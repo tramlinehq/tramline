@@ -12,7 +12,10 @@ class ReleasesController < SignedInApplicationController
   end
 
   def show
-    redirect_to overview_release_path(@release) and return if @release.is_v2?
+    if @release.is_v2?
+      redirect_to active_tab
+      return
+    end
 
     set_commits
     set_pull_requests

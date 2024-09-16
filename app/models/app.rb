@@ -176,13 +176,19 @@ class App < ApplicationRecord
 
     app_config_setup = {
       app_config: {
-        visible: integrations.ready?, completed: ready?
+        visible: integrations.ready?,
+        completed: ready?,
+        integrations: {}
       }
     }
 
-    [app_setup, integration_setup, app_config_setup]
-      .flatten
-      .reduce(:merge)
+    config.further_setup_by_category?.each do |category, status_map|
+      app_config_setup[:app_config][:integrations][category] = {
+        visible: true, completed: status_map[:ready]
+      }
+    end
+
+    [app_setup, integration_setup, app_config_setup].flatten.reduce(:merge)
   end
 
   def train_setup_instructions
@@ -206,15 +212,9 @@ class App < ApplicationRecord
         }
       }
 
-    instructions =
-      if cross_platform?
-        [train_setup, ios_steps_setup, android_steps_setup]
-      elsif android?
-        [train_setup, android_steps_setup]
-      else
-        [train_setup, ios_steps_setup]
-      end
-
+    instructions = [train_setup]
+    instructions += [ios_steps_setup] if ios? || cross_platform?
+    instructions += [android_steps_setup] if android? || cross_platform?
     instructions.flatten.reduce(:merge)
   end
 

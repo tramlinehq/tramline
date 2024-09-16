@@ -12,11 +12,14 @@
 
     <% if connected_integrations?(integrations) %>
       <% sc.with_sidenote do %>
-        <%= render V2::ModalComponent.new(title: "Configure #{Integration.human_enum_name(:category, category)}") do |modal| %>
+        <%= render V2::ModalComponent.new(title: title(category), open: pre_open?(category)) do |modal| %>
           <% modal.with_button(label: "Configure", scheme: :light, type: :action, size: :xxs, arrow: :none)
                   .with_icon("v2/cog.svg", size: :md) %>
           <% modal.with_body do %>
-            <%= tag.turbo_frame id: "#{category}_config", src: edit_app_app_config_path(@app, integration_category: category), loading: :lazy, class: "with-turbo-frame-loader" do %>
+            <%= tag.turbo_frame id: "#{category}_config",
+                                src: edit_app_app_config_path(@app, integration_category: category),
+                                loading: :lazy,
+                                class: "with-turbo-frame-loader" do %>
               <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
             <% end %>
           <% end %>

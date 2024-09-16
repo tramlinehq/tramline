@@ -338,7 +338,7 @@ en:
           version_control: "Version Control"
           ci_cd: "Build Servers"
           notification: "Notifications"
-          build_channel: "Distributions"
+          build_channel: "Submissions"
           monitoring: "Monitoring and Analytics"
       bitrise_integration:
         access_token: "Bitrise Personal Access Token"

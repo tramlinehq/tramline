@@ -49,23 +49,23 @@ class AppConfigsController < SignedInApplicationController
   end
 
   def configure_version_control
-    set_code_repositories if @config.further_code_repository_setup?
+    set_code_repositories if further_setup_by_category?.dig(:version_control, :further_setup)
   end
 
   def configure_notification_channel
     set_notification_channels if @app.notifications_set_up?
   end
 
+  def configure_ci_cd
+    set_ci_cd_projects if further_setup_by_category?.dig(:ci_cd, :further_setup)
+  end
+
   def configure_build_channel
-    set_firebase_apps if @config.further_build_channel_setup?
+    set_firebase_apps if further_setup_by_category?.dig(:build_channel, :further_setup)
   end
 
   def configure_monitoring
-    set_monitoring_projects if @config.further_monitoring_setup?
-  end
-
-  def configure_ci_cd
-    set_ci_cd_projects if @config.further_ci_cd_setup?
+    set_monitoring_projects if further_setup_by_category?.dig(:monitoring, :further_setup)
   end
 
   def set_app_config
@@ -136,15 +136,23 @@ class AppConfigsController < SignedInApplicationController
     config = {}
 
     if config_params[:bugsnag_ios_release_stage].present?
-      config[:bugsnag_ios_config] = {project_id: config_params[:bugsnag_ios_project_id].safe_json_parse,
-                                      release_stage: config_params[:bugsnag_ios_release_stage]}
+      config[:bugsnag_ios_config] = {
+        project_id: config_params[:bugsnag_ios_project_id].safe_json_parse,
+        release_stage: config_params[:bugsnag_ios_release_stage]
+      }
     end
 
     if config_params[:bugsnag_android_release_stage].present?
-      config[:bugsnag_android_config] = {project_id: config_params[:bugsnag_android_project_id].safe_json_parse,
-                                          release_stage: config_params[:bugsnag_android_release_stage]}
+      config[:bugsnag_android_config] = {
+        project_id: config_params[:bugsnag_android_project_id].safe_json_parse,
+        release_stage: config_params[:bugsnag_android_release_stage]
+      }
     end
 
     config
+  end
+
+  def further_setup_by_category?
+    @further_setup_by_category ||= @config.further_setup_by_category?
   end
 end

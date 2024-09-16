@@ -30,7 +30,7 @@
 
             <% dropdown.with_item_group do |group| %>
               <% current_user.organizations.each do |organization| %>
-                <% group.with_item(link: { path: switch_accounts_organization_path(organization) },
+                <% group.with_item(link: { path: switch_accounts_organization_path(organization), "data-turbo": false },
                                    selected: organization.id == current_organization.id) do %>
                   <div class="text-left">
                     <div class="font-medium leading-none mb-0.5 text-sm">

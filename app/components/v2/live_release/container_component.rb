@@ -48,7 +48,10 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
 
   def sorted_sections
     live_release_tab_configuration.to_h do |s, configs|
-      [s.to_s.humanize, configs.sort_by { |_, c| c[:position] }]
+      [
+        s.to_s.humanize,
+        configs.reject { |_, c| c[:status] == :hidden }.sort_by { |_, c| c[:position] }
+      ]
     end
   end
 

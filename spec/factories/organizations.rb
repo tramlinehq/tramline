@@ -8,7 +8,7 @@ FactoryBot.define do
     trait :with_sso do
       sso { true }
       sso_domains { [Faker::Lorem.word + ".com"] }
-      sso_tenant_id { Faker::String.random(length: 10) }
+      sso_tenant_id { Faker::Lorem.word }
     end
   end
 end
