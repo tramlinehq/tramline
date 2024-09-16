@@ -118,7 +118,9 @@ class GithubIntegration < ApplicationRecord
       }).to_s
   end
 
-  def repos
+  def workspaces = nil
+
+  def repos(_)
     installation.list_repos(REPOS_TRANSFORMATIONS)
   end
 

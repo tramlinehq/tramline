@@ -10,25 +10,25 @@ module Installations
     USER_INFO_URL = "#{BASE_URL}/user"
     WORKSPACES_URL = "#{BASE_URL}/workspaces"
     REPOS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}"
-    REPO_HOOKS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/hooks"
-    REPO_HOOK_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/hooks/{hook_id}"
-    REPO_BRANCHES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/branches"
-    REPO_BRANCH_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/branches/{branch_name}"
-    REPO_TAGS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/tags"
-    REPO_TAG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/tags/{tag_name}"
-    DIFFSTAT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/diffstat/{to_sha}..{from_sha}"
-    PRS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests"
-    PR_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}"
-    PR_MERGE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}/merge"
-    REPO_COMMITS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commits"
-    REPO_COMMIT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commit/{sha}"
-    GET_COMMIT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commit/{commit_sha}"
-    PIPELINES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines"
-    PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines/{pipeline_id}"
-    STOP_PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines/{pipeline_id}/stopPipeline"
-    LIST_FILES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/downloads"
-    GET_FILE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/downloads/{file_name}"
-    PIPELINE_YAML_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/src/{branch_name}/bitbucket-pipelines.yml"
+    REPO_HOOKS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/hooks"
+    REPO_HOOK_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/hooks/{hook_id}"
+    REPO_BRANCHES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/refs/branches"
+    REPO_BRANCH_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/refs/branches/{branch_name}"
+    REPO_TAGS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/refs/tags"
+    REPO_TAG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/refs/tags/{tag_name}"
+    DIFFSTAT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/diffstat/{to_sha}..{from_sha}"
+    PRS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/pullrequests"
+    PR_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/pullrequests/{pr_number}"
+    PR_MERGE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/pullrequests/{pr_number}/merge"
+    REPO_COMMITS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/commits"
+    REPO_COMMIT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/commit/{sha}"
+    GET_COMMIT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/commit/{commit_sha}"
+    PIPELINES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/pipelines"
+    PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/pipelines/{pipeline_id}"
+    STOP_PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/pipelines/{pipeline_id}/stopPipeline"
+    LIST_FILES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/downloads"
+    GET_FILE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/downloads/{file_name}"
+    PIPELINE_YAML_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/src/{branch_name}/bitbucket-pipelines.yml"
 
     WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
 
@@ -85,9 +85,8 @@ module Installations
       end
     end
 
-    def initialize(oauth_access_token, workspace)
+    def initialize(oauth_access_token)
       @oauth_access_token = oauth_access_token
-      @workspace = workspace
     end
 
     def user_info(transforms)
@@ -101,7 +100,7 @@ module Installations
         .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
     end
 
-    def list_repos(transforms)
+    def list_repos(workspace, transforms)
       execute(:get, REPOS_URL.expand(workspace:).to_s)
         .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
     end

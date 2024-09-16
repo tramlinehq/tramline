@@ -25,7 +25,7 @@ class BitbucketIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
-  delegate :code_repo_name_only, :code_repository_name, to: :app_config
+  delegate :code_repository_name, to: :app_config
 
   def install_path
     unless integration.version_control? || integration.ci_cd?
@@ -46,7 +46,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def installation
-    Installations::Bitbucket::Api.new(oauth_access_token, workspace)
+    Installations::Bitbucket::Api.new(oauth_access_token)
   end
 
   def to_s = "bitbucket"
@@ -81,7 +81,7 @@ class BitbucketIntegration < ApplicationRecord
   }
 
   def workspaces
-    with_api_retries { installation.list_workspaces(WORKSPACE_TRANSFORMATIONS) }
+    with_api_retries { installation.list_workspaces(WORKSPACE_TRANSFORMATIONS).pluck(:name) }
   end
 
   def metadata
@@ -147,46 +147,46 @@ class BitbucketIntegration < ApplicationRecord
     pr[:state] == "OPEN"
   end
 
-  def repos
-    with_api_retries { installation.list_repos(REPOS_TRANSFORMATIONS) }
+  def repos(workspace)
+    with_api_retries { installation.list_repos(workspace, REPOS_TRANSFORMATIONS) }
   end
 
   def find_or_create_webhook!(id:, train_id:)
     GitHub::Result.new do
       if id
-        webhook = with_api_retries { installation.find_webhook(code_repo_name_only, id, WEBHOOK_TRANSFORMATIONS) }
+        webhook = with_api_retries { installation.find_webhook(code_repository_name, id, WEBHOOK_TRANSFORMATIONS) }
         if webhook[:url] == events_url(train_id:) && (installation.class::WEBHOOK_EVENTS - webhook[:events]).empty?
           webhook
         else
-          with_api_retries { installation.update_repo_webhook!(code_repo_name_only, webhook[:id], events_url(train_id:), WEBHOOK_TRANSFORMATIONS) }
+          with_api_retries { installation.update_repo_webhook!(code_repository_name, webhook[:id], events_url(train_id:), WEBHOOK_TRANSFORMATIONS) }
         end
       else
-        with_api_retries { installation.create_repo_webhook!(code_repo_name_only, events_url(train_id:), WEBHOOK_TRANSFORMATIONS) }
+        with_api_retries { installation.create_repo_webhook!(code_repository_name, events_url(train_id:), WEBHOOK_TRANSFORMATIONS) }
       end
     rescue Installations::Bitbucket::Error => ex
       raise ex unless ex.reason == :webhook_not_found
-      with_api_retries { installation.create_repo_webhook!(code_repo_name_only, events_url(train_id:), WEBHOOK_TRANSFORMATIONS) }
+      with_api_retries { installation.create_repo_webhook!(code_repository_name, events_url(train_id:), WEBHOOK_TRANSFORMATIONS) }
     end
   end
 
   def create_branch!(from, to, source_type: :branch)
-    with_api_retries { installation.create_branch!(code_repo_name_only, from, to, source_type:) }
+    with_api_retries { installation.create_branch!(code_repository_name, from, to, source_type:) }
   end
 
   def commit_log(from_branch, to_branch)
-    installation.commits_between(code_repo_name_only, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
+    installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
   end
 
   def diff_between?(from_branch, to_branch, from_type: :branch)
-    with_api_retries { installation.diff?(code_repo_name_only, from_branch, to_branch, from_type) }
+    with_api_retries { installation.diff?(code_repository_name, from_branch, to_branch, from_type) }
   end
 
   def branch_head_sha(branch, sha_only: true)
-    with_api_retries { installation.head(code_repo_name_only, branch, sha_only:, commit_transforms: COMMITS_TRANSFORMATIONS) }
+    with_api_retries { installation.head(code_repository_name, branch, sha_only:, commit_transforms: COMMITS_TRANSFORMATIONS) }
   end
 
   def branch_exists?(branch_name)
-    with_api_retries { installation.get_branch(code_repo_name_only, branch_name) }.present?
+    with_api_retries { installation.get_branch(code_repository_name, branch_name) }.present?
   rescue Installations::Error => ex
     raise ex unless ex.reason == :not_found
     false
@@ -211,7 +211,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def tag_exists?(tag_name)
-    with_api_retries { installation.get_tag(code_repo_name_only, tag_name) }.present?
+    with_api_retries { installation.get_tag(code_repository_name, tag_name) }.present?
   rescue Installations::Error => ex
     raise ex unless ex.reason == :not_found
     false
@@ -220,13 +220,13 @@ class BitbucketIntegration < ApplicationRecord
   def create_release!(tag_name, branch_name) = create_tag!(tag_name, branch_name)
 
   def create_tag!(tag_name, sha)
-    with_api_retries { installation.create_tag!(code_repo_name_only, tag_name, sha) }
+    with_api_retries { installation.create_tag!(code_repository_name, tag_name, sha) }
   end
 
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
     with_api_retries do
       installation
-        .create_pr!(code_repo_name_only, to_branch_ref, from_branch_ref, title, description, PR_TRANSFORMATIONS)
+        .create_pr!(code_repository_name, to_branch_ref, from_branch_ref, title, description, PR_TRANSFORMATIONS)
         .merge_if_present(source: :bitbucket)
     end
   end
@@ -234,17 +234,17 @@ class BitbucketIntegration < ApplicationRecord
   def find_pr(to_branch_ref, from_branch_ref)
     with_api_retries do
       installation
-        .find_pr(code_repo_name_only, to_branch_ref, from_branch_ref, PR_TRANSFORMATIONS)
+        .find_pr(code_repository_name, to_branch_ref, from_branch_ref, PR_TRANSFORMATIONS)
         .merge_if_present(source: :bitbucket)
     end
   end
 
   def get_pr(pr_number)
-    with_api_retries { installation.get_pr(code_repo_name_only, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :bitbucket) }
+    with_api_retries { installation.get_pr(code_repository_name, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :bitbucket) }
   end
 
   def merge_pr!(pr_number)
-    with_api_retries { installation.merge_pr!(code_repo_name_only, pr_number) }
+    with_api_retries { installation.merge_pr!(code_repository_name, pr_number) }
   end
 
   def create_patch_pr!(_to_branch, _patch_branch, _commit_hash, _pr_title_prefix)
@@ -277,15 +277,15 @@ class BitbucketIntegration < ApplicationRecord
 
   def workflows
     return [] unless integration.ci_cd?
-    with_api_retries { installation.list_pipeline_selectors(code_repo_name_onlym, WORKFLOW_TRANSFORMATIONS) }
+    with_api_retries { installation.list_pipeline_selectors(code_repository_name, WORKFLOW_TRANSFORMATIONS) }
   end
 
   def workflow_retriable? = false
 
   def trigger_workflow_run!(ci_cd_channel, _branch_name, inputs, commit_hash = nil)
     with_api_retries do
-      res = installation.trigger_pipeline!(code_repo_name_only, ci_cd_channel, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
-      res.merge(ci_link: "https://bitbucket.org/#{workspace}/#{code_repo_name_only}/pipelines/results/#{res[:number]}")
+      res = installation.trigger_pipeline!(code_repository_name, ci_cd_channel, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
+      res.merge(ci_link: "https://bitbucket.org/#{code_repository_name}/pipelines/results/#{res[:number]}")
     end
   end
 
@@ -294,7 +294,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def cancel_workflow_run!(ci_ref)
-    with_api_retries { installation.cancel_pipeline!(code_repo_name_only, ci_ref) }
+    with_api_retries { installation.cancel_pipeline!(code_repository_name, ci_ref) }
   end
 
   def find_workflow_run(_workflow_id, _branch, _commit_sha)
@@ -302,14 +302,14 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def get_workflow_run(pipeline_id)
-    with_api_retries { installation.get_pipeline(code_repo_name_only, pipeline_id) }
+    with_api_retries { installation.get_pipeline(code_repository_name, pipeline_id) }
   end
 
   def get_artifact_v2(_, _, external_workflow_run_id:)
     raise Integration::NoBuildArtifactAvailable if external_workflow_run_id.blank?
 
     artifact_name = "build-#{external_workflow_run_id}".gsub(/{/, "").gsub(/}/, "")
-    artifact = with_api_retries { installation.get_file(code_repo_name_only, artifact_name, ARTIFACTS_TRANSFORMATIONS) }
+    artifact = with_api_retries { installation.get_file(code_repository_name, artifact_name, ARTIFACTS_TRANSFORMATIONS) }
     raise Integration::NoBuildArtifactAvailable if artifact.blank?
 
     Rails.logger.debug { "Downloading artifact #{artifact}" }
@@ -375,10 +375,5 @@ class BitbucketIntegration < ApplicationRecord
     else
       bitbucket_events_url(host: ENV["HOST_NAME"], protocol: "https", **params)
     end
-  end
-
-  # TODO: fix this
-  def workspace
-    "tramline"
   end
 end

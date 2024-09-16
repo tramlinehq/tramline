@@ -3,8 +3,7 @@ require "webmock/rspec"
 
 describe Installations::Bitbucket::Api, type: :integration do
   let(:access_token) { Faker::String.random(length: 8) }
-  let(:workspace) { "tramline" }
-  let(:repo_slug) { "ueno" }
+  let(:repo_slug) { "tramline/ueno" }
   let(:url) { "https://example.com" }
 
   describe "#create_repo_webhook!" do
@@ -14,7 +13,7 @@ describe Installations::Bitbucket::Api, type: :integration do
       allow_any_instance_of(described_class).to receive(:execute).and_return(response)
 
       result = described_class
-        .new(access_token, workspace)
+        .new(access_token)
         .create_repo_webhook!(repo_slug, url, BitbucketIntegration::WEBHOOK_TRANSFORMATIONS)
 
       expect(result).to eq({
@@ -33,13 +32,13 @@ describe Installations::Bitbucket::Api, type: :integration do
 
     it "creates a branch given a name" do
       response = {"target" => {"hash" => head_ref_sha, "type" => "branch"}}
-      get_branch_url = described_class::REPO_BRANCH_URL.expand(workspace:, repo_slug:, branch_name: source_branch_name).to_s
-      create_branch_url = described_class::REPO_BRANCHES_URL.expand(workspace:, repo_slug:).to_s
+      get_branch_url = described_class::REPO_BRANCH_URL.expand(repo_slug:, branch_name: source_branch_name).to_s
+      create_branch_url = described_class::REPO_BRANCHES_URL.expand(repo_slug:).to_s
       get_branch_request = stub_request(:get, get_branch_url).to_return_json(body: response)
       create_branch_request = stub_request(:post, create_branch_url).to_return_json(body: {})
 
       described_class
-        .new(access_token, workspace)
+        .new(access_token)
         .create_branch!(repo_slug, source_branch_name, new_branch_name)
 
       expect(get_branch_request.with(headers: {"Authorization" => "Bearer #{access_token}"})).to have_been_made
@@ -52,13 +51,13 @@ describe Installations::Bitbucket::Api, type: :integration do
 
     it "creates a branch given a tag" do
       response = {"target" => {"hash" => head_ref_sha, "type" => "tag"}}
-      get_tag_url = described_class::REPO_TAG_URL.expand(workspace:, repo_slug:, tag_name: source_tag_name).to_s
-      create_branch_url = described_class::REPO_BRANCHES_URL.expand(workspace:, repo_slug:).to_s
+      get_tag_url = described_class::REPO_TAG_URL.expand(repo_slug:, tag_name: source_tag_name).to_s
+      create_branch_url = described_class::REPO_BRANCHES_URL.expand(repo_slug:).to_s
       get_tag_request = stub_request(:get, get_tag_url).to_return_json(body: response)
       create_branch_request = stub_request(:post, create_branch_url).to_return_json(body: {})
 
       described_class
-        .new(access_token, workspace)
+        .new(access_token)
         .create_branch!(repo_slug, source_tag_name, new_branch_name, source_type: :tag)
 
       expect(get_tag_request.with(headers: {"Authorization" => "Bearer #{access_token}"})).to have_been_made
@@ -70,11 +69,11 @@ describe Installations::Bitbucket::Api, type: :integration do
     end
 
     it "creates a branch given a commit" do
-      create_branch_url = described_class::REPO_BRANCHES_URL.expand(workspace:, repo_slug:).to_s
+      create_branch_url = described_class::REPO_BRANCHES_URL.expand(repo_slug:).to_s
       create_branch_request = stub_request(:post, create_branch_url).to_return_json(body: {})
 
       described_class
-        .new(access_token, workspace)
+        .new(access_token)
         .create_branch!(repo_slug, head_ref_sha, new_branch_name, source_type: :commit)
 
       expect(

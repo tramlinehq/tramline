@@ -122,7 +122,9 @@ class GitlabIntegration < ApplicationRecord
     set_tokens(Installations::Gitlab::Api.oauth_access_token(code, redirect_uri))
   end
 
-  def repos
+  def workspaces = nil
+
+  def repos(_)
     with_api_retries { installation.list_projects(REPOS_TRANSFORMATIONS) }
   end
 

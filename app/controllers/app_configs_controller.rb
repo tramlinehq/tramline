@@ -15,6 +15,11 @@ class AppConfigsController < SignedInApplicationController
           render edit_category_partial
         end
       end
+
+      format.turbo_stream do
+        pick_category
+        render edit_category_partial
+      end
     end
   end
 
@@ -79,7 +84,8 @@ class AppConfigsController < SignedInApplicationController
         :bugsnag_ios_release_stage,
         :bugsnag_ios_project_id,
         :bugsnag_android_release_stage,
-        :bugsnag_android_project_id
+        :bugsnag_android_project_id,
+        :bitbucket_workspace
       )
   end
 
@@ -109,7 +115,9 @@ class AppConfigsController < SignedInApplicationController
   end
 
   def set_code_repositories
-    @code_repositories = @app.vcs_provider.repos
+    @workspaces = @app.vcs_provider.workspaces || []
+    workspace = params[:workspace] || @workspaces.first
+    @code_repositories = @app.vcs_provider.repos(workspace)
   end
 
   def set_notification_channels

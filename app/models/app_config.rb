@@ -3,6 +3,7 @@
 # Table name: app_configs
 #
 #  id                      :uuid             not null, primary key
+#  bitbucket_workspace     :string
 #  bugsnag_android_config  :jsonb
 #  bugsnag_ios_config      :jsonb
 #  code_repository         :json
