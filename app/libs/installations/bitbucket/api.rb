@@ -305,6 +305,7 @@ module Installations
       execute(:post, PIPELINES_URL.expand(workspace:, repo_slug:).to_s, params)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
+        .then { |ok| ok.presence || raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed))
     end
 
     def get_pipeline(repo_slug, pipeline_id)
