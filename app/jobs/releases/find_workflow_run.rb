@@ -6,7 +6,7 @@ class Releases::FindWorkflowRun
   sidekiq_options retry: 25
 
   sidekiq_retry_in do |count, exception|
-    if exception.is_a?(Installations::Errors::WorkflowRunNotFound)
+    if exception.is_a?(Installations::Error) && exception.reason == :workflow_run_not_found
       10 * (count + 1)
     else
       :kill
@@ -14,7 +14,7 @@ class Releases::FindWorkflowRun
   end
 
   sidekiq_retries_exhausted do |msg, ex|
-    if ex.is_a?(Installations::Errors::WorkflowRunNotFound)
+    if ex.is_a?(Installations::Error) && ex.reason == :workflow_run_not_found
       run = StepRun.find(msg["args"].first)
       run.ci_unavailable! if run.may_ci_unavailable?
       run.event_stamp!(reason: :ci_workflow_unavailable, kind: :error, data: {})

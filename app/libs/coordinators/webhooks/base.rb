@@ -4,6 +4,7 @@ class Coordinators::Webhooks::Base
 
   GITHUB = Coordinators::Webhooks::Github
   GITLAB = Coordinators::Webhooks::Gitlab
+  BITBUCKET = Coordinators::Webhooks::Bitbucket
 
   attr_reader :payload, :train
 

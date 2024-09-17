@@ -111,6 +111,7 @@ en:
       app_store_integration: "App Store & TestFlight"
       gitlab_integration: "GitLab"
       github_integration: "GitHub"
+      bitbucket_integration: "Bitbucket"
       google_firebase_integration: "Firebase App Distribution"
       deployment: "Distribution"
       app_store_submission: "App Store"
@@ -330,6 +331,7 @@ en:
           invalid_config: "configuration is invalid, please check!"
           invalid_api_package: "the build artifact being invalid for the channel"
           firebase_processing_error: "the build was uploaded to Firebase, but Firebase threw an error while processing it. This could be due to degradation or an invalid package"
+          not_found: "the app/project was not found in Firebase App Distribution"
     attributes:
       integration:
         categories:
@@ -400,6 +402,7 @@ en:
               not_available: "could not find the working branch in the configured git repo"
             backmerge_strategy:
               continuous_not_allowed: "continuous backmerge only allowed for Almost Trunk branching strategy"
+              disabled_for_bitbucket: "continuous backmerge is not allowed for Bitbucket at the moment"
         notification_setting:
           attributes:
             notification_channels:

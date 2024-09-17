@@ -17,6 +17,7 @@ describe Triggers::PullRequest do
   let(:merge_payload) { JSON.parse(File.read("spec/fixtures/github/merge_pull_request.json")).with_indifferent_access }
   let(:repo_integration) { instance_double(Installations::Github::Api) }
   let(:repo_name) { app.config.code_repository_name }
+  let(:no_diff_error) { Installations::Error.new("Should not create a Pull Request without a diff", reason: :pull_request_without_commits) }
 
   before do
     allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
@@ -43,7 +44,7 @@ describe Triggers::PullRequest do
     end
 
     it "does not create PR and merge it if the PR does not have a diff to create" do
-      allow(repo_integration).to receive(:create_pr!).and_raise(Installations::Errors::PullRequestWithoutCommits)
+      allow(repo_integration).to receive(:create_pr!).and_raise(no_diff_error)
       allow(repo_integration).to receive(:merge_pr!)
 
       result = described_class.create_and_merge!(
@@ -63,7 +64,7 @@ describe Triggers::PullRequest do
     end
 
     it "returns an unsuccessful result if the PR does not have a diff to create and allow without diff is false" do
-      allow(repo_integration).to receive(:create_pr!).and_raise(Installations::Errors::PullRequestWithoutCommits)
+      allow(repo_integration).to receive(:create_pr!).and_raise(no_diff_error)
       allow(repo_integration).to receive(:merge_pr!)
 
       result = described_class.create_and_merge!(
@@ -85,7 +86,7 @@ describe Triggers::PullRequest do
 
     it "does not close the PR if the merge fails" do
       allow(repo_integration).to receive(:create_pr!).and_return(create_payload)
-      allow(repo_integration).to receive(:merge_pr!).and_raise(Installations::Errors::PullRequestNotMergeable)
+      allow(repo_integration).to receive(:merge_pr!).and_raise(Installations::Error.new("Failed to merge the Pull Request", reason: :pull_request_not_mergeable))
 
       result = described_class.create_and_merge!(
         release: release,

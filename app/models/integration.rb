@@ -21,7 +21,7 @@ class Integration < ApplicationRecord
 
   belongs_to :app
 
-  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration]
+  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration]
   delegated_type :providable, types: ALL_TYPES, autosave: true, validate: false
 
   IntegrationNotImplemented = Class.new(StandardError)
@@ -30,22 +30,22 @@ class Integration < ApplicationRecord
 
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
-      "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration],
+      "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration]
     },
     android: {
-      "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration],
+      "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration]
     },
     cross_platform: {
-      "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration],
+      "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
       "monitoring" => %w[BugsnagIntegration]

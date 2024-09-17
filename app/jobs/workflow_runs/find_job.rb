@@ -7,7 +7,7 @@ class WorkflowRuns::FindJob
   sidekiq_options retry: 25
 
   sidekiq_retry_in do |count, exception|
-    if exception.is_a?(Installations::Errors::WorkflowRunNotFound)
+    if exception.is_a?(Installations::Error) && exception.reason == :workflow_run_not_found
       backoff_in(attempt: count, period: :minutes).to_i
     else
       elog(exception)
@@ -16,7 +16,7 @@ class WorkflowRuns::FindJob
   end
 
   sidekiq_retries_exhausted do |msg, ex|
-    if ex.is_a?(Installations::Errors::WorkflowRunNotFound)
+    if ex.is_a?(Installations::Error) && ex.reason == :workflow_run_not_found
       run = WorkflowRun.find(msg["args"].first)
       run.unavailable! if run.may_unavailable?
       elog(ex)

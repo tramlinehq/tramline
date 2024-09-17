@@ -177,7 +177,7 @@ class StepRun < ApplicationRecord
   delegate :release_platform, :release, :platform, to: :release_platform_run
   delegate :release_branch, :release_version, to: :release
   delegate :train, :store_provider, to: :release_platform
-  delegate :app, :unzip_artifact?, :notify!, to: :train
+  delegate :app, :notify!, to: :train
   delegate :organization, to: :app
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact, allow_nil: true

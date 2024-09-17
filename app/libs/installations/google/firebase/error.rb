@@ -20,6 +20,12 @@ module Installations
         code: 403,
         message_matcher: /The caller does not have permission/,
         decorated_reason: :permission_denied
+      },
+      {
+        status: "NOT_FOUND",
+        code: 404,
+        message_matcher: /Requested entity was not found/i,
+        decorated_reason: :not_found
       }
     ]
 

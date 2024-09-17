@@ -1,0 +1,94 @@
+{
+  "uuid": "{efd55170-b3c4-46b9-841a-80542b72cbc1}",
+  "repository": {
+    "type": "repository",
+    "full_name": "tramline/ueno",
+    "links": {
+      "self": {
+        "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno"
+      },
+      "html": {
+        "href": "https://bitbucket.org/tramline/ueno"
+      },
+      "avatar": {
+        "href": "https://bytebucket.org/ravatar/%7Babd86e4d-4ad5-4d31-b727-9ccf26604d37%7D?ts=3627142"
+      }
+    },
+    "name": "ueno",
+    "uuid": "{abd86e4d-4ad5-4d31-b727-9ccf26604d37}"
+  },
+  "state": {
+    "name": "IN_PROGRESS",
+    "type": "pipeline_state_parsing",
+    "result": {
+      "name": "PARSING",
+      "type": "pipeline_state_parsing"
+    }
+  },
+  "build_number": 7,
+  "creator": {
+    "display_name": "Nivedita Priyadarshini",
+    "links": {
+      "self": {
+        "href": "https://api.bitbucket.org/2.0/users/%7Bdb534ec4-33b8-4595-9012-8a86593ac4dd%7D"
+      },
+      "avatar": {
+        "href": "https://secure.gravatar.com/avatar/cb35b6f8b777e174b0c46cdbf51a3a64?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FNP-0.png"
+      },
+      "html": {
+        "href": "https://bitbucket.org/%7Bdb534ec4-33b8-4595-9012-8a86593ac4dd%7D/"
+      }
+    },
+    "type": "user",
+    "uuid": "{db534ec4-33b8-4595-9012-8a86593ac4dd}",
+    "account_id": "712020:07879f2c-20ca-488b-b5f3-0fd492b8c939",
+    "nickname": "Nivedita Priyadarshini"
+  },
+  "created_on": "2024-09-04T12:39:39.123027492Z",
+  "completed_on": "2024-09-04T12:47:13.780543208Z",
+  "target": {
+    "selector": {
+      "type": "custom",
+      "pattern": "android-debug-apk"
+    },
+    "commit": {
+      "hash": "2852d77475aa1f95a60e67f4c28081aa1835068d",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/2852d77475aa1f95a60e67f4c28081aa1835068d"
+        },
+        "html": {
+          "href": "https://bitbucket.org/tramline/ueno/commits/2852d77475aa1f95a60e67f4c28081aa1835068d"
+        }
+      },
+      "type": "commit"
+    },
+    "type": "pipeline_commit_target"
+  },
+  "trigger": {
+    "name": "MANUAL",
+    "type": "pipeline_trigger_manual"
+  },
+  "run_number": 1,
+  "duration_in_seconds": 442,
+  "build_seconds_used": 441,
+  "first_successful": false,
+  "expired": false,
+  "links": {
+    "self": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pipelines/%7Befd55170-b3c4-46b9-841a-80542b72cbc1%7D"
+    },
+    "steps": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pipelines/%7Befd55170-b3c4-46b9-841a-80542b72cbc1%7D/steps"
+    }
+  },
+  "has_variables": false,
+  "labels": {},
+  "configuration_sources": [
+    {
+      "source": "STATIC_LOCAL",
+      "uri": "/%7B49606611-4df7-46f4-bbbd-f349a99d1ce8%7D/%7Babd86e4d-4ad5-4d31-b727-9ccf26604d37%7D/src/2852d77475aa1f95a60e67f4c28081aa1835068d/bitbucket-pipelines.yml"
+    }
+  ],
+  "type": "pipeline"
+}

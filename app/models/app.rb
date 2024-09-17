@@ -148,6 +148,10 @@ class App < ApplicationRecord
     integrations.bugsnag_integrations.any?
   end
 
+  def bitbucket_connected?
+    integrations.bitbucket_integrations.any?
+  end
+
   def firebase_connected?
     integrations.google_firebase_integrations.any?
   end

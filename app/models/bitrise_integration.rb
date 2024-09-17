@@ -138,7 +138,7 @@ class BitriseIntegration < ApplicationRecord
     Artifacts::Stream.new(installation.artifact_io_stream(artifact_url))
   end
 
-  def get_artifact_v2(artifact_url, _)
+  def get_artifact_v2(artifact_url, _, _)
     raise Integration::NoBuildArtifactAvailable if artifact_url.blank?
 
     artifact = installation.artifact(artifact_url, ARTIFACTS_TRANSFORMATIONS)
@@ -146,10 +146,6 @@ class BitriseIntegration < ApplicationRecord
 
     stream = installation.download_artifact(artifact[:archive_download_url])
     {artifact:, stream: Artifacts::Stream.new(stream)}
-  end
-
-  def unzip_artifact?
-    false
   end
 
   def public_icon_img

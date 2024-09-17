@@ -118,7 +118,9 @@ class GithubIntegration < ApplicationRecord
       }).to_s
   end
 
-  def repos
+  def workspaces = nil
+
+  def repos(_)
     installation.list_repos(REPOS_TRANSFORMATIONS)
   end
 
@@ -140,7 +142,8 @@ class GithubIntegration < ApplicationRecord
       else
         create_webhook!(train_id:)
       end
-    rescue Installations::Errors::ResourceNotFound
+    rescue Installations::Error => ex
+      raise ex unless ex.reason == :not_found
       create_webhook!(train_id:)
     end
   end
@@ -157,19 +160,19 @@ class GithubIntegration < ApplicationRecord
     installation.create_branch!(code_repository_name, from, to, source_type:)
   end
 
-  def pull_requests_url(repo, branch_name, open: false)
+  def pull_requests_url(branch_name, open: false)
     query_string = "is:pr base:#{branch_name}"
     query_string += " is:open" if open
     q = URI.encode_www_form("q" => query_string)
-    "https://github.com/#{repo}/pulls?#{q}"
+    "https://github.com/#{code_repository_name}/pulls?#{q}"
   end
 
-  def branch_url(repo, branch_name)
-    "https://github.com/#{repo}/tree/#{branch_name}"
+  def branch_url(branch_name)
+    "https://github.com/#{code_repository_name}/tree/#{branch_name}"
   end
 
-  def tag_url(repo, tag_name)
-    "https://github.com/#{repo}/releases/tag/#{tag_name}"
+  def tag_url(tag_name)
+    "https://github.com/#{code_repository_name}/releases/tag/#{tag_name}"
   end
 
   def compare_url(to_branch, from_branch)
@@ -198,10 +201,6 @@ class GithubIntegration < ApplicationRecord
     false
   end
 
-  def namespaced_branch(branch_name)
-    [code_repo_namespace, ":", branch_name].join
-  end
-
   def further_setup?
     return true if integration.version_control?
     false
@@ -220,6 +219,14 @@ class GithubIntegration < ApplicationRecord
     "#{creds.integrations.github.app_name}[bot]"
   end
 
+  def pr_closed?(pr)
+    pr[:state] == "closed"
+  end
+
+  def pr_open?(pr)
+    pr[:state] == "open"
+  end
+
   ## CI/CD
 
   def workflows
@@ -229,7 +236,7 @@ class GithubIntegration < ApplicationRecord
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
     deploy_action_enabled = organization.deploy_action_enabled? || app.deploy_action_enabled?
-    raise WorkflowRun unless installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash, deploy_action_enabled)
+    installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash, deploy_action_enabled)
   end
 
   def cancel_workflow_run!(ci_ref)
@@ -261,15 +268,7 @@ class GithubIntegration < ApplicationRecord
       .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
   end
 
-  def select_artifact(artifacts_url, artifact_name_pattern)
-    installation
-      .artifacts(artifacts_url, ARTIFACTS_TRANSFORMATIONS)
-      .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
-      .then { |artifacts| API.find_biggest(artifacts) }
-      .tap { |artifact| raise Installations::Errors::ArtifactsNotFound if artifact.blank? }
-  end
-
-  def get_artifact_v2(artifacts_url, artifact_name_pattern)
+  def get_artifact_v2(artifacts_url, artifact_name_pattern, _)
     artifact = select_artifact(artifacts_url, artifact_name_pattern)
 
     artifact_stream = installation.artifact_download_url(artifact)
@@ -281,16 +280,16 @@ class GithubIntegration < ApplicationRecord
 
   def branch_exists?(branch_name)
     installation.branch_exists?(code_repository_name, branch_name)
-  rescue Installations::Errors::ResourceNotFound
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
     false
   end
 
   def tag_exists?(tag_name)
     installation.tag_exists?(code_repository_name, tag_name)
-  end
-
-  def unzip_artifact?
-    true
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
+    false
   end
 
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
@@ -327,9 +326,10 @@ class GithubIntegration < ApplicationRecord
     installation.get_commit(code_repository_name, commit_hash, COMMITS_TRANSFORMATIONS)
   end
 
-  def diff_between?(from_branch, to_branch)
+  def diff_between?(from_branch, to_branch, _)
     installation.diff?(code_repository_name, from_branch, to_branch)
-  rescue Installations::Errors::ResourceNotFound
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
     true
   end
 
@@ -346,6 +346,18 @@ class GithubIntegration < ApplicationRecord
   end
 
   private
+
+  def select_artifact(artifacts_url, artifact_name_pattern)
+    installation
+      .artifacts(artifacts_url, ARTIFACTS_TRANSFORMATIONS)
+      .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
+      .then { |artifacts| API.find_biggest(artifacts) }
+      .tap { |artifact| raise Installations::Github::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank? }
+  end
+
+  def namespaced_branch(branch_name)
+    [code_repo_namespace, ":", branch_name].join
+  end
 
   def create_webhook!(url_params)
     installation.create_repo_webhook!(code_repository_name, events_url(url_params), WEBHOOK_TRANSFORMATIONS)

@@ -15,9 +15,7 @@
   <div class="flex items-center">
     <div class="form-switch">
       <%= form.check_box field_name,
-                         { id: switch_id,
-                           class: "sr-only",
-                           data: switch_data },
+                         switch_options,
                          "true", "false" %>
       <label class="bg-slate-400" for="<%= switch_id %>">
         <span class="bg-white shadow" aria-hidden="true"></span>
