@@ -201,7 +201,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def compare_url(to_branch, from_branch)
-    "https://bitbucket.org/tramline/ueno/branch/#{from_branch}?dest=#{CGI.escapeURIComponent(to_branch)}"
+    "https://bitbucket.org/#{code_repository_name}/branch/#{from_branch}?dest=#{CGI.escapeURIComponent(to_branch)}"
   end
 
   def pull_requests_url(branch_name, open: false)
@@ -308,7 +308,10 @@ class BitbucketIntegration < ApplicationRecord
   def get_artifact_v2(_, _, external_workflow_run_id:)
     raise Integration::NoBuildArtifactAvailable if external_workflow_run_id.blank?
 
-    artifact_name = "build-#{external_workflow_run_id}".gsub(/{/, "").gsub(/}/, "") # bitbucket expects uuids surrounded by curly braces, like {uuid} in all api requests
+    # bitbucket expects uuids surrounded by curly braces, like {uuid} in all api requests
+    # except for the file name, where it doesn't for some reason
+    artifact_name = "build-#{external_workflow_run_id}".gsub(/{/, "").gsub(/}/, "")
+
     artifact = with_api_retries { installation.get_file(code_repository_name, artifact_name, ARTIFACTS_TRANSFORMATIONS) }
     raise Integration::NoBuildArtifactAvailable if artifact.blank?
 
