@@ -89,7 +89,7 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def upload_build!
     return unless may_prepare?
-    return fail_with_error!("Build not found") if build&.artifact.blank?
+    return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
     result = nil
     filename = build.artifact.file.filename.to_s

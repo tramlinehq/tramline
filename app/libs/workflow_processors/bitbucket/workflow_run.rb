@@ -23,7 +23,7 @@ class WorkflowProcessors::Bitbucket::WorkflowRun
   end
 
   def artifacts_url
-    nil
+    true
   end
 
   def started_at

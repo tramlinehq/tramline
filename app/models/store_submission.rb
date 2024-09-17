@@ -29,6 +29,8 @@ class StoreSubmission < ApplicationRecord
   include Passportable
   include Loggable
 
+  BuildNotFound = Installations::Error.new("Build not found", reason: :build_not_found)
+
   has_one :store_rollout, dependent: :destroy
   belongs_to :release_platform_run
   belongs_to :parent_release, polymorphic: true
