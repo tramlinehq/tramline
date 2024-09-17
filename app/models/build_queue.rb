@@ -33,7 +33,6 @@ class BuildQueue < ApplicationRecord
 
   def add_commit_v2!(commit, can_apply: true)
     commits << commit
-
     if commits.size >= build_queue_size && can_apply
       Signal.build_queue_can_be_applied!(self)
     end
