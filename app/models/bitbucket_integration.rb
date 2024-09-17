@@ -11,10 +11,10 @@
 class BitbucketIntegration < ApplicationRecord
   has_paper_trail
   using RefinedHash
+  include Linkable
   include Vaultable
   include Providable
   include Displayable
-  include Rails.application.routes.url_helpers
 
   encrypts :oauth_access_token, deterministic: true
   encrypts :oauth_refresh_token, deterministic: true
@@ -201,7 +201,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def compare_url(to_branch, from_branch)
-    "https://bitbucket.org/#{code_repository_name}/compare/#{to_branch}..#{from_branch}"
+    "https://bitbucket.org/tramline/ueno/branch/#{from_branch}?dest=#{CGI.escapeURIComponent(to_branch)}"
   end
 
   def pull_requests_url(branch_name, open: false)
@@ -277,7 +277,7 @@ class BitbucketIntegration < ApplicationRecord
 
   def workflows
     return [] unless integration.ci_cd?
-    with_api_retries { installation.list_pipeline_selectors(code_repository_name, WORKFLOW_TRANSFORMATIONS) }
+    with_api_retries { installation.list_pipeline_selectors(code_repository_name) }
   end
 
   def workflow_retriable? = false
@@ -308,7 +308,7 @@ class BitbucketIntegration < ApplicationRecord
   def get_artifact_v2(_, _, external_workflow_run_id:)
     raise Integration::NoBuildArtifactAvailable if external_workflow_run_id.blank?
 
-    artifact_name = "build-#{external_workflow_run_id}".gsub(/{/, "").gsub(/}/, "")
+    artifact_name = "build-#{external_workflow_run_id}".gsub(/{/, "").gsub(/}/, "") # bitbucket expects uuids surrounded by curly braces, like {uuid} in all api requests
     artifact = with_api_retries { installation.get_file(code_repository_name, artifact_name, ARTIFACTS_TRANSFORMATIONS) }
     raise Integration::NoBuildArtifactAvailable if artifact.blank?
 
@@ -362,18 +362,10 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def redirect_uri
-    if Rails.env.development?
-      bitbucket_callback_url(host: ENV["HOST_NAME"], port: "3000", protocol: "https")
-    else
-      bitbucket_callback_url(host: ENV["HOST_NAME"], protocol: "https")
-    end
+    bitbucket_callback_url(link_params)
   end
 
   def events_url(params)
-    if Rails.env.development?
-      bitbucket_events_url(host: ENV["WEBHOOK_HOST_NAME"], **params)
-    else
-      bitbucket_events_url(host: ENV["HOST_NAME"], protocol: "https", **params)
-    end
+    bitbucket_events_url(**tunneled_link_params, **params)
   end
 end

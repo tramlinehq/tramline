@@ -73,13 +73,14 @@ module Installations
       end
 
       def parse_author_info(commit)
-        if commit[:author_raw] =~ /(.*)<(.*)>/
-          commit[:author_name] = $1.strip
-          commit[:author_email] = $2.strip
+        if (match = /\A(.*)<(.*)>\z/.match(commit[:author_raw]))
+          commit[:author_name] = match[1].strip
+          commit[:author_email] = match[2].strip
         else
           commit[:author_name] = commit[:author_raw]
           commit[:author_email] = commit[:author_raw]
         end
+
         commit.delete(:author_raw)
         commit
       end
