@@ -14,7 +14,8 @@ class Triggers::PatchPullRequest
   def create!
     GitHub::Result.new do
       repo_integration.create_patch_pr!(working_branch, patch_branch, commit.commit_hash, pr_title_prefix)
-    rescue Installations::Errors::PullRequestAlreadyExists
+    rescue Installations::Error => ex
+      raise ex unless ex.reason == :pull_request_already_exists
       logger.debug { "Patch Pull Request: Pull Request Already exists for #{commit.short_sha} to #{working_branch}" }
       repo_integration.find_pr(working_branch, patch_branch)
     end.then do |value|

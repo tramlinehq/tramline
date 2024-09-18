@@ -6,7 +6,7 @@ class Releases::UploadArtifact
   sidekiq_options retry: 3
 
   sidekiq_retry_in do |count, exception|
-    if exception.is_a?(Installations::Errors::ArtifactsNotFound)
+    if exception.is_a?(Installations::Error) && exception && exception.reason == :artifact_not_found
       10 * (count + 1)
     else
       :kill

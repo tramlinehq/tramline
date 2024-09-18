@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
+ActiveRecord::Schema[7.2].define(version: 2024_09_16_105018) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -56,6 +56,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.jsonb "bugsnag_project_id"
     t.jsonb "bugsnag_ios_config"
     t.jsonb "bugsnag_android_config"
+    t.string "bitbucket_workspace"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -94,6 +95,13 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.boolean "draft"
     t.index ["organization_id"], name: "index_apps_on_organization_id"
     t.index ["platform", "bundle_identifier", "organization_id"], name: "index_apps_on_platform_and_bundle_id_and_org_id", unique: true
+  end
+
+  create_table "bitbucket_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "oauth_access_token"
+    t.string "oauth_refresh_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "bitrise_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -292,6 +300,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.text "value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["feature_key", "key", "value"], name: "index_flipper_gates_on_feature_key_and_key_and_value", unique: true
   end
 
   create_table "github_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

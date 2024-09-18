@@ -1,0 +1,470 @@
+{
+  "push": {
+    "changes": [
+      {
+        "old": null,
+        "new": {
+          "name": "r/bb-train/2024-09-06-1",
+          "target": {
+            "type": "commit",
+            "hash": "1db233942778c67f398ddc1c2ae0f4df27f5ebd8",
+            "date": "2024-09-05T12:44:55+00:00",
+            "author": {
+              "type": "author",
+              "raw": "Nivedita Priyadarshini <nid.mishra7@gmail.com>"
+            },
+            "message": "Add a default step to the pipeline\n",
+            "summary": {
+              "type": "rendered",
+              "raw": "Add a default step to the pipeline\n",
+              "markup": "markdown",
+              "html": "<p>Add a default step to the pipeline</p>"
+            },
+            "links": {
+              "self": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/1db233942778c67f398ddc1c2ae0f4df27f5ebd8"
+              },
+              "html": {
+                "href": "https://bitbucket.org/tramline/ueno/commits/1db233942778c67f398ddc1c2ae0f4df27f5ebd8"
+              }
+            },
+            "parents": [
+              {
+                "hash": "c90f65e6524d095c42759315f3f11ab20abde0ef",
+                "links": {
+                  "self": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/c90f65e6524d095c42759315f3f11ab20abde0ef"
+                  },
+                  "html": {
+                    "href": "https://bitbucket.org/tramline/ueno/commits/c90f65e6524d095c42759315f3f11ab20abde0ef"
+                  }
+                },
+                "type": "commit"
+              }
+            ],
+            "rendered": {},
+            "properties": {}
+          },
+          "links": {
+            "self": {
+              "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/refs/branches/r/bb-train/2024-09-06-1"
+            },
+            "commits": {
+              "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commits/r/bb-train/2024-09-06-1"
+            },
+            "html": {
+              "href": "https://bitbucket.org/tramline/ueno/branch/r/bb-train/2024-09-06-1"
+            },
+            "pullrequest_create": {
+              "href": "https://bitbucket.org/tramline/ueno/pull-requests/new?source=r/bb-train/2024-09-06-1&t=1"
+            }
+          },
+          "type": "branch",
+          "merge_strategies": [
+            "merge_commit",
+            "squash",
+            "fast_forward"
+          ],
+          "default_merge_strategy": "merge_commit"
+        },
+        "truncated": true,
+        "created": true,
+        "forced": false,
+        "closed": false,
+        "links": {
+          "commits": {
+            "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commits?include=1db233942778c67f398ddc1c2ae0f4df27f5ebd8"
+          },
+          "html": {
+            "href": "https://bitbucket.org/tramline/ueno/branch/r/bb-train/2024-09-06-1"
+          }
+        },
+        "commits": [
+          {
+            "type": "commit",
+            "hash": "1db233942778c67f398ddc1c2ae0f4df27f5ebd8",
+            "date": "2024-09-05T12:44:55+00:00",
+            "author": {
+              "type": "author",
+              "raw": "Nivedita Priyadarshini <nid.mishra7@gmail.com>"
+            },
+            "message": "Add a default step to the pipeline\n",
+            "summary": {
+              "type": "rendered",
+              "raw": "Add a default step to the pipeline\n",
+              "markup": "markdown",
+              "html": "<p>Add a default step to the pipeline</p>"
+            },
+            "links": {
+              "self": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/1db233942778c67f398ddc1c2ae0f4df27f5ebd8"
+              },
+              "html": {
+                "href": "https://bitbucket.org/tramline/ueno/commits/1db233942778c67f398ddc1c2ae0f4df27f5ebd8"
+              },
+              "diff": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/diff/1db233942778c67f398ddc1c2ae0f4df27f5ebd8"
+              },
+              "approve": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/1db233942778c67f398ddc1c2ae0f4df27f5ebd8/approve"
+              },
+              "comments": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/1db233942778c67f398ddc1c2ae0f4df27f5ebd8/comments"
+              },
+              "statuses": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/1db233942778c67f398ddc1c2ae0f4df27f5ebd8/statuses"
+              },
+              "patch": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/patch/1db233942778c67f398ddc1c2ae0f4df27f5ebd8"
+              }
+            },
+            "parents": [
+              {
+                "hash": "c90f65e6524d095c42759315f3f11ab20abde0ef",
+                "links": {
+                  "self": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/c90f65e6524d095c42759315f3f11ab20abde0ef"
+                  },
+                  "html": {
+                    "href": "https://bitbucket.org/tramline/ueno/commits/c90f65e6524d095c42759315f3f11ab20abde0ef"
+                  }
+                },
+                "type": "commit"
+              }
+            ],
+            "rendered": {},
+            "properties": {}
+          },
+          {
+            "type": "commit",
+            "hash": "c90f65e6524d095c42759315f3f11ab20abde0ef",
+            "date": "2024-09-05T08:56:34+00:00",
+            "author": {
+              "type": "author",
+              "raw": "Nivedita Priyadarshini <nid.mishra7@gmail.com>"
+            },
+            "message": "Try a bigger machine\n",
+            "summary": {
+              "type": "rendered",
+              "raw": "Try a bigger machine\n",
+              "markup": "markdown",
+              "html": "<p>Try a bigger machine</p>"
+            },
+            "links": {
+              "self": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/c90f65e6524d095c42759315f3f11ab20abde0ef"
+              },
+              "html": {
+                "href": "https://bitbucket.org/tramline/ueno/commits/c90f65e6524d095c42759315f3f11ab20abde0ef"
+              },
+              "diff": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/diff/c90f65e6524d095c42759315f3f11ab20abde0ef"
+              },
+              "approve": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/c90f65e6524d095c42759315f3f11ab20abde0ef/approve"
+              },
+              "comments": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/c90f65e6524d095c42759315f3f11ab20abde0ef/comments"
+              },
+              "statuses": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/c90f65e6524d095c42759315f3f11ab20abde0ef/statuses"
+              },
+              "patch": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/patch/c90f65e6524d095c42759315f3f11ab20abde0ef"
+              }
+            },
+            "parents": [
+              {
+                "hash": "dbe35a3b27d4006c646eb8832895474836308f50",
+                "links": {
+                  "self": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/dbe35a3b27d4006c646eb8832895474836308f50"
+                  },
+                  "html": {
+                    "href": "https://bitbucket.org/tramline/ueno/commits/dbe35a3b27d4006c646eb8832895474836308f50"
+                  }
+                },
+                "type": "commit"
+              }
+            ],
+            "rendered": {},
+            "properties": {}
+          },
+          {
+            "type": "commit",
+            "hash": "dbe35a3b27d4006c646eb8832895474836308f50",
+            "date": "2024-09-05T08:12:12+00:00",
+            "author": {
+              "type": "author",
+              "raw": "Nivedita Priyadarshini <nid.mishra7@gmail.com>"
+            },
+            "message": "Switch to username/password to upload, api token is premium feature\n",
+            "summary": {
+              "type": "rendered",
+              "raw": "Switch to username/password to upload, api token is premium feature\n",
+              "markup": "markdown",
+              "html": "<p>Switch to username/password to upload, api token is premium feature</p>"
+            },
+            "links": {
+              "self": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/dbe35a3b27d4006c646eb8832895474836308f50"
+              },
+              "html": {
+                "href": "https://bitbucket.org/tramline/ueno/commits/dbe35a3b27d4006c646eb8832895474836308f50"
+              },
+              "diff": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/diff/dbe35a3b27d4006c646eb8832895474836308f50"
+              },
+              "approve": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/dbe35a3b27d4006c646eb8832895474836308f50/approve"
+              },
+              "comments": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/dbe35a3b27d4006c646eb8832895474836308f50/comments"
+              },
+              "statuses": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/dbe35a3b27d4006c646eb8832895474836308f50/statuses"
+              },
+              "patch": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/patch/dbe35a3b27d4006c646eb8832895474836308f50"
+              }
+            },
+            "parents": [
+              {
+                "hash": "d9db2a8fc96a3046b028aabd4047c946678c32a3",
+                "links": {
+                  "self": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/d9db2a8fc96a3046b028aabd4047c946678c32a3"
+                  },
+                  "html": {
+                    "href": "https://bitbucket.org/tramline/ueno/commits/d9db2a8fc96a3046b028aabd4047c946678c32a3"
+                  }
+                },
+                "type": "commit"
+              }
+            ],
+            "rendered": {},
+            "properties": {}
+          },
+          {
+            "type": "commit",
+            "hash": "d9db2a8fc96a3046b028aabd4047c946678c32a3",
+            "date": "2024-09-05T08:07:00+00:00",
+            "author": {
+              "type": "author",
+              "raw": "Nivedita Priyadarshini <nid.mishra7@gmail.com>"
+            },
+            "message": "Upload artifacts to downloads\n",
+            "summary": {
+              "type": "rendered",
+              "raw": "Upload artifacts to downloads\n",
+              "markup": "markdown",
+              "html": "<p>Upload artifacts to downloads</p>"
+            },
+            "links": {
+              "self": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/d9db2a8fc96a3046b028aabd4047c946678c32a3"
+              },
+              "html": {
+                "href": "https://bitbucket.org/tramline/ueno/commits/d9db2a8fc96a3046b028aabd4047c946678c32a3"
+              },
+              "diff": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/diff/d9db2a8fc96a3046b028aabd4047c946678c32a3"
+              },
+              "approve": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/d9db2a8fc96a3046b028aabd4047c946678c32a3/approve"
+              },
+              "comments": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/d9db2a8fc96a3046b028aabd4047c946678c32a3/comments"
+              },
+              "statuses": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/d9db2a8fc96a3046b028aabd4047c946678c32a3/statuses"
+              },
+              "patch": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/patch/d9db2a8fc96a3046b028aabd4047c946678c32a3"
+              }
+            },
+            "parents": [
+              {
+                "hash": "13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6",
+                "links": {
+                  "self": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6"
+                  },
+                  "html": {
+                    "href": "https://bitbucket.org/tramline/ueno/commits/13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6"
+                  }
+                },
+                "type": "commit"
+              }
+            ],
+            "rendered": {},
+            "properties": {}
+          },
+          {
+            "type": "commit",
+            "hash": "13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6",
+            "date": "2024-09-05T07:15:22+00:00",
+            "author": {
+              "type": "author",
+              "raw": "Nivedita Priyadarshini <nivedita@tramline.app>",
+              "user": {
+                "display_name": "Nivedita Priyadarshini",
+                "links": {
+                  "self": {
+                    "href": "https://api.bitbucket.org/2.0/users/%7Bdb534ec4-33b8-4595-9012-8a86593ac4dd%7D"
+                  },
+                  "avatar": {
+                    "href": "https://secure.gravatar.com/avatar/cb35b6f8b777e174b0c46cdbf51a3a64?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FNP-0.png"
+                  },
+                  "html": {
+                    "href": "https://bitbucket.org/%7Bdb534ec4-33b8-4595-9012-8a86593ac4dd%7D/"
+                  }
+                },
+                "type": "user",
+                "uuid": "{db534ec4-33b8-4595-9012-8a86593ac4dd}",
+                "account_id": "712020:07879f2c-20ca-488b-b5f3-0fd492b8c939",
+                "nickname": "Nivedita Priyadarshini"
+              }
+            },
+            "message": "Make the pipeline fail",
+            "summary": {
+              "type": "rendered",
+              "raw": "Make the pipeline fail",
+              "markup": "markdown",
+              "html": "<p>Make the pipeline fail</p>"
+            },
+            "links": {
+              "self": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6"
+              },
+              "html": {
+                "href": "https://bitbucket.org/tramline/ueno/commits/13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6"
+              },
+              "diff": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/diff/13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6"
+              },
+              "approve": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6/approve"
+              },
+              "comments": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6/comments"
+              },
+              "statuses": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6/statuses"
+              },
+              "patch": {
+                "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/patch/13a1b2c52f014ef88b8c39f4fd12e1daa85e63a6"
+              }
+            },
+            "parents": [
+              {
+                "hash": "2852d77475aa1f95a60e67f4c28081aa1835068d",
+                "links": {
+                  "self": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/2852d77475aa1f95a60e67f4c28081aa1835068d"
+                  },
+                  "html": {
+                    "href": "https://bitbucket.org/tramline/ueno/commits/2852d77475aa1f95a60e67f4c28081aa1835068d"
+                  }
+                },
+                "type": "commit"
+              }
+            ],
+            "rendered": {},
+            "properties": {}
+          }
+        ]
+      }
+    ]
+  },
+  "repository": {
+    "type": "repository",
+    "full_name": "tramline/ueno",
+    "links": {
+      "self": {
+        "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno"
+      },
+      "html": {
+        "href": "https://bitbucket.org/tramline/ueno"
+      },
+      "avatar": {
+        "href": "https://bytebucket.org/ravatar/%7Babd86e4d-4ad5-4d31-b727-9ccf26604d37%7D?ts=3627142"
+      }
+    },
+    "name": "ueno",
+    "scm": "git",
+    "website": null,
+    "owner": {
+      "display_name": "tramline",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/workspaces/%7B49606611-4df7-46f4-bbbd-f349a99d1ce8%7D"
+        },
+        "avatar": {
+          "href": "https://bitbucket.org/account/tramline/avatar/"
+        },
+        "html": {
+          "href": "https://bitbucket.org/%7B49606611-4df7-46f4-bbbd-f349a99d1ce8%7D/"
+        }
+      },
+      "type": "team",
+      "uuid": "{49606611-4df7-46f4-bbbd-f349a99d1ce8}",
+      "username": "tramline"
+    },
+    "workspace": {
+      "type": "workspace",
+      "uuid": "{49606611-4df7-46f4-bbbd-f349a99d1ce8}",
+      "name": "tramline",
+      "slug": "tramline",
+      "links": {
+        "avatar": {
+          "href": "https://bitbucket.org/workspaces/tramline/avatar/?ts=1725261302"
+        },
+        "html": {
+          "href": "https://bitbucket.org/tramline/"
+        },
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/workspaces/tramline"
+        }
+      }
+    },
+    "is_private": false,
+    "project": {
+      "type": "project",
+      "key": "UENO",
+      "uuid": "{4d02dffb-fbef-45c3-bfa0-f6d721459744}",
+      "name": "Ueno",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/workspaces/tramline/projects/UENO"
+        },
+        "html": {
+          "href": "https://bitbucket.org/tramline/workspace/projects/UENO"
+        },
+        "avatar": {
+          "href": "https://bitbucket.org/account/user/tramline/projects/UENO/avatar/32?ts=1725261342"
+        }
+      }
+    },
+    "uuid": "{abd86e4d-4ad5-4d31-b727-9ccf26604d37}",
+    "parent": null
+  },
+  "actor": {
+    "display_name": "Nivedita Priyadarshini",
+    "links": {
+      "self": {
+        "href": "https://api.bitbucket.org/2.0/users/%7Bdb534ec4-33b8-4595-9012-8a86593ac4dd%7D"
+      },
+      "avatar": {
+        "href": "https://secure.gravatar.com/avatar/cb35b6f8b777e174b0c46cdbf51a3a64?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FNP-0.png"
+      },
+      "html": {
+        "href": "https://bitbucket.org/%7Bdb534ec4-33b8-4595-9012-8a86593ac4dd%7D/"
+      }
+    },
+    "type": "user",
+    "uuid": "{db534ec4-33b8-4595-9012-8a86593ac4dd}",
+    "account_id": "712020:07879f2c-20ca-488b-b5f3-0fd492b8c939",
+    "nickname": "Nivedita Priyadarshini"
+  }
+}

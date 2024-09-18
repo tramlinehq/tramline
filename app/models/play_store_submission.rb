@@ -55,7 +55,8 @@ class PlayStoreSubmission < StoreSubmission
   MAX_NOTES_LENGTH = 500
 
   enum :failure_reason, {
-    unknown_failure: "unknown_failure"
+    unknown_failure: "unknown_failure",
+    build_not_found: "build_not_found"
   }.merge(Installations::Google::PlayDeveloper::Error.reasons.zip_map_self)
   enum :status, STATES
 
@@ -159,7 +160,7 @@ class PlayStoreSubmission < StoreSubmission
   def upload_build!
     with_lock do
       return unless may_start_prepare?
-      return fail_with_error!("Build not found") if build&.artifact.blank?
+      return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
       build.artifact.with_open do |file|
         result = provider.upload(file)

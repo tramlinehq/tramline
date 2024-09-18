@@ -343,20 +343,21 @@ class Release < ApplicationRecord
     train.create_vcs_release!(release_branch, input_tag_name)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
-  rescue Installations::Errors::TagReferenceAlreadyExists, Installations::Errors::TaggedReleaseAlreadyExists
+  rescue Installations::Error => ex
+    raise unless [:tag_reference_already_exists, :tagged_release_already_exists].include?(ex.reason)
     create_vcs_release!(unique_tag_name(input_tag_name))
   end
 
   def branch_url
-    train.vcs_provider&.branch_url(app.config&.code_repository_name, release_branch)
+    train.vcs_provider&.branch_url(release_branch)
   end
 
   def tag_url
-    train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
+    train.vcs_provider&.tag_url(tag_name)
   end
 
   def pull_requests_url(open = false)
-    train.vcs_provider&.pull_requests_url(app.config&.code_repository_name, branch_name, open:)
+    train.vcs_provider&.pull_requests_url(branch_name, open:)
   end
 
   def metadata_editable?

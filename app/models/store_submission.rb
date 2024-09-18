@@ -29,6 +29,8 @@ class StoreSubmission < ApplicationRecord
   include Passportable
   include Loggable
 
+  BuildNotFound = Installations::Error.new("Build not found", reason: :build_not_found)
+
   has_one :store_rollout, dependent: :destroy
   belongs_to :release_platform_run
   belongs_to :parent_release, polymorphic: true
@@ -42,6 +44,7 @@ class StoreSubmission < ApplicationRecord
   delegate :version_name, :build_number, to: :build
   delegate :actionable?, to: :parent_release
 
+  scope :sequential, -> { reorder("store_submissions.sequence_number ASC") }
   scope :production, -> { where(parent_release_type: "ProductionRelease") }
 
   def submission_channel

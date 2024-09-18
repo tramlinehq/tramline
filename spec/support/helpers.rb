@@ -5,7 +5,7 @@ module TestHelpers
     allow_any_instance_of(instance).to receive(method) do
       if exception_raised_count < max_exceptions
         exception_raised_count += 1
-        raise exception.new
+        raise exception
       end
     end
   end

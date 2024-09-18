@@ -150,7 +150,7 @@ module Installations
 
     def create_pr!(project_id, target_branch, source_branch, title, description, transforms)
       # gitlab allows creating merge requests without any changes, but we avoid it
-      raise Installations::Errors::PullRequestWithoutCommits unless diff?(project_id, target_branch, source_branch)
+      raise Installations::Error.new("Should not create a Pull Request without a diff", reason: :pull_request_without_commits) unless diff?(project_id, target_branch, source_branch)
 
       params = {
         form: {
@@ -222,8 +222,6 @@ module Installations
 
     def tag_exists?(project_id, tag_name)
       execute(:get, GET_TAG_URL.expand(project_id:, tag_name:).to_s, {}).present?
-    rescue Installations::Errors::ResourceNotFound
-      false
     end
 
     def head(project_id, branch_name, sha_only: true, commit_transforms: nil)
@@ -244,7 +242,7 @@ module Installations
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
       body = JSON.parse(response.body.to_s)
       return body unless error?(response.status)
-      raise Installations::Gitlab::Error.handle(body)
+      raise Installations::Gitlab::Error.new(body)
     end
 
     def error?(code)
