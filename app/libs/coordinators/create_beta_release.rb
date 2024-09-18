@@ -41,7 +41,7 @@ class Coordinators::CreateBetaRelease
   private
 
   def carryover_build?
-    build.present? && !workflows_config.separate_rc_workflow?
+    build.present? && !release_platform_run.conf.separate_rc_workflow?
   end
 
   def previous
@@ -49,15 +49,11 @@ class Coordinators::CreateBetaRelease
   end
 
   def config
-    release_platform_run.conf.beta_release.value
-  end
-
-  def workflows_config
-    release_platform_run.conf.workflows
+    release_platform_run.conf.beta_release.as_json
   end
 
   def rc_workflow_config
-    workflows_config.release_candidate_workflow
+    release_platform_run.conf.release_candidate_workflow
   end
 
   attr_reader :release_platform_run, :build, :commit

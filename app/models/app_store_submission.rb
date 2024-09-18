@@ -313,7 +313,7 @@ class AppStoreSubmission < StoreSubmission
     notify!("Production submission approved", :production_submission_approved, notification_params)
     create_app_store_rollout!(
       release_platform_run:,
-      config: staged_rollout? ? conf.rollout_config.stages : [],
+      config: staged_rollout? ? conf.rollout_stages : [],
       is_staged_rollout: staged_rollout?
     )
   end

@@ -48,7 +48,7 @@ class StoreSubmission < ApplicationRecord
   scope :production, -> { where(parent_release_type: "ProductionRelease") }
 
   def submission_channel
-    conf.submission_config
+    conf.submission_external
   end
 
   def triggerable?
@@ -60,11 +60,11 @@ class StoreSubmission < ApplicationRecord
   end
 
   def submission_channel_id
-    conf.submission_config.id.to_s
+    conf.submission_external.identifier.to_s
   end
 
   def staged_rollout?
-    conf.rollout_config.enabled
+    conf.rollout_enabled?
   end
 
   def auto_rollout? = !parent_release.production?
@@ -96,7 +96,7 @@ class StoreSubmission < ApplicationRecord
     auto_promote = parent_release.conf.auto_promote? if auto_promote.nil?
     release_platform_run = parent_release.release_platform_run
     sequence_number = submission_config.number
-    config = submission_config.to_h
+    config = submission_config.as_json
 
     submission = create!(parent_release:, release_platform_run:, build:, sequence_number:, config:)
     submission.trigger! if auto_promote
@@ -144,7 +144,7 @@ class StoreSubmission < ApplicationRecord
     nil
   end
 
-  def conf = ReleaseConfig::Platform::Submission.new(config)
+  def conf = Config::Submission.from_json(config)
 
   protected
 

@@ -32,6 +32,7 @@ class ReleasePlatform < ApplicationRecord
 
   belongs_to :app
   belongs_to :train
+  has_one :platform_config, class_name: "Config::ReleasePlatform", dependent: :destroy
   has_many :release_health_rules, -> { kept }, dependent: :destroy, inverse_of: :release_platform
   has_many :all_release_health_rules, dependent: :destroy, inverse_of: :release_platform, class_name: "ReleaseHealthRule"
   has_many :release_platform_runs, inverse_of: :release_platform, dependent: :destroy

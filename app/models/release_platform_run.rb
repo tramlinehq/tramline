@@ -110,10 +110,6 @@ class ReleasePlatformRun < ApplicationRecord
     release_metadata&.find_by(locale: locale_tag)
   end
 
-  def conf
-    ReleaseConfig::Platform.new(config)
-  end
-
   def ready_for_beta_release?
     return true if conf.only_beta_release?
     latest_internal_release(finished: true).present?
@@ -494,6 +490,8 @@ class ReleasePlatformRun < ApplicationRecord
     update!(play_store_blocked: false)
   end
 
+  def conf = Config::ReleasePlatform.from_json(config)
+
   private
 
   def base_tag_name
@@ -528,6 +526,6 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def set_config
-    self.config = release_platform.config
+    self.config = release_platform.platform_config.as_json
   end
 end

@@ -22,7 +22,7 @@ class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
   end
 
   def internal_workflow_config(release_platform_run)
-    release_platform_run.conf.workflows.pick_internal_workflow
+    release_platform_run.conf.pick_internal_workflow
   end
 
   def latest_internal_release(release_platform_run)

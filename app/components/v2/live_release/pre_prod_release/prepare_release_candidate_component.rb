@@ -24,12 +24,12 @@ class V2::LiveRelease::PreProdRelease::PrepareReleaseCandidateComponent < V2::Ba
 
   def create_new_rc?
     return unless ready_for_beta_release?
-    release_platform_run.conf.workflows.separate_rc_workflow? && commit.present?
+    release_platform_run.conf.separate_rc_workflow? && commit.present?
   end
 
   def carryover_build?
     return unless ready_for_beta_release?
-    !release_platform_run.conf.workflows.separate_rc_workflow? && latest_internal_release.present?
+    !release_platform_run.conf.separate_rc_workflow? && latest_internal_release.present?
   end
 
   def confirmation_opts

@@ -25,11 +25,11 @@ class Coordinators::CreateInternalRelease
   end
 
   def config
-    release_platform_run.conf.internal_release.value
+    release_platform_run.conf.internal_release.as_json
   end
 
   def workflow_config
-    release_platform_run.conf.workflows.pick_internal_workflow
+    release_platform_run.conf.pick_internal_workflow
   end
 
   attr_reader :release_platform_run, :commit
