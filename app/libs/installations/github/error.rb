@@ -57,7 +57,8 @@ module Installations
 
     def initialize(api_exception)
       @api_exception = api_exception
-      super(message, reason: handle)
+      Rails.logger.debug { "Github error: #{api_exception}" }
+      super(errors.first&.fetch("message", nil) || error_message, reason: handle)
     end
 
     def handle
@@ -90,7 +91,7 @@ module Installations
     end
 
     def matched_message
-      MESSAGES.find { |known_error_message| known_error_message[:message_matcher] =~ message }
+      MESSAGES.find { |known_error_message| known_error_message[:message_matcher] =~ error_message }
     end
 
     def body
@@ -101,7 +102,7 @@ module Installations
       body["errors"]
     end
 
-    def message
+    def error_message
       body["message"]
     end
   end

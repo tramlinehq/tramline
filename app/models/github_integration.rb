@@ -352,7 +352,7 @@ class GithubIntegration < ApplicationRecord
       .artifacts(artifacts_url, ARTIFACTS_TRANSFORMATIONS)
       .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
       .then { |artifacts| API.find_biggest(artifacts) }
-      .tap { |artifact| raise Installations::Github::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank? }
+      .tap { |artifact| raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank? }
   end
 
   def namespaced_branch(branch_name)
