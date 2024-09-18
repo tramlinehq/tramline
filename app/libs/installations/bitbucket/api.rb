@@ -107,19 +107,19 @@ module Installations
     end
 
     def create_repo_webhook!(repo_slug, url, transforms)
-      execute(:post, REPO_HOOKS_URL.expand(workspace:, repo_slug:).to_s, webhook_params(url))
+      execute(:post, REPO_HOOKS_URL.expand(repo_slug:).to_s, webhook_params(url))
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     def update_repo_webhook!(repo_slug, hook_id, url, transforms)
-      execute(:put, REPO_HOOK_URL.expand(workspace:, repo_slug:, hook_id:).to_s, webhook_params(url))
+      execute(:put, REPO_HOOK_URL.expand(repo_slug:, hook_id:).to_s, webhook_params(url))
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     def find_webhook(repo_slug, hook_id, transforms)
-      execute(:get, REPO_HOOK_URL.expand(workspace:, repo_slug:, hook_id:).to_s)
+      execute(:get, REPO_HOOK_URL.expand(repo_slug:, hook_id:).to_s)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
@@ -144,7 +144,7 @@ module Installations
         }
       }
 
-      execute(:post, REPO_BRANCHES_URL.expand(workspace:, repo_slug:).to_s, params)
+      execute(:post, REPO_BRANCHES_URL.expand(repo_slug:).to_s, params)
     end
 
     def create_tag!(repo_slug, tag_name, sha)
@@ -155,15 +155,15 @@ module Installations
         }
       }
 
-      execute(:post, REPO_TAGS_URL.expand(workspace:, repo_slug:).to_s, params)
+      execute(:post, REPO_TAGS_URL.expand(repo_slug:).to_s, params)
     end
 
     def get_branch(repo_slug, branch_name)
-      execute(:get, REPO_BRANCH_URL.expand(workspace:, repo_slug:, branch_name:).to_s)
+      execute(:get, REPO_BRANCH_URL.expand(repo_slug:, branch_name:).to_s)
     end
 
     def get_tag(repo_slug, tag_name)
-      execute(:get, REPO_TAG_URL.expand(workspace:, repo_slug:, tag_name:).to_s)
+      execute(:get, REPO_TAG_URL.expand(repo_slug:, tag_name:).to_s)
     end
 
     def create_pr!(repo_slug, to, from, title, description, transforms)
@@ -178,7 +178,7 @@ module Installations
         }
       }
 
-      execute(:post, PRS_URL.expand(workspace:, repo_slug:).to_s, params)
+      execute(:post, PRS_URL.expand(repo_slug:).to_s, params)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
@@ -194,19 +194,19 @@ module Installations
         }
       }
 
-      execute(:get, PRS_URL.expand(workspace:, repo_slug:).to_s, params)
+      execute(:get, PRS_URL.expand(repo_slug:).to_s, params)
         .then { |response| Installations::Response::Keys.transform(response["values"], transforms) }
         .first
     end
 
     def get_pr(repo, pr_number, transforms)
-      execute(:get, PR_URL.expand(workspace:, repo_slug: repo, pr_number:).to_s)
+      execute(:get, PR_URL.expand(repo_slug: repo, pr_number:).to_s)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     def merge_pr!(repo_slug, pr_number)
-      execute(:post, PR_MERGE_URL.expand(workspace: @workspace, repo_slug:, pr_number:).to_s)
+      execute(:post, PR_MERGE_URL.expand(repo_slug:, pr_number:).to_s)
     end
 
     def commits_between(repo, from_branch, to_branch, transforms)
@@ -217,7 +217,7 @@ module Installations
         }
       }
 
-      paginated_execute(:get, REPO_COMMITS_URL.expand(workspace: @workspace, repo_slug: repo).to_s, params)
+      paginated_execute(:get, REPO_COMMITS_URL.expand(repo_slug: repo).to_s, params)
         .then { |commits| Installations::Response::Keys.transform(commits, transforms) }
         .map { |commit| self.class.parse_author_info(commit) }
     end
@@ -234,7 +234,7 @@ module Installations
       end
       to_sha = head(repo_slug, to_branch, sha_only: true)
 
-      execute(:get, DIFFSTAT_URL.expand(workspace:, repo_slug:, from_sha:, to_sha:).to_s)
+      execute(:get, DIFFSTAT_URL.expand(repo_slug:, from_sha:, to_sha:).to_s)
         .dig("size")
         .positive?
     end
@@ -248,7 +248,7 @@ module Installations
     end
 
     def get_commit(repo_slug, sha, transforms)
-      execute(:get, REPO_COMMIT_URL.expand(workspace: @workspace, repo_slug:, sha:).to_s)
+      execute(:get, REPO_COMMIT_URL.expand(repo_slug:, sha:).to_s)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
         .then { |commit| self.class.parse_author_info(commit) }
@@ -302,22 +302,22 @@ module Installations
         }
       }
 
-      execute(:post, PIPELINES_URL.expand(workspace:, repo_slug:).to_s, params)
+      execute(:post, PIPELINES_URL.expand(repo_slug:).to_s, params)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
         .then { |pipeline| pipeline.presence || raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed)) }
     end
 
     def get_pipeline(repo_slug, pipeline_id)
-      execute(:get, PIPELINE_URL.expand(workspace:, repo_slug:, pipeline_id:).to_s)&.with_indifferent_access
+      execute(:get, PIPELINE_URL.expand(repo_slug:, pipeline_id:).to_s)&.with_indifferent_access
     end
 
     def cancel_pipeline!(repo_slug, pipeline_id)
-      execute(:post, STOP_PIPELINE_URL.expand(workspace:, repo_slug:, pipeline_id:).to_s)
+      execute(:post, STOP_PIPELINE_URL.expand(repo_slug:, pipeline_id:).to_s)
     end
 
     def get_file(repo_slug, file_name, transforms)
-      find_file(LIST_FILES_URL.expand(workspace:, repo_slug:).to_s, [], file_name)
+      find_file(LIST_FILES_URL.expand(repo_slug:).to_s, [], file_name)
         &.then { |file| Installations::Response::Keys.transform([file], transforms) }
         &.first
     end
@@ -327,8 +327,6 @@ module Installations
     end
 
     private
-
-    attr_reader :workspace
 
     MAX_PAGES = 10
 
@@ -353,7 +351,7 @@ module Installations
     end
 
     def fetch_pipeline_yaml(repo_slug, branch_name = "main")
-      execute(:get, PIPELINE_YAML_URL.expand(workspace:, repo_slug:, branch_name:).to_s, {}, false)
+      execute(:get, PIPELINE_YAML_URL.expand(repo_slug:, branch_name:).to_s, {}, false)
     rescue Installations::Bitbucket::Error => e
       raise Installations::Error.new("Failed to fetch bitbucket-pipelines.yml: #{e.message}", reason: :pipeline_yaml_not_found)
     end
