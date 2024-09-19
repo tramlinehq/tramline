@@ -10,7 +10,7 @@ export default class extends Controller {
   ]
 
   initialize() {
-    this.stages = [];
+    this.validateString()
   }
 
   clear() {

@@ -35,7 +35,9 @@ class Config::ReleaseStep < ApplicationRecord
   end
 
   def fetch_submission_by_number(number)
-    submissions.find_by(number: number)
+    # rubocop:disable Performance/Detect
+    submissions.filter { |s| s.number == number }.first
+    # rubocop:enable Performance/Detect
   end
 
   def fetch_by_number(num)

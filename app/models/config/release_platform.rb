@@ -23,6 +23,11 @@ class Config::ReleasePlatform < ApplicationRecord
   accepts_nested_attributes_for :beta_release
   accepts_nested_attributes_for :production_release
 
+  delegate :platform, to: :release_platform
+  attr_accessor :production_release_enabled, :internal_workflow_enabled, :internal_release_enabled, :beta_release_enabled
+
+  after_initialize :set_defaults
+
   def self.from_json(json)
     release_config = new(json.except("workflows", "internal_release", "beta_release", "production_release", "id"))
     release_config.internal_workflow = Config::Workflow.from_json(json["workflows"]["internal"]) if json.dig("workflows", "internal").present?
@@ -31,6 +36,13 @@ class Config::ReleasePlatform < ApplicationRecord
     release_config.beta_release = Config::ReleaseStep.from_json(json["beta_release"].merge("kind" => "beta")) if json["beta_release"]
     release_config.production_release = Config::ReleaseStep.from_json(json["production_release"].merge("kind" => "production")) if json["production_release"]
     release_config
+  end
+
+  def set_defaults
+    self.production_release_enabled = production_release.present?
+    self.internal_workflow_enabled = internal_workflow.present?
+    self.internal_release_enabled = internal_release.present?
+    self.beta_release_enabled = beta_release.present?
   end
 
   def as_json(options = {})

@@ -841,10 +841,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_18_130859) do
     t.index ["organization_id"], name: "index_teams_on_organization_id"
   end
 
-  create_table "test", id: false, force: :cascade do |t|
-    t.ltree "path"
-  end
-
   create_table "trains", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
     t.string "name", null: false

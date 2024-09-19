@@ -4,6 +4,6 @@
                                             error_resource: @train) do |container| %>
   <% container.with_back_button(to: "the train", path: app_train_releases_path(@app, @train)) %>
   <% container.with_tab do %>
-    <%= render "form", app: @app, train: @train, selected_platform: @selected_platform, other_platform: @other_platform %>
+    <%= render "form", app: @app, train: @train, release_platform: @release_platform, selected_config: @selected_config, other_config: @other_config,ci_actions: @ci_actions, submission_types: @submission_types %>
   <% end %>
 <% end %>

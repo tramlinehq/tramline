@@ -92,7 +92,7 @@ class TrainsController < SignedInApplicationController
     @tab_configuration = [
       [1, "Release Settings", edit_app_train_path(@app, @train), "v2/cog.svg"],
       # [2, "Workflow Settings", steps_app_train_path(@app, @train), "v2/route.svg"],
-      [2, "Submissions Settings", edit_app_train_platform_path(@app, @train, @train.release_platforms.first.platform), "v2/route.svg"],
+      [2, "Submissions Settings", edit_app_train_platform_config_path(@app, @train, @train.release_platforms.first, @train.release_platforms.first.platform_config), "v2/route.svg"],
       [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
       [4, "Release Health Rules", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
       [5, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"]

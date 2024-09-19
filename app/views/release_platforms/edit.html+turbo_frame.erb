@@ -1,6 +1,0 @@
-<% component = V2::EnhancedTurboFrameComponent.new(dom_id(@train, :edit_train)) %>
-<% component.with_loading_indicator %>
-<%= render component do %>
-  <%= render "form", app: @app, train: @train, selected_platform: @selected_platform, other_platform: @other_platform %>
-<% end %>
-
