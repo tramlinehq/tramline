@@ -215,6 +215,9 @@ module Installations
         # It returns a single element if there is an exact match
         !@client.ref(repo, "tags/#{tag_name}").is_a?(Array)
       end
+    rescue Installations::Github::Error => e
+      raise e if e.reason != :not_found
+      false
     end
 
     def branch_exists?(repo, branch_name)
