@@ -29,7 +29,7 @@ def submission_type(deployment)
 end
 
 def populate_config(release_platform)
-  config = {}
+  config = {}.with_indifferent_access
   review_step = release_platform.steps.review.first
   release_step = release_platform.release_step
   internal_workflow_config = nil
@@ -98,6 +98,7 @@ def populate_config(release_platform)
     }
   end
 
-  release_platform.config = config
-  release_platform.save!
+  config = Config::ReleasePlatform.from_json(config)
+  config.release_platform = release_platform
+  config.save!
 end
