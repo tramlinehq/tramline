@@ -5,6 +5,10 @@ namespace :one_off do
     trains.each do |train|
       puts "Populating config for train: #{train.name}"
       train.release_platforms.each do |release_platform|
+        if release_platform.config.present?
+          puts "Skipping #{train.name} platform #{release_platform.platform} as it already has a config"
+          next
+        end
         populate_config(release_platform)
       end
     end
