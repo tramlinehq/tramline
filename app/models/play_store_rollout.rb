@@ -26,6 +26,7 @@ class PlayStoreRollout < StoreRollout
     resumed
     halted
     completed
+    failed
     fully_released
   ]
 
@@ -81,6 +82,10 @@ class PlayStoreRollout < StoreRollout
       if result.ok?
         update_stage(next_stage, finish_rollout: true)
       else
+        if result.error.reason == :fully_released_can_not_be_staged
+          fully_release!
+          return
+        end
         fail!(result.error, review_failure: !retry_on_review_fail)
       end
     end
@@ -135,7 +140,17 @@ class PlayStoreRollout < StoreRollout
   def fail!(error, review_failure: false)
     elog(error)
     errors.add(:base, error)
-    play_store_submission.fail_with_review_rejected!(error) if review_failure
+
+    if review_failure
+      event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+      play_store_submission.fail_with_review_rejected!(error)
+      return
+    end
+
+    if submission.auto_rollout?
+      event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+      play_store_submission.fail_with_error!(error)
+    end
   end
 
   def rollout(value, retry_on_review_fail: false)
