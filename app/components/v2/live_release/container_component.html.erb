@@ -16,7 +16,7 @@
               <span class="self-end"><%= render V2::BadgeComponent.new(text: "Hotfix", kind: :featured) %></span>
             <% end %>
 
-            <div class="flex flex-row gap-2 justify-end items-baseline">
+            <div class="flex flex-row gap-2 justify-end items-baseline !bg-diagonal-stripes-soft-red">
               <% if cross_platform? %>
                 <div class="flex items-center gap-1">
                   <%= render V2::IconComponent.new("v2/android.svg", size: :lg) %>

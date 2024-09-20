@@ -38,6 +38,7 @@ class Triggers::Release
     if kickoff.ok?
       Response.new(:ok, release)
     else
+      Rails.logger.error(kickoff.error)
       Response.new(:unprocessable_entity, "Could not kickoff a release • #{kickoff.error.message}")
     end
   end
@@ -75,7 +76,7 @@ class Triggers::Release
       hotfix_platform: (hotfix_platform if hotfix?),
       custom_version: custom_version,
       release_pilot_id: Current.user&.id,
-      is_v2: train.product_v2? && !hotfix?
+      is_v2: train.product_v2?
     )
   end
 

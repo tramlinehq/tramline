@@ -21,7 +21,7 @@ class Coordinators::CreateBetaRelease
     transaction do
       beta_release = release_platform_run.beta_releases.new(config:, previous:)
 
-      if carryover_build?
+      if build.present? && workflows_config.carryover_build?
         beta_release.commit = build.commit
         beta_release.parent_internal_release = build.workflow_run.triggering_release
         beta_release.save!
@@ -39,10 +39,6 @@ class Coordinators::CreateBetaRelease
   end
 
   private
-
-  def carryover_build?
-    build.present? && !workflows_config.separate_rc_workflow?
-  end
 
   def previous
     release_platform_run.latest_beta_release

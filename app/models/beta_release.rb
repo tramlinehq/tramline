@@ -44,17 +44,13 @@ class BetaRelease < PreProdRelease
 
   def new_build_available?
     return unless release_platform_run.on_track?
-    return unless carried_over?
+    return unless carryover_build?
     release_platform_run.latest_internal_release(finished: true) != parent_internal_release
-  end
-
-  def carried_over?
-    parent_internal_release.present?
   end
 
   def new_commit_available?
     return unless release_platform_run.on_track?
-    return if carried_over?
+    return if carryover_build?
     release_platform_run.last_commit != commit
   end
 end

@@ -26,7 +26,14 @@
             banner_image: icon,
             type: :subdued) %>
         <% else %>
-          <div><!-- grid maintenance --></div>
+          <div></div>
+          <%= render V2::ButtonComponent.new(
+            scheme: :success,
+            options: run_pre_prod_internal_path(release_platform_run),
+            type: :button,
+            size: :xxs,
+            turbo: false,
+            html_options: html_opts(:post, "Are you sure you want to start the internal release?")) %>
         <% end %>
       <% end %>
 

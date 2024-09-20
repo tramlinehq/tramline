@@ -6,6 +6,7 @@
 #  config                     :jsonb            not null
 #  status                     :string           default("created"), not null
 #  tester_notes               :text
+
 #  type                       :string           not null
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
@@ -159,6 +160,12 @@ class PreProdRelease < ApplicationRecord
       release_version: release.release_version,
       submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", ")
     )
+  end
+
+  protected
+
+  def carryover_build?
+    release_platform_run.conf.workflows.carryover_build?
   end
 
   private

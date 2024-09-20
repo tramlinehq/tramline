@@ -147,6 +147,10 @@ class ReleaseConfig::Platform < Struct.new(:conf)
       internal_workflow.present?
     end
 
+    def carryover_build?
+      !separate_rc_workflow?
+    end
+
     def pick_internal_workflow
       internal_workflow || release_candidate_workflow
     end

@@ -32,6 +32,6 @@ class Coordinators::CreateInternalRelease
     release_platform_run.conf.workflows.pick_internal_workflow
   end
 
+  delegate :transaction, to: InternalRelease
   attr_reader :release_platform_run, :commit
-  delegate :transaction, to: BetaRelease
 end

@@ -9,9 +9,16 @@ class BetaReleasesController < SignedInApplicationController
   end
 
   def create
-    # existing build scenario
-    build_id = default_params[:build_id]
-    commit_id = default_params[:commit_id]
+    build_id = nil
+    commit_id = nil
+    if @release_platform_run.carryover_build?
+      # existing carryover build scenario
+      latest_internal_release = @release_platform_run.latest_internal_release(finished: true)
+      build_id = latest_internal_release.build.id
+    else
+      latest_commit = @release_platform_run.last_commit
+      commit_id = latest_commit.commit_id
+    end
 
     if (result = Action.start_beta_release!(@release_platform_run, build_id, commit_id)).ok?
       redirect_back fallback_location: root_path, notice: t(".success")
