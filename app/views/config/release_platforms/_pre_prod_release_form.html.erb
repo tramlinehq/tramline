@@ -6,8 +6,10 @@
 
 <div class="grid gap-4 divide-y divide-main-200">
   <% section.F.fields_for release_type, section.F.object.send(release_type) || Config::ReleaseStep.new(kind: kind) do |rr| %>
+    <%= rr.hidden_field :id, value: rr.object.id %>
     <%= render V2::Form::SwitchComponent.new(form: rr,
                                              field_name: :auto_promote,
+                                             switch_id: SecureRandom.uuid,
                                              on_label: "Auto start this step",
                                              off_label: "Manually start this step") %>
 
@@ -38,10 +40,10 @@
               <%= render "submissions_form", form: submission_form, submission_types: submission_types %>
               <%= submission_form.hidden_field :number, value: submission.number, data: { list_position_target: "position" } %>
               <%= submission_form.hidden_field :id, value: submission.id %>
+              <%= submission_form.hidden_field :_destroy %>
             <% end %>
           </li>
         <% end %>
-
 
         <template data-nested-form-ext-target="template">
           <li class="nested-form-wrapper pr-2" data-new-record="<%= rr.object.new_record? %>">

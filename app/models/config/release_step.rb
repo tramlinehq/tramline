@@ -15,7 +15,7 @@ class Config::ReleaseStep < ApplicationRecord
   belongs_to :release_platform_config, class_name: "Config::ReleasePlatform"
   has_many :submissions, class_name: "Config::Submission", inverse_of: :release_step_config, dependent: :destroy
 
-  accepts_nested_attributes_for :submissions
+  accepts_nested_attributes_for :submissions, allow_destroy: true
 
   enum :kind, {internal: "internal", beta: "beta", production: "production"}
 

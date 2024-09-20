@@ -47,6 +47,7 @@ class ReleasePlatform < ApplicationRecord
   friendly_id :name, use: :slugged
 
   validate :ready?, on: :create
+  before_save :set_default_config, if: :new_record?
 
   delegate :integrations, :ci_cd_provider, to: :train
   delegate :ready?, :default_locale, to: :app
@@ -125,5 +126,56 @@ class ReleasePlatform < ApplicationRecord
 
   def default_locale
     app.latest_external_apps[platform.to_sym]&.default_locale
+  end
+
+  private
+
+  def set_default_config
+    return if Rails.env.test?
+    return if platform_config.present?
+
+    ci_cd_channel = train.ci_cd_provider.workflows.first
+    config_map = {
+      workflows: {
+        internal: nil,
+        release_candidate: {
+          kind: "release_candidate",
+          name: ci_cd_channel[:name],
+          id: ci_cd_channel[:id],
+          artifact_name_pattern: nil
+        }
+      },
+      internal_release: nil,
+      beta_release: nil,
+      production_release: andrdoid ? android_production_release_config : ios_production_release_config
+    }
+
+    self.platform_config = Config::ReleasePlatform.from_json(config_map)
+  end
+
+  def android_production_release_config
+    {
+      auto_promote: false,
+      submissions: [
+        {number: 1,
+         submission_type: "PlayStoreSubmission",
+         submission_config: GooglePlayStoreIntegration::PROD_CHANNEL,
+         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+         auto_promote: false}
+      ]
+    }
+  end
+
+  def ios_production_release_config
+    {
+      auto_promote: false,
+      submissions: [
+        {number: 1,
+         submission_type: "AppStoreSubmission",
+         submission_config: AppStoreIntegration::PROD_CHANNEL,
+         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+         auto_promote: false}
+      ]
+    }
   end
 end

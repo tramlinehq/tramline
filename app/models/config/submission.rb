@@ -18,7 +18,7 @@ class Config::Submission < ApplicationRecord
   belongs_to :release_step_config, class_name: "Config::ReleaseStep"
   has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
 
-  accepts_nested_attributes_for :submission_external
+  accepts_nested_attributes_for :submission_external, allow_destroy: true
 
   def as_json(options = {})
     {

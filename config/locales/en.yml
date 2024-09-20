@@ -1,6 +1,6 @@
 en:
   config:
-    release_platform:
+    release_platforms:
       success: "Platform configuration was successfully updated."
   release_metadata:
     metadata_not_editable: "Cannot update the release metadata once the production release has begun."

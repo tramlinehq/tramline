@@ -17,7 +17,7 @@
 
       <div class="flex-grow w-1/2">
         <% form.fields_for :submission_external, form.object.submission_external || Config::SubmissionExternal.new do |s| %>
-          <%= s.hidden_field :id %>
+          <%= s.hidden_field :id, value: s.object.id %>
           <%= s.select_without_label :identifier,
                                      {},
                                      {},

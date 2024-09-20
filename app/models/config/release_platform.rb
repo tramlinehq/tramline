@@ -17,18 +17,18 @@ class Config::ReleasePlatform < ApplicationRecord
   has_one :beta_release, -> { beta }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
   has_one :production_release, -> { production }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
 
-  accepts_nested_attributes_for :internal_workflow
-  accepts_nested_attributes_for :release_candidate_workflow
-  accepts_nested_attributes_for :internal_release
-  accepts_nested_attributes_for :beta_release
-  accepts_nested_attributes_for :production_release
+  accepts_nested_attributes_for :internal_workflow, allow_destroy: true
+  accepts_nested_attributes_for :release_candidate_workflow, allow_destroy: true
+  accepts_nested_attributes_for :internal_release, allow_destroy: true
+  accepts_nested_attributes_for :beta_release, allow_destroy: true
+  accepts_nested_attributes_for :production_release, allow_destroy: true
 
   delegate :platform, to: :release_platform
   attr_accessor :production_release_enabled, :internal_workflow_enabled, :internal_release_enabled, :beta_release_enabled
-
   after_initialize :set_defaults
 
   def self.from_json(json)
+    json = json.with_indifferent_access
     release_config = new(json.except("workflows", "internal_release", "beta_release", "production_release", "id"))
     release_config.internal_workflow = Config::Workflow.from_json(json["workflows"]["internal"]) if json.dig("workflows", "internal").present?
     release_config.release_candidate_workflow = Config::Workflow.from_json(json["workflows"]["release_candidate"])

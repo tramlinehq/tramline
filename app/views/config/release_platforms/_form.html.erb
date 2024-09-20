@@ -8,9 +8,9 @@
             You must have at least the RC workflow defined. The internal workflow is optional. The CI workflows should generate a valid build artifact (aab/apk/ipa).
           <% end %>
 
-          <% section.F.fields_for :release_candidate_workflow do |rc_fields| %>
+          <% section.F.fields_for :release_candidate_workflow, section.F.object.release_candidate_workflow do |rc_fields| %>
             <div>
-              <%= rc_fields.hidden_field :id %>
+              <%= rc_fields.hidden_field :id, value: rc_fields.object.id  %>
               <%= rc_fields.labeled_select :identifier, "Release Candidate workflow",
                                            options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.release_candidate_workflow.identifier),
                                            { required: true },
@@ -21,20 +21,26 @@
             </div>
           <% end %>
 
-          <% section.F.fields_for :internal_workflow do |internal_fields| %>
-            <div>
-              <%= internal_fields.hidden_field :id %>
-              <%= internal_fields.labeled_select :identifier, "Internal build workflow",
-                                                 options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }.unshift(["None", nil]), platform_config.internal_workflow&.identifier),
-                                                 { required: false },
-                                                 data: { controller: "input-select" } %>
-              <div class="text-sm mt-1">
-                If you have a different workflow to generate the internal build, you can configure it here.
-              </div>
-            </div>
+          <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                   field_name: :internal_workflow_enabled,
+                                                   on_label: "Different workflow for internal builds",
+                                                   off_label: "Same workflow for internal builds") do |component| %>
+            <% component.with_child do %>
+              <% section.F.fields_for :internal_workflow, section.F.object.internal_workflow || Config::Workflow.new(kind: "internal") do |internal_fields| %>
+                <div>
+                  <%= internal_fields.hidden_field :id, value: internal_fields.object.id  %>
+                  <%= internal_fields.labeled_select :identifier, "Internal build workflow",
+                                                     options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }.unshift(["None", nil]), platform_config.internal_workflow&.identifier),
+                                                     { required: false },
+                                                     data: { controller: "input-select" } %>
+                  <div class="text-sm mt-1">
+                    If you have a different workflow to generate the internal build, you can configure it here.
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
           <% end %>
         <% end %>
-
 
         <% f.with_section(heading: "Configure Internal Release Step") do |section| %>
           <%= render V2::Form::SwitchComponent.new(form: section.F,
@@ -68,9 +74,10 @@
                                                    on_label: "Send to production channel",
                                                    off_label: "Do not send to production channel") do |component| %>
             <% section.F.fields_for :production_release, section.F.object.production_release do |prod_fields| %>
-              <%= prod_fields.hidden_field :id %>
               <% component.with_child do %>
+                <%= prod_fields.hidden_field :id, value: prod_fields.object.id  %>
                 <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first do |sub_fields| %>
+                  <%= sub_fields.hidden_field :id, value: sub_fields.object.id  %>
                   <%= render V2::Form::SwitchComponent.new(form: sub_fields,
                                                            field_name: :rollout_enabled,
                                                            on_label: "Staged Rollout enabled",
@@ -82,7 +89,8 @@
                         <% else %>
                           <%= sub_fields.labeled_text_field :rollout_stages,
                                                             "Rollout stages",
-                                                            { placeholder: "1, 2, 5, 10, 20, 50, 100",
+                                                            { value: sub_fields.object.rollout_stages.join(", "),
+                                                              placeholder: "1, 2, 5, 10, 20, 50, 100",
                                                               data: { domain__staged_rollout_help_target: "input",
                                                                       action: "domain--staged-rollout-help#validateString" } } %>
                         <% end %>
