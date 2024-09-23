@@ -14,6 +14,7 @@ class Config::SubmissionExternal < ApplicationRecord
   self.table_name = "submission_external_configs"
 
   belongs_to :submission_config, class_name: "Config::Submission"
+  validates :identifier, :name, presence: true
 
   def as_json(options = {})
     {

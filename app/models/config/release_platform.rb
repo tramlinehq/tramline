@@ -26,6 +26,10 @@ class Config::ReleasePlatform < ApplicationRecord
   delegate :platform, to: :release_platform
   attr_accessor :production_release_enabled, :internal_workflow_enabled, :internal_release_enabled, :beta_release_enabled
   after_initialize :set_defaults
+  validate :validate_rc_workflow_presence
+  validate :validate_workflow_identifiers
+  validate :validate_release_steps_presence
+  validate :validate_submission_uniqueness
 
   def self.from_json(json)
     json = json.with_indifferent_access
@@ -83,5 +87,41 @@ class Config::ReleasePlatform < ApplicationRecord
 
   def production_release?
     production_release.present?
+  end
+
+  # Custom validation to check if release candidate workflow is present
+  def validate_rc_workflow_presence
+    errors.add(:release_candidate_workflow, :not_present) if release_candidate_workflow.nil?
+  end
+
+  # Ensure that at least one of internal release, beta release, or production release is configured
+  def validate_release_steps_presence
+    if internal_release.nil? && beta_release.nil? && production_release.nil?
+      errors.add(:base, :at_least_one_release_step)
+    end
+  end
+
+  # Validate that multiple workflows have unique identifiers
+  def validate_workflow_identifiers
+    workflow_identifiers = [internal_workflow&.identifier, release_candidate_workflow&.identifier].compact
+    if workflow_identifiers.uniq.length != workflow_identifiers.length
+      errors.add(:base, :unique_workflows)
+    end
+  end
+
+  # Ensure submissions across release steps (internal, beta, production) are unique by type and submission_external identifier
+  def validate_submission_uniqueness
+    all_submissions = Set.new
+
+    [internal_release, beta_release, production_release].compact.each do |release_step|
+      release_step.submissions.each do |submission|
+        submission_key = [submission.submission_type, submission.submission_external&.identifier].join("-")
+
+        unless all_submissions.add?(submission_key)
+          errors.add(:base, :unique_submissions)
+          break
+        end
+      end
+    end
   end
 end

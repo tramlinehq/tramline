@@ -19,6 +19,7 @@ class Config::Submission < ApplicationRecord
   has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
 
   accepts_nested_attributes_for :submission_external, allow_destroy: true
+  validates :submission_type, presence: true
 
   def as_json(options = {})
     {

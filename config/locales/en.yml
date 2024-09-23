@@ -472,6 +472,14 @@ en:
               invalid: "can only contain alphanumerics, underscores and hyphens"
             trigger_rule_expressions:
               duplicate_metrics: "cannot have multiple health conditions with the same metric"
+        config/release_platform:
+          attributes:
+            base:
+              unique_submissions: "a build can not be submitted to the same channel more than once"
+              unique_workflows: "the internal and RC workflows cannot be the same"
+              at_least_one_release_step: "at least one release step must be configured"
+            release_candidate_workflow:
+              not_present: "the release candidate workflow must be configured"
 
   invitation:
     flash:

@@ -169,7 +169,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
 
     @submission_types.find { |type| type[:type] == submission[:submission_type] }
       &.then { |sub| sub.dig(:channels) }
-      &.then { |channels| channels.find { |channel| channel[:id] == identifier } }
+      &.then { |channels| channels.find { |channel| channel[:id].to_s == identifier } }
       &.then { |channel| channel[:name] }
   end
 end

@@ -17,6 +17,7 @@ class Config::Workflow < ApplicationRecord
   belongs_to :release_platform_config, class_name: "Config::ReleasePlatform"
 
   enum :kind, {internal: "internal", release_candidate: "release_candidate"}
+  validates :identifier, :name, presence: true
 
   def as_json(options = {})
     {

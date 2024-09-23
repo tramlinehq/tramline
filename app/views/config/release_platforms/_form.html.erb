@@ -1,4 +1,8 @@
 <%= render V2::SimpleTabComponent.new(groups: ["Configure Android", "Configure iOS"]) do |component| %>
+  <% content_for :error_resource do %>
+    <%= render V2::ErrorComponent.new(selected_config) %>
+  <% end %>
+
   <% [selected_config, other_config].compact.each do |platform_config| %>
     <% component.with_tab do %>
       <%= render V2::FormComponent.new(model: [app, train, platform_config.release_platform, platform_config],
