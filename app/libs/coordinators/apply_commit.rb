@@ -7,7 +7,6 @@ class Coordinators::ApplyCommit
   end
 
   def initialize(release, commit, release_step: nil)
-    raise ArgumentError, "release_step must be one of #{RELEASE_STEPS}" unless RELEASE_STEPS.include?(release_step)
     @release = release
     @commit = commit
     @release_step = release_step
@@ -16,37 +15,44 @@ class Coordinators::ApplyCommit
   def call
     return unless commit.applicable?
     release.release_platform_runs.each do |run|
-      trigger_release_for(run)
+      next unless run.on_track?
+
+      run.bump_version!
+      run.update!(last_commit: commit)
+
+      if release.hotfix?
+        pre_select_trigger(run) if trigger_hotfix?
+      else
+        trigger(run)
+      end
     end
   end
 
   private
 
-  def trigger_release_for(run)
-    return unless run.on_track?
-    run.bump_version!
-    run.update!(last_commit: commit)
-
-    if release.hotfix?
-      case release_step
-      when "InternalRelease"
-        Coordinators::CreateInternalRelease.call(run, commit)
-      when "BetaRelease"
-        Coordinators::CreateBetaRelease.call(run, nil, commit.id)
-      else
-        Coordinators::CreateInternalRelease.call(run, commit)
-      end
-
-      return
-    end
-
-    if run.conf.internal_release? && release_step.nil?
+  def pre_select_trigger(run)
+    case release_step
+    when "InternalRelease"
       Coordinators::CreateInternalRelease.call(run, commit)
+    when "BetaRelease"
+      Coordinators::CreateBetaRelease.call(run, nil, commit)
     else
-      Coordinators::CreateBetaRelease.call(run, nil, commit.id)
+      Coordinators::CreateBetaRelease.call(run, nil, commit)
     end
   end
 
-  attr_reader :release, :commit, :release_step
+  def trigger(run)
+    if run.conf.internal_release? && release_step.nil?
+      Coordinators::CreateInternalRelease.call(run, commit)
+    else
+      Coordinators::CreateBetaRelease.call(run, nil, commit)
+    end
+  end
+
+  def trigger_hotfix?
+    release.hotfixed_from.last_commit.commit_hash != commit.commit_hash
+  end
+
   delegate :train, to: :release
+  attr_reader :release, :commit, :release_step
 end

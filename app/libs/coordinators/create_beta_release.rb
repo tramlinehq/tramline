@@ -1,18 +1,16 @@
 class Coordinators::CreateBetaRelease
-  def self.call(release_platform_run, build_id, commit_id)
-    new(release_platform_run, build_id, commit_id).call
+  def self.call(release_platform_run, build, commit)
+    new(release_platform_run, build, commit).call
   end
 
-  def initialize(release_platform_run, build_id, commit_id)
-    raise ArgumentError, "Only expects one of build or commit" if build_id.present? && commit_id.present?
-    raise ArgumentError, "At least expects one of build or commit" if build_id.blank? && commit_id.blank?
+  def initialize(release_platform_run, build, commit)
+    raise ArgumentError, "Only expects one of build or commit" if build.present? && commit.present?
+    raise ArgumentError, "At least expects one of build or commit" if build.blank? && commit.blank?
     raise ArgumentError, "Beta release is blocked" unless release_platform_run.ready_for_beta_release?
 
     @release_platform_run = release_platform_run
-    @build = nil
-    @build = release_platform_run.builds.find(build_id) if build_id.present?
-    @commit = nil
-    @commit = release_platform_run.release.all_commits.find(commit_id) if commit_id.present?
+    @build = build
+    @commit = commit
   end
 
   def call

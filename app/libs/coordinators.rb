@@ -60,7 +60,7 @@ module Coordinators
     def self.internal_release_finished!(build)
       release_platform_run = build.release_platform_run
       if release_platform_run.conf.auto_start_beta_release?
-        Coordinators::CreateBetaRelease.call(release_platform_run, build.id, nil)
+        Coordinators::CreateBetaRelease.call(release_platform_run, build, nil)
       end
     end
 
@@ -122,21 +122,24 @@ module Coordinators
       end
     end
 
-    def self.start_internal_release!(release_platform_run, commit_id)
+    def self.start_internal_release!(release_platform_run)
       Res.new do
         raise "release is not active" unless release_platform_run.active?
-        commit = release_platform_run.release.all_commits.find(commit_id)
+        commit = release_platform_run.release.last_applicable_commit
         Coordinators::ApplyCommit.call(release_platform_run.release, commit, release_step: InternalRelease.to_s)
       end
     end
 
-    def self.start_beta_release!(release_platform_run, build_id, commit_id)
+    def self.start_beta_release!(run)
       Res.new do
-        raise "release is not active" unless release_platform_run.active?
-        if commit_id.present?
-          Coordinators::ApplyCommit.call(release_platform_run.release, commit, release_step: BetaRelease.to_s)
+        raise "release is not active" unless run.active?
+
+        if run.carryover_build?
+          latest_internal_release = run.latest_internal_release(finished: true)
+          Coordinators::CreateBetaRelease.call(run, latest_internal_release.build, nil)
         else
-          Coordinators::CreateBetaRelease.call(release_platform_run, build_id, nil)
+          commit = run.release.last_applicable_commit
+          Coordinators::ApplyCommit.call(run.release, commit, release_step: BetaRelease.to_s)
         end
       end
     end

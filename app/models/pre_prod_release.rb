@@ -15,6 +15,7 @@
 #  previous_id                :uuid             indexed
 #  release_platform_run_id    :uuid             not null, indexed
 #
+# TODO: [v2] missing unique check on commit_id and type
 class PreProdRelease < ApplicationRecord
   include AASM
   include Loggable
