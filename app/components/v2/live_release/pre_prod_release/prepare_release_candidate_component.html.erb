@@ -6,40 +6,28 @@
     type: :subdued) %>
 <% end %>
 
-<% if ready_for_beta_release? %>
-  <%= render V2::CardComponent.new(title: title) do |card| %>
-    <% if carryover_build? %>
-      <% if release_platform_run.conf.beta_submissions? %>
-        <% card.with_action do %>
-          <%= render V2::ButtonComponent.new(label: "Start beta release",
-                                             scheme: :default,
-                                             type: :button,
-                                             options: create_release_candidate_path,
-                                             size: :xxs,
-                                             turbo: false,
-                                             html_options: confirmation_opts) %>
-        <% end %>
-      <% end %>
+<% if release_platform_run.hotfix? %>
+  <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "Changes were not automatically applied for the hotfix") do %>
+    <div class="flex flex-col gap-2">
+      <span class="text-sm">There have been no new changes in this hotfix release branch. To rebuild the latest change, create the RC manually.</span>
+    </div>
+  <% end %>
+<% end %>
 
-      <div class="flex flex-col section-gap-default">
-        <%= render V2::LiveRelease::BuildComponent.new(build) %>
-      </div>
+<% if create_new_rc? %>
+  <%= render V2::CardComponent.new(title: "Latest Change") do |card| %>
+    <% card.with_action do %>
+      <%= render V2::ButtonComponent.new(label: "Create Release Candidate",
+                                         scheme: :default,
+                                         type: :button,
+                                         options: create_release_candidate_path,
+                                         size: :xxs,
+                                         turbo: false,
+                                         html_options: confirmation_opts) %>
     <% end %>
 
-    <% if create_new_rc? %>
-      <% card.with_action do %>
-        <%= render V2::ButtonComponent.new(label: "Create Release Candidate",
-                                           scheme: :default,
-                                           type: :button,
-                                           options: create_release_candidate_path,
-                                           size: :xxs,
-                                           turbo: false,
-                                           html_options: confirmation_opts) %>
-      <% end %>
-
-      <div class="flex flex-col section-gap-default">
-        <%= render V2::CommitComponent.new(commit:, detailed: false) %>
-      </div>
-    <% end %>
+    <div class="flex flex-col section-gap-default">
+      <%= render V2::CommitComponent.new(commit: applicable_commit, detailed: false) %>
+    </div>
   <% end %>
 <% end %>

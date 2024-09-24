@@ -38,6 +38,7 @@ class Triggers::Release
     if kickoff.ok?
       Response.new(:ok, release)
     else
+      Rails.logger.error(kickoff.error)
       Response.new(:unprocessable_entity, "Could not kickoff a release • #{kickoff.error.message}")
     end
   end

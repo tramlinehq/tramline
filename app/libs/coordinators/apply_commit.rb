@@ -1,6 +1,4 @@
 class Coordinators::ApplyCommit
-  include Loggable
-
   def self.call(release, commit)
     new(release, commit).call
   end
@@ -12,28 +10,30 @@ class Coordinators::ApplyCommit
 
   def call
     return unless commit.applicable?
-
     release.release_platform_runs.each do |run|
-      trigger_release_for(run)
+      next unless run.on_track?
+
+      if release.hotfix?
+        Coordinators::CreateBetaRelease.call(run, commit) if trigger_hotfix?
+      else
+        trigger(run)
+      end
     end
   end
 
   private
 
-  def trigger_release_for(run)
-    return if release.hotfix?
-    return unless run.on_track?
-
-    run.bump_version!
-    run.update!(last_commit: commit)
-
+  def trigger(run)
     if run.conf.internal_release?
       Coordinators::CreateInternalRelease.call(run, commit)
     else
-      Coordinators::CreateBetaRelease.call(run, nil, commit.id)
+      Coordinators::CreateBetaRelease.call(run, commit)
     end
   end
 
+  def trigger_hotfix?
+    release.hotfixed_from.last_commit.commit_hash != commit.commit_hash
+  end
+
   attr_reader :release, :commit
-  delegate :train, to: :release
 end

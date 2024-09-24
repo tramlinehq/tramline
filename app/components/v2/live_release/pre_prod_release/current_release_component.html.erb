@@ -2,39 +2,18 @@
   <%= render partial: "shared/play_store_review_rejected", locals: {show: show_blocked_message?,
                                                                     build:,
                                                                     actionable: false} %>
-  <% if pre_prod_release.new_build_available? %>
-    <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "New Internal Build is available") do |ann| %>
-      <% ann.with_announcement_button(label: "Start Beta release",
-                                      scheme: :default,
-                                      type: :button,
-                                      options: run_pre_prod_beta_path(release_platform_run),
-                                      size: :xxs,
-                                      turbo: false,
-                                      html_options: html_opts(:post, "Are you sure you want to start the beta release?", params: {pre_prod_release: rc_params})) %>
-      <div class="flex flex-col gap-2">
-        <%= render V2::LiveRelease::BuildComponent.new(
-          latest_internal_release.build,
-          show_metadata: false,
-          show_ci: true,
-          show_activity: false,
-          show_commit: false) %>
-        <span class="text-sm">Please start the beta release for the new build.</span>
-      </div>
-    <% end %>
-  <% end %>
-
   <% if pre_prod_release.new_commit_available? %>
     <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "New changes on the release branch") do |ann| %>
       <% ann.with_announcement_button(label: "Create Release Candidate",
                                       scheme: :default,
                                       type: :button,
-                                      options: run_pre_prod_beta_path(release_platform_run),
+                                      options: pre_prod_beta_run_path(release_platform_run),
                                       size: :xxs,
                                       turbo: false,
-                                      html_options: html_opts(:post, "Are you sure you want to start the beta release?", params: {pre_prod_release: rc_params})) %>
+                                      html_options: html_opts(:post, "Are you sure you want to create the RC?")) %>
       <div class="flex flex-col gap-2">
         <%= render V2::CommitComponent.new(commit: latest_commit, detailed: false) %>
-        <span class="text-sm">You can continue to release your existing Release Candidate, or replace it with the new change.</span>
+        <span class="text-sm">You can continue with your existing Release Candidate, or replace it with this new change.</span>
       </div>
     <% end %>
   <% end %>

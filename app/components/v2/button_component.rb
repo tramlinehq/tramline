@@ -142,11 +142,8 @@ class V2::ButtonComponent < V2::BaseComponent
     options[:disabled] = true if disabled?
 
     options[:data] ||= {}
-    if @turbo
-      options[:data][:turbo] = @turbo
-    else
-      options[:data][:turbo_frame] = "_top"
-    end
+    options[:data][:turbo] = @turbo
+    options[:data][:turbo_frame] = "_top" unless @turbo
 
     if tooltip_allowed?
       options[:data][:popup_target] = "element"

@@ -45,7 +45,7 @@ module Exceptionable
       @content = t("errors.messages.http_code.#{@code}.content")
       @message = exception.message if code < 500
 
-      format.any { render "errors/show", layout: "errors", status: code, formats: [:html] }
+      format.any { render "errors/show", layout: "errors", status: code, formats: [:html, :turbo_stream] }
       format.json { render json: {code:, error: Rack::Utils::HTTP_STATUS_CODES[code]}, status: code }
     end
   end

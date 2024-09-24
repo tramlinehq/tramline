@@ -13,23 +13,27 @@ class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
 
   attr_reader :release
 
-  def configured?(release_platform_run)
-    configuration(release_platform_run).present?
+  def applicable_commit(run)
+    run.release.last_applicable_commit
   end
 
-  def configuration(release_platform_run)
-    release_platform_run.conf.internal_release
+  def configured?(run)
+    configuration(run).present?
   end
 
-  def internal_workflow_config(release_platform_run)
-    release_platform_run.conf.workflows.pick_internal_workflow
+  def configuration(run)
+    run.conf.internal_release
   end
 
-  def latest_internal_release(release_platform_run)
-    release_platform_run.latest_internal_release
+  def internal_workflow_config(run)
+    run.conf.workflows.pick_internal_workflow
   end
 
-  def previous_internal_releases(release_platform_run)
-    release_platform_run.older_internal_releases
+  def latest_internal_release(run)
+    run.latest_internal_release
+  end
+
+  def previous_internal_releases(run)
+    run.older_internal_releases
   end
 end
