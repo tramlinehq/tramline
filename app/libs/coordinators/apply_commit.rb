@@ -35,6 +35,5 @@ class Coordinators::ApplyCommit
     release.hotfixed_from.last_commit.commit_hash != commit.commit_hash
   end
 
-  delegate :train, to: :release
-  attr_reader :release, :commit, :release_step
+  attr_reader :release, :commit
 end
