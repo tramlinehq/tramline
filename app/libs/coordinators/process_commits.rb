@@ -76,7 +76,7 @@ class Coordinators::ProcessCommits
     return if commit.blank?
     return commit if commit[:parents].present?
 
-    train.vcs_provider.get_commit(commit_hash)
+    train.vcs_provider.get_commit(commit[:commit_hash])
   end
 
   delegate :train, to: :release

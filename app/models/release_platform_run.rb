@@ -392,7 +392,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def tag_url
-    train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
+    train.vcs_provider&.tag_url(tag_name)
   end
 
   # recursively attempt to create a release tag until a unique one gets created
