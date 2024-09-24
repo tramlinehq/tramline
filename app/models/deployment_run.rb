@@ -510,7 +510,8 @@ class DeploymentRun < ApplicationRecord
   end
 
   def production_release_happened?
-    production_channel? && status.in?(READY_STATES)
+    return false unless production_channel?
+    status.in?(READY_STATES) && (staged_rollout.blank? || staged_rollout.active?)
   end
 
   def production_release_submitted?
