@@ -1,19 +1,8 @@
 <% release_type = "#{kind}_release".to_sym %>
 
-<% section.with_description do %>
-  Configure the <%= release_type.to_s.humanize.downcase %> settings for this platform.
-<% end %>
-
-<div class="grid gap-4 divide-y divide-main-200">
+<div class="grid gap-4">
   <% section.F.fields_for release_type, section.F.object.send(release_type) || Config::ReleaseStep.new(kind: kind) do |rr| %>
     <%= rr.hidden_field :id, value: rr.object.id %>
-    <%= render V2::Form::SwitchComponent.new(form: rr,
-                                             field_name: :auto_promote,
-                                             switch_id: SecureRandom.uuid,
-                                             on_label: "Auto start this step",
-                                             off_label: "Manually start this step") %>
-
-
     <div data-controller="nested-form-ext"
          data-nested-form-ext-list-position-outlet="#<%= release_type %>_submissions"
          class="grid gap-2 pt-3">
@@ -53,6 +42,7 @@
             <% end %>
           </li>
         </template>
+
         <div data-nested-form-ext-target="target"></div>
       </ul>
     </div>

@@ -4,101 +4,70 @@
   <% end %>
 
   <% [selected_config, other_config].compact.each do |platform_config| %>
+    <% platform = platform_config.release_platform %>
+    <% platform_name = platform.platform %>
+
     <% component.with_tab do %>
-      <%= render V2::FormComponent.new(model: [app, train, platform_config.release_platform, platform_config],
-                                       url: app_train_platform_config_path(app, train, platform_config.release_platform, platform_config)) do |f| %>
-        <% f.with_section(heading: "Configure CI Workflows") do |section| %>
+      <%= render V2::FormComponent.new(model: [app, train, platform, platform_config],
+                                       url: app_train_platform_config_path(app, train, platform, platform_config)) do |f| %>
+        <% f.with_section(heading: "Configure RC (Release Candidate) Workflow") do |section| %>
           <% section.with_description do %>
-            You must have at least the RC workflow defined. The internal workflow is optional. The CI workflows should generate a valid build artifact (aab/apk/ipa).
+            You must have at least an RC workflow defined. The CI workflows should generate a valid build artifact (aab/apk/ipa).
           <% end %>
 
           <% section.F.fields_for :release_candidate_workflow, section.F.object.release_candidate_workflow do |rc_fields| %>
             <div>
-              <%= rc_fields.hidden_field :id, value: rc_fields.object.id  %>
+              <%= rc_fields.hidden_field :id, value: rc_fields.object.id %>
               <%= rc_fields.labeled_select :identifier, "Release Candidate workflow",
                                            options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.release_candidate_workflow.identifier),
                                            { required: true },
                                            data: { controller: "input-select" } %>
-              <div class="text-sm mt-1">
-                The RC workflow is used to generate the release candidate builds for the store.
+
+              <div class="text-xs text-secondary mt-2">
+                Please select the workflow that generates builds for iOS release candidates.
               </div>
             </div>
           <% end %>
-
-          <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                                   field_name: :internal_workflow_enabled,
-                                                   on_label: "Different workflow for internal builds",
-                                                   off_label: "Same workflow for internal builds") do |component| %>
-            <% component.with_child do %>
-              <% section.F.fields_for :internal_workflow, section.F.object.internal_workflow || Config::Workflow.new(kind: "internal") do |internal_fields| %>
-                <div>
-                  <%= internal_fields.hidden_field :id, value: internal_fields.object.id  %>
-                  <%= internal_fields.labeled_select :identifier, "Internal build workflow",
-                                                     options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }.unshift(["None", nil]), platform_config.internal_workflow&.identifier),
-                                                     { required: false },
-                                                     data: { controller: "input-select" } %>
-                  <div class="text-sm mt-1">
-                    If you have a different workflow to generate the internal build, you can configure it here.
-                  </div>
-                </div>
-              <% end %>
-            <% end %>
-          <% end %>
         <% end %>
 
-        <% f.with_section(heading: "Configure Internal Release Step") do |section| %>
-          <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                                   field_name: :internal_release_enabled,
-                                                   on_label: "Send to testing channels",
-                                                   off_label: "Do not send to testing channels") do |component| %>
-            <% component.with_child do %>
-              <%= render "pre_prod_release_form", section:, kind: :internal, submission_types:, platform: platform_config.release_platform %>
-            <% end %>
-          <% end %>
-        <% end %>
-
-        <% f.with_section(heading: "Configure Beta Release Step") do |section| %>
-          <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                                   field_name: :beta_release_enabled,
-                                                   on_label: "Send to beta channels",
-                                                   off_label: "Do not send to beta channels") do |component| %>
-            <% component.with_child do %>
-              <%= render "pre_prod_release_form", section:, kind: :beta, submission_types:, platform: platform_config.release_platform %>
-            <% end %>
-          <% end %>
-        <% end %>
-
-        <% f.with_section(heading: "Configure Production Release Step") do |section| %>
+        <% f.with_section(heading: "Configure Production Release") do |section| %>
           <% section.with_description do %>
-            Configure the production release step for the release train.
+            Configuring production releases will enable the ability to send builds to the Production track on the stores (App Store, Play Store, etc.).
           <% end %>
 
           <%= render V2::Form::SwitchComponent.new(form: section.F,
                                                    field_name: :production_release_enabled,
-                                                   on_label: "Send to production channel",
-                                                   off_label: "Do not send to production channel") do |component| %>
+                                                   on_label: "Production release is enabled",
+                                                   off_label: "Disabled") do |component| %>
             <% section.F.fields_for :production_release, section.F.object.production_release do |prod_fields| %>
               <% component.with_child do %>
-                <%= prod_fields.hidden_field :id, value: prod_fields.object.id  %>
+                <%= prod_fields.hidden_field :id, value: prod_fields.object.id %>
                 <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first do |sub_fields| %>
-                  <%= sub_fields.hidden_field :id, value: sub_fields.object.id  %>
+                  <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
                   <%= render V2::Form::SwitchComponent.new(form: sub_fields,
                                                            field_name: :rollout_enabled,
-                                                           on_label: "Staged Rollout enabled",
-                                                           off_label: "Staged Rollout disabled") do |rollout| %>
+                                                           on_label: t("store_rollouts.switcher.#{platform_name}.enable"),
+                                                           off_label: t("store_rollouts.switcher.#{platform_name}.disable")) do |rollout| %>
+
+                    <% if platform.android? %>
+                      <% rollout.with_info_icon do %>
+                        Here you set a standard template for the common progression of your rollout percentages. When you start a production release, you will always move through these.
+                      <% end %>
+                    <% end %>
+
                     <% rollout.with_child do %>
                       <div data-controller="domain--staged-rollout-help">
-                        <% if platform_config.release_platform.ios? %>
+                        <% if platform.ios? %>
                           <span class="text-xs text-slate-400">Phased release in App Store goes from 1%, 2%, 5%, 10%, 20%, 50% to 100% over 7 days</span>
                         <% else %>
                           <%= sub_fields.labeled_text_field :rollout_stages,
-                                                            "Rollout stages",
+                                                            "Rollout sequence",
                                                             { value: sub_fields.object.rollout_stages.join(", "),
                                                               placeholder: "1, 2, 5, 10, 20, 50, 100",
                                                               data: { domain__staged_rollout_help_target: "input",
                                                                       action: "domain--staged-rollout-help#validateString" } } %>
                         <% end %>
-                        <div class="text-sm text-slate-600 italic mt-2">
+                        <div class="text-xs text-secondary mt-2">
                           <span data-domain--staged-rollout-help-target="helpErrorText helpSuccessText"></span>
                         </div>
                       </div>
@@ -110,12 +79,53 @@
           <% end %>
         <% end %>
 
+        <% f.with_section(heading: "Configure Beta Testing Tracks") do |section| %>
+          <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                   field_name: :beta_release_enabled,
+                                                   on_label: "Beta testing tracks are enabled",
+                                                   off_label: "Disabled") do |component| %>
+
+            <% section.with_description do %>
+              Release Candidate builds generated from the RC workflow will be sent to the configured beta testing tracks.
+            <% end %>
+
+            <% component.with_child do %>
+              <%= render "pre_prod_release_form", section:, kind: :beta, submission_types:, platform: %>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <% f.with_section(heading: "Setup Internal Testing") do |section| %>
+          <% section.with_description do %>
+            If you have an internal testing process that generates non-production builds and sends them to testing channels, you can configure it here.
+          <% end %>
+
+          <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                   field_name: :internal_release_enabled,
+                                                   on_label: "Internal testing is enabled",
+                                                   off_label: "No internal testing setup") do |component| %>
+            <% component.with_child do %>
+              <% section.F.fields_for :internal_workflow, section.F.object.internal_workflow || Config::Workflow.new(kind: "internal") do |internal_fields| %>
+                <div>
+                  <%= internal_fields.hidden_field :id, value: internal_fields.object.id %>
+                  <%= internal_fields.labeled_select :identifier, "Internal build workflow",
+                                                     options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.internal_workflow&.identifier),
+                                                     { required: false },
+                                                     data: { controller: "input-select" } %>
+                </div>
+              <% end %>
+
+              <div class="mt-4"><%= render "pre_prod_release_form", section:, kind: :internal, submission_types:, platform: %></div>
+            <% end %>
+          <% end %>
+        <% end %>
+
         <% f.with_action do %>
           <%= f.F.authz_submit "Save", "v2/archive.svg" %>
         <% end %>
       <% end %>
       <div class="mt-8">
-        <span class="text-sm font-bold"><%= platform_config.platform %></span>
+        <span class="text-sm font-bold"><%= platform_name %></span>
         <textarea class="w-full h-96" disabled="disabled"><%= JSON.pretty_generate(platform_config.as_json) %></textarea>
       </div>
     <% end %>

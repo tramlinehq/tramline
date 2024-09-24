@@ -18,8 +18,12 @@ en:
       failure: "Failed to create production release — %{errors}"
   staged_rollout:
     ios:
+      switch_on: "Enable Phased Release"
+      switch_off: "Disable Phased Release"
       checkbox: "Enable Phased Release"
     android:
+      switch_on: "Enable Staged Rollout"
+      switch_off: "Disable Staged Rollout"
       checkbox: "Enable Staged Rollout"
   beta_releases:
     create:
@@ -71,6 +75,13 @@ en:
       failure: "Failed to create submission — %{errors}"
       invalid_build: "The build is not valid to start a submission."
   store_rollouts:
+    switcher:
+      ios:
+        enable: "Phased Release is enabled"
+        disable: "Phased Release is disabled"
+      android:
+        enable: "Staged Rollout is enabled"
+        disable: "Staged Rollout is disabled"
     increase:
       success: "Rollout was successfully increased."
       failure: "Failed to increase rollout — %{errors}"

@@ -147,7 +147,7 @@ class ReleasePlatform < ApplicationRecord
       },
       internal_release: nil,
       beta_release: nil,
-      production_release: andrdoid ? android_production_release_config : ios_production_release_config
+      production_release: android? ? android_production_release_config : ios_production_release_config
     }
 
     self.platform_config = Config::ReleasePlatform.from_json(config_map)

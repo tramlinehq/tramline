@@ -29,7 +29,6 @@
     <div>
       <%= render V2::Form::SwitchComponent.new(form: form,
                                                field_name: :auto_promote,
-                                               switch_id: SecureRandom.uuid,
                                                on_label: "Auto submit this submission",
                                                off_label: "Manually submit this submission") %>
     </div>

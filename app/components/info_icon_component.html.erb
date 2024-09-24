@@ -1,0 +1,9 @@
+<%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-secondary") do |icon| %>
+  <% icon.with_tooltip("ho2u", placement: "top", type: :detailed) do |tooltip| %>
+    <% tooltip.with_detailed_text do %>
+      <div class="flex flex-col gap-y-4 items-start">
+        <%= content %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
