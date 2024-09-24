@@ -7,7 +7,7 @@
       <% ann.with_announcement_button(label: "Create Release Candidate",
                                       scheme: :default,
                                       type: :button,
-                                      options: run_pre_prod_beta_path(release_platform_run),
+                                      options: pre_prod_beta_run_path(release_platform_run),
                                       size: :xxs,
                                       turbo: false,
                                       html_options: html_opts(:post, "Are you sure you want to create the RC?")) %>
