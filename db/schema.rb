@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_09_16_105018) do
+ActiveRecord::Schema[7.2].define(version: 2024_09_24_104432) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -439,6 +439,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_16_105018) do
     t.index ["commit_id"], name: "index_pre_prod_releases_on_commit_id"
     t.index ["parent_internal_release_id"], name: "index_pre_prod_releases_on_parent_internal_release_id"
     t.index ["previous_id"], name: "index_pre_prod_releases_on_previous_id"
+    t.index ["release_platform_run_id", "commit_id", "type"], name: "idx_on_release_platform_run_id_commit_id_type_78e050198a", unique: true
     t.index ["release_platform_run_id"], name: "index_pre_prod_releases_on_release_platform_run_id"
   end
 
@@ -903,6 +904,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_16_105018) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["commit_id"], name: "index_workflow_runs_on_commit_id"
+    t.index ["pre_prod_release_id", "commit_id"], name: "index_workflow_runs_on_pre_prod_release_id_and_commit_id", unique: true
     t.index ["pre_prod_release_id"], name: "index_workflow_runs_on_pre_prod_release_id"
     t.index ["release_platform_run_id"], name: "index_workflow_runs_on_release_platform_run_id"
   end
