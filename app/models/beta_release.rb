@@ -15,8 +15,6 @@
 #  release_platform_run_id    :uuid             not null, indexed
 #
 class BetaRelease < PreProdRelease
-  belongs_to :parent_internal_release, class_name: "InternalRelease", optional: true
-
   STAMPABLE_REASONS = %w[created finished failed]
 
   def tester_notes? = false
@@ -42,15 +40,8 @@ class BetaRelease < PreProdRelease
     end
   end
 
-  def new_build_available?
-    return unless release_platform_run.on_track?
-    return unless carryover_build?
-    release_platform_run.latest_internal_release(finished: true) != parent_internal_release
-  end
-
   def new_commit_available?
     return unless release_platform_run.on_track?
-    return if carryover_build?
     release_platform_run.last_commit != commit
   end
 end

@@ -38,6 +38,8 @@ class PreProdRelease < ApplicationRecord
   delegate :release, :train, :platform, to: :release_platform_run
   delegate :notify!, :notify_with_snippet!, to: :train
 
+  alias_method :workflow_run, :triggered_workflow_run
+
   STATES = {
     created: "created",
     failed: "failed",
@@ -61,10 +63,6 @@ class PreProdRelease < ApplicationRecord
 
   def actionable?
     created? && release_platform_run.on_track?
-  end
-
-  def workflow_run
-    triggered_workflow_run || parent_internal_release&.workflow_run
   end
 
   def build
@@ -140,10 +138,6 @@ class PreProdRelease < ApplicationRecord
     previous.previous_successful
   end
 
-  def new_build_available? = false
-
-  def carried_over? = false
-
   def new_commit_available? = false
 
   def stamp_data
@@ -161,12 +155,6 @@ class PreProdRelease < ApplicationRecord
       release_version: release.release_version,
       submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", ")
     )
-  end
-
-  protected
-
-  def carryover_build?
-    release_platform_run.conf.workflows.carryover_build?
   end
 
   private

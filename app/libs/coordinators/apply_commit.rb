@@ -35,9 +35,9 @@ class Coordinators::ApplyCommit
     when "InternalRelease"
       Coordinators::CreateInternalRelease.call(run, commit)
     when "BetaRelease"
-      Coordinators::CreateBetaRelease.call(run, nil, commit)
+      Coordinators::CreateBetaRelease.call(run, commit)
     else
-      Coordinators::CreateBetaRelease.call(run, nil, commit)
+      Coordinators::CreateBetaRelease.call(run, commit)
     end
   end
 
@@ -45,7 +45,7 @@ class Coordinators::ApplyCommit
     if run.conf.internal_release? && release_step.nil?
       Coordinators::CreateInternalRelease.call(run, commit)
     else
-      Coordinators::CreateBetaRelease.call(run, nil, commit)
+      Coordinators::CreateBetaRelease.call(run, commit)
     end
   end
 

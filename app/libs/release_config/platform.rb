@@ -19,10 +19,6 @@ class ReleaseConfig::Platform < Struct.new(:conf)
     beta_release.submissions?
   end
 
-  def auto_start_beta_release?
-    workflows.separate_rc_workflow? && !beta_submissions?
-  end
-
   def beta_release
     ReleaseStep.new(value[:beta_release])
   end
@@ -141,14 +137,6 @@ class ReleaseConfig::Platform < Struct.new(:conf)
 
     def release_candidate_workflow
       Workflow.new(value[:release_candidate], :release_candidate)
-    end
-
-    def separate_rc_workflow?
-      internal_workflow.present?
-    end
-
-    def carryover_build?
-      !separate_rc_workflow?
     end
 
     def pick_internal_workflow

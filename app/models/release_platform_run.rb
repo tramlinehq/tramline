@@ -136,10 +136,6 @@ class ReleasePlatformRun < ApplicationRecord
       .first
   end
 
-  def carryover_build?
-    conf.workflows.carryover_build?
-  end
-
   def latest_production_release
     production_releases.order(created_at: :desc).first
   end
