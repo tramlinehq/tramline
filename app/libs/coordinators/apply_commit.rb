@@ -1,15 +1,11 @@
 class Coordinators::ApplyCommit
-  include Loggable
-  RELEASE_STEPS = %w[InternalRelease BetaRelease]
-
-  def self.call(release, commit, release_step: nil)
-    new(release, commit, release_step:).call
+  def self.call(release, commit)
+    new(release, commit).call
   end
 
-  def initialize(release, commit, release_step: nil)
+  def initialize(release, commit)
     @release = release
     @commit = commit
-    @release_step = release_step
   end
 
   def call
@@ -17,11 +13,8 @@ class Coordinators::ApplyCommit
     release.release_platform_runs.each do |run|
       next unless run.on_track?
 
-      run.bump_version!
-      run.update!(last_commit: commit)
-
       if release.hotfix?
-        pre_select_trigger(run) if trigger_hotfix?
+        Coordinators::CreateBetaRelease.call(run, commit) if trigger_hotfix?
       else
         trigger(run)
       end
@@ -30,19 +23,8 @@ class Coordinators::ApplyCommit
 
   private
 
-  def pre_select_trigger(run)
-    case release_step
-    when "InternalRelease"
-      Coordinators::CreateInternalRelease.call(run, commit)
-    when "BetaRelease"
-      Coordinators::CreateBetaRelease.call(run, commit)
-    else
-      Coordinators::CreateBetaRelease.call(run, commit)
-    end
-  end
-
   def trigger(run)
-    if run.conf.internal_release? && release_step.nil?
+    if run.conf.internal_release?
       Coordinators::CreateInternalRelease.call(run, commit)
     else
       Coordinators::CreateBetaRelease.call(run, commit)

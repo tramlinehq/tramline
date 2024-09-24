@@ -256,6 +256,16 @@ class ReleasePlatformRun < ApplicationRecord
     train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
   end
 
+  # TODO: [V2] this is a workaround to handle drifted cross-platform releases
+  # Figure out of a way to deprecate last_commit from rpr and rely on release instead
+  def update_last_commit!(commit)
+    return if commit.blank?
+    return if last_commit.commit_hash == commit.commit_hash
+    return if last_commit.present? && last_commit.timestamp > commit.timestamp
+
+    update!(last_commit: commit)
+  end
+
   def bump_version!
     return unless version_bump_required?
 

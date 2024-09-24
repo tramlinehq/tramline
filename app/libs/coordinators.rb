@@ -123,16 +123,15 @@ module Coordinators
       Res.new do
         raise "release is not active" unless release_platform_run.active?
         commit = release_platform_run.release.last_applicable_commit
-        Coordinators::ApplyCommit.call(release_platform_run.release, commit, release_step: InternalRelease.to_s)
+        Coordinators::CreateInternalRelease.call(release_platform_run, commit)
       end
     end
 
     def self.start_beta_release!(run)
       Res.new do
         raise "release is not active" unless run.active?
-
         commit = run.release.last_applicable_commit
-        Coordinators::ApplyCommit.call(run.release, commit, release_step: BetaRelease.to_s)
+        Coordinators::CreateBetaRelease.call(run, commit)
       end
     end
 
