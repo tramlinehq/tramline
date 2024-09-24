@@ -112,6 +112,7 @@ class Release < ApplicationRecord
 
   has_many :store_rollouts, through: :release_platform_runs
   has_many :store_submissions, through: :release_platform_runs
+  has_many :pre_prod_releases, through: :release_platform_runs
   has_many :production_releases, through: :release_platform_runs
   has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
 
@@ -277,6 +278,11 @@ class Release < ApplicationRecord
   def applied_commits
     return all_commits if active_build_queue.blank?
     all_commits.where.not(build_queue_id: active_build_queue.id).or(all_commits.where(build_queue_id: nil))
+  end
+
+  def last_applicable_commit
+    return unless committable?
+    applied_commits.last
   end
 
   def committable?

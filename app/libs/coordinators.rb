@@ -58,10 +58,7 @@ module Coordinators
     end
 
     def self.internal_release_finished!(build)
-      release_platform_run = build.release_platform_run
-      if release_platform_run.conf.auto_start_beta_release?
-        Coordinators::CreateBetaRelease.call(release_platform_run, build.id, nil)
-      end
+      # manage regression testing here
     end
 
     def self.regression_testing_is_approved!(build)
@@ -122,10 +119,19 @@ module Coordinators
       end
     end
 
-    def self.start_beta_release!(release_platform_run, build_id, commit_id)
+    def self.start_internal_release!(release_platform_run)
       Res.new do
         raise "release is not active" unless release_platform_run.active?
-        Coordinators::CreateBetaRelease.call(release_platform_run, build_id, commit_id)
+        commit = release_platform_run.release.last_applicable_commit
+        Coordinators::CreateInternalRelease.call(release_platform_run, commit)
+      end
+    end
+
+    def self.start_beta_release!(run)
+      Res.new do
+        raise "release is not active" unless run.active?
+        commit = run.release.last_applicable_commit
+        Coordinators::CreateBetaRelease.call(run, commit)
       end
     end
 

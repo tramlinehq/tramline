@@ -86,6 +86,10 @@ class StagedRollout < ApplicationRecord
     end
   end
 
+  def active?
+    %w[started completed fully_released].include?(status)
+  end
+
   def display_current_stage
     return 0 if created?
     (current_stage || 0).succ

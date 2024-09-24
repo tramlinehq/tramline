@@ -255,22 +255,22 @@ GEM
       google-cloud-core (~> 1.6)
       googleauth (~> 1.9)
       mini_mime (~> 1.0)
-    google-protobuf (4.28.0)
+    google-protobuf (4.28.2)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.28.0-aarch64-linux)
+    google-protobuf (4.28.2-aarch64-linux)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.28.0-arm64-darwin)
+    google-protobuf (4.28.2-arm64-darwin)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.28.0-x86-linux)
+    google-protobuf (4.28.2-x86-linux)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.28.0-x86_64-darwin)
+    google-protobuf (4.28.2-x86_64-darwin)
       bigdecimal
       rake (>= 13)
-    google-protobuf (4.28.0-x86_64-linux)
+    google-protobuf (4.28.2-x86_64-linux)
       bigdecimal
       rake (>= 13)
     googleauth (1.11.0)
@@ -445,7 +445,7 @@ GEM
     psych (5.1.2)
       stringio
     public_suffix (6.0.1)
-    puma (6.4.2)
+    puma (6.4.3)
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1)
@@ -705,7 +705,7 @@ GEM
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
-    webrick (1.8.1)
+    webrick (1.8.2)
     websocket (1.2.11)
     websocket-driver (0.7.6)
       websocket-extensions (>= 0.1.0)

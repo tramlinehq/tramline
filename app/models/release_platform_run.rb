@@ -111,6 +111,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def ready_for_beta_release?
+    return true if release.hotfix?
     return true if conf.only_beta_release?
     latest_internal_release(finished: true).present?
   end
@@ -251,6 +252,16 @@ class ReleasePlatformRun < ApplicationRecord
     train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
   end
 
+  # TODO: [V2] this is a workaround to handle drifted cross-platform releases
+  # Figure out of a way to deprecate last_commit from rpr and rely on release instead
+  def update_last_commit!(commit)
+    return if commit.blank?
+    return if last_commit.commit_hash == commit.commit_hash
+    return if last_commit.present? && last_commit.timestamp > commit.timestamp
+
+    update!(last_commit: commit)
+  end
+
   def bump_version!
     return unless version_bump_required?
 
@@ -387,7 +398,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def tag_url
-    train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
+    train.vcs_provider&.tag_url(tag_name)
   end
 
   # recursively attempt to create a release tag until a unique one gets created

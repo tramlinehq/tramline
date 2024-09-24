@@ -9,11 +9,14 @@ class Coordinators::CreateInternalRelease
   end
 
   def call
+    return unless release_platform_run.on_track?
+
     transaction do
+      release_platform_run.update_last_commit!(commit)
+      release_platform_run.bump_version!
       release_platform_run.correct_version!
       internal_release = release_platform_run.internal_releases.create!(config:, previous:, commit:)
-      auto_promote = internal_release.conf.auto_promote?
-      WorkflowRun.create_and_trigger!(workflow_config, internal_release, commit, release_platform_run, auto_promote:)
+      WorkflowRun.create_and_trigger!(workflow_config, internal_release, commit, release_platform_run)
       internal_release.previous&.workflow_run&.cancel_workflow!
     end
   end
@@ -32,6 +35,6 @@ class Coordinators::CreateInternalRelease
     release_platform_run.conf.pick_internal_workflow
   end
 
+  delegate :transaction, to: InternalRelease
   attr_reader :release_platform_run, :commit
-  delegate :transaction, to: BetaRelease
 end

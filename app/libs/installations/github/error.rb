@@ -58,7 +58,7 @@ module Installations
     def initialize(api_exception)
       @api_exception = api_exception
       Rails.logger.debug { "Github error: #{api_exception}" }
-      super(errors.first&.fetch("message", nil) || error_message, reason: handle)
+      super(errors&.first&.fetch("message", nil) || error_message, reason: handle)
     end
 
     def handle
