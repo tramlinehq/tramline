@@ -76,7 +76,7 @@ class Triggers::Release
       hotfix_platform: (hotfix_platform if hotfix?),
       custom_version: custom_version,
       release_pilot_id: Current.user&.id,
-      is_v2: train.product_v2?
+      is_v2: train.product_v2? && !hotfix?
     )
   end
 
