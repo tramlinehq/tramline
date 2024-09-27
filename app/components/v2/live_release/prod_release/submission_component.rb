@@ -87,7 +87,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def all_builds
-    available_builds + [current_build]
+    (available_builds + [current_build]).sort_by(&:generated_at).reverse
   end
 
   def build_display_info(b)
