@@ -24,9 +24,10 @@ class StoreSubmissions::AppStore::FindBuildJob
 
   def perform(submission_id)
     submission = AppStoreSubmission.find(submission_id)
+    return unless submission.actionable?
     return unless submission.may_start_prepare?
 
-    submission.find_build
-    submission.start_prepare!
+    submission.find_build.value!
+    submission.prepare_for_release!
   end
 end

@@ -36,7 +36,6 @@ class AppStoreSubmission < StoreSubmission
   RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
   STATES = {
     created: "created",
-    preprocessing: "preprocessing",
     preparing: "preparing",
     prepared: "prepared",
     failed_prepare: "failed_prepare",
@@ -76,10 +75,6 @@ class AppStoreSubmission < StoreSubmission
   aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)
-
-    event :preprocess do
-      transitions to: :preprocessing
-    end
 
     event :start_prepare, after_commit: :on_start_prepare! do
       transitions to: :preparing
@@ -142,10 +137,8 @@ class AppStoreSubmission < StoreSubmission
 
   def trigger!
     return unless actionable?
-    return start_prepare! if build_present_in_store?
 
-    preprocess!
-    StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
+    start_prepare!
   end
 
   def retrigger!
@@ -282,7 +275,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def on_start_prepare!
-    StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id)
+    StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
   end
 
   def on_submit_for_review!(args = {resubmission: false})

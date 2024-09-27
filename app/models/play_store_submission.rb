@@ -133,7 +133,6 @@ class PlayStoreSubmission < StoreSubmission
 
   def trigger!
     return unless actionable?
-    return start_prepare! if build_present_in_store?
 
     preprocess!
     StoreSubmissions::PlayStore::UploadJob.perform_later(id)
@@ -158,6 +157,8 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def upload_build!
+    return start_prepare! if build_present_in_store?
+
     with_lock do
       return unless may_start_prepare?
       return fail_with_error!(BuildNotFound) if build&.artifact.blank?
