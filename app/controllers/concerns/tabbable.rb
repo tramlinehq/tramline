@@ -7,6 +7,17 @@ module Tabbable
     helper_method :live_release_tab_configuration, :current_overall_status
   end
 
+  def set_train_config_tabs
+    @tab_configuration = [
+      [1, "Release Settings", edit_app_train_path(@app, @train), "v2/cog.svg"],
+      ([2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"] unless v2?),
+      ([2, "Submissions Settings", submission_config_edit_app_train_path(@app, @train), "v2/route.svg"] if v2?),
+      [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
+      [4, "Release Health Rules", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
+      [5, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"]
+    ].compact
+  end
+
   def live_release!
     @release ||=
       Release

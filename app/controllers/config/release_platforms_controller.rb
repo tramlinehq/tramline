@@ -1,5 +1,7 @@
 class Config::ReleasePlatformsController < SignedInApplicationController
+  include Tabbable
   using RefinedString
+
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_train, only: %i[edit update]
   before_action :set_app_from_train, only: %i[edit update]
@@ -45,16 +47,6 @@ class Config::ReleasePlatformsController < SignedInApplicationController
 
   def set_config
     @config = @release_platform.platform_config
-  end
-
-  def set_tab_configuration
-    @tab_configuration = [
-      [1, "Release Settings", edit_app_train_path(@app, @train), "v2/cog.svg"],
-      [2, "Submissions Settings", submission_config_edit_app_train_path(@app, @train), "v2/route.svg"],
-      [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
-      [4, "Release Health Rules", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
-      [5, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"]
-    ].compact
   end
 
   def set_ci_actions

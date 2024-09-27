@@ -1,11 +1,12 @@
 class TrainsController < SignedInApplicationController
+  include Tabbable
   using RefinedString
   using RefinedInteger
 
   before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate]
   around_action :set_time_zone
   before_action :set_train, only: %i[edit update destroy activate deactivate steps rules]
-  before_action :set_tab_configuration, only: %i[edit update steps rules destroy activate deactivate]
+  before_action :set_train_config_tabs, only: %i[edit update steps rules destroy activate deactivate]
   before_action :validate_integration_status, only: %i[new create]
   before_action :set_notification_channels, only: %i[new create edit update]
 
@@ -86,16 +87,6 @@ class TrainsController < SignedInApplicationController
 
   def set_train
     @train = @app.trains.friendly.find(params[:id])
-  end
-
-  def set_tab_configuration
-    @tab_configuration = [
-      [1, "Release Settings", edit_app_train_path(@app, @train), "v2/cog.svg"],
-      [2, "Submissions Settings", submission_config_edit_app_train_path(@app, @train), "v2/route.svg"],
-      [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
-      [4, "Release Health Rules", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
-      [5, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"]
-    ].compact
   end
 
   def train_params
