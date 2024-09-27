@@ -105,6 +105,8 @@ class PlayStoreSubmission < StoreSubmission
 
   def cancellable? = false
 
+  def cancelling? = false
+
   def finished?
     return true if finished_manually?
     FINAL_STATES.include?(status) && store_rollout.finished?

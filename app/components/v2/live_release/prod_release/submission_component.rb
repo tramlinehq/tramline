@@ -110,7 +110,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
       @change_build_prompt = true
     elsif submission.cancellable?
       @cancel_prompt = true
-    elsif !@inactive
+    elsif !@inactive && !submission.cancelling?
       @new_submission_prompt = true
     end
   end
