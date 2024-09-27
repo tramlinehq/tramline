@@ -136,7 +136,7 @@ module Installations
     end
 
     def log
-      logger.error(response_body, {error_resource: resource, code: code})
+      logger.error({api_error: response_body, error_resource: resource, code: code})
     end
   end
 end
