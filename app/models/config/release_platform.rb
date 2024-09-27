@@ -11,11 +11,11 @@ class Config::ReleasePlatform < ApplicationRecord
   self.table_name = "release_platform_configs"
 
   belongs_to :release_platform
-  has_one :internal_workflow, -> { internal }, class_name: "Config::Workflow", inverse_of: :release_platform_config, dependent: :destroy
-  has_one :release_candidate_workflow, -> { release_candidate }, class_name: "Config::Workflow", inverse_of: :release_platform_config, dependent: :destroy
-  has_one :internal_release, -> { internal }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
-  has_one :beta_release, -> { beta }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
-  has_one :production_release, -> { production }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
+  has_one :internal_workflow, -> { internal }, class_name: "Config::Workflow", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
+  has_one :release_candidate_workflow, -> { release_candidate }, class_name: "Config::Workflow", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
+  has_one :internal_release, -> { internal }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
+  has_one :beta_release, -> { beta }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
+  has_one :production_release, -> { production }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
 
   accepts_nested_attributes_for :internal_workflow, allow_destroy: true
   accepts_nested_attributes_for :release_candidate_workflow, allow_destroy: true
@@ -24,12 +24,14 @@ class Config::ReleasePlatform < ApplicationRecord
   accepts_nested_attributes_for :production_release, allow_destroy: true
 
   delegate :platform, to: :release_platform
-  attr_accessor :production_release_enabled, :internal_workflow_enabled, :internal_release_enabled, :beta_release_enabled
+  attr_accessor :production_release_enabled, :internal_release_enabled, :beta_release_enabled
   after_initialize :set_defaults
-  validate :validate_rc_workflow_presence
-  validate :validate_workflow_identifiers
-  validate :validate_release_steps_presence
-  validate :validate_submission_uniqueness
+  validate :rc_workflow_presence
+  validate :workflow_identifiers
+  validate :release_steps_presence
+  validate :submission_uniqueness
+  validate :internal_releases
+  validate :beta_releases
 
   def self.from_json(json)
     json = json.with_indifferent_access
@@ -44,7 +46,6 @@ class Config::ReleasePlatform < ApplicationRecord
 
   def set_defaults
     self.production_release_enabled = production_release.present?
-    self.internal_workflow_enabled = internal_workflow.present?
     self.internal_release_enabled = internal_release.present?
     self.beta_release_enabled = beta_release.present?
   end
@@ -90,27 +91,30 @@ class Config::ReleasePlatform < ApplicationRecord
   end
 
   # Custom validation to check if release candidate workflow is present
-  def validate_rc_workflow_presence
+  def rc_workflow_presence
     errors.add(:release_candidate_workflow, :not_present) if release_candidate_workflow.nil?
   end
 
   # Ensure that at least one of internal release, beta release, or production release is configured
-  def validate_release_steps_presence
-    if internal_release.nil? && beta_release.nil? && production_release.nil?
+  def release_steps_presence
+    internal_valid = internal_release.present? && !internal_release.marked_for_destruction?
+    beta_valid = beta_release.present? && !beta_release.marked_for_destruction?
+    production_valid = production_release.present? && !production_release.marked_for_destruction?
+
+    if !internal_valid && !beta_valid && !production_valid
       errors.add(:base, :at_least_one_release_step)
     end
   end
 
   # Validate that multiple workflows have unique identifiers
-  def validate_workflow_identifiers
-    workflow_identifiers = [internal_workflow&.identifier, release_candidate_workflow&.identifier].compact
-    if workflow_identifiers.uniq.length != workflow_identifiers.length
+  def workflow_identifiers
+    if internal_workflow&.identifier == release_candidate_workflow&.identifier
       errors.add(:base, :unique_workflows)
     end
   end
 
   # Ensure submissions across release steps (internal, beta, production) are unique by type and submission_external identifier
-  def validate_submission_uniqueness
+  def submission_uniqueness
     all_submissions = Set.new
 
     [internal_release, beta_release, production_release].compact.each do |release_step|
@@ -122,6 +126,21 @@ class Config::ReleasePlatform < ApplicationRecord
           break
         end
       end
+    end
+  end
+
+  def internal_releases
+    workflow = internal_workflow.present? && !internal_workflow.marked_for_destruction?
+    release = !internal_release&.marked_for_destruction? && internal_release&.submissions&.reject(&:marked_for_destruction?).present?
+
+    if workflow != release
+      errors.add(:base, :internal_releases_are_incomplete)
+    end
+  end
+
+  def beta_releases
+    if beta_release.present? && !beta_release.marked_for_destruction? && beta_release.submissions.blank?
+      errors.add(:base, :beta_releases_are_incomplete)
     end
   end
 end

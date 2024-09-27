@@ -128,7 +128,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def channels
-    channel_data.map(&:with_indifferent_access)
     CHANNELS.map(&:with_indifferent_access)
   end
 

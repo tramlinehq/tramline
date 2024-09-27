@@ -493,6 +493,8 @@ en:
               unique_submissions: "a build can not be submitted to the same channel more than once"
               unique_workflows: "the internal and RC workflows cannot be the same"
               at_least_one_release_step: "at least one release step must be configured"
+              internal_releases_are_incomplete: "internal workflows and its submissions must be configured together"
+              beta_releases_are_incomplete: "if beta releases are enabled, you must configure at least one submission"
             release_candidate_workflow:
               not_present: "the release candidate workflow must be configured"
 

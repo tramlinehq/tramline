@@ -22,9 +22,10 @@
           data-sortable-list-ext-handle-value=".handle"
           data-sortable-list-ext-list-position-outlet="#<%= release_type %>_submissions"
           data-list-position-initial-value=1
+          class="flex flex-col item-gap-default"
           id="<%= release_type %>_submissions">
         <% rr.object.submissions.each_with_index do |submission, _index| %>
-          <li class="nested-form-wrapper pr-2" data-new-record="false">
+          <li class="nested-form-wrapper" data-new-record="false">
             <% rr.fields_for :submissions, submission do |submission_form| %>
               <%= render "submissions_form", form: submission_form, submission_types: submission_types %>
               <%= submission_form.hidden_field :number, value: submission.number, data: { list_position_target: "position" } %>
@@ -35,7 +36,7 @@
         <% end %>
 
         <template data-nested-form-ext-target="template">
-          <li class="nested-form-wrapper pr-2" data-new-record="<%= rr.object.new_record? %>">
+          <li class="nested-form-wrapper" data-new-record="<%= rr.object.new_record? %>">
             <% rr.fields_for :submissions, Config::Submission.new(submission_type: submission_types.first, auto_promote: false), child_index: "NEW_RECORD" do |submission_form| %>
               <%= render "submissions_form", form: submission_form, submission_types: submission_types %>
               <%= submission_form.hidden_field :number, data: { list_position_target: "position" } %>
