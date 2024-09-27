@@ -23,7 +23,8 @@ describe AppStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:project_link)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
     end
 
     context "when successful" do
@@ -142,7 +143,8 @@ describe AppStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:project_link)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
     end
 
     context "when successful" do
@@ -218,7 +220,8 @@ describe AppStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:project_link)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
     end
 
     it "finds release" do
@@ -317,7 +320,8 @@ describe AppStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:project_link)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
     end
 
     it "removes the release from review" do

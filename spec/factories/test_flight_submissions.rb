@@ -21,8 +21,8 @@ FactoryBot.define do
       status { "created" }
     end
 
-    trait :submitting_for_review do
-      status { "submitting_for_review" }
+    trait :preprocessing do
+      status { "preprocessing" }
     end
 
     trait :submitted_for_review do

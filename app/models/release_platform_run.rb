@@ -256,7 +256,7 @@ class ReleasePlatformRun < ApplicationRecord
   # Figure out of a way to deprecate last_commit from rpr and rely on release instead
   def update_last_commit!(commit)
     return if commit.blank?
-    return if last_commit.commit_hash == commit.commit_hash
+    return if last_commit&.commit_hash == commit.commit_hash
     return if last_commit.present? && last_commit.timestamp > commit.timestamp
 
     update!(last_commit: commit)

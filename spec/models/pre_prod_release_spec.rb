@@ -6,19 +6,13 @@ describe PreProdRelease do
   describe "#trigger_submissions!" do
     let(:pre_prod_release) { create(:internal_release) }
     let(:workflow_run) { create(:workflow_run, triggering_release: pre_prod_release) }
-    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
-
-    before do
-      allow_any_instance_of(PlayStoreSubmission).to receive(:provider).and_return(providable_dbl)
-      allow(providable_dbl).to receive(:find_build).and_return(true)
-    end
 
     it "triggers the first submission" do
       build = create(:build, workflow_run:)
       pre_prod_release.trigger_submissions!
       expect(pre_prod_release.store_submissions.count).to eq(1)
       expect(pre_prod_release.store_submissions.sole.build).to eq(build)
-      expect(pre_prod_release.store_submissions.sole.preparing?).to be true
+      expect(pre_prod_release.store_submissions.sole.preprocessing?).to be true
     end
   end
 
@@ -37,7 +31,7 @@ describe PreProdRelease do
     it "triggers the next submission" do
       pre_prod_release.rollout_complete!(submission)
       expect(pre_prod_release.store_submissions.count).to eq(2)
-      expect(pre_prod_release.store_submissions.find_by(sequence_number: 2).preparing?).to be true
+      expect(pre_prod_release.store_submissions.find_by(sequence_number: 2).preprocessing?).to be true
     end
 
     it "finishes the release if there are no more submissions" do
