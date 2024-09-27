@@ -33,6 +33,10 @@
       b.with_icon("v2/trash.svg", size: :md)
     end %>
 
-    <%= render V2::Form::SwitchComponent.new(form: form, field_name: :auto_promote, on_label: "Auto-submit on", off_label: "Auto-submit off") %>
+    <%= render V2::Form::SwitchComponent.new(form: form, field_name: :auto_promote, on_label: "Auto-submit enabled", off_label: "Auto-submit stopped") do |auto_submit| %>
+      <% auto_submit.with_info_icon do %>
+        When enabled, Tramline will automatically deliver the build to this submission as soon as the previous one is delivered. If it's the first submission, the same will happen as soon as the build is ready.
+      <% end %>
+    <% end %>
   </div>
 </div>

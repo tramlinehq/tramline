@@ -98,6 +98,11 @@
                                              field_name: :internal_release_enabled,
                                              on_label: "Internal testing is enabled",
                                              off_label: "No internal testing setup") do |component| %>
+
+      <% component.with_info_icon do %>
+        Tramline requires both an internal workflow and the relevant submissions to be configured together if you enable Internal Testing.
+      <% end %>
+
       <% component.with_child do %>
         <% section.F.fields_for :internal_workflow, section.F.object.internal_workflow || Config::Workflow.new(kind: "internal") do |internal_fields| %>
           <div>
@@ -106,6 +111,10 @@
                                                options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.internal_workflow&.identifier),
                                                {required: false},
                                                data: {controller: "input-select"} %>
+          </div>
+
+          <div class="text-xs text-secondary mt-2">
+            Select a workflow that generates internal / non-production builds.
           </div>
         <% end %>
 
