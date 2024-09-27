@@ -31,6 +31,7 @@ class Config::ReleasePlatform < ApplicationRecord
   validate :release_steps_presence
   validate :submission_uniqueness
   validate :internal_releases
+  validate :beta_releases
 
   def self.from_json(json)
     json = json.with_indifferent_access
@@ -130,10 +131,16 @@ class Config::ReleasePlatform < ApplicationRecord
 
   def internal_releases
     workflow = internal_workflow.present? && !internal_workflow.marked_for_destruction?
-    release = internal_release&.submissions.present? && !internal_release.marked_for_destruction?
+    release = !internal_release&.marked_for_destruction? && internal_release&.submissions&.reject(&:marked_for_destruction?).present?
 
     if workflow != release
       errors.add(:base, :internal_releases_are_incomplete)
+    end
+  end
+
+  def beta_releases
+    if beta_release.present? && !beta_release.marked_for_destruction? && beta_release.submissions.blank?
+      errors.add(:base, :beta_releases_are_incomplete)
     end
   end
 end

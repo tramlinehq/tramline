@@ -29,10 +29,10 @@
                                              field_name: :production_release_enabled,
                                              on_label: "Production release is enabled",
                                              off_label: "Disabled") do |component| %>
-      <% section.F.fields_for :production_release, section.F.object.production_release do |prod_fields| %>
+      <% section.F.fields_for :production_release, section.F.object.production_release || Config::ReleaseStep.new(kind: "production") do |prod_fields| %>
         <% component.with_child do %>
           <%= prod_fields.hidden_field :id, value: prod_fields.object.id %>
-          <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first do |sub_fields| %>
+          <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || Config::Submission.new(submission_type: "PlayStoreSubmission", auto_promote: false) do |sub_fields| %>
             <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
             <%= render V2::Form::SwitchComponent.new(form: sub_fields,
                                                      field_name: :rollout_enabled,
