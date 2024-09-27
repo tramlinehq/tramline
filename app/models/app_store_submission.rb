@@ -135,6 +135,12 @@ class AppStoreSubmission < StoreSubmission
 
   def version_bump_required? = true
 
+  def external_link
+    return provider.inflight_store_link if parent_release.inflight?
+    return provider.deliverable_store_link if parent_release.active?
+    store_link
+  end
+
   def trigger!
     return unless actionable?
 

@@ -249,6 +249,14 @@ class AppStoreIntegration < ApplicationRecord
     "itms-beta://beta.itunes.apple.com/v1/app/#{app.external_id}"
   end
 
+  def inflight_store_link
+    "https://appstoreconnect.apple.com/apps/#{app.external_id}/distribution/ios/version/inflight"
+  end
+
+  def deliverable_store_link
+    "https://appstoreconnect.apple.com/apps/#{app.external_id}/distribution/ios/version/deliverable"
+  end
+
   def build_info(build_info)
     TestFlightInfo.new(build_info.merge(external_link: APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id: app.external_id, external_id: build_info[:external_id]).to_s))
   end
