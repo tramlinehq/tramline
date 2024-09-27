@@ -16,9 +16,10 @@ class Config::Submission < ApplicationRecord
   self.table_name = "submission_configs"
 
   belongs_to :release_step_config, class_name: "Config::ReleaseStep"
-  has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
+  has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy, autosave: true
 
   accepts_nested_attributes_for :submission_external, allow_destroy: true
+
   validates :submission_type, presence: true
 
   def as_json(options = {})
@@ -48,5 +49,9 @@ class Config::Submission < ApplicationRecord
     submission.rollout_stages = json.dig("rollout_config", "stages")
     submission.rollout_enabled = json.dig("rollout_config", "enabled")
     submission
+  end
+
+  def display
+    submission_type.classify.constantize.model_name.human
   end
 end

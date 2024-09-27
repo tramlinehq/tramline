@@ -1,7 +1,7 @@
-<section class="grid gap-4"
-         data-controller="toggle-switch"
-         data-toggle-switch-on-label-value="<%= on_label %>"
-         data-toggle-switch-off-label-value="<%= off_label %>">
+<div class="grid gap-4"
+     data-controller="toggle-switch"
+     data-toggle-switch-on-label-value="<%= on_label %>"
+     data-toggle-switch-off-label-value="<%= off_label %>">
   <% if heading.present? %>
     <div class="text-slate-600 font-medium"><%= heading %></div>
   <% end %>
@@ -27,4 +27,4 @@
       <%= child %>
     </div>
   <% end %>
-</section>
+</div>

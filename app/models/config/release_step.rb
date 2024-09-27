@@ -13,7 +13,7 @@ class Config::ReleaseStep < ApplicationRecord
   self.table_name = "release_step_configs"
 
   belongs_to :release_platform_config, class_name: "Config::ReleasePlatform"
-  has_many :submissions, class_name: "Config::Submission", inverse_of: :release_step_config, dependent: :destroy
+  has_many :submissions, class_name: "Config::Submission", inverse_of: :release_step_config, dependent: :destroy, autosave: true
 
   accepts_nested_attributes_for :submissions, allow_destroy: true
 

@@ -1,46 +1,38 @@
-<div class="flex flex-row item-gap-default items-center w-full mt-3 box-padding-md border border-dashed border-main-200 dark:border-main-600 rounded-lg">
-  <%= render V2::IconComponent.new("grip.svg", size: :lg, classes: "handle cursor-grabbing") %>
+<div class="flex flex-row item-gap-default items-center w-full box-padding-md border border-dashed border-main-200 dark:border-main-600 rounded-lg"
+     data-controller="nested-select"
+     data-nested-select-selected-nested-option-value="<%= form.object.submission_external&.identifier %>"
+     data-nested-select-options-value="<%= submission_types.to_json %>"
+     data-nested-select-option-key-value="type"
+     data-nested-select-nested-option-key-value="channels">
 
-  <div class="flex flex-col item-gap-default w-full">
-    <div class="flex flex-row items-center gap-4 w-full"
-         data-controller="nested-select"
-         data-nested-select-selected-nested-option-value="<%= form.object.submission_external&.identifier %>"
-         data-nested-select-options-value="<%= submission_types.to_json %>"
-         data-nested-select-option-key-value="type"
-         data-nested-select-nested-option-key-value="channels">
-      <div class="flex-grow w-1/2">
-        <%= form.select_without_label :submission_type,
-                                   options_for_select(submission_types.pluck(:type), form.object.submission_type),
-                                   {},
-                                   { data: { nested_select_target: "primary", action: "nested-select#updateNestedOptions" } }  %>
-      </div>
-
-      <div class="flex-grow w-1/2">
-        <% form.fields_for :submission_external, form.object.submission_external || Config::SubmissionExternal.new do |s| %>
-          <%= s.hidden_field :id, value: s.object.id %>
-          <%= s.select_without_label :identifier,
-                                     {},
-                                     {},
-                                     { data: { nested_select_target: "nested", controller: "input-select" } }%>
-        <% end %>
-      </div>
-    </div>
-
-    <div>
-      <%= render V2::Form::SwitchComponent.new(form: form,
-                                               field_name: :auto_promote,
-                                               on_label: "Auto submit this submission",
-                                               off_label: "Manually submit this submission") %>
-    </div>
+  <div class="flex justify-start">
+    <%= render V2::IconComponent.new("grip.svg", size: :lg, classes: "handle cursor-grabbing") %>
   </div>
 
-  <div class="justify-self-end">
+  <div class="flex flex-row flex-grow item-gap-default">
+    <%= form.select_without_label :submission_type,
+                                  options_for_select(submission_types.pluck(:type).map { |t| [t.display, t.to_s]}, form.object.submission_type),
+                                  {},
+                                  {data: {nested_select_target: "primary", action: "nested-select#updateNestedOptions"}} %>
+
+    <% form.fields_for :submission_external, form.object.submission_external || Config::SubmissionExternal.new do |s| %>
+      <%= s.hidden_field :id, value: s.object.id %>
+      <%= s.select_without_label :identifier,
+                                 {},
+                                 {},
+                                 {data: {nested_select_target: "nested", controller: "input-select"}} %>
+    <% end %>
+  </div>
+
+  <div class="flex item-gap-default justify-end">
     <%= render V2::ButtonComponent.new(
       scheme: :naked_icon,
       type: :action,
       size: :none,
-      html_options: { data: { action: "nested-form-ext#remove" } }) do |b|
+      html_options: {data: {action: "nested-form-ext#remove"}}) do |b|
       b.with_icon("v2/trash.svg", size: :md)
     end %>
+
+    <%= render V2::Form::SwitchComponent.new(form: form, field_name: :auto_promote, on_label: "Auto-submit on", off_label: "Auto-submit off") %>
   </div>
 </div>

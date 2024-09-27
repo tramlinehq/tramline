@@ -1,5 +1,16 @@
 <% component = V2::EnhancedTurboFrameComponent.new(dom_id(@train, :edit_train)) %>
 <% component.with_loading_indicator %>
 <%= render component do %>
-  <%= render "form", app: @app, train: @train, release_platform: @release_platform, selected_config: @selected_config, other_config: @other_config,ci_actions: @ci_actions, submission_types: @submission_types %>
+  <%= render "parent_form",
+             app: @app,
+             train: @train,
+             release_platform: @release_platform,
+             selected_label: @selected_label,
+             selected_config: @selected_config,
+             other_platform: @other_platform,
+             other_label: @other_label,
+             other_config: @other_config,
+             ci_actions: @ci_actions,
+             edit_not_allowed: @edit_not_allowed,
+             submission_types: @submission_types %>
 <% end %>
