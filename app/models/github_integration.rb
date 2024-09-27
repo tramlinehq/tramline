@@ -21,6 +21,7 @@ class GithubIntegration < ApplicationRecord
   delegate :code_repository_name, :code_repo_namespace, :code_repo_name_only, to: :app_config
   delegate :app, to: :integration
   delegate :organization, to: :app
+  delegate :cache, to: Rails
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
@@ -231,7 +232,9 @@ class GithubIntegration < ApplicationRecord
 
   def workflows
     return [] unless integration.ci_cd?
-    installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
+    cache.fetch(workflows_cache_key, expires_in: 10.minutes) do
+      installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
+    end
   end
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
@@ -377,5 +380,9 @@ class GithubIntegration < ApplicationRecord
     else
       github_events_url(host: ENV["HOST_NAME"], protocol: "https", **params)
     end
+  end
+
+  def workflows_cache_key
+    "app/#{app.id}/github_integration/#{id}/workflows"
   end
 end

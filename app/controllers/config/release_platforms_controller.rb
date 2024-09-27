@@ -15,8 +15,8 @@ class Config::ReleasePlatformsController < SignedInApplicationController
     @selected_platform = @selected_config.release_platform
     @selected_label = @selected_platform.display_attr(:platform)
     @other_config = @train.release_platforms.where.not(id: @selected_platform.id).first&.platform_config
-    @other_platform = @other_config.release_platform
-    @other_label = @other_platform.display_attr(:platform)
+    @other_platform = @other_config&.release_platform
+    @other_label = @other_platform&.display_attr(:platform)
   end
 
   def update
@@ -32,7 +32,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   private
 
   def set_train
-    @train = Train.friendly.friendly.find(params[:id])
+    @train = Train.friendly.friendly.find(params[:id].presence || params[:train_id])
   end
 
   def set_app_from_train

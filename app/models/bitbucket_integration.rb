@@ -277,7 +277,9 @@ class BitbucketIntegration < ApplicationRecord
 
   def workflows
     return [] unless integration.ci_cd?
-    with_api_retries { installation.list_pipeline_selectors(code_repository_name) }
+    cache.fetch(workflows_cache_key, expires_in: 10.minutes) do
+      with_api_retries { installation.list_pipeline_selectors(code_repository_name) }
+    end
   end
 
   def workflow_retriable? = false
@@ -370,5 +372,9 @@ class BitbucketIntegration < ApplicationRecord
 
   def events_url(params)
     bitbucket_events_url(**tunneled_link_params, **params)
+  end
+
+  def workflows_cache_key
+    "app/#{app.id}/bitbucket_integration/#{id}/workflows"
   end
 end

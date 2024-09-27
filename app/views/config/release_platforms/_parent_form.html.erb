@@ -35,11 +35,16 @@
     <% end %>
   <% end %>
 <% else %>
+  <% content_for :error_resource do %>
+    <%= render V2::ErrorComponent.new(selected_config) %>
+  <% end %>
+
   <% platform = selected_config.release_platform %>
   <% platform_name = platform.platform %>
   <%= render "form",
              app:,
              train:,
+             platform_label: selected_label,
              platform_name:,
              platform:,
              platform_config: selected_config,
