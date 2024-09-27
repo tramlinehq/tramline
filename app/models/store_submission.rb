@@ -81,6 +81,8 @@ class StoreSubmission < ApplicationRecord
 
   def cancellable? = raise NotImplementedError
 
+  def cancelling? = raise NotImplementedError
+
   def retryable? = false
 
   def failed_with_action_required? = false

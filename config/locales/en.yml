@@ -54,16 +54,16 @@ en:
     submission_not_active: "Submission is not active."
     submission_not_retryable: "Submission is not retryable."
     prepare:
-      success: "The new release has begun preparing."
+      success: "The new release is being prepared."
       unstartable: "This release can not be prepared for submission."
       prepare:
         failure: "Failed to prepare submission — %{errors}"
     submit_for_review:
-      success: "The release has been submitted for review!"
+      success: "The release is being submitted for review!"
       failure: "Failed to submit for review — %{errors}"
       unreviewable: "This release can not be submitted for review."
     cancel:
-      success: "The release has been removed from review!"
+      success: "The release is being removed from review!"
       failure: "Failed to remove from review — %{errors}"
       uncanceleable: "This release submission can not be removed from review."
     update:

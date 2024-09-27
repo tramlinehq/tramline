@@ -37,7 +37,6 @@ class TestFlightSubmission < StoreSubmission
   STATES = {
     created: "created",
     preprocessing: "preprocessing",
-    submitting_for_review: "submitting_for_review",
     submitted_for_review: "submitted_for_review",
     review_failed: "review_failed",
     finished: "finished",
@@ -90,8 +89,6 @@ class TestFlightSubmission < StoreSubmission
 
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     # return mock_start_release_in_testflight if sandbox_mode?
-    return start_release! if build_present_in_store?
-
     preprocess!
     StoreSubmissions::TestFlight::FindBuildJob.perform_async(id)
   end
