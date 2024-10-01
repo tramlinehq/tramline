@@ -13,16 +13,18 @@ class Config::ReleasePlatformsController < SignedInApplicationController
 
   def edit
     @edit_not_allowed = @train.active_runs.exists?
+    @default_platform = params[:platform_id] || @release_platform&.platform || @train.release_platforms.sole.platform
     set_form_defaults
   end
 
   def update
-    set_update_form_defaults
+    @default_platform = @release_platform.platform
+    set_form_defaults
 
     if @config.update(update_config_params)
-      redirect_to submission_config_edit_app_train_path(@app, @train, platform: @default_platform), notice: t(".success")
+      redirect_to edit_app_train_platform_submission_config_path(@app, @train, @default_platform), notice: t(".success")
     else
-      render :edit, status: :unprocessable_entity
+      redirect_to edit_app_train_platform_submission_config_path(@app, @train, @default_platform), flash: {error: @config.errors.full_messages.to_sentence}
     end
   end
 
@@ -174,16 +176,8 @@ class Config::ReleasePlatformsController < SignedInApplicationController
 
   def set_form_defaults
     @form_scope = FORM_SCOPE
-    @default_platform = params[:platform] || @release_platform&.platform || @train.release_platforms.sole.platform
     @platform = @train.release_platforms.where(platform: @default_platform).sole
     @config = @platform&.platform_config
     @platform_label = @platform&.display_attr(:platform)
-  end
-
-  def set_update_form_defaults
-    @form_scope = FORM_SCOPE
-    @default_platform = @release_platform.platform
-    @platform = @train.release_platforms.where(platform: @default_platform).sole
-    @config = @platform&.platform_config
   end
 end
