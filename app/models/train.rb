@@ -253,7 +253,6 @@ class Train < ApplicationRecord
     end
     NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
-
   # rubocop:enable Rails/SkipsModelValidations
 
   def display_name
@@ -432,12 +431,8 @@ class Train < ApplicationRecord
   def hotfixable?
     return false unless startable?
     return false if hotfix_release.present?
-
-    hf = hotfix_from
-    return true if ongoing_release.present? && hf.temporary_hotfix_allowance? # FIXME: temporary hack
-
     return false if ongoing_release.present? && ongoing_release.production_release_happened? # TODO: remove this once we allow platform-specific hotfixes
-    hf.present? && release_platforms.any?(&:has_production_deployment?)
+    hotfix_from.present? && release_platforms.any?(&:has_production_deployment?)
   end
 
   def devops_report
