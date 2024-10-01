@@ -207,6 +207,10 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:unhealthy?)
   end
 
+  def temporary_hotfix_allowance?
+    Flipper.enabled?(:temporary_hotfix_allowance, self)
+  end
+
   def show_health?
     return true if ongoing? || partially_finished?
     return true if finished? && release_platform_runs.any?(&:show_health?)
