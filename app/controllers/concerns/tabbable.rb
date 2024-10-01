@@ -1,7 +1,6 @@
 module Tabbable
   include Memery
   extend ActiveSupport::Concern
-  AUTO_SELECTABLES = [:internal_builds, :release_candidate, :app_submission, :rollout_to_users]
 
   included do
     helper_method :live_release_tab_configuration, :current_overall_status
@@ -11,7 +10,9 @@ module Tabbable
     @tab_configuration = [
       [1, "Release Settings", edit_app_train_path(@app, @train), "v2/cog.svg"],
       ([2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"] unless v2?),
-      ([2, "Submissions Settings", submission_config_edit_app_train_path(@app, @train), "v2/route.svg"] if v2?),
+      ([2, "Android Submissions", submission_config_edit_app_train_path(@app, @train, platform: :android), "v2/logo_google_play_store_bw.svg"] if @app.cross_platform?),
+      ([2, "iOS Submissions", submission_config_edit_app_train_path(@app, @train, platform: :ios), "v2/logo_app_store_bw.svg"] if @app.cross_platform?),
+      ([2, "Submissions Settings", submission_config_edit_app_train_path(@app, @train), "v2/route.svg"] if v2? && !@app.cross_platform?),
       [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
       [4, "Release Health Rules", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
       [5, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"]
@@ -43,6 +44,8 @@ module Tabbable
   memoize def step_statuses
     @release.step_statuses
   end
+
+  AUTO_SELECTABLES = [:internal_builds, :release_candidate, :app_submission, :rollout_to_users]
 
   def active_tab
     tab = step_statuses[:statuses]

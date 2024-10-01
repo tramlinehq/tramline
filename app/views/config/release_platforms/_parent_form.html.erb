@@ -4,20 +4,20 @@
   <% end %>
 <% end %>
 
-<% if app.cross_platform? %>
-  <%= render V2::SimpleTabComponent.new(groups: ["Configure #{selected_label}", "Configure #{other_label}"]) do |component| %>
-    <% content_for :error_resource do %>
-      <%= render V2::ErrorComponent.new(selected_config) %>
-    <% end %>
+<% content_for :error_resource do %>
+  <%= render V2::ErrorComponent.new(primary_config) %>
+<% end %>
 
+<% if app.cross_platform? %>
+  <%= render V2::SimpleTabComponent.new(groups: @tab_groups, selected_tab: @selected_tab) do |component| %>
     <% component.with_tab do %>
       <%= render "form",
                  app:,
                  train:,
-                 platform_label: selected_label,
-                 platform_name: selected_platform.platform,
-                 platform: selected_platform,
-                 platform_config: selected_config,
+                 platform_label: primary_label,
+                 platform_name: primary_platform.platform,
+                 platform: primary_platform,
+                 platform_config: primary_config,
                  ci_actions:,
                  submission_types: %>
     <% end %>
@@ -27,7 +27,7 @@
                  app:,
                  train:,
                  platform_label: other_label,
-                 platform_name: selected_platform.platform,
+                 platform_name: other_platform.platform,
                  platform: other_platform,
                  platform_config: other_config,
                  ci_actions:,
@@ -35,19 +35,13 @@
     <% end %>
   <% end %>
 <% else %>
-  <% content_for :error_resource do %>
-    <%= render V2::ErrorComponent.new(selected_config) %>
-  <% end %>
-
-  <% platform = selected_config.release_platform %>
-  <% platform_name = platform.platform %>
   <%= render "form",
              app:,
              train:,
-             platform_label: selected_label,
-             platform_name:,
-             platform:,
-             platform_config: selected_config,
+             platform_label: primary_label,
+             platform_name: primary_platform.platform,
+             platform: primary_platform,
+             platform_config: primary_config,
              ci_actions:,
              submission_types: %>
 <% end %>

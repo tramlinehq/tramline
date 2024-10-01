@@ -1,17 +1,19 @@
 <% component = V2::EnhancedTurboFrameComponent.new(dom_id(@train, :edit_train)) %>
 <% component.with_loading_indicator %>
 <%= render component do %>
-  <%= render "parent_form",
+  <% if @edit_not_allowed %>
+    <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Updates will be applied on a new release", full_screen: false) do %>
+      The submissions settings can be edited while there are active releases. But they will only be applied on the next release.
+    <% end %>
+  <% end %>
+
+  <%= render "form",
              app: @app,
              train: @train,
-             release_platform: @release_platform,
-             selected_platform: @selected_platform,
-             selected_label: @selected_label,
-             selected_config: @selected_config,
-             other_platform: @other_platform,
-             other_label: @other_label,
-             other_config: @other_config,
+             platform_label: @platform_label,
+             platform_name: @platform.platform,
+             platform: @platform,
+             platform_config: @config,
              ci_actions: @ci_actions,
-             edit_not_allowed: @edit_not_allowed,
              submission_types: @submission_types %>
 <% end %>

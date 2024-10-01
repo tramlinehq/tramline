@@ -1,32 +1,27 @@
 class Config::ReleasePlatformsController < SignedInApplicationController
   include Tabbable
   using RefinedString
+  FORM_SCOPE = "config_release_platform".freeze
 
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_train, only: %i[edit update]
   before_action :set_app_from_train, only: %i[edit update]
   before_action :set_release_platform, only: %i[update]
-  before_action :set_config, only: %i[update]
-  before_action :set_tab_configuration, only: %i[edit update]
+  before_action :set_train_config_tabs, only: %i[edit update]
   before_action :set_ci_actions, only: %i[edit update]
   before_action :set_submission_types, only: %i[edit update]
 
   def edit
     @edit_not_allowed = @train.active_runs.exists?
-    @selected_config = @train.release_platforms.first&.platform_config
-    @selected_platform = @selected_config.release_platform
-    @selected_label = @selected_platform.display_attr(:platform)
-    @other_config = @train.release_platforms.where.not(id: @selected_platform.id).first&.platform_config
-    @other_platform = @other_config&.release_platform
-    @other_label = @other_platform&.display_attr(:platform)
+    set_form_defaults
   end
 
   def update
+    set_update_form_defaults
+
     if @config.update(update_config_params)
-      redirect_to submission_config_edit_app_train_path(@app, @train), notice: t(".success")
+      redirect_to submission_config_edit_app_train_path(@app, @train, platform: @default_platform), notice: t(".success")
     else
-      @selected_config = @config
-      @other_config = @train.release_platforms.where.not(id: @release_platform.id).first&.platform_config
       render :edit, status: :unprocessable_entity
     end
   end
@@ -43,10 +38,6 @@ class Config::ReleasePlatformsController < SignedInApplicationController
 
   def set_release_platform
     @release_platform = @train.release_platforms.friendly.find(params[:platform_id])
-  end
-
-  def set_config
-    @config = @release_platform.platform_config
   end
 
   def set_ci_actions
@@ -99,7 +90,8 @@ class Config::ReleasePlatformsController < SignedInApplicationController
 
   # Permit the params for the release platform and its nested attributes
   def config_params
-    params.require(:config_release_platform).permit(
+    platform = params["#{@form_scope}_android"] ? "#{@form_scope}_android" : "#{@form_scope}_ios"
+    params.require(platform).permit(
       :internal_release_enabled,
       :beta_release_enabled,
       :production_release_enabled,
@@ -158,11 +150,16 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       end
     end
 
-    if permitted_params[:production_release_attributes].present? && permitted_params[:production_release_attributes][:submissions_attributes]["0"][:rollout_enabled] == "true"
-      permitted_params[:production_release_attributes][:submissions_attributes]["0"][:rollout_stages] = permitted_params[:production_release_attributes][:submissions_attributes]["0"][:rollout_stages].safe_csv_parse
+    submission_attributes = permitted_params[:production_release_attributes][:submissions_attributes]["0"]
+    if permitted_params[:production_release_attributes].present? && submission_attributes[:rollout_enabled] == "true"
+      permitted_params[:production_release_attributes][:submissions_attributes]["0"][:rollout_stages] = submission_attributes[:rollout_stages].safe_csv_parse
     end
 
     permitted_params
+  end
+
+  def find_workflow_name(identifier)
+    @ci_actions.find { |action| action[:id] == identifier }&.dig(:name)
   end
 
   def find_submission_name(submission)
@@ -175,7 +172,18 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       &.then { |channel| channel[:name] }
   end
 
-  def find_workflow_name(identifier)
-    @ci_actions.find { |action| action[:id] == identifier }&.dig(:name)
+  def set_form_defaults
+    @form_scope = FORM_SCOPE
+    @default_platform = params[:platform] || @release_platform&.platform || @train.release_platforms.sole.platform
+    @platform = @train.release_platforms.where(platform: @default_platform).sole
+    @config = @platform&.platform_config
+    @platform_label = @platform&.display_attr(:platform)
+  end
+
+  def set_update_form_defaults
+    @form_scope = FORM_SCOPE
+    @default_platform = @release_platform.platform
+    @platform = @train.release_platforms.where(platform: @default_platform).sole
+    @config = @platform&.platform_config
   end
 end
