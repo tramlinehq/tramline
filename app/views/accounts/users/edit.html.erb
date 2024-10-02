@@ -1,7 +1,7 @@
 <%= render V2::ContainerComponent.new(title: "Account settings", error_resource: @user) do |container| %>
   <% container.with_back_button %>
   <% container.with_body do %>
-    <%= render V2::FormComponent.new(model: @user) do |f| %>
+    <%= render V2::FormComponent.new(model: @user, url: accounts_user_path) do |f| %>
       <% f.with_section(heading: "Basic account information") do |section| %>
         <div class="grid gap-4">
           <div><%= section.F.labeled_text_field :full_name, "Name", required: true %></div>
