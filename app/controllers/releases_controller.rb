@@ -13,7 +13,7 @@ class ReleasesController < SignedInApplicationController
 
   def show
     if @release.is_v2?
-      redirect_to active_tab
+      redirect_to live_release_active_tab
       return
     end
 

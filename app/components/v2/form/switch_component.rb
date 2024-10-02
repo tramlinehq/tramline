@@ -19,7 +19,7 @@ class V2::Form::SwitchComponent < ViewComponent::Base
 
   attr_reader :form, :field_name, :on_label, :off_label
 
-  def switch_id # TODO: remove this after ensuring notifications form works
+  def switch_id
     return field_name.to_s + "-switch" unless @switch_id
     @switch_id
   end
