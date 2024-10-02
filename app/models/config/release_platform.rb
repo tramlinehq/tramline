@@ -11,11 +11,11 @@ class Config::ReleasePlatform < ApplicationRecord
   self.table_name = "release_platform_configs"
 
   belongs_to :release_platform
-  has_one :internal_workflow, -> { internal }, class_name: "Config::Workflow", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
-  has_one :release_candidate_workflow, -> { release_candidate }, class_name: "Config::Workflow", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
-  has_one :internal_release, -> { internal }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
-  has_one :beta_release, -> { beta }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
-  has_one :production_release, -> { production }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
+  has_one :internal_workflow, -> { internal }, class_name: "Config::Workflow", inverse_of: :release_platform_config, dependent: :destroy
+  has_one :release_candidate_workflow, -> { release_candidate }, class_name: "Config::Workflow", inverse_of: :release_platform_config, dependent: :destroy
+  has_one :internal_release, -> { internal }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
+  has_one :beta_release, -> { beta }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
+  has_one :production_release, -> { production }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
 
   accepts_nested_attributes_for :internal_workflow, allow_destroy: true
   accepts_nested_attributes_for :release_candidate_workflow, allow_destroy: true
@@ -26,12 +26,13 @@ class Config::ReleasePlatform < ApplicationRecord
   delegate :platform, to: :release_platform
   attr_accessor :production_release_enabled, :internal_release_enabled, :beta_release_enabled
   after_initialize :set_defaults
-  validate :rc_workflow_presence
+  validates :release_candidate_workflow, presence: { message: :not_present }
   validate :workflow_identifiers
   validate :release_steps_presence
   validate :submission_uniqueness
   validate :internal_releases
-  validate :beta_releases
+  validate :beta_release_submissions
+  validates :beta_release, presence: { message: :not_present }
 
   def self.from_json(json)
     json = json.with_indifferent_access
@@ -47,7 +48,7 @@ class Config::ReleasePlatform < ApplicationRecord
   def set_defaults
     self.production_release_enabled = production_release.present?
     self.internal_release_enabled = internal_release.present?
-    self.beta_release_enabled = beta_release.present?
+    self.beta_release_enabled = beta_release.submissions.present?
   end
 
   def as_json(options = {})
@@ -138,8 +139,8 @@ class Config::ReleasePlatform < ApplicationRecord
     end
   end
 
-  def beta_releases
-    if beta_release.present? && !beta_release.marked_for_destruction? && beta_release.submissions.blank?
+  def beta_release_submissions
+    if beta_release_enabled && beta_release.submissions&.reject(&:marked_for_destruction?).blank?
       errors.add(:base, :beta_releases_are_incomplete)
     end
   end

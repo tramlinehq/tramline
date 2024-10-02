@@ -74,20 +74,21 @@ class Config::ReleasePlatformsController < SignedInApplicationController
 
     # Conditionally remove attributes if the relevant _enabled param is false
     if permitted_params[:internal_release_enabled] != "true" && permitted_params[:internal_release_attributes].present?
-      permitted_params[:internal_workflow_attributes][:_destroy] = "1"
-      permitted_params[:internal_release_attributes][:_destroy] = "1"
+      permitted_params[:internal_workflow_attributes][:_destroy] = true
+      permitted_params[:internal_release_attributes][:_destroy] = true
     end
 
     if permitted_params[:beta_release_enabled] != "true" && permitted_params[:beta_release_attributes].present?
-      permitted_params[:beta_release_attributes][:_destroy] = "1"
+      permitted_params[:beta_release_attributes][:submissions_attributes]&.each do |_, submission|
+        submission[:submission_external_attributes][:_destroy] = true
+      end
     end
 
     if permitted_params[:production_release_enabled] != "true" && permitted_params[:production_release_attributes].present?
-      permitted_params[:production_release_attributes][:_destroy] = "1"
+      permitted_params[:production_release_attributes][:_destroy] = true
     end
 
-    parse_config_params(permitted_params)
-      .except(:internal_release_enabled, :beta_release_enabled, :production_release_enabled)
+    parse_config_params(permitted_params).except(:internal_release_enabled, :production_release_enabled)
   end
 
   # Permit the params for the release platform and its nested attributes
@@ -112,7 +113,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       production_release_attributes: [
         :id,
         submissions_attributes: [
-          :id, :rollout_stages, :rollout_enabled
+          :id, :submission_type, :_destroy, :rollout_stages, :rollout_enabled
         ]
       ],
       internal_workflow_attributes: [
@@ -152,9 +153,11 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       end
     end
 
-    submission_attributes = permitted_params[:production_release_attributes][:submissions_attributes]["0"]
-    if permitted_params[:production_release_attributes].present? && submission_attributes[:rollout_enabled] == "true"
-      permitted_params[:production_release_attributes][:submissions_attributes]["0"][:rollout_stages] = submission_attributes[:rollout_stages].safe_csv_parse
+    if @platform.android?
+      submission_attributes = permitted_params[:production_release_attributes][:submissions_attributes]["0"]
+      if permitted_params[:production_release_attributes].present? && submission_attributes[:rollout_enabled] == "true"
+        permitted_params[:production_release_attributes][:submissions_attributes]["0"][:rollout_stages] = submission_attributes[:rollout_stages].safe_csv_parse
+      end
     end
 
     permitted_params

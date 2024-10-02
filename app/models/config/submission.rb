@@ -14,13 +14,15 @@
 #
 class Config::Submission < ApplicationRecord
   self.table_name = "submission_configs"
+  FULL_ROLLOUT_VALUE = BigDecimal("100")
 
   belongs_to :release_step_config, class_name: "Config::ReleaseStep"
-  has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy, autosave: true
+  has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
 
   accepts_nested_attributes_for :submission_external, allow_destroy: true
 
   validates :submission_type, presence: true
+  validate :correct_rollout_stages, if: :rolloutable?
 
   def as_json(options = {})
     {
@@ -53,5 +55,27 @@ class Config::Submission < ApplicationRecord
 
   def display
     submission_type.classify.constantize.model_name.human
+  end
+
+  def correct_rollout_stages
+    if rollout_stages.size < 1
+      errors.add(:rollout_stages, :at_least_one)
+    end
+
+    if rollout_stages[0]&.zero?
+      errors.add(:rollout_stages, :zero_rollout)
+    end
+
+    if rollout_stages.sort != rollout_stages
+      errors.add(:rollout_stages, :increasing_order)
+    end
+
+    if rollout_stages.any? { |value| value > FULL_ROLLOUT_VALUE }
+      errors.add(:rollout_stages, :max_100)
+    end
+  end
+
+  def rolloutable?
+    rollout_enabled? && submission_type.in?(%w[PlayStoreSubmission])
   end
 end
