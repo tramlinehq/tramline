@@ -49,12 +49,6 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   def set_submission_types
     @submission_types = []
 
-    if @app.ios_store_provider.present?
-      @submission_types << {
-        type: TestFlightSubmission, channels: @app.ios_store_provider.build_channels(with_production: false)
-      }
-    end
-
     if @app.android_store_provider.present?
       @submission_types << {
         type: PlayStoreSubmission, channels: @app.android_store_provider.build_channels(with_production: false)
@@ -66,49 +60,36 @@ class Config::ReleasePlatformsController < SignedInApplicationController
         type: GoogleFirebaseSubmission, channels: @app.firebase_build_channel_provider.build_channels
       }
     end
+
+    if @app.ios_store_provider.present?
+      @submission_types << {
+        type: TestFlightSubmission, channels: @app.ios_store_provider.build_channels(with_production: false)
+      }
+    end
   end
 
-  # Parse form params and conditionally include or exclude nested models
-  def update_config_params
-    permitted_params = config_params
-
-    # Conditionally remove attributes if the relevant _enabled param is false
-    if permitted_params[:internal_release_enabled] != "true" && permitted_params[:internal_release_attributes].present?
-      permitted_params[:internal_workflow_attributes][:_destroy] = true
-      permitted_params[:internal_release_attributes][:_destroy] = true
-    end
-
-    if permitted_params[:beta_release_enabled] != "true" && permitted_params[:beta_release_attributes].present?
-      permitted_params[:beta_release_attributes][:submissions_attributes]&.each do |_, submission|
-        submission[:submission_external_attributes][:_destroy] = true
-      end
-    end
-
-    if permitted_params[:production_release_enabled] != "true" && permitted_params[:production_release_attributes].present?
-      permitted_params[:production_release_attributes][:_destroy] = true
-    end
-
-    parse_config_params(permitted_params).except(:internal_release_enabled, :production_release_enabled)
-  end
-
-  # Permit the params for the release platform and its nested attributes
   def config_params
     platform = params["#{@form_scope}_android"] ? "#{@form_scope}_android" : "#{@form_scope}_ios"
     params.require(platform).permit(
       :internal_release_enabled,
-      :beta_release_enabled,
+      :beta_release_submissions_enabled,
       :production_release_enabled,
       internal_release_attributes: [
         :id, :auto_promote, :number,
         submissions_attributes: [
-          :id, :submission_type, :_destroy, submission_external_attributes: [:id, :identifier]
+          :id, :submission_type, :_destroy,
+          submission_external_attributes: [:id, :identifier, :_destroy]
         ]
       ],
       beta_release_attributes: [
         :id, :auto_promote, :number,
         submissions_attributes: [
-          :id, :submission_type, :_destroy, submission_external_attributes: [:id, :identifier]
+          :id, :submission_type, :_destroy,
+          submission_external_attributes: [:id, :identifier, :_destroy]
         ]
+      ],
+      release_candidate_workflow_attributes: [
+        :id, :identifier, :build_artifact_name_pattern
       ],
       production_release_attributes: [
         :id,
@@ -118,49 +99,65 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       ],
       internal_workflow_attributes: [
         :id, :identifier, :_destroy, :build_artifact_name_pattern
-      ],
-      release_candidate_workflow_attributes: [
-        :id, :identifier, :build_artifact_name_pattern
       ]
     )
   end
 
-  # Populate the 'name' fields based on a static list corresponding to 'identifier'
-  def parse_config_params(permitted_params)
-    # For internal workflow
-    if permitted_params[:internal_workflow_attributes].present? && permitted_params[:internal_workflow_attributes][:identifier].present?
-      identifier = permitted_params[:internal_workflow_attributes][:identifier]
-      permitted_params[:internal_workflow_attributes][:name] = find_workflow_name(identifier) if identifier
+  # Parse form params and delete parents as necessary
+  def update_config_params
+    permitted_params = config_params
+    internal_enabled = permitted_params[:internal_release_enabled] == "true"
+    beta_enabled = permitted_params[:beta_release_submissions_enabled] == "true"
+    prod_enabled = permitted_params[:production_release_enabled] == "true"
+
+    if !internal_enabled && permitted_params[:internal_release_attributes].present?
+      set_destroy!(permitted_params[:internal_release_attributes])
+      set_destroy!(permitted_params[:internal_workflow_attributes])
     end
 
-    # For release candidate workflow
-    if permitted_params[:release_candidate_workflow_attributes].present? && permitted_params[:release_candidate_workflow_attributes][:identifier].present?
-      identifier = permitted_params[:release_candidate_workflow_attributes][:identifier]
-      permitted_params[:release_candidate_workflow_attributes][:name] = find_workflow_name(identifier) if identifier
-    end
-
-    # For internal release submissions
-    if permitted_params[:internal_release_attributes].present?
-      permitted_params[:internal_release_attributes][:submissions_attributes]&.each do |_, submission|
-        submission[:submission_external_attributes][:name] = find_submission_name(submission)
-      end
-    end
-
-    # For beta release submissions
-    if permitted_params[:beta_release_attributes].present?
+    if !beta_enabled && permitted_params[:beta_release_attributes].present?
       permitted_params[:beta_release_attributes][:submissions_attributes]&.each do |_, submission|
-        submission[:submission_external_attributes][:name] = find_submission_name(submission)
+        set_destroy!(submission)
+        set_destroy!(submission[:submission_external_attributes])
       end
     end
 
-    if @platform.android?
-      submission_attributes = permitted_params[:production_release_attributes][:submissions_attributes]["0"]
-      if permitted_params[:production_release_attributes].present? && submission_attributes[:rollout_enabled] == "true"
-        permitted_params[:production_release_attributes][:submissions_attributes]["0"][:rollout_stages] = submission_attributes[:rollout_stages].safe_csv_parse
-      end
+    if !prod_enabled && permitted_params[:production_release_attributes].present?
+      set_destroy!(permitted_params[:production_release_attributes])
     end
+
+    parse_config_params(permitted_params)
+  end
+
+  def parse_config_params(permitted_params)
+    update_workflow_name(permitted_params[:internal_workflow_attributes])
+    update_workflow_name(permitted_params[:release_candidate_workflow_attributes])
+    update_submission_names(permitted_params[:internal_release_attributes])
+    update_submission_names(permitted_params[:beta_release_attributes])
+    update_production_release_rollout_stages(permitted_params[:production_release_attributes]) if @platform.android?
 
     permitted_params
+  end
+
+  def update_workflow_name(workflow_attributes)
+    if workflow_attributes&.dig(:identifier).present?
+      workflow_attributes[:name] = find_workflow_name(workflow_attributes[:identifier])
+    end
+  end
+
+  def update_submission_names(release_attributes)
+    if release_attributes.present?
+      release_attributes[:submissions_attributes]&.each do |_, submission|
+        submission[:submission_external_attributes][:name] = find_submission_name(submission)
+      end
+    end
+  end
+
+  def update_production_release_rollout_stages(production_release_attributes)
+    submission_attributes = production_release_attributes[:submissions_attributes]["0"]
+    if production_release_attributes.present? && submission_attributes[:rollout_enabled] == "true"
+      submission_attributes[:rollout_stages] = submission_attributes[:rollout_stages].safe_csv_parse
+    end
   end
 
   def find_workflow_name(identifier)
@@ -181,6 +178,9 @@ class Config::ReleasePlatformsController < SignedInApplicationController
     @form_scope = FORM_SCOPE
     @platform = @train.release_platforms.where(platform: @default_platform).sole
     @config = @platform&.platform_config
-    @platform_label = @platform&.display_attr(:platform)
+  end
+
+  def set_destroy!(param)
+    param[:_destroy] = "1"
   end
 end

@@ -35,7 +35,7 @@
       <% section.F.fields_for :production_release, section.F.object.production_release || Config::ReleaseStep.new(kind: "production") do |prod_fields| %>
         <% component.with_child do %>
           <%= prod_fields.hidden_field :id, value: prod_fields.object.id %>
-          <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || Config::Submission.new(submission_type: "PlayStoreSubmission", auto_promote: false) do |sub_fields| %>
+          <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || Config::Submission.new(submission_type: @platform.production_submission_type, auto_promote: false) do |sub_fields| %>
             <%= sub_fields.hidden_field :submission_type, value: sub_fields.object.submission_type %>
             <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
             <%= render V2::Form::SwitchComponent.new(form: sub_fields,
@@ -78,7 +78,7 @@
 
   <% f.with_section(heading: "Configure Beta Testing Tracks") do |section| %>
     <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                             field_name: :beta_release_enabled,
+                                             field_name: :beta_release_submissions_enabled,
                                              on_label: "Beta testing tracks are enabled",
                                              off_label: "Disabled") do |component| %>
 

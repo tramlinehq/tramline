@@ -23,9 +23,12 @@ class Config::ReleasePlatform < ApplicationRecord
   accepts_nested_attributes_for :beta_release, allow_destroy: true
   accepts_nested_attributes_for :production_release, allow_destroy: true
 
-  delegate :platform, to: :release_platform
-  attr_accessor :production_release_enabled, :internal_release_enabled, :beta_release_enabled
+  attribute :production_release_enabled, :boolean, default: false
+  attribute :internal_release_enabled, :boolean, default: false
+  attribute :beta_release_submissions_enabled, :boolean, default: false
+
   after_initialize :set_defaults
+
   validates :release_candidate_workflow, presence: { message: :not_present }
   validate :workflow_identifiers
   validate :release_steps_presence
@@ -33,6 +36,8 @@ class Config::ReleasePlatform < ApplicationRecord
   validate :internal_releases
   validate :beta_release_submissions
   validates :beta_release, presence: { message: :not_present }
+
+  delegate :platform, to: :release_platform
 
   def self.from_json(json)
     json = json.with_indifferent_access
@@ -46,9 +51,9 @@ class Config::ReleasePlatform < ApplicationRecord
   end
 
   def set_defaults
-    self.production_release_enabled = production_release.present?
-    self.internal_release_enabled = internal_release.present?
-    self.beta_release_enabled = beta_release.submissions.present?
+    self.production_release_enabled = production_valid?
+    self.internal_release_enabled = internal_valid?
+    self.beta_release_submissions_enabled = beta_valid?
   end
 
   def as_json(options = {})
@@ -91,23 +96,14 @@ class Config::ReleasePlatform < ApplicationRecord
     production_release.present?
   end
 
-  # Custom validation to check if release candidate workflow is present
-  def rc_workflow_presence
-    errors.add(:release_candidate_workflow, :not_present) if release_candidate_workflow.nil?
-  end
-
   # Ensure that at least one of internal release, beta release, or production release is configured
   def release_steps_presence
-    internal_valid = internal_release.present? && !internal_release.marked_for_destruction?
-    beta_valid = beta_release.present? && !beta_release.marked_for_destruction?
-    production_valid = production_release.present? && !production_release.marked_for_destruction?
-
-    if !internal_valid && !beta_valid && !production_valid
+    if !internal_valid? && !beta_valid? && !production_valid?
       errors.add(:base, :at_least_one_release_step)
     end
   end
 
-  # Validate that multiple workflows have unique identifiers
+  # Ensure that multiple workflows have unique identifiers
   def workflow_identifiers
     if internal_workflow&.identifier == release_candidate_workflow&.identifier
       errors.add(:base, :unique_workflows)
@@ -130,18 +126,33 @@ class Config::ReleasePlatform < ApplicationRecord
     end
   end
 
+  # Ensure internal releases have workflows and submissions configured together
   def internal_releases
     workflow = internal_workflow.present? && !internal_workflow.marked_for_destruction?
-    release = !internal_release&.marked_for_destruction? && internal_release&.submissions&.reject(&:marked_for_destruction?).present?
+    release = internal_valid? && internal_release.submissions&.reject(&:marked_for_destruction?).present?
 
     if workflow != release
       errors.add(:base, :internal_releases_are_incomplete)
     end
   end
 
+  # Ensure if beta testing tracks are enabled, submissions are also configured
   def beta_release_submissions
-    if beta_release_enabled && beta_release.submissions&.reject(&:marked_for_destruction?).blank?
+    if beta_release_submissions_enabled && beta_release.submissions&.reject(&:marked_for_destruction?).blank?
       errors.add(:base, :beta_releases_are_incomplete)
     end
+  end
+
+  def production_valid?
+    production_release.present? && !production_release.marked_for_destruction?
+  end
+
+  def internal_valid?
+    internal_release.present? && !internal_release.marked_for_destruction?
+  end
+
+  # beta releases are always present, so we check for submissions in particular for any beta-related validations
+  def beta_valid?
+    beta_release&.submissions.present? && !beta_release.marked_for_destruction?
   end
 end

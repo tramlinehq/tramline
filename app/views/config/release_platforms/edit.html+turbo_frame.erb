@@ -10,7 +10,7 @@
   <%= render "form",
              app: @app,
              train: @train,
-             platform_label: @platform_label,
+             platform_label: @platform.display_attr(:platform),
              platform_name: @platform.platform,
              platform: @platform,
              platform_config: @config,

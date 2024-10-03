@@ -36,7 +36,7 @@
         <% end %>
 
         <template data-nested-form-ext-target="template">
-          <li class="nested-form-wrapper" data-new-record="<%= rr.object.new_record? %>">
+          <li class="nested-form-wrapper" data-new-record="true">
             <% rr.fields_for :submissions, Config::Submission.new(submission_type: submission_types.first, auto_promote: false), child_index: "NEW_RECORD" do |submission_form| %>
               <%= render "submissions_form", form: submission_form, submission_types: submission_types %>
               <%= submission_form.hidden_field :number, data: { list_position_target: "position" } %>

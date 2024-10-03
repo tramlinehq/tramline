@@ -128,7 +128,9 @@ class ReleasePlatform < ApplicationRecord
     app.latest_external_apps[platform.to_sym]&.default_locale
   end
 
-  private
+  def production_submission_type
+    android? ? "PlayStoreSubmission" : "AppStoreSubmission"
+  end
 
   def set_default_config
     return if Rails.env.test?
@@ -136,6 +138,7 @@ class ReleasePlatform < ApplicationRecord
 
     ci_cd_channel = train.ci_cd_provider.workflows.first
     config_map = {
+      release_platform: self,
       workflows: {
         internal: nil,
         release_candidate: {
@@ -146,7 +149,10 @@ class ReleasePlatform < ApplicationRecord
         }
       },
       internal_release: nil,
-      beta_release: nil,
+      beta_release: {
+        auto_promote: false,
+        submissions: []
+      },
       production_release: android? ? android_production_release_config : ios_production_release_config
     }
 
