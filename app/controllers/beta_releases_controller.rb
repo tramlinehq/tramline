@@ -9,11 +9,7 @@ class BetaReleasesController < SignedInApplicationController
   end
 
   def create
-    # existing build scenario
-    build_id = default_params[:build_id]
-    commit_id = default_params[:commit_id]
-
-    if (result = Action.start_beta_release!(@release_platform_run, build_id, commit_id)).ok?
+    if (result = Action.start_beta_release!(@release_platform_run)).ok?
       redirect_back fallback_location: root_path, notice: t(".success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".failure", errors: result.error.message)}
@@ -27,6 +23,6 @@ class BetaReleasesController < SignedInApplicationController
   end
 
   def set_release_platform_run
-    @release_platform_run = ReleasePlatformRun.find(params[:run_id])
+    @release_platform_run = ReleasePlatformRun.find(params[:id])
   end
 end

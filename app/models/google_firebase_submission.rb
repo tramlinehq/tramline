@@ -76,13 +76,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     # return mock_upload_to_firebase if sandbox_mode?
 
-    if build_present_in_store?
-      release_info = @build.value!
-      prepare_and_update!(release_info)
-      StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, release_info.id)
-      return
-    end
-
     preprocess!
     StoreSubmissions::GoogleFirebase::UploadJob.perform_later(id)
   end
@@ -90,6 +83,13 @@ class GoogleFirebaseSubmission < StoreSubmission
   def upload_build!
     return unless may_prepare?
     return fail_with_error!(BuildNotFound) if build&.artifact.blank?
+
+    if build_present_in_store?
+      release_info = @build.value!
+      prepare_and_update!(release_info)
+      StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, release_info.id)
+      return
+    end
 
     result = nil
     filename = build.artifact.file.filename.to_s

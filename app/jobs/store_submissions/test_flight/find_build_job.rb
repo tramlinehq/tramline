@@ -8,7 +8,8 @@ class StoreSubmissions::TestFlight::FindBuildJob
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(Installations::Error) && ex.reason == :build_not_found
-      backoff_in(attempt: count, period: :minutes).to_i
+      Rails.logger.debug { "TestFlight build not found, retrying: #{ex.message}" }
+      backoff_in(attempt: count, period: :minutes, type: :static, factor: 1).to_i
     else
       elog(ex)
       :kill
@@ -24,9 +25,10 @@ class StoreSubmissions::TestFlight::FindBuildJob
 
   def perform(submission_id)
     submission = TestFlightSubmission.find(submission_id)
+    return unless submission.actionable?
     return unless submission.may_submit_for_review?
 
-    submission.find_build
+    submission.find_build.value!
     submission.start_release!
   end
 end

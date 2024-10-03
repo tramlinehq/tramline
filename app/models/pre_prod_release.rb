@@ -6,13 +6,13 @@
 #  config                     :jsonb            not null
 #  status                     :string           default("created"), not null
 #  tester_notes               :text
-#  type                       :string           not null
+#  type                       :string           not null, indexed => [release_platform_run_id, commit_id]
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  commit_id                  :uuid             not null, indexed
+#  commit_id                  :uuid             not null, indexed => [release_platform_run_id, type], indexed
 #  parent_internal_release_id :uuid             indexed
 #  previous_id                :uuid             indexed
-#  release_platform_run_id    :uuid             not null, indexed
+#  release_platform_run_id    :uuid             not null, indexed => [commit_id, type], indexed
 #
 class PreProdRelease < ApplicationRecord
   include AASM
@@ -35,6 +35,8 @@ class PreProdRelease < ApplicationRecord
 
   delegate :release, :train, :platform, to: :release_platform_run
   delegate :notify!, :notify_with_snippet!, to: :train
+
+  alias_method :workflow_run, :triggered_workflow_run
 
   STATES = {
     created: "created",
@@ -59,10 +61,6 @@ class PreProdRelease < ApplicationRecord
 
   def actionable?
     created? && release_platform_run.on_track?
-  end
-
-  def workflow_run
-    triggered_workflow_run || parent_internal_release&.workflow_run
   end
 
   def build
@@ -137,10 +135,6 @@ class PreProdRelease < ApplicationRecord
     return previous if previous.finished?
     previous.previous_successful
   end
-
-  def new_build_available? = false
-
-  def carried_over? = false
 
   def new_commit_available? = false
 

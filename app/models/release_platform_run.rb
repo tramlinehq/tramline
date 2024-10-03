@@ -43,7 +43,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :internal_releases, dependent: :destroy
   has_many :beta_releases, dependent: :destroy
   has_many :store_submissions, dependent: :destroy
-  has_many :production_releases, dependent: :destroy
+  has_many :production_releases, -> { sequential }, dependent: :destroy, inverse_of: :release_platform_run
   has_one :inflight_production_release, -> { inflight }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :active_production_release, -> { active }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :finished_production_release, -> { finished }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
@@ -115,6 +115,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def ready_for_beta_release?
+    return true if release.hotfix?
     return true if conf.only_beta_release?
     latest_internal_release(finished: true).present?
   end
@@ -136,7 +137,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def latest_production_release
-    production_releases.order(created_at: :desc).first
+    production_releases.first
   end
 
   def inflight_store_rollout
@@ -164,7 +165,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def older_production_releases
-    production_releases.stale.order(created_at: :desc)
+    production_releases.stale
   end
 
   def older_production_store_rollouts
@@ -253,6 +254,16 @@ class ReleasePlatformRun < ApplicationRecord
     return train.next_version if train.version_ahead?(self)
     return train.ongoing_release.next_version if train.ongoing_release&.version_ahead?(self) && !release.hotfix?
     train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
+  end
+
+  # TODO: [V2] this is a workaround to handle drifted cross-platform releases
+  # Figure out of a way to deprecate last_commit from rpr and rely on release instead
+  def update_last_commit!(commit)
+    return if commit.blank?
+    return if last_commit&.commit_hash == commit.commit_hash
+    return if last_commit.present? && last_commit.timestamp > commit.timestamp
+
+    update!(last_commit: commit)
   end
 
   def bump_version!
@@ -391,7 +402,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def tag_url
-    train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
+    train.vcs_provider&.tag_url(tag_name)
   end
 
   # recursively attempt to create a release tag until a unique one gets created

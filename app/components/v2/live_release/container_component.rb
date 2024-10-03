@@ -75,4 +75,8 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
   def sidebar_title_tag(config)
     config[:unavailable] ? :div : :a
   end
+
+  def hotfix_background
+    "bg-diagonal-stripes-soft-red" if hotfix?
+  end
 end

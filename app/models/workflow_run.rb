@@ -13,9 +13,9 @@
 #  workflow_config         :jsonb
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
-#  commit_id               :uuid             not null, indexed
+#  commit_id               :uuid             not null, indexed, indexed => [pre_prod_release_id]
 #  external_id             :string
-#  pre_prod_release_id     :uuid             not null, indexed
+#  pre_prod_release_id     :uuid             not null, indexed, indexed => [commit_id]
 #  release_platform_run_id :uuid             not null, indexed
 #
 class WorkflowRun < ApplicationRecord
@@ -112,14 +112,14 @@ class WorkflowRun < ApplicationRecord
     end
   end
 
-  def self.create_and_trigger!(workflow, triggering_release, commit, release_platform_run, auto_promote: false)
+  def self.create_and_trigger!(workflow, triggering_release, commit, release_platform_run)
     workflow_run = create!(workflow_config: workflow.value,
       triggering_release:,
       release_platform_run:,
       commit:,
       kind: workflow.kind)
     workflow_run.create_build!(version_name: workflow_run.release_version, release_platform_run:, commit:)
-    workflow_run.initiate! if auto_promote
+    workflow_run.initiate!
   end
 
   def active?

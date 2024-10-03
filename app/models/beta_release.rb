@@ -6,17 +6,15 @@
 #  config                     :jsonb            not null
 #  status                     :string           default("created"), not null
 #  tester_notes               :text
-#  type                       :string           not null
+#  type                       :string           not null, indexed => [release_platform_run_id, commit_id]
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  commit_id                  :uuid             not null, indexed
+#  commit_id                  :uuid             not null, indexed => [release_platform_run_id, type], indexed
 #  parent_internal_release_id :uuid             indexed
 #  previous_id                :uuid             indexed
-#  release_platform_run_id    :uuid             not null, indexed
+#  release_platform_run_id    :uuid             not null, indexed => [commit_id, type], indexed
 #
 class BetaRelease < PreProdRelease
-  belongs_to :parent_internal_release, class_name: "InternalRelease", optional: true
-
   STAMPABLE_REASONS = %w[created finished failed]
 
   def tester_notes? = false
@@ -42,19 +40,8 @@ class BetaRelease < PreProdRelease
     end
   end
 
-  def new_build_available?
-    return unless release_platform_run.on_track?
-    return unless carried_over?
-    release_platform_run.latest_internal_release(finished: true) != parent_internal_release
-  end
-
-  def carried_over?
-    parent_internal_release.present?
-  end
-
   def new_commit_available?
     return unless release_platform_run.on_track?
-    return if carried_over?
     release_platform_run.last_commit != commit
   end
 end

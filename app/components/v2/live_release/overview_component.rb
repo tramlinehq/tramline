@@ -48,4 +48,8 @@ class V2::LiveRelease::OverviewComponent < V2::BaseComponent
       show_y_axis: false
     }
   end
+
+  def hotfix_banner?
+    hotfix? && release.all_commits.exists? && release.pre_prod_releases.none?
+  end
 end
