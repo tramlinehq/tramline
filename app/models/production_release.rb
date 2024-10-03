@@ -25,6 +25,8 @@ class ProductionRelease < ApplicationRecord
   has_many :release_health_events, dependent: :destroy, inverse_of: :production_release
   has_many :release_health_metrics, dependent: :destroy, inverse_of: :production_release
 
+  scope :sequential, -> { order(created_at: :desc) }
+
   delegate :app, :train, :release, :platform, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission
@@ -65,8 +67,8 @@ class ProductionRelease < ApplicationRecord
       update!(status: STATES[:finished])
       event_stamp!(reason: :finished, kind: :notice, data: stamp_data)
       notify!("Production release was finished!", :production_release_finished, notification_params)
-      Signal.production_release_is_complete!(release_platform_run)
     end
+    Signal.production_release_is_complete!(release_platform_run)
   end
 
   def actionable?
