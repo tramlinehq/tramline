@@ -25,6 +25,8 @@ class ProductionRelease < ApplicationRecord
   has_many :release_health_events, dependent: :destroy, inverse_of: :production_release
   has_many :release_health_metrics, dependent: :destroy, inverse_of: :production_release
 
+  scope :sequential, -> { order(created_at: :desc) }
+
   delegate :app, :train, :release, :platform, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission

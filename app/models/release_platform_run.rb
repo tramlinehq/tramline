@@ -43,7 +43,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :internal_releases, dependent: :destroy
   has_many :beta_releases, dependent: :destroy
   has_many :store_submissions, dependent: :destroy
-  has_many :production_releases, dependent: :destroy
+  has_many :production_releases, -> { sequential }, dependent: :destroy, inverse_of: :release_platform_run
   has_one :inflight_production_release, -> { inflight }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :active_production_release, -> { active }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :finished_production_release, -> { finished }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
@@ -137,7 +137,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def latest_production_release
-    production_releases.order(created_at: :desc).first
+    production_releases.first
   end
 
   def inflight_store_rollout
@@ -165,7 +165,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def older_production_releases
-    production_releases.stale.order(created_at: :desc)
+    production_releases.stale
   end
 
   def older_production_store_rollouts
