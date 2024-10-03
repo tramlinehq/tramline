@@ -43,7 +43,7 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
     :stop_release_warning, to: :release
 
   def overall_status
-    RELEASE_PHASE.fetch(current_overall_status.to_sym)
+    RELEASE_PHASE.fetch(live_release_overall_status.to_sym)
   end
 
   def sorted_sections
