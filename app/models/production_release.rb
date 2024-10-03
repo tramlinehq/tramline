@@ -72,8 +72,8 @@ class ProductionRelease < ApplicationRecord
       update!(status: STATES[:finished])
       event_stamp!(reason: :finished, kind: :notice, data: stamp_data)
       notify!("Production release was finished!", :production_release_finished, notification_params)
-      Signal.production_release_is_complete!(release_platform_run)
     end
+    Signal.production_release_is_complete!(release_platform_run)
   end
 
   def actionable?
