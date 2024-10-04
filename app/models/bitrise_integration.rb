@@ -107,7 +107,7 @@ class BitriseIntegration < ApplicationRecord
     installation.list_workflows(project, WORKFLOWS_TRANSFORMATIONS)
   end
 
-  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
     installation.run_workflow!(project, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
   end
 
