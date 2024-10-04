@@ -76,6 +76,7 @@ class StoreRollout < ApplicationRecord
   end
 
   def last_rollout_percentage
+    return Release::FULL_ROLLOUT_VALUE if finished? && !staged_rollout?
     return Release::FULL_ROLLOUT_VALUE if fully_released?
     return 0 if created? || current_stage.nil?
     return config.last if reached_last_stage?

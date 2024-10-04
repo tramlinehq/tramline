@@ -1,5 +1,8 @@
+<%# locals: (app:, train:, platform:, platform_config:, platform_name:, platform_label:, ci_actions:, submission_types:) %>
+
 <%= render V2::FormComponent.new(model: [app, train, platform, platform_config],
-                                 url: app_train_platform_submission_config_update_path(app, train, platform)) do |f| %>
+                                 scope: "#{@form_scope}_#{platform_name}",
+                                 url: app_train_platform_submission_config_path(app, train, platform)) do |f| %>
   <% f.with_section(heading: "Configure RC (Release Candidate) Workflow") do |section| %>
     <% section.with_description do %>
       You must have at least an RC workflow defined. The CI workflows should generate a valid build artifact (aab/apk/ipa).
@@ -32,7 +35,8 @@
       <% section.F.fields_for :production_release, section.F.object.production_release || Config::ReleaseStep.new(kind: "production") do |prod_fields| %>
         <% component.with_child do %>
           <%= prod_fields.hidden_field :id, value: prod_fields.object.id %>
-          <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || Config::Submission.new(submission_type: "PlayStoreSubmission", auto_promote: false) do |sub_fields| %>
+          <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || Config::Submission.new(submission_type: @platform.production_submission_type, auto_promote: false) do |sub_fields| %>
+            <%= sub_fields.hidden_field :submission_type, value: sub_fields.object.submission_type %>
             <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
             <%= render V2::Form::SwitchComponent.new(form: sub_fields,
                                                      field_name: :rollout_enabled,
@@ -43,24 +47,27 @@
                 <% rollout.with_info_icon do %>
                   Here you set a standard template for the common progression of your rollout percentages. When you start a production release, you will always move through these.
                 <% end %>
+              <% else %>
+                <% rollout.with_info_icon do %>
+                  Phased release on the App Store automatically progresses by 1%, 2%, 5%, 10%, 20%, 50% to 100% over 7 days.
+                <% end %>
               <% end %>
 
-              <% rollout.with_child do %>
-                <div data-controller="domain--staged-rollout-help">
-                  <% if platform.ios? %>
-                    <span class="text-xs text-slate-400">Phased release in App Store goes from 1%, 2%, 5%, 10%, 20%, 50% to 100% over 7 days</span>
-                  <% else %>
+              <% if platform.android? %>
+                <% rollout.with_child do %>
+                  <div data-controller="domain--staged-rollout-help">
                     <%= sub_fields.labeled_text_field :rollout_stages,
                                                       "Rollout sequence",
                                                       {value: sub_fields.object.rollout_stages.join(", "),
                                                        placeholder: "1, 2, 5, 10, 20, 50, 100",
                                                        data: {domain__staged_rollout_help_target: "input",
                                                               action: "domain--staged-rollout-help#validateString"}} %>
-                  <% end %>
-                  <div class="text-xs text-secondary mt-2">
-                    <span data-domain--staged-rollout-help-target="helpErrorText helpSuccessText"></span>
+
+                    <div class="text-xs text-secondary mt-2">
+                      <span data-domain--staged-rollout-help-target="helpErrorText helpSuccessText"></span>
+                    </div>
                   </div>
-                </div>
+                <% end %>
               <% end %>
             <% end %>
           <% end %>
@@ -71,7 +78,7 @@
 
   <% f.with_section(heading: "Configure Beta Testing Tracks") do |section| %>
     <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                             field_name: :beta_release_enabled,
+                                             field_name: :beta_release_submissions_enabled,
                                              on_label: "Beta testing tracks are enabled",
                                              off_label: "Disabled") do |component| %>
 
