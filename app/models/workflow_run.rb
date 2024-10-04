@@ -196,8 +196,10 @@ class WorkflowRun < ApplicationRecord
   private
 
   def trigger_external_run!
+    deploy_action_enabled = organization.deploy_action_enabled? || app.deploy_action_enabled? || train.deploy_action_enabled?
+
     ci_cd_provider
-      .trigger_workflow_run!(conf.identifier, release_branch, workflow_inputs, commit_hash)
+      .trigger_workflow_run!(conf.id, release_branch, workflow_inputs, commit_hash, deploy_action_enabled)
       .then { |wr| update_external_metadata!(wr) }
   end
 
