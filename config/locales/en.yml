@@ -341,6 +341,7 @@ en:
           invalid_api_package: "the build artifact is invalid for the app"
           firebase_processing_error: "the build was uploaded to Firebase, but Firebase threw an error while processing it. This could be due to degradation or an invalid package"
           not_found: "the app/project was not found in Firebase App Distribution"
+          wrong_package_name: "the build has a different package name than the one configured in Firebase App Distribution. Please ensure you have selected the correct app in the Integrations page when configuring your Firebase integration."
     attributes:
       integration:
         categories:
