@@ -11,7 +11,9 @@ class V2::ReleaseListComponent < V2::BaseComponent
   attr_reader :train, :ongoing_release, :hotfix_release, :upcoming_release
   delegate :app, :hotfix_from, to: :train
 
-  def empty?
+  # we don't check for train.releases.none?
+  # because the constituent releases that are loaded on the page are already memoized, so we avoid a query
+  def no_releases?
     previous_releases.empty? && ongoing_release.nil? && upcoming_release.nil? && hotfix_release.nil? && last_completed_release.nil?
   end
 
@@ -85,7 +87,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
     app.cross_platform? || app.ios?
   end
 
-  def empty_state
+  def no_release_empty_state
     if train.automatic?
       if train.activatable?
         {

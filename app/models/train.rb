@@ -310,11 +310,13 @@ class Train < ApplicationRecord
   end
 
   def in_creation?
+    return false if product_v2?
     release_platforms.any?(&:in_creation?)
   end
 
   def startable?
     return false unless app.ready?
+    return true if product_v2?
     release_platforms.all?(&:startable?)
   end
 

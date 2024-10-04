@@ -266,11 +266,11 @@
         </div>
       <% end %>
     <% end %>
-  <% elsif empty? %>
+  <% elsif no_releases? %>
     <% container.with_empty_state do %>
       <%= render V2::EmptyStateComponent.new(
-        title: empty_state[:title],
-        text: empty_state[:text],
+        title: no_release_empty_state[:title],
+        text: no_release_empty_state[:text],
         banner_image: "art/no_releases.png") %>
     <% end %>
   <% end %>

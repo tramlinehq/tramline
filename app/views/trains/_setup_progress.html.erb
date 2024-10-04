@@ -1,5 +1,5 @@
 <% if app.guided_train_setup? %>
-  <%= render V2::SectionComponent.new(title: "Setup your first release train 🚃", style: :titled) do %>
+  <%= render V2::SectionComponent.new(title: "Setup your first release 🚃", style: :titled) do %>
     <div class="mb-8">
       <div class="pb-4">
         <% if train_in_creation&.in_creation? %>
@@ -14,8 +14,6 @@
             <%= link_to_external "macige", "https://macige.tramline.app", class: "underline" %> — a workflow generator
             for mobile apps — can also help you get started.</p>
         <% else %>
-          <p class="pb-2">
-            <strong>Release trains</strong> represent the release cycle you follow.</p>
           <p class="pb-2">
             In Tramline, you can tune and automate your release to your liking. For example, automatically creating
             branches and tags, creating releases on your VCS and much more.</p>
@@ -35,48 +33,16 @@
         </div>
 
         <div class="mt-3 sm:pr-10">
-          <h3 class="text-lg font-semibold text-main-900 mb-2">Create a Release Train</h3>
+          <h3 class="text-lg font-semibold text-main-900 mb-2">Setup your release process</h3>
           <% if is_train_completed %>
             <p class="text-base font-normal text-secondary">This is complete!</p>
           <% else %>
-            <% button = V2::ButtonComponent.new(scheme: :default, type: :link, size: :xs, options: new_app_train_path(@app), label: "Create", arrow: :none) %>
+            <% button = V2::ButtonComponent.new(scheme: :default, type: :link, size: :xs, options: new_app_train_path(@app), label: "Setup", arrow: :none) %>
             <% button.with_icon("plus.svg") %>
             <%= render button %>
           <% end %>
         </div>
       </li>
-
-      <% if setup_instructions[:ios_review_step].present? %>
-        <% is_ios_review_step_visible = setup_instructions[:ios_review_step][:visible] %>
-        <% is_ios_review_step_completed = setup_instructions[:ios_review_step][:completed] %>
-        <li class="relative w-full mb-6 sm:mb-0 <%= "opacity-30" unless is_ios_review_step_visible %>">
-          <div class="flex items-center">
-            <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_ios_review_step_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
-              <% if is_ios_review_step_completed %>
-                <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "text-white fill-current") %>
-              <% end %>
-            </div>
-          </div>
-          <div class="mt-3 sm:pr-10">
-            <h3 class="text-lg font-semibold text-main-900 mb-2">Create iOS Review Steps</h3>
-            <% if is_ios_review_step_completed %>
-              <p class="text-base font-normal text-secondary">This is complete!</p>
-            <% else %>
-              <p class="text-base font-normal text-secondary mb-2">Configure your iOS review or debug workflows</p>
-              <% if train_in_creation %>
-                <% button = V2::ButtonComponent.new(scheme: :default,
-                                                    type: :link,
-                                                    size: :xs,
-                                                    options: new_app_train_platform_step_path(app, train_in_creation, train_in_creation.ios_train, kind: Step.kinds[:review]),
-                                                    label: "Add a review step",
-                                                    arrow: :none) %>
-                <% button.with_icon("plus.svg") %>
-                <%= render button %>
-              <% end %>
-            <% end %>
-          </div>
-        </li>
-      <% end %>
 
       <% if setup_instructions[:ios_release_step].present? %>
         <% is_ios_release_step_visible = setup_instructions[:ios_release_step][:visible] %>
@@ -91,49 +57,17 @@
           </div>
 
           <div class="mt-3 sm:pr-10">
-            <h3 class="text-lg font-semibold text-main-900 mb-2">Setup iOS Release Step</h3>
+            <h3 class="text-lg font-semibold text-main-900 mb-2">Setup iOS</h3>
             <% if is_ios_release_step_completed %>
               <p class="text-base font-normal text-secondary">This is complete!</p>
             <% else %>
-              <p class="text-base font-normal text-secondary mb-2">Configure your iOS release candidate workflow</p>
+              <p class="text-base font-normal text-secondary mb-2">Configure your iOS release flow</p>
               <% if train_in_creation %>
                 <% button = V2::ButtonComponent.new(scheme: :default,
                                                     type: :link,
                                                     size: :xs,
                                                     options: new_app_train_platform_step_path(app, train_in_creation, train_in_creation.ios_train, kind: Step.kinds[:release]),
                                                     label: "Add a release step",
-                                                    arrow: :none) %>
-                <% button.with_icon("plus.svg") %>
-                <%= render button %>
-              <% end %>
-            <% end %>
-          </div>
-        </li>
-      <% end %>
-
-      <% if setup_instructions[:android_review_step].present? %>
-        <% is_android_review_step_visible = setup_instructions[:android_review_step][:visible] %>
-        <% is_android_review_step_completed = setup_instructions[:android_review_step][:completed] %>
-        <li class="relative w-full mb-6 sm:mb-0 <%= "opacity-30" unless is_android_review_step_visible %>">
-          <div class="flex items-center">
-            <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_android_review_step_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
-              <% if is_android_review_step_completed %>
-                <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "text-white fill-current") %>
-              <% end %>
-            </div>
-          </div>
-          <div class="mt-3 sm:pr-10">
-            <h3 class="text-lg font-semibold text-main-900 mb-2">Create Android Review Steps</h3>
-            <% if is_android_review_step_completed %>
-              <p class="text-base font-normal text-secondary">This is complete!</p>
-            <% else %>
-              <p class="text-base font-normal text-secondary mb-2">Configure your Android review or debug workflows</p>
-              <% if train_in_creation %>
-                <% button = V2::ButtonComponent.new(scheme: :default,
-                                                    type: :link,
-                                                    size: :xs,
-                                                    options: new_app_train_platform_step_path(app, train_in_creation, train_in_creation.android_train, kind: Step.kinds[:review]),
-                                                    label: "Add a review step",
                                                     arrow: :none) %>
                 <% button.with_icon("plus.svg") %>
                 <%= render button %>
@@ -156,11 +90,11 @@
           </div>
 
           <div class="mt-3 sm:pr-10">
-            <h3 class="text-lg font-semibold text-main-900 mb-2">Setup Android Release Step</h3>
+            <h3 class="text-lg font-semibold text-main-900 mb-2">Setup Android</h3>
             <% if is_android_release_step_completed %>
               <p class="text-base font-normal text-secondary">This is complete!</p>
             <% else %>
-              <p class="text-base font-normal text-secondary mb-2">Configure your Android release candidate workflow</p>
+              <p class="text-base font-normal text-secondary mb-2">Configure your Android release flow</p>
               <% if train_in_creation %>
                 <% button = V2::ButtonComponent.new(scheme: :default,
                                                     type: :link,
