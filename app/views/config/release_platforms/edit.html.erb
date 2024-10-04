@@ -13,9 +13,9 @@
     <%= render "form",
                app: @app,
                train: @train,
-               platform: @platform,
-               platform_name: @platform.platform,
-               platform_label: @platform.display_attr(:platform),
+               platform: @release_platform,
+               platform_name: @release_platform.platform,
+               platform_label: @release_platform.display_attr(:platform),
                platform_config: @config,
                ci_actions: @ci_actions,
                submission_types: @submission_types %>

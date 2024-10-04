@@ -1,8 +1,7 @@
 <%# locals: (app:, train:, platform:, platform_config:, platform_name:, platform_label:, ci_actions:, submission_types:) %>
 
 <%= render V2::FormComponent.new(model: [app, train, platform, platform_config],
-                                 scope: "#{@form_scope}_#{platform_name}",
-                                 url: app_train_platform_submission_config_path(app, train, platform)) do |f| %>
+                                 url: app_train_platform_submission_config_path(app, train, platform_name)) do |f| %>
   <% f.with_section(heading: "Configure RC (Release Candidate) Workflow") do |section| %>
     <% section.with_description do %>
       You must have at least an RC workflow defined. The CI workflows should generate a valid build artifact (aab/apk/ipa).

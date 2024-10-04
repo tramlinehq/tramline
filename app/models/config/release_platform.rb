@@ -37,7 +37,18 @@ class Config::ReleasePlatform < ApplicationRecord
   validate :beta_release_submissions
   validates :beta_release, presence: {message: :not_present}
 
-  delegate :platform, to: :release_platform
+  delegate :platform, :app, to: :release_platform
+
+  PRE_PROD_SUBMISSIONS_TO_PROVIDERS = {
+    android: {
+      GoogleFirebaseSubmission => :firebase_build_channel_provider,
+      PlayStoreSubmission => :android_store_provider
+    },
+    ios: {
+      GoogleFirebaseSubmission => :firebase_build_channel_provider,
+      TestFlightSubmission => :ios_store_provider
+    }
+  }.freeze
 
   def self.from_json(json)
     json = json.with_indifferent_access
@@ -94,6 +105,18 @@ class Config::ReleasePlatform < ApplicationRecord
 
   def production_release?
     production_release.present?
+  end
+
+  def allowed_pre_prod_submissions
+    PRE_PROD_SUBMISSIONS_TO_PROVIDERS[platform.to_sym].each_with_object([]) do |(type, provider), submissions|
+      provider = app.public_send(provider)
+      next if provider.blank?
+
+      submissions << {
+        type: type,
+        channels: provider.build_channels(with_production: false)
+      }
+    end
   end
 
   # Ensure that at least one of internal release, beta release, or production release is configured

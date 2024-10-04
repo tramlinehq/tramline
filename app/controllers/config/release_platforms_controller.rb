@@ -1,30 +1,25 @@
 class Config::ReleasePlatformsController < SignedInApplicationController
   include Tabbable
   using RefinedString
-  FORM_SCOPE = "config_release_platform".freeze
 
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_train, only: %i[edit update]
   before_action :set_app_from_train, only: %i[edit update]
-  before_action :set_release_platform, only: %i[update]
+  before_action :set_release_platform, only: %i[edit update]
+  before_action :set_config, only: %i[edit update]
   before_action :set_train_config_tabs, only: %i[edit update]
   before_action :set_ci_actions, only: %i[edit update]
   before_action :set_submission_types, only: %i[edit update]
 
   def edit
     @edit_not_allowed = @train.active_runs.exists?
-    @default_platform = params[:platform_id] || @release_platform&.platform || @train.release_platforms.sole.platform
-    set_form_defaults
   end
 
   def update
-    @default_platform = @release_platform.platform
-    set_form_defaults
-
     if @config.update(update_config_params)
-      redirect_to edit_app_train_platform_submission_config_path(@app, @train, @default_platform), notice: t(".success")
+      redirect_to edit_app_train_platform_submission_config_path(@app, @train, @release_platform.platform), notice: t(".success")
     else
-      redirect_to edit_app_train_platform_submission_config_path(@app, @train, @default_platform), flash: {error: @config.errors.full_messages.to_sentence}
+      redirect_to edit_app_train_platform_submission_config_path(@app, @train, @release_platform.platform), flash: {error: @config.errors.full_messages.to_sentence}
     end
   end
 
@@ -39,7 +34,11 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   end
 
   def set_release_platform
-    @release_platform = @train.release_platforms.friendly.find(params[:platform_id])
+    @release_platform = @train.release_platforms.find_by(platform: params[:platform_id])
+  end
+
+  def set_config
+    @config = @release_platform.platform_config
   end
 
   def set_ci_actions
@@ -47,30 +46,11 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   end
 
   def set_submission_types
-    @submission_types = []
-
-    if @app.android_store_provider.present?
-      @submission_types << {
-        type: PlayStoreSubmission, channels: @app.android_store_provider.build_channels(with_production: false)
-      }
-    end
-
-    if @app.firebase_build_channel_provider.present?
-      @submission_types << {
-        type: GoogleFirebaseSubmission, channels: @app.firebase_build_channel_provider.build_channels
-      }
-    end
-
-    if @app.ios_store_provider.present?
-      @submission_types << {
-        type: TestFlightSubmission, channels: @app.ios_store_provider.build_channels(with_production: false)
-      }
-    end
+    @submission_types = @config.allowed_pre_prod_submissions
   end
 
   def config_params
-    platform = params["#{@form_scope}_android"] ? "#{@form_scope}_android" : "#{@form_scope}_ios"
-    params.require(platform).permit(
+    params.require(:config_release_platform).permit(
       :internal_release_enabled,
       :beta_release_submissions_enabled,
       :production_release_enabled,
@@ -134,7 +114,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
     update_workflow_name(permitted_params[:release_candidate_workflow_attributes])
     update_submission_names(permitted_params[:internal_release_attributes])
     update_submission_names(permitted_params[:beta_release_attributes])
-    update_production_release_rollout_stages(permitted_params[:production_release_attributes]) if @platform.android?
+    update_production_release_rollout_stages(permitted_params[:production_release_attributes]) if @release_platform.android?
 
     permitted_params
   end
@@ -172,12 +152,6 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       &.then { |sub| sub.dig(:channels) }
       &.then { |channels| channels.find { |channel| channel[:id].to_s == identifier } }
       &.then { |channel| channel[:name] }
-  end
-
-  def set_form_defaults
-    @form_scope = FORM_SCOPE
-    @platform = @train.release_platforms.where(platform: @default_platform).sole
-    @config = @platform&.platform_config
   end
 
   def set_destroy!(param)
