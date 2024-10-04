@@ -166,8 +166,9 @@ class GoogleFirebaseSubmission < StoreSubmission
     parent_release.rollout_complete!(self)
   end
 
-  def on_fail!
-    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+  def on_fail!(args = nil)
+    failure_error = args&.fetch(:error, nil)
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
     notify!("Submission failed", :submission_failed, notification_params)
   end
 
@@ -195,7 +196,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     DEEP_LINK.expand(platform:, external_release_id: external_id).to_s
   end
 
-  def stamp_data
+  def stamp_data(failure_message: nil)
     super.merge(channels: submission_channel.name)
   end
 end

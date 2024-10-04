@@ -55,8 +55,7 @@ class PlayStoreSubmission < StoreSubmission
   MAX_NOTES_LENGTH = 500
 
   enum :failure_reason, {
-    unknown_failure: "unknown_failure",
-    build_not_found: "build_not_found"
+    unknown_failure: "unknown_failure"
   }.merge(Installations::Google::PlayDeveloper::Error.reasons.zip_map_self)
   enum :status, STATES
 
@@ -266,8 +265,9 @@ class PlayStoreSubmission < StoreSubmission
     play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_rollout?
   end
 
-  def on_fail!
-    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+  def on_fail!(args = nil)
+    failure_error = args&.fetch(:error, nil)
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
     notify!("Submission failed", :submission_failed, notification_params)
   end
 
@@ -276,7 +276,7 @@ class PlayStoreSubmission < StoreSubmission
     provider.find_build(build_number).present?
   end
 
-  def stamp_data
+  def stamp_data(failure_message: nil)
     super.merge(track: submission_channel.name.humanize)
   end
 end

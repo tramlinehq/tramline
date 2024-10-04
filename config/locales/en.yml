@@ -207,6 +207,7 @@ en:
           firebase_processing_error: "the build was uploaded to Firebase, but Firebase threw an error while processing it. This could be due to degradation or an invalid package"
           foreground_service_permission_required: "the app has not declared the required Foreground Service permissions in the Play Console"
           fully_released_can_not_be_staged: "the app was already fully released, marking the rollout completed"
+          advertising_app_permission: "the app has not declared the required Advertising ID permissions in the Play Console"
       deployment:
         integration_type:
           app_store: "App Store (production)"
@@ -301,6 +302,8 @@ en:
           foreground_service_permission_required: "the app has not declared the required Foreground Service permissions in the Play Console"
           account_issues: "the Play Console account has issues, cannot publish changes to the app from Tramline"
           fully_released_can_not_be_staged: "the app was already fully released, marking the rollout completed"
+          advertising_app_permission: "the app has not declared the required Advertising ID permissions in the Play Console"
+          build_not_found: "the build not being available in Play Console"
       app_store_submission:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"
