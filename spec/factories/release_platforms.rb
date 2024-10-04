@@ -28,6 +28,7 @@ FactoryBot.define do
           ]
         }
       }
+
       release_platform.platform_config = Config::ReleasePlatform.from_json(config)
     end
   end

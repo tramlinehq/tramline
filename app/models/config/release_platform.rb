@@ -29,13 +29,13 @@ class Config::ReleasePlatform < ApplicationRecord
 
   after_initialize :set_defaults
 
+  validates :beta_release, presence: {message: :not_present}
   validates :release_candidate_workflow, presence: {message: :not_present}
   validate :workflow_identifiers
   validate :release_steps_presence
   validate :submission_uniqueness
   validate :internal_releases
   validate :beta_release_submissions
-  validates :beta_release, presence: {message: :not_present}
 
   delegate :platform, :app, to: :release_platform
 
