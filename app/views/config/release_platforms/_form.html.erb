@@ -27,52 +27,59 @@
       Configuring production releases will enable the ability to send builds to the Production track on the stores (App Store, Play Store, etc.).
     <% end %>
 
-    <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                             field_name: :production_release_enabled,
-                                             on_label: "Production release is enabled",
-                                             off_label: "Disabled") do |component| %>
-      <% section.F.fields_for :production_release, section.F.object.production_release || Config::ReleaseStep.new(kind: "production") do |prod_fields| %>
-        <% component.with_child do %>
-          <%= prod_fields.hidden_field :id, value: prod_fields.object.id %>
-          <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || Config::Submission.new(submission_type: @platform.production_submission_type, auto_promote: false) do |sub_fields| %>
-            <%= sub_fields.hidden_field :submission_type, value: sub_fields.object.submission_type %>
-            <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
-            <%= render V2::Form::SwitchComponent.new(form: sub_fields,
-                                                     field_name: :rollout_enabled,
-                                                     on_label: t("store_rollouts.switcher.#{platform_name}.enable"),
-                                                     off_label: t("store_rollouts.switcher.#{platform_name}.disable")) do |rollout| %>
 
-              <% if platform.android? %>
-                <% rollout.with_info_icon do %>
-                  Here you set a standard template for the common progression of your rollout percentages. When you start a production release, you will always move through these.
+    <% if platform.production_ready? %>
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :production_release_enabled,
+                                               on_label: "Production release is enabled",
+                                               off_label: "Disabled") do |component| %>
+        <% section.F.fields_for :production_release, section.F.object.production_release || Config::ReleaseStep.new(kind: "production") do |prod_fields| %>
+          <% component.with_child do %>
+            <%= prod_fields.hidden_field :id, value: prod_fields.object.id %>
+            <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || Config::Submission.new(submission_type: platform.production_submission_type, auto_promote: false) do |sub_fields| %>
+              <%= sub_fields.hidden_field :submission_type, value: sub_fields.object.submission_type %>
+              <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
+              <%= render V2::Form::SwitchComponent.new(form: sub_fields,
+                                                       field_name: :rollout_enabled,
+                                                       on_label: t("store_rollouts.switcher.#{platform_name}.enable"),
+                                                       off_label: t("store_rollouts.switcher.#{platform_name}.disable")) do |rollout| %>
+
+                <% if platform.android? %>
+                  <% rollout.with_info_icon do %>
+                    Here you set a standard template for the common progression of your rollout percentages. When you start a production release, you will always move through these.
+                  <% end %>
+                <% else %>
+                  <% rollout.with_info_icon do %>
+                    Phased release on the App Store automatically progresses by 1%, 2%, 5%, 10%, 20%, 50% to 100% over 7 days.
+                  <% end %>
                 <% end %>
-              <% else %>
-                <% rollout.with_info_icon do %>
-                  Phased release on the App Store automatically progresses by 1%, 2%, 5%, 10%, 20%, 50% to 100% over 7 days.
-                <% end %>
-              <% end %>
 
-              <% if platform.android? %>
-                <% rollout.with_child do %>
-                  <div data-controller="domain--staged-rollout-help">
-                    <%= sub_fields.labeled_text_field :rollout_stages,
-                                                      "Rollout sequence",
-                                                      {value: sub_fields.object.rollout_stages.join(", "),
-                                                       placeholder: "1, 2, 5, 10, 20, 50, 100",
-                                                       data: {domain__staged_rollout_help_target: "input",
-                                                              action: "domain--staged-rollout-help#validateString"}} %>
+                <% if platform.android? %>
+                  <% rollout.with_child do %>
+                    <div data-controller="domain--staged-rollout-help">
+                      <%= sub_fields.labeled_text_field :rollout_stages,
+                                                        "Rollout sequence",
+                                                        {value: sub_fields.object.rollout_stages.join(", "),
+                                                         placeholder: "1, 2, 5, 10, 20, 50, 100",
+                                                         data: {domain__staged_rollout_help_target: "input",
+                                                                action: "domain--staged-rollout-help#validateString"}} %>
 
-                    <div class="text-xs text-secondary mt-2">
-                      <span data-domain--staged-rollout-help-target="helpSuccessText"></span>
-                      <span data-domain--staged-rollout-help-target="helpErrorText" class="text-red-600"></span>
+                      <div class="text-xs text-secondary mt-2">
+                        <span data-domain--staged-rollout-help-target="helpSuccessText"></span>
+                        <span data-domain--staged-rollout-help-target="helpErrorText" class="text-red-600"></span>
+                      </div>
                     </div>
-                  </div>
+                  <% end %>
                 <% end %>
               <% end %>
             <% end %>
           <% end %>
         <% end %>
       <% end %>
+    <% else %>
+      <div class="text-xs text-secondary">
+        Production releases are not available for this platform. You need to configure a store integration first.
+      </div>
     <% end %>
   <% end %>
 

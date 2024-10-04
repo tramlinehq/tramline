@@ -39,17 +39,6 @@ class Config::ReleasePlatform < ApplicationRecord
 
   delegate :platform, :app, to: :release_platform
 
-  PRE_PROD_SUBMISSIONS_TO_PROVIDERS = {
-    android: {
-      GoogleFirebaseSubmission => :firebase_build_channel_provider,
-      PlayStoreSubmission => :android_store_provider
-    },
-    ios: {
-      GoogleFirebaseSubmission => :firebase_build_channel_provider,
-      TestFlightSubmission => :ios_store_provider
-    }
-  }.freeze
-
   def self.from_json(json)
     json = json.with_indifferent_access
     release_config = new(json.except("workflows", "internal_release", "beta_release", "production_release", "id"))
@@ -108,8 +97,8 @@ class Config::ReleasePlatform < ApplicationRecord
   end
 
   def allowed_pre_prod_submissions
-    PRE_PROD_SUBMISSIONS_TO_PROVIDERS[platform.to_sym].each_with_object([]) do |(type, provider), submissions|
-      provider = app.public_send(provider)
+    Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym].invert.each_with_object([]) do |(type, integration), submissions|
+      provider = app.integrations.build_channel.find_by(providable_type: integration.to_s)&.providable
       next if provider.blank?
 
       submissions << {

@@ -1,7 +1,7 @@
 require "rails_helper"
 
 describe Config::ReleasePlatform do
-  let(:base_config)  {
+  let(:base_config) {
     {
       workflows: {
         internal: nil,

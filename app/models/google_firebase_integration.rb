@@ -116,6 +116,10 @@ class GoogleFirebaseIntegration < ApplicationRecord
     (sliced || []).push(EMPTY_CHANNEL)
   end
 
+  def pick_default_beta_channel
+    build_channels.first
+  end
+
   def upload(file, filename, platform:, variant: nil)
     raise ArgumentError, "platform must be valid" unless valid_platforms.include?(platform)
 

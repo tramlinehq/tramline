@@ -52,6 +52,17 @@ class Integration < ApplicationRecord
     }
   }.with_indifferent_access
 
+  INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS = {
+    android: {
+      GoogleFirebaseIntegration => GoogleFirebaseSubmission,
+      GooglePlayStoreIntegration => PlayStoreSubmission
+    },
+    ios: {
+      GoogleFirebaseIntegration => GoogleFirebaseSubmission,
+      AppStoreIntegration => TestFlightSubmission
+    }
+  }.freeze
+
   enum :category, ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_map_self
   enum :status, {connected: "connected", disconnected: "disconnected"}
 
