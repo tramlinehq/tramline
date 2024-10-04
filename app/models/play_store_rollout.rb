@@ -82,7 +82,7 @@ class PlayStoreRollout < StoreRollout
       if result.ok?
         update_stage(next_stage, finish_rollout: true)
       else
-        if result.error.reason == :fully_released_can_not_be_staged
+        if result.error.is_a?(Installations::Error) && result.error.reason == :fully_released_can_not_be_staged
           fully_release!
           return
         end
@@ -147,7 +147,7 @@ class PlayStoreRollout < StoreRollout
       return
     end
 
-    if submission.auto_rollout?
+    if play_store_submission.auto_rollout?
       event_stamp!(reason: :failed, kind: :error, data: stamp_data)
       play_store_submission.fail_with_error!(error)
     end
