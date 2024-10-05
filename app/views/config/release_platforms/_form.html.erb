@@ -8,15 +8,22 @@
     <% end %>
 
     <% section.F.fields_for :release_candidate_workflow, section.F.object.release_candidate_workflow do |rc_fields| %>
-      <div>
-        <%= rc_fields.hidden_field :id, value: rc_fields.object.id %>
-        <%= rc_fields.labeled_select :identifier, "Release Candidate workflow",
-                                     options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.release_candidate_workflow.identifier),
-                                     {required: true},
-                                     data: {controller: "input-select"} %>
+      <div class="flex flex-col gap-4">
+        <div>
+          <%= rc_fields.hidden_field :id, value: rc_fields.object.id %>
+          <%= rc_fields.labeled_select :identifier, "Release Candidate workflow",
+                                       options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.release_candidate_workflow.identifier),
+                                       {required: true},
+                                       data: {controller: "input-select"} %>
 
-        <div class="text-xs text-secondary mt-2">
-          Please select the workflow that generates builds for <%= platform_label %> release candidates.
+          <div class="text-xs text-secondary mt-1">
+            Please select the workflow that generates builds for <%= platform_label %> release candidates.
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-0.5">
+          <%= render partial: "build_name_pattern_info" %>
+          <div><%= rc_fields.labeled_text_field :artifact_name_pattern, "Build artifact name (optional)", placeholder: "Eg., build-abc.apk" %></div>
         </div>
       </div>
     <% end %>
@@ -26,7 +33,6 @@
     <% section.with_description do %>
       Configuring production releases will enable the ability to send builds to the Production track on the stores (App Store, Play Store, etc.).
     <% end %>
-
 
     <% if platform.production_ready? %>
       <%= render V2::Form::SwitchComponent.new(form: section.F,
@@ -118,21 +124,29 @@
       <% end %>
 
       <% component.with_child do %>
-        <% section.F.fields_for :internal_workflow, section.F.object.internal_workflow || Config::Workflow.new(kind: "internal") do |internal_fields| %>
-          <div>
-            <%= internal_fields.hidden_field :id, value: internal_fields.object.id %>
-            <%= internal_fields.labeled_select :identifier, "Internal build workflow",
-                                               options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.internal_workflow&.identifier),
-                                               {required: false},
-                                               data: {controller: "input-select"} %>
-          </div>
+        <div class="flex flex-col gap-4">
+          <% section.F.fields_for :internal_workflow, section.F.object.internal_workflow || Config::Workflow.new(kind: "internal") do |internal_fields| %>
+            <div>
+              <%= internal_fields.hidden_field :id, value: internal_fields.object.id %>
+              <%= internal_fields.labeled_select :identifier, "Internal build workflow",
+                                                 options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.internal_workflow&.identifier),
+                                                 {required: false},
+                                                 data: {controller: "input-select"} %>
 
-          <div class="text-xs text-secondary mt-2">
-            Select a workflow that generates internal / non-production builds.
-          </div>
-        <% end %>
+              <div class="text-xs text-secondary mt-1">Select a workflow that generates internal / non-production
+                builds.
+              </div>
+            </div>
 
-        <div class="mt-4"><%= render "pre_prod_release_form", section:, kind: :internal, submission_types:, platform: %></div>
+            <div class="flex flex-col gap-0.5">
+              <%= render partial: "build_name_pattern_info" %>
+              <div><%= internal_fields.labeled_text_field :artifact_name_pattern, "Build artifact name (optional)", placeholder: "Eg., build-abc.apk" %></div>
+            </div>
+          <% end %>
+
+          <%= render "pre_prod_release_form", section:, kind: :internal, submission_types:, platform: %>
+        </div>
+
       <% end %>
     <% end %>
   <% end %>

@@ -15,12 +15,12 @@ class Config::ReleasePlatform < ApplicationRecord
   has_one :release_candidate_workflow, -> { release_candidate }, class_name: "Config::Workflow", inverse_of: :release_platform_config, dependent: :destroy
   has_one :internal_release, -> { internal }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
   has_one :beta_release, -> { beta }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
-  has_one :production_release, -> { production }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
+  has_one :production_release, -> { production }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
 
   accepts_nested_attributes_for :internal_workflow, allow_destroy: true
-  accepts_nested_attributes_for :release_candidate_workflow, allow_destroy: true
   accepts_nested_attributes_for :internal_release, allow_destroy: true
-  accepts_nested_attributes_for :beta_release, allow_destroy: true
+  accepts_nested_attributes_for :release_candidate_workflow
+  accepts_nested_attributes_for :beta_release
   accepts_nested_attributes_for :production_release, allow_destroy: true
 
   attribute :production_release_enabled, :boolean, default: false
@@ -37,7 +37,7 @@ class Config::ReleasePlatform < ApplicationRecord
   validate :internal_releases
   validate :beta_release_submissions
 
-  delegate :platform, :app, to: :release_platform
+  delegate :platform, :app, :android?, :ios?, to: :release_platform
 
   def self.from_json(json)
     json = json.with_indifferent_access

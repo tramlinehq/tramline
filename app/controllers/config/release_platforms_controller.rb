@@ -12,7 +12,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   before_action :set_submission_types, only: %i[edit update]
 
   def edit
-    @edit_not_allowed = @train.active_runs.exists?
+    @edit_allowed = @train.active_runs.exists?
   end
 
   def update
@@ -26,7 +26,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   private
 
   def set_train
-    @train = Train.friendly.friendly.find(params[:id].presence || params[:train_id])
+    @train = Train.friendly.friendly.find(params[:train_id])
   end
 
   def set_app_from_train
@@ -55,21 +55,21 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       :beta_release_submissions_enabled,
       :production_release_enabled,
       internal_release_attributes: [
-        :id, :auto_promote, :number,
+        :id, :auto_promote,
         submissions_attributes: [
-          :id, :submission_type, :_destroy,
+          :id, :submission_type, :_destroy, :number,
           submission_external_attributes: [:id, :identifier, :_destroy]
         ]
       ],
       beta_release_attributes: [
-        :id, :auto_promote, :number,
+        :id, :auto_promote,
         submissions_attributes: [
-          :id, :submission_type, :_destroy,
+          :id, :submission_type, :_destroy, :number,
           submission_external_attributes: [:id, :identifier, :_destroy]
         ]
       ],
       release_candidate_workflow_attributes: [
-        :id, :identifier, :build_artifact_name_pattern
+        :id, :identifier, :artifact_name_pattern
       ],
       production_release_attributes: [
         :id,
@@ -78,7 +78,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
         ]
       ],
       internal_workflow_attributes: [
-        :id, :identifier, :_destroy, :build_artifact_name_pattern
+        :id, :identifier, :_destroy, :artifact_name_pattern
       ]
     )
   end

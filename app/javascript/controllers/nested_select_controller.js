@@ -7,7 +7,7 @@ export default class extends Controller {
     selectedNestedOption: String,
     options: Array,
     optionKey: "id",
-    nestedOptionKey: "release_stages",
+    nestedOptionKey: "key",
     nestedOptionsId: "id",
     nestedOptionsName: "name"
   }
