@@ -25,6 +25,7 @@ class BitbucketIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
+  delegate :app, to: :integration
   delegate :code_repository_name, to: :app_config
   delegate :cache, to: Rails
 
@@ -364,7 +365,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def app_config
-    integration.app.config
+    app.config
   end
 
   def redirect_uri
