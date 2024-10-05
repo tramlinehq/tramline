@@ -24,7 +24,6 @@ class AppsController < SignedInApplicationController
 
     @train_in_creation = @app.train_in_creation
     @app_setup_instructions = @app.app_setup_instructions
-    @train_setup_instructions = @app.train_setup_instructions
   end
 
   def edit

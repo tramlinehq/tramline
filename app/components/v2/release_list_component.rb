@@ -101,9 +101,11 @@ class V2::ReleaseListComponent < V2::BaseComponent
         }
       end
     else
+      platform = train.release_platforms.first.platform
       {
         title: "Create your very first release",
-        text: "Once you've finished configuring your train fully, you can start creating new releases."
+        text: "You can now start creating new releases. \n We have added some default submissions settings for you, please review them before starting a release.",
+        content: render(V2::ButtonComponent.new(scheme: :light, type: :link, label: "Review submission settings", options: edit_app_train_platform_submission_config_path(app, train, platform), size: :xxs, authz: false))
       }
     end
   end

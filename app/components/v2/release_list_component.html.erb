@@ -248,30 +248,15 @@
     <% end %>
   <% end %>
 
-  <% if train.in_creation? %>
+  <% if no_releases? %>
     <% container.with_empty_state do %>
-      <%= render V2::EmptyStateComponent.new(
-        title: "Incomplete train configuration",
-        text: "Once you've finished configuring your train fully, you can start creating new releases.",
-        banner_image: "art/no_releases.png") do %>
-        <div>
-          <%= render V2::ButtonComponent.new(scheme: :default,
-                                             type: :link,
-                                             label: "Configure train",
-                                             options: steps_app_train_path(train.app, train),
-                                             size: :xxs,
-                                             authz: false) do |b| %>
-            <% b.with_icon("v2/cog.svg", size: :md) %>
-          <% end %>
-        </div>
+      <%= render V2::EmptyStateComponent.new(title: no_release_empty_state[:title], text: no_release_empty_state[:text], banner_image: "art/no_releases.png") do %>
+        <% if no_release_empty_state[:content].present? %>
+          <div>
+            <%= no_release_empty_state[:content] %>
+          </div>
+        <% end %>
       <% end %>
-    <% end %>
-  <% elsif no_releases? %>
-    <% container.with_empty_state do %>
-      <%= render V2::EmptyStateComponent.new(
-        title: no_release_empty_state[:title],
-        text: no_release_empty_state[:text],
-        banner_image: "art/no_releases.png") %>
     <% end %>
   <% end %>
 <% end %>
