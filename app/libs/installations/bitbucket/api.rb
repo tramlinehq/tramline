@@ -270,6 +270,9 @@ module Installations
       end
 
       selectors
+    rescue Installations::Bitbucket::Error => e
+      raise e if e.reason == :token_expired
+      raise Installations::Error.new("Failed to fetch bitbucket-pipelines.yml: #{e.message}", reason: :pipeline_yaml_not_found)
     rescue => e
       raise Installations::Error.new("Failed to parse bitbucket-pipelines.yml: #{e.message}", reason: :pipeline_yaml_parse_error)
     end
