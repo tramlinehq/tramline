@@ -356,10 +356,11 @@ module Installations
       return if response.status.no_content?
       raise Installations::Bitbucket::Error.new({"error" => {"message" => "Service Unavailable"}}) if response.status.server_error?
 
-      body = parse_json ? response.body.to_s.safe_json_parse : response.body.to_s
-      return body unless response.status.client_error?
+      body = response.body.to_s
+      parsed_body = body.safe_json_parse
+      return (parse_json ? parsed_body : body) unless response.status.client_error?
 
-      raise Installations::Bitbucket::Error.new(body)
+      raise Installations::Bitbucket::Error.new(parsed_body)
     end
 
     def paginated_execute(verb, url, params = {}, values = [], page = 0)
