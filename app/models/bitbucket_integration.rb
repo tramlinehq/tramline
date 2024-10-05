@@ -339,7 +339,7 @@ class BitbucketIntegration < ApplicationRecord
 
   def with_api_retries(attempt: 0, &)
     yield
-  rescue Installations::Bitbucket::Error => ex
+  rescue Installations::Error => ex
     raise ex if attempt >= MAX_RETRY_ATTEMPTS
     next_attempt = attempt + 1
 
