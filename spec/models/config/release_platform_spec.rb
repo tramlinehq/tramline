@@ -28,14 +28,14 @@ describe Config::ReleasePlatform do
 
   describe "validations" do
     it "validates presence of release_candidate" do
-      release_platform = Config::ReleasePlatform.from_json(base_config)
+      release_platform = described_class.from_json(base_config)
       release_platform.release_candidate_workflow = nil
       expect(release_platform).not_to be_valid
       expect(release_platform.errors.messages[:release_candidate_workflow]).to include("the release candidate workflow must be configured")
     end
 
     it "validates presence of beta_release" do
-      release_platform = Config::ReleasePlatform.from_json(base_config)
+      release_platform = described_class.from_json(base_config)
       release_platform.beta_release = nil
       expect(release_platform).not_to be_valid
       expect(release_platform.errors.messages[:beta_release]).to include("the beta release must be configured")
