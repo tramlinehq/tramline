@@ -277,10 +277,10 @@ class BitbucketIntegration < ApplicationRecord
     generated_at: :created_on
   }
 
-  def workflows
+  def workflows(branch_name)
     return [] unless integration.ci_cd?
     cache.fetch(workflows_cache_key, expires_in: 10.minutes) do
-      with_api_retries { installation.list_pipeline_selectors(code_repository_name) }
+      with_api_retries { installation.list_pipeline_selectors(code_repository_name, branch_name) }
     end
   end
 

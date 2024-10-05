@@ -256,8 +256,8 @@ module Installations
 
     # CI/CD
 
-    def list_pipeline_selectors(repo_slug)
-      yaml_content = fetch_pipeline_yaml(repo_slug)
+    def list_pipeline_selectors(repo_slug, branch_name = "main")
+      yaml_content = execute(:get, PIPELINE_YAML_URL.expand(repo_slug:, branch_name:).to_s, {}, false)
       pipeline_config = YAML.safe_load(yaml_content)
       selectors = []
 
@@ -348,12 +348,6 @@ module Installations
 
     def fetch_files(url)
       execute(:get, url)
-    end
-
-    def fetch_pipeline_yaml(repo_slug, branch_name = "main")
-      execute(:get, PIPELINE_YAML_URL.expand(repo_slug:, branch_name:).to_s, {}, false)
-    rescue Installations::Bitbucket::Error => e
-      raise Installations::Error.new("Failed to fetch bitbucket-pipelines.yml: #{e.message}", reason: :pipeline_yaml_not_found)
     end
 
     def execute(verb, url, params = {}, parse_json = true)

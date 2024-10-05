@@ -146,6 +146,10 @@ class Train < ApplicationRecord
     Flipper.enabled?(:deploy_action_enabled, self)
   end
 
+  def workflows
+    ci_cd_provider.workflows(working_branch)
+  end
+
   def version_ahead?(release)
     version_current.to_semverish >= release.release_version.to_semverish
   end
