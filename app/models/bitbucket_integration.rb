@@ -26,6 +26,7 @@ class BitbucketIntegration < ApplicationRecord
   attr_accessor :code
   before_create :complete_access
   delegate :code_repository_name, to: :app_config
+  delegate :cache, to: Rails
 
   def install_path
     unless integration.version_control? || integration.ci_cd?
