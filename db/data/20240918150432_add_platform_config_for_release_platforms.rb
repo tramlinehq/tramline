@@ -9,6 +9,7 @@ class AddPlatformConfigForReleasePlatforms < ActiveRecord::Migration[7.2]
 
         config = Config::ReleasePlatform.from_json(release_platform.config)
         config.release_platform = release_platform
+        puts "Saving release platform config for: #{release_platform.name}"
         config.save!
       end
     end
