@@ -111,9 +111,13 @@ class GoogleFirebaseIntegration < ApplicationRecord
     cache.write(build_channels_cache_key, get_all_channels, expires_in: CACHE_EXPIRY)
   end
 
-  def build_channels(with_production:)
+  def build_channels(with_production: false)
     sliced = cache.fetch(build_channels_cache_key, expires_in: CACHE_EXPIRY) { get_all_channels }
     (sliced || []).push(EMPTY_CHANNEL)
+  end
+
+  def pick_default_beta_channel
+    build_channels.first
   end
 
   def upload(file, filename, platform:, variant: nil)

@@ -112,12 +112,12 @@ class WorkflowRun < ApplicationRecord
     end
   end
 
-  def self.create_and_trigger!(workflow, triggering_release, commit, release_platform_run)
-    workflow_run = create!(workflow_config: workflow.value,
+  def self.create_and_trigger!(workflow_config, triggering_release, commit, release_platform_run)
+    workflow_run = create!(workflow_config: workflow_config.as_json,
       triggering_release:,
       release_platform_run:,
       commit:,
-      kind: workflow.kind)
+      kind: workflow_config.kind)
     workflow_run.create_build!(version_name: workflow_run.release_version, release_platform_run:, commit:)
     workflow_run.initiate!
   end
@@ -199,7 +199,7 @@ class WorkflowRun < ApplicationRecord
     deploy_action_enabled = organization.deploy_action_enabled? || app.deploy_action_enabled? || train.deploy_action_enabled?
 
     ci_cd_provider
-      .trigger_workflow_run!(conf.id, release_branch, workflow_inputs, commit_hash, deploy_action_enabled)
+      .trigger_workflow_run!(conf.identifier, release_branch, workflow_inputs, commit_hash, deploy_action_enabled)
       .then { |wr| update_external_metadata!(wr) }
   end
 
@@ -225,7 +225,7 @@ class WorkflowRun < ApplicationRecord
 
   def find_external_run
     # return mock_external_run if sandbox_mode?
-    ci_cd_provider.find_workflow_run(conf.id, release_branch, commit_hash)
+    ci_cd_provider.find_workflow_run(conf.identifier, release_branch, commit_hash)
   end
 
   def on_initiate!
@@ -284,5 +284,5 @@ class WorkflowRun < ApplicationRecord
     }
   end
 
-  def conf = ReleaseConfig::Platform::Workflow.new(workflow_config, kind)
+  def conf = Config::Workflow.from_json(workflow_config)
 end

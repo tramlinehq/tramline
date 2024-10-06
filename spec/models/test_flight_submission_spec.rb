@@ -14,7 +14,14 @@ describe TestFlightSubmission do
   let(:workflow_run) { create(:workflow_run, :finished) }
   let(:internal_release) {
     create(:internal_release,
-      config: {submissions: [{id: "123", name: "Internal Testers", is_internal: true}]},
+      config: {
+        auto_promote: false,
+        submissions: [
+          {number: 1,
+           submission_type: "TestFlightSubmission",
+           submission_config: {id: "123", name: "Internal Testers", is_internal: true}}
+        ]
+      },
       triggered_workflow_run: workflow_run,
       release_platform_run: workflow_run.release_platform_run,
       commit: workflow_run.commit)

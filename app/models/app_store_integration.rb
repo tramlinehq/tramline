@@ -223,6 +223,10 @@ class AppStoreIntegration < ApplicationRecord
     elog(e)
   end
 
+  def pick_default_beta_channel
+    build_channels(with_production: false).first
+  end
+
   def build_channels(with_production:)
     sliced =
       cache.fetch(build_channels_cache_key, expires_in: 1.hour) do

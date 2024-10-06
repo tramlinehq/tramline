@@ -1,4 +1,5 @@
 class NotificationSettingsController < SignedInApplicationController
+  include Tabbable
   using RefinedString
   using RefinedInteger
 
@@ -15,12 +16,13 @@ class NotificationSettingsController < SignedInApplicationController
         @train.notification_settings.where(kind: NotificationSetting.kinds.values - NotificationSetting::V2_KINDS.values)
       end
     end
-    set_tab_configuration
+
+    set_train_config_tabs
   end
 
   def edit
     @setting = NotificationSettingsComponent::NotificationSettingComponent.new(@app, @train, @notification_setting)
-    set_tab_configuration
+    set_train_config_tabs
   end
 
   def update
@@ -34,16 +36,6 @@ class NotificationSettingsController < SignedInApplicationController
   end
 
   private
-
-  def set_tab_configuration
-    @tab_configuration = [
-      [1, "General", edit_app_train_path(@app, @train), "v2/cog.svg"],
-      [2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"],
-      [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
-      [4, "Release Health", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
-      [5, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"]
-    ].compact
-  end
 
   def set_notification_setting
     @notification_setting = @train.notification_settings.find(params[:id])

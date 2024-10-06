@@ -16,12 +16,7 @@
   <% container.with_body do %>
     <% if @app.ready? %>
       <%= render partial: "shared/draft_mode_notice", locals: { app: @app } %>
-      <%= render partial: "trains/setup_progress",
-                 locals: {
-                   setup_instructions: @train_setup_instructions,
-                   app: @app,
-                   train_in_creation: @train_in_creation
-                 } %>
+      <%= render partial: "trains/setup_progress", locals: {app: @app, train_in_creation: @train_in_creation} %>
     <% else %>
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>

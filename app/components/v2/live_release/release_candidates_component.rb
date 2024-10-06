@@ -12,7 +12,7 @@ class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseComponent
   end
 
   def workflow_config(release_platform_run)
-    release_platform_run.conf.workflows.release_candidate_workflow
+    release_platform_run.conf.release_candidate_workflow
   end
 
   def latest_beta_release(release_platform_run)

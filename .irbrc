@@ -5,6 +5,7 @@ IRB.conf[:SAVE_HISTORY] = 1000
 IRB.conf[:HISTORY_FILE] = "#{ENV["HOME"]}/.irb-save-history"
 IRB.conf[:USE_AUTOCOMPLETE] = false
 
+def T(slug) = Train.find_by_slug(slug)
 def Rel(slug) = Release.find_by_slug(slug)
 def Wrun(id) = WorkflowRun.find(id)
 def B(id) = Build.find(id)

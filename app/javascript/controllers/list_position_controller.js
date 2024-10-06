@@ -13,10 +13,8 @@ export default class extends Controller {
       posTarget.value = position
       position++
     }
-    if (position > 2 && this.hasShowCheckboxTarget) {
-      this.showCheckboxTarget.hidden = false
-    } else {
-      this.showCheckboxTarget.hidden = true
+    if (this.hasShowCheckboxTarget) {
+      this.showCheckboxTarget.hidden = position <= 2;
     }
   }
 }

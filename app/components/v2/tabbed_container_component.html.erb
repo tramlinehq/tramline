@@ -32,16 +32,18 @@
             data-activation-inactive-value="<%= TAB_STYLE %>">
           <% sorted_configs.each do |(_position, name, path, icon)| %>
             <li class="me-2">
-              <a href="<%= path %>"
-                 data-activation-target="target"
-                 data-action="click->activation#toggle"
-                 data-turbo-action="replace"
-                 data-turbo-frame="<%= frame %>"
-                 class="<%= style(path) %>"
-                 aria-selected="false">
-                <%= render V2::IconComponent.new(icon, size: :md, classes: "me-2") %>
-                <%= name %>
-              </a>
+              <div data-turbo-prefetch="false">
+                <a href="<%= path %>"
+                   data-activation-target="target"
+                   data-action="click->activation#toggle"
+                   data-turbo-action="replace"
+                   data-turbo-frame="<%= frame %>"
+                   class="<%= style(path) %>"
+                   aria-selected="false">
+                  <%= render V2::IconComponent.new(icon, size: :md, classes: "me-2") %>
+                  <%= name %>
+                </a>
+              </div>
             </li>
           <% end %>
         </ul>

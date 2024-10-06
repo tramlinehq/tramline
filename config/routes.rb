@@ -71,13 +71,14 @@ Rails.application.routes.draw do
         patch :activate
         patch :deactivate
       end
-      resource :release_index, only: %i[edit update]
 
+      resource :release_index, only: %i[edit update]
       resources :notification_settings, only: %i[index update edit]
 
-      resources :release_platforms, only: [], path: :platforms, as: :platforms do
+      resources :release_platforms, path: :platforms, as: :platforms do
         resources :steps, only: %i[new create update]
         resources :release_health_rules, path: :rules
+        resource :release_platform_configs, only: %i[edit update], path: :submissions, as: :submission_config, controller: "config/release_platforms"
       end
 
       resources :releases, only: %i[show create destroy index update], shallow: true do

@@ -84,7 +84,7 @@ class ProductionRelease < ApplicationRecord
     return rollout_complete!(nil) if conf.submissions.blank?
 
     submission_config = conf.submissions.first
-    submission_config.submission_type.create_and_trigger!(self, submission_config, build)
+    submission_config.submission_class.create_and_trigger!(self, submission_config, build)
   end
 
   def rollout_started!
@@ -117,7 +117,7 @@ class ProductionRelease < ApplicationRecord
     release_health_metrics.order(fetched_at: :desc).first
   end
 
-  def conf = ReleaseConfig::Platform::ReleaseStep.new(config)
+  def conf = Config::ReleaseStep.from_json(config)
 
   def production? = true
 

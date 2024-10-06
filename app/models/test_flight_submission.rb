@@ -81,7 +81,7 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def internal_channel?
-    submission_channel.is_internal
+    submission_channel.internal?
   end
 
   def trigger!

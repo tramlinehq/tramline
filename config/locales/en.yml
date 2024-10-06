@@ -1,4 +1,7 @@
 en:
+  config:
+    release_platforms:
+      success: "Platform configuration was successfully updated."
   release_metadata:
     metadata_not_editable: "Cannot update the release metadata once the production release has begun."
     update:
@@ -15,8 +18,12 @@ en:
       failure: "Failed to create production release — %{errors}"
   staged_rollout:
     ios:
+      switch_on: "Enable Phased Release"
+      switch_off: "Disable Phased Release"
       checkbox: "Enable Phased Release"
     android:
+      switch_on: "Enable Staged Rollout"
+      switch_off: "Disable Staged Rollout"
       checkbox: "Enable Staged Rollout"
   beta_releases:
     create:
@@ -68,6 +75,13 @@ en:
       failure: "Failed to create submission — %{errors}"
       invalid_build: "The build is not valid to start a submission."
   store_rollouts:
+    switcher:
+      ios:
+        enable: "Phased Release is enabled"
+        disable: "Phased Release is disabled"
+      android:
+        enable: "Staged Rollout is enabled"
+        disable: "Staged Rollout is disabled"
     increase:
       success: "Rollout was successfully increased."
       failure: "Failed to increase rollout — %{errors}"
@@ -263,12 +277,12 @@ en:
       release_index_component:
         name:
           hotfixes: "Hotfixes"
-          rollout_fixes: "Rollout Fixes"
-          rollout_duration: "Rollout Duration"
-          duration: "Release Duration"
-          stability_duration: "Stability Duration"
-          stability_changes: "Stability Changes"
-          rollout_changes: "Rollout Changes"
+          rollout_fixes: "Rollout fixes"
+          rollout_duration: "Rollout duration"
+          duration: "Release duration"
+          stability_duration: "Stability duration"
+          stability_changes: "Stability changes"
+          rollout_changes: "Rollout changes"
           days_since_last_release: "Days since last release"
         description:
           hotfixes: "These are the fixes that are done after the release has reached all the users."
@@ -479,6 +493,25 @@ en:
               invalid: "can only contain alphanumerics, underscores and hyphens"
             trigger_rule_expressions:
               duplicate_metrics: "cannot have multiple health conditions with the same metric"
+        config/submission:
+          attributes:
+            rollout_stages:
+              at_least_one: "should have at least one rollout percentage value"
+              zero_rollout: "cannot start with zero rollout"
+              increasing_order: "staged rollout should be in increasing order"
+              max_100: "staged rollout cannot be more than 100%"
+        config/release_platform:
+          attributes:
+            base:
+              unique_submissions: "a build can not be submitted to the same channel more than once"
+              unique_workflows: "the internal and RC workflows cannot be the same"
+              at_least_one_release_step: "at least one release step must be configured"
+              internal_releases_are_incomplete: "internal workflows and its submissions must be configured together"
+              beta_releases_are_incomplete: "if beta tracks are enabled, you should configure at least one submission"
+            beta_release:
+              not_present: "the beta release must be configured"
+            release_candidate_workflow:
+              not_present: "the release candidate workflow must be configured"
 
   invitation:
     flash:

@@ -25,7 +25,9 @@ class BitbucketIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
+  delegate :app, to: :integration
   delegate :code_repository_name, to: :app_config
+  delegate :cache, to: Rails
 
   def install_path
     unless integration.version_control? || integration.ci_cd?
@@ -275,9 +277,11 @@ class BitbucketIntegration < ApplicationRecord
     generated_at: :created_on
   }
 
-  def workflows
+  def workflows(branch_name)
     return [] unless integration.ci_cd?
-    with_api_retries { installation.list_pipeline_selectors(code_repository_name) }
+    cache.fetch(workflows_cache_key, expires_in: 10.minutes) do
+      with_api_retries { installation.list_pipeline_selectors(code_repository_name, branch_name) }
+    end
   end
 
   def workflow_retriable? = false
@@ -335,7 +339,7 @@ class BitbucketIntegration < ApplicationRecord
 
   def with_api_retries(attempt: 0, &)
     yield
-  rescue Installations::Bitbucket::Error => ex
+  rescue Installations::Error => ex
     raise ex if attempt >= MAX_RETRY_ATTEMPTS
     next_attempt = attempt + 1
 
@@ -361,7 +365,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def app_config
-    integration.app.config
+    app.config
   end
 
   def redirect_uri
@@ -370,5 +374,9 @@ class BitbucketIntegration < ApplicationRecord
 
   def events_url(params)
     bitbucket_events_url(**tunneled_link_params, **params)
+  end
+
+  def workflows_cache_key
+    "app/#{app.id}/bitbucket_integration/#{id}/workflows"
   end
 end
