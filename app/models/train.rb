@@ -142,6 +142,10 @@ class Train < ApplicationRecord
     Flipper.enabled?(:product_v2, self)
   end
 
+  def deploy_action_enabled?
+    Flipper.enabled?(:deploy_action_enabled, self)
+  end
+
   def version_ahead?(release)
     version_current.to_semverish >= release.release_version.to_semverish
   end
