@@ -174,8 +174,9 @@ class TestFlightSubmission < StoreSubmission
     event_stamp!(reason: :review_rejected, kind: :error, data: stamp_data)
   end
 
-  def on_fail!
-    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+  def on_fail!(args = nil)
+    failure_error = args&.fetch(:error, nil)
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
     notify!("Submission failed", :submission_failed, notification_params)
   end
 
@@ -184,7 +185,7 @@ class TestFlightSubmission < StoreSubmission
     parent_release.rollout_complete!(self)
   end
 
-  def stamp_data
+  def stamp_data(failure_message: nil)
     super.merge(channels: submission_channel.name)
   end
 end

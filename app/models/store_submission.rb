@@ -120,7 +120,7 @@ class StoreSubmission < ApplicationRecord
   def fail_with_error!(error)
     elog(error)
     if error.is_a?(Installations::Error)
-      fail!(reason: error.reason)
+      fail!(reason: error.reason, error: error)
     else
       fail!
     end
@@ -177,11 +177,17 @@ class StoreSubmission < ApplicationRecord
     update! rejected_at: Time.current
   end
 
-  def stamp_data
+  def stamp_data(failure_message: nil)
+    failure_reason_data =
+      if failure_reason != :unknown_failure
+        display_attr(:failure_reason)
+      else
+        failure_message || self.class.human_attr_value(:failure_reason, :unknown_failure)
+      end
     {
       version: version_name,
       build_number: build_number,
-      failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
+      failure_reason: failure_reason_data
     }
   end
 end

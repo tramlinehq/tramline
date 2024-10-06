@@ -122,6 +122,24 @@ module Installations
         code: 403,
         message_matcher: /There are issues with your account which mean you can't publish changes to your app or send changes for review/i,
         decorated_reason: :account_issues
+      },
+      {
+        status: "INVALID_ARGUMENT",
+        code: 400,
+        message_matcher: /Fully released can not be staged/i,
+        decorated_reason: :fully_released_can_not_be_staged
+      },
+      {
+        status: "NOT_FOUND",
+        code: 404,
+        error_message: /The following APK version codes could not be found/i,
+        decorated_reason: :build_not_found
+      },
+      {
+        status: "INVALID_ARGUMENT",
+        code: 400,
+        message_matcher: /This release includes the com.google.android.gms.permission.AD_ID permission but your declaration on Play Console says your app doesn't use advertising ID/i,
+        decorated_reason: :advertising_app_permission
       }
     ]
 

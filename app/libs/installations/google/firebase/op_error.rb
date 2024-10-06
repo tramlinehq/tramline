@@ -11,6 +11,11 @@ module Installations
       {
         message_matcher: /There was a error processing your app. Try distributing again and contact Firebase support if this problem continues/i,
         decorated_reason: :firebase_processing_error
+      },
+      {
+        code: 3,
+        message_matcher: /package name .* does not match your Firebase app's package name/i,
+        decorated_reason: :wrong_package_name
       }
     ]
 
