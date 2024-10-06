@@ -27,9 +27,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create_commit :refresh_external_app
 
   PROD_CHANNEL = {id: :production, name: "production", is_production: true}.freeze
+  BETA_CHANNEL = {id: :beta, name: "open testing", is_production: false}.freeze
   CHANNELS = [
     PROD_CHANNEL,
-    {id: :beta, name: "open testing", is_production: false},
+    BETA_CHANNEL,
     {id: :alpha, name: "closed testing", is_production: false},
     {id: :internal, name: "internal testing", is_production: false}
   ]
@@ -128,8 +129,11 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def channels
-    channel_data.map(&:with_indifferent_access)
     CHANNELS.map(&:with_indifferent_access)
+  end
+
+  def pick_default_beta_channel
+    BETA_CHANNEL
   end
 
   def build_channels(with_production: false)

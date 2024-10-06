@@ -1,0 +1,51 @@
+<% release_type = "#{kind}_release".to_sym %>
+
+<div class="grid gap-4">
+  <% section.F.fields_for release_type, section.F.object.send(release_type) || Config::ReleaseStep.new(kind: kind) do |rr| %>
+    <%= rr.hidden_field :id, value: rr.object.id %>
+    <div data-controller="nested-form-ext"
+         data-nested-form-ext-list-position-outlet="#<%= release_type %>_submissions"
+         class="grid gap-2 pt-3">
+      <div>
+        <%= render V2::ButtonComponent.new(
+          scheme: :light,
+          type: :action,
+          size: :xs,
+          label: "Add a new submission",
+          html_options: { data: { action: "nested-form-ext#add" } },
+          arrow: :none) do |b|
+          b.with_icon("plus.svg", rounded: false)
+        end %>
+      </div>
+
+      <ul data-controller="sortable-list-ext list-position"
+          data-sortable-list-ext-handle-value=".handle"
+          data-sortable-list-ext-list-position-outlet="#<%= release_type %>_submissions"
+          data-list-position-initial-value=1
+          class="flex flex-col item-gap-default"
+          id="<%= release_type %>_submissions">
+        <% rr.object.submissions.each_with_index do |submission, _index| %>
+          <li class="nested-form-wrapper" data-new-record="false">
+            <% rr.fields_for :submissions, submission do |submission_form| %>
+              <%= render "submissions_form", form: submission_form, submission_types: submission_types %>
+              <%= submission_form.hidden_field :number, value: submission.number, data: { list_position_target: "position" } %>
+              <%= submission_form.hidden_field :id, value: submission.id %>
+              <%= submission_form.hidden_field :_destroy %>
+            <% end %>
+          </li>
+        <% end %>
+
+        <template data-nested-form-ext-target="template">
+          <li class="nested-form-wrapper" data-new-record="true">
+            <% rr.fields_for :submissions, Config::Submission.new(submission_type: submission_types.first, auto_promote: false), child_index: "NEW_RECORD" do |submission_form| %>
+              <%= render "submissions_form", form: submission_form, submission_types: submission_types %>
+              <%= submission_form.hidden_field :number, data: { list_position_target: "position" } %>
+            <% end %>
+          </li>
+        </template>
+
+        <div data-nested-form-ext-target="target"></div>
+      </ul>
+    </div>
+  <% end %>
+</div>

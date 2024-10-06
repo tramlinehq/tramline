@@ -128,7 +128,7 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.list_projects(REPOS_TRANSFORMATIONS) }
   end
 
-  def workflows
+  def workflows(_)
     nil
   end
 

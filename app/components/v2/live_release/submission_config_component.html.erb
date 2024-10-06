@@ -26,8 +26,8 @@
       <!-- loop over the deployments/submissions -->
       <div class="grid justify-self-start grid-flow-col items-center">
         <div class="border-t mr-1 border-main-300 border-dashed w-5"></div>
-        <%= render V2::BadgeComponent.new(text: submission.submission_config.name, kind: :badge) do |badge| %>
-          <% badge.with_icon("integrations/logo_#{submission.submission_type.new(release_platform_run:).provider}.png") %>
+        <%= render V2::BadgeComponent.new(text: submission.submission_external.name, kind: :badge) do |badge| %>
+          <% badge.with_icon("integrations/logo_#{submission.submission_class.new(release_platform_run:).provider}.png") %>
         <% end %>
       </div>
       <% submission = submission.next %>

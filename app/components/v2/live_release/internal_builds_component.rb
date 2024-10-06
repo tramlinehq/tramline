@@ -21,12 +21,12 @@ class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
     configuration(run).present?
   end
 
-  def configuration(run)
-    run.conf.internal_release
+  def internal_workflow_config(run)
+    run.conf.pick_internal_workflow
   end
 
-  def internal_workflow_config(run)
-    run.conf.workflows.pick_internal_workflow
+  def configuration(run)
+    run.conf.internal_release
   end
 
   def latest_internal_release(run)

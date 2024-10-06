@@ -107,6 +107,7 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
+  after_create -> { Flipper.enable_actor(:product_v2, self) }
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
 
@@ -144,6 +145,10 @@ class Train < ApplicationRecord
 
   def deploy_action_enabled?
     Flipper.enabled?(:deploy_action_enabled, self)
+  end
+
+  def workflows
+    ci_cd_provider.workflows(working_branch)
   end
 
   def version_ahead?(release)
@@ -309,12 +314,9 @@ class Train < ApplicationRecord
     scheduled_releases.pending&.delete_all
   end
 
-  def in_creation?
-    release_platforms.any?(&:in_creation?)
-  end
-
   def startable?
     return false unless app.ready?
+    return true if product_v2?
     release_platforms.all?(&:startable?)
   end
 

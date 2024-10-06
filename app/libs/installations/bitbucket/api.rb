@@ -256,8 +256,8 @@ module Installations
 
     # CI/CD
 
-    def list_pipeline_selectors(repo_slug)
-      yaml_content = fetch_pipeline_yaml(repo_slug)
+    def list_pipeline_selectors(repo_slug, branch_name = "main")
+      yaml_content = execute(:get, PIPELINE_YAML_URL.expand(repo_slug:, branch_name:).to_s, {}, false)
       pipeline_config = YAML.safe_load(yaml_content)
       selectors = []
 
@@ -270,6 +270,9 @@ module Installations
       end
 
       selectors
+    rescue Installations::Bitbucket::Error => e
+      raise e if e.reason == :token_expired
+      raise Installations::Error.new("Failed to fetch bitbucket-pipelines.yml: #{e.message}", reason: :pipeline_yaml_not_found)
     rescue => e
       raise Installations::Error.new("Failed to parse bitbucket-pipelines.yml: #{e.message}", reason: :pipeline_yaml_parse_error)
     end
@@ -350,22 +353,17 @@ module Installations
       execute(:get, url)
     end
 
-    def fetch_pipeline_yaml(repo_slug, branch_name = "main")
-      execute(:get, PIPELINE_YAML_URL.expand(repo_slug:, branch_name:).to_s, {}, false)
-    rescue Installations::Bitbucket::Error => e
-      raise Installations::Error.new("Failed to fetch bitbucket-pipelines.yml: #{e.message}", reason: :pipeline_yaml_not_found)
-    end
-
     def execute(verb, url, params = {}, parse_json = true)
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
 
       return if response.status.no_content?
       raise Installations::Bitbucket::Error.new({"error" => {"message" => "Service Unavailable"}}) if response.status.server_error?
 
-      body = parse_json ? response.body.to_s.safe_json_parse : response.body.to_s
-      return body unless response.status.client_error?
+      body = response.body.to_s
+      parsed_body = body.safe_json_parse
+      return (parse_json ? parsed_body : body) unless response.status.client_error?
 
-      raise Installations::Bitbucket::Error.new(body)
+      raise Installations::Bitbucket::Error.new(parsed_body)
     end
 
     def paginated_execute(verb, url, params = {}, values = [], page = 0)

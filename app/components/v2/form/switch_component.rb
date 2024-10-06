@@ -4,6 +4,7 @@ class V2::Form::SwitchComponent < ViewComponent::Base
   renders_one :child
   renders_one :heading
   renders_one :description
+  renders_one :info_icon, InfoIconComponent
 
   def initialize(form:, field_name:, on_label: "Enabled", off_label: "Disabled", hide_child: true, switch_id: nil, switch_data: {}, html_options: {})
     @form = form
@@ -28,9 +29,7 @@ class V2::Form::SwitchComponent < ViewComponent::Base
   end
 
   def switch_options
-    {id: switch_id,
-     class: "sr-only",
-     data: switch_data}.merge(@html_options)
+    {class: "sr-only", data: switch_data}.merge(@html_options)
   end
 
   def data_actions
@@ -42,5 +41,16 @@ class V2::Form::SwitchComponent < ViewComponent::Base
   def switch_data
     {action: data_actions,
      toggle_switch_target: "checkbox"}.merge(@switch_data.except(:action))
+  end
+
+  def form_label
+    form.label field_name, class: "bg-slate-400" do
+      content_tag(:span, nil, class: "bg-white shadow", aria: {hidden: true})
+        .concat(content_tag(:span, nil, class: "sr-only"))
+    end
+  end
+
+  def form_checkbox
+    form.check_box field_name, switch_options, "true", "false"
   end
 end

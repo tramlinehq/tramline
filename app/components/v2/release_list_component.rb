@@ -11,7 +11,9 @@ class V2::ReleaseListComponent < V2::BaseComponent
   attr_reader :train, :ongoing_release, :hotfix_release, :upcoming_release
   delegate :app, :hotfix_from, to: :train
 
-  def empty?
+  # we don't check for train.releases.none?
+  # because the constituent releases that are loaded on the page are already memoized, so we avoid a query
+  def no_releases?
     previous_releases.empty? && ongoing_release.nil? && upcoming_release.nil? && hotfix_release.nil? && last_completed_release.nil?
   end
 
@@ -85,7 +87,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
     app.cross_platform? || app.ios?
   end
 
-  def empty_state
+  def no_release_empty_state
     if train.automatic?
       if train.activatable?
         {
@@ -99,9 +101,11 @@ class V2::ReleaseListComponent < V2::BaseComponent
         }
       end
     else
+      platform = train.release_platforms.first.platform
       {
         title: "Create your very first release",
-        text: "Once you've finished configuring your train fully, you can start creating new releases."
+        text: "You can now start creating new releases. We have added some default submissions settings for you. This involves picking the right workflows and configuring the right channels for build distribution. Please review these starting a release.",
+        content: render(V2::ButtonComponent.new(scheme: :light, type: :link, label: "Review submission settings", options: edit_app_train_platform_submission_config_path(app, train, platform), size: :xxs, authz: false))
       }
     end
   end

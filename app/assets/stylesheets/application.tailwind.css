@@ -103,6 +103,10 @@
     @apply px-4 py-3.5;
   }
 
+  .box-padding-md {
+    @apply px-2 py-2;
+  }
+
   .box-padding-sm {
     @apply px-1.5 py-0.5;
   }
@@ -270,16 +274,13 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
 }
 
 .emphasize {
-  @apply inline-block pr-1.5 pl-1.5 py-0;
-  @apply rounded-md;
+  @apply inline-block pr-1.5 pl-1.5 py-0.5;
   @apply bg-main-200 text-slate-700;
 }
 
 .emphasize-link {
   @apply underline;
-  @apply inline-block pr-1.5 pl-1.5 py-0;
-  @apply rounded-md;
-  @apply bg-main-200 text-slate-700;
+  @apply emphasize;
 }
 
 /* Application theme starts here */

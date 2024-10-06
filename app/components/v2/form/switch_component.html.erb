@@ -1,7 +1,7 @@
-<section class="grid gap-4"
-         data-controller="toggle-switch"
-         data-toggle-switch-on-label-value="<%= on_label %>"
-         data-toggle-switch-off-label-value="<%= off_label %>">
+<div class="grid gap-4"
+     data-controller="toggle-switch"
+     data-toggle-switch-on-label-value="<%= on_label %>"
+     data-toggle-switch-off-label-value="<%= off_label %>">
   <% if heading.present? %>
     <div class="text-slate-600 font-medium"><%= heading %></div>
   <% end %>
@@ -12,18 +12,14 @@
     </div>
   <% end %>
 
-  <div class="flex items-center">
+  <div class="flex items-center gap-1.5">
     <div class="form-switch">
-      <%= form.check_box field_name,
-                         switch_options,
-                         "true", "false" %>
-      <label class="bg-slate-400" for="<%= switch_id %>">
-        <span class="bg-white shadow" aria-hidden="true"></span>
-        <span class="sr-only">Switch label</span>
-      </label>
+      <%= form_checkbox %>
+      <%= form_label %>
     </div>
 
-    <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
+    <div class="<%= EnhancedFormHelper::AuthzForm::BASE_LABEL_CLASSES %>" data-toggle-switch-target="output"></div>
+    <%= info_icon if info_icon? %>
   </div>
 
   <% if child.present? %>
@@ -31,4 +27,4 @@
       <%= child %>
     </div>
   <% end %>
-</section>
+</div>

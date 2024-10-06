@@ -82,7 +82,7 @@ class PreProdRelease < ApplicationRecord
   def rollout_complete!(submission)
     return unless actionable?
 
-    next_submission_config = conf.submissions.fetch_by_number(submission.sequence_number + 1)
+    next_submission_config = conf.fetch_submission_by_number(submission.sequence_number + 1)
     if next_submission_config
       trigger_submission!(next_submission_config)
     else
@@ -90,7 +90,7 @@ class PreProdRelease < ApplicationRecord
     end
   end
 
-  def conf = ReleaseConfig::Platform::ReleaseStep.new(config)
+  def conf = Config::ReleaseStep.from_json(config)
 
   def commits_since_previous
     changes_since_last_release = release.release_changelog&.normalized_commits
@@ -158,6 +158,6 @@ class PreProdRelease < ApplicationRecord
   private
 
   def trigger_submission!(submission_config)
-    submission_config.submission_type.create_and_trigger!(self, submission_config, build)
+    submission_config.submission_class.create_and_trigger!(self, submission_config, build)
   end
 end
