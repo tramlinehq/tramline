@@ -96,6 +96,7 @@ class Train < ApplicationRecord
   validate :working_branch_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
 
+  after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
   after_initialize :set_release_schedule, if: :persisted?
   after_initialize :set_build_queue_config, if: :persisted?
@@ -520,6 +521,10 @@ class Train < ApplicationRecord
       VersioningStrategies::Semverish.build(major_version_seed, minor_version_seed, patch_version_seed)
   rescue ArgumentError
     nil
+  end
+
+  def set_branching_strategy
+    self.branching_strategy ||= "almost_trunk"
   end
 
   def set_current_version
