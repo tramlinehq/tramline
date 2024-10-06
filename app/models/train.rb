@@ -314,11 +314,6 @@ class Train < ApplicationRecord
     scheduled_releases.pending&.delete_all
   end
 
-  def in_creation?
-    return false if product_v2?
-    release_platforms.any?(&:in_creation?)
-  end
-
   def startable?
     return false unless app.ready?
     return true if product_v2?

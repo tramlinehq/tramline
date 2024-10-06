@@ -120,10 +120,6 @@ class ReleasePlatform < ApplicationRecord
     steps.where(step_number: ..step_number).order(:step_number)
   end
 
-  def in_creation?
-    train.draft? && steps.release.none?
-  end
-
   def valid_steps?
     steps.release.size == 1
   end
@@ -160,7 +156,7 @@ class ReleasePlatform < ApplicationRecord
     DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym][:submissions].first[:submission_type] if production_ready?
   end
 
-  # setup production is store configs are integrated
+  # setup production if the store integrations are added
   # otherwise use the first build channel integration and setup beta releases
   def set_default_config
     return if Rails.env.test?

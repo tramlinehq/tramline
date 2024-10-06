@@ -17,9 +17,9 @@ class Config::ReleasePlatformsController < SignedInApplicationController
 
   def update
     if @config.update(update_config_params)
-      redirect_to edit_app_train_platform_submission_config_path(@app, @train, @release_platform.platform), notice: t(".success")
+      redirect_to update_redirect_path, notice: t(".success")
     else
-      redirect_to edit_app_train_platform_submission_config_path(@app, @train, @release_platform.platform), flash: {error: @config.errors.full_messages.to_sentence}
+      redirect_to update_redirect_path, flash: {error: @config.errors.full_messages.to_sentence}
     end
   end
 
@@ -156,5 +156,9 @@ class Config::ReleasePlatformsController < SignedInApplicationController
 
   def set_destroy!(param)
     param[:_destroy] = "1"
+  end
+
+  def update_redirect_path
+    edit_app_train_platform_submission_config_path(@app, @train, @release_platform.platform)
   end
 end

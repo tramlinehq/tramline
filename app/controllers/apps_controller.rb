@@ -17,7 +17,7 @@ class AppsController < SignedInApplicationController
   def show
     @app = default_app
 
-    if @app.trains.size > 1 || (@app.trains.size == 1 && !@app.trains.first.in_creation?)
+    if @app.trains.exists?
       selected_train = @app.trains.find(&:has_production_deployment?) || @app.trains.first
       redirect_to app_train_releases_path(@app, selected_train)
     end

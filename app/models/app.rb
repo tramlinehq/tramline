@@ -100,8 +100,7 @@ class App < ApplicationRecord
   end
 
   def guided_train_setup?
-    return true if trains.none? && train_in_creation&.product_v2?
-    trains.none? || train_in_creation&.in_creation?
+    trains.none? || train_in_creation&.product_v2?
   end
 
   def train_in_creation
