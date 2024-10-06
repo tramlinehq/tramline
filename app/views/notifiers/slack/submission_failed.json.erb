@@ -4,7 +4,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": ":octagonal_sign: The submission to *<%= @submission_channel %>* failed for *<%= @release_version %> (<%= @build_number %>)* for <<%= @commit_url %>|<%= @commit_sha %>> due to <%= @submission_failure_reason %>. Please check the release page for more details."
+        "text": ":octagonal_sign: The submission to *<%= @submission_channel %>* failed for *<%= @release_version %> (<%= @build_number %>)* for <<%= @commit_url %>|<%= @commit_sha %>>. Please check the release page for more details. \n\n *Error* \n ```<%= @submission_failure_reason %>```"
       }
     }
   ]
