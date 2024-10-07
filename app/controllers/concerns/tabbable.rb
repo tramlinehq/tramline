@@ -1,7 +1,7 @@
 module Tabbable
   include Memery
   extend ActiveSupport::Concern
-  AUTO_SELECTABLE_LIVE_RELEASE_TABS = [:internal_builds, :release_candidate, :app_submission, :rollout_to_users]
+  AUTO_SELECTABLE_LIVE_RELEASE_TABS = [:internal_builds, :release_candidate, :app_submission, :rollout_to_users, :wrap_up_automations]
   included { helper_method :live_release_tab_configuration, :live_release_overall_status }
 
   def set_train_config_tabs
