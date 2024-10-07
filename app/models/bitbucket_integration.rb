@@ -25,7 +25,9 @@ class BitbucketIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
+  delegate :app, to: :integration
   delegate :code_repository_name, to: :app_config
+  delegate :cache, to: Rails
 
   def install_path
     unless integration.version_control? || integration.ci_cd?
@@ -275,16 +277,16 @@ class BitbucketIntegration < ApplicationRecord
     generated_at: :created_on
   }
 
-  def workflows
+  def workflows(branch_name)
     return [] unless integration.ci_cd?
     cache.fetch(workflows_cache_key, expires_in: 10.minutes) do
-      with_api_retries { installation.list_pipeline_selectors(code_repository_name) }
+      with_api_retries { installation.list_pipeline_selectors(code_repository_name, branch_name) }
     end
   end
 
   def workflow_retriable? = false
 
-  def trigger_workflow_run!(ci_cd_channel, _branch_name, inputs, commit_hash = nil)
+  def trigger_workflow_run!(ci_cd_channel, _branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
     with_api_retries do
       res = installation.trigger_pipeline!(code_repository_name, ci_cd_channel, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
       res.merge(ci_link: "https://bitbucket.org/#{code_repository_name}/pipelines/results/#{res[:number]}")
@@ -337,7 +339,7 @@ class BitbucketIntegration < ApplicationRecord
 
   def with_api_retries(attempt: 0, &)
     yield
-  rescue Installations::Bitbucket::Error => ex
+  rescue Installations::Error => ex
     raise ex if attempt >= MAX_RETRY_ATTEMPTS
     next_attempt = attempt + 1
 
@@ -363,7 +365,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def app_config
-    integration.app.config
+    app.config
   end
 
   def redirect_uri

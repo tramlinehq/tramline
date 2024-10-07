@@ -27,8 +27,32 @@ class ReleasePlatform < ApplicationRecord
   using RefinedString
   extend FriendlyId
   include Displayable
+
   # self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id status]
+
   NATURAL_ORDER = Arel.sql("CASE WHEN platform = 'android' THEN 1 WHEN platform = 'ios' THEN 2 ELSE 3 END")
+  DEFAULT_PROD_RELEASE_CONFIG = {
+    android: {
+      auto_promote: false,
+      submissions: [
+        {number: 1,
+         submission_type: "GooglePlayStoreSubmission",
+         submission_config: GooglePlayStoreIntegration::PROD_CHANNEL,
+         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+         auto_promote: false}
+      ]
+    },
+    ios: {
+      auto_promote: false,
+      submissions: [
+        {number: 1,
+         submission_type: "AppStoreSubmission",
+         submission_config: AppStoreIntegration::PROD_CHANNEL,
+         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+         auto_promote: false}
+      ]
+    }
+  }
 
   belongs_to :app
   belongs_to :train
@@ -96,10 +120,6 @@ class ReleasePlatform < ApplicationRecord
     steps.where(step_number: ..step_number).order(:step_number)
   end
 
-  def in_creation?
-    train.draft? && steps.release.none?
-  end
-
   def valid_steps?
     steps.release.size == 1
   end
@@ -112,6 +132,10 @@ class ReleasePlatform < ApplicationRecord
     else
       raise ArgumentError, "invalid platform value"
     end
+  end
+
+  def production_ready?
+    store_provider.present?
   end
 
   def build_channel_integrations
@@ -129,22 +153,24 @@ class ReleasePlatform < ApplicationRecord
   end
 
   def production_submission_type
-    android? ? "PlayStoreSubmission" : "AppStoreSubmission"
+    DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym][:submissions].first[:submission_type] if production_ready?
   end
 
+  # setup production if the store integrations are added
+  # otherwise use the first build channel integration and setup beta releases
   def set_default_config
     return if Rails.env.test?
     return if platform_config.present?
 
-    ci_cd_channel = train.ci_cd_provider.workflows.first
-    config_map = {
+    rc_ci_cd_channel = train.workflows.first
+    base_config_map = {
       release_platform: self,
       workflows: {
         internal: nil,
         release_candidate: {
           kind: "release_candidate",
-          name: ci_cd_channel[:name],
-          id: ci_cd_channel[:id],
+          name: rc_ci_cd_channel[:name],
+          id: rc_ci_cd_channel[:id],
           artifact_name_pattern: nil
         }
       },
@@ -152,36 +178,28 @@ class ReleasePlatform < ApplicationRecord
       beta_release: {
         auto_promote: false,
         submissions: []
-      },
-      production_release: android? ? android_production_release_config : ios_production_release_config
+      }
     }
 
-    self.platform_config = Config::ReleasePlatform.from_json(config_map)
-  end
+    base_config_map[:production_release] = DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym] if production_ready?
 
-  def android_production_release_config
-    {
-      auto_promote: false,
-      submissions: [
-        {number: 1,
-         submission_type: "PlayStoreSubmission",
-         submission_config: GooglePlayStoreIntegration::PROD_CHANNEL,
-         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
-         auto_promote: false}
+    if base_config_map[:production_release].nil?
+      providable = app.integrations.build_channel.first.providable
+      providable_type = providable.class
+      submission_type = Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym][providable_type]
+      submission_config = providable.pick_default_beta_channel
+      submissions = [
+        {
+          number: 1,
+          submission_type:,
+          submission_config:,
+          auto_promote: false
+        }
       ]
-    }
-  end
 
-  def ios_production_release_config
-    {
-      auto_promote: false,
-      submissions: [
-        {number: 1,
-         submission_type: "AppStoreSubmission",
-         submission_config: AppStoreIntegration::PROD_CHANNEL,
-         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
-         auto_promote: false}
-      ]
-    }
+      base_config_map[:beta_release][:submissions] = submissions
+    end
+
+    self.platform_config = Config::ReleasePlatform.from_json(base_config_map)
   end
 end

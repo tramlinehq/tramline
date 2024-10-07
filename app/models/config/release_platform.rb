@@ -15,12 +15,12 @@ class Config::ReleasePlatform < ApplicationRecord
   has_one :release_candidate_workflow, -> { release_candidate }, class_name: "Config::Workflow", inverse_of: :release_platform_config, dependent: :destroy
   has_one :internal_release, -> { internal }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
   has_one :beta_release, -> { beta }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
-  has_one :production_release, -> { production }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy
+  has_one :production_release, -> { production }, class_name: "Config::ReleaseStep", inverse_of: :release_platform_config, dependent: :destroy, autosave: true
 
   accepts_nested_attributes_for :internal_workflow, allow_destroy: true
-  accepts_nested_attributes_for :release_candidate_workflow, allow_destroy: true
   accepts_nested_attributes_for :internal_release, allow_destroy: true
-  accepts_nested_attributes_for :beta_release, allow_destroy: true
+  accepts_nested_attributes_for :release_candidate_workflow
+  accepts_nested_attributes_for :beta_release
   accepts_nested_attributes_for :production_release, allow_destroy: true
 
   attribute :production_release_enabled, :boolean, default: false
@@ -29,15 +29,15 @@ class Config::ReleasePlatform < ApplicationRecord
 
   after_initialize :set_defaults
 
-  validates :release_candidate_workflow, presence: { message: :not_present }
+  validates :beta_release, presence: {message: :not_present}
+  validates :release_candidate_workflow, presence: {message: :not_present}
   validate :workflow_identifiers
   validate :release_steps_presence
   validate :submission_uniqueness
   validate :internal_releases
   validate :beta_release_submissions
-  validates :beta_release, presence: { message: :not_present }
 
-  delegate :platform, to: :release_platform
+  delegate :platform, :app, :android?, :ios?, to: :release_platform
 
   def self.from_json(json)
     json = json.with_indifferent_access
@@ -94,6 +94,18 @@ class Config::ReleasePlatform < ApplicationRecord
 
   def production_release?
     production_release.present?
+  end
+
+  def allowed_pre_prod_submissions
+    Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym].invert.each_with_object([]) do |(type, integration), submissions|
+      provider = app.integrations.build_channel.find_by(providable_type: integration.to_s)&.providable
+      next if provider.blank?
+
+      submissions << {
+        type: type,
+        channels: provider.build_channels(with_production: false)
+      }
+    end
   end
 
   # Ensure that at least one of internal release, beta release, or production release is configured

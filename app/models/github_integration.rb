@@ -230,15 +230,14 @@ class GithubIntegration < ApplicationRecord
 
   ## CI/CD
 
-  def workflows
+  def workflows(_ = nil)
     return [] unless integration.ci_cd?
     cache.fetch(workflows_cache_key, expires_in: 10.minutes) do
       installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
     end
   end
 
-  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
-    deploy_action_enabled = organization.deploy_action_enabled? || app.deploy_action_enabled?
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, deploy_action_enabled = false)
     installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash, deploy_action_enabled)
   end
 

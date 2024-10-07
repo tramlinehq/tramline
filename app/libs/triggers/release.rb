@@ -28,7 +28,7 @@ class Triggers::Release
     return Response.new(:unprocessable_entity, "Could not kickoff a hotfix because the source tag does not exist") if hotfix_from_new_branch? && !hotfix_tag_exists?
     return Response.new(:unprocessable_entity, "Could not kickoff a hotfix because the source release branch does not exist") if hotfix_from_previous_branch? && !hotfix_branch_exists?
     return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train.inactive?
-    return Response.new(:unprocessable_entity, "Cannot start a train that has no release step. Please add at least one release step to the train.") unless train.release_platforms.all?(&:has_release_step?)
+    return Response.new(:unprocessable_entity, "Cannot start a train that has no release step. Please add at least one release step to the train.") unless train.startable?
     return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.ongoing_release.present? && automatic
     return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix?
     return Response.new(:unprocessable_entity, "Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?

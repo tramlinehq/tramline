@@ -13,11 +13,13 @@ class Config::ReleaseStep < ApplicationRecord
   self.table_name = "release_step_configs"
 
   belongs_to :release_platform_config, class_name: "Config::ReleasePlatform"
-  has_many :submissions, class_name: "Config::Submission", inverse_of: :release_step_config, dependent: :destroy
+  has_many :submissions, class_name: "Config::Submission", inverse_of: :release_step_config, dependent: :destroy, autosave: true
 
   accepts_nested_attributes_for :submissions, allow_destroy: true
 
   enum :kind, {internal: "internal", beta: "beta", production: "production"}
+
+  delegate :ios?, :android?, to: :release_platform_config
 
   def as_json(options = {})
     {

@@ -100,7 +100,7 @@ class App < ApplicationRecord
   end
 
   def guided_train_setup?
-    trains.none? || train_in_creation&.in_creation?
+    trains.none? || train_in_creation&.product_v2?
   end
 
   def train_in_creation
@@ -189,33 +189,6 @@ class App < ApplicationRecord
     end
 
     [app_setup, integration_setup, app_config_setup].flatten.reduce(:merge)
-  end
-
-  def train_setup_instructions
-    train_setup = {
-      train: {
-        visible: !trains.any?, completed: trains.any?
-      }
-    }
-
-    ios_steps_setup =
-      {
-        ios_release_step: {
-          visible: trains.any?, completed: trains.ios_release_steps?
-        }
-      }
-
-    android_steps_setup =
-      {
-        android_release_step: {
-          visible: trains.any?, completed: trains.android_release_steps?
-        }
-      }
-
-    instructions = [train_setup]
-    instructions += [ios_steps_setup] if ios? || cross_platform?
-    instructions += [android_steps_setup] if android? || cross_platform?
-    instructions.flatten.reduce(:merge)
   end
 
   def set_external_details(external_id)

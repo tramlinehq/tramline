@@ -96,6 +96,7 @@ class Train < ApplicationRecord
   validate :working_branch_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
 
+  after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
   after_initialize :set_release_schedule, if: :persisted?
   after_initialize :set_build_queue_config, if: :persisted?
@@ -107,6 +108,7 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
+  after_create -> { Flipper.enable_actor(:product_v2, self) }
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
 
@@ -140,6 +142,14 @@ class Train < ApplicationRecord
 
   def product_v2?
     Flipper.enabled?(:product_v2, self)
+  end
+
+  def deploy_action_enabled?
+    Flipper.enabled?(:deploy_action_enabled, self)
+  end
+
+  def workflows
+    ci_cd_provider.workflows(working_branch)
   end
 
   def version_ahead?(release)
@@ -306,13 +316,10 @@ class Train < ApplicationRecord
     scheduled_releases.pending&.delete_all
   end
 
-  def in_creation?
-    release_platforms.any?(&:in_creation?)
-  end
-
   def startable?
     return true if product_v2?
     return false unless app.ready?
+    return true if product_v2?
     release_platforms.all?(&:startable?)
   end
 
@@ -527,6 +534,10 @@ class Train < ApplicationRecord
       VersioningStrategies::Semverish.build(major_version_seed, minor_version_seed, patch_version_seed)
   rescue ArgumentError
     nil
+  end
+
+  def set_branching_strategy
+    self.branching_strategy ||= "almost_trunk"
   end
 
   def set_current_version

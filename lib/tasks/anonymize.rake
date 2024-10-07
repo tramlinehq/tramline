@@ -117,7 +117,7 @@ namespace :anonymize do
         whitelist "release_platform_id", "status", "step_number", "slug", "release_suffix", "kind", "auto_deploy", "app_variant_id", "discarded_at"
         whitelist_timestamps
         anonymize("ci_cd_channel") do |field|
-          {"id" => "dummy", "name" => "CI Workflow #{Faker::JapaneseMedia::StudioGhibli.character}"}
+          {"id" => Faker::Internet.uuid, "name" => "CI Workflow #{Faker::JapaneseMedia::StudioGhibli.character}"}
         end
         anonymize("name").using FieldStrategy::LoremIpsum.new
         anonymize("description").using FieldStrategy::LoremIpsum.new

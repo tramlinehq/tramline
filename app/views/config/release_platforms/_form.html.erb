@@ -1,23 +1,29 @@
 <%# locals: (app:, train:, platform:, platform_config:, platform_name:, platform_label:, ci_actions:, submission_types:) %>
 
 <%= render V2::FormComponent.new(model: [app, train, platform, platform_config],
-                                 scope: "#{@form_scope}_#{platform_name}",
-                                 url: app_train_platform_submission_config_path(app, train, platform)) do |f| %>
+                                 url: app_train_platform_submission_config_path(app, train, platform_name)) do |f| %>
   <% f.with_section(heading: "Configure RC (Release Candidate) Workflow") do |section| %>
     <% section.with_description do %>
       You must have at least an RC workflow defined. The CI workflows should generate a valid build artifact (aab/apk/ipa).
     <% end %>
 
     <% section.F.fields_for :release_candidate_workflow, section.F.object.release_candidate_workflow do |rc_fields| %>
-      <div>
-        <%= rc_fields.hidden_field :id, value: rc_fields.object.id %>
-        <%= rc_fields.labeled_select :identifier, "Release Candidate workflow",
-                                     options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.release_candidate_workflow.identifier),
-                                     {required: true},
-                                     data: {controller: "input-select"} %>
+      <div class="flex flex-col gap-4">
+        <div>
+          <%= rc_fields.hidden_field :id, value: rc_fields.object.id %>
+          <%= rc_fields.labeled_select :identifier, "Release Candidate workflow",
+                                       options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.release_candidate_workflow.identifier),
+                                       {required: true},
+                                       data: {controller: "input-select"} %>
 
-        <div class="text-xs text-secondary mt-2">
-          Please select the workflow that generates builds for <%= platform_label %> release candidates.
+          <div class="text-xs text-secondary mt-1">
+            Please select the workflow that generates builds for <%= platform_label %> release candidates.
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-0.5">
+          <%= render partial: "build_name_pattern_info" %>
+          <div><%= rc_fields.labeled_text_field :artifact_name_pattern, "Build artifact name (optional)", placeholder: "Eg., build-abc.apk" %></div>
         </div>
       </div>
     <% end %>
@@ -28,51 +34,58 @@
       Configuring production releases will enable the ability to send builds to the Production track on the stores (App Store, Play Store, etc.).
     <% end %>
 
-    <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                             field_name: :production_release_enabled,
-                                             on_label: "Production release is enabled",
-                                             off_label: "Disabled") do |component| %>
-      <% section.F.fields_for :production_release, section.F.object.production_release || Config::ReleaseStep.new(kind: "production") do |prod_fields| %>
-        <% component.with_child do %>
-          <%= prod_fields.hidden_field :id, value: prod_fields.object.id %>
-          <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || Config::Submission.new(submission_type: @platform.production_submission_type, auto_promote: false) do |sub_fields| %>
-            <%= sub_fields.hidden_field :submission_type, value: sub_fields.object.submission_type %>
-            <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
-            <%= render V2::Form::SwitchComponent.new(form: sub_fields,
-                                                     field_name: :rollout_enabled,
-                                                     on_label: t("store_rollouts.switcher.#{platform_name}.enable"),
-                                                     off_label: t("store_rollouts.switcher.#{platform_name}.disable")) do |rollout| %>
+    <% if platform.production_ready? %>
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :production_release_enabled,
+                                               on_label: "Production release is enabled",
+                                               off_label: "Disabled") do |component| %>
+        <% section.F.fields_for :production_release, section.F.object.production_release || Config::ReleaseStep.new(kind: "production") do |prod_fields| %>
+          <% component.with_child do %>
+            <%= prod_fields.hidden_field :id, value: prod_fields.object.id %>
+            <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || Config::Submission.new(submission_type: platform.production_submission_type, auto_promote: false) do |sub_fields| %>
+              <%= sub_fields.hidden_field :submission_type, value: sub_fields.object.submission_type %>
+              <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
+              <%= render V2::Form::SwitchComponent.new(form: sub_fields,
+                                                       field_name: :rollout_enabled,
+                                                       on_label: t("store_rollouts.switcher.#{platform_name}.enable"),
+                                                       off_label: t("store_rollouts.switcher.#{platform_name}.disable")) do |rollout| %>
 
-              <% if platform.android? %>
-                <% rollout.with_info_icon do %>
-                  Here you set a standard template for the common progression of your rollout percentages. When you start a production release, you will always move through these.
+                <% if platform.android? %>
+                  <% rollout.with_info_icon do %>
+                    Here you set a standard template for the common progression of your rollout percentages. When you start a production release, you will always move through these.
+                  <% end %>
+                <% else %>
+                  <% rollout.with_info_icon do %>
+                    Phased release on the App Store automatically progresses by 1%, 2%, 5%, 10%, 20%, 50% to 100% over 7 days.
+                  <% end %>
                 <% end %>
-              <% else %>
-                <% rollout.with_info_icon do %>
-                  Phased release on the App Store automatically progresses by 1%, 2%, 5%, 10%, 20%, 50% to 100% over 7 days.
-                <% end %>
-              <% end %>
 
-              <% if platform.android? %>
-                <% rollout.with_child do %>
-                  <div data-controller="domain--staged-rollout-help">
-                    <%= sub_fields.labeled_text_field :rollout_stages,
-                                                      "Rollout sequence",
-                                                      {value: sub_fields.object.rollout_stages.join(", "),
-                                                       placeholder: "1, 2, 5, 10, 20, 50, 100",
-                                                       data: {domain__staged_rollout_help_target: "input",
-                                                              action: "domain--staged-rollout-help#validateString"}} %>
+                <% if platform.android? %>
+                  <% rollout.with_child do %>
+                    <div data-controller="domain--staged-rollout-help">
+                      <%= sub_fields.labeled_text_field :rollout_stages,
+                                                        "Rollout sequence",
+                                                        {value: sub_fields.object.rollout_stages.join(", "),
+                                                         placeholder: "1, 2, 5, 10, 20, 50, 100",
+                                                         data: {domain__staged_rollout_help_target: "input",
+                                                                action: "domain--staged-rollout-help#validateString"}} %>
 
-                    <div class="text-xs text-secondary mt-2">
-                      <span data-domain--staged-rollout-help-target="helpErrorText helpSuccessText"></span>
+                      <div class="text-xs text-secondary mt-2">
+                        <span data-domain--staged-rollout-help-target="helpSuccessText"></span>
+                        <span data-domain--staged-rollout-help-target="helpErrorText" class="text-red-600"></span>
+                      </div>
                     </div>
-                  </div>
+                  <% end %>
                 <% end %>
               <% end %>
             <% end %>
           <% end %>
         <% end %>
       <% end %>
+    <% else %>
+      <div class="text-xs text-secondary">
+        Production releases are not available for this platform. You need to configure a store integration first.
+      </div>
     <% end %>
   <% end %>
 
@@ -111,21 +124,29 @@
       <% end %>
 
       <% component.with_child do %>
-        <% section.F.fields_for :internal_workflow, section.F.object.internal_workflow || Config::Workflow.new(kind: "internal") do |internal_fields| %>
-          <div>
-            <%= internal_fields.hidden_field :id, value: internal_fields.object.id %>
-            <%= internal_fields.labeled_select :identifier, "Internal build workflow",
-                                               options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.internal_workflow&.identifier),
-                                               {required: false},
-                                               data: {controller: "input-select"} %>
-          </div>
+        <div class="flex flex-col gap-4">
+          <% section.F.fields_for :internal_workflow, section.F.object.internal_workflow || Config::Workflow.new(kind: "internal") do |internal_fields| %>
+            <div>
+              <%= internal_fields.hidden_field :id, value: internal_fields.object.id %>
+              <%= internal_fields.labeled_select :identifier, "Internal build workflow",
+                                                 options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.internal_workflow&.identifier),
+                                                 {required: false},
+                                                 data: {controller: "input-select"} %>
 
-          <div class="text-xs text-secondary mt-2">
-            Select a workflow that generates internal / non-production builds.
-          </div>
-        <% end %>
+              <div class="text-xs text-secondary mt-1">Select a workflow that generates internal / non-production
+                builds.
+              </div>
+            </div>
 
-        <div class="mt-4"><%= render "pre_prod_release_form", section:, kind: :internal, submission_types:, platform: %></div>
+            <div class="flex flex-col gap-0.5">
+              <%= render partial: "build_name_pattern_info" %>
+              <div><%= internal_fields.labeled_text_field :artifact_name_pattern, "Build artifact name (optional)", placeholder: "Eg., build-abc.apk" %></div>
+            </div>
+          <% end %>
+
+          <%= render "pre_prod_release_form", section:, kind: :internal, submission_types:, platform: %>
+        </div>
+
       <% end %>
     <% end %>
   <% end %>

@@ -10,7 +10,6 @@ FactoryBot.define do
         workflows: {
           internal: nil,
           release_candidate: {
-            kind: "release_candidate",
             name: Faker::FunnyName.name,
             id: Faker::Number.number(digits: 8),
             artifact_name_pattern: nil
@@ -28,7 +27,8 @@ FactoryBot.define do
              auto_promote: false}
           ]
         }
-      }.with_indifferent_access
+      }
+
       release_platform.platform_config = Config::ReleasePlatform.from_json(config)
     end
   end

@@ -19,10 +19,16 @@ class Config::Submission < ApplicationRecord
   belongs_to :release_step_config, class_name: "Config::ReleaseStep"
   has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
 
-  accepts_nested_attributes_for :submission_external, allow_destroy: true
+  before_validation :set_number_one, if: :production?
+  before_validation :set_default_rollout_for_ios, if: [:ios?, :rollout_enabled?]
 
   validates :submission_type, presence: true
-  validate :correct_rollout_stages, if: :rolloutable?
+  validates :number, presence: true, uniqueness: {scope: :release_step_config_id}
+  validate :correct_rollout_stages, if: :rollout_enabled?
+
+  accepts_nested_attributes_for :submission_external, allow_destroy: true
+
+  delegate :ios?, :android?, :production?, to: :release_step_config
 
   def as_json(options = {})
     {
@@ -75,7 +81,11 @@ class Config::Submission < ApplicationRecord
     end
   end
 
-  def rolloutable?
-    rollout_enabled? && submission_type.in?(%w[PlayStoreSubmission])
+  def set_default_rollout_for_ios
+    self.rollout_stages = AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE
+  end
+
+  def set_number_one
+    self.number = 1
   end
 end

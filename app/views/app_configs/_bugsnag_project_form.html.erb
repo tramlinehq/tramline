@@ -7,7 +7,9 @@
   <div class="grid gap-y-4"
        data-controller="nested-select"
        data-nested-select-selected-nested-option-value="<%= stage %>"
-       data-nested-select-options-value="<%= projects.to_json %>">
+       data-nested-select-options-value="<%= projects.to_json %>"
+       data-nested-select-option-key-value="id"
+       data-nested-select-nested-option-key-value="release_stages">
     <div>
       <%= section.F.labeled_select "bugsnag_#{platform}_project_id".downcase.to_sym,
                                    "Project",
