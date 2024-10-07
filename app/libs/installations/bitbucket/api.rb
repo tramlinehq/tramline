@@ -167,7 +167,7 @@ module Installations
     end
 
     def create_pr!(repo_slug, to, from, title, description, transforms)
-      raise Installations::Error.new("Should not create a Pull Request without a diff", reason: :pull_request_without_commits) unless diff?(repo_slug, from, to, :branch)
+      raise Installations::Error.new("Should not create a Pull Request without a diff", reason: :pull_request_without_commits) unless diff?(repo_slug, to, from)
 
       params = {
         json: {
@@ -222,18 +222,11 @@ module Installations
         .map { |commit| self.class.parse_author_info(commit) }
     end
 
-    def diff?(repo_slug, from_branch, to_branch, from_type)
-      from_sha = if from_type == :branch
-        head(repo_slug, from_branch, sha_only: true)
-      elsif from_type == :tag
-        get_tag(repo_slug, from_branch).dig("target", "hash")
-      elsif from_type == :commit
-        from_branch
-      else
-        raise ArgumentError, "Invalid ref type"
-      end
-      to_sha = head(repo_slug, to_branch, sha_only: true)
+    def diff?(repo_slug, from_branch, to_branch, from_type = :branch, to_type = :branch)
+      from_sha = get_sha_for_ref(repo_slug, from_branch, from_type)
+      to_sha = get_sha_for_ref(repo_slug, to_branch, to_type)
 
+      # This is equivalent to git diff from_sha..to_sha
       execute(:get, DIFFSTAT_URL.expand(repo_slug:, from_sha:, to_sha:).to_s)
         .dig("size")
         .positive?
@@ -330,6 +323,18 @@ module Installations
     end
 
     private
+
+    def get_sha_for_ref(repo_slug, ref, type)
+      if type == :branch
+        head(repo_slug, ref, sha_only: true)
+      elsif type == :tag
+        get_tag(repo_slug, ref).dig("target", "hash")
+      elsif type == :commit
+        ref
+      else
+        raise ArgumentError, "Invalid ref type"
+      end
+    end
 
     MAX_PAGES = 10
 

@@ -211,11 +211,11 @@ class Train < ApplicationRecord
     return true if last_finished_release.blank?
 
     if last_finished_release.tag_name.present?
-      from_branch, from_type = last_finished_release.tag_name, :tag
+      last_release_ref, ref_type = last_finished_release.tag_name, :tag
     else
-      from_branch, from_type = last_finished_release.last_commit.commit_hash, :commit
+      last_release_ref, ref_type = last_finished_release.last_commit.commit_hash, :commit
     end
-    vcs_provider.diff_between?(from_branch, working_branch, from_type:)
+    vcs_provider.diff_between?(last_release_ref, working_branch, from_type: ref_type)
   end
 
   def diff_for_release?
