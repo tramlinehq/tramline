@@ -40,14 +40,14 @@ class Integration < ApplicationRecord
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
-      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
+      "build_channel" => %w[GooglePlayStoreIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration]
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
-      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
+      "build_channel" => %w[GooglePlayStoreIntegration GoogleFirebaseIntegration AppStoreIntegration],
       "monitoring" => %w[BugsnagIntegration]
     }
   }.with_indifferent_access
