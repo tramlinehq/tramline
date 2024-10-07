@@ -71,7 +71,7 @@ class ReleasePlatform < ApplicationRecord
   friendly_id :name, use: :slugged
 
   validate :ready?, on: :create
-  before_save :set_default_config, if: :new_record?
+  after_create :set_default_config
 
   delegate :integrations, :ci_cd_provider, to: :train
   delegate :ready?, :default_locale, to: :app
@@ -162,7 +162,7 @@ class ReleasePlatform < ApplicationRecord
     return if Rails.env.test?
     return if platform_config.present?
 
-    rc_ci_cd_channel = train.workflows.first
+    rc_ci_cd_channel = app.config.ci_cd_workflows.first
     base_config_map = {
       release_platform: self,
       workflows: {
@@ -186,7 +186,7 @@ class ReleasePlatform < ApplicationRecord
     if base_config_map[:production_release].nil?
       providable = app.integrations.build_channel.first.providable
       providable_type = providable.class
-      submission_type = Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym][providable_type]
+      submission_type = Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym][providable_type].to_s
       submission_config = providable.pick_default_beta_channel
       submissions = [
         {
@@ -196,7 +196,6 @@ class ReleasePlatform < ApplicationRecord
           auto_promote: false
         }
       ]
-
       base_config_map[:beta_release][:submissions] = submissions
     end
 

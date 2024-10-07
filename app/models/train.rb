@@ -94,6 +94,7 @@ class Train < ApplicationRecord
   validate :tag_release_config
   validate :valid_train_configuration, on: :activate_context
   validate :working_branch_presence, on: :create
+  validate :ci_cd_workflows_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
 
   after_initialize :set_branching_strategy, if: :new_record?
@@ -103,6 +104,7 @@ class Train < ApplicationRecord
   after_initialize :set_backmerge_config, if: :persisted?
   after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
+  before_create :set_ci_cd_workflows
   before_create :set_current_version
   before_create :set_default_status
   after_create :create_release_platforms
@@ -149,7 +151,7 @@ class Train < ApplicationRecord
   end
 
   def workflows
-    ci_cd_provider.workflows(working_branch)
+    @workflows ||= ci_cd_provider.workflows(working_branch)
   end
 
   def version_ahead?(release)
@@ -241,13 +243,10 @@ class Train < ApplicationRecord
 
   def create_release_platforms
     platforms = app.cross_platform? ? ReleasePlatform.platforms.values : [app.platform]
-    platforms.each do |platform|
-      release_platforms.create!(
-        platform: platform,
-        name: "#{name} #{platform}",
-        app: app
-      )
-    end
+    platforms.each { |platform| release_platforms.create!(app:, platform:, name: "#{name} #{platform}") }
+  rescue ActiveRecord::RecordNotSaved
+    errors.add(:base, "There was an error setting up your release. Please try again.")
+    raise ActiveRecord::RecordInvalid, self
   end
 
   # rubocop:disable Rails/SkipsModelValidations
@@ -482,6 +481,10 @@ class Train < ApplicationRecord
     releases.where(status: "finished").reorder(completed_at: :desc).first
   end
 
+  def set_ci_cd_workflows
+    config.set_ci_cd_workflows(workflows)
+  end
+
   def set_constituent_seed_versions
     semverish = version_seeded_with.to_semverish
     self.major_version_seed, self.minor_version_seed, self.patch_version_seed = semverish.major, semverish.minor, semverish.patch
@@ -564,6 +567,10 @@ class Train < ApplicationRecord
 
   def working_branch_presence
     errors.add(:working_branch, :not_available) unless vcs_provider.branch_exists?(working_branch)
+  end
+
+  def ci_cd_workflows_presence
+    errors.add(:base, :ci_cd_workflows_not_available) if workflows.blank?
   end
 
   def build_queue_config

@@ -413,6 +413,8 @@ en:
           attributes:
             name:
               invalid: "can only contain alphanumerics, underscores, hyphens and forward-slashes"
+            base:
+              ci_cd_workflows_not_available: "Your working branch / release does not have any CI workflows available. Please add at least one workflow to continue."
             tag_all_store_releases:
               not_allowed: "cannot enable tags for all store releases without enabling platform-specific tags"
             build_queue_size:

@@ -232,7 +232,7 @@ class GithubIntegration < ApplicationRecord
 
   def workflows(_ = nil)
     return [] unless integration.ci_cd?
-    cache.fetch(workflows_cache_key, expires_in: 10.minutes) do
+    cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
       installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
     end
   end

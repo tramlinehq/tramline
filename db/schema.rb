@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_09_24_104432) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_07_102045) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -57,6 +57,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_24_104432) do
     t.jsonb "bugsnag_ios_config"
     t.jsonb "bugsnag_android_config"
     t.string "bitbucket_workspace"
+    t.jsonb "ci_cd_workflows"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 

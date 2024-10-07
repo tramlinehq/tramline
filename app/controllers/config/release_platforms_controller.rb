@@ -42,7 +42,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   end
 
   def set_ci_actions
-    @ci_actions = @train.workflows
+    @ci_actions = @app.config.ci_cd_workflows
   end
 
   def set_submission_types

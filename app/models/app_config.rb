@@ -6,6 +6,7 @@
 #  bitbucket_workspace     :string
 #  bugsnag_android_config  :jsonb
 #  bugsnag_ios_config      :jsonb
+#  ci_cd_workflows         :jsonb
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
@@ -112,6 +113,16 @@ class AppConfig < ApplicationRecord
 
   def bugsnag_release_stage(platform)
     pick_bugsnag_release_stage(platform)
+  end
+
+  def ci_cd_workflows
+    super&.map(&:with_indifferent_access)
+  end
+
+  def set_ci_cd_workflows(workflows)
+    return if code_repository.nil?
+    return if app.ci_cd_provider.blank?
+    update(ci_cd_workflows: workflows)
   end
 
   private
