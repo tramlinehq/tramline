@@ -127,6 +127,8 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_finish?
     # return mock_finish_firebase_release if sandbox_mode?
 
+    return finish! if submission_channel_id == GoogleFirebaseIntegration::EMPTY_CHANNEL[:id].to_s
+
     deployment_channels = [submission_channel_id]
     result = provider.release(external_id, deployment_channels)
     if result.ok?

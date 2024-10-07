@@ -114,7 +114,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
     update_workflow_name(permitted_params[:release_candidate_workflow_attributes])
     update_submission_names(permitted_params[:internal_release_attributes])
     update_submission_names(permitted_params[:beta_release_attributes])
-    update_production_release_rollout_stages(permitted_params[:production_release_attributes]) if @release_platform.android?
+    update_production_release_rollout_stages(permitted_params[:production_release_attributes]) if @release_platform.android? && permitted_params[:production_release_attributes].present?
 
     permitted_params
   end
