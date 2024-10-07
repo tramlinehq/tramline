@@ -465,6 +465,10 @@ class Train < ApplicationRecord
     ongoing_release.stop!
   end
 
+  def set_ci_cd_workflows
+    config.set_ci_cd_workflows(workflows)
+  end
+
   private
 
   def train_link
@@ -479,10 +483,6 @@ class Train < ApplicationRecord
 
   def last_finished_release
     releases.where(status: "finished").reorder(completed_at: :desc).first
-  end
-
-  def set_ci_cd_workflows
-    config.set_ci_cd_workflows(workflows)
   end
 
   def set_constituent_seed_versions
