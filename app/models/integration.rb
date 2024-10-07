@@ -115,6 +115,10 @@ class Integration < ApplicationRecord
         next if MULTI_INTEGRATION_CATEGORIES.exclude?(category) && combination[category].present?
 
         (providers - existing_integration.pluck(:providable_type)).each do |provider|
+          # NOTE: Slack is deprecated as a build channel and will be removed in the future.
+          # Do not allow any new Slack integrations as build channels.
+          next if category == "build_channel" && provider == "SlackIntegration"
+
           integration =
             app
               .integrations
