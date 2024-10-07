@@ -74,6 +74,11 @@ class ReleasesController < SignedInApplicationController
     set_train_and_app
   end
 
+  def wrap_up_automations
+    live_release!
+    set_train_and_app
+  end
+
   def live_release
     @train = @app.trains.friendly.find(params[:train_id])
     @release = @train.ongoing_release

@@ -87,6 +87,7 @@ Rails.application.routes.draw do
           get :changeset_tracking
           get :regression_testing
           get :soak
+          get :wrap_up_automations
         end
 
         resources :commits, only: [], shallow: false do

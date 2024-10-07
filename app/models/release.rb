@@ -91,7 +91,8 @@ class Release < ApplicationRecord
     screenshots: {title: "Screenshots"},
     approvals: {title: "Approvals"},
     app_submission: {title: "App submission"},
-    rollout_to_users: {title: "Rollout"}
+    rollout_to_users: {title: "Rollout"},
+    wrap_up_automations: {title: "Automations"}
   }
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
