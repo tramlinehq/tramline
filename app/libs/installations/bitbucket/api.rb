@@ -28,7 +28,7 @@ module Installations
     STOP_PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/pipelines/{pipeline_id}/stopPipeline"
     LIST_FILES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/downloads"
     GET_FILE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/downloads/{file_name}"
-    PIPELINE_YAML_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/src/{branch_name}/bitbucket-pipelines.yml"
+    PIPELINE_YAML_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/src/{sha}/bitbucket-pipelines.yml"
 
     WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
 
@@ -250,8 +250,9 @@ module Installations
     # CI/CD
 
     def list_pipeline_selectors(repo_slug, branch_name = "main")
-      yaml_content = execute(:get, PIPELINE_YAML_URL.expand(repo_slug:, branch_name:).to_s, {}, false)
-      pipeline_config = YAML.safe_load(yaml_content)
+      sha = head(repo_slug, branch_name, sha_only: true)
+      yaml_content = execute(:get, PIPELINE_YAML_URL.expand(repo_slug:, sha:).to_s, {}, false)
+      pipeline_config = YAML.safe_load(yaml_content, aliases: true)
       selectors = []
 
       # Add default pipeline if it exists
