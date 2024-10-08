@@ -102,10 +102,17 @@ class V2::ReleaseListComponent < V2::BaseComponent
       end
     else
       platform = train.release_platforms.first.platform
+      text =
+        if train.product_v2?
+          "You can now start creating new releases. We have added some default submissions settings for you. This involves picking the right workflows and configuring the right channels for build distribution. Please review these before starting a release."
+        else
+          "You can now start creating new releases. Please review the release steps and submissions settings before starting a release."
+        end
+      button_link = train.product_v2? ? edit_app_train_platform_submission_config_path(app, train, platform) : steps_app_train_path(app, train)
       {
         title: "Create your very first release",
-        text: "You can now start creating new releases. We have added some default submissions settings for you. This involves picking the right workflows and configuring the right channels for build distribution. Please review these before starting a release.",
-        content: render(V2::ButtonComponent.new(scheme: :light, type: :link, label: "Review submission settings", options: edit_app_train_platform_submission_config_path(app, train, platform), size: :xxs, authz: false))
+        text:,
+        content: render(V2::ButtonComponent.new(scheme: :light, type: :link, label: "Review submission settings", options: button_link, size: :xxs, authz: false))
       }
     end
   end
