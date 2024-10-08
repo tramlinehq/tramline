@@ -14,7 +14,6 @@ module Exceptionable
     message = t("errors.messages.not_authorized_policy", query: e.query, model: e.record.class)
     exception = StandardError.new(message)
     exception.set_backtrace(e.backtrace)
-
     respond_with_error(403, exception)
   end
 
@@ -31,8 +30,7 @@ module Exceptionable
   end
 
   def internal_server_error(e)
-    Rails.logger.error e
-    respond_with_error(500, e)
+    respond_without_blowing_up(500, e)
   end
 
   def respond_with_error(code, exception)
@@ -46,6 +44,16 @@ module Exceptionable
       @message = exception.message if code < 500
 
       format.any { render "errors/show", layout: "errors", status: code, formats: [:html, :turbo_stream] }
+      format.json { render json: {code:, error: Rack::Utils::HTTP_STATUS_CODES[code]}, status: code }
+    end
+  end
+
+  def respond_without_blowing_up(code, exception)
+    Rails.logger.error(exception)
+    Sentry.capture_exception(exception) if code >= 500
+
+    respond_to do |format|
+      format.any { redirect_back fallback_location: root_path, flash: {error: "An unrecognized error occurred. This shouldn't have happened. Please contact support to report this."} }
       format.json { render json: {code:, error: Rack::Utils::HTTP_STATUS_CODES[code]}, status: code }
     end
   end
