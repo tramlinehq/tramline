@@ -83,7 +83,7 @@ class BitbucketIntegration < ApplicationRecord
   }
 
   def workspaces
-    with_api_retries { installation.list_workspaces(WORKSPACE_TRANSFORMATIONS).pluck(:name) }
+    with_api_retries { installation.list_workspaces(WORKSPACE_TRANSFORMATIONS).pluck(:id) }
   end
 
   def metadata
