@@ -149,8 +149,8 @@ class GithubIntegration < ApplicationRecord
     end
   end
 
-  def create_release!(tag_name, branch)
-    installation.create_release!(code_repository_name, tag_name, branch)
+  def create_release!(tag_name, branch, release_notes)
+    installation.create_release!(code_repository_name, tag_name, branch, release_notes)
   end
 
   def create_tag!(tag_name, sha)
