@@ -19,10 +19,13 @@ class Integration < ApplicationRecord
   using RefinedString
   include Discard::Model
 
+  # self.ignored_columns += %w[app_id]
   belongs_to :app
 
-  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration]
-  delegated_type :providable, types: ALL_TYPES, autosave: true, validate: false
+  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration]
+  INTEGRABLE_TYPES = %w[App AppVariant]
+  delegated_type :providable, types: PROVIDER_TYPES, autosave: true, validate: false
+  delegated_type :integrable, types: INTEGRABLE_TYPES, autosave: true, validate: false
 
   IntegrationNotImplemented = Class.new(StandardError)
   UnsupportedAction = Class.new(StandardError)
@@ -87,7 +90,7 @@ class Integration < ApplicationRecord
   validates :category, presence: true
   validate :allowed_integrations_for_app
   validate :validate_providable, on: :create
-  validates :providable_type, uniqueness: {scope: [:app_id, :category, :status], message: :unique_connected_integration_category, if: :connected?}
+  validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: :connected?}
 
   attr_accessor :current_user, :code
 
@@ -215,8 +218,8 @@ class Integration < ApplicationRecord
 
   def installation_state
     {
-      organization_id: app.organization.id,
-      app_id: app.id,
+      organization_id: integrable.organization.id,
+      app_id: integrable.app_id,
       integration_category: category,
       integration_provider: providable_type,
       user_id: current_user.id

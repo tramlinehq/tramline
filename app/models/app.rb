@@ -18,8 +18,9 @@
 #
 class App < ApplicationRecord
   has_paper_trail
-  include Displayable
   extend FriendlyId
+  include Integrable
+  include Displayable
 
   GOOGLE_PLAY_STORE_URL_TEMPLATE = Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
   APP_STORE_URL_TEMPLATE = Addressable::Template.new("https://apps.apple.com/app/ueno/id{id}")
@@ -74,6 +75,10 @@ class App < ApplicationRecord
       ios: "iOS",
       cross_platform: "Cross Platform"
     }.invert
+  end
+
+  def app_id
+    id
   end
 
   def has_recent_activity?

@@ -13,6 +13,7 @@
 #
 class AppVariant < ApplicationRecord
   has_paper_trail
+  include Integrable
   include PlatformAwareness
 
   belongs_to :app_config
@@ -22,6 +23,8 @@ class AppVariant < ApplicationRecord
   validate :duplicate_bundle_identifier, on: :create
 
   delegate :app, to: :app_config
+  delegate :organization, :active_runs, to: :app
+  delegate :id, to: :app, prefix: true
 
   def display_text
     "#{name} (#{bundle_identifier})"
