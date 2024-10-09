@@ -1,0 +1,15 @@
+<%= render V2::EnhancedTurboFrameComponent.new(dom_id(@app_variant, :edit_variant)) do %>
+  <%= render V2::FormComponent.new(model: [@app, @app_config, @app_variant], url: app_app_config_app_variant_path(@app, @app_variant), method: :patch) do |f| %>
+    <%= render partial: "form", locals: {form: f, bundle_id: @app.bundle_identifier} %>
+    <%= render partial: "app_configs/firebase_form",
+               locals: {f:,
+                        config: @app_config,
+                        integrable: @app_variant,
+                        firebase_ios_apps: @firebase_ios_apps,
+                        firebase_android_apps: @firebase_android_apps} %>
+
+    <% f.with_action do %>
+      <%= f.F.authz_submit "Update", "v2/archive.svg" %>
+    <% end %>
+  <% end %>
+<% end %>

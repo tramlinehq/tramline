@@ -20,7 +20,7 @@ class Integration < ApplicationRecord
   include Discard::Model
 
   # self.ignored_columns += %w[app_id]
-  belongs_to :app
+  belongs_to :app, optional: true
 
   PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration]
   INTEGRABLE_TYPES = %w[App AppVariant]
@@ -87,15 +87,16 @@ class Integration < ApplicationRecord
     build_channels: [{id: :external, name: "External"}]
   }
 
-  validates :category, presence: true
   validate :allowed_integrations_for_app
   validate :validate_providable, on: :create
+  validate :app_variant_restriction, on: :create
+  validates :category, presence: true
   validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: :connected?}
 
   attr_accessor :current_user, :code
 
   delegate :install_path, :connection_data, :project_link, :public_icon_img, to: :providable
-  delegate :platform, to: :app
+  delegate :platform, to: :integrable
 
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
 
@@ -247,6 +248,14 @@ class Integration < ApplicationRecord
   def validate_providable
     unless providable&.valid?
       errors.add(:base, providable.errors.full_messages[0])
+    end
+  end
+
+  def app_variant_restriction
+    return unless integrable_type == "AppVariant"
+
+    if category != Integration.categories[:build_channel]
+      errors.add(:category, "must be 'build_channel' when integrable is an AppVariant")
     end
   end
 end

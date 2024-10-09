@@ -55,17 +55,6 @@ class App < ApplicationRecord
   friendly_id :name, use: :slugged
   normalizes :name, with: ->(name) { name.squish }
 
-  delegate :vcs_provider,
-    :ci_cd_provider,
-    :monitoring_provider,
-    :notification_provider,
-    :ios_store_provider,
-    :android_store_provider,
-    :slack_build_channel_provider,
-    :firebase_build_channel_provider,
-    :slack_notifications?, to: :integrations, allow_nil: true
-  delegate :draft_check?, to: :android_store_provider, allow_nil: true
-
   scope :with_trains, -> { joins(:trains).distinct }
   scope :sequential, -> { reorder("apps.created_at ASC") }
 
@@ -143,22 +132,6 @@ class App < ApplicationRecord
 
   def notifications_set_up?
     notification_provider.present?
-  end
-
-  def bitrise_connected?
-    integrations.bitrise_integrations.any?
-  end
-
-  def bugsnag_connected?
-    integrations.bugsnag_integrations.any?
-  end
-
-  def bitbucket_connected?
-    integrations.bitbucket_integrations.any?
-  end
-
-  def firebase_connected?
-    integrations.google_firebase_integrations.any?
   end
 
   # this helps power initial setup instructions after an app is created

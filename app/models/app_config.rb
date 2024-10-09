@@ -102,8 +102,7 @@ class AppConfig < ApplicationRecord
     categories
   end
 
-  def firebase_app(platform, variant: nil)
-    return variant.pick_firebase_app_id(platform) if variant&.in?(variants)
+  def firebase_app(platform)
     pick_firebase_app_id(platform)
   end
 
