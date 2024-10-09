@@ -1,7 +1,9 @@
 class IntegrationsController < SignedInApplicationController
   using RefinedString
+  include Tabbable
 
   before_action :require_write_access!, only: %i[connect create index build_artifact_channels destroy]
+  before_action :set_app_config_tabs, only: %i[index]
   before_action :set_integration, only: %i[connect create]
   before_action :set_providable, only: %i[connect create]
 
@@ -12,7 +14,6 @@ class IntegrationsController < SignedInApplicationController
   def index
     @pre_open_category = Integration.categories[params[:integration_category]]
     set_integrations_by_categories
-    set_tab_configuration
   end
 
   def create
@@ -64,14 +65,6 @@ class IntegrationsController < SignedInApplicationController
 
   def set_providable_params
     @integration.providable.assign_attributes(providable_params)
-  end
-
-  def set_tab_configuration
-    @tab_configuration = [
-      [1, "General", edit_app_path(@app), "v2/cog.svg"],
-      [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
-      [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
-    ]
   end
 
   def integration_params
