@@ -24,6 +24,7 @@
 #  release_platform_run_id :uuid             not null, indexed
 #
 class StoreSubmission < ApplicationRecord
+  has_paper_trail
   # include Sandboxable
   include AASM
   include Passportable

@@ -57,14 +57,14 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       internal_release_attributes: [
         :id, :auto_promote,
         submissions_attributes: [
-          :id, :submission_type, :_destroy, :number,
+          :id, :submission_type, :_destroy, :number, :auto_promote,
           submission_external_attributes: [:id, :identifier, :_destroy]
         ]
       ],
       beta_release_attributes: [
         :id, :auto_promote,
         submissions_attributes: [
-          :id, :submission_type, :_destroy, :number,
+          :id, :submission_type, :_destroy, :number, :auto_promote,
           submission_external_attributes: [:id, :identifier, :_destroy]
         ]
       ],
