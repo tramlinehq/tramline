@@ -2,7 +2,7 @@ module LoggingExtensions
   # Create our default log formatter so that we can use it everywhere, and keep formats consistent.
   def self.default_log_formatter
     @default_log_formatter =
-      if Rails.env.development? || Rails.env.test?
+      if Rails.env.local?
         Ougai::Formatters::Readable.new
       else
         Ougai::Formatters::Bunyan.new

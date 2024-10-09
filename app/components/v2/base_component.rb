@@ -15,7 +15,7 @@ class V2::BaseComponent < ViewComponent::Base
     :ci_cd_provider_logo,
     :vcs_provider_logo,
     :live_release_tab_configuration,
-    :current_overall_status,
+    :live_release_overall_status,
     :teams_supported?,
     to: :helpers
   delegate :team_colors, to: :current_organization

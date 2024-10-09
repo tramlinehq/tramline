@@ -1,8 +1,11 @@
-<%= render V2::ContainerComponent.new(title: "Complete your app setup...") do |container| %>
-  <% container.with_body do %>
-    <ol class="sm:flex w-full pb-12">
+<% is_app_config_visible = setup_instructions[:app_config][:visible] %>
+<% is_app_config_completed = setup_instructions[:app_config][:completed] %>
+
+<div class="flex flex-col gap-4">
+  <%= render V2::SectionComponent.new(title: "Complete your app setup 📲", style: :titled) do %>
+    <ol class="flex w-full gap-x-1">
       <% is_app_completed = setup_instructions[:app][:completed] %>
-      <li class="relative w-8/12 mb-6 sm:mb-0">
+      <li class="relative w-8/12 sm:mb-0">
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_app_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_app_completed %>
@@ -17,7 +20,7 @@
       </li>
 
       <% is_version_control_completed = setup_instructions[:version_control][:completed] %>
-      <li class="relative w-full mb-6 sm:mb-0">
+      <li class="relative w-full sm:mb-0">
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_version_control_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_version_control_completed %>
@@ -26,16 +29,20 @@
           </div>
         </div>
         <div class="mt-3 sm:pr-10">
-          <h3 class="text-lg font-semibold text-main-900">Version Control Integration</h3>
-          <p class="text-base font-normal text-secondary mt-2">
-            <%= link_to "Configure", app_integrations_path(@app, anchor: "version_control"), class: "underline" %>&nbsp;where
-            your code lives.
+          <h3 class="text-lg font-semibold text-main-900">Version Control (VCS) Integration</h3>
+          <p class="text-base font-normal text-secondary">
+            <% if is_version_control_completed %>
+              This is complete!
+            <% else %>
+              <%= link_to "Configure", app_integrations_path(@app, anchor: "version_control"), class: "underline" %>&nbsp;where
+              your code lives.
+            <% end %>
           </p>
         </div>
       </li>
 
       <% is_ci_cd_completed = setup_instructions[:ci_cd][:completed] %>
-      <li class="relative w-full mb-6 sm:mb-0">
+      <li class="relative w-full sm:mb-0">
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_ci_cd_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_ci_cd_completed %>
@@ -46,15 +53,19 @@
         <div class="mt-3 sm:pr-10">
           <h3 class="text-lg font-semibold text-main-900">CI/CD Integration</h3>
           <p class="text-base font-normal text-secondary">
-          <p class="text-base font-normal text-secondary mt-2">
-            <%= link_to "Configure", app_integrations_path(@app, anchor: "ci_cd"), class: "underline" %>&nbsp;your CI/CD
-            provider.
+            <% if is_ci_cd_completed %>
+              This is complete!
+            <% else %>
+              <%= link_to "Configure", app_integrations_path(@app, anchor: "ci_cd"), class: "underline" %>&nbsp;your
+              CI/CD
+              provider.
+            <% end %>
           </p>
         </div>
       </li>
 
       <% is_build_channel_completed = setup_instructions[:build_channel][:completed] %>
-      <li class="relative w-full mb-6 sm:mb-0">
+      <li class="relative w-full sm:mb-0">
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_build_channel_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_build_channel_completed %>
@@ -65,30 +76,28 @@
 
         <div class="mt-3 sm:pr-10">
           <h3 class="text-lg font-semibold text-main-900">Deployment Integration</h3>
-          <p class="text-base font-normal text-secondary mt-2">
-            <%= link_to "Configure", app_integrations_path(@app, anchor: "build_channel"), class: "underline" %>&nbsp;one or
-            more deployment providers for the platform(s).
+          <p class="text-base font-normal text-secondary">
+            <% if is_build_channel_completed %>
+              This is complete!
+            <% else %>
+              <%= link_to "Configure", app_integrations_path(@app, anchor: "build_channel"), class: "underline" %>&nbsp;one
+              or
+              more deployment providers for the platform(s).
+            <% end %>
           </p>
         </div>
       </li>
 
-      <% is_app_config_visible = setup_instructions[:app_config][:visible] %>
-      <% is_app_config_completed = setup_instructions[:app_config][:completed] %>
-      <li class="relative w-full mb-6 sm:mb-0 <%= "opacity-30" unless is_app_config_visible %>">
+      <li class="relative w-full sm:mb-0 <%= "opacity-30" unless is_app_config_visible %>">
         <div class="flex items-center">
-          <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_app_config_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
-            <% if is_app_config_completed %>
-              <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
-            <% end %>
-          </div>
+          <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_app_config_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0"></div>
         </div>
 
         <div class="mt-3 sm:pr-2">
           <h3 class="text-lg font-semibold text-main-900">Update Configuration</h3>
-          <p class="text-base font-normal text-secondary mt-2">
+          <p class="text-base font-normal text-secondary">
             <% if is_app_config_visible %>
-              <%= link_to "Finish", app_integrations_path(@app), class: "underline" %>&nbsp;configuring all your
-              integrations.
+              Finish configuring all your integrations.
             <% else %>
               Finish setting up your integrations first.
             <% end %>
@@ -97,5 +106,34 @@
       </li>
     </ol>
   <% end %>
-<% end %>
 
+  <% if is_app_config_visible %>
+    <%= render V2::SectionComponent.new(title: "Finish configuring integrations 🔌", style: :titled) do %>
+      <ol class="flex w-full gap-x-1">
+        <% setup_instructions[:app_config][:integrations].each do |category, statuses| %>
+          <% completed = statuses[:completed] %>
+          <li class="relative w-full sm:mb-0">
+            <div class="flex items-center">
+              <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
+                <% if completed %>
+                  <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="mt-3 sm:pr-2">
+              <h3 class="text-lg font-semibold text-main-900">Configure <%= Integration.human_enum_name(:category, category) %></h3>
+              <p class="text-base font-normal text-secondary">
+                <% if completed %>
+                  You're all set!
+                <% else %>
+                  <%= link_to "Finish up", app_integrations_path(@app, integration_category: category), class: "underline" %>
+                <% end %>
+              </p>
+            </div>
+          </li>
+        <% end %>
+      </ol>
+    <% end %>
+  <% end %>
+</div>

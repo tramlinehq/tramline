@@ -56,8 +56,10 @@ class BitriseIntegration < ApplicationRecord
 
   encrypts :access_token, deterministic: true
 
+  delegate :app, to: :integration
   delegate :bitrise_project, to: :app_config
   alias_method :project, :bitrise_project
+  delegate :cache, to: Rails
 
   def installation
     API.new(access_token)
@@ -102,12 +104,14 @@ class BitriseIntegration < ApplicationRecord
 
   # CI/CD
 
-  def workflows
+  def workflows(_ = nil)
     return [] unless integration.ci_cd?
-    installation.list_workflows(project, WORKFLOWS_TRANSFORMATIONS)
+    cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
+      installation.list_workflows(project, WORKFLOWS_TRANSFORMATIONS)
+    end
   end
 
-  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
     installation.run_workflow!(project, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
   end
 
@@ -138,7 +142,7 @@ class BitriseIntegration < ApplicationRecord
     Artifacts::Stream.new(installation.artifact_io_stream(artifact_url))
   end
 
-  def get_artifact_v2(artifact_url, _)
+  def get_artifact_v2(artifact_url, _, _)
     raise Integration::NoBuildArtifactAvailable if artifact_url.blank?
 
     artifact = installation.artifact(artifact_url, ARTIFACTS_TRANSFORMATIONS)
@@ -146,10 +150,6 @@ class BitriseIntegration < ApplicationRecord
 
     stream = installation.download_artifact(artifact[:archive_download_url])
     {artifact:, stream: Artifacts::Stream.new(stream)}
-  end
-
-  def unzip_artifact?
-    false
   end
 
   def public_icon_img
@@ -163,12 +163,16 @@ class BitriseIntegration < ApplicationRecord
   private
 
   def app_config
-    integration.app.config
+    app.config
   end
 
   def correct_key
     if access_token.present?
       errors.add(:access_token, :no_apps) if list_apps.size < 1
     end
+  end
+
+  def workflows_cache_key
+    "app/#{app.id}/bitrise_integration/#{id}/workflows"
   end
 end

@@ -12,33 +12,9 @@ describe GoogleFirebaseSubmission do
   describe "#trigger!" do
     let(:submission) { create(:google_firebase_submission) }
     let(:providable_dbl) { instance_double(GoogleFirebaseIntegration) }
-    let(:release_info) {
-      {
-        build_version: "471280959",
-        create_time: "2024-07-05T23:51:56.539088Z",
-        display_version: "10.31.0",
-        firebase_console_uri: Faker::Internet.url,
-        name: Faker::String.random(length: 10),
-        release_notes: {text: "NOTES"}
-      }
-    }
-    let(:release_info_obj) { GoogleFirebaseIntegration::ReleaseInfo.new(release_info, GoogleFirebaseIntegration::BUILD_TRANSFORMATIONS) }
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
-    end
-
-    it "prepares and updates the submission if build already in store" do
-      expected_job = StoreSubmissions::GoogleFirebase::PrepareForReleaseJob
-      allow(providable_dbl).to receive(:find_build_by_build_number).and_return(GitHub::Result.new { release_info_obj })
-      allow(expected_job).to receive(:perform_later)
-
-      submission.trigger!
-      submission.reload
-
-      expect(submission.preparing?).to be(true)
-      expect(submission.store_link).to eq(release_info[:firebase_console_uri])
-      expect(expected_job).to have_received(:perform_later).with(submission.id).once
     end
 
     it "preprocesses the submission if build not in store" do
@@ -62,9 +38,36 @@ describe GoogleFirebaseSubmission do
     let(:build) { create(:build, :with_artifact, workflow_run:) }
     let(:submission) { create(:google_firebase_submission, :preprocessing, build:, release_platform_run:, parent_release:) }
     let(:providable_dbl) { instance_double(GoogleFirebaseIntegration) }
+    let(:release_info) {
+      {
+        build_version: "471280959",
+        create_time: "2024-07-05T23:51:56.539088Z",
+        display_version: "10.31.0",
+        firebase_console_uri: Faker::Internet.url,
+        name: Faker::String.random(length: 10),
+        release_notes: {text: "NOTES"}
+      }
+    }
+    let(:release_info_obj) { GoogleFirebaseIntegration::ReleaseInfo.new(release_info, GoogleFirebaseIntegration::BUILD_TRANSFORMATIONS) }
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:find_build_by_build_number).and_return(GitHub::Result.new { raise })
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
+    end
+
+    it "prepares and updates the submission if build already in store" do
+      expected_job = StoreSubmissions::GoogleFirebase::PrepareForReleaseJob
+      allow(providable_dbl).to receive(:find_build_by_build_number).and_return(GitHub::Result.new { release_info_obj })
+      allow(expected_job).to receive(:perform_later)
+
+      submission.upload_build!
+      submission.reload
+
+      expect(submission.preparing?).to be(true)
+      expect(submission.store_link).to eq(release_info[:firebase_console_uri])
+      expect(expected_job).to have_received(:perform_later).with(submission.id).once
     end
 
     it "starts the upload" do
@@ -111,7 +114,7 @@ describe GoogleFirebaseSubmission do
         response: {
           result: "SUCCESS",
           release: {
-            name: Faker::String.random(length: 10),
+            name: Faker::Lorem.sentence,
             firebaseConsoleUri: Faker::Internet.url
           }
         }
@@ -121,6 +124,8 @@ describe GoogleFirebaseSubmission do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
     end
 
     it "prepares and updates the submission" do
@@ -192,6 +197,8 @@ describe GoogleFirebaseSubmission do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
     end
 
     it "finishes the release" do

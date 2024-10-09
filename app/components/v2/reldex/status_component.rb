@@ -16,11 +16,11 @@ class V2::Reldex::StatusComponent < V2::Reldex::BaseComponent
   end
 
   def tolerable_min
-    @reldex_score.release_index.tolerable_range.min
+    @reldex_score.release_index&.tolerable_range&.min
   end
 
   def tolerable_max
-    @reldex_score.release_index.tolerable_range.max
+    @reldex_score.release_index&.tolerable_range&.max
   end
 
   def components

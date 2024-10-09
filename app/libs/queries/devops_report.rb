@@ -94,7 +94,7 @@ class Queries::DevopsReport
   memoize def hotfixes(last: LAST_RELEASES)
     releases_by_version(last).transform_values do |releases|
       platform_runs = releases.flat_map(&:release_platform_runs)
-      platform_runs.group_by(&:platform).transform_values { |run| run[0].production_releases.size.pred }
+      platform_runs.group_by(&:platform).transform_values { |run| [run[0].production_releases.size.pred, 0].max }
     end
   end
 

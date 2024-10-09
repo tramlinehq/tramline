@@ -12,7 +12,10 @@ class ReleasesController < SignedInApplicationController
   end
 
   def show
-    redirect_to overview_release_path(@release) and return if @release.is_v2?
+    if @release.is_v2?
+      redirect_to live_release_active_tab
+      return
+    end
 
     set_commits
     set_pull_requests
@@ -71,6 +74,11 @@ class ReleasesController < SignedInApplicationController
     set_train_and_app
   end
 
+  def wrap_up_automations
+    live_release!
+    set_train_and_app
+  end
+
   def live_release
     @train = @app.trains.friendly.find(params[:train_id])
     @release = @train.ongoing_release
@@ -105,7 +113,7 @@ class ReleasesController < SignedInApplicationController
   end
 
   def destroy
-    if (res = Action.stop_release!(@release))
+    if (res = Action.stop_release!(@release)).ok?
       redirect_to train_path, notice: "The release was stopped."
     else
       redirect_to train_path, flash: {error: res.error.message}
@@ -117,7 +125,7 @@ class ReleasesController < SignedInApplicationController
   def post_release
     @release = Release.friendly.find(params[:id])
 
-    if Action.complete_release!(@release)
+    if Action.complete_release!(@release).ok?
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
       redirect_back fallback_location: root_path, notice: "Train could not be finalized."
@@ -127,7 +135,7 @@ class ReleasesController < SignedInApplicationController
   def finish_release
     @release = Release.friendly.find(params[:id])
 
-    if Action.mark_release_as_finished!(@release)
+    if Action.mark_release_as_finished!(@release).ok?
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
       redirect_back fallback_location: root_path, notice: "Release is not partially finished. You cannot mark it as finished yet."

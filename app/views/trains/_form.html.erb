@@ -12,7 +12,7 @@
   <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
     <% f.with_section(heading: "Basic") do |section| %>
       <% section.with_description do %>
-        Configure the release train. You'll find the advanced configuration below, in the advanced settings section.
+        Configure the release. You'll find the advanced configuration below, in the advanced settings section.
       <% end %>
 
       <div class="grid gap-4">
@@ -183,24 +183,28 @@
       <% section.with_description do %>
         Enable backmerging of release branch commits into the working branch as they arrive.
         By default, merge happens at the end of the release.
+        This feature is currently not available for Bitbucket VCS integration.
       <% end %>
 
       <%= render V2::Form::SwitchComponent.new(form: section.F,
                                                field_name: :continuous_backmerge_enabled,
                                                on_label: "Continuous Backmerge enabled",
-                                               off_label: "Continuous Backmerge disabled") %>
+                                               off_label: "Continuous Backmerge disabled",
+                                               html_options: { disabled: train.backmerge_disabled? }) %>
     <% end %>
 
-    <%= f.with_advanced_section(heading: "Manual Release Trigger") do |section| %>
-      <% section.with_description do %>
-        Always require a manual trigger for the release step of the train.
-        By default, the release step will be auto-triggered if it has run before in the release.
-      <% end %>
+    <% if @train.persisted? && !@train.product_v2? %>
+      <%= f.with_advanced_section(heading: "Manual Release Trigger") do |section| %>
+        <% section.with_description do %>
+          Always require a manual trigger for the release step of the train.
+          By default, the release step will be auto-triggered if it has run before in the release.
+        <% end %>
 
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                               field_name: :manual_release,
-                                               on_label: "Manual Release enabled",
-                                               off_label: "Manual Release disabled") %>
+        <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                 field_name: :manual_release,
+                                                 on_label: "Manual Release enabled",
+                                                 off_label: "Manual Release disabled") %>
+      <% end %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Compact Build Notes") do |section| %>
@@ -247,7 +251,7 @@
     <% end %>
 
     <% f.with_action do %>
-      <%= f.F.authz_submit (train.persisted? ? "Update Train" : "Create Train"), (train.persisted? ? "v2/archive.svg" : "plus.svg"), disabled: @edit_not_allowed %>
+      <%= f.F.authz_submit (train.persisted? ? "Update" : "Create"), (train.persisted? ? "v2/archive.svg" : "plus.svg"), disabled: @edit_not_allowed %>
     <% end %>
   <% end %>
 </div>

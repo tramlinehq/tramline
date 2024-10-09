@@ -5,6 +5,10 @@ namespace :one_off do
     trains.each do |train|
       puts "Populating config for train: #{train.name}"
       train.release_platforms.each do |release_platform|
+        if release_platform.config.present?
+          puts "Skipping #{train.name} platform #{release_platform.platform} as it already has a config"
+          next
+        end
         populate_config(release_platform)
       end
     end
@@ -29,7 +33,7 @@ def submission_type(deployment)
 end
 
 def populate_config(release_platform)
-  config = {}
+  config = {}.with_indifferent_access
   review_step = release_platform.steps.review.first
   release_step = release_platform.release_step
   internal_workflow_config = nil
@@ -58,19 +62,19 @@ def populate_config(release_platform)
   if review_step
     config[:internal_release] = {
       auto_promote: true,
-      submissions: review_step.deployments.each_with_index.map do |deployment, index|
+      submissions: review_step.deployments.each_with_index.filter_map do |deployment, index|
         {number: index + 1,
          submission_type: submission_type(deployment),
          submission_config: deployment.build_artifact_channel,
          rollout_config: {enabled: false},
          auto_promote: true}
-      end.compact
+      end
     }
   end
 
   config[:beta_release] = {
     auto_promote: false,
-    submissions: release_step.deployments.each_with_index.map do |deployment, index|
+    submissions: release_step.deployments.each_with_index.filter_map do |deployment, index|
       next if deployment.production_channel?
 
       {number: index + 1,
@@ -78,7 +82,7 @@ def populate_config(release_platform)
        submission_config: deployment.build_artifact_channel,
        rollout_config: {enabled: false},
        auto_promote: index.zero? ? true : release_step.auto_deploy?}
-    end.compact
+    end
   }
 
   production_deployment = release_step.deployments.find { |deployment| deployment.production_channel? }
@@ -98,6 +102,7 @@ def populate_config(release_platform)
     }
   end
 
-  release_platform.config = config
-  release_platform.save!
+  config = Config::ReleasePlatform.from_json(config)
+  config.release_platform = release_platform
+  config.save!
 end

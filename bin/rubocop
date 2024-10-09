@@ -1,8 +1,11 @@
-#!/usr/bin/env ruby
-require "rubygems"
-require "bundler/setup"
+#!/usr/bin/env bash
+set -o errexit
 
-# explicit rubocop config increases performance slightly while avoiding config confusion.
-ARGV.unshift("--config", File.expand_path("../.rubocop.yml", __dir__))
+# Get the absolute path to the script's directory
+script_dir="$(dirname "$(realpath "$0")")"
 
-load Gem.bin_path("rubocop", "rubocop")
+# Construct the path to the .rubocop.yml file in the parent directory
+rubocop_config="$script_dir/../.rubocop.yml"
+
+# Run rubocop with the specified config file
+bundle exec rubocop --config "$rubocop_config" "$@"

@@ -10,7 +10,7 @@ export default class extends Controller {
   ]
 
   initialize() {
-    this.stages = [];
+    this.validateString()
   }
 
   clear() {
@@ -69,12 +69,17 @@ export default class extends Controller {
   }
 
   __setError(errStr) {
+    this.helpErrorTextTarget.hidden = false;
     this.helpErrorTextTarget.innerHTML = errStr;
+
+    this.helpSuccessTextTarget.hidden = true;
   }
 
   __setSuccess() {
-    this.__setError("");
+    this.helpSuccessTextTarget.hidden = false;
     this.helpSuccessTextTarget.innerHTML = baseHelpText + this.__addPercentages(this.stages);
+
+    this.helpErrorTextTarget.hidden = true;
   }
 
   __addPercentages(numbers) {

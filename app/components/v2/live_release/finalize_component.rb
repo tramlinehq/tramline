@@ -69,8 +69,8 @@ class V2::LiveRelease::FinalizeComponent < V2::BaseComponent
   end
 
   def title
-    return "⚡️End-of-release task summary" if release.finished?
-    "⚡️Pending End-of-release tasks"
+    return "⚡️End-of-release automations" if release.finished?
+    "⚡️Pending end-of-release automations"
   end
 
   def subtitle

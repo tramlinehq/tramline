@@ -22,9 +22,9 @@
         </div>
 
         <% if pr.closed_at.nil? %>
-          <div class="text-sm mt-2">Opened at – <%= pr.opened_at.to_s(:short) %></div>
+          <div class="text-sm mt-2">Opened at – <%= pr.opened_at.to_formatted_s(:short) %></div>
         <% else %>
-          <div class="text-sm mt-2">Closed at – <%= pr.closed_at.to_s(:short) %></div>
+          <div class="text-sm mt-2">Closed at – <%= pr.closed_at.to_formatted_s(:short) %></div>
         <% end %>
       </div>
     </div>

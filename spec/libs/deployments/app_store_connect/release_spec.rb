@@ -137,11 +137,11 @@ describe Deployments::AppStoreConnect::Release do
         described_class.prepare_for_release!(run)
 
         release_metadatum = run.release_platform_run.release_metadatum
-        metadata = {
+        metadata = [{
           whats_new: release_metadatum.release_notes,
           promotional_text: release_metadatum.promo_text,
           locale: release_metadatum.locale
-        }
+        }]
         expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, metadata, false).once
       end
 
@@ -156,11 +156,11 @@ describe Deployments::AppStoreConnect::Release do
         described_class.prepare_for_release!(run)
 
         release_metadatum = run.release_platform_run.release_metadatum
-        metadata = {
+        metadata = [{
           whats_new: release_metadatum.release_notes,
           promotional_text: release_metadatum.promo_text,
           locale: release_metadatum.locale
-        }
+        }]
         expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, true, metadata, false).once
       end
 
@@ -168,11 +168,11 @@ describe Deployments::AppStoreConnect::Release do
         described_class.prepare_for_release!(run, force: true)
 
         release_metadatum = run.release_platform_run.release_metadatum
-        metadata = {
+        metadata = [{
           whats_new: release_metadatum.release_notes,
           promotional_text: release_metadatum.promo_text,
           locale: release_metadatum.locale
-        }
+        }]
         expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, metadata, true).once
       end
     end

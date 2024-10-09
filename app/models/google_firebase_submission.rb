@@ -28,7 +28,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   include Displayable
 
   MAX_NOTES_LENGTH = 16_380
-
+  DEEP_LINK = Addressable::Template.new("https://appdistribution.firebase.google.com/testerapps/{platform}/releases/{external_release_id}")
   UploadNotComplete = Class.new(StandardError)
 
   STAMPABLE_REASONS = %w[
@@ -46,7 +46,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     failed_with_action_required: "failed_with_action_required"
   }
 
-  enum status: STATES
+  enum :status, STATES
   aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)
@@ -76,20 +76,20 @@ class GoogleFirebaseSubmission < StoreSubmission
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     # return mock_upload_to_firebase if sandbox_mode?
 
-    if build_present_in_store?
-      release_info = @build.value!
-      prepare_and_update!(release_info)
-      StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, release_info.id)
-      return
-    end
-
     preprocess!
     StoreSubmissions::GoogleFirebase::UploadJob.perform_later(id)
   end
 
   def upload_build!
     return unless may_prepare?
-    return fail_with_error!("Build not found") if build&.artifact.blank?
+    return fail_with_error!(BuildNotFound) if build&.artifact.blank?
+
+    if build_present_in_store?
+      release_info = @build.value!
+      prepare_and_update!(release_info)
+      StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, release_info.id)
+      return
+    end
 
     result = nil
     filename = build.artifact.file.filename.to_s
@@ -126,6 +126,8 @@ class GoogleFirebaseSubmission < StoreSubmission
   def prepare_for_release!
     return unless may_finish?
     # return mock_finish_firebase_release if sandbox_mode?
+
+    return finish! if submission_channel_id == GoogleFirebaseIntegration::EMPTY_CHANNEL[:id].to_s
 
     deployment_channels = [submission_channel_id]
     result = provider.release(external_id, deployment_channels)
@@ -166,8 +168,9 @@ class GoogleFirebaseSubmission < StoreSubmission
     parent_release.rollout_complete!(self)
   end
 
-  def on_fail!
-    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+  def on_fail!(args = nil)
+    failure_error = args&.fetch(:error, nil)
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
     notify!("Submission failed", :submission_failed, notification_params)
   end
 
@@ -179,7 +182,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def find_build
-    @build ||= provider.find_build_by_build_number(build_number, release_platform_run.platform)
+    @build ||= provider.find_build_by_build_number(build_number, platform)
   end
 
   def build_present_in_store?
@@ -187,10 +190,15 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def external_id
-    store_release["id"]
+    store_release.try(:[], "id")
   end
 
-  def stamp_data
+  def deep_link
+    return if external_id.blank?
+    DEEP_LINK.expand(platform:, external_release_id: external_id).to_s
+  end
+
+  def stamp_data(failure_message: nil)
     super.merge(channels: submission_channel.name)
   end
 end

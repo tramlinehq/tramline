@@ -7,8 +7,8 @@ describe Coordinators::FinalizeRelease do
       %w[release_backmerge Coordinators::FinalizeRelease::ReleaseBackMerge],
       %w[parallel_working Coordinators::FinalizeRelease::ParallelBranches]
     ].each do |branching_strategy, post_release_class|
-      context "Given branching strategy – #{branching_strategy}" do
-        let(:train) { create(:train, "with_#{branching_strategy}".to_sym) }
+      context "with branching strategy – #{branching_strategy}" do
+        let(:train) { create(:train, :"with_#{branching_strategy}") }
         let(:release) { create(:release, :post_release_started, train:) }
 
         it "dispatches to #{post_release_class} and marks release as finished on success" do

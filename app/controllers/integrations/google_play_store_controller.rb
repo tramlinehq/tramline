@@ -11,6 +11,7 @@ class Integrations::GooglePlayStoreController < IntegrationsController
     if providable_params_errors.present?
       flash.now[:error] = providable_params_errors.first
       set_integrations_by_categories
+      set_tab_configuration
       render :index, status: :unprocessable_entity
     else
       super

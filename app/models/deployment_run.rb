@@ -101,8 +101,8 @@ class DeploymentRun < ApplicationRecord
   STORE_SUBMISSION_STATES = READY_STATES + [STATES[:submitted_for_review], STATES[:review_failed]]
   FAILED_STATES = [STATES[:failed], STATES[:failed_prepare_release], STATES[:failed_with_action_required]]
 
-  enum status: STATES
-  enum failure_reason: {
+  enum :status, STATES
+  enum :failure_reason, {
     developer_rejected: "developer_rejected",
     invalid_release: "invalid_release",
     unknown_failure: "unknown_failure"
@@ -231,11 +231,10 @@ class DeploymentRun < ApplicationRecord
     return true if release_health_rules.blank?
     return true if release_health_events.blank?
 
-    rule_health = release_health_rules.map do |rule|
-      release_health_events.where(release_health_rule: rule).last&.healthy?
-    end.compact
-
-    rule_health.all?
+    release_health_rules.all? do |rule|
+      event = release_health_events.where(release_health_rule: rule).last
+      event.blank? || event.healthy?
+    end
   end
 
   def fetch_health_data!
@@ -511,7 +510,8 @@ class DeploymentRun < ApplicationRecord
   end
 
   def production_release_happened?
-    production_channel? && status.in?(READY_STATES)
+    return false unless production_channel?
+    status.in?(READY_STATES) && (staged_rollout.blank? || staged_rollout.active?)
   end
 
   def production_release_submitted?

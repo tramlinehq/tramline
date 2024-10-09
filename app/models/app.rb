@@ -44,7 +44,7 @@ class App < ApplicationRecord
   validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
   validates :build_number, numericality: {less_than: 2100000000}
 
-  enum platform: {android: "android", ios: "ios", cross_platform: "cross_platform"}
+  enum :platform, {android: "android", ios: "ios", cross_platform: "cross_platform"}
 
   after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
@@ -52,7 +52,7 @@ class App < ApplicationRecord
   end
 
   friendly_id :name, use: :slugged
-  auto_strip_attributes :name, squish: true
+  normalizes :name, with: ->(name) { name.squish }
 
   delegate :vcs_provider,
     :ci_cd_provider,
@@ -100,7 +100,7 @@ class App < ApplicationRecord
   end
 
   def guided_train_setup?
-    trains.none? || train_in_creation&.in_creation?
+    trains.none? || train_in_creation&.product_v2?
   end
 
   def train_in_creation
@@ -148,6 +148,10 @@ class App < ApplicationRecord
     integrations.bugsnag_integrations.any?
   end
 
+  def bitbucket_connected?
+    integrations.bitbucket_integrations.any?
+  end
+
   def firebase_connected?
     integrations.google_firebase_integrations.any?
   end
@@ -172,46 +176,19 @@ class App < ApplicationRecord
 
     app_config_setup = {
       app_config: {
-        visible: integrations.ready?, completed: ready?
+        visible: integrations.ready?,
+        completed: ready?,
+        integrations: {}
       }
     }
 
-    [app_setup, integration_setup, app_config_setup]
-      .flatten
-      .reduce(:merge)
-  end
-
-  def train_setup_instructions
-    train_setup = {
-      train: {
-        visible: !trains.any?, completed: trains.any?
+    config.further_setup_by_category?.each do |category, status_map|
+      app_config_setup[:app_config][:integrations][category] = {
+        visible: true, completed: status_map[:ready]
       }
-    }
+    end
 
-    ios_steps_setup =
-      {
-        ios_release_step: {
-          visible: trains.any?, completed: trains.ios_release_steps?
-        }
-      }
-
-    android_steps_setup =
-      {
-        android_release_step: {
-          visible: trains.any?, completed: trains.android_release_steps?
-        }
-      }
-
-    instructions =
-      if cross_platform?
-        [train_setup, ios_steps_setup, android_steps_setup]
-      elsif android?
-        [train_setup, android_steps_setup]
-      else
-        [train_setup, ios_steps_setup]
-      end
-
-    instructions.flatten.reduce(:merge)
+    [app_setup, integration_setup, app_config_setup].flatten.reduce(:merge)
   end
 
   def set_external_details(external_id)

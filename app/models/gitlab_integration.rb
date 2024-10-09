@@ -122,11 +122,13 @@ class GitlabIntegration < ApplicationRecord
     set_tokens(Installations::Gitlab::Api.oauth_access_token(code, redirect_uri))
   end
 
-  def repos
+  def workspaces = nil
+
+  def repos(_)
     with_api_retries { installation.list_projects(REPOS_TRANSFORMATIONS) }
   end
 
-  def workflows
+  def workflows(_)
     nil
   end
 
@@ -148,7 +150,8 @@ class GitlabIntegration < ApplicationRecord
       else
         create_webhook!(train_id:)
       end
-    rescue Installations::Errors::ResourceNotFound
+    rescue Installations::Error => ex
+      raise ex unless ex.reason == :not_found
       create_webhook!(train_id:)
     end
   end
@@ -173,22 +176,22 @@ class GitlabIntegration < ApplicationRecord
     installation.user_info(USER_INFO_TRANSFORMATIONS)
   end
 
-  def pull_requests_url(repo, branch_name, open: false)
+  def pull_requests_url(branch_name, open: false)
     state = open ? "opened" : "all"
     q = URI.encode_www_form("state" => state, "target_branch" => branch_name)
-    "https://gitlab.com/#{repo}/-/merge_requests?#{q}"
+    "https://gitlab.com/#{code_repository_name}/-/merge_requests?#{q}"
   end
 
-  def branch_url(repo, branch_name)
-    "https://gitlab.com/#{repo}/tree/#{branch_name}"
+  def branch_url(branch_name)
+    "https://gitlab.com/#{code_repository_name}/tree/#{branch_name}"
   end
 
-  def tag_url(repo, tag_name)
-    "https://gitlab.com/#{repo}/-/tags/#{tag_name}"
+  def tag_url(tag_name)
+    "https://gitlab.com/#{code_repository_name}/-/tags/#{tag_name}"
   end
 
   def compare_url(to_branch, from_branch)
-    "https://gitlab.com/tramline/ueno/-/compare/#{to_branch}...#{from_branch}?straight=true"
+    "https://gitlab.com/#{code_repository_name}/-/compare/#{to_branch}...#{from_branch}?straight=true"
   end
 
   def installation
@@ -242,7 +245,7 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_BETWEEN_TRANSFORMATIONS) }
   end
 
-  def diff_between?(from_branch, to_branch)
+  def diff_between?(from_branch, to_branch, _)
     with_api_retries { installation.diff?(code_repository_name, from_branch, to_branch) }
   end
 
@@ -265,25 +268,52 @@ class GitlabIntegration < ApplicationRecord
 
   def branch_exists?(branch)
     with_api_retries { installation.branch_exists?(code_repository_name, branch) }
-  rescue Installations::Errors::ResourceNotFound
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
     false
   end
 
   def tag_exists?(tag_name)
     with_api_retries { installation.tag_exists?(code_repository_name, tag_name) }
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
+    false
   end
 
   def bot_name
     nil
   end
 
+  def pr_closed?(pr)
+    %w[closed merged].include?(pr[:state])
+  end
+
+  def pr_open?(pr)
+    %w[opened locked].include?(pr[:state])
+  end
+
   private
 
   # retry once (2 attempts in total)
-  ATTEMPTS = 2
-  def with_api_retries
-    retryables = [Installations::Gitlab::Api::TokenExpired]
-    Retryable.retryable(on: retryables, tries: ATTEMPTS, sleep: 0, exception_cb: proc { reset_tokens! }) { yield }
+  MAX_RETRY_ATTEMPTS = 2
+  RETRYABLE_ERRORS = []
+
+  def with_api_retries(attempt: 0, &)
+    yield
+  rescue Installations::Gitlab::Error => ex
+    raise ex if attempt >= MAX_RETRY_ATTEMPTS
+    next_attempt = attempt + 1
+
+    if ex.reason == :token_expired
+      reset_tokens!
+      return with_api_retries(attempt: next_attempt, &)
+    end
+
+    if RETRYABLE_ERRORS.include?(ex.reason)
+      return with_api_retries(attempt: next_attempt, &)
+    end
+
+    raise ex
   end
 
   def reset_tokens!

@@ -39,11 +39,7 @@ class StepRun < ApplicationRecord
   has_many :running_deployments, through: :deployment_runs, source: :deployment
 
   validates :step_id, uniqueness: {scope: :commit_id}
-
-  after_commit :populate_build_notes, on: :create
-  # FIXME: solve this correctly, we rely on wait time to ensure steps are triggered in correct order
-  after_commit -> { Releases::TriggerWorkflowRunJob.set(wait: BASE_WAIT_TIME * step_number).perform_later(id) }, on: :create
-  after_commit -> { create_stamp!(data: stamp_data) }, on: :create
+  after_create_commit :handle_post_create_tasks
 
   STAMPABLE_REASONS = %w[
     created
@@ -104,7 +100,7 @@ class StepRun < ApplicationRecord
   WORKFLOW_IMMUTABLE = STATES.keys - END_STATES - WORKFLOW_IN_PROGRESS - WORKFLOW_NOT_STARTED
   FAILED_STATES = %w[ci_workflow_failed ci_workflow_halted build_not_found_in_store build_unavailable deployment_failed failed_with_action_required cancelled_before_start]
 
-  enum status: STATES
+  enum :status, STATES
 
   aasm safe_state_machine_params do
     state :on_track, initial: true
@@ -173,7 +169,7 @@ class StepRun < ApplicationRecord
     end
   end
 
-  enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
+  enum :approval_status, {pending: "pending", approved: "approved", rejected: "rejected"}, prefix: "approval"
 
   attr_accessor :current_user
   attr_accessor :artifacts_url
@@ -181,7 +177,7 @@ class StepRun < ApplicationRecord
   delegate :release_platform, :release, :platform, to: :release_platform_run
   delegate :release_branch, :release_version, to: :release
   delegate :train, :store_provider, to: :release_platform
-  delegate :app, :unzip_artifact?, :notify!, to: :train
+  delegate :app, :notify!, to: :train
   delegate :organization, to: :app
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact, allow_nil: true
@@ -246,7 +242,7 @@ class StepRun < ApplicationRecord
   end
 
   def deployment_start_blocked?(deployment)
-    release.upcoming? && deployment.production_channel?
+    release.upcoming? && deployment.production_channel? && !release_platform_run.temporary_unblock_upcoming?
   end
 
   def last_deployment_run
@@ -373,7 +369,7 @@ class StepRun < ApplicationRecord
       .map { |str| str&.strip }
       .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
       .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
-      .map { |line| line.gsub(/"/, "\\\"") }
+      .map { |line| line.gsub('"', "\\\"") }
       .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
       .compact_blank
       .uniq
@@ -414,6 +410,13 @@ class StepRun < ApplicationRecord
 
   private
 
+  def handle_post_create_tasks
+    populate_build_notes
+    # FIXME: solve this correctly, we rely on wait time to ensure steps are triggered in correct order
+    Releases::TriggerWorkflowRunJob.set(wait: BASE_WAIT_TIME * step_number).perform_later(id)
+    create_stamp!(data: stamp_data)
+  end
+
   def populate_build_notes
     return if build_notes_raw.present?
     update(build_notes_raw: relevant_changes)
@@ -422,7 +425,7 @@ class StepRun < ApplicationRecord
   def previous_step_run
     release_platform_run
       .step_runs_for(step)
-      .where("scheduled_at < ?", scheduled_at)
+      .where(scheduled_at: ...scheduled_at)
       .where.not(id: id)
       .order(:scheduled_at)
       .last
@@ -440,8 +443,10 @@ class StepRun < ApplicationRecord
   def trigger_workflow_run(retrigger: false)
     update_build_number! unless retrigger
 
+    deploy_action_enabled = organization.deploy_action_enabled? || app.deploy_action_enabled? || train.deploy_action_enabled?
+
     ci_cd_provider
-      .trigger_workflow_run!(workflow_id, release_branch, workflow_inputs, commit_hash)
+      .trigger_workflow_run!(workflow_id, release_branch, workflow_inputs, commit_hash, deploy_action_enabled)
       .then { |wr| update_ci_metadata!(wr) }
   end
 

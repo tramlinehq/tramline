@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :deployment_run do
-    association :step_run, factory: [:step_run, :with_build_artifact, :deployment_started]
+    step_run factory: %i[step_run with_build_artifact deployment_started]
     deployment { association :deployment, step: step_run.step }
     status { "created" }
     scheduled_at { Time.current }
@@ -62,7 +62,7 @@ FactoryBot.define do
     end
 
     trait :with_staged_rollout do
-      association :step_run, factory: [:step_run, :with_release_step, :with_build_artifact, :deployment_started]
+      step_run factory: %i[step_run with_release_step with_build_artifact deployment_started]
       deployment { association :deployment, :with_staged_rollout, :with_google_play_store, step: step_run.step }
     end
 

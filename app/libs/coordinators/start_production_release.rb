@@ -27,7 +27,7 @@ class Coordinators::StartProductionRelease
   end
 
   def config
-    release_platform_run.conf.production_release.value
+    release_platform_run.conf.production_release.as_json
   end
 
   attr_reader :release_platform_run, :build

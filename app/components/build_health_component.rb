@@ -32,7 +32,7 @@ class BuildHealthComponent < ViewComponent::Base
       description: "",
       type: "number",
       unit: "MB",
-      data: step_runs.map { |srun| [srun.build_number, {"MB" => srun.build_size}] if srun.build_size }.compact.to_h
+      data: step_runs.filter_map { |srun| [srun.build_number, {"MB" => srun.build_size}] if srun.build_size }.to_h
     }
   end
 

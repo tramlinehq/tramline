@@ -70,12 +70,12 @@ class Train < ApplicationRecord
   delegate :ready?, :config, :organization, to: :app
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :monitoring_provider, to: :integrations
 
-  enum status: {draft: "draft", active: "active", inactive: "inactive"}
-  enum backmerge_strategy: {continuous: "continuous", on_finalize: "on_finalize"}
-  enum versioning_strategy: VersioningStrategies::Semverish::STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
+  enum :status, {draft: "draft", active: "active", inactive: "inactive"}
+  enum :backmerge_strategy, {continuous: "continuous", on_finalize: "on_finalize"}
+  enum :versioning_strategy, VersioningStrategies::Semverish::STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
 
   friendly_id :name, use: :slugged
-  auto_strip_attributes :name, squish: true
+  normalizes :name, with: ->(name) { name.squish }
   attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
   attr_accessor :build_queue_wait_time_unit, :build_queue_wait_time_value
   attr_accessor :repeat_duration_unit, :repeat_duration_value, :release_schedule_enabled
@@ -94,19 +94,23 @@ class Train < ApplicationRecord
   validate :tag_release_config
   validate :valid_train_configuration, on: :activate_context
   validate :working_branch_presence, on: :create
+  validate :ci_cd_workflows_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
 
+  after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
   after_initialize :set_release_schedule, if: :persisted?
   after_initialize :set_build_queue_config, if: :persisted?
   after_initialize :set_backmerge_config, if: :persisted?
   after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
+  before_create :set_ci_cd_workflows
   before_create :set_current_version
   before_create :set_default_status
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
+  after_create -> { Flipper.enable_actor(:product_v2, self) }
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
 
@@ -140,6 +144,14 @@ class Train < ApplicationRecord
 
   def product_v2?
     Flipper.enabled?(:product_v2, self)
+  end
+
+  def deploy_action_enabled?
+    Flipper.enabled?(:deploy_action_enabled, self)
+  end
+
+  def workflows
+    @workflows ||= ci_cd_provider.workflows(working_branch)
   end
 
   def version_ahead?(release)
@@ -197,14 +209,20 @@ class Train < ApplicationRecord
   end
 
   def diff_since_last_release?
-    return vcs_provider.diff_between?(ongoing_release.first_commit.commit_hash, working_branch) if ongoing_release
+    return vcs_provider.diff_between?(ongoing_release.first_commit.commit_hash, working_branch, from_type: :commit) if ongoing_release
     return true if last_finished_release.blank?
-    vcs_provider.diff_between?(last_finished_release.tag_name || last_finished_release.last_commit.commit_hash, working_branch)
+
+    if last_finished_release.tag_name.present?
+      last_release_ref, ref_type = last_finished_release.tag_name, :tag
+    else
+      last_release_ref, ref_type = last_finished_release.last_commit.commit_hash, :commit
+    end
+    vcs_provider.diff_between?(last_release_ref, working_branch, from_type: ref_type)
   end
 
   def diff_for_release?
     return false unless parallel_working_branch?
-    vcs_provider.diff_between?(release_branch, working_branch)
+    vcs_provider.diff_between?(release_branch, working_branch, from_type: :branch)
   end
 
   def create_webhook!
@@ -225,15 +243,13 @@ class Train < ApplicationRecord
 
   def create_release_platforms
     platforms = app.cross_platform? ? ReleasePlatform.platforms.values : [app.platform]
-    platforms.each do |platform|
-      release_platforms.create!(
-        platform: platform,
-        name: "#{name} #{platform}",
-        app: app
-      )
-    end
+    platforms.each { |platform| release_platforms.create!(app:, platform:, name: "#{name} #{platform}") }
+  rescue ActiveRecord::RecordNotSaved
+    errors.add(:base, "There was an error setting up your release. Please try again.")
+    raise ActiveRecord::RecordInvalid, self
   end
 
+  # rubocop:disable Rails/SkipsModelValidations
   def create_default_notification_settings
     return if notification_channel.blank?
     vals = NotificationSetting.kinds.map do |_, kind|
@@ -246,6 +262,7 @@ class Train < ApplicationRecord
     end
     NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
+  # rubocop:enable Rails/SkipsModelValidations
 
   def display_name
     name&.parameterize
@@ -297,12 +314,9 @@ class Train < ApplicationRecord
     scheduled_releases.pending&.delete_all
   end
 
-  def in_creation?
-    release_platforms.any?(&:in_creation?)
-  end
-
   def startable?
     return false unless app.ready?
+    return true if product_v2?
     release_platforms.all?(&:startable?)
   end
 
@@ -365,6 +379,10 @@ class Train < ApplicationRecord
     branching_strategy == "almost_trunk"
   end
 
+  def backmerge_disabled?
+    vcs_provider&.integration&.bitbucket_integration? || !almost_trunk?
+  end
+
   def create_vcs_release!(branch_name, tag_name)
     return false unless active?
     vcs_provider.create_release!(tag_name, branch_name)
@@ -402,7 +420,8 @@ class Train < ApplicationRecord
         train_current_version: version_current,
         train_next_version: next_version,
         train_url: train_link,
-        working_branch:
+        working_branch:,
+        is_v2: product_v2?
       }
     )
   end
@@ -444,6 +463,10 @@ class Train < ApplicationRecord
     return unless ongoing_release.failure_anywhere?
 
     ongoing_release.stop!
+  end
+
+  def set_ci_cd_workflows
+    config.set_ci_cd_workflows(workflows)
   end
 
   private
@@ -503,6 +526,10 @@ class Train < ApplicationRecord
     nil
   end
 
+  def set_branching_strategy
+    self.branching_strategy ||= "almost_trunk"
+  end
+
   def set_current_version
     self.version_current = version_seeded_with
   end
@@ -531,6 +558,7 @@ class Train < ApplicationRecord
 
   def backmerge_config
     errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && continuous_backmerge?
+    errors.add(:backmerge_strategy, :disabled_for_bitbucket) if vcs_provider&.integration&.bitbucket_integration? && continuous_backmerge?
   end
 
   def tag_release_config
@@ -539,6 +567,10 @@ class Train < ApplicationRecord
 
   def working_branch_presence
     errors.add(:working_branch, :not_available) unless vcs_provider.branch_exists?(working_branch)
+  end
+
+  def ci_cd_workflows_presence
+    errors.add(:base, :ci_cd_workflows_not_available) if workflows.blank?
   end
 
   def build_queue_config

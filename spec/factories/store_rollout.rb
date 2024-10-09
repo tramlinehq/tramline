@@ -3,17 +3,19 @@ FactoryBot.define do
     config { [1, 100] }
     current_stage { nil }
     is_staged_rollout { true }
-    association :release_platform_run
-    association :store_submission
+    release_platform_run
+    store_submission factory: :play_store_submission
 
     type { "PlayStoreRollout" }
     initialize_with { type.constantize.new }
 
     trait :play_store do
+      store_submission factory: :play_store_submission
       type { "PlayStoreRollout" }
     end
 
     trait :app_store do
+      store_submission factory: :app_store_submission
       type { "AppStoreRollout" }
     end
 

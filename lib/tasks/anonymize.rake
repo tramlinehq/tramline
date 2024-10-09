@@ -117,7 +117,7 @@ namespace :anonymize do
         whitelist "release_platform_id", "status", "step_number", "slug", "release_suffix", "kind", "auto_deploy", "app_variant_id", "discarded_at"
         whitelist_timestamps
         anonymize("ci_cd_channel") do |field|
-          {"id" => "dummy", "name" => "CI Workflow #{Faker::JapaneseMedia::StudioGhibli.character}"}
+          {"id" => Faker::Internet.uuid, "name" => "CI Workflow #{Faker::JapaneseMedia::StudioGhibli.character}"}
         end
         anonymize("name").using FieldStrategy::LoremIpsum.new
         anonymize("description").using FieldStrategy::LoremIpsum.new
@@ -418,10 +418,13 @@ namespace :anonymize do
 
   def populate_v2_models(train)
     ActiveRecord::Base.transaction do
-      train.releases.where.not(is_v2: true).each do |release|
+      train.releases.where.not(is_v2: true).find_each do |release|
         release.update!(is_v2: true)
         release.release_platform_runs.each do |prun|
-          prun.update!(config: prun.release_platform.config)
+          prun.update!(config: prun.release_platform.platform_config.as_json)
+
+          raise "Config not loaded" if prun.config.blank?
+          puts "Config loaded for #{prun.release_platform.name} as #{prun.config.inspect}"
 
           review_step = prun.release_platform.steps.review.first
           review_runs = prun.step_runs_for(review_step).to_a
@@ -443,12 +446,12 @@ namespace :anonymize do
           previous_pre_prod_release = nil
           previous_production_release = nil
           idx = 0
-          production_release_config = prun.conf.production_release.value
+          production_release_config = prun.conf.production_release.as_json
           production_depl = release_step.deployments.find { |d| d.production_channel? }
 
           while release_step_run.present?
             pre_prod_release = create_pre_prod_release!(prun, release_step, release_step_run, previous_pre_prod_release, idx, "release_candidate")
-            release_step_run.deployment_runs.where(deployment: production_depl).each do |drun|
+            release_step_run.deployment_runs.where(deployment: production_depl).find_each do |drun|
               production_release = prun.production_releases.create!(
                 id: drun.id,
                 config: production_release_config,
@@ -459,12 +462,12 @@ namespace :anonymize do
                 updated_at: release_step_run.updated_at
               )
               submission_config = prun.conf.production_release.submissions.first
-              submission = submission_config.submission_type.create!(
+              submission = submission_config.submission_class.create!(
                 parent_release: production_release,
                 release_platform_run: prun,
                 build: pre_prod_release.build,
                 sequence_number: 1,
-                config: submission_config.to_h,
+                config: submission_config.as_json,
                 status: "prepared",
                 created_at: drun.created_at,
                 updated_at: drun.updated_at
@@ -475,8 +478,8 @@ namespace :anonymize do
                   submission.create_play_store_rollout!(
                     release_platform_run: prun,
                     current_stage: drun.staged_rollout&.current_stage || 0,
-                    config: submission_config.rollout_config.stages.presence || [],
-                    is_staged_rollout: submission_config.rollout_config.enabled,
+                    config: submission_config.rollout_stages.presence || [],
+                    is_staged_rollout: submission_config.rollout_enabled,
                     status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status,
                     created_at: drun.staged_rollout.created_at,
                     updated_at: drun.staged_rollout.updated_at
@@ -485,8 +488,8 @@ namespace :anonymize do
                   submission.create_app_store_rollout!(
                     release_platform_run: prun,
                     current_stage: drun.staged_rollout&.current_stage || 0,
-                    config: submission_config.rollout_config.stages.presence || [],
-                    is_staged_rollout: submission_config.rollout_config.enabled,
+                    config: submission_config.rollout_stages.presence || [],
+                    is_staged_rollout: submission_config.rollout_enabled,
                     status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status,
                     created_at: drun.staged_rollout.created_at,
                     updated_at: drun.staged_rollout.updated_at
@@ -508,7 +511,7 @@ namespace :anonymize do
 
   def populate_v2_metrics_models(train)
     ActiveRecord::Base.transaction do
-      train.releases.where(is_v2: true).each do |release|
+      train.releases.where(is_v2: true).find_each do |release|
         release.deployment_runs.each do |drun|
           next unless ProductionRelease.exists?(drun.id)
           # rubocop:disable Rails/SkipsModelValidations
@@ -525,16 +528,16 @@ namespace :anonymize do
 
     if kind == "internal"
       config = release_platform_run.conf.internal_release
-      pre_prod_release = release_platform_run.internal_releases.create!(config: config.value, commit:, status:, previous:)
-      workflow_config = release_platform_run.conf.workflows.pick_internal_workflow
+      pre_prod_release = release_platform_run.internal_releases.create!(config: config.as_json, commit:, status:, previous:)
+      workflow_config = release_platform_run.conf.pick_internal_workflow
     else
       config = release_platform_run.conf.beta_release
-      pre_prod_release = release_platform_run.beta_releases.create!(config: config.value, commit:, status:, previous:)
-      workflow_config = release_platform_run.conf.workflows.release_candidate_workflow
+      pre_prod_release = release_platform_run.beta_releases.create!(config: config.as_json, commit:, status:, previous:)
+      workflow_config = release_platform_run.conf.release_candidate_workflow
     end
 
     workflow_run = WorkflowRun.create!(
-      workflow_config: workflow_config.value,
+      workflow_config: workflow_config.as_json,
       triggering_release: pre_prod_release,
       release_platform_run:,
       commit:,
@@ -555,21 +558,21 @@ namespace :anonymize do
     )
 
     step.deployments.reject { |d| d.production_channel? }.each_with_index do |deployment, index|
-      submission_config = config.submissions.fetch_by_number(index + 1)
-      create_pre_prod_submissions(release_platform_run, step_run, deployment, submission_config, pre_prod_release, build)
+      submission_config = config.submissions.find { |s| s.number == index + 1 }
+      create_pre_prod_submissions(release_platform_run, step_run, deployment, submission_config, pre_prod_release, build) if submission_config.present?
     end
     pre_prod_release
   end
 
   def create_pre_prod_submissions(release_platform_run, step_run, deployment, config, parent_release, build)
-    step_run.deployment_runs.where(deployment: deployment).each do |drun|
-      submission = config.submission_type.create!(
+    step_run.deployment_runs.where(deployment: deployment).find_each do |drun|
+      submission = config.submission_class.create!(
         parent_release:,
         release_platform_run:,
         build:,
         sequence_number: config.number,
-        config: config.to_h,
-        status: drun.failed? ? "failed" : success_state(config.submission_type),
+        config: config.as_json,
+        status: drun.failed? ? "failed" : success_state(config.submission_class),
         created_at: drun.created_at,
         updated_at: drun.updated_at
       )
@@ -577,8 +580,8 @@ namespace :anonymize do
       if submission.is_a?(PlayStoreSubmission)
         submission.create_play_store_rollout!(
           release_platform_run:,
-          config: config.rollout_config.stages.presence || [],
-          is_staged_rollout: config.rollout_config.enabled,
+          config: config.rollout_stages.presence || [],
+          is_staged_rollout: config.rollout_enabled,
           status: drun.failed? ? "failed" : "completed",
           created_at: drun.created_at,
           updated_at: drun.updated_at

@@ -6,15 +6,16 @@
 #  config                     :jsonb            not null
 #  status                     :string           default("created"), not null
 #  tester_notes               :text
-#  type                       :string           not null
+#  type                       :string           not null, indexed => [release_platform_run_id, commit_id]
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  commit_id                  :uuid             not null, indexed
+#  commit_id                  :uuid             not null, indexed => [release_platform_run_id, type], indexed
 #  parent_internal_release_id :uuid             indexed
 #  previous_id                :uuid             indexed
-#  release_platform_run_id    :uuid             not null, indexed
+#  release_platform_run_id    :uuid             not null, indexed => [commit_id, type], indexed
 #
 class PreProdRelease < ApplicationRecord
+  has_paper_trail
   include AASM
   include Loggable
   include Displayable
@@ -25,7 +26,7 @@ class PreProdRelease < ApplicationRecord
   belongs_to :commit
   has_one :next, class_name: "PreProdRelease", inverse_of: :previous, dependent: :nullify
   has_one :triggered_workflow_run, class_name: "WorkflowRun", dependent: :destroy, inverse_of: :triggering_release
-  has_many :store_submissions, as: :parent_release, dependent: :destroy
+  has_many :store_submissions, -> { sequential }, as: :parent_release, dependent: :destroy, inverse_of: :parent_release
 
   scope :inactive, -> { where(status: INACTIVE) }
 
@@ -36,6 +37,8 @@ class PreProdRelease < ApplicationRecord
   delegate :release, :train, :platform, to: :release_platform_run
   delegate :notify!, :notify_with_snippet!, to: :train
 
+  alias_method :workflow_run, :triggered_workflow_run
+
   STATES = {
     created: "created",
     failed: "failed",
@@ -44,7 +47,7 @@ class PreProdRelease < ApplicationRecord
   }
   INACTIVE = STATES.values - ["created"]
 
-  enum status: STATES
+  enum :status, STATES
 
   def mark_as_stale!
     with_lock do
@@ -59,10 +62,6 @@ class PreProdRelease < ApplicationRecord
 
   def actionable?
     created? && release_platform_run.on_track?
-  end
-
-  def workflow_run
-    triggered_workflow_run || parent_internal_release&.workflow_run
   end
 
   def build
@@ -84,7 +83,7 @@ class PreProdRelease < ApplicationRecord
   def rollout_complete!(submission)
     return unless actionable?
 
-    next_submission_config = conf.submissions.fetch_by_number(submission.sequence_number + 1)
+    next_submission_config = conf.fetch_submission_by_number(submission.sequence_number + 1)
     if next_submission_config
       trigger_submission!(next_submission_config)
     else
@@ -92,7 +91,7 @@ class PreProdRelease < ApplicationRecord
     end
   end
 
-  def conf = ReleaseConfig::Platform::ReleaseStep.new(config)
+  def conf = Config::ReleaseStep.from_json(config)
 
   def commits_since_previous
     changes_since_last_release = release.release_changelog&.normalized_commits
@@ -101,7 +100,7 @@ class PreProdRelease < ApplicationRecord
 
     return changes_since_last_run if last_successful_run.present?
 
-    return (changes_since_last_release || []) if previous.blank?
+    return changes_since_last_release || [] if previous.blank?
     ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq { |c| c.commit_hash }
   end
 
@@ -113,8 +112,8 @@ class PreProdRelease < ApplicationRecord
       .between_commits(last_successful_run&.commit, commit)
       &.commit_messages(true)
 
-    return (changes_since_last_run || []) if last_successful_run.present?
-    return (changes_since_last_release || []) if previous.blank?
+    return changes_since_last_run || [] if last_successful_run.present?
+    return changes_since_last_release || [] if previous.blank?
     ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq
   end
 
@@ -124,7 +123,7 @@ class PreProdRelease < ApplicationRecord
       .map { |str| str&.strip }
       .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
       .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
-      .map { |line| line.gsub(/"/, "\\\"") }
+      .map { |line| line.gsub('"', "\\\"") }
       .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
       .compact_blank
       .uniq
@@ -137,10 +136,6 @@ class PreProdRelease < ApplicationRecord
     return previous if previous.finished?
     previous.previous_successful
   end
-
-  def new_build_available? = false
-
-  def carried_over? = false
 
   def new_commit_available? = false
 
@@ -164,6 +159,6 @@ class PreProdRelease < ApplicationRecord
   private
 
   def trigger_submission!(submission_config)
-    submission_config.submission_type.create_and_trigger!(self, submission_config, build)
+    submission_config.submission_class.create_and_trigger!(self, submission_config, build)
   end
 end

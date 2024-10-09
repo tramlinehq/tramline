@@ -13,9 +13,9 @@ module Artifacts
       @is_archive = is_archive
     end
 
-    def with_open(&blk)
+    def with_open(&)
       if unzip?
-        open_zip(&blk)
+        open_zip(&)
       else
         yield(StreamIO.new(tempfile, File.extname(tempfile)))
       end

@@ -31,7 +31,7 @@
     <div class="flex flex-col gap-2 text-sm text-secondary">
       <% if train.tag_releases? %>
         <p class="<%= strikethrough %>">
-          ◦ Cut tag at <code><%= release.last_commit.short_sha %></code> and push to <%= tag_link %> <%= checked %>
+          ◦ Cut tag at <code><%= release.last_commit&.short_sha %></code> and push to <%= tag_link %> <%= checked %>
         </p>
       <% end %>
 
@@ -54,11 +54,11 @@
     <% if post_release_failed? %>
       <div class="flex flex-col items-start item-gap-default mt-4">
         <% if open_backmerge_prs? %>
-          <%= render V2::AlertComponent.new(type: :error, title: "We couldn't finish this release, please manually merge/close the backmerge PRs and retry.") %>
+          <%= render V2::AlertComponent.new(type: :error, title: "We couldn't finish this release, please manually merge/close the backmerge PRs and retry.", full_screen: false) %>
           <h3 class="heading-5">Backmerge Pull Requests</h3>
           <%= render(V2::PullRequestComponent.with_collection(open_backmerge_prs, simple: true)) %>
         <% elsif open_post_release_prs? %>
-          <%= render V2::AlertComponent.new(type: :error, title: "We couldn't automatically finish the release, please manually merge/close the PR and retry.") %>
+          <%= render V2::AlertComponent.new(type: :error, title: "We couldn't automatically finish the release, please manually merge/close the PR and retry.", full_screen: false) %>
           <h3 class="heading-5">Post-release Pull Request</h3>
           <%= render(V2::PullRequestComponent.with_collection(open_post_release_prs, simple: true)) %>
         <% end %>

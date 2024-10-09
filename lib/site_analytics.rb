@@ -4,7 +4,7 @@ module SiteAnalytics
   ANALYTICS = June::Analytics.new(
     {
       write_key: ENV["JUNE_ANALYTICS_KEY"] || "",
-      on_error: proc { |_status, msg| Rails.logger.debug msg },
+      on_error: proc { |_status, msg| Rails.logger.debug { msg } },
       stub: !Rails.env.production?
     }
   )

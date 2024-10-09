@@ -1,7 +1,8 @@
-#!/usr/bin/env ruby
-require "rubygems"
-require "bundler/setup"
+#!/usr/bin/env bash
+set -o errexit
 
-ARGV.unshift("--ensure-latest")
+# Add --ensure-latest to the beginning of the arguments
+set -- --ensure-latest "$@"
 
-load Gem.bin_path("brakeman", "brakeman")
+# Run brakeman with the provided arguments
+bundle exec brakeman "$@"

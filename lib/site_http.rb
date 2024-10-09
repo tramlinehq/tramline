@@ -17,7 +17,9 @@ module SiteHttp
     private
 
     def validate_status
-      raise InvalidStatus if Rack::Utils::SYMBOL_TO_STATUS_CODE.exclude?(@status)
+      Rack::Utils.status_code(@status)
+    rescue ArgumentError
+      raise InvalidStatus
     end
   end
 end

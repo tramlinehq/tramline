@@ -25,6 +25,6 @@ class Triggers::PreRelease
     release.event_stamp!(reason: :pre_release_pr_not_creatable, kind: :error, data: {release_branch:})
     release.stop!
   rescue Triggers::PullRequest::MergeError
-    Rails.logger.debug "Pre-release pull request not merged", release.pull_requests.pre_release
+    Rails.logger.debug { "Pre-release pull request not merged: #{release.pull_requests.pre_release}" }
   end
 end

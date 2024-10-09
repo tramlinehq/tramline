@@ -14,7 +14,14 @@ describe TestFlightSubmission do
   let(:workflow_run) { create(:workflow_run, :finished) }
   let(:internal_release) {
     create(:internal_release,
-      config: {submissions: [{id: "123", name: "Internal Testers", is_internal: true}]},
+      config: {
+        auto_promote: false,
+        submissions: [
+          {number: 1,
+           submission_type: "TestFlightSubmission",
+           submission_config: {id: "123", name: "Internal Testers", is_internal: true}}
+        ]
+      },
       triggered_workflow_run: workflow_run,
       release_platform_run: workflow_run.release_platform_run,
       commit: workflow_run.commit)
@@ -34,34 +41,26 @@ describe TestFlightSubmission do
   describe ".trigger!" do
     let(:test_flight_submission) {
       create(:test_flight_submission,
+        :created,
         parent_release: internal_release,
         config: {submission_config: {id: "123", name: "External Testers", is_internal: false}})
     }
 
     before do
-      allow(provider_dbl).to receive(:release_to_testflight).and_return(GitHub::Result.new { build_info })
-      allow(provider_dbl).to receive(:update_release_notes)
       allow(StoreSubmissions::TestFlight::FindBuildJob).to receive(:perform_async)
     end
 
-    it "starts preparing the release when build is present in the store" do
-      allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { build_info })
-
-      test_flight_submission.trigger!
-
-      expect(test_flight_submission.submitted_for_review?).to be true
-      expect(provider_dbl).to have_received(:release_to_testflight)
-        .with(test_flight_submission.submission_channel_id, test_flight_submission.build_number).once
-    end
-
-    it "find the build when build is not present in the store" do
-      allow(provider_dbl).to receive(:find_build)
-        .and_return(GitHub::Result.new { raise Installations::Error.new("build not found", reason: :build_not_found) })
-
+    it "finds the build" do
       test_flight_submission.trigger!
 
       expect(test_flight_submission.preprocessing?).to be true
       expect(StoreSubmissions::TestFlight::FindBuildJob).to have_received(:perform_async).with(test_flight_submission.id).once
+    end
+
+    it "marks submission as preprocessing" do
+      test_flight_submission.trigger!
+
+      expect(test_flight_submission.reload.preprocessing?).to be true
     end
   end
 
@@ -108,8 +107,7 @@ describe TestFlightSubmission do
 
       before do
         allow(provider_dbl).to receive(:update_release_notes)
-        allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { build_info })
-        allow(provider_dbl).to receive(:release_to_testflight).and_return(GitHub::Result.new { build_info })
+        allow(provider_dbl).to receive_messages(find_build: GitHub::Result.new { build_info }, release_to_testflight: GitHub::Result.new { build_info })
         allow(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to receive(:perform_later)
         allow(StoreSubmissions::TestFlight::UpdateExternalBuildJob).to receive(:perform_async)
       end

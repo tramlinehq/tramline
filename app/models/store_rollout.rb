@@ -15,6 +15,7 @@
 #  store_submission_id     :uuid             indexed
 #
 class StoreRollout < ApplicationRecord
+  has_paper_trail
   using RefinedString
   include AASM
   include Loggable
@@ -45,7 +46,7 @@ class StoreRollout < ApplicationRecord
     fully_released: "fully_released"
   }
 
-  enum status: STATES
+  enum :status, STATES
 
   delegate :parent_release, :build, :external_link, to: :store_submission
   delegate :version_name, :build_number, to: :build
@@ -76,6 +77,7 @@ class StoreRollout < ApplicationRecord
   end
 
   def last_rollout_percentage
+    return Release::FULL_ROLLOUT_VALUE if finished? && !staged_rollout?
     return Release::FULL_ROLLOUT_VALUE if fully_released?
     return 0 if created? || current_stage.nil?
     return config.last if reached_last_stage?

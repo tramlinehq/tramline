@@ -1,63 +1,58 @@
 module Installations
-  class Gitlab::Error
-    UnhandledError = Class.new(StandardError)
-
+  class Gitlab::Error < Installations::Error
     ERRORS = [
       {
         error: "invalid_token",
-        decorated_exception: Installations::Gitlab::Api::TokenExpired
+        decorated_reason: :token_expired
       }
     ]
 
     MESSAGES = [
       {
         message_matcher: /Another open merge request already exists for this source branch/,
-        decorated_exception: Installations::Errors::PullRequestAlreadyExists
+        decorated_reason: :pull_request_already_exists
       },
       {
         message_matcher: /The merge request failed to merge/,
-        decorated_exception: Installations::Errors::PullRequestNotMergeable
+        decorated_reason: :pull_request_not_mergeable
       },
       {
         message_matcher: /The merge request is not able to be merged/,
-        decorated_exception: Installations::Errors::PullRequestNotMergeable
+        decorated_reason: :pull_request_not_mergeable
       },
       {
         message_matcher: /Tag (.*) already exists/,
-        decorated_exception: Installations::Errors::TagReferenceAlreadyExists
+        decorated_reason: :tag_reference_already_exists
       },
       {
         message_matcher: /Not found/i,
-        decorated_exception: Installations::Errors::ResourceNotFound
+        decorated_reason: :not_found
       },
       {
         message_matcher: /Branch cannot be merged/i,
-        decorated_exception: Installations::Errors::PullRequestNotMergeable
+        decorated_reason: :pull_request_not_mergeable
       },
       {
         message_matcher: /open merge request already exists/i,
-        decorated_exception: Installations::Errors::PullRequestAlreadyExists
+        decorated_reason: :pull_request_already_exists
       },
       # NOTE: This is a temporary solution till GitLab starts sending correct message for the merge failure
       # See: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/115088
       {
         message_matcher: /405 Method Not Allowed/i,
-        decorated_exception: Installations::Errors::PullRequestNotMergeable
+        decorated_reason: :pull_request_not_mergeable
       }
     ]
 
-    def self.handle(response_body)
-      new(response_body).handle
-    end
-
     def initialize(response_body)
-      Rails.logger.debug "GitLab error", response_body
+      Rails.logger.debug { "GitLab error: #{response_body}" }
       @response_body = response_body
+      super(message, reason: handle)
     end
 
     def handle
-      return UnhandledError.new(body) if match.nil?
-      match[:decorated_exception].new
+      return :unknown_failure if match.nil?
+      match[:decorated_reason]
     end
 
     private

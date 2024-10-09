@@ -223,6 +223,10 @@ class AppStoreIntegration < ApplicationRecord
     elog(e)
   end
 
+  def pick_default_beta_channel
+    build_channels(with_production: false).first
+  end
+
   def build_channels(with_production:)
     sliced =
       cache.fetch(build_channels_cache_key, expires_in: 1.hour) do
@@ -247,6 +251,14 @@ class AppStoreIntegration < ApplicationRecord
 
   def deep_link(_, _)
     "itms-beta://beta.itunes.apple.com/v1/app/#{app.external_id}"
+  end
+
+  def inflight_store_link
+    "https://appstoreconnect.apple.com/apps/#{app.external_id}/distribution/ios/version/inflight"
+  end
+
+  def deliverable_store_link
+    "https://appstoreconnect.apple.com/apps/#{app.external_id}/distribution/ios/version/deliverable"
   end
 
   def build_info(build_info)

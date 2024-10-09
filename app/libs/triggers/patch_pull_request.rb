@@ -14,12 +14,13 @@ class Triggers::PatchPullRequest
   def create!
     GitHub::Result.new do
       repo_integration.create_patch_pr!(working_branch, patch_branch, commit.commit_hash, pr_title_prefix)
-    rescue Installations::Errors::PullRequestAlreadyExists
-      logger.debug("Patch Pull Request: Pull Request Already exists for #{commit.short_sha} to #{working_branch}")
+    rescue Installations::Error => ex
+      raise ex unless ex.reason == :pull_request_already_exists
+      logger.debug { "Patch Pull Request: Pull Request Already exists for #{commit.short_sha} to #{working_branch}" }
       repo_integration.find_pr(working_branch, patch_branch)
     end.then do |value|
       pr = commit.build_pull_request(release:, phase: :ongoing).update_or_insert!(**value)
-      logger.debug "Patch Pull Request: Created a patch PR successfully", pr
+      logger.debug { "Patch Pull Request: Created a patch PR successfully: #{pr}" }
       repo_integration.enable_auto_merge!(pr.number)
       stamp_pr_success(pr)
       GitHub::Result.new { value }

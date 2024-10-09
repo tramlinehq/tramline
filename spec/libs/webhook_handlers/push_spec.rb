@@ -7,7 +7,7 @@ describe WebhookHandlers::Push do
 
   describe "#process" do
     it "returns accepted when release not present" do
-      expect(handler.process.status).to be_eql(:accepted)
+      expect(handler.process.status).to be(:accepted)
     end
   end
 end

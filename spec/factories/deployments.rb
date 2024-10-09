@@ -3,7 +3,7 @@ FactoryBot.define do
     sequence(:build_artifact_channel) { |n| {id: n} }
     send_build_notes { true }
     notes { Deployment.notes[:build_notes] }
-    association :integration
+    integration
 
     trait :with_step do
       before(:create) do |deployment, _|
@@ -31,15 +31,15 @@ FactoryBot.define do
     end
 
     trait :with_google_play_store do
-      association :integration, :with_google_play_store
+      integration factory: %i[integration with_google_play_store]
     end
 
     trait :with_slack do
-      association :integration, :with_slack
+      integration factory: %i[integration with_slack]
     end
 
     trait :with_app_store do
-      association :integration, :with_app_store
+      integration factory: %i[integration with_app_store]
     end
 
     trait :with_external do

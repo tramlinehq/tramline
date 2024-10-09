@@ -27,11 +27,36 @@ class ReleasePlatform < ApplicationRecord
   using RefinedString
   extend FriendlyId
   include Displayable
+
   # self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id status]
+
   NATURAL_ORDER = Arel.sql("CASE WHEN platform = 'android' THEN 1 WHEN platform = 'ios' THEN 2 ELSE 3 END")
+  DEFAULT_PROD_RELEASE_CONFIG = {
+    android: {
+      auto_promote: false,
+      submissions: [
+        {number: 1,
+         submission_type: "GooglePlayStoreSubmission",
+         submission_config: GooglePlayStoreIntegration::PROD_CHANNEL,
+         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+         auto_promote: false}
+      ]
+    },
+    ios: {
+      auto_promote: false,
+      submissions: [
+        {number: 1,
+         submission_type: "AppStoreSubmission",
+         submission_config: AppStoreIntegration::PROD_CHANNEL,
+         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+         auto_promote: false}
+      ]
+    }
+  }
 
   belongs_to :app
   belongs_to :train
+  has_one :platform_config, class_name: "Config::ReleasePlatform", dependent: :destroy
   has_many :release_health_rules, -> { kept }, dependent: :destroy, inverse_of: :release_platform
   has_many :all_release_health_rules, dependent: :destroy, inverse_of: :release_platform, class_name: "ReleaseHealthRule"
   has_many :release_platform_runs, inverse_of: :release_platform, dependent: :destroy
@@ -41,11 +66,12 @@ class ReleasePlatform < ApplicationRecord
 
   scope :sequential, -> { order(NATURAL_ORDER) }
 
-  enum platform: {android: "android", ios: "ios"}
+  enum :platform, {android: "android", ios: "ios"}
 
   friendly_id :name, use: :slugged
 
   validate :ready?, on: :create
+  after_create :set_default_config
 
   delegate :integrations, :ci_cd_provider, to: :train
   delegate :ready?, :default_locale, to: :app
@@ -64,7 +90,7 @@ class ReleasePlatform < ApplicationRecord
 
     # historical release only
     all_steps
-      .where("created_at <= ?", release.end_time)
+      .where(created_at: ..release.end_time)
       .where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
   end
 
@@ -91,11 +117,7 @@ class ReleasePlatform < ApplicationRecord
   end
 
   def ordered_steps_until(step_number)
-    steps.where("step_number <= ?", step_number).order(:step_number)
-  end
-
-  def in_creation?
-    train.draft? && steps.release.none?
+    steps.where(step_number: ..step_number).order(:step_number)
   end
 
   def valid_steps?
@@ -112,6 +134,10 @@ class ReleasePlatform < ApplicationRecord
     end
   end
 
+  def production_ready?
+    store_provider.present?
+  end
+
   def build_channel_integrations
     integrations
       .build_channel
@@ -124,5 +150,55 @@ class ReleasePlatform < ApplicationRecord
 
   def default_locale
     app.latest_external_apps[platform.to_sym]&.default_locale
+  end
+
+  def production_submission_type
+    DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym][:submissions].first[:submission_type] if production_ready?
+  end
+
+  # setup production if the store integrations are added
+  # otherwise use the first build channel integration and setup beta releases
+  def set_default_config
+    return if Rails.env.test?
+    return if platform_config.present?
+
+    rc_ci_cd_channel = app.config.ci_cd_workflows.first
+    base_config_map = {
+      release_platform: self,
+      workflows: {
+        internal: nil,
+        release_candidate: {
+          kind: "release_candidate",
+          name: rc_ci_cd_channel[:name],
+          id: rc_ci_cd_channel[:id],
+          artifact_name_pattern: nil
+        }
+      },
+      internal_release: nil,
+      beta_release: {
+        auto_promote: false,
+        submissions: []
+      }
+    }
+
+    base_config_map[:production_release] = DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym] if production_ready?
+
+    if base_config_map[:production_release].nil?
+      providable = app.integrations.build_channel.first.providable
+      providable_type = providable.class
+      submission_type = Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym][providable_type].to_s
+      submission_config = providable.pick_default_beta_channel
+      submissions = [
+        {
+          number: 1,
+          submission_type:,
+          submission_config:,
+          auto_promote: false
+        }
+      ]
+      base_config_map[:beta_release][:submissions] = submissions
+    end
+
+    self.platform_config = Config::ReleasePlatform.from_json(base_config_map)
   end
 end

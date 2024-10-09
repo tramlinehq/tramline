@@ -14,7 +14,11 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
   end
 
   attr_reader :pre_prod_release
-  delegate :release_platform_run, :store_submissions, :workflow_run, :build, to: :pre_prod_release
+  delegate :release_platform_run,
+    :store_submissions,
+    :workflow_run,
+    :conf,
+    :build, to: :pre_prod_release
 
   def show_blocked_message?
     release_platform_run.play_store_blocked? && store_submissions.none?(&:failed_with_action_required?)
@@ -36,19 +40,11 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
     workflow_run&.may_retry?
   end
 
-  memoize def latest_internal_release
+  def latest_internal_release
     release_platform_run.latest_internal_release(finished: true)
   end
 
-  memoize def latest_commit
+  def latest_commit
     release_platform_run.last_commit
-  end
-
-  def rc_params
-    if pre_prod_release.carried_over?
-      {build_id: latest_internal_release.build.id}
-    else
-      {commit_id: latest_commit.id}
-    end
   end
 end

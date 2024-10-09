@@ -67,8 +67,7 @@ describe AppStoreRollout do
       allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { release_info })
 
       rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:)
-      allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout).to receive(:parent_release).and_return(production_release)
+      allow(rollout).to receive_messages(provider: providable_dbl, parent_release: production_release)
       allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!
@@ -81,8 +80,7 @@ describe AppStoreRollout do
       allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { raise })
 
       rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:)
-      allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout).to receive(:parent_release).and_return(production_release)
+      allow(rollout).to receive_messages(provider: providable_dbl, parent_release: production_release)
       allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!
@@ -110,6 +108,13 @@ describe AppStoreRollout do
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:app_store_submission, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
+
+    before do
+      allow_any_instance_of(AppStoreSubmission).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
+    end
 
     it "halts the rollout if started" do
       rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:)
@@ -161,6 +166,13 @@ describe AppStoreRollout do
     let(:store_submission) { create(:app_store_submission, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
 
+    before do
+      allow_any_instance_of(AppStoreSubmission).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
+    end
+
     it "resumes the rollout if halted" do
       rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:, config: [1, 80], current_stage: 0)
       allow(providable_dbl).to receive(:pause_phased_release).and_return(GitHub::Result.new { release_info })
@@ -197,6 +209,13 @@ describe AppStoreRollout do
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:app_store_submission, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
+
+    before do
+      allow_any_instance_of(AppStoreSubmission).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
+    end
 
     it "resumes the rollout if paused" do
       rollout = create(:store_rollout, :paused, :app_store, release_platform_run:, store_submission:, config: [1, 80], current_stage: 0)

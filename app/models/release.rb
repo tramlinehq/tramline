@@ -91,7 +91,8 @@ class Release < ApplicationRecord
     screenshots: {title: "Screenshots"},
     approvals: {title: "Approvals"},
     app_submission: {title: "App submission"},
-    rollout_to_users: {title: "Rollout"}
+    rollout_to_users: {title: "Rollout"},
+    wrap_up_automations: {title: "Automations"}
   }
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
@@ -112,6 +113,7 @@ class Release < ApplicationRecord
 
   has_many :store_rollouts, through: :release_platform_runs
   has_many :store_submissions, through: :release_platform_runs
+  has_many :pre_prod_releases, through: :release_platform_runs
   has_many :production_releases, through: :release_platform_runs
   has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
 
@@ -120,11 +122,8 @@ class Release < ApplicationRecord
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
 
-  enum status: STATES
-  enum release_type: {
-    hotfix: "hotfix",
-    release: "release"
-  }
+  enum :status, STATES
+  enum :release_type, {hotfix: "hotfix", release: "release"}
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
@@ -282,6 +281,11 @@ class Release < ApplicationRecord
     all_commits.where.not(build_queue_id: active_build_queue.id).or(all_commits.where(build_queue_id: nil))
   end
 
+  def last_applicable_commit
+    return unless committable?
+    applied_commits.last
+  end
+
   def committable?
     created? || on_track? || partially_finished?
   end
@@ -346,20 +350,21 @@ class Release < ApplicationRecord
     train.create_vcs_release!(release_branch, input_tag_name)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
-  rescue Installations::Errors::TagReferenceAlreadyExists, Installations::Errors::TaggedReleaseAlreadyExists
+  rescue Installations::Error => ex
+    raise unless [:tag_reference_already_exists, :tagged_release_already_exists].include?(ex.reason)
     create_vcs_release!(unique_tag_name(input_tag_name))
   end
 
   def branch_url
-    train.vcs_provider&.branch_url(app.config&.code_repository_name, release_branch)
+    train.vcs_provider&.branch_url(release_branch)
   end
 
   def tag_url
-    train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
+    train.vcs_provider&.tag_url(tag_name)
   end
 
   def pull_requests_url(open = false)
-    train.vcs_provider&.pull_requests_url(app.config&.code_repository_name, branch_name, open:)
+    train.vcs_provider&.pull_requests_url(branch_name, open:)
   end
 
   def metadata_editable?
@@ -503,7 +508,7 @@ class Release < ApplicationRecord
     return base_conditions.first if completed_at.blank?
 
     base_conditions
-      .where("completed_at < ?", completed_at)
+      .where(completed_at: ...completed_at)
       .first
   end
 

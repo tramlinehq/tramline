@@ -21,7 +21,7 @@ class Integration < ApplicationRecord
 
   belongs_to :app
 
-  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration]
+  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration]
   delegated_type :providable, types: ALL_TYPES, autosave: true, validate: false
 
   IntegrationNotImplemented = Class.new(StandardError)
@@ -30,33 +30,41 @@ class Integration < ApplicationRecord
 
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
-      "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration],
+      "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration]
     },
     android: {
-      "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration],
+      "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration]
     },
     cross_platform: {
-      "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration],
+      "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
       "monitoring" => %w[BugsnagIntegration]
     }
   }.with_indifferent_access
 
-  enum category: ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_map_self
-  enum status: {
-    connected: "connected",
-    disconnected: "disconnected"
-  }
+  INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS = {
+    android: {
+      GoogleFirebaseIntegration => GoogleFirebaseSubmission,
+      GooglePlayStoreIntegration => PlayStoreSubmission
+    },
+    ios: {
+      GoogleFirebaseIntegration => GoogleFirebaseSubmission,
+      AppStoreIntegration => TestFlightSubmission
+    }
+  }.freeze
+
+  enum :category, ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_map_self
+  enum :status, {connected: "connected", disconnected: "disconnected"}
 
   CATEGORY_DESCRIPTIONS = {
     version_control: "Automatically create release branches and tags, and merge release PRs.",
@@ -107,6 +115,10 @@ class Integration < ApplicationRecord
         next if MULTI_INTEGRATION_CATEGORIES.exclude?(category) && combination[category].present?
 
         (providers - existing_integration.pluck(:providable_type)).each do |provider|
+          # NOTE: Slack is deprecated as a build channel and will be removed in the future.
+          # Do not allow any new Slack integrations as build channels.
+          next if category == "build_channel" && provider == "SlackIntegration"
+
           integration =
             app
               .integrations

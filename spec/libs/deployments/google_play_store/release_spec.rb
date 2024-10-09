@@ -286,8 +286,7 @@ describe Deployments::GooglePlayStore::Release do
         let(:deployment) { factory_tree[:deployment] }
 
         it "creates the draft release" do
-          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(false)
-          allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+          allow(providable_dbl).to receive_messages(build_present_in_channel?: false, create_draft_release: GitHub::Result.new)
           described_class.start_release!(deployment_run)
           expect(providable_dbl).to have_received(:create_draft_release)
             .with(deployment_run.deployment_channel,
@@ -298,8 +297,7 @@ describe Deployments::GooglePlayStore::Release do
         end
 
         it "marks a run as release started" do
-          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(false)
-          allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+          allow(providable_dbl).to receive_messages(build_present_in_channel?: false, create_draft_release: GitHub::Result.new)
           expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :rollout_started?)
         end
       end
@@ -314,8 +312,7 @@ describe Deployments::GooglePlayStore::Release do
         let(:step_run) { factory_tree[:step_run] }
 
         it "creates a full rollout release" do
-          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(false)
-          allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+          allow(providable_dbl).to receive_messages(build_present_in_channel?: false, rollout_release: GitHub::Result.new)
           described_class.start_release!(deployment_run)
           expect(providable_dbl).to have_received(:rollout_release)
             .with(deployment_run.deployment_channel,
@@ -326,8 +323,7 @@ describe Deployments::GooglePlayStore::Release do
         end
 
         it "marks a run as released when no staged rollout" do
-          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(false)
-          allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+          allow(providable_dbl).to receive_messages(build_present_in_channel?: false, rollout_release: GitHub::Result.new)
           expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :released?)
         end
       end
@@ -375,8 +371,7 @@ describe Deployments::GooglePlayStore::Release do
         end
 
         it "marks a run as released when no staged rollout" do
-          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(true)
-          allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+          allow(providable_dbl).to receive_messages(build_present_in_channel?: true, rollout_release: GitHub::Result.new)
           expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :released?)
         end
       end

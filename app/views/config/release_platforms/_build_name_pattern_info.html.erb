@@ -1,0 +1,15 @@
+<%= render InfoIconComponent.new do %>
+  <p>
+    If your CI workflow generates multiple artifacts, provide a name to choose the correct build artifact
+    (aab/apk/ipa) among the files generated.
+  </p>
+
+  <p class="mt-1">
+    When left blank, Tramline will choose the largest file generated as the build artifact.
+  </p>
+
+  <p class="mt-1">
+    To understand more about build artifact
+    selection, <%= link_to_external "check out the docs.", "https://docs.tramline.app/integrations/ci-cd/#build-artifact-selection", class: "underline" %>
+  </p>
+<% end %>

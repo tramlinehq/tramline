@@ -173,4 +173,8 @@ class SignedInApplicationController < ApplicationController
   def turbo_frame_request_variant
     request.variant = :turbo_frame if turbo_frame_request?
   end
+
+  def v2?
+    @train&.product_v2?
+  end
 end

@@ -13,7 +13,7 @@ class V2::LiveRelease::ChangesetTrackingComponent < V2::BaseComponent
   attr_reader :release, :build_queue, :applied_commits, :change_queue_commits, :mid_release_prs, :open_backmerge_prs
 
   def change_queue_commits_count
-    (change_queue_commits&.size || 0)
+    change_queue_commits&.size || 0
   end
 
   def changelog_present?

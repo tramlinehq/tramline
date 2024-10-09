@@ -1,0 +1,42 @@
+{
+  "type": "webhook_subscription",
+  "uuid": "{cffc8461-e355-4ab2-9eb9-bb2e800240dc}",
+  "description": "Tramline",
+  "url": "https://example.com",
+  "active": true,
+  "skip_cert_verification": false,
+  "events": [
+    "pullrequest:created",
+    "pullrequest:fulfilled",
+    "repo:push",
+    "pullrequest:rejected",
+    "pullrequest:updated"
+  ],
+  "created_at": "2024-09-04T13:40:59.613181841Z",
+  "subject": {
+    "type": "repository",
+    "full_name": "tramline/ueno",
+    "links": {
+      "self": {
+        "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno"
+      },
+      "html": {
+        "href": "https://bitbucket.org/tramline/ueno"
+      },
+      "avatar": {
+        "href": "https://bytebucket.org/ravatar/%7Babd86e4d-4ad5-4d31-b727-9ccf26604d37%7D?ts=3627142"
+      }
+    },
+    "name": "ueno",
+    "uuid": "{abd86e4d-4ad5-4d31-b727-9ccf26604d37}"
+  },
+  "links": {
+    "self": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/hooks/%7Bcffc8461-e355-4ab2-9eb9-bb2e800240dc%7D"
+    }
+  },
+  "source": null,
+  "read_only": false,
+  "history_enabled": false,
+  "secret_set": false
+}

@@ -36,7 +36,6 @@ class AppStoreSubmission < StoreSubmission
   RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
   STATES = {
     created: "created",
-    preprocessing: "preprocessing",
     preparing: "preparing",
     prepared: "prepared",
     failed_prepare: "failed_prepare",
@@ -67,8 +66,8 @@ class AppStoreSubmission < StoreSubmission
   PreparedVersionNotFoundError = Class.new(StandardError)
   SubmissionNotInTerminalState = Class.new(StandardError)
 
-  enum status: STATES
-  enum failure_reason: {
+  enum :status, STATES
+  enum :failure_reason, {
     invalid_release: "invalid_release",
     unknown_failure: "unknown_failure"
   }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
@@ -76,10 +75,6 @@ class AppStoreSubmission < StoreSubmission
   aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)
-
-    event :preprocess do
-      transitions to: :preprocessing
-    end
 
     event :start_prepare, after_commit: :on_start_prepare! do
       transitions to: :preparing
@@ -140,12 +135,16 @@ class AppStoreSubmission < StoreSubmission
 
   def version_bump_required? = true
 
+  def external_link
+    return provider.inflight_store_link if parent_release.inflight?
+    return provider.deliverable_store_link if parent_release.active?
+    store_link
+  end
+
   def trigger!
     return unless actionable?
-    return start_prepare! if build_present_in_store?
 
-    preprocess!
-    StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
+    start_prepare!
   end
 
   def retrigger!
@@ -282,7 +281,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def on_start_prepare!
-    StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id)
+    StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
   end
 
   def on_submit_for_review!(args = {resubmission: false})
@@ -313,7 +312,7 @@ class AppStoreSubmission < StoreSubmission
     notify!("Production submission approved", :production_submission_approved, notification_params)
     create_app_store_rollout!(
       release_platform_run:,
-      config: staged_rollout? ? conf.rollout_config.stages : [],
+      config: staged_rollout? ? conf.rollout_stages : [],
       is_staged_rollout: staged_rollout?
     )
   end
@@ -323,8 +322,9 @@ class AppStoreSubmission < StoreSubmission
     notify!("Submission failed", :submission_failed, notification_params)
   end
 
-  def on_fail!
-    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+  def on_fail!(args = nil)
+    failure_error = args&.fetch(:error, nil)
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
     notify!("Submission failed", :submission_failed, notification_params)
   end
 

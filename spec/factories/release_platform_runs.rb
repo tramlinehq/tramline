@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :release_platform_run do
-    association :release_platform
+    release_platform
     release { association :release }
     code_name { Faker::FunnyName.name }
     scheduled_at { Time.current }

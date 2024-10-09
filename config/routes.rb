@@ -38,7 +38,7 @@ Rails.application.routes.draw do
   end
 
   namespace :authentication do
-    resources :invite_confirmations, only: %i[new create]
+    resources :invite_confirmations, only: %i[new create], controller: "email/invite_confirmations"
   end
 
   namespace :accounts do
@@ -72,13 +72,14 @@ Rails.application.routes.draw do
         patch :activate
         patch :deactivate
       end
-      resource :release_index, only: %i[edit update]
 
+      resource :release_index, only: %i[edit update]
       resources :notification_settings, only: %i[index update edit]
 
-      resources :release_platforms, only: [], path: :platforms, as: :platforms do
+      resources :release_platforms, path: :platforms, as: :platforms do
         resources :steps, only: %i[new create update]
         resources :release_health_rules, path: :rules
+        resource :release_platform_configs, only: %i[edit update], path: :submissions, as: :submission_config, controller: "config/release_platforms"
       end
 
       resources :releases, only: %i[show create destroy index update], shallow: true do
@@ -87,6 +88,7 @@ Rails.application.routes.draw do
           get :changeset_tracking
           get :regression_testing
           get :soak
+          get :wrap_up_automations
         end
 
         resources :commits, only: [], shallow: false do
@@ -205,7 +207,11 @@ Rails.application.routes.draw do
   end
 
   resources :release_platform_runs, path: :runs, as: :runs, only: [] do
-    post :pre_prod_beta, to: "beta_releases#create"
+    member do
+      post :pre_prod_internal, to: "internal_releases#create"
+      post :pre_prod_beta, to: "beta_releases#create"
+    end
+
     post :production, to: "production_releases#create"
 
     resources :pre_prod_releases, shallow: true, only: [] do
@@ -278,6 +284,11 @@ Rails.application.routes.draw do
   scope :gitlab do
     get :callback, controller: "integration_listeners/gitlab", as: :gitlab_callback
     post "/events/:train_id", to: "integration_listeners/gitlab#events", as: :gitlab_events
+  end
+
+  scope :bitbucket do
+    get :callback, controller: "integration_listeners/bitbucket", as: :bitbucket_callback
+    post "/events/:train_id", to: "integration_listeners/bitbucket#events", as: :bitbucket_events
   end
 
   scope :slack do

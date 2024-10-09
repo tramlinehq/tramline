@@ -54,10 +54,10 @@ class PlayStoreSubmission < StoreSubmission
   CHANGEABLE_STATES = %w[created preprocessing failed prepared]
   MAX_NOTES_LENGTH = 500
 
-  enum failure_reason: {
+  enum :failure_reason, {
     unknown_failure: "unknown_failure"
   }.merge(Installations::Google::PlayDeveloper::Error.reasons.zip_map_self)
-  enum status: STATES
+  enum :status, STATES
 
   aasm safe_state_machine_params do
     state :created, initial: true
@@ -104,6 +104,8 @@ class PlayStoreSubmission < StoreSubmission
 
   def cancellable? = false
 
+  def cancelling? = false
+
   def finished?
     return true if finished_manually?
     FINAL_STATES.include?(status) && store_rollout.finished?
@@ -132,7 +134,6 @@ class PlayStoreSubmission < StoreSubmission
 
   def trigger!
     return unless actionable?
-    return start_prepare! if build_present_in_store?
 
     preprocess!
     StoreSubmissions::PlayStore::UploadJob.perform_later(id)
@@ -157,9 +158,11 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def upload_build!
+    return start_prepare! if build_present_in_store?
+
     with_lock do
       return unless may_start_prepare?
-      return fail_with_error!("Build not found") if build&.artifact.blank?
+      return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
       build.artifact.with_open do |file|
         result = provider.upload(file)
@@ -257,16 +260,14 @@ class PlayStoreSubmission < StoreSubmission
 
   def on_prepare!
     event_stamp!(reason: :prepared, kind: :notice, data: stamp_data)
-    create_play_store_rollout!(
-      release_platform_run:,
-      config: conf.rollout_config.stages.presence || [],
-      is_staged_rollout: staged_rollout?
-    )
+    config = conf.rollout_stages.presence || []
+    create_play_store_rollout!(release_platform_run:, config:, is_staged_rollout: staged_rollout?)
     play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_rollout?
   end
 
-  def on_fail!
-    event_stamp!(reason: :fail, kind: :notice, data: stamp_data)
+  def on_fail!(args = nil)
+    failure_error = args&.fetch(:error, nil)
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
     notify!("Submission failed", :submission_failed, notification_params)
   end
 
@@ -275,7 +276,7 @@ class PlayStoreSubmission < StoreSubmission
     provider.find_build(build_number).present?
   end
 
-  def stamp_data
+  def stamp_data(failure_message: nil)
     super.merge(track: submission_channel.name.humanize)
   end
 end

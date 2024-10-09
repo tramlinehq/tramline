@@ -58,10 +58,7 @@ module Coordinators
     end
 
     def self.internal_release_finished!(build)
-      release_platform_run = build.release_platform_run
-      if release_platform_run.conf.auto_start_beta_release?
-        Coordinators::CreateBetaRelease.call(release_platform_run, build.id, nil)
-      end
+      # manage regression testing here
     end
 
     def self.regression_testing_is_approved!(build)
@@ -92,12 +89,12 @@ module Coordinators
       # NewRelease.call(release)
     end
 
-    def self.process_push_webhook(release, push_params)
-      Res.new { Coordinators::Webhooks::Push.process(release, push_params) }
+    def self.process_push_webhook(train, push_params)
+      Res.new { Coordinators::Webhooks::Push.process(train, push_params) }
     end
 
-    def self.process_pull_request_webhook(release, push_params)
-      Res.new { Coordinators::Webhooks::PullRequest.process(release, push_params) }
+    def self.process_pull_request_webhook(train, pull_request_params)
+      Res.new { Coordinators::Webhooks::PullRequest.process(train, pull_request_params) }
     end
 
     def self.apply_build_queue!(build_queue)
@@ -122,10 +119,19 @@ module Coordinators
       end
     end
 
-    def self.start_beta_release!(release_platform_run, build_id, commit_id)
+    def self.start_internal_release!(release_platform_run)
       Res.new do
         raise "release is not active" unless release_platform_run.active?
-        Coordinators::CreateBetaRelease.call(release_platform_run, build_id, commit_id)
+        commit = release_platform_run.release.last_applicable_commit
+        Coordinators::CreateInternalRelease.call(release_platform_run, commit)
+      end
+    end
+
+    def self.start_beta_release!(run)
+      Res.new do
+        raise "release is not active" unless run.active?
+        commit = run.release.last_applicable_commit
+        Coordinators::CreateBetaRelease.call(run, commit)
       end
     end
 
@@ -232,7 +238,7 @@ module Coordinators
 
     def self.complete_release!(release)
       Res.new do
-        with_lock do
+        release.with_lock do
           raise "release is not ready to be finalized" unless Release::FINALIZE_STATES.include?(release.status)
           raise "release is not ready to be finalized" unless release.ready_to_be_finalized?
           release.start_post_release_phase!

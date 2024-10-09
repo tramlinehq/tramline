@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :train do
-    association :app, factory: [:app, :android]
+    app factory: %i[app android]
     version_seeded_with { "1.1.1" }
     name { "train" }
     description { "train description" }
@@ -60,6 +60,10 @@ FactoryBot.define do
 
     after(:build) do |train|
       def train.working_branch_presence = true
+
+      def train.set_ci_cd_workflows = true
+
+      def train.ci_cd_workflows_presence = true
     end
 
     trait :with_no_platforms do

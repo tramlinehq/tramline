@@ -18,7 +18,7 @@ class V2::ModalComponent < V2::BaseComponent
 
   renders_one :body
 
-  def initialize(title:, type: :dialog, subtitle: nil, size: :default, authz: true, dismissable: true)
+  def initialize(title:, type: :dialog, subtitle: nil, size: :default, authz: true, dismissable: true, open: false)
     raise ArgumentError, "Invalid size" unless SIZE_TO_WIDTH.key?(size.to_sym)
 
     @title = title
@@ -27,15 +27,16 @@ class V2::ModalComponent < V2::BaseComponent
     @size = size
     @authz = authz
     @dismissable = dismissable
+    @open = open
   end
 
-  attr_reader :title, :subtitle, :dismissable
+  attr_reader :title, :subtitle, :dismissable, :open
 
   def reveal_data_attrs
     if disabled?
       {}
     elsif dialog?
-      {class: "inline-flex items-center", data: {controller: "dialog", dialog_dismissable_value: dismissable}}
+      {class: "inline-flex items-center", data: {controller: "dialog", dialog_dismissable_value: dismissable, dialog_open_value: open}}
     elsif drawer?
       {class: "inline-flex items-center", data: {controller: "reveal", reveal_away_value: dismissable, reveal_target_selector_value: "[data-drawer-reveal]"}}
     end

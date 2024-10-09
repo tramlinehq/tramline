@@ -12,6 +12,7 @@
 #  release_platform_run_id :uuid             not null, indexed, indexed => [status], indexed => [status], indexed => [status]
 #
 class ProductionRelease < ApplicationRecord
+  has_paper_trail
   # include Sandboxable
   include Loggable
   include Passportable
@@ -24,6 +25,8 @@ class ProductionRelease < ApplicationRecord
   has_one :store_submission, as: :parent_release, dependent: :destroy
   has_many :release_health_events, dependent: :destroy, inverse_of: :production_release
   has_many :release_health_metrics, dependent: :destroy, inverse_of: :production_release
+
+  scope :sequential, -> { order(created_at: :desc) }
 
   delegate :app, :train, :release, :platform, to: :release_platform_run
   delegate :monitoring_provider, to: :app
@@ -42,17 +45,20 @@ class ProductionRelease < ApplicationRecord
   INITIAL_STATE = STATES[:inflight]
   ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
-  enum status: STATES
+  enum :status, STATES
 
   def tester_notes? = false
 
   def release_notes? = true
 
   def version_bump_required?
-    return false unless release_platform_run.latest_rc_build?(build)
-    return true if active?
-    return true if store_submission.version_bump_required? && store_submission.finished?
-    false
+    if release_platform_run.latest_rc_build?(build)
+      return true if active?
+      return true if store_submission.version_bump_required? && store_submission.finished?
+      false
+    else
+      release_platform_run.latest_rc_build.version_name == build.version_name
+    end
   end
 
   def mark_as_stale!
@@ -65,8 +71,8 @@ class ProductionRelease < ApplicationRecord
       update!(status: STATES[:finished])
       event_stamp!(reason: :finished, kind: :notice, data: stamp_data)
       notify!("Production release was finished!", :production_release_finished, notification_params)
-      Signal.production_release_is_complete!(release_platform_run)
     end
+    Signal.production_release_is_complete!(release_platform_run)
   end
 
   def actionable?
@@ -82,7 +88,7 @@ class ProductionRelease < ApplicationRecord
     return rollout_complete!(nil) if conf.submissions.blank?
 
     submission_config = conf.submissions.first
-    submission_config.submission_type.create_and_trigger!(self, submission_config, build)
+    submission_config.submission_class.create_and_trigger!(self, submission_config, build)
   end
 
   def rollout_started!
@@ -115,7 +121,7 @@ class ProductionRelease < ApplicationRecord
     release_health_metrics.order(fetched_at: :desc).first
   end
 
-  def conf = ReleaseConfig::Platform::ReleaseStep.new(config)
+  def conf = Config::ReleaseStep.from_json(config)
 
   def production? = true
 

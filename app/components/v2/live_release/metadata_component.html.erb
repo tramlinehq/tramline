@@ -3,12 +3,12 @@
     <%= render V2::AlertComponent.new(type: :info, title: "You can edit the release notes until the review process has begun on the stores.", full_screen: false) %>
   <% else %>
     <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "Release notes cannot be edited") do %>
-      Unfortunately, you can't edit the release notes once the review process has begun on the stores.
+      ❌ You can't edit the release notes once the review process has begun on the stores.
     <% end %>
   <% end %>
 </div>
 
-<%= render V2::FormComponent.new(url: update_metadata_path, method: :patch, data: { turbo: false }, free_form: true) do |f| %>
+<%= render V2::FormComponent.new(model: ReleaseMetadata.new(release: @release), url: update_metadata_path, method: :patch, data: { turbo: false }, free_form: true) do |f| %>
   <div>
     <div class="flex flex-col gap-y-2 mb-6">
       <div class="flex gap-x-4">

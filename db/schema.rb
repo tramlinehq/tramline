@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_07_102045) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -56,6 +56,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.jsonb "bugsnag_project_id"
     t.jsonb "bugsnag_ios_config"
     t.jsonb "bugsnag_android_config"
+    t.string "bitbucket_workspace"
+    t.jsonb "ci_cd_workflows"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -94,6 +96,13 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.boolean "draft"
     t.index ["organization_id"], name: "index_apps_on_organization_id"
     t.index ["platform", "bundle_identifier", "organization_id"], name: "index_apps_on_platform_and_bundle_id_and_org_id", unique: true
+  end
+
+  create_table "bitbucket_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "oauth_access_token"
+    t.string "oauth_refresh_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "bitrise_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -430,6 +439,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.index ["commit_id"], name: "index_pre_prod_releases_on_commit_id"
     t.index ["parent_internal_release_id"], name: "index_pre_prod_releases_on_parent_internal_release_id"
     t.index ["previous_id"], name: "index_pre_prod_releases_on_previous_id"
+    t.index ["release_platform_run_id", "commit_id", "type"], name: "idx_on_release_platform_run_id_commit_id_type_78e050198a", unique: true
     t.index ["release_platform_run_id"], name: "index_pre_prod_releases_on_release_platform_run_id"
   end
 
@@ -570,6 +580,13 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.index ["release_platform_run_id"], name: "index_release_metadata_on_release_platform_run_id"
   end
 
+  create_table "release_platform_configs", force: :cascade do |t|
+    t.uuid "release_platform_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["release_platform_id"], name: "index_release_platform_configs_on_release_platform_id"
+  end
+
   create_table "release_platform_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_id", null: false
     t.string "code_name", null: false
@@ -612,6 +629,15 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.string "platform"
     t.jsonb "config"
     t.index ["app_id"], name: "index_release_platforms_on_app_id"
+  end
+
+  create_table "release_step_configs", force: :cascade do |t|
+    t.bigint "release_platform_config_id"
+    t.string "kind"
+    t.boolean "auto_promote", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["release_platform_config_id"], name: "index_release_step_configs_on_release_platform_config_id"
   end
 
   create_table "releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -783,6 +809,30 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.index ["sequence_number"], name: "index_store_submissions_on_sequence_number"
   end
 
+  create_table "submission_configs", force: :cascade do |t|
+    t.bigint "release_step_config_id"
+    t.integer "number"
+    t.string "submission_type"
+    t.decimal "rollout_stages", precision: 8, scale: 5, default: [], array: true
+    t.boolean "rollout_enabled", default: false
+    t.boolean "auto_promote", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["number"], name: "index_submission_configs_on_number"
+    t.index ["release_step_config_id", "number"], name: "index_submission_configs_on_release_step_config_id_and_number", unique: true
+    t.index ["release_step_config_id"], name: "index_submission_configs_on_release_step_config_id"
+  end
+
+  create_table "submission_external_configs", force: :cascade do |t|
+    t.bigint "submission_config_id"
+    t.string "identifier"
+    t.string "name"
+    t.boolean "internal", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["submission_config_id"], name: "index_submission_external_configs_on_submission_config_id"
+  end
+
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "organization_id", null: false
     t.string "name", null: false
@@ -878,6 +928,17 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
+  create_table "workflow_configs", force: :cascade do |t|
+    t.bigint "release_platform_config_id"
+    t.string "kind"
+    t.string "name"
+    t.string "identifier"
+    t.string "artifact_name_pattern"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["release_platform_config_id"], name: "index_workflow_configs_on_release_platform_config_id"
+  end
+
   create_table "workflow_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
     t.uuid "commit_id", null: false
@@ -894,6 +955,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["commit_id"], name: "index_workflow_runs_on_commit_id"
+    t.index ["pre_prod_release_id", "commit_id"], name: "index_workflow_runs_on_pre_prod_release_id_and_commit_id", unique: true
     t.index ["pre_prod_release_id"], name: "index_workflow_runs_on_pre_prod_release_id"
     t.index ["release_platform_run_id"], name: "index_workflow_runs_on_release_platform_run_id"
   end
@@ -943,9 +1005,11 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
   add_foreign_key "release_index_components", "release_indices"
   add_foreign_key "release_indices", "trains"
   add_foreign_key "release_metadata", "release_platform_runs"
+  add_foreign_key "release_platform_configs", "release_platforms"
   add_foreign_key "release_platform_runs", "commits", column: "last_commit_id"
   add_foreign_key "release_platform_runs", "release_platforms"
   add_foreign_key "release_platforms", "apps"
+  add_foreign_key "release_step_configs", "release_platform_configs"
   add_foreign_key "releases", "trains"
   add_foreign_key "rule_expressions", "release_health_rules"
   add_foreign_key "scheduled_releases", "trains"
@@ -958,9 +1022,12 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_02_093510) do
   add_foreign_key "store_rollouts", "store_submissions"
   add_foreign_key "store_submissions", "builds"
   add_foreign_key "store_submissions", "release_platform_runs"
+  add_foreign_key "submission_configs", "release_step_configs"
+  add_foreign_key "submission_external_configs", "submission_configs"
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
   add_foreign_key "user_authentications", "users"
+  add_foreign_key "workflow_configs", "release_platform_configs"
   add_foreign_key "workflow_runs", "commits"
   add_foreign_key "workflow_runs", "pre_prod_releases"
   add_foreign_key "workflow_runs", "release_platform_runs"

@@ -20,7 +20,7 @@ class Passport < ApplicationRecord
   belongs_to :stampable, polymorphic: true
   belongs_to :author, class_name: "Accounts::User", optional: true
 
-  enum kind: {success: "success", error: "error", notice: "notice"}
+  enum :kind, {success: "success", error: "error", notice: "notice"}
 
   validate :appropriate_reason
   validates :kind, presence: true

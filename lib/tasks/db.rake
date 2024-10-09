@@ -102,6 +102,27 @@ def nuke_train(train)
   train.release_index&.release_index_components&.delete_all
   train.release_index&.delete
   train.release_platforms.each do |release_platform|
+    config = release_platform.platform_config
+    if config.present?
+      config.internal_workflow&.delete
+      config.release_candidate_workflow&.delete
+      config.internal_release&.submissions&.each do |submission|
+        submission.submission_external&.delete
+        submission.delete
+      end
+      config.beta_release&.submissions&.each do |submission|
+        submission.submission_external&.delete
+        submission.delete
+      end
+      config.production_release&.submissions&.each do |submission|
+        submission.submission_external&.delete
+        submission.delete
+      end
+      config.internal_release&.delete
+      config.beta_release&.delete
+      config.production_release&.delete
+      config.delete
+    end
     release_platform.all_release_health_rules.each do |rule|
       rule.trigger_rule_expressions&.delete_all
       rule.filter_rule_expressions&.delete_all

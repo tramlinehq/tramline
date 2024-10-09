@@ -1,0 +1,8 @@
+<%= render V2::LiveRelease::ContainerComponent.new(@release, title: @train.name) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "Automations", icon: live_release_tab_configuration.dig(:wrap_up, :wrap_up_automations, :icon)) do %>
+    <div class="flex flex-col">
+      <%= render V2::LiveRelease::FinalizeComponent.new(@release) %>
+    </div>
+  <% end %>
+<% end %>

@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby File.read(".ruby-version").strip
+ruby file: ".ruby-version"
 
 gem "rails", "~> 7.1"
 gem "pg", "~> 1.1"
@@ -18,7 +18,6 @@ gem "bootsnap", "~> 1.10"
 gem "devise", "~> 4.9"
 gem "strong_password", "~> 0.0.10"
 gem "friendly_id", "~> 5.4"
-gem "auto_strip_attributes", "~> 2.6"
 gem "flipper", "~> 1.3.0"
 gem "flipper-ui", "~> 1.3.0"
 gem "flipper-active_record", "~> 1.3.0"
@@ -54,7 +53,7 @@ gem "amazing_print", "~> 1.4"
 gem "ddtrace", "~> 1.4"
 gem "dogstatsd-ruby", "~> 5.5"
 gem "memery", "~> 1.4"
-gem "data_migrate", "~> 8.1"
+gem "data_migrate", "11.0.0.rc3"
 gem "device_detector", "~> 1.0"
 gem "strong_migrations", "~> 1.4"
 gem "fast_blank", "~> 1.0"
@@ -79,6 +78,7 @@ gem "json-schema", "~> 4.1"
 gem "color", "~> 1.8"
 gem "descope", "~> 1.0"
 gem "invisible_captcha", "~> 2.3"
+gem "csv", "~> 3.3"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
@@ -93,6 +93,8 @@ group :development, :test do
   gem "rubocop-rails", require: false
   gem "rubocop-rspec", require: false
   gem "rubocop-performance", require: false
+  gem "rubocop-factory_bot", require: false
+  gem "rubocop-rspec_rails", require: false
   gem "stateoscope"
   gem "error_highlight"
 end
@@ -108,7 +110,6 @@ end
 
 group :test do
   gem "webmock"
-  gem "capybara"
   gem "simplecov"
   gem "webdrivers"
   gem "selenium-webdriver"

@@ -16,7 +16,8 @@ class Coordinators::Webhooks::Push < Coordinators::Webhooks::Base
 
   memoize def runner
     return GITHUB::Push.new(payload) if vcs_provider.integration.github_integration?
-    GITLAB::Push.new(payload, train) if vcs_provider.integration.gitlab_integration?
+    return GITLAB::Push.new(payload, train) if vcs_provider.integration.gitlab_integration?
+    BITBUCKET::Push.new(payload, train) if vcs_provider.integration.bitbucket_integration?
   end
 
   def relevant_commit?

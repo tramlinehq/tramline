@@ -54,7 +54,7 @@ class ProductionReleasePresenter < SimpleDelegator
     when :review_failed
       {text: "Review rejected", status: :failure}
     when :failed, :failed_with_action_required, :failed_prepare
-      {text: "Failed to prepare for release", status: :failure}
+      {text: "Failed to prepare release", status: :failure}
     when :finished_manually
       {text: "Finished manually", status: :inert}
     else

@@ -24,10 +24,13 @@
 #  release_platform_run_id :uuid             not null, indexed
 #
 class StoreSubmission < ApplicationRecord
+  has_paper_trail
   # include Sandboxable
   include AASM
   include Passportable
   include Loggable
+
+  BuildNotFound = Installations::Error.new("Build not found", reason: :build_not_found)
 
   has_one :store_rollout, dependent: :destroy
   belongs_to :release_platform_run
@@ -38,15 +41,15 @@ class StoreSubmission < ApplicationRecord
   belongs_to :build
 
   delegate :release_metadata, :train, :release, :app, :platform, to: :release_platform_run
-  delegate :project_link, :public_icon_img, to: :provider, allow_nil: true
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
   delegate :actionable?, to: :parent_release
 
+  scope :sequential, -> { reorder("store_submissions.sequence_number ASC") }
   scope :production, -> { where(parent_release_type: "ProductionRelease") }
 
   def submission_channel
-    conf.submission_config
+    conf.submission_external
   end
 
   def triggerable?
@@ -58,17 +61,17 @@ class StoreSubmission < ApplicationRecord
   end
 
   def submission_channel_id
-    conf.submission_config.id.to_s
+    conf.submission_external.identifier.to_s
   end
 
   def staged_rollout?
-    conf.rollout_config.enabled
+    conf.rollout_enabled?
   end
 
   def auto_rollout? = !parent_release.production?
 
   def external_link
-    store_link || project_link
+    store_link || provider&.project_link
   end
 
   def pre_review? = true
@@ -78,6 +81,8 @@ class StoreSubmission < ApplicationRecord
   def reviewable? = raise NotImplementedError
 
   def cancellable? = raise NotImplementedError
+
+  def cancelling? = raise NotImplementedError
 
   def retryable? = false
 
@@ -94,7 +99,7 @@ class StoreSubmission < ApplicationRecord
     auto_promote = parent_release.conf.auto_promote? if auto_promote.nil?
     release_platform_run = parent_release.release_platform_run
     sequence_number = submission_config.number
-    config = submission_config.to_h
+    config = submission_config.as_json
 
     submission = create!(parent_release:, release_platform_run:, build:, sequence_number:, config:)
     submission.trigger! if auto_promote
@@ -102,7 +107,10 @@ class StoreSubmission < ApplicationRecord
 
   def notification_params
     parent_release.notification_params.merge(
-      submission_failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
+      submission_failure_reason: (display_attr(:failure_reason) if failure_reason.present?),
+      submission_asset_link: provider&.public_icon_img,
+      project_link: external_link,
+      deep_link: deep_link
     )
   end
 
@@ -113,7 +121,7 @@ class StoreSubmission < ApplicationRecord
   def fail_with_error!(error)
     elog(error)
     if error.is_a?(Installations::Error)
-      fail!(reason: error.reason)
+      fail!(reason: error.reason, error: error)
     else
       fail!
     end
@@ -134,6 +142,12 @@ class StoreSubmission < ApplicationRecord
   def release_notes
     raise NotImplementedError
   end
+
+  def deep_link
+    nil
+  end
+
+  def conf = Config::Submission.from_json(config)
 
   protected
 
@@ -164,13 +178,17 @@ class StoreSubmission < ApplicationRecord
     update! rejected_at: Time.current
   end
 
-  def stamp_data
+  def stamp_data(failure_message: nil)
+    failure_reason_data =
+      if failure_reason != :unknown_failure
+        display_attr(:failure_reason)
+      else
+        failure_message || self.class.human_attr_value(:failure_reason, :unknown_failure)
+      end
     {
       version: version_name,
       build_number: build_number,
-      failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
+      failure_reason: failure_reason_data
     }
   end
-
-  def conf = ReleaseConfig::Platform::Submission.new(config)
 end

@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :membership, class: "Accounts::Membership" do
-    association :organization
-    association :user
+    organization
+    user
     role { "developer" }
 
     trait :owner do

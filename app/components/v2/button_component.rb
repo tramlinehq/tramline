@@ -40,7 +40,7 @@ class V2::ButtonComponent < V2::BaseComponent
   renders_one :icon, V2::IconComponent
   renders_one :tooltip, ->(text, **args) { V2::TooltipComponent.new(text, **args.merge(cursor: false)) }
 
-  def initialize(label: nil, scheme: :switcher, type: :button, size: :xxs, options: nil, html_options: nil, arrow: :none, authz: true, turbo: true, disabled: false)
+  def initialize(label: nil, scheme: :switcher, type: :button, size: :xxs, options: nil, html_options: nil, arrow: :none, authz: true, turbo: true, disabled: false, auto_label_case: true)
     arrow = (scheme == :switcher) ? :double : arrow
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
@@ -57,11 +57,13 @@ class V2::ButtonComponent < V2::BaseComponent
     @authz = authz
     @disabled = disabled
     @turbo = turbo
+    @auto_label_case = auto_label_case
   end
 
   def before_render
     super
     @html_options = apply_html_options(@html_options)
+    @label = @label&.humanize if @auto_label_case && (button? || action?)
   end
 
   def render_component
@@ -141,9 +143,8 @@ class V2::ButtonComponent < V2::BaseComponent
     options[:disabled] = true if disabled?
 
     options[:data] ||= {}
-    if @turbo
-      options[:data][:turbo] = @turbo
-    end
+    options[:data][:turbo] = @turbo
+    options[:data][:turbo_frame] = "_top" unless @turbo
 
     if tooltip_allowed?
       options[:data][:popup_target] = "element"

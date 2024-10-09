@@ -13,9 +13,9 @@
 #  workflow_config         :jsonb
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
-#  commit_id               :uuid             not null, indexed
+#  commit_id               :uuid             not null, indexed, indexed => [pre_prod_release_id]
 #  external_id             :string
-#  pre_prod_release_id     :uuid             not null, indexed
+#  pre_prod_release_id     :uuid             not null, indexed, indexed => [commit_id]
 #  release_platform_run_id :uuid             not null, indexed
 #
 class WorkflowRun < ApplicationRecord
@@ -66,8 +66,8 @@ class WorkflowRun < ApplicationRecord
   WORKFLOW_IMMUTABLE = %w[unavailable failed halted finished cancelled cancelling cancelled_before_start]
   FAILED_STATES = %w[failed halted unavailable cancelled cancelled_before_start cancelling]
 
-  enum status: STATES
-  enum kind: KINDS
+  enum :status, STATES
+  enum :kind, KINDS
 
   aasm safe_state_machine_params do
     state :created, initial: true
@@ -112,14 +112,14 @@ class WorkflowRun < ApplicationRecord
     end
   end
 
-  def self.create_and_trigger!(workflow, triggering_release, commit, release_platform_run, auto_promote: false)
-    workflow_run = create!(workflow_config: workflow.value,
+  def self.create_and_trigger!(workflow_config, triggering_release, commit, release_platform_run)
+    workflow_run = create!(workflow_config: workflow_config.as_json,
       triggering_release:,
       release_platform_run:,
       commit:,
-      kind: workflow.kind)
+      kind: workflow_config.kind)
     workflow_run.create_build!(version_name: workflow_run.release_version, release_platform_run:, commit:)
-    workflow_run.initiate! if auto_promote
+    workflow_run.initiate!
   end
 
   def active?
@@ -196,8 +196,10 @@ class WorkflowRun < ApplicationRecord
   private
 
   def trigger_external_run!
+    deploy_action_enabled = organization.deploy_action_enabled? || app.deploy_action_enabled? || train.deploy_action_enabled?
+
     ci_cd_provider
-      .trigger_workflow_run!(conf.id, release_branch, workflow_inputs, commit_hash)
+      .trigger_workflow_run!(conf.identifier, release_branch, workflow_inputs, commit_hash, deploy_action_enabled)
       .then { |wr| update_external_metadata!(wr) }
   end
 
@@ -223,7 +225,7 @@ class WorkflowRun < ApplicationRecord
 
   def find_external_run
     # return mock_external_run if sandbox_mode?
-    ci_cd_provider.find_workflow_run(conf.id, release_branch, commit_hash)
+    ci_cd_provider.find_workflow_run(conf.identifier, release_branch, commit_hash)
   end
 
   def on_initiate!
@@ -282,5 +284,5 @@ class WorkflowRun < ApplicationRecord
     }
   end
 
-  def conf = ReleaseConfig::Platform::Workflow.new(workflow_config, kind)
+  def conf = Config::Workflow.from_json(workflow_config)
 end

@@ -23,7 +23,8 @@ describe AppStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:project_link)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
     end
 
     context "when successful" do
@@ -142,7 +143,8 @@ describe AppStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:project_link)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
     end
 
     context "when successful" do
@@ -218,7 +220,8 @@ describe AppStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:project_link)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
     end
 
     it "finds release" do
@@ -317,7 +320,8 @@ describe AppStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:project_link)
+      allow(providable_dbl).to receive(:inflight_store_link)
+      allow(providable_dbl).to receive(:deliverable_store_link)
     end
 
     it "removes the release from review" do
@@ -330,8 +334,7 @@ describe AppStoreSubmission do
 
     it "rechecks external status if submission is not found" do
       submission_not_found = Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "submission", "code" => "not_found"}})
-      allow(providable_dbl).to receive(:remove_from_review).and_return(GitHub::Result.new { raise(submission_not_found) })
-      allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { release_info })
+      allow(providable_dbl).to receive_messages(remove_from_review: GitHub::Result.new { raise(submission_not_found) }, find_release: GitHub::Result.new { release_info })
       submission.remove_from_review!
 
       expect(providable_dbl).to have_received(:remove_from_review).with(build.build_number, build.version_name).once

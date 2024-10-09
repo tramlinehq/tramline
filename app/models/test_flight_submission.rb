@@ -37,7 +37,6 @@ class TestFlightSubmission < StoreSubmission
   STATES = {
     created: "created",
     preprocessing: "preprocessing",
-    submitting_for_review: "submitting_for_review",
     submitted_for_review: "submitted_for_review",
     review_failed: "review_failed",
     finished: "finished",
@@ -48,8 +47,8 @@ class TestFlightSubmission < StoreSubmission
 
   SubmissionNotInTerminalState = Class.new(StandardError)
 
-  enum status: STATES
-  enum failure_reason: {
+  enum :status, STATES
+  enum :failure_reason, {
     unknown_failure: "unknown_failure"
   }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
 
@@ -82,7 +81,7 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def internal_channel?
-    submission_channel.is_internal
+    submission_channel.internal?
   end
 
   def trigger!
@@ -90,8 +89,6 @@ class TestFlightSubmission < StoreSubmission
 
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     # return mock_start_release_in_testflight if sandbox_mode?
-    return start_release! if build_present_in_store?
-
     preprocess!
     StoreSubmissions::TestFlight::FindBuildJob.perform_async(id)
   end
@@ -177,8 +174,9 @@ class TestFlightSubmission < StoreSubmission
     event_stamp!(reason: :review_rejected, kind: :error, data: stamp_data)
   end
 
-  def on_fail!
-    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+  def on_fail!(args = nil)
+    failure_error = args&.fetch(:error, nil)
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
     notify!("Submission failed", :submission_failed, notification_params)
   end
 
@@ -187,7 +185,7 @@ class TestFlightSubmission < StoreSubmission
     parent_release.rollout_complete!(self)
   end
 
-  def stamp_data
+  def stamp_data(failure_message: nil)
     super.merge(channels: submission_channel.name)
   end
 end

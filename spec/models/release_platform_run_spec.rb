@@ -25,7 +25,7 @@ describe ReleasePlatformRun do
       expect(run.release_metadatum.locale).to eq("en-US")
       expect(run.release_metadatum.release_notes).to eq("This latest version includes bugfixes for the android platform.")
       expect(run.release_metadata.size).to eq(2)
-      expect(run.release_metadata.pluck(:locale)).to match_array(["en-US", "en-AU"])
+      expect(run.release_metadata.pluck(:locale)).to contain_exactly("en-US", "en-AU")
     end
   end
 
@@ -605,6 +605,7 @@ describe ReleasePlatformRun do
     let(:step) { create(:step, release_platform:) }
     let(:release) { create(:release) }
     let(:release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform:) }
+    let(:tag_exists_error) { Installations::Error.new("Should not create a tag", reason: :tag_reference_already_exists) }
 
     it "saves a new tag with the base name" do
       allow_any_instance_of(GithubIntegration).to receive(:create_tag!)
@@ -617,7 +618,7 @@ describe ReleasePlatformRun do
     end
 
     it "saves base name + last commit sha" do
-      raise_times(GithubIntegration, Installations::Errors::TagReferenceAlreadyExists, :create_tag!, 1)
+      raise_times(GithubIntegration, tag_exists_error, :create_tag!, 1)
       commit = create(:commit, :without_trigger, release:)
       release_platform_run.update!(last_commit: commit)
       create(:step_run, release_platform_run:, commit:)
@@ -627,7 +628,7 @@ describe ReleasePlatformRun do
     end
 
     it "saves base name + last commit sha + time" do
-      raise_times(GithubIntegration, Installations::Errors::TagReferenceAlreadyExists, :create_tag!, 2)
+      raise_times(GithubIntegration, tag_exists_error, :create_tag!, 2)
 
       freeze_time do
         now = Time.now.to_i
