@@ -51,10 +51,13 @@ class ProductionRelease < ApplicationRecord
   def release_notes? = true
 
   def version_bump_required?
-    return false unless release_platform_run.latest_rc_build?(build)
-    return true if active?
-    return true if store_submission.version_bump_required? && store_submission.finished?
-    false
+    if release_platform_run.latest_rc_build?(build)
+      return true if active?
+      return true if store_submission.version_bump_required? && store_submission.finished?
+      false
+    else
+      release_platform_run.latest_rc_build.version_name == build.version_name
+    end
   end
 
   def mark_as_stale!
