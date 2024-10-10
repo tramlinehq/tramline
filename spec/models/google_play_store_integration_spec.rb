@@ -7,7 +7,7 @@ describe GooglePlayStoreIntegration do
 
   describe "#upload" do
     let(:app) { create(:app, platform: :android) }
-    let(:integration) { create(:integration, :with_google_play_store, app:) }
+    let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
     let(:google_integration) { integration.providable }
     let(:file) { Tempfile.new("test_artifact.aab") }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
@@ -68,7 +68,7 @@ describe GooglePlayStoreIntegration do
 
   describe "#create_draft_release" do
     let(:app) { create(:app, platform: :android) }
-    let(:integration) { create(:integration, :with_google_play_store, app:) }
+    let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
     let(:google_integration) { integration.providable }
     let(:file) { Tempfile.new("test_artifact.aab") }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
@@ -95,7 +95,7 @@ describe GooglePlayStoreIntegration do
 
   describe "#rollout_release" do
     let(:app) { create(:app, platform: :android) }
-    let(:integration) { create(:integration, :with_google_play_store, app:) }
+    let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
     let(:google_integration) { integration.providable }
     let(:file) { Tempfile.new("test_artifact.aab") }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
@@ -122,7 +122,7 @@ describe GooglePlayStoreIntegration do
 
   describe "#halt_release" do
     let(:app) { create(:app, platform: :android) }
-    let(:integration) { create(:integration, :with_google_play_store, app:) }
+    let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
     let(:google_integration) { integration.providable }
     let(:file) { Tempfile.new("test_artifact.aab") }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }

@@ -2,7 +2,7 @@ require "rails_helper"
 require "webmock/rspec"
 
 describe Installations::Bitbucket::Api, type: :integration do
-  let(:access_token) { Faker::String.random(length: 8) }
+  let(:access_token) { Faker::Lorem.word }
   let(:repo_slug) { "tramline/ueno" }
   let(:url) { "https://example.com" }
 
