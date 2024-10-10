@@ -32,6 +32,8 @@ class Integration < ApplicationRecord
   UnsupportedAction = Class.new(StandardError)
   NoBuildArtifactAvailable = Class.new(StandardError)
 
+  APP_VARIANT_PROVIDABLE_TYPES = %w[GoogleFirebaseIntegration]
+
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
@@ -257,6 +259,10 @@ class Integration < ApplicationRecord
 
     if category != Integration.categories[:build_channel]
       errors.add(:category, "must be 'build_channel' when integrable is an AppVariant")
+    end
+
+    if APP_VARIANT_PROVIDABLE_TYPES.exclude?(providable_type)
+      errors.add(:providable_type, :not_allowed_for_app_variant)
     end
   end
 end

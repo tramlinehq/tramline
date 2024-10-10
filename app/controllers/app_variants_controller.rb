@@ -28,6 +28,7 @@ class AppVariantsController < SignedInApplicationController
     if @app_variant.save
       redirect_to default_path, notice: "App Variant was successfully created."
     else
+      @app_variant.errors.merge!(@integration)
       redirect_back fallback_location: default_path, flash: {error: @app_variant.errors.full_messages.to_sentence}
     end
   end

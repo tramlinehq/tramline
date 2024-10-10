@@ -22,6 +22,7 @@ class AppVariant < ApplicationRecord
   validates :bundle_identifier, presence: true, uniqueness: {scope: :app_config_id}
   validate :duplicate_bundle_identifier
   validate :single_variant_per_app_config, on: :create
+  validates :name, presence: true, length: {maximum: 30}
 
   delegate :app, to: :app_config
   delegate :organization, :active_runs, :platform, to: :app

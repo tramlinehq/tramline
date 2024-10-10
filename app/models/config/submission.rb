@@ -28,6 +28,7 @@ class Config::Submission < ApplicationRecord
   validates :submission_type, presence: true
   validates :number, presence: true, uniqueness: {scope: :release_step_config_id}
   validate :correct_rollout_stages, if: :rollout_enabled?
+  validate :production_release_submission
 
   accepts_nested_attributes_for :submission_external, allow_destroy: true
 
@@ -66,6 +67,12 @@ class Config::Submission < ApplicationRecord
 
   def display
     submission_type.classify.constantize.model_name.human
+  end
+
+  def production_release_submission
+    if release_step_config.production?
+      errors.add(:integrable_type, :variant_not_allowed) if integrable_type == "AppVariant"
+    end
   end
 
   def correct_rollout_stages
