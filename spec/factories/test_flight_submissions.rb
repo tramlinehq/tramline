@@ -13,7 +13,9 @@ FactoryBot.define do
           name: "External Testers",
           is_internal: false
         },
-        auto_promote: true
+        auto_promote: true,
+        integrable_id: parent_release.release_platform_run.app.id,
+        integrable_type: "App"
       }
     }
 

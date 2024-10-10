@@ -5,15 +5,10 @@ module Integrable
     has_many :integrations, as: :integrable, dependent: :destroy
   end
 
-  delegate :vcs_provider,
-    :ci_cd_provider,
-    :monitoring_provider,
-    :notification_provider,
-    :ios_store_provider,
+  delegate :ios_store_provider,
     :android_store_provider,
     :slack_build_channel_provider,
-    :firebase_build_channel_provider,
-    :slack_notifications?, to: :integrations, allow_nil: true
+    :firebase_build_channel_provider, to: :integrations, allow_nil: true
   delegate :draft_check?, to: :android_store_provider, allow_nil: true
 
   def bitrise_connected?

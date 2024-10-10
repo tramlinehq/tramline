@@ -8,7 +8,9 @@ FactoryBot.define do
     status { "created" }
     config {
       {
-        submission_config: {id: :production, name: "production"}
+        submission_config: {id: :production, name: "production"},
+        integrable_id: parent_release.release_platform_run.app.id,
+        integrable_type: "App"
       }
     }
 

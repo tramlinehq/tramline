@@ -57,6 +57,12 @@ class App < ApplicationRecord
   scope :with_trains, -> { joins(:trains).distinct }
   scope :sequential, -> { reorder("apps.created_at ASC") }
 
+  delegate :vcs_provider,
+    :ci_cd_provider,
+    :monitoring_provider,
+    :notification_provider,
+    :slack_notifications?, to: :integrations, allow_nil: true
+
   def self.allowed_platforms
     {
       android: "Android",

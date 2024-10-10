@@ -25,7 +25,6 @@ class Integration < ApplicationRecord
   belongs_to :app, optional: true
 
   PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration]
-  INTEGRABLE_TYPES = %w[App AppVariant]
   delegated_type :providable, types: PROVIDER_TYPES, autosave: true, validate: false
   delegated_type :integrable, types: INTEGRABLE_TYPES, autosave: true, validate: false
 

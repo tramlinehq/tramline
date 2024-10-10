@@ -251,7 +251,8 @@ class AppStoreSubmission < StoreSubmission
     save!
   end
 
-  def provider = app.ios_store_provider
+  # app.ios_store_provider
+  def provider = conf.integrable.ios_store_provider
 
   def notification_params
     super.merge(

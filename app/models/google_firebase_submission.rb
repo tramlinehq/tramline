@@ -137,7 +137,8 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
-  def provider = app.firebase_build_channel_provider
+  # app.firebase_build_channel_provider
+  def provider = conf.integrable.firebase_build_channel_provider
 
   def notification_params
     super.merge(submission_channel: "#{display} - #{submission_channel.name}")

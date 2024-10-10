@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_09_082609) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_10_094500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -820,6 +820,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_09_082609) do
     t.boolean "auto_promote", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "integrable_id"
+    t.string "integrable_type"
     t.index ["number"], name: "index_submission_configs_on_number"
     t.index ["release_step_config_id", "number"], name: "index_submission_configs_on_release_step_config_id_and_number", unique: true
     t.index ["release_step_config_id"], name: "index_submission_configs_on_release_step_config_id"
