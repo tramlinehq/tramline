@@ -14,7 +14,7 @@
 class AppVariant < ApplicationRecord
   has_paper_trail
   include Integrable
-  include PlatformAwareness
+  include AppConfigurable
 
   belongs_to :app_config
   has_many :steps, dependent: :nullify
@@ -31,6 +31,8 @@ class AppVariant < ApplicationRecord
   def display_text
     "#{name} (#{bundle_identifier})"
   end
+
+  def config = self
 
   private
 
