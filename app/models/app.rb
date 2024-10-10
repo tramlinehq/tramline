@@ -94,6 +94,18 @@ class App < ApplicationRecord
     releases.pending_release
   end
 
+  def bitrise_connected?
+    integrations.bitrise_integrations.any?
+  end
+
+  def bugsnag_connected?
+    integrations.bugsnag_integrations.any?
+  end
+
+  def bitbucket_connected?
+    integrations.bitbucket_integrations.any?
+  end
+
   def ready?
     integrations.ready? and config&.ready?
   end
