@@ -15,6 +15,7 @@
 #  store_submission_id     :uuid             indexed
 #
 class StoreRollout < ApplicationRecord
+  has_paper_trail
   using RefinedString
   include AASM
   include Loggable

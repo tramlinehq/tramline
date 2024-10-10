@@ -25,8 +25,8 @@ class Computations::Release::StepStatuses
         approvals: STATUS[:blocked],
         app_submission: app_submission_status,
         rollout_to_users: rollout_to_users_status,
-        wrap_up_automations: wrap_up_automations_status
-      },
+        wrap_up_automations: (wrap_up_automations_status unless any_platforms? { |rp| rp.conf.production_release? })
+      }.compact,
       current_overall_status: current_overall_status
     }
   end
