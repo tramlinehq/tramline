@@ -23,8 +23,10 @@ class AddIntegrablesToAllRuntimeModelConfigs < ActiveRecord::Migration[7.2]
     end
 
     ReleasePlatformRun.find_each do |run|
-      app = run.app
       config = run.config
+      next unless config.present?
+
+      app = run.app
       if config.dig("internal_release", "submissions").present?
         config["internal_release"]["submissions"].each do |submission|
           submission["integrable_id"] = app.id
@@ -45,7 +47,7 @@ class AddIntegrablesToAllRuntimeModelConfigs < ActiveRecord::Migration[7.2]
           submission["integrable_type"] = "App"
         end
       end
-      
+
       run.update! config: config
     end
   end
