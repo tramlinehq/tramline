@@ -217,4 +217,22 @@ describe GoogleFirebaseSubmission do
       expect(submission.finished?).to be(false)
     end
   end
+
+  describe "#provider" do
+    let(:app) { create(:app, :android) }
+    let(:app_variant) { create(:app_variant, bundle_identifier: "variant_identifier", app_config: app.config) }
+    let(:submission) { create(:google_firebase_submission) }
+
+    it "return the variant's integration" do
+      app_variant_integration = create(:integration, :with_google_firebase, integrable: app_variant)
+      submission.update!(config: submission.config.merge(integrable_id: app_variant.id, integrable_type: "AppVariant"))
+      expect(submission.reload.provider).to eq(app_variant_integration.providable)
+    end
+
+    it "return the app's integration" do
+      app_integration = create(:integration, :with_google_firebase, integrable: app)
+      submission.update!(config: submission.config.merge(integrable_id: app.id, integrable_type: "App"))
+      expect(submission.reload.provider).to eq(app_integration.providable)
+    end
+  end
 end
