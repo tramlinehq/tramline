@@ -88,11 +88,11 @@ class Integration < ApplicationRecord
     build_channels: [{id: :external, name: "External"}]
   }
 
-  validate :allowed_integrations_for_app
+  validate :allowed_integrations_for_app, on: :create
   validate :validate_providable, on: :create
   validate :app_variant_restriction, on: :create
   validates :category, presence: true
-  validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: :connected?}
+  validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: -> { integrable_id.present? && connected? }}
 
   attr_accessor :current_user, :code
 
