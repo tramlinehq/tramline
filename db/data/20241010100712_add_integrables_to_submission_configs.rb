@@ -7,6 +7,11 @@ class AddIntegrablesToSubmissionConfigs < ActiveRecord::Migration[7.2]
       submission.integrable = app
       submission.save!
     end
+
+    StoreSubmission.find_each do |submission|
+      app = submission.release_platform_run.app
+      submission.update! config: submission.config.merge(integrable_id: app.id, integrable_type: "App")
+    end
   end
 
   def down
