@@ -1,11 +1,11 @@
 FactoryBot.define do
   factory :integration do
-    app factory: %i[app android]
+    integrable factory: %i[app android]
     providable factory: %i[google_firebase_integration without_callbacks_and_validations]
     category { "build_channel" }
 
     trait :with_google_play_store do
-      app factory: %i[app android]
+      integrable factory: %i[app android]
       providable factory: %i[google_play_store_integration without_callbacks_and_validations]
       category { "build_channel" }
     end
@@ -21,7 +21,7 @@ FactoryBot.define do
     end
 
     trait :with_app_store do
-      app factory: %i[app ios]
+      integrable factory: %i[app ios]
       providable factory: %i[app_store_integration without_callbacks_and_validations]
       category { "build_channel" }
     end

@@ -1,30 +1,64 @@
 <div class="flex flex-row item-gap-default items-center w-full box-padding-md border border-dashed border-main-200 dark:border-main-600 rounded-lg"
-     data-controller="nested-select"
-     data-nested-select-selected-nested-option-value="<%= form.object.submission_external&.identifier %>"
-     data-nested-select-options-value="<%= submission_types.to_json %>"
-     data-nested-select-option-key-value="type"
-     data-nested-select-nested-option-key-value="channels">
+     data-controller="multi-level-select"
+     data-multi-level-select-selected-nested-option-value="<%= form.object.submission_external&.identifier %>"
+     data-multi-level-select-options-value="<%= submission_types.to_json %>">
 
   <div class="flex justify-start">
     <%= render V2::IconComponent.new("grip.svg", size: :lg, classes: "handle cursor-grabbing") %>
   </div>
 
-  <div class="flex flex-row flex-grow item-gap-default">
-    <%= form.select_without_label :submission_type,
-                                  options_for_select(submission_types.pluck(:type).map { |t| [t.display, t.to_s] }, form.object.submission_type),
-                                  {},
-                                  {data: {nested_select_target: "primary", action: "nested-select#updateNestedOptions"}} %>
+  <div class="flex flex-1 justify-start">
+    <div class="grid grid-cols-3 item-gap-default">
+      <%= form.select_without_label :integrable_id,
+                                    options_for_select(submission_types["variants"].map { |t| [t["name"], t["id"]] }),
+                                    {},
+                                    {
+                                      data: {
+                                        multi_level_select_target: "select",
+                                        action: "multi-level-select#update",
+                                        selected_value: form.object.integrable_id,
+                                        level: "variants",
+                                        level_key: "id",
+                                        level_display_key: "name",
+                                        target_level: "submissions"
+                                      }
+                                    } %>
 
-    <% form.fields_for :submission_external, form.object.submission_external || Config::SubmissionExternal.new do |s| %>
-      <%= s.hidden_field :id, value: s.object.id %>
-      <%= s.select_without_label :identifier,
-                                 {},
-                                 {},
-                                 {data: {nested_select_target: "nested", controller: "input-select"}} %>
-    <% end %>
+      <%= form.select_without_label :submission_type,
+                                    {},
+                                    {},
+                                    {
+                                      data: {
+                                        multi_level_select_target: "select",
+                                        action: "multi-level-select#update",
+                                        selected_value: form.object.submission_type,
+                                        level: "submissions",
+                                        level_key: "type",
+                                        level_display_key: "name",
+                                        target_level: "channels"
+                                      }
+                                    } %>
+
+      <% form.fields_for :submission_external, form.object.submission_external || Config::SubmissionExternal.new do |s| %>
+        <%= s.hidden_field :id, value: s.object.id %>
+        <%= s.select_without_label :identifier,
+                                   {},
+                                   {},
+                                   {
+                                     data: {
+                                       controller: "input-select",
+                                       multi_level_select_target: "select",
+                                       selected_value: s.object.identifier,
+                                       level: "channels",
+                                       level_key: "id",
+                                       level_display_key: "name"
+                                     }
+                                   } %>
+      <% end %>
+    </div>
   </div>
 
-  <div class="flex item-gap-default justify-end">
+  <div class="flex item-gap-default ml-auto">
     <%= render V2::ButtonComponent.new(
       scheme: :naked_icon,
       type: :action,
@@ -33,7 +67,7 @@
       b.with_icon("v2/trash.svg", size: :md)
     end %>
 
-    <%= render V2::Form::SwitchComponent.new(form: form, field_name: :auto_promote, on_label: "Auto-submit enabled", off_label: "Auto-submit stopped") do |auto_submit| %>
+    <%= render V2::Form::SwitchComponent.new(form: form, field_name: :auto_promote, on_label: "Auto-submit", off_label: "Auto-submit") do |auto_submit| %>
       <% auto_submit.with_info_icon do %>
         When enabled, Tramline will automatically deliver the build to this submission as soon as the previous one is
         delivered. If it's the first submission, the same will happen as soon as the build is ready.

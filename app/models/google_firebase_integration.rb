@@ -14,14 +14,13 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   self.ignored_columns += %w[app_id]
 
+  include Loggable
   include Providable
   include Displayable
-  include Loggable
-  include PlatformAwareness
 
   delegate :cache, to: Rails
-  delegate :app, to: :integration
-  delegate :config, to: :app
+  delegate :integrable, to: :integration
+  delegate :config, to: :integrable
   delegate :firebase_app, to: :config
 
   validate :correct_key, on: :create
@@ -92,19 +91,24 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def setup
-    platform_aware_config(list_apps(platform: "ios"), list_apps(platform: "android"))
+    android = list_apps(platform: "android")
+    ios = list_apps(platform: "ios")
+
+    case integrable.platform
+    when "android" then {android: android}
+    when "ios" then {ios: ios}
+    when "cross_platform" then {ios: ios, android: android}
+    else
+      raise ArgumentError, "Invalid platform"
+    end
   end
 
   def list_apps(platform:)
-    raise ArgumentError, "platform must be valid" unless valid_platforms.include?(platform)
-
     apps = cache.fetch(list_apps_cache_key, expires_in: CACHE_EXPIRY) do
       installation.list_apps(APPS_TRANSFORMATIONS)
     end
 
-    apps
-      .select { |app| app[:platform] == platform }
-      .map { |app| app.slice(:app_id, :display_name) }
+    apps.select { |app| app[:platform] == platform }.map { |app| app.slice(:app_id, :display_name) }
   end
 
   def populate_channels!
@@ -120,11 +124,9 @@ class GoogleFirebaseIntegration < ApplicationRecord
     build_channels.first
   end
 
-  def upload(file, filename, platform:, variant: nil)
-    raise ArgumentError, "platform must be valid" unless valid_platforms.include?(platform)
-
+  def upload(file, filename, platform:)
     GitHub::Result.new do
-      installation.upload(file, filename, firebase_app(platform, variant:))
+      installation.upload(file, filename, firebase_app(platform))
     end
   end
 
@@ -233,10 +235,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   private
 
-  def valid_platforms
-    App.platforms.slice(:android, :ios).keys
-  end
-
   def get_all_channels
     channels&.map { |channel| channel.slice(:id, :name) }
   end
@@ -258,10 +256,10 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def list_apps_cache_key
-    "app/#{app.id}/google_firebase_integration/#{id}/list_apps"
+    "google_firebase_integration/#{id}/list_apps"
   end
 
   def build_channels_cache_key
-    "app/#{app.id}/google_firebase_integration/#{id}/build_channels"
+    "google_firebase_integration/#{id}/build_channels"
   end
 end

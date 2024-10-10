@@ -57,14 +57,14 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       internal_release_attributes: [
         :id, :auto_promote,
         submissions_attributes: [
-          :id, :submission_type, :_destroy, :number, :auto_promote,
+          :id, :submission_type, :_destroy, :number, :auto_promote, :integrable_id,
           submission_external_attributes: [:id, :identifier, :_destroy]
         ]
       ],
       beta_release_attributes: [
         :id, :auto_promote,
         submissions_attributes: [
-          :id, :submission_type, :_destroy, :number, :auto_promote,
+          :id, :submission_type, :_destroy, :number, :auto_promote, :integrable_id,
           submission_external_attributes: [:id, :identifier, :_destroy]
         ]
       ],
@@ -112,8 +112,8 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   def parse_config_params(permitted_params)
     update_workflow_name(permitted_params[:internal_workflow_attributes])
     update_workflow_name(permitted_params[:release_candidate_workflow_attributes])
-    update_submission_names(permitted_params[:internal_release_attributes])
-    update_submission_names(permitted_params[:beta_release_attributes])
+    update_submission_params(permitted_params[:internal_release_attributes])
+    update_submission_params(permitted_params[:beta_release_attributes])
     update_production_release_rollout_stages(permitted_params[:production_release_attributes]) if @release_platform.android? && permitted_params[:production_release_attributes].present?
 
     permitted_params
@@ -125,10 +125,13 @@ class Config::ReleasePlatformsController < SignedInApplicationController
     end
   end
 
-  def update_submission_names(release_attributes)
+  def update_submission_params(release_attributes)
     if release_attributes.present?
       release_attributes[:submissions_attributes]&.each do |_, submission|
-        submission[:submission_external_attributes][:name] = find_submission_name(submission)
+        variant = @submission_types[:variants].find { |v| v[:id] == submission[:integrable_id] }
+
+        submission[:submission_external_attributes][:name] = find_submission_name(submission, variant)
+        submission[:integrable_type] = variant[:type]
       end
     end
   end
@@ -144,11 +147,12 @@ class Config::ReleasePlatformsController < SignedInApplicationController
     @ci_actions.find { |action| action[:id] == identifier }&.dig(:name)
   end
 
-  def find_submission_name(submission)
+  def find_submission_name(submission, variant)
+    return if variant.blank?
     identifier = submission.dig(:submission_external_attributes, :identifier)
     return unless identifier
 
-    @submission_types.find { |type| type[:type].to_s == submission[:submission_type].to_s }
+    variant[:submissions].find { |type| type[:type].to_s == submission[:submission_type].to_s }
       &.then { |sub| sub.dig(:channels) }
       &.then { |channels| channels.find { |channel| channel[:id].to_s == identifier } }
       &.then { |channel| channel[:name] }
