@@ -282,6 +282,8 @@ class BitbucketIntegration < ApplicationRecord
     cache.fetch(workflows_cache_key(branch_name), expires_in: 120.minutes) do
       with_api_retries { installation.list_pipeline_selectors(code_repository_name, branch_name) }
     end
+  rescue Installations::Error
+    []
   end
 
   def workflow_retriable? = false

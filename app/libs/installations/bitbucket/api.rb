@@ -369,8 +369,10 @@ module Installations
 
       body = response.body.to_s
       parsed_body = body.safe_json_parse
+      Rails.logger.debug { "Bitbucket API returned #{response.status} for #{url} with body - #{parsed_body}" }
       return (parse_json ? parsed_body : body) unless response.status.client_error?
 
+      raise Installations::Error.new("Resource not found", reason: :not_found) if response.status.not_found?
       raise Installations::Bitbucket::Error.new(parsed_body)
     end
 

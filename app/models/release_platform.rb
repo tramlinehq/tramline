@@ -192,7 +192,9 @@ class ReleasePlatform < ApplicationRecord
           number: 1,
           submission_type:,
           submission_config:,
-          auto_promote: false
+          auto_promote: false,
+          integrable_id: app.id,
+          integrable_type: "App"
         }
       ]
       base_config_map[:beta_release][:submissions] = submissions
