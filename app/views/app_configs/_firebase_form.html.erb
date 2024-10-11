@@ -10,7 +10,7 @@
         <%= section.F.labeled_select :firebase_android_config,
                                      "Android App",
                                      options_for_select(display_channels(firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
-                                                        integrable.firebase_android_config.to_json) %>
+                                                        integrable.config.firebase_android_config.to_json) %>
       </div>
     <% end %>
 
@@ -19,7 +19,7 @@
         <%= section.F.labeled_select :firebase_ios_config,
                                      "iOS App",
                                      options_for_select(display_channels(firebase_ios_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
-                                                        integrable.firebase_ios_config.to_json) %>
+                                                        integrable.config.firebase_ios_config.to_json) %>
       </div>
     <% end %>
   <% end %>
