@@ -163,39 +163,39 @@ class Integration < ApplicationRecord
     end
 
     def slack_notifications?
-      notification.first&.slack_integration?
+      kept.notification.first&.slack_integration?
     end
 
     def vcs_provider
-      version_control.first&.providable
+      kept.version_control.first&.providable
     end
 
     def ci_cd_provider
-      ci_cd.connected.first&.providable
+      kept.ci_cd.connected.first&.providable
     end
 
     def monitoring_provider
-      monitoring.first&.providable
+      kept.monitoring.first&.providable
     end
 
     def notification_provider
-      notification.first&.providable
+      kept.notification.first&.providable
     end
 
     def android_store_provider
-      build_channel.find(&:google_play_store_integration?)&.providable
+      kept.build_channel.find(&:google_play_store_integration?)&.providable
     end
 
     def ios_store_provider
-      build_channel.find(&:app_store_integration?)&.providable
+      kept.build_channel.find(&:app_store_integration?)&.providable
     end
 
     def slack_build_channel_provider
-      build_channel.find(&:slack_integration?)&.providable
+      kept.build_channel.find(&:slack_integration?)&.providable
     end
 
     def firebase_build_channel_provider
-      build_channel.find(&:google_firebase_integration?)&.providable
+      kept.build_channel.find(&:google_firebase_integration?)&.providable
     end
 
     private
