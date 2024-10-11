@@ -320,8 +320,10 @@ class BitbucketIntegration < ApplicationRecord
     raise Integration::NoBuildArtifactAvailable if artifact.blank?
 
     Rails.logger.debug { "Downloading artifact #{artifact}" }
-    stream = with_api_retries { installation.download_artifact(artifact[:archive_download_url]) }
-    {artifact:, stream: Artifacts::Stream.new(stream)}
+    artifact_file = with_api_retries { installation.download_artifact(artifact[:archive_download_url]) }
+    raise Integration::NoBuildArtifactAvailable if artifact_file.blank?
+
+    {artifact:, stream: Artifacts::Stream.new(artifact_file)}
   end
 
   def artifact_url
