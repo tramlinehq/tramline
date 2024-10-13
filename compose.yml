@@ -54,7 +54,7 @@ services:
     command: [ "http", "https://web:3000", "--log=stdout", "--host-header=rewrite" ]
     env_file: .env.development
     ports:
-      - 4040:4040
+      - '4040:4040'
     healthcheck:
       test: /bin/bash -c "</dev/tcp/ngrok/4040"
       interval: 60s
