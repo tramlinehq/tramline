@@ -34,6 +34,8 @@ x-backend: &backend
       condition: service_healthy
     setup:
       condition: service_completed_successfully
+    ngrok:
+      condition: service_started
 
 services:
   setup:
@@ -63,9 +65,6 @@ services:
       timeout: 2s
       retries: 2
       start_period: 2s
-    depends_on:
-      ngrok:
-        condition: service_started
 
   css:
     <<: *backend
@@ -99,7 +98,7 @@ services:
       - '6389:6379'
     healthcheck:
       test: redis-cli ping
-      interval: 60s
+      interval: 5s
       timeout: 1s
       retries: 30
 
