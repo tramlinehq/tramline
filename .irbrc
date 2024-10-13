@@ -2,7 +2,7 @@ require "irb/completion"
 require "rubygems"
 
 IRB.conf[:SAVE_HISTORY] = 1000
-IRB.conf[:HISTORY_FILE] = "#{ENV["HOME"]}/.irb-save-history"
+IRB.conf[:HISTORY_FILE] = ".irb-save-history"
 IRB.conf[:USE_AUTOCOMPLETE] = false
 
 def A(slug) = App.find_by_slug(slug)

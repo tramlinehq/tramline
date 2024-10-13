@@ -3,7 +3,7 @@
 # docker build -t my-app .
 # docker run -d -p 80:80 -p 443:443 --name my-app -e RAILS_MASTER_KEY=<value from config/master.key> my-app
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version
-ARG RUBY_VERSION=3.3.4
+ARG RUBY_VERSION=3.3.5
 ARG DISTRO_NAME=bookworm
 
 FROM ruby:$RUBY_VERSION-slim-$DISTRO_NAME AS base
@@ -15,7 +15,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 less build-essential git pkg-config jq && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 less build-essential git pkg-config jq vim && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install PostgreSQL dependencies
@@ -42,7 +42,3 @@ ENV RAILS_ENV="development" \
 # Copy application code
 COPY . .
 RUN bundle install
-
-# Start the server by default, this can be overwritten at runtime
-EXPOSE 3000
-CMD ["/bin/bash"]

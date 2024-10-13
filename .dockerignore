@@ -46,4 +46,10 @@
 
 # Ignore Docker-related files
 /.dockerignore
-/Dockerfile*
+/*Dockerfile
+
+# Ignore OS files
+.DS_Store
+
+# Ignore ruby config files
+.irb-save-history
