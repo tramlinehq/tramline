@@ -1,0 +1,110 @@
+x-app: &app
+  build:
+    dockerfile: ./dev.Dockerfile
+    context: .
+    args:
+      RUBY_VERSION: '3.3.5'
+      PG_MAJOR: '14'
+  image: tramline-site-dev:1.0.0
+  environment: &env
+    RAILS_ENV: ${RAILS_ENV:-development}
+  tmpfs:
+    - /tmp
+    - /app/tmp/pids
+
+x-backend: &backend
+  <<: *app
+  stdin_open: true
+  tty: true
+  volumes:
+    - .:/rails:cached
+    - bundle:/usr/local/bundle
+    - rails_cache:/app/tmp/cache
+  environment:
+    <<: *env
+    REDIS_URL: redis://redis:6379/
+    DATABASE_URL: postgres://postgres:postgres@postgres:5432
+    BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
+    XDG_DATA_HOME: /app/tmp/caches
+    EDITOR: vim
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    setup:
+      condition: service_completed_successfully
+
+services:
+  setup:
+    <<: *backend
+    command: [ "/bin/bash", "/rails/bin/setup.docker.dev" ]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    command: [ "http", "https://web:3000", "--log=stdout", "--host-header=rewrite" ]
+    environment:
+      NGROK_AUTHTOKEN: YOUR_NGROK_AUTHTOKEN
+      NGROK_REGION: in
+    ports:
+      - 4040:4040
+
+  web:
+    <<: *backend
+    command: bundle exec rails server -p 3000 -b 'ssl://0.0.0.0:3000?key=config/certs/localhost-key.pem&cert=config/certs/localhost.pem'
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test: [ "CMD", "curl", "-k", "-f", "-H", "X-Monitor-Allowed: 1", "https://localhost:3000/up" ]
+      interval: 60s
+      timeout: 2s
+      retries: 2
+      start_period: 2s
+    depends_on:
+      ngrok:
+        condition: service_started
+
+  css:
+    <<: *backend
+    command: bundle exec rails tailwindcss:watch
+    depends_on:
+      web:
+        condition: service_healthy
+
+  sidekiq:
+    <<: *backend
+    command: bundle exec sidekiq -C config/sidekiq.yml
+
+  postgres:
+    image: postgres:14
+    volumes:
+      - .psqlrc:/root/.psqlrc:ro
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5442:5432'
+    healthcheck:
+      test: pg_isready -U postgres -h 127.0.0.1
+      interval: 5s
+
+  redis:
+    image: redis:6.2-alpine
+    volumes:
+      - redis:/data
+    ports:
+      - '6389:6379'
+    healthcheck:
+      test: redis-cli ping
+      interval: 60s
+      timeout: 1s
+      retries: 30
+
+volumes:
+  bundle:
+  rails_cache:
+  postgres:
+  redis:
