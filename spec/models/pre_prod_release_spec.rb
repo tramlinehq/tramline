@@ -41,22 +41,31 @@ describe PreProdRelease do
     end
 
     context "when auto promote is disabled" do
+      let(:release_platform_run) { create(:release_platform_run) }
       let(:config) {
         {auto_promote: true,
          submissions: [
-           {number: 1,
-            submission_type: "PlayStoreSubmission",
-            submission_config: {id: :internal, name: "internal testing"},
-            rollout_config: {enabled: false},
-            auto_promote: true},
-           {number: 2,
-            submission_type: "PlayStoreSubmission",
-            submission_config: {id: :alpha, name: "closed testing"},
-            rollout_config: {enabled: true, stages: [10, 100]},
-            auto_promote: false}
+           {
+             number: 1,
+             submission_type: "PlayStoreSubmission",
+             submission_config: {id: :internal, name: "internal testing"},
+             rollout_config: {enabled: false},
+             auto_promote: true,
+             integrable_id: release_platform_run.app.id,
+             integrable_type: "App"
+           },
+           {
+             number: 2,
+             submission_type: "PlayStoreSubmission",
+             submission_config: {id: :alpha, name: "closed testing"},
+             rollout_config: {enabled: true, stages: [10, 100]},
+             auto_promote: false,
+             integrable_id: release_platform_run.app.id,
+             integrable_type: "App"
+           }
          ]}
       }
-      let(:pre_prod_release) { create(:pre_prod_release, config:) }
+      let(:pre_prod_release) { create(:pre_prod_release, release_platform_run:, config:) }
 
       it "does not trigger the next submission if auto_promote is false" do
         pre_prod_release.rollout_complete!(submission)

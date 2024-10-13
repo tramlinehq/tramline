@@ -198,7 +198,8 @@ class PlayStoreSubmission < StoreSubmission
     end
   end
 
-  def provider = app.android_store_provider
+  # app.android_store_provider
+  def provider = conf.integrable.android_store_provider
 
   def update_external_status
     # return if sandbox_mode?

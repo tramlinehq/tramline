@@ -319,8 +319,10 @@ module Installations
         &.first
     end
 
-    def download_artifact(download_url)
-      Down::Http.download(download_url, follow: {max_hops: 2})
+    def download_artifact(artifact_url)
+      download_url = fetch_redirect(artifact_url)
+      return unless download_url
+      Down::Http.download(download_url, follow: {max_hops: 1})
     end
 
     private
@@ -367,9 +369,18 @@ module Installations
 
       body = response.body.to_s
       parsed_body = body.safe_json_parse
+      Rails.logger.debug { "Bitbucket API returned #{response.status} for #{url} with body - #{parsed_body}" }
       return (parse_json ? parsed_body : body) unless response.status.client_error?
 
+      raise Installations::Error.new("Resource not found", reason: :not_found) if response.status.not_found?
       raise Installations::Bitbucket::Error.new(parsed_body)
+    end
+
+    def fetch_redirect(url)
+      response = HTTP.auth("Bearer #{oauth_access_token}").headers("Content-Type" => "application/json").get(url)
+      raise Installations::Bitbucket::Error.new({"error" => {"message" => "Service Unavailable"}}) if response.status.server_error?
+      return response.headers["Location"] unless response.status.client_error?
+      raise Installations::Bitbucket::Error.new(response.body.safe_json_parse)
     end
 
     def paginated_execute(verb, url, params = {}, values = [], page = 0)

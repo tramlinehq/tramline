@@ -143,7 +143,8 @@ class TestFlightSubmission < StoreSubmission
     @build ||= provider.find_build(build_number)
   end
 
-  def provider = app.ios_store_provider
+  # app.ios_store_provider
+  def provider = conf.integrable.ios_store_provider
 
   def notification_params
     super.merge(submission_channel: "#{display} - #{submission_channel.name}")

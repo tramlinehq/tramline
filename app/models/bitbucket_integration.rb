@@ -282,6 +282,8 @@ class BitbucketIntegration < ApplicationRecord
     cache.fetch(workflows_cache_key(branch_name), expires_in: 120.minutes) do
       with_api_retries { installation.list_pipeline_selectors(code_repository_name, branch_name) }
     end
+  rescue Installations::Error
+    []
   end
 
   def workflow_retriable? = false
@@ -320,8 +322,10 @@ class BitbucketIntegration < ApplicationRecord
     raise Integration::NoBuildArtifactAvailable if artifact.blank?
 
     Rails.logger.debug { "Downloading artifact #{artifact}" }
-    stream = with_api_retries { installation.download_artifact(artifact[:archive_download_url]) }
-    {artifact:, stream: Artifacts::Stream.new(stream)}
+    artifact_file = with_api_retries { installation.download_artifact(artifact[:archive_download_url]) }
+    raise Integration::NoBuildArtifactAvailable if artifact_file.blank?
+
+    {artifact:, stream: Artifacts::Stream.new(artifact_file)}
   end
 
   def artifact_url

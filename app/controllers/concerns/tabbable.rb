@@ -4,6 +4,14 @@ module Tabbable
   AUTO_SELECTABLE_LIVE_RELEASE_TABS = [:internal_builds, :release_candidate, :app_submission, :rollout_to_users, :wrap_up_automations]
   included { helper_method :live_release_tab_configuration, :live_release_overall_status }
 
+  def set_app_config_tabs
+    @tab_configuration = [
+      [1, "General", edit_app_path(@app), "v2/cog.svg"],
+      [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
+      [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
+    ]
+  end
+
   def set_train_config_tabs
     @tab_configuration = [
       [1, "Release Settings", edit_app_train_path(@app, @train), "v2/cog.svg"],

@@ -1,28 +1,21 @@
-<%= render V2::FormComponent.new(model: [app, app.config, app_variant], url: app_app_config_app_variants_path(app), method: :post) do |f| %>
-  <% f.with_section(heading: "Basic") do |section| %>
-    <% section.with_description do %>
-      <div>
-        App variants are akin to <strong>product flavors</strong> or <strong>build variants</strong>, but with an
-        explicit requirement of having a different bundle identifier. For example, you can setup a staging variant
-        <code><%= app.bundle_identifier + ".staging" %></code> that gets deployed to a different Firebase app than the
-        primary <code><%= app.bundle_identifier %></code> app.
-      </div>
-    <% end %>
-    <div>
-      <%= section.F.labeled_text_field :name, "Name", placeholder: "Enter app name...", required: true %>
-    </div>
-
-    <div>
-      <%= section.F.labeled_text_field :bundle_identifier, "Bundle Identifier", placeholder: "eg., com.just.use.rails", required: true %>
-      <div class="text-sm mt-1">If you're going to deploy to the App Store or Play Store, this <strong>must</strong>
-        match the identifier in the store listing.
-      </div>
+<% form.with_section(heading: "Settings") do |section| %>
+  <% section.with_description do %>
+    <div class="flex flex-col gap-2.5">
+      <p>App variants are akin to <strong>product flavors</strong> or <strong>build variants</strong>, but with an
+        explicit requirement of having a different bundle identifier and their own integrations.</p>
+      <p>For example, you can setup a staging variant with bundle identifier:
+        <code><%= bundle_id + ".staging" %></code> that gets deployed to an entirely different Firebase
+        account.</p>
+      <p>Save the variant first, and then you can configure the integrations for it.</p>
     </div>
   <% end %>
 
-  <%= render partial: "app_configs/firebase_form", locals: { f:, config: app.config, app: app, firebase_ios_apps: firebase_ios_apps, firebase_android_apps: firebase_android_apps } %>
+  <div><%= section.F.labeled_text_field :name, "Name", placeholder: "Enter app name...", required: true %></div>
 
-  <% f.with_action do %>
-    <%= f.F.authz_submit "Save", "v2/archive.svg" %>
-  <% end %>
+  <div>
+    <%= section.F.labeled_text_field :bundle_identifier, "Bundle Identifier", placeholder: "eg., com.just.use.rails", required: true %>
+    <div class="text-sm mt-1">If you're going to deploy to the App Store or Play Store, this <strong>must</strong>
+      match the identifier in the store listing.
+    </div>
+  </div>
 <% end %>

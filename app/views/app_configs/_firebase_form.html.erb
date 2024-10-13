@@ -1,4 +1,4 @@
-<% if app.firebase_connected? %>
+<% if integrable.firebase_connected? %>
   <% f.with_section(heading: "Select Firebase Apps") do |section| %>
     <% section.with_description do %>
       Apps against your connected Firebase project.
@@ -9,10 +9,8 @@
       <div class="mb-4">
         <%= section.F.labeled_select :firebase_android_config,
                                      "Android App",
-                                     options_for_select(
-                                       display_channels(firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
-                                       config.firebase_android_config.to_json
-                                     ) %>
+                                     options_for_select(display_channels(firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
+                                                        integrable.config.firebase_android_config.to_json) %>
       </div>
     <% end %>
 
@@ -20,10 +18,8 @@
       <div>
         <%= section.F.labeled_select :firebase_ios_config,
                                      "iOS App",
-                                     options_for_select(
-                                       display_channels(firebase_ios_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
-                                       config.firebase_ios_config.to_json
-                                     ) %>
+                                     options_for_select(display_channels(firebase_ios_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
+                                                        integrable.config.firebase_ios_config.to_json) %>
       </div>
     <% end %>
   <% end %>

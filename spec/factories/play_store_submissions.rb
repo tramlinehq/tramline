@@ -15,7 +15,9 @@ FactoryBot.define do
         rollout_config: {
           enabled: true,
           stages: [1, 5, 10, 20, 50, 100]
-        }
+        },
+        integrable_id: parent_release.release_platform_run.app.id,
+        integrable_type: "App"
       }
     }
 
@@ -34,7 +36,9 @@ FactoryBot.define do
           submission_config: {
             id: :internal,
             name: "internal testing"
-          }
+          },
+          integrable_id: parent_release.release_platform_run.app.id,
+          integrable_type: "App"
         }
       }
     end
