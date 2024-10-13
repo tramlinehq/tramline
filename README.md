@@ -247,10 +247,17 @@ That should be it! You can use the default DNS from `site-web` to launch Tramlin
 
 For local development, clone this repository and install the following pre-requisites:
 
-- `docker` – Follow the instructions [here](https://docs.docker.com/engine/install/) to install docker on your machine if you don't have it already.
-- `ngrok` –  Setup an account (free or otherwise) [here](https://ngrok.com/). ngrok is required for using [webhooks](#webhooks) from our third-party integrations like GitHub, GitLab, Bitbucket, etc. Follow the instructions [here](https://ngrok.com/download) to install ngrok on your machine if you don't have it already.
-- Replace the `YOUR_NGROK_AUTHTOKEN` in the `ngrok` service in `compose.yml` with your ngrok auth token.
-- Lastly, reach out to the existing developers for access to the `master.key`. Place the `master.key` file in the `config` directory.
+**docker**
+
+Follow the instructions [here](https://docs.docker.com/engine/install/) to install docker on your machine if you don't have it already. We recommend using [Podman](https://podman.io) or [OrbStack](https://orbstack.dev) for managing containers locally.
+
+**ngrok**
+
+Setup an account (free or otherwise) [here](https://ngrok.com/). ngrok is required for using [webhooks](#webhooks) from our third-party integrations like GitHub, GitLab, Bitbucket, etc. Follow the instructions [here](https://ngrok.com/download) to install ngrok on your machine if you don't have it already. Add your token in `.env.development` under `NGROK_AUTHTOKEN`.
+
+**master.key**
+
+Reach out to the existing developers for access to the `master.key`. Place the `master.key` file in the `config` directory.
 
 ### Running
 
@@ -268,14 +275,17 @@ Install `just` by following the instructions [here](https://github.com/casey/jus
 
 Below are some common commands you can use:
 
-- `just start` – Starts the development environment.
-- `just spec` – Runs the specs.
-- `just lint` – Runs the linter.
-- `just rails command` – Runs a Rails command in the web container.
-- `just rake command` – Runs a Rake command in the web container.
-- `just bundle command` – Runs a Bundler command in the web container.
-- `just devlog` – Tails the development log.
-- `just bglog` – Tails the background worker log.
+- `just start` – Starts the development environment
+- `just spec` – Runs the specs
+- `just lint` – Runs the linter
+- `just rails command` – Runs a Rails command in the web container
+- `just rake command` – Runs a Rake command in the web container
+- `just bundle command` – Runs a Bundler command in the web container
+- `just devlog` – Tails the development log
+- `just bglog` – Tails the background worker log
+- `just shell` – Opens a shell in any docker container
+
+In case the above list is stale, run `just --summary` to see the full list.
 
 ### Webhooks
 

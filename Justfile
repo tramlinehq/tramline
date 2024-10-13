@@ -24,3 +24,6 @@ bglog log_lines="100":
 
 attach container="web":
   docker attach --detach-keys "ctrl-d" site-{{ container }}-1
+
+shell container="web":
+  docker exec -it site-{{ container }}-1 /bin/bash

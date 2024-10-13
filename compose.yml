@@ -35,7 +35,7 @@ x-backend: &backend
     setup:
       condition: service_completed_successfully
     ngrok:
-      condition: service_started
+      condition: service_healthy
 
 services:
   setup:
@@ -44,15 +44,23 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      ngrok:
+        condition: service_healthy
 
   ngrok:
     image: ngrok/ngrok:latest
     command: [ "http", "https://web:3000", "--log=stdout", "--host-header=rewrite" ]
-    environment:
-      NGROK_AUTHTOKEN: YOUR_NGROK_AUTHTOKEN
-      NGROK_REGION: in
+    env_file: .env.development
     ports:
       - 4040:4040
+    healthcheck:
+      test: /bin/bash -c "</dev/tcp/ngrok/4040"
+      interval: 60s
+      timeout: 1s
+      retries: 2
+      start_period: 3s
 
   web:
     <<: *backend
@@ -62,9 +70,9 @@ services:
     healthcheck:
       test: [ "CMD", "curl", "-k", "-f", "-H", "X-Monitor-Allowed: 1", "https://localhost:3000/up" ]
       interval: 60s
-      timeout: 2s
+      timeout: 1s
       retries: 2
-      start_period: 2s
+      start_period: 3s
 
   css:
     <<: *backend
@@ -88,7 +96,10 @@ services:
       - '5442:5432'
     healthcheck:
       test: pg_isready -U postgres -h 127.0.0.1
-      interval: 5s
+      interval: 60s
+      timeout: 1s
+      retries: 2
+      start_period: 3s
 
   redis:
     image: redis:6.2-alpine
@@ -98,9 +109,10 @@ services:
       - '6389:6379'
     healthcheck:
       test: redis-cli ping
-      interval: 5s
+      interval: 60s
       timeout: 1s
-      retries: 30
+      retries: 2
+      start_period: 3s
 
 volumes:
   bundle:
