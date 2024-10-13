@@ -1,8 +1,5 @@
 start:
-  bin/dev
-
-goto session="console":
-  overmind connect {{session}}
+  docker compose up -d
 
 spec:
   bundle exec rspec
@@ -10,8 +7,20 @@ spec:
 lint:
   bin/rubocop --autocorrect
 
+rails +command="console":
+  docker exec -it site-web-1 bundle exec rails {{ command }}
+
+rake +command:
+  docker exec -it site-web-1 bundle exec rake {{ command }}
+
+bundle +command:
+  docker exec -it site-web-1 bundle {{ command }}
+
 devlog log_lines="1000":
   tail -f -n {{ log_lines }} log/development.log
 
 bglog log_lines="100":
   tail -f -n {{ log_lines }} log/sidekiq.log
+
+attach container="web":
+  docker attach --detach-keys "ctrl-d" site-{{ container }}-1
