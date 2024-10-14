@@ -386,7 +386,7 @@ describe StepRun do
     let(:slack_api_dbl) { instance_double(Installations::Slack::Api) }
 
     before do
-      create(:integration, :notification, app:)
+      create(:integration, :notification, integrable: app)
       train.update!(notification_channel: {id: "123"})
       ci_cd_dbl = instance_double(GithubIntegration)
 

@@ -57,7 +57,7 @@
 
 A centralized dashboard to monitor and control all your mobile releases, that gives visibility into the release process to all stakeholders.
 
-### Release trains 
+### Release trains
 
 Using the release train model, you can setup different types of releases as separate trains comprising of different steps. For e.g. your production release train can look completely different from the release train that does frequent internal deploys.
 
@@ -67,24 +67,25 @@ Connect with all the [essential tools](https://www.tramline.app/integrations) yo
 
 ### Automations
 
-Save time and reduce human error across the board by automating release-specific chores. For e.g. 
+Save time and reduce human error across the board by automating release-specific chores. For e.g.
 
 - Create a new release branch for every release
-- Create and merge release-specific branches, as determined by your branching strategy 
-- Submit build to the Store only after explicit approval 
-- Tag the final release build commit 
+- Create and merge release-specific branches, as determined by your branching strategy
+- Submit build to the Store only after explicit approval
+- Tag the final release build commit
 - Don't allow starting a new release unless previous release-specific commits have landed in the working branch
 
 ### Analytics
 
-Track and visualize release-specific metadata that you need to make informed decisions: release frequency, build times, review times, etc. 
+Track and visualize release-specific metadata that you need to make informed decisions: release frequency, build times, review times, etc.
 
 
 ## How to set it up yourself ⚙️
 
 These steps assume setting it up on [Render](https://render.com) only. However, the instructions are standard enough to be adapted for a [Heroku](https://heroku.com) deployment or even bare-metal. A Dockerized setup is in the works and will come shortly.
 
-> **Note:** Since Render does not offer background workers under the free plan, you will have to put in your payment details to fully complete this deployment.
+> [!NOTE]
+> Since Render does not offer background workers under the free plan, you will have to put in your payment details to fully complete this deployment.
 
 ### Requirements
 
@@ -136,7 +137,7 @@ bin/setup.mac
 bin/setup.creds -e prod
 ```
 
-Keep the `production.key` file safe and don't commit it! 
+Keep the `production.key` file safe and don't commit it!
 
 ### Update production credentials
 
@@ -242,72 +243,78 @@ That should be it! You can use the default DNS from `site-web` to launch Tramlin
 
 ## Local development 🛠️
 
-### Setup
+### Pre-requisites
 
-For local development on macOS, clone this repository and run the included setup script:
+For local development, clone this repository and install the following pre-requisites:
+
+**docker**
+
+Follow the instructions [here](https://docs.docker.com/engine/install/) to install docker on your machine if you don't have it already. We recommend using [Podman](https://podman.io) or [OrbStack](https://orbstack.dev) for managing containers locally.
+
+**ngrok**
+
+Setup an account (free or otherwise) [here](https://ngrok.com/). ngrok is required for using [webhooks](#webhooks) from our third-party integrations like GitHub, GitLab, Bitbucket, etc. Follow the instructions [here](https://ngrok.com/download) to install ngrok on your machine if you don't have it already. Add your token in `.env.development` under `NGROK_AUTHTOKEN`.
+
+**master.key**
+
+Reach out to the existing developers for access to the `master.key`. Place the `master.key` file in the `config` directory.
+
+### Running
+
+You can start your local development environment by running the following command:
 
 ```
-bin/setup.mac
-```
-
-**Note:** If you already have a previous dev environment that you're trying to refresh, the easiest thing to do is to
-drop your database and run setup again.
-
-```bash
-rails db:drop
-bin/setup.mac
+docker compose up
 ```
 
 Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 
-### Running
+We have a `Justfile` that you can use to run common commands including starting the development environment, running specs, linting, etc.
 
-- Place the `master.key` file in the `config` directory.
-- Start ngrok for [webhooks](#webhooks).
-- Start PostgreSQL and Redis using [Homebrew services](https://github.com/Homebrew/homebrew-services).
-- Finally, run `bin/dev`.
+Install `just` by following the instructions [here](https://github.com/casey/just?tab=readme-ov-file#installation).
+
+Below are some common commands you can use:
+
+- `just start` – Starts the development environment
+- `just spec` – Runs the specs
+- `just lint` – Runs the linter
+- `just rails command` – Runs a Rails command in the web container
+- `just rake command` – Runs a Rake command in the web container
+- `just bundle command` – Runs a Bundler command in the web container
+- `just devlog` – Tails the development log
+- `just bglog` – Tails the background worker log
+- `just shell` – Opens a shell in any docker container
+
+In case the above list is stale, run `just --summary` to see the full list.
 
 ### Webhooks
 
-Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We
-use ngrok, and you should run it like this:
-
-```bash
-ngrok http https://localhost:3000
-```
-
-If you'd like to use the custom DNS tunnel, add the following to your ngrok config file,
-
-```yaml
-version: "2"
-authtoken: # put your authtoken
-region: in
-tunnels:
-  tramline_dev:
-    proto: http
-    hostname: # add the tunnel hostname
-    addr: https://localhost:3000
-```
-
-You can run this configured tunnel via
-
-```bash
-ngrok start tramline_dev
-```
-
-or through the `Procfile.dev`
+Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We use ngrok and it is started in the local development environment using Docker Compose.
 
 ### Adding or updating gems
 
-* Use `bundle add <gem>` to add a new gem.
-* To update a gem use `bundle update <gem>`.
+* Use `just bundle add <gem>` to add a new gem.
+* To update a gem use `just bundle update <gem>`.
 
-Using the `bundle add` tool auto-applies
+> [!TIP]
+> You might need to restart the web, sidekiq and/or css containers after adding or updating a gem.
+
+Using the `just bundle add` tool auto-applies
 the [pessimistic operator](https://thoughtbot.com/blog/rubys-pessimistic-operator) in the `Gemfile`.
 Although `Gemfile.lock` is the correct source of gem versions, specifying the pessimistic operator makes for a simpler
 and safer update path through bundler for future users.
 
 Doing this for development/test groups is optional.
+
+### Using pry
+
+You can attach to a running container using the `just attach <service-name>` command.
+Once attached, any pry session will be available in the container. To detach, press `ctrl-d`.
+
+> [!WARNING]
+> Killing the attached container will kill the container process. Ensure you use the right escape sequence for detaching.
+
+The default service name is `web`, so you can use `just attach` to attach to the web container.
 
 ### SSL
 

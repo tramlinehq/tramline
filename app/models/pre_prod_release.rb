@@ -15,6 +15,7 @@
 #  release_platform_run_id    :uuid             not null, indexed => [commit_id, type], indexed
 #
 class PreProdRelease < ApplicationRecord
+  has_paper_trail
   include AASM
   include Loggable
   include Displayable

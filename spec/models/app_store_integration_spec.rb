@@ -7,7 +7,7 @@ describe AppStoreIntegration do
 
   describe "#find_live_release" do
     let(:app) { create(:app, platform: :ios) }
-    let(:integration) { create(:integration, :with_app_store, app:) }
+    let(:integration) { create(:integration, :with_app_store, integrable: app) }
     let(:app_store_integration) { integration.providable }
     let(:api_double) { instance_double(Installations::Apple::AppStoreConnect::Api) }
     let(:live_release_response) {
@@ -134,7 +134,7 @@ describe AppStoreIntegration do
 
   describe "#find_build" do
     let(:app) { create(:app, platform: :ios) }
-    let(:integration) { create(:integration, :with_app_store, app:) }
+    let(:integration) { create(:integration, :with_app_store, integrable: app) }
     let(:app_store_integration) { integration.providable }
     let(:api_double) { instance_double(Installations::Apple::AppStoreConnect::Api) }
     let(:build_number) { Faker::Number.number(digits: 7).to_s }

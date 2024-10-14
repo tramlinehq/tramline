@@ -12,6 +12,7 @@
 #  release_platform_run_id :uuid             not null, indexed, indexed => [status], indexed => [status], indexed => [status]
 #
 class ProductionRelease < ApplicationRecord
+  has_paper_trail
   # include Sandboxable
   include Loggable
   include Passportable

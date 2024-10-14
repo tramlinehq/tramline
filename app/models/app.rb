@@ -18,8 +18,9 @@
 #
 class App < ApplicationRecord
   has_paper_trail
-  include Displayable
   extend FriendlyId
+  include Integrable
+  include Displayable
 
   GOOGLE_PLAY_STORE_URL_TEMPLATE = Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
   APP_STORE_URL_TEMPLATE = Addressable::Template.new("https://apps.apple.com/app/ueno/id{id}")
@@ -30,7 +31,6 @@ class App < ApplicationRecord
   has_one :config, class_name: "AppConfig", dependent: :destroy
   has_many :variants, through: :config
   has_many :external_apps, inverse_of: :app, dependent: :destroy
-  has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
   has_many :releases, through: :trains
   has_many :step_runs, through: :releases
@@ -54,19 +54,14 @@ class App < ApplicationRecord
   friendly_id :name, use: :slugged
   normalizes :name, with: ->(name) { name.squish }
 
+  scope :with_trains, -> { joins(:trains).distinct }
+  scope :sequential, -> { reorder("apps.created_at ASC") }
+
   delegate :vcs_provider,
     :ci_cd_provider,
     :monitoring_provider,
     :notification_provider,
-    :ios_store_provider,
-    :android_store_provider,
-    :slack_build_channel_provider,
-    :firebase_build_channel_provider,
     :slack_notifications?, to: :integrations, allow_nil: true
-  delegate :draft_check?, to: :android_store_provider, allow_nil: true
-
-  scope :with_trains, -> { joins(:trains).distinct }
-  scope :sequential, -> { reorder("apps.created_at ASC") }
 
   def self.allowed_platforms
     {
@@ -74,6 +69,10 @@ class App < ApplicationRecord
       ios: "iOS",
       cross_platform: "Cross Platform"
     }.invert
+  end
+
+  def app_id
+    id
   end
 
   def has_recent_activity?
@@ -93,6 +92,18 @@ class App < ApplicationRecord
 
   def active_runs
     releases.pending_release
+  end
+
+  def bitrise_connected?
+    integrations.bitrise_integrations.any?
+  end
+
+  def bugsnag_connected?
+    integrations.bugsnag_integrations.any?
+  end
+
+  def bitbucket_connected?
+    integrations.bitbucket_integrations.any?
   end
 
   def ready?
@@ -138,22 +149,6 @@ class App < ApplicationRecord
 
   def notifications_set_up?
     notification_provider.present?
-  end
-
-  def bitrise_connected?
-    integrations.bitrise_integrations.any?
-  end
-
-  def bugsnag_connected?
-    integrations.bugsnag_integrations.any?
-  end
-
-  def bitbucket_connected?
-    integrations.bitbucket_integrations.any?
-  end
-
-  def firebase_connected?
-    integrations.google_firebase_integrations.any?
   end
 
   # this helps power initial setup instructions after an app is created

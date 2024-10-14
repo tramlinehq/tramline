@@ -38,6 +38,7 @@ bundle/
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+/config/credentials/staging.key
 
 # Ignore IntelliJ things
 .idea
@@ -54,7 +55,9 @@ bundle/
 # Brew-related stuff
 Brewfile.lock.json
 
-/config/credentials/staging.key
-coverage
+# Ignore ruby config files
+.irb-save-history
 
+# Ignore temp project files
+coverage
 aasm-*.pdf

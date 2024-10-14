@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_07_102045) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_10_094500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -334,7 +334,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_07_102045) do
   end
 
   create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "app_id", null: false
+    t.uuid "app_id"
     t.string "category", null: false
     t.string "status"
     t.datetime "created_at", null: false
@@ -343,8 +343,10 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_07_102045) do
     t.string "providable_type"
     t.jsonb "metadata"
     t.datetime "discarded_at"
-    t.index ["app_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
+    t.uuid "integrable_id"
+    t.string "integrable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"
+    t.index ["integrable_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
     t.index ["providable_type", "providable_id"], name: "index_integrations_on_providable_type_and_providable_id", unique: true
   end
 
@@ -818,6 +820,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_07_102045) do
     t.boolean "auto_promote", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "integrable_id"
+    t.string "integrable_type"
     t.index ["number"], name: "index_submission_configs_on_number"
     t.index ["release_step_config_id", "number"], name: "index_submission_configs_on_release_step_config_id_and_number", unique: true
     t.index ["release_step_config_id"], name: "index_submission_configs_on_release_step_config_id"

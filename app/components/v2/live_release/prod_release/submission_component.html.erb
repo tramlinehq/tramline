@@ -60,7 +60,7 @@
                                       type: :notice,
                                       title: "Release is locked",
                                       full_screen: false,
-                                      info: { label: "Go to the blocking release", link: blocked_release_link}) do %>
+                                      info: { label: "Go to the blocking release", link: blocked_release_link }) do %>
       You cannot start this submission until the <%= blocked_release_link_text %> is finished.
     <% end %>
   <% end %>
@@ -91,7 +91,7 @@
     <% end %>
 
     <%# card.with_action do %>
-      <%#= mock_actions %>
+    <%#= mock_actions %>
     <%# end %>
 
     <% card.with_action do %>
@@ -163,13 +163,17 @@
           <%= render V2::HorizontalDataSetComponent.new do |component| %>
             <% component.with_data_set(title: "Status").with_content(store_status) %>
             <% component.with_data_set(title: "Dashboard") do %>
-              <%= render V2::ButtonComponent.new(scheme: :naked_icon,
-                                                 type: :link_external,
-                                                 options: external_link.presence || NOT_AVAILABLE,
-                                                 html_options: { class: "text-xs" },
-                                                 authz: false,
-                                                 size: :none) do |b| %>
-                <% b.with_icon("v2/external_link.svg", size: :md) %>
+              <% if external_link.present? %>
+                <%= render V2::ButtonComponent.new(scheme: :naked_icon,
+                                                   type: :link_external,
+                                                   options: external_link,
+                                                   html_options: { class: "text-xs" },
+                                                   authz: false,
+                                                   size: :none) do |b| %>
+                  <% b.with_icon("v2/external_link.svg", size: :md) %>
+                <% end %>
+              <% else %>
+                <%= NOT_AVAILABLE %>
               <% end %>
             <% end %>
           <% end %>

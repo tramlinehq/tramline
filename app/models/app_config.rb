@@ -20,7 +20,7 @@
 class AppConfig < ApplicationRecord
   has_paper_trail
   include Notifiable
-  include PlatformAwareness
+  include AppConfigurable
 
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
   # self.ignored_columns += ["bugsnag_project_id"]
@@ -100,11 +100,6 @@ class AppConfig < ApplicationRecord
     end
 
     categories
-  end
-
-  def firebase_app(platform, variant: nil)
-    return variant.pick_firebase_app_id(platform) if variant&.in?(variants)
-    pick_firebase_app_id(platform)
   end
 
   def bugsnag_project(platform)

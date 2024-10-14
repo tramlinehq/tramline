@@ -93,9 +93,8 @@ class GoogleFirebaseSubmission < StoreSubmission
 
     result = nil
     filename = build.artifact.file.filename.to_s
-    variant = nil # TODO: [V2] [post-alpha] attach it from the right place
     build.artifact.with_open do |file|
-      result = provider.upload(file, filename, platform:, variant:)
+      result = provider.upload(file, filename, platform:)
       unless result.ok?
         fail_with_error!(result.error)
       end
@@ -138,7 +137,8 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
-  def provider = app.firebase_build_channel_provider
+  # app.firebase_build_channel_provider
+  def provider = conf.integrable.firebase_build_channel_provider
 
   def notification_params
     super.merge(submission_channel: "#{display} - #{submission_channel.name}")

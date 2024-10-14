@@ -24,6 +24,7 @@
 #  release_platform_run_id :uuid             not null, indexed
 #
 class StoreSubmission < ApplicationRecord
+  has_paper_trail
   # include Sandboxable
   include AASM
   include Passportable
@@ -179,7 +180,7 @@ class StoreSubmission < ApplicationRecord
 
   def stamp_data(failure_message: nil)
     failure_reason_data =
-      if failure_reason != :unknown_failure
+      if failure_reason.present? && failure_reason != :unknown_failure
         display_attr(:failure_reason)
       else
         failure_message || self.class.human_attr_value(:failure_reason, :unknown_failure)

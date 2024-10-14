@@ -4,7 +4,6 @@
 #
 #  id                       :uuid             not null, primary key
 #  branching_strategy       :string
-#  config                   :jsonb
 #  description              :string
 #  name                     :string           not null
 #  platform                 :string
@@ -29,7 +28,7 @@ class ReleasePlatform < ApplicationRecord
   include Displayable
 
   # self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id status]
-
+  self.ignored_columns += %w[config]
   NATURAL_ORDER = Arel.sql("CASE WHEN platform = 'android' THEN 1 WHEN platform = 'ios' THEN 2 ELSE 3 END")
   DEFAULT_PROD_RELEASE_CONFIG = {
     android: {
@@ -193,7 +192,9 @@ class ReleasePlatform < ApplicationRecord
           number: 1,
           submission_type:,
           submission_config:,
-          auto_promote: false
+          auto_promote: false,
+          integrable_id: app.id,
+          integrable_type: "App"
         }
       ]
       base_config_map[:beta_release][:submissions] = submissions
