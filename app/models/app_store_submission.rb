@@ -131,9 +131,9 @@ class AppStoreSubmission < StoreSubmission
 
   def finished? = FINAL_STATES.include?(status) && store_rollout.finished?
 
-  def reviewable? = prepared? && editable?
+  def post_review? = FINAL_STATES.include?(status)
 
-  def version_bump_required? = true
+  def reviewable? = prepared? && editable?
 
   def external_link
     return provider.inflight_store_link if parent_release.inflight?
