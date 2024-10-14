@@ -193,16 +193,18 @@
                                                html_options: { disabled: train.backmerge_disabled? }) %>
     <% end %>
 
-    <%= f.with_advanced_section(heading: "Manual Release Trigger") do |section| %>
-      <% section.with_description do %>
-        Always require a manual trigger for the release step of the train.
-        By default, the release step will be auto-triggered if it has run before in the release.
-      <% end %>
+    <% if @train.persisted? && !@train.product_v2? %>
+      <%= f.with_advanced_section(heading: "Manual Release Trigger") do |section| %>
+        <% section.with_description do %>
+          Always require a manual trigger for the release step of the train.
+          By default, the release step will be auto-triggered if it has run before in the release.
+        <% end %>
 
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                               field_name: :manual_release,
-                                               on_label: "Manual Release enabled",
-                                               off_label: "Manual Release disabled") %>
+        <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                 field_name: :manual_release,
+                                                 on_label: "Manual Release enabled",
+                                                 off_label: "Manual Release disabled") %>
+      <% end %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Compact Build Notes") do |section| %>

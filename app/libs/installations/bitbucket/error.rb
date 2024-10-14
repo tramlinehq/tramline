@@ -12,6 +12,14 @@ module Installations
       {
         message_matcher: /is not a valid hook/i,
         decorated_reason: :webhook_not_found
+      },
+      {
+        message_matcher: /tag .* already exists/i,
+        decorated_reason: :tag_reference_already_exists
+      },
+      {
+        message_matcher: /You can't merge until you resolve all merge conflicts/i,
+        decorated_reason: :pull_request_not_mergeable
       }
     ]
 

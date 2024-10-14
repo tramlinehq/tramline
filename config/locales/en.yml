@@ -356,6 +356,8 @@ en:
           firebase_processing_error: "the build was uploaded to Firebase, but Firebase threw an error while processing it. This could be due to degradation or an invalid package"
           not_found: "the app/project was not found in Firebase App Distribution"
           wrong_package_name: "the build has a different package name than the one configured in Firebase App Distribution. Please ensure you have selected the correct app in the Integrations page when configuring your Firebase integration."
+          build_not_found: "the build is not available in Tramline"
+          failed_precondition: "the build failed precondition check"
     attributes:
       integration:
         categories:
@@ -413,6 +415,8 @@ en:
           attributes:
             name:
               invalid: "can only contain alphanumerics, underscores, hyphens and forward-slashes"
+            base:
+              ci_cd_workflows_not_available: "Your working branch / release does not have any CI workflows available. Please add at least one workflow to continue."
             tag_all_store_releases:
               not_allowed: "cannot enable tags for all store releases without enabling platform-specific tags"
             build_queue_size:
@@ -458,6 +462,7 @@ en:
           attributes:
             providable_type:
               unique_connected_integration_category: "only one integration of this category can be connected to the app"
+              not_allowed_for_app_variant: "this provider is not allowed for app variant"
         app_store_integration:
           attributes:
             key_id:
@@ -483,10 +488,10 @@ en:
         google_firebase_integration:
           attributes:
             json_key:
-              key_format: "the supplied key format is incorrect, please check your key!"
-              invalid_config: "configuration is invalid, please check!"
-              permission_denied: "permission denied to access the project using the key!"
-              unknown_failure: "an unrecognized error occurred connecting to Firebase, please try again!"
+              key_format: "the supplied key format is incorrect, please check your key"
+              invalid_config: "configuration is invalid, please check"
+              permission_denied: "permission denied to access the project using the key"
+              unknown_failure: "an unrecognized error occurred connecting to Firebase, please check your project number and key"
         release_health_rule:
           attributes:
             name:
@@ -500,6 +505,8 @@ en:
               zero_rollout: "cannot start with zero rollout"
               increasing_order: "staged rollout should be in increasing order"
               max_100: "staged rollout cannot be more than 100%"
+            integrable_type:
+              variant_not_allowed: "the production release submission must be to the primary app and not an app variant"
         config/release_platform:
           attributes:
             base:

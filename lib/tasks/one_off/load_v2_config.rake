@@ -5,7 +5,7 @@ namespace :one_off do
     trains.each do |train|
       puts "Populating config for train: #{train.name}"
       train.release_platforms.each do |release_platform|
-        if release_platform.config.present?
+        if release_platform.platform_config.present?
           puts "Skipping #{train.name} platform #{release_platform.platform} as it already has a config"
           next
         end
@@ -67,7 +67,9 @@ def populate_config(release_platform)
          submission_type: submission_type(deployment),
          submission_config: deployment.build_artifact_channel,
          rollout_config: {enabled: false},
-         auto_promote: true}
+         auto_promote: true,
+         integrable_id: release_platform.app.id,
+         integrable_type: "App"}
       end
     }
   end
@@ -81,7 +83,9 @@ def populate_config(release_platform)
        submission_type: submission_type(deployment),
        submission_config: deployment.build_artifact_channel,
        rollout_config: {enabled: false},
-       auto_promote: index.zero? ? true : release_step.auto_deploy?}
+       auto_promote: index.zero? ? true : release_step.auto_deploy?,
+       integrable_id: release_platform.app.id,
+       integrable_type: "App"}
     end
   }
 
@@ -96,7 +100,9 @@ def populate_config(release_platform)
           submission_config: production_deployment.build_artifact_channel,
           rollout_config: {enabled: production_deployment.is_staged_rollout,
                            stages: production_deployment.staged_rollout_config},
-          auto_promote: false
+          auto_promote: false,
+          integrable_id: release_platform.app.id,
+          integrable_type: "App"
         }
       ]
     }

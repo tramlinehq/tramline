@@ -1,10 +1,11 @@
 class AppsController < SignedInApplicationController
   include Pagy::Backend
   include Filterable
+  include Tabbable
 
   before_action :require_write_access!, only: %i[create edit update destroy]
   before_action :set_integrations, only: %i[show destroy]
-  before_action :set_tab_config, only: %i[edit update]
+  before_action :set_app_config_tabs, only: %i[edit update]
   around_action :set_time_zone
 
   def index
@@ -70,14 +71,6 @@ class AppsController < SignedInApplicationController
   end
 
   private
-
-  def set_tab_config
-    @tab_configuration = [
-      [1, "General", edit_app_path(@app), "v2/cog.svg"],
-      [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
-      [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
-    ]
-  end
 
   def set_integrations
     @integrations = @app.integrations

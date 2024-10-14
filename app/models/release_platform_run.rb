@@ -169,7 +169,11 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def latest_rc_build?(build)
-    rc_builds.first == build
+    latest_rc_build == build
+  end
+
+  def latest_rc_build
+    rc_builds.first
   end
 
   def available_rc_builds(after: nil)

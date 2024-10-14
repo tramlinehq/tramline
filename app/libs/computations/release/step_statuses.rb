@@ -24,8 +24,9 @@ class Computations::Release::StepStatuses
         screenshots: STATUS[:blocked],
         approvals: STATUS[:blocked],
         app_submission: app_submission_status,
-        rollout_to_users: rollout_to_users_status
-      },
+        rollout_to_users: rollout_to_users_status,
+        wrap_up_automations: (wrap_up_automations_status unless any_platforms? { |rp| rp.conf.production_release? })
+      }.compact,
       current_overall_status: current_overall_status
     }
   end
@@ -72,6 +73,12 @@ class Computations::Release::StepStatuses
     return STATUS[:ongoing] if any_platforms? { |rp| rp.active_store_rollout&.present? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.inflight_store_rollout&.present? }
     STATUS[:success]
+  end
+
+  def wrap_up_automations_status
+    return STATUS[:success] if @release.finished?
+    return STATUS[:blocked] if any_platforms? { |rp| rp.active? }
+    STATUS[:ongoing]
   end
 
   def current_overall_status

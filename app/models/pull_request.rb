@@ -42,7 +42,8 @@ class PullRequest < ApplicationRecord
 
   enum :source, {
     github: "github",
-    gitlab: "gitlab"
+    gitlab: "gitlab",
+    bitbucket: "bitbucket"
   }
 
   scope :automatic, -> { where(phase: [:ongoing, :post_release]) }

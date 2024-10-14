@@ -1,8 +1,16 @@
 module Tabbable
   include Memery
   extend ActiveSupport::Concern
-  AUTO_SELECTABLE_LIVE_RELEASE_TABS = [:internal_builds, :release_candidate, :app_submission, :rollout_to_users]
+  AUTO_SELECTABLE_LIVE_RELEASE_TABS = [:internal_builds, :release_candidate, :app_submission, :rollout_to_users, :wrap_up_automations]
   included { helper_method :live_release_tab_configuration, :live_release_overall_status }
+
+  def set_app_config_tabs
+    @tab_configuration = [
+      [1, "General", edit_app_path(@app), "v2/cog.svg"],
+      [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
+      [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
+    ]
+  end
 
   def set_train_config_tabs
     @tab_configuration = [
@@ -64,7 +72,8 @@ module Tabbable
       screenshots: root_path,
       approvals: root_path,
       app_submission: release_store_submissions_path(@release),
-      rollout_to_users: release_store_rollouts_path(@release)
+      rollout_to_users: release_store_rollouts_path(@release),
+      wrap_up_automations: wrap_up_automations_release_path(@release)
     }
   end
 
@@ -123,24 +132,34 @@ module Tabbable
     sections[:metadata][:screenshots][:status] = live_release_step_statuses[:statuses][:screenshots]
     sections[:metadata][:screenshots][:unavailable] = true
 
-    sections[:store_release] = {
-      approvals: Release::SECTIONS[:approvals],
-      app_submission: Release::SECTIONS[:app_submission],
-      rollout_to_users: Release::SECTIONS[:rollout_to_users]
-    }
-    sections[:store_release][:approvals][:path] = live_release_paths[:approvals]
-    sections[:store_release][:approvals][:icon] = "v2/list_checks.svg"
-    sections[:store_release][:approvals][:position] = 9
-    sections[:store_release][:approvals][:status] = live_release_step_statuses[:statuses][:approvals]
-    sections[:store_release][:approvals][:unavailable] = true
-    sections[:store_release][:app_submission][:path] = live_release_paths[:app_submission]
-    sections[:store_release][:app_submission][:icon] = "v2/mail.svg"
-    sections[:store_release][:app_submission][:position] = 10
-    sections[:store_release][:app_submission][:status] = live_release_step_statuses[:statuses][:app_submission]
-    sections[:store_release][:rollout_to_users][:path] = live_release_paths[:rollout_to_users]
-    sections[:store_release][:rollout_to_users][:icon] = "v2/rocket.svg"
-    sections[:store_release][:rollout_to_users][:position] = 11
-    sections[:store_release][:rollout_to_users][:status] = live_release_step_statuses[:statuses][:rollout_to_users]
+    if @release.release_platform_runs.any? { |rpr| rpr.conf.production_release? }
+      sections[:store_release] = {
+        approvals: Release::SECTIONS[:approvals],
+        app_submission: Release::SECTIONS[:app_submission],
+        rollout_to_users: Release::SECTIONS[:rollout_to_users]
+      }
+      sections[:store_release][:approvals][:path] = live_release_paths[:approvals]
+      sections[:store_release][:approvals][:icon] = "v2/list_checks.svg"
+      sections[:store_release][:approvals][:position] = 9
+      sections[:store_release][:approvals][:status] = live_release_step_statuses[:statuses][:approvals]
+      sections[:store_release][:approvals][:unavailable] = true
+      sections[:store_release][:app_submission][:path] = live_release_paths[:app_submission]
+      sections[:store_release][:app_submission][:icon] = "v2/mail.svg"
+      sections[:store_release][:app_submission][:position] = 10
+      sections[:store_release][:app_submission][:status] = live_release_step_statuses[:statuses][:app_submission]
+      sections[:store_release][:rollout_to_users][:path] = live_release_paths[:rollout_to_users]
+      sections[:store_release][:rollout_to_users][:icon] = "v2/rocket.svg"
+      sections[:store_release][:rollout_to_users][:position] = 11
+      sections[:store_release][:rollout_to_users][:status] = live_release_step_statuses[:statuses][:rollout_to_users]
+    else
+      sections[:wrap_up] = {
+        wrap_up_automations: Release::SECTIONS[:wrap_up_automations]
+      }
+      sections[:wrap_up][:wrap_up_automations][:path] = live_release_paths[:wrap_up_automations]
+      sections[:wrap_up][:wrap_up_automations][:icon] = "v2/robot.svg"
+      sections[:wrap_up][:wrap_up_automations][:position] = 9
+      sections[:wrap_up][:wrap_up_automations][:status] = live_release_step_statuses[:statuses][:wrap_up_automations]
+    end
 
     sections
   end

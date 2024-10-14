@@ -97,15 +97,49 @@ class Config::ReleasePlatform < ApplicationRecord
   end
 
   def allowed_pre_prod_submissions
-    Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym].invert.each_with_object([]) do |(type, integration), submissions|
-      provider = app.integrations.build_channel.find_by(providable_type: integration.to_s)&.providable
-      next if provider.blank?
+    opts = {
+      variants: [
+        {
+          name: "Default – #{app.bundle_identifier}",
+          id: app.id,
+          type: "App",
+          submissions:
+            Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym].invert.each_with_object([]) do |(type, integration), submissions|
+              provider = app.integrations.build_channel.find_by(providable_type: integration.to_s)&.providable
+              next if provider.blank?
 
-      submissions << {
-        type: type,
-        channels: provider.build_channels(with_production: false)
-      }
+              submissions << {
+                type: type,
+                name: provider.display,
+                channels: provider.build_channels(with_production: false)
+              }
+            end
+        }
+      ]
+    }
+
+    if app.config.variants.any?
+      opts[:variants] += app.config.variants.map do |variant|
+        {
+          name: "#{variant.name} – #{variant.bundle_identifier}",
+          id: variant.id,
+          type: "AppVariant",
+          submissions:
+            Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym].invert.each_with_object([]) do |(type, integration), submissions|
+              provider = variant.integrations.build_channel.find_by(providable_type: integration.to_s)&.providable
+              next if provider.blank?
+
+              submissions << {
+                type: type,
+                name: provider.display,
+                channels: provider.build_channels(with_production: false)
+              }
+            end
+        }
+      end
     end
+
+    opts.with_indifferent_access
   end
 
   # Ensure that at least one of internal release, beta release, or production release is configured
@@ -128,7 +162,7 @@ class Config::ReleasePlatform < ApplicationRecord
 
     [internal_release, beta_release, production_release].compact.each do |release_step|
       release_step.submissions.each do |submission|
-        submission_key = [submission.submission_type, submission.submission_external&.identifier].join("-")
+        submission_key = [submission.integrable_id, submission.submission_type, submission.submission_external&.identifier].join("-")
 
         unless all_submissions.add?(submission_key)
           errors.add(:base, :unique_submissions)

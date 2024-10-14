@@ -28,7 +28,7 @@ module Installations
     STOP_PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/pipelines/{pipeline_id}/stopPipeline"
     LIST_FILES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/downloads"
     GET_FILE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/downloads/{file_name}"
-    PIPELINE_YAML_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/src/{branch_name}/bitbucket-pipelines.yml"
+    PIPELINE_YAML_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/src/{sha}/bitbucket-pipelines.yml"
 
     WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
 
@@ -167,7 +167,7 @@ module Installations
     end
 
     def create_pr!(repo_slug, to, from, title, description, transforms)
-      raise Installations::Error.new("Should not create a Pull Request without a diff", reason: :pull_request_without_commits) unless diff?(repo_slug, from, to, :branch)
+      raise Installations::Error.new("Should not create a Pull Request without a diff", reason: :pull_request_without_commits) unless diff?(repo_slug, to, from)
 
       params = {
         json: {
@@ -222,18 +222,11 @@ module Installations
         .map { |commit| self.class.parse_author_info(commit) }
     end
 
-    def diff?(repo_slug, from_branch, to_branch, from_type)
-      from_sha = if from_type == :branch
-        head(repo_slug, from_branch, sha_only: true)
-      elsif from_type == :tag
-        get_tag(repo_slug, from_branch).dig("target", "hash")
-      elsif from_type == :commit
-        from_branch
-      else
-        raise ArgumentError, "Invalid ref type"
-      end
-      to_sha = head(repo_slug, to_branch, sha_only: true)
+    def diff?(repo_slug, from_branch, to_branch, from_type = :branch, to_type = :branch)
+      from_sha = get_sha_for_ref(repo_slug, from_branch, from_type)
+      to_sha = get_sha_for_ref(repo_slug, to_branch, to_type)
 
+      # This is equivalent to git diff from_sha..to_sha
       execute(:get, DIFFSTAT_URL.expand(repo_slug:, from_sha:, to_sha:).to_s)
         .dig("size")
         .positive?
@@ -257,8 +250,9 @@ module Installations
     # CI/CD
 
     def list_pipeline_selectors(repo_slug, branch_name = "main")
-      yaml_content = execute(:get, PIPELINE_YAML_URL.expand(repo_slug:, branch_name:).to_s, {}, false)
-      pipeline_config = YAML.safe_load(yaml_content)
+      sha = head(repo_slug, branch_name, sha_only: true)
+      yaml_content = execute(:get, PIPELINE_YAML_URL.expand(repo_slug:, sha:).to_s, {}, false)
+      pipeline_config = YAML.safe_load(yaml_content, aliases: true)
       selectors = []
 
       # Add default pipeline if it exists
@@ -325,11 +319,25 @@ module Installations
         &.first
     end
 
-    def download_artifact(download_url)
-      Down::Http.download(download_url, follow: {max_hops: 2})
+    def download_artifact(artifact_url)
+      download_url = fetch_redirect(artifact_url)
+      return unless download_url
+      Down::Http.download(download_url, follow: {max_hops: 1})
     end
 
     private
+
+    def get_sha_for_ref(repo_slug, ref, type)
+      if type == :branch
+        head(repo_slug, ref, sha_only: true)
+      elsif type == :tag
+        get_tag(repo_slug, ref).dig("target", "hash")
+      elsif type == :commit
+        ref
+      else
+        raise ArgumentError, "Invalid ref type"
+      end
+    end
 
     MAX_PAGES = 10
 
@@ -361,9 +369,18 @@ module Installations
 
       body = response.body.to_s
       parsed_body = body.safe_json_parse
+      Rails.logger.debug { "Bitbucket API returned #{response.status} for #{url} with body - #{parsed_body}" }
       return (parse_json ? parsed_body : body) unless response.status.client_error?
 
+      raise Installations::Error.new("Resource not found", reason: :not_found) if response.status.not_found?
       raise Installations::Bitbucket::Error.new(parsed_body)
+    end
+
+    def fetch_redirect(url)
+      response = HTTP.auth("Bearer #{oauth_access_token}").headers("Content-Type" => "application/json").get(url)
+      raise Installations::Bitbucket::Error.new({"error" => {"message" => "Service Unavailable"}}) if response.status.server_error?
+      return response.headers["Location"] unless response.status.client_error?
+      raise Installations::Bitbucket::Error.new(response.body.safe_json_parse)
     end
 
     def paginated_execute(verb, url, params = {}, values = [], page = 0)

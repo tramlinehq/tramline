@@ -3,14 +3,16 @@
 # Table name: integrations
 #
 #  id              :uuid             not null, primary key
-#  category        :string           not null, indexed => [app_id, providable_type, status]
+#  category        :string           not null, indexed => [integrable_id, providable_type, status]
 #  discarded_at    :datetime
+#  integrable_type :string
 #  metadata        :jsonb
-#  providable_type :string           indexed => [providable_id], indexed => [app_id, category, status]
-#  status          :string           indexed => [app_id, category, providable_type]
+#  providable_type :string           indexed => [providable_id], indexed => [integrable_id, category, status]
+#  status          :string           indexed => [integrable_id, category, providable_type]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  app_id          :uuid             not null, indexed, indexed => [category, providable_type, status]
+#  app_id          :uuid             indexed
+#  integrable_id   :uuid             indexed => [category, providable_type, status]
 #  providable_id   :uuid             indexed => [providable_type]
 #
 class Integration < ApplicationRecord
@@ -19,14 +21,18 @@ class Integration < ApplicationRecord
   using RefinedString
   include Discard::Model
 
-  belongs_to :app
+  # self.ignored_columns += %w[app_id]
+  belongs_to :app, optional: true
 
-  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration]
-  delegated_type :providable, types: ALL_TYPES, autosave: true, validate: false
+  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration]
+  delegated_type :providable, types: PROVIDER_TYPES, autosave: true, validate: false
+  delegated_type :integrable, types: INTEGRABLE_TYPES, autosave: true, validate: false
 
   IntegrationNotImplemented = Class.new(StandardError)
   UnsupportedAction = Class.new(StandardError)
   NoBuildArtifactAvailable = Class.new(StandardError)
+
+  APP_VARIANT_PROVIDABLE_TYPES = %w[GoogleFirebaseIntegration]
 
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
@@ -84,15 +90,16 @@ class Integration < ApplicationRecord
     build_channels: [{id: :external, name: "External"}]
   }
 
-  validates :category, presence: true
-  validate :allowed_integrations_for_app
+  validate :allowed_integrations_for_app, on: :create
   validate :validate_providable, on: :create
-  validates :providable_type, uniqueness: {scope: [:app_id, :category, :status], message: :unique_connected_integration_category, if: :connected?}
+  validate :app_variant_restriction, on: :create
+  validates :category, presence: true
+  validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: -> { integrable_id.present? && connected? }}
 
   attr_accessor :current_user, :code
 
   delegate :install_path, :connection_data, :project_link, :public_icon_img, to: :providable
-  delegate :platform, to: :app
+  delegate :platform, to: :integrable
 
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
 
@@ -115,6 +122,10 @@ class Integration < ApplicationRecord
         next if MULTI_INTEGRATION_CATEGORIES.exclude?(category) && combination[category].present?
 
         (providers - existing_integration.pluck(:providable_type)).each do |provider|
+          # NOTE: Slack is deprecated as a build channel and will be removed in the future.
+          # Do not allow any new Slack integrations as build channels.
+          next if category == "build_channel" && provider == "SlackIntegration"
+
           integration =
             app
               .integrations
@@ -152,39 +163,39 @@ class Integration < ApplicationRecord
     end
 
     def slack_notifications?
-      notification.first&.slack_integration?
+      kept.notification.first&.slack_integration?
     end
 
     def vcs_provider
-      version_control.first&.providable
+      kept.version_control.first&.providable
     end
 
     def ci_cd_provider
-      ci_cd.connected.first&.providable
+      kept.ci_cd.connected.first&.providable
     end
 
     def monitoring_provider
-      monitoring.first&.providable
+      kept.monitoring.first&.providable
     end
 
     def notification_provider
-      notification.first&.providable
+      kept.notification.first&.providable
     end
 
     def android_store_provider
-      build_channel.find(&:google_play_store_integration?)&.providable
+      kept.build_channel.find(&:google_play_store_integration?)&.providable
     end
 
     def ios_store_provider
-      build_channel.find(&:app_store_integration?)&.providable
+      kept.build_channel.find(&:app_store_integration?)&.providable
     end
 
     def slack_build_channel_provider
-      build_channel.find(&:slack_integration?)&.providable
+      kept.build_channel.find(&:slack_integration?)&.providable
     end
 
     def firebase_build_channel_provider
-      build_channel.find(&:google_firebase_integration?)&.providable
+      kept.build_channel.find(&:google_firebase_integration?)&.providable
     end
 
     private
@@ -211,8 +222,8 @@ class Integration < ApplicationRecord
 
   def installation_state
     {
-      organization_id: app.organization.id,
-      app_id: app.id,
+      organization_id: integrable.organization.id,
+      app_id: integrable.app_id,
       integration_category: category,
       integration_provider: providable_type,
       user_id: current_user.id
@@ -240,6 +251,18 @@ class Integration < ApplicationRecord
   def validate_providable
     unless providable&.valid?
       errors.add(:base, providable.errors.full_messages[0])
+    end
+  end
+
+  def app_variant_restriction
+    return unless integrable_type == "AppVariant"
+
+    if category != Integration.categories[:build_channel]
+      errors.add(:category, "must be 'build_channel' when integrable is an AppVariant")
+    end
+
+    if APP_VARIANT_PROVIDABLE_TYPES.exclude?(providable_type)
+      errors.add(:providable_type, :not_allowed_for_app_variant)
     end
   end
 end

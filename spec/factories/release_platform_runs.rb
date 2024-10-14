@@ -21,19 +21,27 @@ FactoryBot.define do
         beta_release: {
           auto_promote: false,
           submissions: [
-            {number: 1,
-             submission_type: "TestFlightSubmission",
-             submission_config: {id: Faker::FunnyName.name, name: Faker::FunnyName.name, is_internal: true}}
+            {
+              number: 1,
+              submission_type: "TestFlightSubmission",
+              submission_config: {id: Faker::FunnyName.name, name: Faker::FunnyName.name, is_internal: true},
+              integrable_id: release_platform.app.id,
+              integrable_type: "App"
+            }
           ]
         },
         production_release: {
           auto_promote: false,
           submissions: [
-            {number: 1,
-             submission_type: "AppStoreSubmission",
-             submission_config: AppStoreIntegration::PROD_CHANNEL,
-             rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
-             auto_promote: false}
+            {
+              number: 1,
+              submission_type: "AppStoreSubmission",
+              submission_config: AppStoreIntegration::PROD_CHANNEL,
+              rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+              auto_promote: false,
+              integrable_id: release_platform.app.id,
+              integrable_type: "App"
+            }
           ]
         }
       }

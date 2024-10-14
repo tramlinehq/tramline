@@ -47,7 +47,7 @@
                                required: true,
                                autocomplete: "new-password",
                                spellcheck: false,
-                               data: { password_visibility_target: "input" },
+                               data: { password_visibility_target: "source" },
                                placeholder: "Minimum #{@minimum_password_length} characters",
                                class: "form-input w-full" %>
           <%= password_toggle_button(styles: "mr-3") %>
@@ -60,7 +60,7 @@
           <%= f.password_field :password_confirmation,
                                required: true,
                                spellcheck: false,
-                               data: { password_visibility_target: "input" },
+                               data: { password_visibility_target: "source" },
                                autocomplete: "new-password",
                                class: "form-input w-full" %>
           <%= password_toggle_button(styles: "mr-3") %>

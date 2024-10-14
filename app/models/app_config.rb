@@ -6,6 +6,7 @@
 #  bitbucket_workspace     :string
 #  bugsnag_android_config  :jsonb
 #  bugsnag_ios_config      :jsonb
+#  ci_cd_workflows         :jsonb
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
@@ -19,7 +20,7 @@
 class AppConfig < ApplicationRecord
   has_paper_trail
   include Notifiable
-  include PlatformAwareness
+  include AppConfigurable
 
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
   # self.ignored_columns += ["bugsnag_project_id"]
@@ -101,17 +102,22 @@ class AppConfig < ApplicationRecord
     categories
   end
 
-  def firebase_app(platform, variant: nil)
-    return variant.pick_firebase_app_id(platform) if variant&.in?(variants)
-    pick_firebase_app_id(platform)
-  end
-
   def bugsnag_project(platform)
     pick_bugsnag_project_id(platform)
   end
 
   def bugsnag_release_stage(platform)
     pick_bugsnag_release_stage(platform)
+  end
+
+  def ci_cd_workflows
+    super&.map(&:with_indifferent_access)
+  end
+
+  def set_ci_cd_workflows(workflows)
+    return if code_repository.nil?
+    return if app.ci_cd_provider.blank?
+    update(ci_cd_workflows: workflows)
   end
 
   private

@@ -1,0 +1,27 @@
+<%= render V2::FormComponent.new(model: [app, app_config, app_variant], url: app_app_config_app_variants_path(app), method: :post) do |f| %>
+  <%= render partial: "form", locals: {form: f, bundle_id: app.bundle_identifier} %>
+
+  <% f.with_section(heading: "Setup Firebase") do |section| %>
+    <% section.with_description do %>
+      <p>Your Service Account Key</p>
+      <p class="mt-2 text-xs">
+        <%= link_to_external "How to create a firebase service account?",
+                             "https://docs.tramline.app/integrations/distribution/firebase",
+                             class: "underline" %>
+      </p>
+    <% end %>
+
+    <% section.F.fields_for :integrations do |integrationForm| %>
+      <%= integrationForm.hidden_field :category, value: "build_channel" %>
+      <% integrationForm.fields_for :providable do |providableForm| %>
+        <%= providableForm.hidden_field :type, value: "GoogleFirebaseIntegration" %>
+        <div><%= providableForm.labeled_text_field :project_number, "Project Number", required: true %></div>
+        <div><%= providableForm.labeled_file_field :json_key_file, "Upload Service Account JSON Key", "Only .json files.", accept: "application/json", required: true %></div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% f.with_action do %>
+    <%= f.F.authz_submit "Save", "v2/plus.svg" %>
+  <% end %>
+<% end %>

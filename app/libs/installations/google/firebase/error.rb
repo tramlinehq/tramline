@@ -26,6 +26,12 @@ module Installations
         code: 404,
         message_matcher: /Requested entity was not found/i,
         decorated_reason: :not_found
+      },
+      {
+        status: "FAILED_PRECONDITION",
+        code: 400,
+        message_matcher: /Precondition check failed/i,
+        decorated_reason: :failed_precondition
       }
     ]
 

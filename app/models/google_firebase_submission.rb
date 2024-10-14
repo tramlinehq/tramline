@@ -93,9 +93,8 @@ class GoogleFirebaseSubmission < StoreSubmission
 
     result = nil
     filename = build.artifact.file.filename.to_s
-    variant = nil # TODO: [V2] [post-alpha] attach it from the right place
     build.artifact.with_open do |file|
-      result = provider.upload(file, filename, platform:, variant:)
+      result = provider.upload(file, filename, platform:)
       unless result.ok?
         fail_with_error!(result.error)
       end
@@ -127,6 +126,8 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_finish?
     # return mock_finish_firebase_release if sandbox_mode?
 
+    return finish! if submission_channel_id == GoogleFirebaseIntegration::EMPTY_CHANNEL[:id].to_s
+
     deployment_channels = [submission_channel_id]
     result = provider.release(external_id, deployment_channels)
     if result.ok?
@@ -136,7 +137,8 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
-  def provider = app.firebase_build_channel_provider
+  # app.firebase_build_channel_provider
+  def provider = conf.integrable.firebase_build_channel_provider
 
   def notification_params
     super.merge(submission_channel: "#{display} - #{submission_channel.name}")
