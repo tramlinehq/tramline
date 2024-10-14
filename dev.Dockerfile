@@ -15,7 +15,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 less build-essential git pkg-config jq vim && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 less build-essential git pkg-config jq vim mkcert libnss3-tools && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install PostgreSQL dependencies
