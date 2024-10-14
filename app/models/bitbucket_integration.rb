@@ -219,7 +219,7 @@ class BitbucketIntegration < ApplicationRecord
     false
   end
 
-  def create_release!(tag_name, branch_name) = create_tag!(tag_name, branch_name)
+  def create_release!(tag_name, branch_name, _) = create_tag!(tag_name, branch_name)
 
   def create_tag!(tag_name, sha)
     with_api_retries { installation.create_tag!(code_repository_name, tag_name, sha) }

@@ -202,10 +202,16 @@ module Installations
     end
 
     # creates a lightweight tag and a GitHub release simultaneously
-    def create_release!(repo, tag_name, branch_name)
+    def create_release!(repo, tag_name, branch_name, release_notes = nil)
+      options = {
+        target_commitish: branch_name,
+        name: tag_name,
+        body: release_notes.presence,
+        generate_release_notes: release_notes.blank?
+      }.compact
       execute do
         raise Installations::Error.new("Should not create a tag", reason: :tag_reference_already_exists) if tag_exists?(repo, tag_name)
-        @client.create_release(repo, tag_name, target_commitish: branch_name, generate_release_notes: false)
+        @client.create_release(repo, tag_name, options)
       end
     end
 
