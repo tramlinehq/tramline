@@ -202,7 +202,7 @@ module Installations
     end
 
     # creates a lightweight tag and a GitHub release simultaneously
-    def create_release!(repo, tag_name, branch_name, release_notes)
+    def create_release!(repo, tag_name, branch_name, release_notes = nil)
       options = {
         target_commitish: branch_name,
         name: tag_name,

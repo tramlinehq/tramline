@@ -365,7 +365,7 @@ class Release < ApplicationRecord
       .map { |line| line.gsub('"', "\\\"") }
       .compact_blank
       .uniq
-      .map { |str| "• #{str}" }
+      .map { |str| "- #{str}" }
       .join("\n")
   end
 
