@@ -1,11 +1,18 @@
 class Api::V1::BuildsController < ApiController
   def external_metadata
-    step_run = app.step_runs.where(build_number: build_params[:version_code], build_version: build_params[:version_name]).sole
-    external_build_metadata = ExternalBuild.find_or_initialize_by(step_run:)
-
     render json: {error: "No metadata provided"}, status: :unprocessable_entity and return if build_params[:external_metadata].blank?
 
-    new_metadata = external_build_metadata.update_or_insert!(build_params[:external_metadata].map(&:to_h))
+    step_run = app.step_runs.where(build_number: build_params[:version_code], build_version: build_params[:version_name]).first
+    build = app.builds.where(build_number: build_params[:version_code], version_name: build_params[:version_name]).first
+
+    raise ActiveRecord::RecordNotFound if step_run.blank? && build.blank?
+
+    new_metadata =
+      if step_run.present?
+        ExternalBuild.find_or_initialize_by(step_run:).update_or_insert!(build_params[:external_metadata].map(&:to_h))
+      else
+        ExternalBuild.find_or_initialize_by(build:).update_or_insert!(build_params[:external_metadata].map(&:to_h))
+      end
 
     if new_metadata.errors.present?
       render json: {error: new_metadata.errors}, status: :unprocessable_entity

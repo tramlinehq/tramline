@@ -53,7 +53,6 @@ class ReleasePlatformRun < ApplicationRecord
 
   # NOTE: deprecated after v2
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
-  has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
 
@@ -77,6 +76,14 @@ class ReleasePlatformRun < ApplicationRecord
 
   delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, :release_branch, to: :release
   delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
+
+  def external_builds
+    if release.is_v2?
+      ExternalBuild.where(step_run_id: step_runs.select(:id))
+    else
+      ExternalBuild.where(build_id: builds.select(:id))
+    end
+  end
 
   def start!
     with_lock do

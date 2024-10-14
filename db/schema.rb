@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_10_094500) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_14_111548) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -265,11 +265,13 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_10_094500) do
   end
 
   create_table "external_builds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "step_run_id", null: false
+    t.uuid "step_run_id"
     t.jsonb "metadata", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["step_run_id"], name: "index_external_builds_on_step_run_id", unique: true
+    t.uuid "build_id"
+    t.index ["build_id"], name: "index_external_builds_on_build_id", unique: true, where: "(build_id IS NOT NULL)"
+    t.index ["step_run_id"], name: "index_external_builds_on_step_run_id", unique: true, where: "(step_run_id IS NOT NULL)"
   end
 
   create_table "external_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

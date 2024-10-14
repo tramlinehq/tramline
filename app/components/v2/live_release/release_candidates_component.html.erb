@@ -15,7 +15,21 @@
         <% end %>
       <% end %>
 
-      <!-- TODO: [V2] [post-alpha] Show build stats here -->
+      <% component.runs do |run| %>
+        <div class="mt-3">
+          <%= render V2::AccordionComponent.new(title: "Build Metadata") do %>
+            <% if run.rc_builds.size > 1 %>
+              <%= render V2::BuildHealthComponent.new(release_platform_run: run, builds: run.rc_builds) %>
+            <% else %>
+              <%= render V2::EmptyStateComponent.new(
+                title: "No build metadata present",
+                text: "There are no builds available for this release. Please wait for the builds to be available.",
+                banner_image: "v2/drill.svg",
+                type: :subdued) %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
 
       <% component.runs do |release_platform_run| %>
         <% previous_betas = previous_beta_releases(release_platform_run) %>

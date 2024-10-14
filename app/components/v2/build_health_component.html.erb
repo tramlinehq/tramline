@@ -1,0 +1,11 @@
+<% if health_data.present? %>
+  <article>
+    <div class="grid grid-cols-1 item-gap-default mt-4">
+      <% chartable_metadata.each do |metadata| %>
+        <% if chartable?(metadata) %>
+          <%= render ChartComponent.new(chart_data(metadata)) %>
+        <% end %>
+      <% end %>
+    </div>
+  </article>
+<% end %>
