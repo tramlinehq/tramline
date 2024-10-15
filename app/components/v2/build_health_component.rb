@@ -30,7 +30,7 @@ class V2::BuildHealthComponent < ViewComponent::Base
       acc["app_size"] ||= {
         identifier: "app_size",
         name: "App Size",
-        description: "",
+        description: "This is the size of the build file in MB",
         type: "number",
         unit: "MB",
         data: {}

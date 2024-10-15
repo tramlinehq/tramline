@@ -18,8 +18,8 @@
       <% component.runs do |run| %>
         <%= render V2::SectionComponent.new(title: "Build insights", style: :titled, size: :compact) do %>
           <%= render V2::AccordionComponent.new(title: "Metadata trend") do %>
-            <% if run.rc_builds.size > 1 %>
-              <%= render V2::BuildHealthComponent.new(release_platform_run: run, builds: run.rc_builds) %>
+            <% if builds(run).size > 1 %>
+              <%= render V2::BuildHealthComponent.new(release_platform_run: run, builds: builds(run)) %>
             <% else %>
               <%= render V2::EmptyStateComponent.new(
                 title: "No build metadata trend to show",

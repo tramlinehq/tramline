@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseComponent
+  include Memery
+
   def initialize(release)
     @release = release
   end
@@ -21,5 +23,9 @@ class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseComponent
 
   def previous_beta_releases(release_platform_run)
     release_platform_run.older_beta_releases
+  end
+
+  memoize def builds(run)
+    run.rc_builds.includes(:external_build)
   end
 end
