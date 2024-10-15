@@ -300,9 +300,9 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def metadata_editable_v2?
+    return true if release.temporary_unblock_metadata_edits?
     return unless active?
     return false if active_production_release.present? && inflight_production_release.blank?
-
     inflight_production_release.blank? || inflight_production_release.store_submission.pre_review?
   end
 
