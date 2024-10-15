@@ -16,19 +16,19 @@
       <% end %>
 
       <% component.runs do |run| %>
-        <div class="mt-3">
-          <%= render V2::AccordionComponent.new(title: "Build Metadata") do %>
+        <%= render V2::SectionComponent.new(title: "Build insights", style: :titled, size: :compact) do %>
+          <%= render V2::AccordionComponent.new(title: "Metadata trend") do %>
             <% if run.rc_builds.size > 1 %>
               <%= render V2::BuildHealthComponent.new(release_platform_run: run, builds: run.rc_builds) %>
             <% else %>
               <%= render V2::EmptyStateComponent.new(
-                title: "No build metadata present",
-                text: "There are no builds available for this release. Please wait for the builds to be available.",
+                title: "No build metadata trend to show",
+                text: "As you add more builds to Tramline, the trend of their metadata will be displayed here.",
                 banner_image: "v2/drill.svg",
                 type: :subdued) %>
             <% end %>
           <% end %>
-        </div>
+        <% end %>
       <% end %>
 
       <% component.runs do |release_platform_run| %>
