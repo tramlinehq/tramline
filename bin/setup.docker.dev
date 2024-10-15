@@ -11,6 +11,15 @@ system() {
   fi
 }
 
+configure_local_ssl() {
+  echo 'Configuring local SSL certificates...'
+  if [[ ! -f config/certs/localhost-key.pem ]] && [[ ! -f config/certs/localhost.pem ]]
+  then
+    mkcert -install
+    mkcert -key-file config/certs/localhost-key.pem -cert-file config/certs/localhost.pem localhost tramline.local.gd
+  fi
+}
+
 cd "$APP_ROOT" || exit
 
 # This script is a way to set up or update your development environment automatically.
@@ -30,3 +39,6 @@ system bin/rails db:seed
 
 printf "\n== Removing old logs and tempfiles =="
 system bin/rails log:clear tmp:clear
+
+printf "\n== Setting up SSL =="
+configure_local_ssl

@@ -29,6 +29,12 @@ module Installations
         resource: "Release",
         code: "already_exists",
         decorated_reason: :tagged_release_already_exists
+      },
+      {
+        resource: "Release",
+        code: "custom",
+        message_matcher: /body is too long (maximum is 125000 characters)/i,
+        decorated_reason: :release_notes_too_long
       }
     ]
 
