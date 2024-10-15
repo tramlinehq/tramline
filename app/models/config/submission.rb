@@ -57,6 +57,10 @@ class Config::Submission < ApplicationRecord
     release_step_config.submissions.where("number > ?", number).order(:number).first
   end
 
+  def app_variant?
+    integrable_type == "AppVariant"
+  end
+
   def self.from_json(json)
     submission = new(json.except("id", "release_step_config_id", "rollout_config", "submission_config"))
     submission.submission_external = Config::SubmissionExternal.from_json(json["submission_config"])
