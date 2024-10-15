@@ -16,19 +16,7 @@
       <% end %>
 
       <% component.runs do |run| %>
-        <%= render V2::SectionComponent.new(title: "Build insights", style: :titled, size: :compact) do %>
-          <%= render V2::AccordionComponent.new(title: "Metadata trend") do %>
-            <% if builds(run).size > 1 %>
-              <%= render V2::BuildHealthComponent.new(release_platform_run: run, builds: builds(run)) %>
-            <% else %>
-              <%= render V2::EmptyStateComponent.new(
-                title: "No build metadata trend to show",
-                text: "As you add more builds to Tramline, the trend of their metadata will be displayed here.",
-                banner_image: "v2/drill.svg",
-                type: :subdued) %>
-            <% end %>
-          <% end %>
-        <% end %>
+        <%= render partial: "pre_prod_releases/build_insights", locals: {builds: builds(run), run:} %>
       <% end %>
 
       <% component.runs do |release_platform_run| %>

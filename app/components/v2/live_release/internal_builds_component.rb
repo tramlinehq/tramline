@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
-  include Memery
-
   SUBMISSION_STATUS = {
     created: {text: "Ongoing", status: :routine},
     failed: {text: "Failed", status: :failure},
@@ -39,7 +37,7 @@ class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
     run.older_internal_releases
   end
 
-  memoize def builds(run)
+  def builds(run)
     run.internal_builds.includes(:external_build)
   end
 end
