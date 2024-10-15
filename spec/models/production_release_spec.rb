@@ -3,32 +3,32 @@
 require "rails_helper"
 
 RSpec.describe ProductionRelease do
+  using RefinedString
+
   describe "#version_bump_required?" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:workflow_run) { create(:workflow_run, :rc, release_platform_run:) }
-    let(:build) { create(:build, workflow_run:, release_platform_run:, version_name: "1.2.0") }
+    let(:current_prod_release_version) { "1.2.0" }
+    let(:build) { create(:build, workflow_run:, release_platform_run:, version_name: current_prod_release_version) }
 
-    context "when a newer rc build is available" do
-      it "is false when the latest rc build does not have the same version as the production release" do
-        production_release = create(:production_release, :active, build:, release_platform_run:)
-        create(:build, workflow_run:, release_platform_run:, version_name: "1.2.1")
-        expect(production_release.version_bump_required?).to be false
-      end
-
-      it "is true when the latest rc build does has the same version as the production release" do
-        production_release = create(:production_release, :active, build:, release_platform_run:)
-        create(:build, workflow_run:, release_platform_run:, version_name: "1.2.0")
-        expect(production_release.version_bump_required?).to be true
-      end
+    it "is false when release platform run has a higher release version" do
+      production_release = create(:production_release, :active, build:, release_platform_run:)
+      bumped = current_prod_release_version.to_semverish.bump!(:patch).to_s
+      release_platform_run.update!(release_version: bumped)
+      expect(production_release.version_bump_required?).to be false
     end
 
-    context "when no newer rc build is available" do
+    context "when release platform runhas the same release version" do
+      before do
+        release_platform_run.update!(release_version: current_prod_release_version)
+      end
+
       it "is true when production release is active" do
         production_release = create(:production_release, :active, build:, release_platform_run:)
         expect(production_release.version_bump_required?).to be(true)
       end
 
-      it "is true when store submission is in progress" do
+      it "is false when store submission is in progress" do
         production_release = create(:production_release, :inflight, build:, release_platform_run:)
         create(:play_store_submission, :created, parent_release: production_release)
         expect(production_release.version_bump_required?).to be(false)

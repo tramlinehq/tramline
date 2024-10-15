@@ -84,11 +84,11 @@ class StoreSubmission < ApplicationRecord
 
   def cancelling? = raise NotImplementedError
 
+  def post_review? = raise NotImplementedError
+
   def retryable? = false
 
   def failed_with_action_required? = false
-
-  def version_bump_required? = raise NotImplementedError
 
   def attach_build(_build)
     raise NotImplementedError

@@ -12,6 +12,7 @@
 #  release_platform_run_id :uuid             not null, indexed, indexed => [status], indexed => [status], indexed => [status]
 #
 class ProductionRelease < ApplicationRecord
+  using RefinedString
   has_paper_trail
   # include Sandboxable
   include Loggable
@@ -52,13 +53,11 @@ class ProductionRelease < ApplicationRecord
   def release_notes? = true
 
   def version_bump_required?
-    if release_platform_run.latest_rc_build?(build)
-      return true if active?
-      return true if store_submission.version_bump_required? && store_submission.finished?
-      false
-    else
-      release_platform_run.latest_rc_build.version_name == build.version_name
-    end
+    return false if release_platform_run.release_version.to_semverish > build.version_name.to_semverish
+    return true if finished?
+    return true if active?
+    return true if store_submission.post_review?
+    false
   end
 
   def mark_as_stale!

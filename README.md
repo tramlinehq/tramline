@@ -257,7 +257,7 @@ Setup an account (free or otherwise) [here](https://ngrok.com/). ngrok is requir
 
 **master.key**
 
-Reach out to the existing developers for access to the `master.key`. Place the `master.key` file in the `config` directory.
+Reach out to the existing developers for access to the `master.key`. Place the `master.key` file in the `config` directory or set `RAILS_MASTER_KEY` in `.env.development`.
 
 ### Running
 

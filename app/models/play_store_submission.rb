@@ -111,13 +111,13 @@ class PlayStoreSubmission < StoreSubmission
     FINAL_STATES.include?(status) && store_rollout.finished?
   end
 
+  def post_review? = false
+
   def pre_review? = PRE_PREPARE_STATES.include?(status) && editable?
 
   def reviewable? = false
 
   def requires_review? = false
-
-  def version_bump_required? = false
 
   def triggerable?
     return false if play_store_blocked? && !internal_channel?
