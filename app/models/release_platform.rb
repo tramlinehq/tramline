@@ -188,7 +188,6 @@ class ReleasePlatform < ApplicationRecord
       end
     end
 
-
     if base_config_map[:production_release].nil?
       providable = app.integrations.build_channel.first.providable
       providable_type = providable.class
