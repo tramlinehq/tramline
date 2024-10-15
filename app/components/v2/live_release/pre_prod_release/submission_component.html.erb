@@ -34,19 +34,21 @@
 
       <% if active? %>
         <%= render partial: "shared/show_time_ago",
-                   locals: {tooltip_text: last_activity_tooltip, tooltip_placement: "bottom", last_activity_at:} %>
+                   locals: { tooltip_text: last_activity_tooltip, tooltip_placement: "bottom", last_activity_at: } %>
       <% end %>
     </div>
 
-    <%= render partial: "shared/play_store_review_rejected", locals: {show: submission.failed_with_action_required?,
-                                                                      build:,
-                                                                      actionable: true,
-                                                                      channel_name: submission.submission_channel.name} %>
+    <%= render partial: "shared/play_store_review_rejected", locals: { show: submission.failed_with_action_required?,
+                                                                       build:,
+                                                                       actionable: true,
+                                                                       channel_name: submission.submission_channel.name } %>
 
     <%= render V2::SectionComponent.new(title: "External info", style: :titled, size: :micro) do %>
-      <div class="flex">
+      <div class="flex flex-col gap-2">
+        <% if submission.conf.app_variant? %>
+          <div><%= render V2::BadgeComponent.new(text: submission.conf.integrable.bundle_identifier, kind: :badge) %></div>
+        <% end %>
         <%= render V2::HorizontalDataSetComponent.new do |component| %>
-          <% component.with_data_set(title: "Bundle").with_content(submission.conf.integrable.bundle_identifier) %>
           <% component.with_data_set(title: "Status").with_content(external_status) %>
           <% component.with_data_set(title: "Tester groups").with_content(submission.submission_channel.name.truncate(50)) %>
           <% if active? %>
@@ -55,7 +57,7 @@
                 <%= render V2::ButtonComponent.new(scheme: :naked_icon,
                                                    type: :link_external,
                                                    options: submission.store_link,
-                                                   html_options: {class: "text-xs"},
+                                                   html_options: { class: "text-xs" },
                                                    authz: false,
                                                    size: :none) do |b| %>
                   <% b.with_icon("v2/external_link.svg", size: :md) %>

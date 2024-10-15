@@ -409,14 +409,16 @@ describe ReleasePlatformRun do
 
     context "when product v2" do
       let(:release) { create(:release, :with_no_platform_runs, is_v2: true) }
-      let(:release_platform_run) { create(:release_platform_run, release:) }
+      let(:run_version) { "1.2.0" }
+      let(:release_platform_run) { create(:release_platform_run, release:, release_version: run_version) }
 
       it "is false when it does not have a production release" do
         expect(release_platform_run.version_bump_required?).not_to be(true)
       end
 
       it "is true when production release requires a version bump" do
-        create(:production_release, release_platform_run:, status: :active)
+        build = create(:build, release_platform_run:, version_name: run_version)
+        create(:production_release, release_platform_run:, status: :active, build:)
         expect(release_platform_run.version_bump_required?).to be(true)
       end
     end

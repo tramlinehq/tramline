@@ -7,9 +7,8 @@ RSpec.describe ProductionRelease do
 
   describe "#version_bump_required?" do
     let(:release_platform_run) { create(:release_platform_run) }
-    let(:workflow_run) { create(:workflow_run, :rc, release_platform_run:) }
     let(:current_prod_release_version) { "1.2.0" }
-    let(:build) { create(:build, workflow_run:, release_platform_run:, version_name: current_prod_release_version) }
+    let(:build) { create(:build, release_platform_run:, version_name: current_prod_release_version) }
 
     it "is false when release platform run has a higher release version" do
       production_release = create(:production_release, :active, build:, release_platform_run:)
