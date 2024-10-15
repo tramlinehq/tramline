@@ -129,9 +129,13 @@ class Config::ReleasePlatformsController < SignedInApplicationController
     if release_attributes.present?
       release_attributes[:submissions_attributes]&.each do |_, submission|
         variant = @submission_types[:variants].find { |v| v[:id] == submission[:integrable_id] }
-
-        submission[:submission_external_attributes][:name] = find_submission_name(submission, variant)
         submission[:integrable_type] = variant[:type]
+
+        ext_sub = find_submission(submission, variant)
+        if ext_sub.present?
+          submission[:submission_external_attributes][:name] = ext_sub[:name]
+          submission[:submission_external_attributes][:internal] = ext_sub[:is_internal]
+        end
       end
     end
   end
@@ -147,7 +151,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
     @ci_actions.find { |action| action[:id] == identifier }&.dig(:name)
   end
 
-  def find_submission_name(submission, variant)
+  def find_submission(submission, variant)
     return if variant.blank?
     identifier = submission.dig(:submission_external_attributes, :identifier)
     return unless identifier
@@ -155,7 +159,6 @@ class Config::ReleasePlatformsController < SignedInApplicationController
     variant[:submissions].find { |type| type[:type].to_s == submission[:submission_type].to_s }
       &.then { |sub| sub.dig(:channels) }
       &.then { |channels| channels.find { |channel| channel[:id].to_s == identifier } }
-      &.then { |channel| channel[:name] }
   end
 
   def set_destroy!(param)
