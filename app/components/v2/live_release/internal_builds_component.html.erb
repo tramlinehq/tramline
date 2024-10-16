@@ -27,7 +27,6 @@
                                               type: :button,
                                               options: pre_prod_internal_run_path(run),
                                               size: :xxs,
-                                              turbo: false,
                                               html_options: html_opts(:post, "Are you sure you want to create the internal build?")) %>
               <div class="flex flex-col gap-2">
                 <%= render V2::CommitComponent.new(commit: applicable_commit(run), detailed: false) %>
