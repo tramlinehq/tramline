@@ -316,7 +316,6 @@ class Train < ApplicationRecord
   end
 
   def startable?
-    return true if product_v2?
     return false unless app.ready?
     return true if product_v2?
     release_platforms.all?(&:startable?)

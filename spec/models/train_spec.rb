@@ -184,6 +184,7 @@ describe Train do
 
       before do
         _finished_release_run = create(:release_platform_run, release:, release_platform:)
+        Flipper.disable_actor(:product_v2, train)
       end
 
       it "is false if there is already another hotfix in progress" do
@@ -221,7 +222,6 @@ describe Train do
 
       before do
         create(:release_platform, train:)
-        Flipper.enable_actor(:product_v2, train)
       end
 
       it "is false when the train has no production releases" do
@@ -235,6 +235,8 @@ describe Train do
                submission_type: "AppStoreSubmission",
                submission_config: {id: "123", name: "Internal"},
                rollout_config: {enabled: false},
+               integrable_id: train.app.id,
+               integrable_type: "App",
                auto_promote: false}
             ]
           }.with_indifferent_access
