@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_10_094500) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_16_114006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -265,11 +265,13 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_10_094500) do
   end
 
   create_table "external_builds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "step_run_id", null: false
+    t.uuid "step_run_id"
     t.jsonb "metadata", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["step_run_id"], name: "index_external_builds_on_step_run_id", unique: true
+    t.uuid "build_id"
+    t.index ["build_id"], name: "index_external_builds_on_build_id", unique: true, where: "(build_id IS NOT NULL)"
+    t.index ["step_run_id"], name: "index_external_builds_on_step_run_id", unique: true, where: "(step_run_id IS NOT NULL)"
   end
 
   create_table "external_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -500,7 +502,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_10_094500) do
   end
 
   create_table "release_health_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "deployment_run_id", null: false
+    t.uuid "deployment_run_id"
     t.uuid "release_health_rule_id", null: false
     t.uuid "release_health_metric_id", null: false
     t.string "health_status", null: false
@@ -509,9 +511,11 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_10_094500) do
     t.boolean "action_triggered", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "production_release_id"
     t.index ["deployment_run_id", "release_health_rule_id", "release_health_metric_id"], name: "idx_events_on_deployment_and_rule_and_metric", unique: true
     t.index ["deployment_run_id"], name: "index_release_health_events_on_deployment_run_id"
     t.index ["event_timestamp"], name: "index_release_health_events_on_event_timestamp"
+    t.index ["production_release_id"], name: "index_release_health_events_on_production_release_id"
     t.index ["release_health_metric_id"], name: "index_release_health_events_on_release_health_metric_id"
     t.index ["release_health_rule_id"], name: "index_release_health_events_on_release_health_rule_id"
   end
@@ -1001,6 +1005,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_10_094500) do
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
   add_foreign_key "release_health_events", "deployment_runs"
+  add_foreign_key "release_health_events", "production_releases"
   add_foreign_key "release_health_events", "release_health_metrics"
   add_foreign_key "release_health_events", "release_health_rules"
   add_foreign_key "release_health_metrics", "deployment_runs"

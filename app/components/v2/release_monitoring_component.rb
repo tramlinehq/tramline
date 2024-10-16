@@ -18,7 +18,7 @@ class V2::ReleaseMonitoringComponent < V2::BaseComponent
   end
 
   delegate :adoption_rate, to: :release_data, allow_nil: true
-  delegate :monitoring_provider, :platform, to: :parent_release
+  delegate :monitoring_provider, :platform, :release_health_rules, :show_health?, :release_health_events, :app, :train, to: :parent_release
   delegate :parent_release, :store_submission, :last_rollout_percentage, :provider, to: :store_rollout
   delegate :current_user, to: :helpers
   delegate :store_link, to: :store_submission
@@ -90,6 +90,56 @@ class V2::ReleaseMonitoringComponent < V2::BaseComponent
 
   def full_span
     "col-span-#{@cols}"
+  end
+
+  def show_release_health?
+    release_health_rules.present? && show_health?
+  end
+
+  def events
+    release_health_events.reorder("event_timestamp DESC").first(@num_events).map do |event|
+      type = event.healthy? ? :success : :error
+      rule_health = event.healthy? ? "healthy" : "unhealthy"
+      {
+        timestamp: time_format(event.event_timestamp, with_year: false),
+        title: "#{event.release_health_rule.display_name} is #{rule_health}",
+        description: event_description(event),
+        type:
+      }
+    end
+  end
+
+  def event_description(event)
+    return if event.healthy?
+    metric = event.release_health_metric
+    triggers = event.release_health_rule.triggers
+    triggers.filter_map do |expr|
+      value = metric.evaluate(expr.metric)
+      expr.evaluation(value) => { is_healthy:, expression: }
+      expression unless is_healthy
+    end.join(", ")
+  end
+
+  def release_healthy?
+    @is_healthy ||= parent_release.healthy?
+  end
+
+  def release_health
+    return "Not Available" if release_data.blank?
+    return "Healthy" if release_healthy?
+    "Unhealthy"
+  end
+
+  def health_status_duration
+    last_event = release_health_events.reorder("event_timestamp DESC").first
+    return unless last_event
+    ago_in_words(last_event.event_timestamp, prefix: "since", suffix: nil)
+  end
+
+  def release_health_class
+    return "text-main-600" if release_data.blank?
+    return "text-green-800" if release_healthy?
+    "text-red-800"
   end
 
   private
