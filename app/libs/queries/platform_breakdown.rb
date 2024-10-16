@@ -22,7 +22,7 @@ class Queries::PlatformBreakdown
   end
 
   def call
-    cache.fetch(cache_key) { data }
+    cache.fetch(cache_key).presence || data
   end
 
   Platform = Data.define(:name, :stability_duration, :internal_builds_count, :release_candidates_count, :production_releases)
