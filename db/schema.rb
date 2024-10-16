@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_16_114006) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_16_133305) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -512,9 +512,10 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_16_114006) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "production_release_id"
-    t.index ["deployment_run_id", "release_health_rule_id", "release_health_metric_id"], name: "idx_events_on_deployment_and_rule_and_metric", unique: true
+    t.index ["deployment_run_id", "release_health_rule_id", "release_health_metric_id"], name: "idx_events_on_deployment_and_rule_and_metric", unique: true, where: "(deployment_run_id IS NOT NULL)"
     t.index ["deployment_run_id"], name: "index_release_health_events_on_deployment_run_id"
     t.index ["event_timestamp"], name: "index_release_health_events_on_event_timestamp"
+    t.index ["production_release_id", "release_health_rule_id", "release_health_metric_id"], name: "idx_events_on_production_release_and_rule_and_metric", unique: true, where: "(production_release_id IS NOT NULL)"
     t.index ["production_release_id"], name: "index_release_health_events_on_production_release_id"
     t.index ["release_health_metric_id"], name: "index_release_health_events_on_release_health_metric_id"
     t.index ["release_health_rule_id"], name: "index_release_health_events_on_release_health_rule_id"
