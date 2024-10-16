@@ -61,8 +61,7 @@ class ProductionRelease < ApplicationRecord
   end
 
   def rollout_active?
-    return false if store_rollout.blank?
-    store_rollout.started?
+    store_rollout&.started?
   end
 
   def mark_as_stale!
