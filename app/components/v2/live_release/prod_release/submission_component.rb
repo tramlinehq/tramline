@@ -125,7 +125,6 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
        type: :button,
        label: "Prepare for review",
        options: prepare_store_submission_path(id),
-       turbo: false,
        html_options: html_opts(:patch, message, params: {store_submission: {force: false}})}
     elsif submission.cancellable?
       message = "You are about to cancel the submission.\nAre you sure?"
@@ -133,7 +132,6 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
        type: :button,
        label: "Cancel submission",
        options: cancel_store_submission_path(id),
-       turbo: false,
        html_options: html_opts(:patch, message)}
     end
   end
