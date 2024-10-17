@@ -113,7 +113,6 @@ class PreProdRelease < ApplicationRecord
       &.commit_messages(true)
 
     return changes_since_last_run || [] if last_successful_run.present?
-    return changes_since_last_release || [] if previous.blank?
     ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq
   end
 
