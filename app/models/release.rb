@@ -107,6 +107,7 @@ class Release < ApplicationRecord
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :step_runs, through: :release_platform_runs
   has_many :deployment_runs, through: :step_runs
+  has_many :builds, through: :release_platform_runs
   has_many :build_queues, dependent: :destroy
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy

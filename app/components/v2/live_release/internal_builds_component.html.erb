@@ -45,7 +45,9 @@
         <% end %>
       <% end %>
 
-      <!-- TODO: [V2] [post-alpha] Show build health here -->
+      <% component.runs do |run| %>
+        <%= render partial: "pre_prod_releases/build_insights", locals: {builds: builds(run), run:} %>
+      <% end %>
 
       <% component.runs do |release_platform_run| %>
         <% previous_releases = previous_internal_releases(release_platform_run) %>
