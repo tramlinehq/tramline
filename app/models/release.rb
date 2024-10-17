@@ -531,6 +531,10 @@ class Release < ApplicationRecord
     train.update!(version_current: release_version)
   end
 
+  def temporary_unblock_metadata_edits?
+    Flipper.enabled?(:temporary_unblock_metadata_edits, self)
+  end
+
   private
 
   def base_tag_name

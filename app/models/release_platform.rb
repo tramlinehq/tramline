@@ -180,7 +180,13 @@ class ReleasePlatform < ApplicationRecord
       }
     }
 
-    base_config_map[:production_release] = DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym] if production_ready?
+    if production_ready?
+      base_config_map[:production_release] = DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym]
+      base_config_map[:production_release][:submissions].each do |submission|
+        submission[:integrable_id] = app.id
+        submission[:integrable_type] = "App"
+      end
+    end
 
     if base_config_map[:production_release].nil?
       providable = app.integrations.build_channel.first.providable
@@ -200,6 +206,8 @@ class ReleasePlatform < ApplicationRecord
       base_config_map[:beta_release][:submissions] = submissions
     end
 
-    self.platform_config = Config::ReleasePlatform.from_json(base_config_map)
+    config_obj = Config::ReleasePlatform.from_json(base_config_map)
+    Rails.logger.debug { "Errors in default config for #{name}: #{config_obj.errors.full_messages}" } unless config_obj.valid?
+    self.platform_config = config_obj
   end
 end

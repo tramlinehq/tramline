@@ -3,6 +3,14 @@
 <% end %>
 
 <div class="flex flex-col item-gap-default">
+  <div>
+    <% if release_platform_run.metadata_editable_v2? %>
+      <%= render V2::AlertComponent.new(type: :info, title: "You can edit the release notes until you \"Prepare for review\". Once prepared, you won't be able to change the release notes.", full_screen: false) %>
+    <% else %>
+      <%= render V2::AlertComponent.new(type: :info, title: "Release notes cannot be edited any longer. Cancel the review process to edit the release notes.", full_screen: false) %>
+    <% end %>
+  </div>
+
   <%= render partial: "shared/play_store_review_rejected", locals: { show: show_blocked_message?,
                                                                      build: current_build,
                                                                      actionable: false } %>
@@ -125,7 +133,6 @@
                                                  type: :button,
                                                  label: "Submit for review",
                                                  options: submit_for_review_store_submission_path(id),
-                                                 turbo: false,
                                                  html_options: { method: :patch, data: { turbo_method: :patch } }) %>
             </div>
           <% end %>
