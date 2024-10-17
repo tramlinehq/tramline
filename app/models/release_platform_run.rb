@@ -212,11 +212,19 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def show_health?
-    deployment_runs.any?(&:show_health?)
+    if release.is_v2?
+      latest_production_release&.show_health?
+    else
+      deployment_runs.any?(&:show_health?)
+    end
   end
 
   def unhealthy?
-    latest_store_release&.unhealthy?
+    if release.is_v2?
+      latest_production_release&.unhealthy?
+    else
+      latest_store_release&.unhealthy?
+    end
   end
 
   def failure?
@@ -239,6 +247,7 @@ class ReleasePlatformRun < ApplicationRecord
     locale = default_locale || ReleaseMetadata::DEFAULT_LOCALE
     release_metadata.create!(base.merge(locale: locale, default_locale: true))
   end
+
   # rubocop:enable Rails/SkipsModelValidations
 
   def correct_version!
