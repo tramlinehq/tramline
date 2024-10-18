@@ -2,25 +2,26 @@
 #
 # Table name: releases
 #
-#  id                       :uuid             not null, primary key
-#  branch_name              :string           not null
-#  completed_at             :datetime
-#  hotfixed_from            :uuid
-#  internal_notes           :jsonb
-#  is_automatic             :boolean          default(FALSE)
-#  is_v2                    :boolean          default(FALSE)
-#  new_hotfix_branch        :boolean          default(FALSE)
-#  original_release_version :string
-#  release_type             :string           not null
-#  scheduled_at             :datetime
-#  slug                     :string           indexed
-#  status                   :string           not null
-#  stopped_at               :datetime
-#  tag_name                 :string
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  release_pilot_id         :uuid
-#  train_id                 :uuid             not null, indexed
+#  id                        :uuid             not null, primary key
+#  branch_name               :string           not null
+#  completed_at              :datetime
+#  hotfixed_from             :uuid
+#  internal_notes            :jsonb
+#  is_automatic              :boolean          default(FALSE)
+#  is_v2                     :boolean          default(FALSE)
+#  new_hotfix_branch         :boolean          default(FALSE)
+#  original_release_version  :string
+#  release_type              :string           not null
+#  scheduled_at              :datetime
+#  slug                      :string           indexed
+#  status                    :string           not null
+#  stopped_at                :datetime
+#  tag_name                  :string
+#  created_at                :datetime         not null
+#  updated_at                :datetime         not null
+#  approval_overridden_by_id :uuid             indexed
+#  release_pilot_id          :uuid
+#  train_id                  :uuid             not null, indexed
 #
 class Release < ApplicationRecord
   has_paper_trail
@@ -111,6 +112,7 @@ class Release < ApplicationRecord
   has_many :build_queues, dependent: :destroy
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
+  has_many :approval_items, dependent: :destroy
 
   has_many :store_rollouts, through: :release_platform_runs
   has_many :store_submissions, through: :release_platform_runs

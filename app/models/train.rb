@@ -3,6 +3,7 @@
 # Table name: trains
 #
 #  id                                 :uuid             not null, primary key
+#  approvals_enabled                  :boolean          default(FALSE), not null
 #  backmerge_strategy                 :string           default("on_finalize"), not null
 #  branching_strategy                 :string           not null
 #  build_queue_enabled                :boolean          default(FALSE)
