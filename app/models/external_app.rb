@@ -20,12 +20,12 @@ class ExternalApp < ApplicationRecord
   validates :channel_data, presence: true, json: {message: ->(errors) { errors }, schema: CHANNEL_DATA_SCHEMA}
 
   def active_locales
-    channel_data.each_with_object(Set.new) do |datum, acc|
-      datum["releases"]&.each do |release|
-        release["localizations"]&.each do |localization|
-          locale_data = StoreLocaleData.new(self, localization)
-          acc << locale_data if locale_data.supported?
-        end
+    production_channel_data = channel_data.find { |datum| datum["name"] == "production" }
+    return [] if production_channel_data.nil?
+    production_channel_data["releases"]&.each_with_object(Set.new) do |release, acc|
+      release["localizations"]&.each do |localization|
+        locale_data = StoreLocaleData.new(self, localization)
+        acc << locale_data if locale_data.supported?
       end
     end
   end
