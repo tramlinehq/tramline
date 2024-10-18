@@ -6,34 +6,30 @@ FactoryBot.define do
     platform { "android" }
 
     after(:build) do |release_platform|
-      config = {
+      config_map = {
+        release_platform:,
         workflows: {
           internal: nil,
           release_candidate: {
+            kind: "release_candidate",
             name: Faker::FunnyName.name,
             id: Faker::Number.number(digits: 8),
             artifact_name_pattern: nil
           }
         },
         internal_release: nil,
-        beta_release: nil,
-        production_release: {
+        beta_release: {
           auto_promote: false,
-          submissions: [
-            {
-              number: 1,
-              submission_type: "AppStoreSubmission",
-              submission_config: AppStoreIntegration::PROD_CHANNEL,
-              rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
-              auto_promote: false,
-              integrable_id: release_platform.app.id,
-              integrable_type: "App"
-            }
-          ]
+          submissions: []
         }
       }
+      config_map[:production_release] = ReleasePlatform::DEFAULT_PROD_RELEASE_CONFIG[release_platform.platform.to_sym]
+      config_map[:production_release][:submissions].each do |submission|
+        submission[:integrable_id] = release_platform.app.id
+        submission[:integrable_type] = "App"
+      end
 
-      release_platform.platform_config = Config::ReleasePlatform.from_json(config)
+      release_platform.platform_config = Config::ReleasePlatform.from_json(config_map)
     end
   end
 end
