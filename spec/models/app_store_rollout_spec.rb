@@ -77,7 +77,7 @@ describe AppStoreRollout do
     end
 
     it "does not inform the production release when rollout cannot complete" do
-      allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { raise })
+      allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { raise app_store_generic_error })
 
       rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:)
       allow(rollout).to receive_messages(provider: providable_dbl, parent_release: production_release)
@@ -87,6 +87,19 @@ describe AppStoreRollout do
 
       expect(production_release).not_to have_received(:rollout_complete!)
       expect(rollout.fully_released?).to be(false)
+    end
+
+    it "completes the release if phased release is already complete" do
+      allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { raise app_store_phased_release_already_final_error })
+
+      rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:)
+      allow(rollout).to receive_messages(provider: providable_dbl, parent_release: production_release)
+      allow(production_release).to receive(:rollout_complete!)
+
+      rollout.release_fully!
+
+      expect(production_release).to have_received(:rollout_complete!)
+      expect(rollout.completed?).to be(true)
     end
   end
 
@@ -183,7 +196,7 @@ describe AppStoreRollout do
 
     it "does not resume the rollout if store call fails" do
       rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:, config: [1, 80], current_stage: 0)
-      allow(providable_dbl).to receive(:pause_phased_release).and_return(GitHub::Result.new { raise })
+      allow(providable_dbl).to receive(:pause_phased_release).and_return(GitHub::Result.new { raise app_store_generic_error })
       allow(rollout).to receive(:provider).and_return(providable_dbl)
       rollout.pause_release!
       expect(rollout.paused?).to be(false)
@@ -227,7 +240,7 @@ describe AppStoreRollout do
 
     it "does not resume the rollout if store call fails" do
       rollout = create(:store_rollout, :paused, :app_store, release_platform_run:, store_submission:, config: [1, 80], current_stage: 0)
-      allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { raise })
+      allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { raise app_store_generic_error })
       allow(rollout).to receive(:provider).and_return(providable_dbl)
       rollout.resume_release!
       expect(rollout.paused?).to be(true)

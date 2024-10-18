@@ -53,6 +53,16 @@ module Installations
       },
       {
         resource: "release",
+        code: "phased_release_already_final",
+        decorated_reason: :phased_release_already_complete
+      },
+      {
+        resource: "release",
+        code: "phased_release_already_in_state",
+        decorated_reason: :phased_release_already_in_same_state
+      },
+      {
+        resource: "release",
         code: "release_already_prepared",
         decorated_reason: :release_already_exists
       },
