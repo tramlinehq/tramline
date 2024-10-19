@@ -99,8 +99,6 @@ class PreProdRelease < ApplicationRecord
     changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)
 
     return changes_since_last_run if last_successful_run.present?
-
-    return changes_since_last_release || [] if previous.blank?
     ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq { |c| c.commit_hash }
   end
 

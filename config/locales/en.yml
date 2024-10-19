@@ -338,6 +338,7 @@ en:
           attachment_upload_in_progress: "store version is not in a valid state to submit for review, attachment uploads still in progress"
           localization_not_found: "the locale for release metadata doesn't exist in the store"
           unauthorized: "the request to the store failed due to authorization error"
+          developer_rejected: "the store version was rejected by you manually"
       test_flight_submission:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"

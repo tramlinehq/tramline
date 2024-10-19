@@ -168,7 +168,8 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "train_id", "branch_name", "status", "original_release_version", "release_version", "scheduled_at",
-          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch", "internal_notes"
+          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch",
+          "internal_notes", "is_v2"
         whitelist_timestamps
 
         anonymize("release_pilot_id").using FieldStrategy::SelectFromList.new(user_ids)
@@ -325,11 +326,11 @@ namespace :anonymize do
     train = app.trains.reload.find(train_id)
     Charts::DevopsReport.warm(train)
 
-    train.release_platforms.each do |release_platform|
-      populate_config(release_platform)
-    end
-
-    populate_v2_models(train)
+    # train.release_platforms.each do |release_platform|
+    #   populate_config(release_platform)
+    # end
+    #
+    # populate_v2_models(train)
   end
 
   desc 'Anonymize release health metric data from source db into local db
@@ -356,7 +357,7 @@ namespace :anonymize do
       table "release_health_metrics" do
         continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ReleaseHealthMetric.exists?(record["id"]) }
         primary_key "id"
-        whitelist "deployment_run_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
+        whitelist "deployment_run_id", "production_release_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
           "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
         whitelist_timestamps
       end
@@ -370,7 +371,7 @@ namespace :anonymize do
         end
 
         primary_key "id"
-        whitelist "deployment_run_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
+        whitelist "deployment_run_id", "production_release_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
         whitelist_timestamps
       end
     end
