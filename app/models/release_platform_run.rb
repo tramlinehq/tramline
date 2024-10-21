@@ -79,9 +79,9 @@ class ReleasePlatformRun < ApplicationRecord
 
   def external_builds
     if release.is_v2?
-      ExternalBuild.where(step_run_id: step_runs.select(:id))
-    else
       ExternalBuild.where(build_id: builds.select(:id))
+    else
+      ExternalBuild.where(step_run_id: step_runs.select(:id))
     end
   end
 
