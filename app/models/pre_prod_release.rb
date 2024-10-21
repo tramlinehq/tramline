@@ -31,8 +31,12 @@ class PreProdRelease < ApplicationRecord
   scope :inactive, -> { where(status: INACTIVE) }
 
   before_create :set_default_tester_notes
-  after_create_commit -> { previous&.mark_as_stale! }
-  after_create_commit -> { create_stamp!(data: stamp_data) }
+
+  # TODO: Remove this accessor, once the migration is complete
+  attr_accessor :in_data_migration_mode
+
+  after_create_commit -> { previous&.mark_as_stale! }, unless: :in_data_migration_mode
+  after_create_commit -> { create_stamp!(data: stamp_data) }, unless: :in_data_migration_mode
 
   delegate :release, :train, :platform, to: :release_platform_run
   delegate :notify!, :notify_with_snippet!, to: :train

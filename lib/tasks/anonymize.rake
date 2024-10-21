@@ -88,7 +88,7 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "status", "name", "version_seeded_with", "version_current", "slug", "working_branch", "branching_strategy",
-          "release_branch", "release_backmerge_branch", "vcs_webhook_id", "train_id", "platform"
+          "release_branch", "release_backmerge_branch", "vcs_webhook_id", "train_id", "platform", "config"
         whitelist_timestamps
         anonymize("app_id") { |field| app.id }
       end
@@ -239,7 +239,7 @@ namespace :anonymize do
         primary_key "id"
         whitelist "release_platform_id", "code_name", "scheduled_at", "commit_sha", "status", "branch_name",
           "release_version", "completed_at", "stopped_at", "original_release_version", "release_id",
-          "tag_name", "in_store_resubmission", "last_commit_id", "play_store_blocked"
+          "tag_name", "in_store_resubmission", "last_commit_id", "play_store_blocked", "config"
         whitelist_timestamps
       end
 
@@ -268,7 +268,7 @@ namespace :anonymize do
         continue { |index, record| StepRun.exists?(record["step_run_id"]) }
 
         primary_key "id"
-        whitelist "metadata", "step_run_id"
+        whitelist "metadata", "step_run_id", "build_id"
         whitelist_timestamps
       end
 
@@ -320,23 +320,23 @@ namespace :anonymize do
       end
     end
 
-    app.releases.finished.each do |release|
-      Queries::ReleaseSummary.warm(release.id)
-    end
-    train = app.trains.reload.find(train_id)
-    Charts::DevopsReport.warm(train)
-
-    # NOTE: The code below will no longer be necessary once we have moved all the data over to the new models
-    puts "Populating config for train: #{train.name}"
-    train.release_platforms.each do |release_platform|
-      if release_platform.platform_config.present?
-        puts "Skipping #{train.name} platform #{release_platform.platform} as it already has a config"
-        next
-      end
-      populate_config(release_platform)
-    end
-
-    populate_v2_models_for_train(train)
+    # app.releases.finished.each do |release|
+    #   Queries::ReleaseSummary.warm(release.id)
+    # end
+    # train = app.trains.reload.find(train_id)
+    # Charts::DevopsReport.warm(train)
+    #
+    # # NOTE: The code below will no longer be necessary once we have moved all the data over to the new models
+    # puts "Populating config for train: #{train.name}"
+    # train.release_platforms.each do |release_platform|
+    #   if release_platform.platform_config.present?
+    #     puts "Skipping #{train.name} platform #{release_platform.platform} as it already has a config"
+    #     next
+    #   end
+    #   populate_config(release_platform)
+    # end
+    #
+    # populate_v2_models_for_train(train)
   end
 
   desc 'Anonymize release health metric data from source db into local db
@@ -382,7 +382,7 @@ namespace :anonymize do
       end
     end
 
-    populate_v2_metrics_models(train)
+    # populate_v2_metrics_models(train)
   end
 
   def source_db_config

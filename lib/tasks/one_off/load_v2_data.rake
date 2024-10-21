@@ -37,7 +37,10 @@ def populate_v2_models_for_train(train)
   Queries::DevopsReport.warm(train)
 end
 
-def convert_review_step!(release_platform_run, review_step)
+def convert_review_step!(release_platform_run)
+  review_step = release_platform_run.step_runs.detect { |step_run| step_run.step.review? }&.step
+  return if review_step.blank?
+
   review_runs = release_platform_run.step_runs_for(review_step).order(scheduled_at: :asc).to_a
   review_step_run = review_runs.shift
   previous = nil
@@ -51,7 +54,9 @@ def convert_review_step!(release_platform_run, review_step)
   end
 end
 
-def convert_release_step!(prun, release_step)
+def convert_release_step!(prun)
+  release_step = prun.step_runs.detect { |step_run| step_run.step.release? }&.step
+  return if release_step.blank?
   release_step_runs = prun.step_runs_for(release_step).order(scheduled_at: :asc).to_a
   release_step_run = release_step_runs.shift
   previous_pre_prod_release = nil
@@ -110,7 +115,7 @@ def convert_release_step!(prun, release_step)
             current_stage: drun.staged_rollout&.current_stage || 0,
             config: submission_config.rollout_stages.presence || [],
             is_staged_rollout: submission_config.rollout_enabled,
-            status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status,
+            status: compute_store_rollout_status(drun.staged_rollout),
             created_at: drun.staged_rollout.created_at,
             updated_at: drun.staged_rollout.updated_at
           )
@@ -121,7 +126,7 @@ def convert_release_step!(prun, release_step)
             current_stage: drun.staged_rollout&.current_stage || 0,
             config: submission_config.rollout_stages.presence || [],
             is_staged_rollout: submission_config.rollout_enabled,
-            status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status,
+            status: compute_store_rollout_status(drun.staged_rollout),
             created_at: drun.staged_rollout.created_at,
             updated_at: drun.staged_rollout.updated_at
           )
@@ -130,6 +135,9 @@ def convert_release_step!(prun, release_step)
       elsif drun.released?
         create_non_staged_rollout(submission, drun, prun)
       end
+
+      drun.release_health_events.update_all(production_release_id: production_release.id)
+      drun.release_health_metrics.update_all(production_release_id: production_release.id)
 
       previous_pre_prod_release = pre_prod_release
       previous_production_release = production_release
@@ -146,15 +154,15 @@ def populate_v2_models(release)
     prun.update!(config: prun.release_platform.platform_config.as_json)
 
     raise "Config not loaded" if prun.config.blank?
-    puts "Config loaded for #{prun.release_platform.name} as #{prun.config.inspect}"
+    puts "Config loaded for #{prun.release_version} - #{prun.platform} as #{prun.config.inspect}"
 
     # review steps
     raise "More than one review step" if prun.release_platform.steps.review.size > 1
-    convert_review_step!(prun, prun.release_platform.steps.review.first)
+    convert_review_step!(prun)
 
     # release step
     raise "No release step" if prun.release_platform.release_step.blank?
-    convert_release_step!(prun, prun.release_platform.release_step)
+    convert_release_step!(prun)
   end
 end
 
@@ -168,7 +176,8 @@ def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind
     previous:,
     tester_notes:,
     created_at: step_run.created_at,
-    updated_at: step_run.updated_at
+    updated_at: step_run.updated_at,
+    in_data_migration_mode: true
   }
 
   if kind == "internal"
@@ -198,6 +207,8 @@ def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind
     updated_at: step_run.updated_at
   )
 
+  create_passports(workflow_run, step_run)
+
   build = workflow_run.create_build!(
     release_platform_run:,
     workflow_run:,
@@ -213,7 +224,9 @@ def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind
     updated_at: step_run.updated_at
   )
 
-  create_passports(workflow_run, step_run)
+  # NOTE: DANGER ZONE
+  step_run.build_artifact&.update!(build_id: build.id)
+  step_run.external_build&.update!(build_id: build.id)
 
   step_run.deployment_runs.reject(&:production_channel?).each_with_index do |deployment_run, idx|
     create_pre_prod_submission(release_platform_run, step_run, deployment_run, pre_prod_release, build)
@@ -294,7 +307,8 @@ def create_pre_prod_submission(release_platform_run, step_run, deployment_run, p
     store_release: deployment_run.external_release&.attributes,
     store_status: deployment_run.external_release&.status,
     created_at: deployment_run.created_at,
-    updated_at: deployment_run.updated_at
+    updated_at: deployment_run.updated_at,
+    in_data_migration_mode: true
   )
 
   create_passports(submission, deployment_run)
@@ -342,6 +356,16 @@ def create_non_staged_rollout(submission, deployment_run, release_platform_run)
     created_at: rollout_created,
     updated_at: rollout_created
   )
+end
+
+def compute_store_rollout_status(staged_rollout)
+  if staged_rollout.stopped?
+    "halted"
+  elsif staged_rollout.failed?
+    "started"
+  else
+    staged_rollout.status
+  end
 end
 
 def compute_production_release_status(step_run, idx)
