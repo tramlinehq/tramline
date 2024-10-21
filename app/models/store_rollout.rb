@@ -28,15 +28,6 @@ class StoreRollout < ApplicationRecord
   delegate :train, to: :release_platform_run
   delegate :notify!, to: :train
 
-  STAMPABLE_REASONS = %w[
-    started
-    paused
-    resumed
-    increased
-    completed
-    halted
-    fully_released
-  ]
   STATES = {
     created: "created",
     started: "started",

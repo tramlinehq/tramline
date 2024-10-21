@@ -88,6 +88,8 @@ def convert_release_step!(prun, release_step)
         updated_at: drun.updated_at
       )
 
+      create_passports(submission, drun)
+
       if drun.staged_rollout.present?
         if submission.is_a?(PlayStoreSubmission)
           submission.create_play_store_rollout!(
@@ -99,6 +101,7 @@ def convert_release_step!(prun, release_step)
             created_at: drun.staged_rollout.created_at,
             updated_at: drun.staged_rollout.updated_at
           )
+          create_passports(submission.play_store_rollout, drun.staged_rollout)
         elsif submission.is_a?(AppStoreSubmission)
           submission.create_app_store_rollout!(
             release_platform_run: prun,
@@ -109,7 +112,10 @@ def convert_release_step!(prun, release_step)
             created_at: drun.staged_rollout.created_at,
             updated_at: drun.staged_rollout.updated_at
           )
+          create_passports(submission.app_store_rollout, drun.staged_rollout)
         end
+      elsif drun.released?
+        create_non_staged_rollout(submission, drun, prun)
       end
 
       previous_pre_prod_release = pre_prod_release
@@ -173,9 +179,9 @@ def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind
     external_number: step_run.commit.short_sha,
     external_url: step_run.ci_link,
     external_id: step_run.ci_ref,
-    started_at: nil, # TODO: add this passports
-    finished_at: nil, # TODO: add this from passports
-    created_at: step_run.created_at, # TODO: add this from passports
+    started_at: step_run.passports.find_by(reason: :ci_triggered)&.event_timestamp,
+    finished_at: step_run.passports.find_by(reason: :ci_finished)&.event_timestamp,
+    created_at: step_run.passports.find_by(reason: :ci_triggered)&.event_timestamp || step_run.created_at,
     updated_at: step_run.updated_at
   )
 
@@ -208,7 +214,6 @@ def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind
 end
 
 def create_passports(new_model, old_model)
-  data = new_model.send(:stamp_data)
   new_model.passports.delete_all
   old_model.passports.find_each do |passport|
     passport_mapping = PASSPORT_MAPPINGS[old_model.class.name][passport.reason.to_s]
@@ -223,8 +228,8 @@ def create_passports(new_model, old_model)
       stampable: new_model,
       reason:,
       kind: passport.kind,
-      message: I18n.t("passport.#{new_model.class.name.underscore}.#{reason}_html", **data),
-      metadata: data,
+      message: passport.message,
+      metadata: passport.metadata,
       event_timestamp: passport.event_timestamp,
       automatic: passport.automatic?,
       author_id: passport.author_id,
@@ -279,18 +284,51 @@ def create_pre_prod_submission(release_platform_run, step_run, deployment_run, p
     updated_at: deployment_run.updated_at
   )
 
+  create_passports(submission, deployment_run)
+
   if submission.is_a?(PlayStoreSubmission) && deployment_run.released?
+    create_non_staged_rollout(submission, deployment_run, release_platform_run)
+  end
+end
+
+def create_non_staged_rollout(submission, deployment_run, release_platform_run)
+  rollout_created = deployment_run.passports.find_by(reason: :released)&.event_timestamp || deployment_run.updated_at
+  rollout = if submission.is_a?(PlayStoreSubmission)
     submission.create_play_store_rollout!(
       release_platform_run:,
       config: [],
       is_staged_rollout: false,
       status: "completed",
-      created_at: deployment_run.created_at, # TODO: add this from passports
-      updated_at: deployment_run.updated_at
+      created_at: rollout_created,
+      updated_at: rollout_created
     )
+  elsif submission.is_a?(AppStoreSubmission)
+    submission.create_play_store_rollout!(
+      release_platform_run:,
+      config: [],
+      is_staged_rollout: false,
+      status: "completed",
+      created_at: rollout_created,
+      updated_at: rollout_created
+    )
+  else
+    raise "Unknown submission type for a rollout - #{submission.class}"
   end
 
-  create_passports(submission, deployment_run)
+  data = rollout.send(:stamp_data)
+  Passport.create!(
+    stampable: rollout,
+    reason: :completed,
+    kind: :success,
+    message: I18n.t("passport.#{rollout.class.name.underscore}.completed_html", **data),
+    metadata: data,
+    event_timestamp: rollout_created,
+    automatic: true,
+    author_id: nil,
+    author_metadata: nil,
+    created_at: rollout_created,
+    updated_at: rollout_created
+  )
 end
 
 def compute_production_release_status(step_run, idx)
@@ -452,6 +490,45 @@ PASSPORT_MAPPINGS = {
       "skipped" => {
         stampable_type: "StoreSubmission",
         stampable_reason: "finished_manually"
+      }
+    },
+  "StagedRollout" =>
+    {
+      "started" => {
+        stampable_type: "StoreRollout",
+        stampable_reason: "started"
+      },
+      "paused" => {
+        stampable_type: "StoreRollout",
+        stampable_reason: "paused"
+      },
+      # "failed" => {
+      #   stampable_type: "StoreRollout",
+      #   stampable_reason: "dummy"
+      # },
+      # "failed_before_any_rollout" => {
+      #   stampable_type: "StoreRollout",
+      #   stampable_reason: "dummy"
+      # },
+      "resumed" => {
+        stampable_type: "StoreRollout",
+        stampable_reason: "resumed"
+      },
+      "increased" => {
+        stampable_type: "StoreRollout",
+        stampable_reason: "updated"
+      },
+      "completed" => {
+        stampable_type: "StoreRollout",
+        stampable_reason: "completed"
+      },
+      "halted" => {
+        stampable_type: "StoreRollout",
+        stampable_reason: "halted"
+      },
+      "fully_released" => {
+        stampable_type: "StoreRollout",
+        stampable_reason: "fully_released"
       }
     }
 }.with_indifferent_access
