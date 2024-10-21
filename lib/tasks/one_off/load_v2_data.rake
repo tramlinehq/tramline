@@ -15,13 +15,26 @@ namespace :one_off do
       populate_config(release_platform)
     end
 
-    puts "Moving data over from the releases of the train to the new models"
-    ActiveRecord::Base.transaction do
-      train.releases.where.not(is_v2: true).find_each do |release|
-        populate_v2_models(release)
-      end
+    populate_v2_models_for_train(train)
+  end
+end
+
+def populate_v2_models_for_train(train)
+  puts "Moving data over from the releases of the train to the new models"
+  ActiveRecord::Base.transaction do
+    train.releases.where.not(is_v2: true).find_each do |release|
+      populate_v2_models(release)
     end
   end
+
+  train.releases.finished.each do |release|
+    release.release_platform_runs.each do |release_platform_run|
+      Queries::PlatformBreakdown.warm(release_platform_run.id)
+    end
+    Queries::ReleaseBreakdown.warm(release.id)
+  end
+
+  Queries::DevopsReport.warm(train)
 end
 
 def convert_review_step!(release_platform_run, review_step)
@@ -80,7 +93,7 @@ def convert_release_step!(prun, release_step)
         failure_reason: drun.failure_reason,
         prepared_at: drun.submitted_at,
         rejected_at: drun.review_failed? ? drun.external_release&.reviewed_at : nil,
-        submitted_at: drun.submitted_at,
+        submitted_at: drun.submitted_at || drun.created_at,
         store_link: drun.external_link,
         store_release: drun.external_release&.attributes,
         store_status: drun.external_release&.status,
@@ -276,7 +289,7 @@ def create_pre_prod_submission(release_platform_run, step_run, deployment_run, p
     failure_reason: deployment_run.failure_reason,
     prepared_at: deployment_run.submitted_at,
     rejected_at: deployment_run.review_failed? ? deployment_run.external_release&.reviewed_at : nil,
-    submitted_at: deployment_run.submitted_at,
+    submitted_at: deployment_run.submitted_at || deployment_run.created_at,
     store_link: deployment_run.external_link,
     store_release: deployment_run.external_release&.attributes,
     store_status: deployment_run.external_release&.status,
