@@ -11,4 +11,16 @@
 class ApprovalAssignee < ApplicationRecord
   belongs_to :approval_item
   belongs_to :assignee, class_name: "Accounts::User"
+
+  delegate :organization, to: :approval_item
+
+  validate :assignee_belongs_to_org
+
+  private
+
+  def assignee_belongs_to_org
+    unless assignee.organizations&.exists?(id: organization.id)
+      errors.add(:assignee, "does not belong to the organization")
+    end
+  end
 end
