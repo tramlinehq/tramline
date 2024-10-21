@@ -89,6 +89,7 @@ en:
       prepared_html: 'Prepared a new draft release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span>'
       review_rejected_html: 'Play Store submission for <span class="emphasize">%{version} (%{build_number})</span> was rejected'
       failed_html: 'Failed to create a draft release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span>. Error – <span class="emphasize">%{failure_reason}</span>'
+      finished_manually_html: 'Marked the release for <span class="emphasize">%{version} (%{build_number})</span> as finished manually'
     app_store_submission:
       prepare_release_failed_html: 'Failed to prepare release for <span class="emphasize">%{version} (%{build_number})</span> to submit for review in the App Store'
       submitted_for_review_html: 'Submitted release for <span class="emphasize">%{version} (%{build_number})</span> for review to the App Store'

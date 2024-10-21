@@ -194,15 +194,45 @@ def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind
     updated_at: step_run.updated_at
   )
 
+  create_passports(workflow_run, step_run)
+
   step_run.deployment_runs.reject(&:production_channel?).each_with_index do |deployment_run, idx|
     create_pre_prod_submission(release_platform_run, step_run, deployment_run, pre_prod_release, build)
   end
 
-  if kind == "internal"
-    update_release_platform_run_config(release_platform_run, kind)
-  end
+  create_passports(pre_prod_release, step_run)
+
+  update_release_platform_run_config(release_platform_run, kind)
 
   pre_prod_release
+end
+
+def create_passports(new_model, old_model)
+  data = new_model.send(:stamp_data)
+  new_model.passports.delete_all
+  old_model.passports.find_each do |passport|
+    passport_mapping = PASSPORT_MAPPINGS[old_model.class.name][passport.reason.to_s]
+    next if passport_mapping.blank?
+    class_name = passport_mapping[:stampable_type]
+    reason = passport_mapping[:stampable_reason]
+    raise "Invalid passport mapping" if reason.blank?
+    raise "Invalid passport mapping" if class_name.blank?
+    next unless new_model.is_a? class_name.constantize
+    next if new_model.class::STAMPABLE_REASONS.exclude?(reason)
+    Passport.create!(
+      stampable: new_model,
+      reason:,
+      kind: passport.kind,
+      message: I18n.t("passport.#{new_model.class.name.underscore}.#{reason}_html", **data),
+      metadata: data,
+      event_timestamp: passport.event_timestamp,
+      automatic: passport.automatic?,
+      author_id: passport.author_id,
+      author_metadata: passport.author_metadata,
+      created_at: passport.created_at,
+      updated_at: passport.updated_at
+    )
+  end
 end
 
 def update_release_platform_run_config(release_platform_run, kind)
@@ -259,12 +289,8 @@ def create_pre_prod_submission(release_platform_run, step_run, deployment_run, p
       updated_at: deployment_run.updated_at
     )
   end
-end
 
-def release_platform_run_config(release_platform_run)
-  config = release_platform_run.config
-
-  config["beta_release"]["submissions"] = []
+  create_passports(submission, deployment_run)
 end
 
 def compute_production_release_status(step_run, idx)
@@ -321,3 +347,111 @@ def success_state(submission_type)
     raise "Unknown submission type: #{submission_type}"
   end
 end
+
+PASSPORT_MAPPINGS = {
+  "StepRun" => {
+    "created" => {
+      stampable_type: "PreProdRelease",
+      stampable_reason: "created"
+    },
+    "ci_triggered" => {
+      stampable_type: "WorkflowRun",
+      stampable_reason: "triggered"
+    },
+    "ci_retriggered" => {
+      stampable_type: "WorkflowRun",
+      stampable_reason: "retried"
+    },
+    "ci_workflow_unavailable" => {
+      stampable_type: "WorkflowRun",
+      stampable_reason: "unavailable"
+    },
+    "ci_finished" => {
+      stampable_type: "WorkflowRun",
+      stampable_reason: "finished"
+    },
+    "ci_workflow_failed" => {
+      stampable_type: "WorkflowRun",
+      stampable_reason: "failed"
+    },
+    "ci_workflow_halted" => {
+      stampable_type: "WorkflowRun",
+      stampable_reason: "halted"
+    },
+    # "build_available" => {
+    #   stampable_type: "PreProdRelease",
+    #   stampable_reason: "build_available",
+    # },
+    # "build_unavailable" => {
+    #   stampable_type: "PreProdRelease",
+    #   stampable_reason: "build_unavailable",
+    # },
+    # "build_not_found_in_store" => {
+    #   stampable_type: "PreProdRelease",
+    #   stampable_reason: "build_not_found_in_store",
+    # },
+    # "build_found_in_store" => {
+    #   stampable_type: "PreProdRelease",
+    #   stampable_reason: "build_found_in_store",
+    # },
+    # "deployment_restarted" => {
+    #   stampable_type: "PreProdRelease",
+    #   stampable_reason: "deployment_restarted",
+    # },
+    "finished" => {
+      stampable_type: "PreProdRelease",
+      stampable_reason: "finished"
+    }
+    # "failed_with_action_required" => {
+    #   stampable_type: "PreProdRelease",
+    #   stampable_reason: "failed_with_action_required"
+    # }
+  },
+  "DeploymentRun" =>
+    {
+      "created" => {
+        stampable_type: "StoreSubmission",
+        stampable_reason: "triggered"
+      },
+      "release_failed" => {
+        stampable_type: "StoreSubmission",
+        stampable_reason: "failed"
+      },
+      "prepare_release_failed" => {
+        stampable_type: "StoreSubmission",
+        stampable_reason: "failed"
+      },
+      "inflight_release_replaced" => {
+        stampable_type: "StoreSubmission",
+        stampable_reason: "prepared"
+      },
+      "submitted_for_review" => {
+        stampable_type: "StoreSubmission",
+        stampable_reason: "submitted_for_review"
+      },
+      "resubmitted_for_review" => {
+        stampable_type: "StoreSubmission",
+        stampable_reason: "resubmitted_for_review"
+      },
+      "review_approved" => {
+        stampable_type: "StoreSubmission",
+        stampable_reason: "review_approved"
+      },
+      # "release_started" => {
+      #   stampable_type: "StoreRollout",
+      #   stampable_reason: "release_started",
+      # },
+      "released" => {
+        stampable_type: "StoreSubmission",
+        stampable_reason: "finished"
+      },
+      "review_failed" => {
+        stampable_type: "StoreSubmission",
+        stampable_reason: "review_rejected"
+      },
+      "skipped" => {
+        stampable_type: "StoreSubmission",
+        stampable_reason: "finished_manually"
+      }
+    }
+}.with_indifferent_access
