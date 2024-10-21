@@ -136,8 +136,10 @@ def convert_release_step!(prun)
         create_non_staged_rollout(submission, drun, prun)
       end
 
+      # rubocop:disable Rails/SkipsModelValidations
       drun.release_health_events.update_all(production_release_id: production_release.id)
       drun.release_health_metrics.update_all(production_release_id: production_release.id)
+      # rubocop:enable Rails/SkipsModelValidations
 
       previous_pre_prod_release = pre_prod_release
       previous_production_release = production_release
