@@ -1,0 +1,19 @@
+<%= content_tag(:div, id: dom_id(item, :edit_approvals_select)) do %>
+  <%= content_tag(:div, {data: {controller: "stream-effect", stream_effect_param_value: "status", stream_effect_url_value: release_approval_item_url(@release, item)}}) do %>
+    <div class="flex item-gap-default justify-end items-center">
+      <% if item.approved? %>
+        <span class="text-secondary-50 text-xs">approved by <%= item.approved_by.preferred_name %></span>
+      <% end %>
+      <%= select_tag :status,
+                     options_for_select(ApprovalItem.statuses, item.status),
+                     disabled: item.approved?,
+                     class: "#{EnhancedFormHelper::AuthzForm::SELECT_CLASSES} !max-w-36",
+                     data: {action: "change->stream-effect#update", stream_effect_target: "dispatch"} %>
+
+      <%= render InfoIconComponent.new do %>
+        Added by <%= item.author.preferred_name %> <%= ago_in_words(item.created_at) %>.
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+

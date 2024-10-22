@@ -91,6 +91,8 @@ Rails.application.routes.draw do
           get :wrap_up_automations
         end
 
+        resources :approval_items, only: %i[index create update], shallow: false
+
         resources :commits, only: [], shallow: false do
           member do
             post :apply

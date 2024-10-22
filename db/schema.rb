@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_18_122153) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_21_200300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -98,6 +98,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_18_122153) do
     t.uuid "release_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "status", default: "not_started"
     t.index ["approved_at"], name: "index_approval_items_on_approved_at"
     t.index ["approved_by_id"], name: "index_approval_items_on_approved_by_id"
     t.index ["author_id"], name: "index_approval_items_on_author_id"

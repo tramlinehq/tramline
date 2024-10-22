@@ -44,7 +44,7 @@ module Tabbable
           ]
         )
         .friendly
-        .find(params[:id] || params[:release_id])
+        .find(params[:release_id] || params[:id])
   end
 
   memoize def live_release_step_statuses
@@ -70,7 +70,7 @@ module Tabbable
       soak_period: soak_release_path(@release),
       notes: release_metadata_edit_path(@release),
       screenshots: root_path,
-      approvals: root_path,
+      approvals: release_approval_items_path(@release),
       app_submission: release_store_submissions_path(@release),
       rollout_to_users: release_store_rollouts_path(@release),
       wrap_up_automations: wrap_up_automations_release_path(@release)
@@ -142,7 +142,6 @@ module Tabbable
       sections[:store_release][:approvals][:icon] = "v2/list_checks.svg"
       sections[:store_release][:approvals][:position] = 9
       sections[:store_release][:approvals][:status] = live_release_step_statuses[:statuses][:approvals]
-      sections[:store_release][:approvals][:unavailable] = true
       sections[:store_release][:app_submission][:path] = live_release_paths[:app_submission]
       sections[:store_release][:app_submission][:icon] = "v2/mail.svg"
       sections[:store_release][:app_submission][:position] = 10

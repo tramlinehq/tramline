@@ -1,0 +1,21 @@
+<%= render V2::TableComponent.new(columns: ["Item", ""]) do |table| %>
+  <% approval_items.each do |item| %>
+    <% table.with_row do |row| %>
+      <% row.with_cell do %>
+        <div class="flex item-gap-default">
+          <%= render partial: "item_content", locals: {item:} %>
+
+          <div class="flex items-center gap-0.5">
+            <% item.approval_assignees.each do |assignee| %>
+              <%= user_avatar(assignee.preferred_name, limit: 2, size: 24, colors: 90) %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <% row.with_cell(wrap: true) do %>
+        <%= render partial: "item_select", locals: {item:} %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -13,6 +13,7 @@ class ApprovalAssignee < ApplicationRecord
   belongs_to :assignee, class_name: "Accounts::User"
 
   delegate :organization, to: :approval_item
+  delegate :preferred_name, :full_name, to: :assignee
 
   validate :assignee_belongs_to_org
 

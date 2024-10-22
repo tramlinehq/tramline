@@ -5,6 +5,7 @@
 #  id             :bigint           not null, primary key
 #  approved_at    :datetime         indexed
 #  content        :string           not null
+#  status         :string           default("not_started")
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  approved_by_id :uuid             indexed
@@ -24,23 +25,33 @@ class ApprovalItem < ApplicationRecord
   validate :release_pilots_as_authors_only, on: :create
   validates :content, presence: true, length: {maximum: ApprovalItem::MAX_CONTENT_LENGTH}
 
-  scope :approved, -> { where.not(approved_at: nil).where.not(approved_by: nil) }
+  scope :approved, -> { where(status: ApprovalItem.statuses[:approved]).where.not(approved_at: nil).where.not(approved_by: nil) }
 
-  def approve(assignee)
+  enum :status, {
+    not_started: "not_started",
+    in_progress: "in_progress",
+    blocked: "blocked",
+    approved: "approved",
+    rejected: "rejected"
+  }
+
+  def update_status(status, assignee)
     return true if approved?
-
     if self_assigned?(assignee) || approval_assignees.exists?(assignee: assignee)
-      self.approved_by = assignee
-      self.approved_at = Time.current
+      if status == ApprovalItem.statuses[:approved]
+        self.approved_by = assignee
+        self.approved_at = Time.current
+      end
+      self.status = status
       save
     else
-      errors.add(:assignee, "is not authorized to approve this item")
+      errors.add(:assignee, "is not authorized to update this item")
       false
     end
   end
 
   def approved?
-    approved_at.present? && approved_by.present?
+    status == ApprovalItem.statuses[:approved] && approved_at.present? && approved_by.present?
   end
 
   private

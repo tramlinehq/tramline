@@ -1,0 +1,7 @@
+<%= content_tag(:div, id: dom_id(item, :edit_approvals_content)) do %>
+  <% if item.approved? %>
+    <span class="line-through decoration-2 text-secondary-50"><%= item.content %></span>
+  <% else %>
+    <%= item.content %>
+  <% end %>
+<% end %>
