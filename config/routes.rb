@@ -52,7 +52,11 @@ Rails.application.routes.draw do
       resources :invitations, only: [:create]
     end
 
-    resource :user, only: [:edit, :update]
+    resource :user, only: [:edit, :update] do
+      member do
+        patch :update_user_role
+      end
+    end
   end
 
   resources :apps do
