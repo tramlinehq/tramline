@@ -19,7 +19,7 @@ class Config::ReleaseStep < ApplicationRecord
 
   enum :kind, {internal: "internal", beta: "beta", production: "production"}
 
-  delegate :ios?, :android?, to: :release_platform_config
+  delegate :ios?, :android?, :platform, to: :release_platform_config
 
   def as_json(options = {})
     {
