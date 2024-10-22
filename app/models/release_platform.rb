@@ -51,7 +51,7 @@ class ReleasePlatform < ApplicationRecord
          auto_promote: false}
       ]
     }
-  }
+  }.with_indifferent_access
 
   belongs_to :app
   belongs_to :train

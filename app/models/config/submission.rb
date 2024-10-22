@@ -22,8 +22,9 @@ class Config::Submission < ApplicationRecord
   has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
   delegated_type :integrable, types: INTEGRABLE_TYPES, validate: false
 
-  before_validation :set_number_one, if: :production?
-  before_validation :set_default_rollout_for_ios, if: [:ios?, :rollout_enabled?]
+  before_validation :set_default_production_config, if: -> { !readonly? && new_record? && production? }
+  before_validation :set_number_one, if: -> { !readonly? && new_record? && production? }
+  before_validation :set_default_rollout_for_ios, if: -> { !readonly? && new_record? && ios? && rollout_enabled? }
 
   validates :submission_type, presence: true
   validates :number, presence: true, uniqueness: {scope: :release_step_config_id}
@@ -31,8 +32,9 @@ class Config::Submission < ApplicationRecord
   validate :production_release_submission
 
   accepts_nested_attributes_for :submission_external, allow_destroy: true
+  attr_accessor :readonly
 
-  delegate :ios?, :android?, :production?, to: :release_step_config
+  delegate :ios?, :android?, :production?, :platform, to: :release_step_config
 
   def as_json(options = {})
     {
@@ -49,6 +51,8 @@ class Config::Submission < ApplicationRecord
     }
   end
 
+  def readonly? = readonly
+
   def submission_class
     submission_type.constantize
   end
@@ -62,7 +66,7 @@ class Config::Submission < ApplicationRecord
   end
 
   def self.from_json(json)
-    submission = new(json.except("id", "release_step_config_id", "rollout_config", "submission_config"))
+    submission = new(json.except("id", "release_step_config_id", "rollout_config", "submission_config").merge(readonly: true))
     submission.submission_external = Config::SubmissionExternal.from_json(json["submission_config"])
     submission.rollout_stages = json.dig("rollout_config", "stages")
     submission.rollout_enabled = json.dig("rollout_config", "enabled")
@@ -74,7 +78,7 @@ class Config::Submission < ApplicationRecord
   end
 
   def production_release_submission
-    if release_step_config.production?
+    if production?
       errors.add(:integrable_type, :variant_not_allowed) if integrable_type == "AppVariant"
     end
   end
@@ -103,5 +107,15 @@ class Config::Submission < ApplicationRecord
 
   def set_number_one
     self.number = 1
+  end
+
+  def set_default_production_config
+    self.integrable_id = default_app.id
+    self.integrable_type = "App"
+    self.submission_external = Config::SubmissionExternal.from_json(ReleasePlatform::DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym][:submissions][0][:submission_config])
+  end
+
+  def default_app
+    release_step_config.release_platform_config.release_platform.app
   end
 end
