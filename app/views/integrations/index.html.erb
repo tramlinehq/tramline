@@ -3,7 +3,7 @@
                                             tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button(to: "the app", path: app_path(@app)) %>
   <% container.with_tab do %>
-    <%= render V2::IntegrationListComponent.new(@app, @integrations_by_categories, pre_open_category: @pre_open_category) %>
+    <%= render V2::IntegrationListComponent.new(@app, @integrations_by_categories, @existing_github_integration, @existing_bitbucket_integration, pre_open_category: @pre_open_category) %>
   <% end %>
   <% if @app.releases.none? %>
     <% container.with_sub_action do %>

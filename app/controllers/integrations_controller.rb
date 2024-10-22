@@ -4,7 +4,8 @@ class IntegrationsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[connect create index build_artifact_channels destroy]
   before_action :set_app_config_tabs, only: %i[index]
-  before_action :set_integration, only: %i[connect create]
+  before_action :set_integration, only: %i[connect create reuse]
+  before_action :set_existing_integration, only: %i[reuse]
   before_action :set_providable, only: %i[connect create]
 
   def connect
@@ -14,6 +15,18 @@ class IntegrationsController < SignedInApplicationController
   def index
     @pre_open_category = Integration.categories[params[:integration_category]]
     set_integrations_by_categories
+    set_existing_github_integration
+    set_existing_bitbucket_integration
+  end
+
+  def reuse
+    return redirect_to app_integrations_path(@app), alert: "Integration not found or not connected." unless @existing_integration&.connected?
+    new_integration = build_new_integration(@existing_integration)
+    if new_integration.save
+      redirect_to app_integrations_path(@app), notice: "#{@existing_integration.providable_type} integration reused successfully."
+    else
+      redirect_to app_integrations_path(@app), flash: {error: new_integration.errors.full_messages.to_sentence}
+    end
   end
 
   def create
@@ -50,12 +63,46 @@ class IntegrationsController < SignedInApplicationController
 
   private
 
+  def build_new_integration(existing_integration)
+    @app.integrations.new(
+      category: @integration.category,
+      status: Integration.statuses[:connected],
+      metadata: existing_integration.metadata,
+      providable: build_providable(existing_integration)
+    )
+  end
+
   def set_integrations_by_categories
     @integrations_by_categories = Integration.by_categories_for(@app)
   end
 
   def set_integration
     @integration = @app.integrations.new(integrations_only_params)
+  end
+
+  def set_existing_integration
+    @existing_integration = Integration.find_by(id: params[:id])
+  end
+
+  def set_existing_github_integration
+    @existing_github_integration = Integration.existing_github_integration(@app)
+  end
+
+  def set_existing_bitbucket_integration
+    @existing_bitbucket_integration = Integration.existing_bitbucket_integration(@app)
+  end
+
+  def build_providable(existing_integration)
+    providable_class = existing_integration.providable_type.constantize
+
+    if existing_integration.providable_type == "GithubIntegration"
+      installation_id = existing_integration.providable.installation_id
+      providable_class.new(installation_id: installation_id)
+    else
+      oauth_access_token = existing_integration.providable.oauth_access_token
+      oauth_refresh_token = existing_integration.providable.oauth_refresh_token
+      providable_class.new(oauth_access_token: oauth_access_token, oauth_refresh_token: oauth_refresh_token)
+    end
   end
 
   def set_providable
