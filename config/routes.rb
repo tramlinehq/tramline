@@ -89,6 +89,7 @@ Rails.application.routes.draw do
           get :regression_testing
           get :soak
           get :wrap_up_automations
+          patch :override_approvals
         end
 
         resources :approval_items, only: %i[index create update], shallow: false

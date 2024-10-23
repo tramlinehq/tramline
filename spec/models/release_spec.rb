@@ -607,4 +607,35 @@ describe Release do
       end
     end
   end
+
+  describe "#override_approvals" do
+    it "updates the approval_overridden_by field only if the release is active" do
+      who = create(:user, :with_email_authentication, :as_developer)
+      release = create(:release, :stopped, release_pilot: who)
+
+      release.override_approvals(who)
+
+      expect(release.approval_overridden_by).to be_nil
+    end
+
+    it "updates the approval_overridden_by only if the user is the release pilot" do
+      who = create(:user, :with_email_authentication, :as_developer)
+      release = create(:release, release_pilot: who)
+
+      release.override_approvals(who)
+
+      expect(release.approval_overridden_by).to eq(who)
+    end
+
+    it "does nothing if approvals are already overridden" do
+      who = create(:user, :with_email_authentication, :as_developer)
+      new_who = create(:user, :with_email_authentication, :as_developer)
+      release = create(:release, release_pilot: who)
+
+      release.override_approvals(who)
+      release.override_approvals(new_who)
+
+      expect(release.approval_overridden_by).to eq(who)
+    end
+  end
 end

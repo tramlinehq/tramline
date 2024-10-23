@@ -52,6 +52,7 @@ class Release < ApplicationRecord
     release_branch_created
     kickoff_pr_succeeded
     version_changed
+    approvals_overwritten
     finalizing
     pre_release_pr_not_creatable
     pull_request_not_mergeable
@@ -100,6 +101,7 @@ class Release < ApplicationRecord
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
   belongs_to :release_pilot, class_name: "Accounts::User", optional: true
+  belongs_to :approval_overridden_by, class_name: "Accounts::User", optional: true
   has_one :scheduled_release, dependent: :destroy
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
@@ -535,6 +537,28 @@ class Release < ApplicationRecord
 
   def temporary_unblock_metadata_edits?
     Flipper.enabled?(:temporary_unblock_metadata_edits, self)
+  end
+
+  def override_approvals(who)
+    return unless active?
+    return if approvals_overridden?
+
+    if who == release_pilot
+      update(approval_overridden_by: who)
+      event_stamp!(reason: :approvals_overwritten, kind: :notice)
+    end
+  end
+
+  def approvals_overridden?
+    approval_overridden_by.present?
+  end
+
+  def approvals?
+    approval_items.exists?
+  end
+
+  def approvals_ready?
+    approvals_overridden? || (approval_items.approved.size == approval_items.size)
   end
 
   private

@@ -9,7 +9,7 @@ class ApprovalAssignmentMailer < ApplicationMailer
 
     mail(
       to: @approval_assignee.assignee.email,
-      subject: I18n.t("approval_assignee_mailer.notify.subject"),
+      subject: I18n.t("approval_assignee_mailer.notify.subject")
     )
   end
 end

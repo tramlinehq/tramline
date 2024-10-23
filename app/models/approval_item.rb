@@ -29,11 +29,12 @@ class ApprovalItem < ApplicationRecord
     not_started: "not_started",
     in_progress: "in_progress",
     blocked: "blocked",
-    approved: "approved",
+    approved: "approved"
   }
 
   def update_status(status, assignee)
     return true if approved?
+    return unless release.active?
 
     with_lock do
       return true if approved?
