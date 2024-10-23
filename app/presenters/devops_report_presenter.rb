@@ -15,6 +15,11 @@ class DevopsReportPresenter < SimpleDelegator
       value_format: "time",
       name: "devops.time_in_review"
     },
+    patch_fixes: {
+      type: "area",
+      value_format: "number",
+      name: "devops.patch_fixes"
+    },
     hotfixes: {
       type: "area",
       value_format: "number",
@@ -79,8 +84,13 @@ class DevopsReportPresenter < SimpleDelegator
     formatter(:time_in_review)
   end
 
-  def hotfixes
+  def patch_fixes
     return v1_formatter(:mobile_devops, :hotfixes) if v1?
+    formatter(:patch_fixes)
+  end
+
+  def hotfixes
+    return nil if v1?
     formatter(:hotfixes)
   end
 

@@ -610,17 +610,21 @@ en:
       duration:
         title: "Release duration"
         scope: "Last 6 releases"
-        help_text: "How long does the release take?"
+        help_text: "How long does the release take?\n<strong>Note</strong>: This does not include hotfix releases."
       frequency:
         title: "Release frequency"
         scope: "Last 6 months"
-        help_text: "How often do you release every month?\n<strong>Note</strong>: This includes hotfix releases."
+        help_text: "How often do you release every month?\n<strong>Note</strong>: This does not include hotfix releases."
       time_in_review:
         title: "Time in review (iOS)"
         scope: "Last 6 versions"
         help_text: "Time spent in review on the App Store.\n<strong>Note</strong>: This includes hotfix releases."
       hotfixes:
-        title: "Fixes during release"
+        title: "Fixes after the release (hotfixes)"
+        scope: "Last 6 releases"
+        help_text: "Fixes made after the release has reached all users in the store"
+      patch_fixes:
+        title: "Fixes during the release"
         scope: "Last 6 releases"
         help_text: "Fixes made after the release has partially reached the store"
       time_in_phases:
