@@ -78,7 +78,6 @@ class AppStoreRollout < StoreRollout
       event_stamp!(reason: :started, kind: :notice, data: stamp_data)
     else
       complete!
-      event_stamp!(reason: :completed, kind: :success, data: stamp_data)
     end
 
     StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id)
@@ -96,10 +95,7 @@ class AppStoreRollout < StoreRollout
 
     release_info = result.value!
     if release_info.live?(build_number)
-      unless staged_rollout?
-        event_stamp!(reason: :completed, kind: :success, data: stamp_data)
-        return complete!
-      end
+      return complete! unless staged_rollout?
       with_lock { update_rollout(release_info) }
       return if release_info.phased_release_complete?
     end
@@ -134,6 +130,7 @@ class AppStoreRollout < StoreRollout
         fully_release!
         event_stamp!(reason: :fully_released, kind: :success, data: stamp_data)
       else
+        return complete! if result.error.reason == :phased_release_already_complete
         elog(result.error)
         errors.add(:base, result.error)
       end
@@ -178,5 +175,10 @@ class AppStoreRollout < StoreRollout
   def update_rollout(release_info)
     update_store_info!(release_info)
     update_stage(release_info.phased_release_stage, finish_rollout: release_info.phased_release_complete?)
+  end
+
+  def on_complete!
+    event_stamp!(reason: :completed, kind: :success, data: stamp_data)
+    super
   end
 end

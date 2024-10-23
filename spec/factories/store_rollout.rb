@@ -44,3 +44,11 @@ FactoryBot.define do
     end
   end
 end
+
+def app_store_generic_error
+  Installations::Apple::AppStoreConnect::Error.new({})
+end
+
+def app_store_phased_release_already_final_error
+  Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "release", "code" => "phased_release_already_final"}})
+end
