@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_21_200300) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_18_122153) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -92,17 +92,17 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_21_200300) do
 
   create_table "approval_items", force: :cascade do |t|
     t.string "content", null: false
-    t.datetime "approved_at"
+    t.string "status", default: "not_started"
+    t.datetime "status_changed_at"
+    t.uuid "status_changed_by_id"
     t.uuid "author_id", null: false
-    t.uuid "approved_by_id"
     t.uuid "release_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "status", default: "not_started"
-    t.index ["approved_at"], name: "index_approval_items_on_approved_at"
-    t.index ["approved_by_id"], name: "index_approval_items_on_approved_by_id"
     t.index ["author_id"], name: "index_approval_items_on_author_id"
     t.index ["release_id"], name: "index_approval_items_on_release_id"
+    t.index ["status_changed_at"], name: "index_approval_items_on_status_changed_at"
+    t.index ["status_changed_by_id"], name: "index_approval_items_on_status_changed_by_id"
   end
 
   create_table "apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -373,7 +373,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_21_200300) do
     t.string "integrable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["integrable_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
-    t.index ["providable_type", "providable_id"], name: "index_integrations_on_providable_type_and_providable_id", unique: true
   end
 
   create_table "invites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1003,8 +1002,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_21_200300) do
   add_foreign_key "approval_assignees", "approval_items"
   add_foreign_key "approval_assignees", "users", column: "assignee_id"
   add_foreign_key "approval_items", "releases"
-  add_foreign_key "approval_items", "users", column: "approved_by_id"
   add_foreign_key "approval_items", "users", column: "author_id"
+  add_foreign_key "approval_items", "users", column: "status_changed_by_id"
   add_foreign_key "apps", "organizations"
   add_foreign_key "build_artifacts", "step_runs"
   add_foreign_key "build_queues", "releases"

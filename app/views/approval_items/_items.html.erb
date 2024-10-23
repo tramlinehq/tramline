@@ -1,4 +1,4 @@
-<%= render V2::TableComponent.new(columns: ["Item", ""]) do |table| %>
+<%= render V2::TableComponent.new(columns: ["", ""]) do |table| %>
   <% approval_items.each do |item| %>
     <% table.with_row do |row| %>
       <% row.with_cell do %>
@@ -6,8 +6,12 @@
           <%= render partial: "item_content", locals: {item:} %>
 
           <div class="flex items-center gap-0.5">
-            <% item.approval_assignees.each do |assignee| %>
-              <%= user_avatar(assignee.preferred_name, limit: 2, size: 24, colors: 90) %>
+            <% item.approval_assignees.collect do |assignee| %>
+              <%= render V2::TooltipComponent.new(item.assignee_tooltip(assignee), placement: "top") do |tooltip| %>
+                <% tooltip.with_body do %>
+                  <%= item.assignee_avatar(assignee) %>
+                <% end %>
+              <% end %>
             <% end %>
           </div>
         </div>

@@ -2,56 +2,56 @@
 #
 # Table name: approval_items
 #
-#  id             :bigint           not null, primary key
-#  approved_at    :datetime         indexed
-#  content        :string           not null
-#  status         :string           default("not_started")
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  approved_by_id :uuid             indexed
-#  author_id      :uuid             not null, indexed
-#  release_id     :uuid             not null, indexed
+#  id                   :bigint           not null, primary key
+#  content              :string           not null
+#  status               :string           default("not_started")
+#  status_changed_at    :datetime         indexed
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  author_id            :uuid             not null, indexed
+#  release_id           :uuid             not null, indexed
+#  status_changed_by_id :uuid             indexed
 #
 class ApprovalItem < ApplicationRecord
-  MAX_CONTENT_LENGTH = 200
+  MAX_CONTENT_LENGTH = 80
 
   belongs_to :release
   belongs_to :author, class_name: "Accounts::User"
-  belongs_to :approved_by, class_name: "Accounts::User", optional: true
+  belongs_to :status_changed_by, class_name: "Accounts::User", optional: true
   has_many :approval_assignees, dependent: :destroy
 
   delegate :organization, :release_pilot, to: :release
 
   validate :release_pilots_as_authors_only, on: :create
-  validates :content, presence: true, length: {maximum: ApprovalItem::MAX_CONTENT_LENGTH}
-
-  scope :approved, -> { where(status: ApprovalItem.statuses[:approved]).where.not(approved_at: nil).where.not(approved_by: nil) }
+  validates :content, presence: true, length: {maximum: ApprovalItem::MAX_CONTENT_LENGTH}, on: :create
 
   enum :status, {
     not_started: "not_started",
     in_progress: "in_progress",
     blocked: "blocked",
     approved: "approved",
-    rejected: "rejected"
   }
 
   def update_status(status, assignee)
     return true if approved?
-    if self_assigned?(assignee) || approval_assignees.exists?(assignee: assignee)
-      if status == ApprovalItem.statuses[:approved]
-        self.approved_by = assignee
-        self.approved_at = Time.current
+
+    with_lock do
+      return true if approved?
+
+      if edit_allowed?(assignee)
+        self.status_changed_by = assignee
+        self.status_changed_at = Time.current
+        self.status = status
+        save
+      else
+        errors.add(:assignee, "is not authorized to update this item")
+        false
       end
-      self.status = status
-      save
-    else
-      errors.add(:assignee, "is not authorized to update this item")
-      false
     end
   end
 
-  def approved?
-    status == ApprovalItem.statuses[:approved] && approved_at.present? && approved_by.present?
+  def edit_allowed?(potential_assignee)
+    self_assigned?(potential_assignee) || approval_assignees.exists?(assignee: potential_assignee)
   end
 
   private

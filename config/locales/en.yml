@@ -533,7 +533,6 @@ en:
       accepted: "Invitation was accepted. Please sign in to continue."
       already_accepted: "Invitation was already accepted!"
       failed: "Failed to accept your invitation. Please contact support!"
-
     invite_mailer:
       existing_user:
         subject: "%{sender} invited you to join the %{org} team on Tramline"
@@ -550,6 +549,10 @@ en:
         someone_invited_you: "You have been invited to join the <b>%{org}</b> team owned by <b>%{sender_email}</b> on Tramline as a %{role}. To get started, accept the invite below:"
         accept: "Accept invitation"
         ignore: "If you don't want to accept the invitation, please ignore this email. Your account won't be created until you access the link above and set your password."
+
+  approval_assignee_mailer:
+    notify:
+      subject: "Action Required: New approval item assigned on Tramline"
 
   mailer:
     generic:

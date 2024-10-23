@@ -2,45 +2,25 @@
 <%= render V2::LiveRelease::ContainerComponent.new(@release, title: @release.train.name) do |container| %>
   <% container.with_back_button %>
   <% container.with_tab(title: "Approvals", icon:) do %>
-    <%= render V2::AlertComponent.new(type: :info, title: "Create approval items, and assign them to specific individuals to manage stakeholder approvals for the release.", full_screen: false) %>
-
-    <%= render V2::SectionComponent.new(style: :titled,
-                                        title: "Approvals",
-                                        subtitle: "The Approvals step can be used to manage stakeholder approvals for the release. You can create approval items, and assign them to specific individuals.") do |sc| %>
-      <% sc.with_sidenote do %>
-        <%= render V2::ModalComponent.new(title: "Add approval item", size: :xxl) do |modal| %>
-          <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                  .with_icon("v2/plus.svg", size: :md) %>
-          <% modal.with_body do %>
-            <%= render V2::FormComponent.new(model: [@release, @release.approval_items.new], url: release_approval_items_path(@release), method: :post) do |f| %>
-              <% f.with_section(heading: "Basic details") do |section| %>
-                <% section.with_description do %>
-                  <div>Choose a color for your team.</div>
-                <% end %>
-                <div><%= section.F.labeled_textarea :content, "Item content", required: true %></div>
-                <div>
-                  <%= section.F.select_without_label :approval_assignees,
-                                                     options_for_select(@available_assignees.map { |assignee| [assignee.preferred_name, assignee.id] }),
-                                                     {},
-                                                     {
-                                                       multiple: true,
-                                                       data: {
-                                                         controller: "input-select",
-                                                         selected_value: section.F.object.approval_assignees,
-                                                       }
-                                                     } %>
-                </div>
-              <% end %>
-
-              <% f.with_action do %>
-                <% f.F.authz_submit "Save", "v2/archive.svg", size: :xs %>
-              <% end %>
+    <div class="flex flex-col section-gap-default">
+      <%= render V2::AlertComponent.new(type: :info, title: ApprovalsPresenter::NOTICE, full_screen: false) %>
+      <%= render V2::CardComponent.new(title: "Items", separator: false, size: :full) do |card| %>
+        <% card.with_action do %>
+          <%= render V2::ModalComponent.new(title: "Add approval item", dismissable: false) do |modal| %>
+            <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
+                    .with_icon("v2/plus.svg", size: :md) %>
+            <% modal.with_body do %>
+              <%= render partial: "form", locals: {
+                model: [@release, @release.approval_items.new],
+                url: release_approval_items_path(@release),
+                select_options: ApprovalsPresenter.available_assignee_options(@available_assignees)
+              } %>
             <% end %>
           <% end %>
         <% end %>
-      <% end %>
 
-      <%= render partial: "items", locals: {approval_items: @approval_items} %>
-    <% end %>
+        <%= render partial: "items", locals: {approval_items: @approval_items} %>
+      <% end %>
+    </div>
   <% end %>
 <% end %>

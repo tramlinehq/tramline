@@ -28,7 +28,7 @@ describe ApprovalItem do
       assignee_2 = create(:user, :as_developer, member_organization: approval_item.organization)
       create(:approval_assignee, approval_item:, assignee: assignee_2)
 
-      expect(approval_item.update_status("rejected", assignee_1)).to be(true)
+      expect(approval_item.update_status("in_progress", assignee_1)).to be(true)
       expect(approval_item.update_status("approved", assignee_2)).to be(true)
       expect(approval_item.errors).not_to be_present
     end
@@ -46,21 +46,10 @@ describe ApprovalItem do
       expect(approval_item.errors).not_to be_present
     end
 
-
-    context "when status is approved" do
-      it "updates the approved_at and approved_by fields" do
-        expect(approval_item.update_status("approved", approval_item.author)).to be(true)
-        expect(approval_item.approved_at).to be_present
-        expect(approval_item.approved_by).to eq(approval_item.author)
-      end
-    end
-
-    context "when status is not approved" do
-      it "does not update the approved_at and approved_by fields" do
-        expect(approval_item.update_status("in_progress", approval_item.author)).to be(true)
-        expect(approval_item.approved_at).to be_nil
-        expect(approval_item.approved_by).to be_nil
-      end
+    it "updates the status_changed_at and status_changed_by fields" do
+      expect(approval_item.update_status("approved", approval_item.author)).to be(true)
+      expect(approval_item.status_changed_at).to be_present
+      expect(approval_item.status_changed_by).to eq(approval_item.author)
     end
   end
 
@@ -70,10 +59,10 @@ describe ApprovalItem do
 
     it "returns only approved items" do
       _item_1 = create(:approval_item, release:, author: pilot)
-      _item_2 = create(:approval_item, release:, author: pilot, approved_at: Time.current)
-      approved_item = create(:approval_item, release:, author: pilot, status: "approved", approved_by: pilot, approved_at: Time.current)
+      _item_2 = create(:approval_item, release:, author: pilot, status_changed_at: Time.current)
+      approved_item = create(:approval_item, release:, author: pilot, status: "approved", status_changed_by: pilot, status_changed_at: Time.current)
 
-      expect(release.approval_items.approved).to contain_exactly(approved_item)
+      expect(release.approval_items.reload.approved).to contain_exactly(approved_item)
     end
   end
 end

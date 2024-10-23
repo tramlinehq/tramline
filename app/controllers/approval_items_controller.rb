@@ -1,14 +1,14 @@
 class ApprovalItemsController < SignedInApplicationController
   include Tabbable
 
-  before_action :require_write_access!, except: [:index]
+  before_action :require_write_access!, except: [:index, :update]
   delegate :dom_id, to: :helpers
 
   def index
     live_release!
     @app = @release.app
     @available_assignees = Current.organization.users
-    @approval_items = @release.approval_items
+    @approval_items = @release.approval_items.map { |i| ApprovalsPresenter.new(i, view_context) }
   end
 
   def new
@@ -22,15 +22,15 @@ class ApprovalItemsController < SignedInApplicationController
     if @approval_item.save
       redirect_to release_approval_items_path(@release), notice: "Approval item was successfully created."
     else
-      redirect_to release_approval_items_path(@release), flash: {error: item.errors.full_messages.to_sentence}
+      redirect_to release_approval_items_path(@release), flash: {error: @approval_item.errors.full_messages.to_sentence}
     end
   end
 
   def update
     live_release!
-    @approval_item = @release.approval_items.find(params[:id])
+    @approval_item = ApprovalsPresenter.new(@release.approval_items.find(params[:id]), view_context)
 
-    if @approval_item.update_status(params[:status], Current.user)
+    if @approval_item.update_status(params[:status], current_user)
       respond_to do |format|
         format.turbo_stream do
           render turbo_stream: [
@@ -42,15 +42,18 @@ class ApprovalItemsController < SignedInApplicationController
     else
       respond_to do |format|
         format.turbo_stream do
-          flash.now[:error] = @approval_item.errors.full_messages.to_sentence
           redirect_to release_approval_items_path(@release), status: :see_other
         end
       end
     end
   end
 
+  private
+
   def approval_item_params
-    params.require(:approval_item).permit(:content, approval_assignees: []).merge(author: release_pilot)
+    params
+      .require(:approval_item).permit(:content, approval_assignees: [])
+      .merge(author: release_pilot, status: ApprovalItem.statuses[:not_started])
   end
 
   def release_pilot

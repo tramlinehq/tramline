@@ -13,15 +13,23 @@ class ApprovalAssignee < ApplicationRecord
   belongs_to :assignee, class_name: "Accounts::User"
 
   delegate :organization, to: :approval_item
-  delegate :preferred_name, :full_name, to: :assignee
+  delegate :preferred_name, :full_name, :email, to: :assignee
 
   validate :assignee_belongs_to_org
+
+  after_commit :notify_assignee, on: :create
 
   private
 
   def assignee_belongs_to_org
     unless assignee.organizations&.exists?(id: organization.id)
       errors.add(:assignee, "does not belong to the organization")
+    end
+  end
+
+  def notify_assignee
+    if assignee.email.present?
+      ApprovalAssignmentMailer.notify(self).deliver_later
     end
   end
 end

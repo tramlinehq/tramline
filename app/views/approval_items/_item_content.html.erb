@@ -1,6 +1,9 @@
 <%= content_tag(:div, id: dom_id(item, :edit_approvals_content)) do %>
   <% if item.approved? %>
-    <span class="line-through decoration-2 text-secondary-50"><%= item.content %></span>
+    <div class="flex items-center gap-1">
+      <%= render V2::IconComponent.new("v2/check.svg", size: :sm) %>
+      <span class="line-through decoration-1 text-secondary-50"><%= item.content %></span>
+    </div>
   <% else %>
     <%= item.content %>
   <% end %>
