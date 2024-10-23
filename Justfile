@@ -1,6 +1,9 @@
 start:
   docker compose up -d
 
+restart container="web":
+  docker compose restart {{ container }}
+
 spec:
   bundle exec rspec
 

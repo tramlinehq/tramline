@@ -61,6 +61,10 @@ class ProductionRelease < ApplicationRecord
     false
   end
 
+  def rollout_active?
+    store_rollout&.started?
+  end
+
   def mark_as_stale!
     return if finished?
     update!(status: STATES[:stale])
