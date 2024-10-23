@@ -43,7 +43,7 @@ namespace :anonymize do
       destination_db destination_db_config
 
       table "trains" do
-        skip { |index, record| record["id"] != train_id }
+        skip { |index, record| record["id"] != train_id || Train.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "name", "slug", "description", "status", "branching_strategy", "version_seeded_with", "version_current",
@@ -57,7 +57,7 @@ namespace :anonymize do
       end
 
       table "release_indices" do
-        continue { |index, record| Train.exists?(record["train_id"]) }
+        continue { |index, record| Train.exists?(record["train_id"]) && !ReleaseIndex.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "tolerable_range", "train_id"
@@ -65,7 +65,7 @@ namespace :anonymize do
       end
 
       table "release_index_components" do
-        continue { |index, record| ReleaseIndex.exists?(record["release_index_id"]) }
+        continue { |index, record| ReleaseIndex.exists?(record["release_index_id"]) && !ReleaseIndexComponent.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "name", "weight", "tolerable_range", "tolerable_unit", "release_index_id"
@@ -73,7 +73,7 @@ namespace :anonymize do
       end
 
       table "notification_settings" do
-        continue { |index, record| Train.exists?(record["train_id"]) }
+        continue { |index, record| Train.exists?(record["train_id"]) && !NotificationSetting.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "train_id", "kind", "active", "user_groups"
@@ -84,7 +84,7 @@ namespace :anonymize do
       end
 
       table "release_platforms" do
-        continue { |index, record| record["platform"] == platform || platform == "cross_platform" && Train.exists?(record["train_id"]) }
+        continue { |index, record| (record["platform"] == platform || platform == "cross_platform") && Train.exists?(record["train_id"]) && !ReleasePlatform.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "status", "name", "version_seeded_with", "version_current", "slug", "working_branch", "branching_strategy",
@@ -94,7 +94,7 @@ namespace :anonymize do
       end
 
       table "release_health_rules" do
-        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) }
+        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && !ReleaseHealthRule.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "is_halting", "release_platform_id", "discarded_at"
@@ -103,7 +103,7 @@ namespace :anonymize do
       end
 
       table "rule_expressions" do
-        continue { |index, record| ReleaseHealthRule.exists?(record["release_health_rule_id"]) }
+        continue { |index, record| ReleaseHealthRule.exists?(record["release_health_rule_id"]) && !RuleExpression.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "comparator", "metric", "threshold_value", "type", "release_health_rule_id"
@@ -111,7 +111,7 @@ namespace :anonymize do
       end
 
       table "steps" do
-        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) }
+        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && !Step.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_platform_id", "status", "step_number", "slug", "release_suffix", "kind", "auto_deploy", "app_variant_id", "discarded_at"
@@ -127,7 +127,7 @@ namespace :anonymize do
       end
 
       table "deployments" do
-        continue { |index, record| Step.exists?(record["step_id"]) }
+        continue { |index, record| Step.exists?(record["step_id"]) && !Deployment.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "step_id", "build_artifact_channel", "deployment_number", "staged_rollout_config", "is_staged_rollout", "discarded_at"
@@ -156,15 +156,15 @@ namespace :anonymize do
       end
 
       table "scheduled_releases" do
-        continue { |index, record| Train.exists?(record["train_id"]) }
+        continue { |index, record| Train.exists?(record["train_id"]) && !ScheduledRelease.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "train_id", "failure_reason", "is_success", "scheduled_at"
+        whitelist "train_id", "failure_reason", "is_success", "scheduled_at", "release_id"
         whitelist_timestamps
       end
 
       table "releases" do
-        continue { |index, record| Train.exists?(record["train_id"]) }
+        continue { |index, record| Train.exists?(record["train_id"]) && !Release.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "train_id", "branch_name", "status", "original_release_version", "release_version", "scheduled_at",
@@ -176,7 +176,7 @@ namespace :anonymize do
       end
 
       table "build_queues" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && !BuildQueue.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_id", "scheduled_at", "applied_at", "is_active"
@@ -184,7 +184,7 @@ namespace :anonymize do
       end
 
       table "release_changelogs" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && !ReleaseChangelog.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "from_ref", "locale", "promo_text", "created_at", "updated_at", "release_id"
@@ -208,7 +208,7 @@ namespace :anonymize do
       end
 
       table "commits" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && !Commit.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_platform_id", "timestamp", "release_platform_run_id", "release_id", "build_queue_id", "backmerge_failure", "parents"
@@ -222,7 +222,7 @@ namespace :anonymize do
       end
 
       table "pull_requests" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && !PullRequest.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_platform_run_id", "number", "state", "phase", "source", "head_ref", "base_ref", "opened_at",
@@ -234,7 +234,7 @@ namespace :anonymize do
       end
 
       table "release_platform_runs" do
-        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && Release.exists?(record["release_id"]) }
+        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && Release.exists?(record["release_id"]) && !ReleasePlatformRun.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_platform_id", "code_name", "scheduled_at", "commit_sha", "status", "branch_name",
@@ -244,7 +244,7 @@ namespace :anonymize do
       end
 
       table "release_metadata" do
-        continue { |index, record| Release.exists?(record["release_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !ReleaseMetadata.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_platform_run_id", "locale", "created_at", "updated_at", "release_id"
@@ -254,7 +254,7 @@ namespace :anonymize do
       end
 
       table "step_runs" do
-        continue { |index, record| Step.exists?(record["step_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) }
+        continue { |index, record| Step.exists?(record["step_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !StepRun.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "step_id", "release_platform_run_id", "scheduled_at", "status", "commit_id", "build_version",
@@ -265,7 +265,7 @@ namespace :anonymize do
       end
 
       table "external_builds" do
-        continue { |index, record| StepRun.exists?(record["step_run_id"]) }
+        continue { |index, record| StepRun.exists?(record["step_run_id"]) && !ExternalBuild.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "metadata", "step_run_id", "build_id"
@@ -273,7 +273,7 @@ namespace :anonymize do
       end
 
       table "deployment_runs" do
-        continue { |index, record| Deployment.exists?(record["deployment_id"]) && StepRun.exists?(record["step_run_id"]) }
+        continue { |index, record| Deployment.exists?(record["deployment_id"]) && StepRun.exists?(record["step_run_id"]) && !DeploymentRun.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "deployment_id", "step_run_id", "scheduled_at", "status", "initial_rollout_percentage", "failure_reason"
@@ -281,7 +281,7 @@ namespace :anonymize do
       end
 
       table "external_releases" do
-        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) }
+        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ExternalRelease.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "deployment_run_id", "name", "status", "added_at", "size_in_bytes", "external_id", "reviewed_at", "released_at"
@@ -291,7 +291,7 @@ namespace :anonymize do
       end
 
       table "staged_rollouts" do
-        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) }
+        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !StagedRollout.exists?(record["id"]) }
         primary_key "id"
         whitelist "deployment_run_id", "config", "status", "current_stage"
         whitelist_timestamps
