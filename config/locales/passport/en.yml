@@ -86,16 +86,21 @@ en:
       review_rejected_html: 'Beta review rejected for the TestFlight build <span class="emphasize">%{version} (%{build_number})</span>'
       failed_html: 'Failed to send <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span>. Error – <span class="emphasize">%{failure_reason}</span>'
     play_store_submission:
+      triggered_html: 'Triggered a new draft release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span>'
       prepared_html: 'Prepared a new draft release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span>'
       review_rejected_html: 'Play Store submission for <span class="emphasize">%{version} (%{build_number})</span> was rejected'
       failed_html: 'Failed to create a draft release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span>. Error – <span class="emphasize">%{failure_reason}</span>'
       finished_manually_html: 'Marked the release for <span class="emphasize">%{version} (%{build_number})</span> as finished manually'
     app_store_submission:
+      triggered_html: 'Triggered a new store version creation for <span class="emphasize">%{version} (%{build_number})</span> for the App Store'
+      prepared_html: 'Created a new store version for <span class="emphasize">%{version} (%{build_number})</span> in the App Store'
       prepare_release_failed_html: 'Failed to prepare release for <span class="emphasize">%{version} (%{build_number})</span> to submit for review in the App Store'
+      submitting_for_review_html: 'Started a submission for <span class="emphasize">%{version} (%{build_number})</span> for review to the App Store'
       submitted_for_review_html: 'Submitted release for <span class="emphasize">%{version} (%{build_number})</span> for review to the App Store'
       resubmitted_for_review_html: 'Release <span class="emphasize">%{version} (%{build_number})</span> was resubmitted for review to the App Store'
       review_approved_html: 'Review for release for <span class="emphasize">%{version} (%{build_number})</span> approved by the App Store'
       review_rejected_html: 'Review for release for <span class="emphasize">%{version} (%{build_number})</span> was rejected by the App Store'
+      cancelling_html: 'Triggered cancellation for release submission to the App Store for <span class="emphasize">%{version} (%{build_number})</span>'
       cancelled_html: 'Release submission to the App Store for <span class="emphasize">%{version} (%{build_number})</span> was cancelled'
       failed_html: 'Failed to create an inflight store version for <span class="emphasize">%{version} (%{build_number})</span> in the App Store. Error – <span class="emphasize">%{failure_reason}</span>'
     play_store_rollout:

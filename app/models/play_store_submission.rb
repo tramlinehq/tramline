@@ -34,6 +34,7 @@ class PlayStoreSubmission < StoreSubmission
     inverse_of: :play_store_submission
 
   STAMPABLE_REASONS = %w[
+    triggered
     prepared
     review_rejected
     finished_manually
@@ -243,6 +244,7 @@ class PlayStoreSubmission < StoreSubmission
   private
 
   def on_start_prepare!
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id)
   end
 
