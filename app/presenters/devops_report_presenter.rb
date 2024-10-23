@@ -15,6 +15,11 @@ class DevopsReportPresenter < SimpleDelegator
       value_format: "time",
       name: "devops.time_in_review"
     },
+    patch_fixes: {
+      type: "area",
+      value_format: "number",
+      name: "devops.patch_fixes"
+    },
     hotfixes: {
       type: "area",
       value_format: "number",
@@ -79,14 +84,32 @@ class DevopsReportPresenter < SimpleDelegator
     formatter(:time_in_review)
   end
 
-  def hotfixes
+  def patch_fixes
     return v1_formatter(:mobile_devops, :hotfixes) if v1?
+    formatter(:patch_fixes)
+  end
+
+  def hotfixes
+    return nil if v1?
     formatter(:hotfixes)
   end
 
   def time_in_phases
     return v1_formatter(:mobile_devops, :time_in_phases) if v1?
-    formatter(:time_in_phases)
+    chart_data = formatter(:time_in_phases)
+    # The data is in the following format:
+    # {
+    # "1.2.0"=>
+    #     {"android"=>{:stability_time=>676092, :submission_time=>3535, :rollout_time=>591746},
+    #      "ios"=>{:stability_time=>679607, :submission_time=>48894, :rollout_time=>565931}},
+    # "1.3.0"=>
+    #     {"android"=>{:stability_time=>508605, :submission_time=>5646, :rollout_time=>607813},
+    #      "ios"=>{:stability_time=>517345, :submission_time=>129136, :rollout_time=>549477}}
+    # }
+    chart_data[:data] = chart_data[:data].transform_values do |release_data|
+      release_data.transform_values { |platform_data| platform_data.transform_keys { |phase_name| phase_name.to_s.humanize } }
+    end
+    chart_data
   end
 
   def reldex_scores

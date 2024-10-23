@@ -34,8 +34,8 @@ class Queries::ReldexParameters
     days_since_last_release = (completed_at - previous_release&.completed_at) / 1.day if previous_release.present?
 
     if rollout_fixes > 0
-      base_commit = production_releases.first.commit
-      head_commit = production_releases.last.commit
+      base_commit = production_releases.last.commit
+      head_commit = production_releases.first.commit
       rollout_changes = all_commits.between_commits(base_commit, head_commit).size
     end
 

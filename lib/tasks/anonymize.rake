@@ -43,7 +43,7 @@ namespace :anonymize do
       destination_db destination_db_config
 
       table "trains" do
-        skip { |index, record| record["id"] != train_id }
+        skip { |index, record| record["id"] != train_id || Train.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "name", "slug", "description", "status", "branching_strategy", "version_seeded_with", "version_current",
@@ -57,7 +57,7 @@ namespace :anonymize do
       end
 
       table "release_indices" do
-        continue { |index, record| Train.exists?(record["train_id"]) }
+        continue { |index, record| Train.exists?(record["train_id"]) && !ReleaseIndex.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "tolerable_range", "train_id"
@@ -65,7 +65,7 @@ namespace :anonymize do
       end
 
       table "release_index_components" do
-        continue { |index, record| ReleaseIndex.exists?(record["release_index_id"]) }
+        continue { |index, record| ReleaseIndex.exists?(record["release_index_id"]) && !ReleaseIndexComponent.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "name", "weight", "tolerable_range", "tolerable_unit", "release_index_id"
@@ -73,7 +73,7 @@ namespace :anonymize do
       end
 
       table "notification_settings" do
-        continue { |index, record| Train.exists?(record["train_id"]) }
+        continue { |index, record| Train.exists?(record["train_id"]) && !NotificationSetting.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "train_id", "kind", "active", "user_groups"
@@ -84,17 +84,17 @@ namespace :anonymize do
       end
 
       table "release_platforms" do
-        continue { |index, record| record["platform"] == platform || platform == "cross_platform" && Train.exists?(record["train_id"]) }
+        continue { |index, record| (record["platform"] == platform || platform == "cross_platform") && Train.exists?(record["train_id"]) && !ReleasePlatform.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "status", "name", "version_seeded_with", "version_current", "slug", "working_branch", "branching_strategy",
-          "release_branch", "release_backmerge_branch", "vcs_webhook_id", "train_id", "platform"
+          "release_branch", "release_backmerge_branch", "vcs_webhook_id", "train_id", "platform", "config"
         whitelist_timestamps
         anonymize("app_id") { |field| app.id }
       end
 
       table "release_health_rules" do
-        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) }
+        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && !ReleaseHealthRule.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "is_halting", "release_platform_id", "discarded_at"
@@ -103,7 +103,7 @@ namespace :anonymize do
       end
 
       table "rule_expressions" do
-        continue { |index, record| ReleaseHealthRule.exists?(record["release_health_rule_id"]) }
+        continue { |index, record| ReleaseHealthRule.exists?(record["release_health_rule_id"]) && !RuleExpression.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "comparator", "metric", "threshold_value", "type", "release_health_rule_id"
@@ -111,7 +111,7 @@ namespace :anonymize do
       end
 
       table "steps" do
-        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) }
+        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && !Step.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_platform_id", "status", "step_number", "slug", "release_suffix", "kind", "auto_deploy", "app_variant_id", "discarded_at"
@@ -127,7 +127,7 @@ namespace :anonymize do
       end
 
       table "deployments" do
-        continue { |index, record| Step.exists?(record["step_id"]) }
+        continue { |index, record| Step.exists?(record["step_id"]) && !Deployment.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "step_id", "build_artifact_channel", "deployment_number", "staged_rollout_config", "is_staged_rollout", "discarded_at"
@@ -156,26 +156,27 @@ namespace :anonymize do
       end
 
       table "scheduled_releases" do
-        continue { |index, record| Train.exists?(record["train_id"]) }
+        continue { |index, record| Train.exists?(record["train_id"]) && !ScheduledRelease.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "train_id", "failure_reason", "is_success", "scheduled_at"
+        whitelist "train_id", "failure_reason", "is_success", "scheduled_at", "release_id"
         whitelist_timestamps
       end
 
       table "releases" do
-        continue { |index, record| Train.exists?(record["train_id"]) }
+        continue { |index, record| Train.exists?(record["train_id"]) && !Release.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "train_id", "branch_name", "status", "original_release_version", "release_version", "scheduled_at",
-          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch", "internal_notes"
+          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch",
+          "internal_notes", "is_v2"
         whitelist_timestamps
 
         anonymize("release_pilot_id").using FieldStrategy::SelectFromList.new(user_ids)
       end
 
       table "build_queues" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && !BuildQueue.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_id", "scheduled_at", "applied_at", "is_active"
@@ -183,7 +184,7 @@ namespace :anonymize do
       end
 
       table "release_changelogs" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && !ReleaseChangelog.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "from_ref", "locale", "promo_text", "created_at", "updated_at", "release_id"
@@ -207,7 +208,7 @@ namespace :anonymize do
       end
 
       table "commits" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && !Commit.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_platform_id", "timestamp", "release_platform_run_id", "release_id", "build_queue_id", "backmerge_failure", "parents"
@@ -221,7 +222,7 @@ namespace :anonymize do
       end
 
       table "pull_requests" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && !PullRequest.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_platform_run_id", "number", "state", "phase", "source", "head_ref", "base_ref", "opened_at",
@@ -233,17 +234,17 @@ namespace :anonymize do
       end
 
       table "release_platform_runs" do
-        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && Release.exists?(record["release_id"]) }
+        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && Release.exists?(record["release_id"]) && !ReleasePlatformRun.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_platform_id", "code_name", "scheduled_at", "commit_sha", "status", "branch_name",
           "release_version", "completed_at", "stopped_at", "original_release_version", "release_id",
-          "tag_name", "in_store_resubmission", "last_commit_id", "play_store_blocked"
+          "tag_name", "in_store_resubmission", "last_commit_id", "play_store_blocked", "config"
         whitelist_timestamps
       end
 
       table "release_metadata" do
-        continue { |index, record| Release.exists?(record["release_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !ReleaseMetadata.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "release_platform_run_id", "locale", "created_at", "updated_at", "release_id"
@@ -253,7 +254,7 @@ namespace :anonymize do
       end
 
       table "step_runs" do
-        continue { |index, record| Step.exists?(record["step_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) }
+        continue { |index, record| Step.exists?(record["step_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !StepRun.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "step_id", "release_platform_run_id", "scheduled_at", "status", "commit_id", "build_version",
@@ -264,15 +265,15 @@ namespace :anonymize do
       end
 
       table "external_builds" do
-        continue { |index, record| StepRun.exists?(record["step_run_id"]) }
+        continue { |index, record| StepRun.exists?(record["step_run_id"]) && !ExternalBuild.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "metadata", "step_run_id"
+        whitelist "metadata", "step_run_id", "build_id"
         whitelist_timestamps
       end
 
       table "deployment_runs" do
-        continue { |index, record| Deployment.exists?(record["deployment_id"]) && StepRun.exists?(record["step_run_id"]) }
+        continue { |index, record| Deployment.exists?(record["deployment_id"]) && StepRun.exists?(record["step_run_id"]) && !DeploymentRun.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "deployment_id", "step_run_id", "scheduled_at", "status", "initial_rollout_percentage", "failure_reason"
@@ -280,7 +281,7 @@ namespace :anonymize do
       end
 
       table "external_releases" do
-        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) }
+        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ExternalRelease.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "deployment_run_id", "name", "status", "added_at", "size_in_bytes", "external_id", "reviewed_at", "released_at"
@@ -290,7 +291,7 @@ namespace :anonymize do
       end
 
       table "staged_rollouts" do
-        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) }
+        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !StagedRollout.exists?(record["id"]) }
         primary_key "id"
         whitelist "deployment_run_id", "config", "status", "current_stage"
         whitelist_timestamps
@@ -319,17 +320,23 @@ namespace :anonymize do
       end
     end
 
-    app.releases.finished.each do |release|
-      Queries::ReleaseSummary.warm(release.id)
-    end
-    train = app.trains.reload.find(train_id)
-    Charts::DevopsReport.warm(train)
-
-    train.release_platforms.each do |release_platform|
-      populate_config(release_platform)
-    end
-
-    populate_v2_models(train)
+    # app.releases.finished.each do |release|
+    #   Queries::ReleaseSummary.warm(release.id)
+    # end
+    # train = app.trains.reload.find(train_id)
+    # Charts::DevopsReport.warm(train)
+    #
+    # # NOTE: The code below will no longer be necessary once we have moved all the data over to the new models
+    # puts "Populating config for train: #{train.name}"
+    # train.release_platforms.each do |release_platform|
+    #   if release_platform.platform_config.present?
+    #     puts "Skipping #{train.name} platform #{release_platform.platform} as it already has a config"
+    #     next
+    #   end
+    #   populate_config(release_platform)
+    # end
+    #
+    # populate_v2_models_for_train(train)
   end
 
   desc 'Anonymize release health metric data from source db into local db
@@ -356,7 +363,7 @@ namespace :anonymize do
       table "release_health_metrics" do
         continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ReleaseHealthMetric.exists?(record["id"]) }
         primary_key "id"
-        whitelist "deployment_run_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
+        whitelist "deployment_run_id", "production_release_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
           "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
         whitelist_timestamps
       end
@@ -370,32 +377,12 @@ namespace :anonymize do
         end
 
         primary_key "id"
-        whitelist "deployment_run_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
+        whitelist "deployment_run_id", "production_release_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
         whitelist_timestamps
       end
     end
 
-    populate_v2_metrics_models(train)
-  end
-
-  desc "Populate v2 models for the train"
-  task :populate_v2_models, %i[external_train_id] => [:destructive, :environment] do |_, args|
-    train_id = args[:external_train_id].to_s
-    abort "Train ID not found!" if train_id.blank?
-
-    train = Train.find(train_id)
-    abort "Train not found!" unless train
-
-    populate_v2_models(train)
-
-    train.releases.finished.each do |release|
-      release.release_platform_runs.each do |release_platform_run|
-        Queries::PlatformBreakdown.warm(release_platform_run.id)
-      end
-      Queries::ReleaseBreakdown.warm(release.id)
-    end
-
-    Queries::DevopsReport.warm(train)
+    # populate_v2_metrics_models(train)
   end
 
   def source_db_config
@@ -416,99 +403,6 @@ namespace :anonymize do
     whitelist "created_at", "updated_at"
   end
 
-  def populate_v2_models(train)
-    ActiveRecord::Base.transaction do
-      train.releases.where.not(is_v2: true).find_each do |release|
-        release.update!(is_v2: true)
-        release.release_platform_runs.each do |prun|
-          prun.update!(config: prun.release_platform.platform_config.as_json)
-
-          raise "Config not loaded" if prun.config.blank?
-          puts "Config loaded for #{prun.release_platform.name} as #{prun.config.inspect}"
-
-          review_step = prun.release_platform.steps.review.first
-          review_runs = prun.step_runs_for(review_step).to_a
-          review_step_run = review_runs.shift
-          previous = nil
-          idx = 0
-
-          while review_step_run.present?
-            pre_prod_release = create_pre_prod_release!(prun, review_step, review_step_run, previous, idx, "internal")
-            previous = pre_prod_release
-            review_step_run = review_runs.shift
-            idx += 1
-          end
-
-          release_step = prun.release_platform.release_step
-          release_step_runs = prun.step_runs_for(release_step).to_a
-
-          release_step_run = release_step_runs.shift
-          previous_pre_prod_release = nil
-          previous_production_release = nil
-          idx = 0
-          production_release_config = prun.conf.production_release.as_json
-          production_depl = release_step.deployments.find { |d| d.production_channel? }
-
-          while release_step_run.present?
-            pre_prod_release = create_pre_prod_release!(prun, release_step, release_step_run, previous_pre_prod_release, idx, "release_candidate")
-            release_step_run.deployment_runs.where(deployment: production_depl).find_each do |drun|
-              production_release = prun.production_releases.create!(
-                id: drun.id,
-                config: production_release_config,
-                build: pre_prod_release.build,
-                status: compute_production_release_status(release_step_run, idx),
-                previous: previous_production_release,
-                created_at: release_step_run.created_at,
-                updated_at: release_step_run.updated_at
-              )
-              submission_config = prun.conf.production_release.submissions.first
-              submission = submission_config.submission_class.create!(
-                parent_release: production_release,
-                release_platform_run: prun,
-                build: pre_prod_release.build,
-                sequence_number: 1,
-                config: submission_config.as_json,
-                status: "prepared",
-                created_at: drun.created_at,
-                updated_at: drun.updated_at
-              )
-
-              if drun.staged_rollout.present?
-                if submission.is_a?(PlayStoreSubmission)
-                  submission.create_play_store_rollout!(
-                    release_platform_run: prun,
-                    current_stage: drun.staged_rollout&.current_stage || 0,
-                    config: submission_config.rollout_stages.presence || [],
-                    is_staged_rollout: submission_config.rollout_enabled,
-                    status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status,
-                    created_at: drun.staged_rollout.created_at,
-                    updated_at: drun.staged_rollout.updated_at
-                  )
-                elsif submission.is_a?(AppStoreSubmission)
-                  submission.create_app_store_rollout!(
-                    release_platform_run: prun,
-                    current_stage: drun.staged_rollout&.current_stage || 0,
-                    config: submission_config.rollout_stages.presence || [],
-                    is_staged_rollout: submission_config.rollout_enabled,
-                    status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status,
-                    created_at: drun.staged_rollout.created_at,
-                    updated_at: drun.staged_rollout.updated_at
-                  )
-                end
-              end
-
-              previous_pre_prod_release = pre_prod_release
-              previous_production_release = production_release
-              idx += 1
-            end
-
-            release_step_run = release_step_runs.shift
-          end
-        end
-      end
-    end
-  end
-
   def populate_v2_metrics_models(train)
     ActiveRecord::Base.transaction do
       train.releases.where(is_v2: true).find_each do |release|
@@ -519,129 +413,6 @@ namespace :anonymize do
           # rubocop:enable Rails/SkipsModelValidations
         end
       end
-    end
-  end
-
-  def create_pre_prod_release!(release_platform_run, step, step_run, previous, idx, kind)
-    commit = step_run.commit
-    status = compute_pre_prod_release_status(step_run, idx)
-
-    if kind == "internal"
-      config = release_platform_run.conf.internal_release
-      pre_prod_release = release_platform_run.internal_releases.create!(config: config.as_json, commit:, status:, previous:)
-      workflow_config = release_platform_run.conf.pick_internal_workflow
-    else
-      config = release_platform_run.conf.beta_release
-      pre_prod_release = release_platform_run.beta_releases.create!(config: config.as_json, commit:, status:, previous:)
-      workflow_config = release_platform_run.conf.release_candidate_workflow
-    end
-
-    workflow_run = WorkflowRun.create!(
-      workflow_config: workflow_config.as_json,
-      triggering_release: pre_prod_release,
-      release_platform_run:,
-      commit:,
-      kind: workflow_config.kind,
-      status: compute_workflow_run_status(step_run),
-      created_at: step_run.created_at,
-      updated_at: step_run.updated_at
-    )
-
-    build = workflow_run.create_build!(
-      version_name: step_run.build_version,
-      release_platform_run:,
-      generated_at: step_run.build_artifact&.generated_at || step_run.scheduled_at,
-      build_number: step_run.build_number,
-      created_at: step_run.created_at,
-      updated_at: step_run.updated_at,
-      commit:
-    )
-
-    step.deployments.reject { |d| d.production_channel? }.each_with_index do |deployment, index|
-      submission_config = config.submissions.find { |s| s.number == index + 1 }
-      create_pre_prod_submissions(release_platform_run, step_run, deployment, submission_config, pre_prod_release, build) if submission_config.present?
-    end
-    pre_prod_release
-  end
-
-  def create_pre_prod_submissions(release_platform_run, step_run, deployment, config, parent_release, build)
-    step_run.deployment_runs.where(deployment: deployment).find_each do |drun|
-      submission = config.submission_class.create!(
-        parent_release:,
-        release_platform_run:,
-        build:,
-        sequence_number: config.number,
-        config: config.as_json,
-        status: drun.failed? ? "failed" : success_state(config.submission_class),
-        created_at: drun.created_at,
-        updated_at: drun.updated_at
-      )
-
-      if submission.is_a?(PlayStoreSubmission)
-        submission.create_play_store_rollout!(
-          release_platform_run:,
-          config: config.rollout_stages.presence || [],
-          is_staged_rollout: config.rollout_enabled,
-          status: drun.failed? ? "failed" : "completed",
-          created_at: drun.created_at,
-          updated_at: drun.updated_at
-        )
-      end
-    end
-  end
-
-  def compute_production_release_status(step_run, idx)
-    if step_run.success?
-      "finished"
-    elsif step_run.deployment_started? && idx == 0
-      "active"
-    elsif step_run.active? && idx == 0
-      "inflight"
-    else
-      "stale"
-    end
-  end
-
-  def compute_pre_prod_release_status(step_run, idx)
-    if step_run.success?
-      "finished"
-    elsif step_run.failed?
-      "failed"
-    elsif step_run.deployment_started? && idx == 0
-      "created"
-    else
-      "stale"
-    end
-  end
-
-  def compute_workflow_run_status(step_run)
-    if step_run.ci_workflow_failed?
-      "failed"
-    elsif step_run.ci_workflow_halted?
-      "halted"
-    elsif step_run.ci_workflow_unavailable?
-      "unavailable"
-    elsif step_run.ci_workflow_started?
-      "started"
-    elsif step_run.ci_workflow_triggered?
-      "triggered"
-    else
-      "finished"
-    end
-  end
-
-  def success_state(submission_type)
-    case submission_type.to_s
-    when "PlayStoreSubmission"
-      "prepared"
-    when "AppStoreSubmission"
-      "approved"
-    when "TestFlightSubmission"
-      "finished"
-    when "GoogleFirebaseSubmission"
-      "finished"
-    else
-      raise "Unknown submission type: #{submission_type}"
     end
   end
 end

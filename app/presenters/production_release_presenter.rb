@@ -34,7 +34,7 @@ class ProductionReleasePresenter < SimpleDelegator
       {text: "Failed to rollout out after #{percentage}%", status: :failure}
     when :completed
       {text: "Released", status: :success}
-    when :stopped
+    when :halted
       {text: "Rollout halted at #{percentage}%", status: :inert}
     when :fully_released
       {text: "Released", status: :success}

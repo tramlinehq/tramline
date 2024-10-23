@@ -28,7 +28,7 @@ def submission_type(deployment)
   when "GoogleFirebaseIntegration"
     "GoogleFirebaseSubmission"
   else
-    raise "Unknown deployment integration type: #{deployment.integration.providable_type}"
+    "DeprecatedSubmission"
   end
 end
 

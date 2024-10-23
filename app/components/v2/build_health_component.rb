@@ -35,7 +35,7 @@ class V2::BuildHealthComponent < ViewComponent::Base
         unit: "MB",
         data: {}
       }
-      acc["app_size"][:data][build.build_number] = {"MB" => build.size_in_mb}
+      acc["app_size"][:data][build.build_number] = {"MB" => build.size_in_mb} if build.size_in_mb.present?
       metadata = build.external_build&.normalized_metadata
       next unless metadata
 

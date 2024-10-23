@@ -69,7 +69,8 @@ class AppStoreSubmission < StoreSubmission
   enum :status, STATES
   enum :failure_reason, {
     invalid_release: "invalid_release",
-    unknown_failure: "unknown_failure"
+    unknown_failure: "unknown_failure",
+    developer_rejected: "developer_rejected"
   }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
 
   aasm safe_state_machine_params do
@@ -121,7 +122,7 @@ class AppStoreSubmission < StoreSubmission
     end
   end
 
-  after_create_commit :poll_external_status
+  after_create_commit :poll_external_status, unless: :in_data_migration_mode
 
   def pre_review? = PRE_PREPARE_STATES.include?(status) && editable?
 
