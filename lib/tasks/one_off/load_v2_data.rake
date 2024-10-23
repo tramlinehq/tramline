@@ -226,7 +226,6 @@ def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind
     updated_at: step_run.updated_at
   )
 
-  # NOTE: DANGER ZONE
   step_run.build_artifact&.update!(build_id: build.id)
   step_run.external_build&.update!(build_id: build.id)
 
