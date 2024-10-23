@@ -420,6 +420,8 @@ def success_state(submission_type)
     "finished"
   when "GoogleFirebaseSubmission"
     "finished"
+  when "DeprecatedSubmission"
+    "finished"
   else
     raise "Unknown submission type: #{submission_type}"
   end
