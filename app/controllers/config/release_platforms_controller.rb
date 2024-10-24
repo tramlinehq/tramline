@@ -2,6 +2,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   include Tabbable
   using RefinedString
 
+  around_action :set_time_zone
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_train, only: %i[edit update]
   before_action :set_app_from_train, only: %i[edit update]

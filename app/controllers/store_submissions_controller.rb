@@ -2,6 +2,7 @@ class StoreSubmissionsController < SignedInApplicationController
   # include Mocks::Sandboxable
   include Tabbable
 
+  around_action :set_time_zone
   before_action :require_write_access!, except: [:index]
   before_action :set_submission
   before_action :ensure_triggerable, only: [:trigger]

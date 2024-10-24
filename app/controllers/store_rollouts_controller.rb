@@ -1,6 +1,7 @@
 class StoreRolloutsController < SignedInApplicationController
   include Tabbable
 
+  around_action :set_time_zone
   before_action :require_write_access!, except: [:index]
   before_action :set_store_rollout, only: %i[start increase pause resume halt fully_release]
   before_action :ensure_moveable, only: %i[start increase pause resume halt fully_release]

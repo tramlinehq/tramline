@@ -1,5 +1,6 @@
 class InternalReleasesController < SignedInApplicationController
   include Tabbable
+  around_action :set_time_zone
   before_action :require_write_access!, except: %i[index]
   before_action :set_release_platform_run, only: %i[create]
 
