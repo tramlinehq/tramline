@@ -19,7 +19,7 @@ class Config::Submission < ApplicationRecord
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
   belongs_to :release_step_config, class_name: "Config::ReleaseStep"
-  has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
+  has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy, autosave: true
   delegated_type :integrable, types: INTEGRABLE_TYPES, validate: false
 
   before_validation :set_number_one, if: :production?
@@ -71,6 +71,10 @@ class Config::Submission < ApplicationRecord
 
   def display
     submission_type.classify.constantize.model_name.human
+  end
+
+  def submission_info
+    "#{display} • #{submission_external.name}"
   end
 
   def production_release_submission
