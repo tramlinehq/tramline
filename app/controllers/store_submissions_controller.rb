@@ -2,7 +2,6 @@ class StoreSubmissionsController < SignedInApplicationController
   # include Mocks::Sandboxable
   include Tabbable
 
-  around_action :set_time_zone
   before_action :require_write_access!, except: [:index]
   before_action :set_submission
   before_action :ensure_triggerable, only: [:trigger]
@@ -10,10 +9,11 @@ class StoreSubmissionsController < SignedInApplicationController
   before_action :ensure_retryable, only: [:retry]
   before_action :ensure_reviewable, only: [:submit_for_review]
   before_action :ensure_cancellable, only: [:cancel]
+  before_action :live_release!, only: %i[index]
+  before_action :set_app, only: %i[index]
+  around_action :set_time_zone
 
   def index
-    live_release!
-    @app = @release.app
   end
 
   def trigger
@@ -77,6 +77,10 @@ class StoreSubmissionsController < SignedInApplicationController
 
   def set_submission
     @submission = StoreSubmission.find_by(id: params[:id])
+  end
+
+  def set_app
+    @app = @release.app
   end
 
   def ensure_actionable

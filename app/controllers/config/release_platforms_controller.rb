@@ -2,7 +2,6 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   include Tabbable
   using RefinedString
 
-  around_action :set_time_zone
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_train, only: %i[edit update]
   before_action :set_app_from_train, only: %i[edit update]
@@ -11,6 +10,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   before_action :set_train_config_tabs, only: %i[edit update]
   before_action :set_ci_actions, only: %i[edit update]
   before_action :set_submission_types, only: %i[edit update]
+  around_action :set_time_zone
 
   def edit
     @edit_allowed = @train.active_runs.exists?
