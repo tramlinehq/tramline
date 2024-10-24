@@ -22,9 +22,9 @@ class Config::Submission < ApplicationRecord
   has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
   delegated_type :integrable, types: INTEGRABLE_TYPES, validate: false
 
-  before_validation :set_default_production_config, if: -> { !readonly? && new_record? && production? }
-  before_validation :set_number_one, if: -> { !readonly? && new_record? && production? }
-  before_validation :set_default_rollout_for_ios, if: -> { !readonly? && new_record? && ios? && rollout_enabled? }
+  before_validation :set_default_production_config, if: -> { !read_only? && new_record? && production? }
+  before_validation :set_number_one, if: -> { !read_only? && new_record? && production? }
+  before_validation :set_default_rollout_for_ios, if: -> { !read_only? && new_record? && ios? && rollout_enabled? }
 
   validates :submission_type, presence: true
   validates :number, presence: true, uniqueness: {scope: :release_step_config_id}
@@ -32,7 +32,7 @@ class Config::Submission < ApplicationRecord
   validate :production_release_submission
 
   accepts_nested_attributes_for :submission_external, allow_destroy: true
-  attr_accessor :readonly
+  attr_accessor :read_only
 
   delegate :ios?, :android?, :production?, :platform, to: :release_step_config
 
@@ -51,7 +51,7 @@ class Config::Submission < ApplicationRecord
     }
   end
 
-  def readonly? = readonly
+  def read_only? = read_only
 
   def submission_class
     submission_type.constantize
@@ -65,8 +65,8 @@ class Config::Submission < ApplicationRecord
     integrable_type == "AppVariant"
   end
 
-  def self.from_json(json)
-    submission = new(json.except("id", "release_step_config_id", "rollout_config", "submission_config").merge(readonly: true))
+  def self.from_json(json, read_only: false)
+    submission = new(json.except("id", "release_step_config_id", "rollout_config", "submission_config").merge(read_only:))
     submission.submission_external = Config::SubmissionExternal.from_json(json["submission_config"])
     submission.rollout_stages = json.dig("rollout_config", "stages")
     submission.rollout_enabled = json.dig("rollout_config", "enabled")

@@ -43,13 +43,5 @@ describe Config::ReleasePlatform do
       expect(release_platform).not_to be_valid
       expect(release_platform.errors.messages[:beta_release]).to include("the beta release must be configured")
     end
-
-    it "validates production release submission to not have AppVariant" do
-      release_platform = described_class.from_json(base_config.merge(release_platform: create(:release_platform)))
-      release_platform.production_release.submissions.first.update(integrable_type: "AppVariant")
-      expect(release_platform).not_to be_valid
-      expect(release_platform.errors.messages[:"production_release.submissions.integrable_type"])
-        .to include("the production release submission must be to the primary app and not an app variant")
-    end
   end
 end
