@@ -6,7 +6,6 @@ pin "@hotwired/stimulus-loading", to: "stimulus-loading.js", preload: true
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin "flatpickr", to: "https://ga.jspm.io/npm:flatpickr@4.6.9/dist/flatpickr.js"
 pin "stimulus-flatpickr", to: "https://ga.jspm.io/npm:stimulus-flatpickr@3.0.0-0/dist/index.m.js"
-pin "slim-select", to: "https://ga.jspm.io/npm:slim-select@1.27.1/dist/slimselect.min.mjs"
 pin "stimulus-reveal", to: "https://ga.jspm.io/npm:stimulus-reveal@1.4.2/dist/stimulus-reveal.esm.js"
 pin "semver-increment", to: "https://ga.jspm.io/npm:semver-increment@1.0.1/index.js"
 pin "fs", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.27/nodelibs/browser/fs.js"
@@ -44,3 +43,4 @@ pin "@sentry-internal/browser-utils", to: "https://ga.jspm.io/npm:@sentry-intern
 pin "@sentry-internal/feedback", to: "https://ga.jspm.io/npm:@sentry-internal/feedback@8.33.1/build/npm/esm/index.js"
 pin "@sentry-internal/replay", to: "https://ga.jspm.io/npm:@sentry-internal/replay@8.33.1/build/npm/esm/index.js"
 pin "@sentry-internal/replay-canvas", to: "https://ga.jspm.io/npm:@sentry-internal/replay-canvas@8.33.1/build/npm/esm/index.js"
+pin "tom-select", to: "https://ga.jspm.io/npm:tom-select@2.3.1/dist/js/tom-select.complete.js"

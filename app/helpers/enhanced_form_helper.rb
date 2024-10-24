@@ -19,6 +19,7 @@ module EnhancedFormHelper
     SIDE_LABEL_CLASSES = "ms-2 #{BASE_LABEL_CLASSES}"
     BASE_FIELD_CLASSES = "bg-main-50 border border-main-300 text-main rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
     SELECT_CLASSES = "bg-main-50 border border-main-300 text-main text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+    COMPACT_SELECT_CLASSES = "#{SELECT_CLASSES} !py-1.5 !max-w-32"
     TEXT_AREA_CLASSES = "p-2.5 w-full text-sm text-main bg-main-50 rounded-lg border border-main-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
     COMPACT_TEXT_FIELD_CLASSES = "#{BASE_FIELD_CLASSES} text-xs"
     TEXT_FIELD_CLASSES = "#{BASE_FIELD_CLASSES} p-2.5 text-sm"

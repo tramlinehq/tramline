@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :app do
     timezone { "Asia/Kolkata" }
-    organization
+    organization factory: %i[organization with_owner_membership]
     name { Faker::App.name }
     bundle_identifier { "com.example.com" }
     build_number { Faker::Number.number(digits: 4) }

@@ -15,6 +15,7 @@ en:
       vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
       stopped_html: 'Stopped the release <span class="emphasize">%{version}</span>'
       finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>'
+      approvals_overwritten_html: 'Submission approvals were force-approved'
     release_platform_run:
       version_changed_html: 'Updated the release version to <span class="emphasize">%{version}</span>'
       version_corrected_html: 'Updated the release version to <span class="emphasize">%{version}</span> since the ongoing release has moved on to <span class="emphasize">%{ongoing_version}</span>'
