@@ -198,6 +198,14 @@ class Integration < ApplicationRecord
       kept.build_channel.find(&:google_firebase_integration?)&.providable
     end
 
+    def existing_github_integration(app)
+      app.integrations.connected.find_by(providable_type: "GithubIntegration")
+    end
+
+    def existing_bitbucket_integration(app)
+      app.integrations.connected.find_by(providable_type: "BitbucketIntegration")
+    end
+
     private
 
     def providable_error_message(meta)

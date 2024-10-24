@@ -8,7 +8,6 @@
         </h4>
       </header>
     </div>
-
     <footer>
       <div class="flex flex-col justify-start items-start space-y-5">
         <div class="text-xs text-slate-500">
@@ -16,7 +15,6 @@
             <%= connection_data -%>
           <% end %>
         </div>
-
         <% if connected? %>
           <div class="flex justify-between w-full items-baseline">
             <%= render V2::BadgeComponent.new(text: "Connected", status: :success) %>
@@ -34,12 +32,18 @@
             <% end %>
           </div>
         <% end %>
-
         <% if disconnected? %>
           <% if connectable? %>
-            <%= connectable_form_partial %>
+            <div class="flex gap-4">
+              <%= connectable_form_partial %>
+              <% if @existing_github_integration && providable_type == 'GithubIntegration' %>
+                <%= reusable_integration_form_partial(@existing_github_integration) %>
+              <% end %>
+              <% if @existing_bitbucket_integration && providable_type == 'BitbucketIntegration' %>
+                <%= reusable_integration_form_partial(@existing_bitbucket_integration) %>
+              <% end %>
+            </div>
           <% end %>
-
           <% if creatable? %>
             <%= render V2::ModalComponent.new(title: creatable_modal_title) do |modal| %>
               <% modal.with_button(label: "Connect", scheme: :light, type: :action, size: :xxs, arrow: :none)

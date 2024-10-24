@@ -7,10 +7,12 @@ class V2::IntegrationCardComponent < V2::BaseComponent
     bitrise: "Access Token"
   }
 
-  def initialize(app, integration, category)
+  def initialize(app, integration, category, existing_github_integration, existing_bitbucket_integration)
     @app = app
     @integration = integration
     @category = category
+    @existing_github_integration = existing_github_integration
+    @existing_bitbucket_integration = existing_bitbucket_integration
   end
 
   attr_reader :integration
@@ -20,6 +22,10 @@ class V2::IntegrationCardComponent < V2::BaseComponent
 
   def connect_path
     connect_app_integrations_path(@app, integration)
+  end
+
+  def reuse_existing_integration_path(existing_integration)
+    reuse_app_integration_path(@app, existing_integration)
   end
 
   def logo
@@ -38,6 +44,11 @@ class V2::IntegrationCardComponent < V2::BaseComponent
   def connectable_form_partial
     render(partial: "integrations/connectable",
       locals: {app: @app, integration: @integration, category: @category, url: connect_path, type: providable_type})
+  end
+
+  def reusable_integration_form_partial(existing_integration)
+    render(partial: "integrations/reusable",
+      locals: {app: @app, integration: @integration, category: @category, url: reuse_existing_integration_path(existing_integration), type: providable_type, provider: provider})
   end
 
   def disconnectable?
