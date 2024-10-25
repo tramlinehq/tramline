@@ -271,7 +271,7 @@ module Installations
       raise Installations::Error.new("Failed to parse bitbucket-pipelines.yml: #{e.message}", reason: :pipeline_yaml_parse_error)
     end
 
-    def trigger_pipeline!(repo_slug, pipeline_config, inputs, commit_hash, transforms)
+    def trigger_pipeline!(repo_slug, pipeline_config, branch_name, inputs, commit_hash, transforms)
       type, pattern = pipeline_config.split(":").map(&:strip)
       params = {
         json: {
@@ -280,7 +280,9 @@ module Installations
               hash: commit_hash,
               type: "commit"
             },
-            type: "pipeline_commit_target",
+            ref_type: "branch",
+            type: "pipeline_ref_target",
+            ref_name: branch_name,
             selector: {
               type:,
               pattern:

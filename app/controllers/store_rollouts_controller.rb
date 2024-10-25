@@ -6,10 +6,11 @@ class StoreRolloutsController < SignedInApplicationController
   before_action :ensure_moveable, only: %i[start increase pause resume halt fully_release]
   before_action :ensure_user_controlled_rollout, only: [:increase, :halt]
   before_action :ensure_automatic_rollout, only: [:pause]
+  before_action :live_release!, only: %i[index]
+  before_action :set_app, only: %i[index]
+  around_action :set_time_zone
 
   def index
-    live_release!
-    @app = @release.app
   end
 
   def start
@@ -64,6 +65,10 @@ class StoreRolloutsController < SignedInApplicationController
 
   def set_store_rollout
     @store_rollout = StoreRollout.find(params[:id])
+  end
+
+  def set_app
+    @app = @release.app
   end
 
   def ensure_automatic_rollout
