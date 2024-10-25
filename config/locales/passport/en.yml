@@ -116,9 +116,10 @@ en:
     store_rollout:
       reasons:
         started: 'Rollout started'
+        updated: 'Rollout updated'
+        halted: 'Rollout halted'
+        completed: 'Rollout completed'
+        fully_released: 'Rollout fully released'
         paused: 'Rollout paused'
         resumed: 'Rollout resumed'
         increased: 'Rollout increased'
-        completed: 'Rollout completed'
-        halted: 'Rollout halted'
-        fully_released: 'Rollout fully released'

@@ -23,7 +23,9 @@ class ReleaseHealthMetric < ApplicationRecord
   belongs_to :production_release, optional: true
   has_many :release_health_events, dependent: :nullify
 
-  delegate :release_health_rules, to: :deployment_run, allow_nil: true
+  validate :at_least_one_parent
+
+  delegate :release_health_rules, to: :parent
 
   after_create_commit :check_release_health
 
@@ -56,14 +58,10 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def staged_rollout
-    if production_release.present?
-      return production_release.store_rollout.last_rollout_percentage
-    end
-    deployment_run.rollout_percentage
+    parent.rollout_percentage
   end
 
   def check_release_health
-    return if production_release.present? # TODO: [V2] [post-alpha] implement health checks for v2 releases
     return if release_health_rules.blank?
     release_health_rules.each do |rule|
       create_health_event(rule)
@@ -92,6 +90,14 @@ class ReleaseHealthMetric < ApplicationRecord
 
   private
 
+  def at_least_one_parent
+    errors.add(:base, "Release health metrics must have at least one of production_release or deployment_run") if parent.blank?
+  end
+
+  def parent
+    deployment_run || production_release
+  end
+
   def create_health_event(release_health_rule)
     return unless release_health_rule.actionable?(self)
 
@@ -100,11 +106,11 @@ class ReleaseHealthMetric < ApplicationRecord
     current_status = is_healthy ? ReleaseHealthEvent.health_statuses[:healthy] : ReleaseHealthEvent.health_statuses[:unhealthy]
     return if last_event.present? && last_event.health_status == current_status
 
-    release_health_events.create(deployment_run:, release_health_rule:, health_status: current_status, event_timestamp: Time.current)
+    release_health_events.create(deployment_run:, production_release:, release_health_rule:, health_status: current_status, event_timestamp: Time.current)
   end
 
   def last_event_for(rule)
-    deployment_run.release_health_events.where(release_health_rule: rule).last
+    parent.release_health_events.where(release_health_rule: rule).last
   end
 
   def healthy_for_triggers?(rule, metric_name)

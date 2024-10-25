@@ -20,5 +20,17 @@ FactoryBot.define do
         ]
       }
     }
+
+    trait :stale do
+      status { "stale" }
+    end
+
+    trait :finished do
+      status { "finished" }
+    end
+
+    trait :failed do
+      status { "failed" }
+    end
   end
 end

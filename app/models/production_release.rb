@@ -29,11 +29,12 @@ class ProductionRelease < ApplicationRecord
 
   scope :sequential, -> { order(created_at: :desc) }
 
-  delegate :app, :train, :release, :platform, to: :release_platform_run
+  delegate :app, :train, :release, :platform, :release_platform, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission
   delegate :notify!, to: :train
   delegate :commit, :version_name, :build_number, to: :build
+  delegate :release_health_rules, to: :release_platform
 
   STAMPABLE_REASONS = %w[created active finished]
 
@@ -67,6 +68,10 @@ class ProductionRelease < ApplicationRecord
   def mark_as_stale!
     return if finished?
     update!(status: STATES[:stale])
+  end
+
+  def rollout_percentage
+    store_rollout&.last_rollout_percentage
   end
 
   def rollout_complete!(_)
@@ -115,6 +120,7 @@ class ProductionRelease < ApplicationRecord
     return if monitoring_provider.blank?
 
     release_data = monitoring_provider.find_release(platform, version_name, build_number)
+
     return if release_data.blank?
 
     release_health_metrics.create!(fetched_at: Time.current, **release_data)
@@ -122,6 +128,25 @@ class ProductionRelease < ApplicationRecord
 
   def latest_health_data
     release_health_metrics.order(fetched_at: :desc).first
+  end
+
+  def unhealthy?
+    !healthy?
+  end
+
+  def healthy?
+    return true if release_health_rules.blank?
+    return true if release_health_events.blank?
+
+    release_health_rules.all? do |rule|
+      event = release_health_events.where(release_health_rule: rule).last
+      event.blank? || event.healthy?
+    end
+  end
+
+  def show_health?
+    return true if latest_health_data&.fresh?
+    false
   end
 
   def conf = Config::ReleaseStep.from_json(config)

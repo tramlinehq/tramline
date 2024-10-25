@@ -74,4 +74,57 @@ describe PreProdRelease do
       end
     end
   end
+
+  describe "#changes_since_previous" do
+    let(:release) { create(:release, :with_no_platform_runs) }
+    let(:release_platform_run) { create(:release_platform_run, release:) }
+
+    it "returns the release changelog when its the first pre prod release" do
+      release_changelog = create(:release_changelog, release:)
+      first_release = create(:beta_release, release_platform_run:)
+      result = first_release.changes_since_previous
+      expect(result).to eq(release_changelog.commit_messages(true))
+    end
+
+    it "returns the release changelog and the commits on the release branch when the previous releases are unfinished" do
+      release_changelog = create(:release_changelog, release:)
+      first_commit = create(:commit, release:)
+      _first_release = create(:beta_release, :stale, release_platform_run:, commit: first_commit)
+      second_commit = create(:commit, release:)
+      second_release = create(:beta_release, release_platform_run:, commit: second_commit)
+      result = second_release.changes_since_previous
+      expect(result).to contain_exactly(first_commit.message, second_commit.message, *release_changelog.commit_messages(true))
+    end
+
+    it "returns the release changelog and all commits applied to the release branch when there are no previous releases" do
+      release_changelog = create(:release_changelog, release:)
+      first_commit = create(:commit, release:)
+      second_commit = create(:commit, release:)
+      first_release = create(:beta_release, :stale, release_platform_run:, commit: second_commit)
+      result = first_release.changes_since_previous
+      expect(result).to contain_exactly(first_commit.message, second_commit.message, *release_changelog.commit_messages(true))
+    end
+
+    it "returns the difference between the previously successful release and the current release" do
+      _release_changelog = create(:release_changelog, release:)
+      first_commit = create(:commit, release:)
+      first_release = create(:beta_release, :finished, release_platform_run:, commit: first_commit)
+      second_commit = create(:commit, release:)
+      second_release = create(:beta_release, release_platform_run:, commit: second_commit, previous: first_release)
+      result = second_release.changes_since_previous
+      expect(result).to contain_exactly(second_commit.message)
+    end
+
+    it "returns the difference between the previously successful release and the current release when there are multiple commits" do
+      _release_changelog = create(:release_changelog, release:)
+      first_commit = create(:commit, release:)
+      first_release = create(:beta_release, :finished, release_platform_run:, commit: first_commit)
+      second_commit = create(:commit, release:)
+      _second_release = create(:beta_release, :stale, release_platform_run:, commit: second_commit, previous: first_release)
+      third_commit = create(:commit, release:)
+      third_release = create(:beta_release, release_platform_run:, commit: third_commit, previous: first_release)
+      result = third_release.changes_since_previous
+      expect(result).to contain_exactly(second_commit.message, third_commit.message)
+    end
+  end
 end

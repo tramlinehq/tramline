@@ -22,4 +22,8 @@ class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseComponent
   def previous_beta_releases(release_platform_run)
     release_platform_run.older_beta_releases
   end
+
+  def builds(run)
+    run.rc_builds.includes(:external_build)
+  end
 end

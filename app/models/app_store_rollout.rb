@@ -38,11 +38,14 @@ class AppStoreRollout < StoreRollout
 
     event :start, after_commit: :on_start! do
       transitions from: :created, to: :started
-      transitions from: :paused, to: :started
     end
 
     event :pause do
       transitions from: :started, to: :paused
+    end
+
+    event :resume do
+      transitions from: :paused, to: :started
     end
 
     event :halt do
@@ -78,7 +81,6 @@ class AppStoreRollout < StoreRollout
       event_stamp!(reason: :started, kind: :notice, data: stamp_data)
     else
       complete!
-      event_stamp!(reason: :completed, kind: :success, data: stamp_data)
     end
 
     StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id)
@@ -96,10 +98,7 @@ class AppStoreRollout < StoreRollout
 
     release_info = result.value!
     if release_info.live?(build_number)
-      unless staged_rollout?
-        event_stamp!(reason: :completed, kind: :success, data: stamp_data)
-        return complete!
-      end
+      return complete! unless staged_rollout?
       with_lock { update_rollout(release_info) }
       return if release_info.phased_release_complete?
     end
@@ -134,6 +133,7 @@ class AppStoreRollout < StoreRollout
         fully_release!
         event_stamp!(reason: :fully_released, kind: :success, data: stamp_data)
       else
+        return complete! if result.error.reason == :phased_release_already_complete
         elog(result.error)
         errors.add(:base, result.error)
       end
@@ -159,10 +159,11 @@ class AppStoreRollout < StoreRollout
 
   def resume_release!
     with_lock do
-      return unless may_start?
+      return unless may_resume?
 
       result = provider.resume_phased_release
       if result.ok?
+        resume!
         update_rollout(result.value!)
         event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
         notify!("Rollout has been resumed", :production_rollout_resumed, notification_params)
@@ -178,5 +179,10 @@ class AppStoreRollout < StoreRollout
   def update_rollout(release_info)
     update_store_info!(release_info)
     update_stage(release_info.phased_release_stage, finish_rollout: release_info.phased_release_complete?)
+  end
+
+  def on_complete!
+    event_stamp!(reason: :completed, kind: :success, data: stamp_data)
+    super
   end
 end

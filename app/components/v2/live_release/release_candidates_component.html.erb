@@ -15,7 +15,9 @@
         <% end %>
       <% end %>
 
-      <!-- TODO: [V2] [post-alpha] Show build stats here -->
+      <% component.runs do |run| %>
+        <%= render partial: "pre_prod_releases/build_insights", locals: {builds: builds(run), run:} %>
+      <% end %>
 
       <% component.runs do |release_platform_run| %>
         <% previous_betas = previous_beta_releases(release_platform_run) %>

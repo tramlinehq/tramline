@@ -1,0 +1,83 @@
+{
+  "version": "v1.0.0",
+  "entity": {
+    "type": "organisation",
+    "role": "owner",
+    "name": "Tramline Inc.",
+    "email": "hello@tramline.app",
+    "description": "Tramline is a Delaware C-corp building tools for mobile app teams.",
+    "webpageUrl": {
+      "url": "https://github.com/tramlinehq"
+    }
+  },
+  "projects": [
+    {
+      "guid": "tramline",
+      "name": "Tramline",
+      "description": "Tramline is a release management and DevOps platform for mobile app teams. It coordinates the different tools used during the app release process (for e.g. code, CI, crash reporting, approvals, app stores), to bring release-specific information into a dashboard, which anyone can use to understand and run an app release.",
+      "webpageUrl": {
+        "url": "https://github.com/tramlinehq/tramline",
+        "wellKnown": ""
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/tramlinehq/tramline",
+        "wellKnown": ""
+      },
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "tags": [
+        "developer-tools",
+        "devops",
+        "android",
+        "ios",
+        "mobile"
+      ]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "github-sponsor",
+        "type": "payment-provider",
+        "address": "https://github.com/sponsors/tramlinehq/",
+        "description": ""
+      },
+      {
+        "guid": "bank",
+        "type": "bank",
+        "address": "Please contact us for bank details",
+        "description": ""
+      }
+    ],
+    "plans": [
+      {
+        "guid": "developer-salary",
+        "status": "active",
+        "name": "Developer Salary",
+        "description": "Fund a developer's salary for one month.",
+        "amount": 2000,
+        "currency": "USD",
+        "frequency": "monthly",
+        "channels": [
+          "github-sponsor",
+          "bank"
+        ]
+      },
+      {
+        "guid": "infra",
+        "status": "active",
+        "name": "Infrastructure",
+        "description": "Fund our monthly infrastructure and tooling costs.",
+        "amount": 500,
+        "currency": "USD",
+        "frequency": "monthly",
+        "channels": [
+          "github-sponsor",
+          "bank"
+        ]
+      }
+    ],
+    "history": []
+  }
+}

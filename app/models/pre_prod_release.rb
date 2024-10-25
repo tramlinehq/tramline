@@ -73,7 +73,7 @@ class PreProdRelease < ApplicationRecord
   def trigger_submissions!
     return unless actionable?
     return finish! if conf.submissions.blank?
-    trigger_submission!(conf.submissions.first)
+    trigger_submission!(conf.first_submission)
   end
 
   def rollout_started!
@@ -113,7 +113,6 @@ class PreProdRelease < ApplicationRecord
       &.commit_messages(true)
 
     return changes_since_last_run || [] if last_successful_run.present?
-    return changes_since_last_release || [] if previous.blank?
     ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq
   end
 

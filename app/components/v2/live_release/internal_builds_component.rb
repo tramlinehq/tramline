@@ -36,4 +36,8 @@ class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
   def previous_internal_releases(run)
     run.older_internal_releases
   end
+
+  def builds(run)
+    run.internal_builds.includes(:external_build)
+  end
 end

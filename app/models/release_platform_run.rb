@@ -53,7 +53,6 @@ class ReleasePlatformRun < ApplicationRecord
 
   # NOTE: deprecated after v2
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
-  has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
 
@@ -77,6 +76,14 @@ class ReleasePlatformRun < ApplicationRecord
 
   delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, :release_branch, to: :release
   delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
+
+  def external_builds
+    if release.is_v2?
+      ExternalBuild.where(build_id: builds.select(:id))
+    else
+      ExternalBuild.where(step_run_id: step_runs.select(:id))
+    end
+  end
 
   def start!
     with_lock do
@@ -205,11 +212,19 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def show_health?
-    deployment_runs.any?(&:show_health?)
+    if release.is_v2?
+      latest_production_release&.show_health?
+    else
+      deployment_runs.any?(&:show_health?)
+    end
   end
 
   def unhealthy?
-    latest_store_release&.unhealthy?
+    if release.is_v2?
+      latest_production_release&.unhealthy?
+    else
+      latest_store_release&.unhealthy?
+    end
   end
 
   def failure?
@@ -232,6 +247,7 @@ class ReleasePlatformRun < ApplicationRecord
     locale = default_locale || ReleaseMetadata::DEFAULT_LOCALE
     release_metadata.create!(base.merge(locale: locale, default_locale: true))
   end
+
   # rubocop:enable Rails/SkipsModelValidations
 
   def correct_version!
