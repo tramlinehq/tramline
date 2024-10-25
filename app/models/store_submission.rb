@@ -147,7 +147,7 @@ class StoreSubmission < ApplicationRecord
     nil
   end
 
-  def conf = Config::Submission.from_json(config)
+  def conf = Config::Submission.from_json(config, read_only: true)
 
   protected
 
