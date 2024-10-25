@@ -19,7 +19,7 @@ class Config::ReleaseStep < ApplicationRecord
 
   enum :kind, {internal: "internal", beta: "beta", production: "production"}
 
-  delegate :ios?, :android?, to: :release_platform_config
+  delegate :ios?, :android?, :platform, to: :release_platform_config
 
   def as_json(options = {})
     {
@@ -29,11 +29,11 @@ class Config::ReleaseStep < ApplicationRecord
   end
 
   def last_submission
-    submissions.order(number: :desc).first
+    submissions.max_by(&:number)
   end
 
   def first_submission
-    submissions.order(number: :asc).first
+    submissions.min_by(&:number)
   end
 
   def fetch_submission_by_number(number)
