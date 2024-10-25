@@ -19,7 +19,7 @@ class Config::Submission < ApplicationRecord
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
   belongs_to :release_step_config, class_name: "Config::ReleaseStep"
-  has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy, autosave: true
+  has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
   delegated_type :integrable, types: INTEGRABLE_TYPES, validate: false
 
   before_validation :set_default_production_config, if: -> { !read_only? && new_record? && production? }

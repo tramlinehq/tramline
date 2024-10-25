@@ -60,6 +60,7 @@ class Queries::Builds
 
   memoize def records
     Build
+      .ready
       .joins(:workflow_run, release_platform_run: [{release_platform: [train: :app]}])
       .includes(:store_submissions)
       .select(:id, :workflow_run_id)
