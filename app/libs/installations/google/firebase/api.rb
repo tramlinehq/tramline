@@ -86,14 +86,14 @@ module Installations
       end
     end
 
-    def find_build(app_id, build_number, and_filters: nil)
+    def find_build(app_id, build_number, version_name, and_filters: nil)
       execute do
         filter = and_filters&.join(" AND ")
 
         fad_client
           .list_project_app_releases(app_name(app_id), filter:)
           .then(&:releases)
-          &.find { |release| release.build_version == build_number.to_s }
+          &.find { |release| release.build_version == build_number.to_s && release.display_version == version_name }
           &.to_h
       end
     end

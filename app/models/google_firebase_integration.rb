@@ -153,11 +153,17 @@ class GoogleFirebaseIntegration < ApplicationRecord
     release_notes: :release_notes
   }
 
-  def find_build_by_build_number(build_number, platform)
+  def find_build(build_number, version_name, platform)
     lookback_period = 2.weeks.ago.rfc3339
     filters = ["createTime >= \"#{lookback_period}\""]
     GitHub::Result.new do
-      ReleaseInfo.new(installation.find_build(firebase_app(platform), build_number, and_filters: filters), BUILD_TRANSFORMATIONS)
+      ReleaseInfo.new(installation.find_build(
+        firebase_app(platform),
+        build_number,
+        version_name,
+        and_filters: filters
+      ),
+        BUILD_TRANSFORMATIONS)
     end
   end
 
