@@ -3,16 +3,16 @@ require "rails_helper"
 describe Accounts::Membership do
   let!(:organization) { create(:organization) }
 
-  let!(:owner_email) { Faker::Internet.email }
-  let!(:owner) { create(:user, unique_authn_id: owner_email) }
-  let!(:developer_email) { Faker::Internet.email }
-  let!(:developer) { create(:user, :as_developer, unique_authn_id: developer_email) }
-  let!(:viewer_email) { Faker::Internet.email }
-  let!(:viewer) { create(:user, unique_authn_id: viewer_email) }
+  let(:owner_email) { Faker::Internet.email }
+  let(:owner) { create(:user, unique_authn_id: owner_email) }
+  let(:developer_email) { Faker::Internet.email }
+  let(:developer) { create(:user, :as_developer, unique_authn_id: developer_email) }
+  let(:viewer_email) { Faker::Internet.email }
+  let(:viewer) { create(:user, unique_authn_id: viewer_email) }
 
-  let!(:owner_membership) { create(:membership, user: owner, organization: organization, role: "owner") }
-  let!(:developer_membership) { create(:membership, user: developer, organization: organization, role: "developer") }
-  let!(:viewer_membership) { create(:membership, user: viewer, organization: organization, role: "viewer") }
+  let(:owner_membership) { create(:membership, user: owner, organization: organization, role: "owner") }
+  let(:developer_membership) { create(:membership, user: developer, organization: organization, role: "developer") }
+  let(:viewer_membership) { create(:membership, user: viewer, organization: organization, role: "viewer") }
 
   before do
     create(:email_authentication, email: owner_email, user: owner)

@@ -18,11 +18,13 @@ class Accounts::UsersController < SignedInApplicationController
     member = Accounts::User.find_via_email(email)
 
     if member.nil?
-      redirect_to accounts_organization_teams_path(@current_organization), alert: "User #{email} not found" and return
+      redirect_to accounts_organization_teams_path(@current_organization), alert: "User #{email} not found"
+      return
     end
 
     if @user.id == member.id
-      redirect_to accounts_organization_teams_path(@current_organization), alert: "User #{email} cannot change their own role." and return
+      redirect_to accounts_organization_teams_path(@current_organization), alert: "User #{email} cannot change their own role."
+      return
     end
 
     current_organization_id = @current_organization.id
@@ -31,13 +33,16 @@ class Accounts::UsersController < SignedInApplicationController
     membership = member.memberships.find_by(organization: organization)
 
     if membership.nil?
-      redirect_to accounts_organization_teams_path(@current_organization), alert: "User #{email} memberships not found" and return
+      redirect_to accounts_organization_teams_path(@current_organization), alert: "User #{email} memberships not found"
+      return
     end
 
     if membership.update(role: params[:role])
       redirect_to accounts_organization_teams_path(@current_organization), notice: "#{email} role was successfully updated to #{params[:role]}"
+      return
     else
-      redirect_to accounts_organization_teams_path(@current_organization), alert: "Updating #{email} role failed" and return
+      redirect_to accounts_organization_teams_path(@current_organization), alert: "Updating #{email} role failed"
+      return
     end
   end
 

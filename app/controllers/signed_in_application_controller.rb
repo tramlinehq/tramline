@@ -31,7 +31,8 @@ class SignedInApplicationController < ApplicationController
     :logout_path,
     :ci_cd_provider_logo,
     :vcs_provider_logo,
-    :teams_supported?
+    :teams_supported?,
+    :current_user_role
 
   rescue_from NotAuthorizedError, with: :user_not_authorized
 
@@ -156,6 +157,10 @@ class SignedInApplicationController < ApplicationController
 
   def teams_supported?
     @teams_supported ||= current_organization&.teams_supported?
+  end
+
+  def current_user_role
+    current_user.role_for(current_organization)
   end
 
   def default_timezones

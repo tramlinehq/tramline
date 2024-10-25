@@ -1,5 +1,5 @@
-<%= render V2::FormComponent.new(email: ,
-                                 member_role: ,
+<%= render V2::FormComponent.new(email:,
+                                 member_role:,
                                  url: update_user_role_accounts_user_path(),
                                  method: :patch) do |f| %>
   <% f.with_section(heading: "Basic") do |section| %>
@@ -15,7 +15,7 @@
 
     <div>
       <%= section.F.labeled_select :role, "Role",
-        options_for_select(member_role == "viewer" ? Accounts::Membership.allowed_roles : Accounts::Membership.all_roles, member_role) %>
+        options_for_select(available_roles_for_member(member_role)) %>
     </div>
   <% end %>
   <% f.with_action do %>
