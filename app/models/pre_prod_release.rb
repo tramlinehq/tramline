@@ -73,7 +73,7 @@ class PreProdRelease < ApplicationRecord
   def trigger_submissions!
     return unless actionable?
     return finish! if conf.submissions.blank?
-    trigger_submission!(conf.submissions.first)
+    trigger_submission!(conf.first_submission)
   end
 
   def rollout_started!

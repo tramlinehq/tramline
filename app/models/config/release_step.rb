@@ -29,11 +29,11 @@ class Config::ReleaseStep < ApplicationRecord
   end
 
   def last_submission
-    submissions.order(number: :desc).first
+    submissions.max_by(&:number)
   end
 
   def first_submission
-    submissions.order(number: :asc).first
+    submissions.min_by(&:number)
   end
 
   def fetch_submission_by_number(number)
