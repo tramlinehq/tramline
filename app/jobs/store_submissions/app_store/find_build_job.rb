@@ -8,7 +8,7 @@ class StoreSubmissions::AppStore::FindBuildJob
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(Installations::Error) && ex.reason == :build_not_found
-      backoff_in(attempt: count, period: :minutes).to_i
+      backoff_in(attempt: count, period: :minutes, type: :static, factor: 1).to_i
     else
       elog(ex)
       :kill
