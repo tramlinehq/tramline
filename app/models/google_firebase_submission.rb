@@ -182,7 +182,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def find_build
-    @build ||= provider.find_build_by_build_number(build_number, platform)
+    @build ||= provider.find_build(build_number, version_name, platform)
   end
 
   def build_present_in_store?

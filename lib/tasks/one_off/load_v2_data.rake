@@ -37,6 +37,24 @@ def populate_v2_models_for_train(train)
   Queries::DevopsReport.warm(train)
 end
 
+def populate_v2_models(release)
+  release.update!(is_v2: true)
+  release.release_platform_runs.each do |prun|
+    prun.update!(config: prun.release_platform.platform_config.as_json)
+
+    raise "Config not loaded" if prun.config.blank?
+    puts "Config loaded for #{prun.release_version} - #{prun.platform} as #{prun.config.inspect}"
+
+    # review steps
+    raise "More than one review step" if prun.release_platform.steps.review.size > 1
+    convert_review_step!(prun)
+
+    # release step
+    raise "No release step" if prun.release_platform.release_step.blank?
+    convert_release_step!(prun)
+  end
+end
+
 def convert_review_step!(release_platform_run)
   review_step = release_platform_run.step_runs.detect { |step_run| step_run.step.review? }&.step
   return if review_step.blank?
@@ -150,24 +168,6 @@ def convert_release_step!(prun)
   end
 end
 
-def populate_v2_models(release)
-  release.update!(is_v2: true)
-  release.release_platform_runs.each do |prun|
-    prun.update!(config: prun.release_platform.platform_config.as_json)
-
-    raise "Config not loaded" if prun.config.blank?
-    puts "Config loaded for #{prun.release_version} - #{prun.platform} as #{prun.config.inspect}"
-
-    # review steps
-    raise "More than one review step" if prun.release_platform.steps.review.size > 1
-    convert_review_step!(prun)
-
-    # release step
-    raise "No release step" if prun.release_platform.release_step.blank?
-    convert_release_step!(prun)
-  end
-end
-
 def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind)
   commit = step_run.commit
   status = compute_pre_prod_release_status(step_run, idx)
@@ -199,7 +199,7 @@ def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind
     workflow_config: workflow_config.as_json,
     kind: workflow_config.kind,
     status: compute_workflow_run_status(step_run),
-    artifacts_url: step_run.build_artifact&.external_build&.artifacts_url,
+    artifacts_url: nil,
     external_number: step_run.commit.short_sha,
     external_url: step_run.ci_link,
     external_id: step_run.ci_ref,

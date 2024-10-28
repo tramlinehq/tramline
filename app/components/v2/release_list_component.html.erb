@@ -171,13 +171,15 @@
           <%= render ChartComponent.new(devops_report.contributors) %>
           <%= render ChartComponent.new(devops_report.stability_contributors) %>
 
-          <div class="col-span-2">
-            <%= render ChartComponent.new(devops_report.team_contributors) %>
-          </div>
+          <% if teams_supported? %>
+            <div class="col-span-2">
+              <%= render ChartComponent.new(devops_report.team_contributors) %>
+            </div>
 
-          <div class="col-span-2">
-            <%= render ChartComponent.new(devops_report.team_stability_contributors) %>
-          </div>
+            <div class="col-span-2">
+              <%= render ChartComponent.new(devops_report.team_stability_contributors) %>
+            </div>
+          <% end %>
         </div>
       <% end %>
     <% end %>
