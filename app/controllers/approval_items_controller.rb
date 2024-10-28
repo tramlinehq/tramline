@@ -20,7 +20,7 @@ class ApprovalItemsController < SignedInApplicationController
     assign_approval_assignees
 
     if @approval_item.save
-      redirect_to release_approval_items_path(@release), notice: "Approval item was successfully created."
+      redirect_to release_approval_items_path(@release), notice: t(".success")
     else
       redirect_to release_approval_items_path(@release), flash: {error: @approval_item.errors.full_messages.to_sentence}
     end

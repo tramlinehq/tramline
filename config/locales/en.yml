@@ -119,6 +119,9 @@ en:
           failure: "Failed to login via Single Sign-On! Please contact support if the issue persists."
         saml_redeem:
           failure: "Failed to accept the response from SSO provider."
+  approval_items:
+    create:
+      success: "Approval item was successfully created."
 
   activerecord:
     models:
