@@ -20,7 +20,7 @@
         <% if latest_release.present? %>
           <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(latest_release) %>
         <% elsif configured?(run) %>
-          <% if run.hotfix? %>
+          <% if run.hotfix? && run.active? %>
             <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "Changes were not automatically applied for the hotfix") do |ann| %>
               <% ann.with_announcement_button(label: "Create internal build",
                                               scheme: :default,

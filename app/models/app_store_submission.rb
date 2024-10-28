@@ -53,11 +53,15 @@ class AppStoreSubmission < StoreSubmission
   CHANGEABLE_STATES = %w[created preprocessing prepared cancelled review_failed failed approved]
   CANCELABLE_STATES = %w[submitted_for_review]
   STAMPABLE_REASONS = %w[
+    triggered
+    prepared
     prepare_release_failed
+    submitting_for_review
     submitted_for_review
     resubmitted_for_review
     review_approved
     review_rejected
+    cancelling
     cancellation_failed
     cancelled
     failed
@@ -69,7 +73,8 @@ class AppStoreSubmission < StoreSubmission
   enum :status, STATES
   enum :failure_reason, {
     invalid_release: "invalid_release",
-    unknown_failure: "unknown_failure"
+    unknown_failure: "unknown_failure",
+    developer_rejected: "developer_rejected"
   }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
 
   aasm safe_state_machine_params do
@@ -80,7 +85,7 @@ class AppStoreSubmission < StoreSubmission
       transitions to: :preparing
     end
 
-    event :finish_prepare do
+    event :finish_prepare, after_commit: :on_finish_prepare! do
       after { set_prepared_at! }
       transitions from: :preparing, to: :prepared
     end
@@ -121,9 +126,9 @@ class AppStoreSubmission < StoreSubmission
     end
   end
 
-  after_create_commit :poll_external_status
+  after_create_commit :poll_external_status, unless: :in_data_migration_mode
 
-  def pre_review? = PRE_PREPARE_STATES.include?(status) && editable?
+  def pre_review? = PRE_PREPARE_STATES.include?(status)
 
   def change_build? = CHANGEABLE_STATES.include?(status) && editable?
 
@@ -174,10 +179,6 @@ class AppStoreSubmission < StoreSubmission
 
     update_store_info!(result.value!)
     finish_prepare!
-  end
-
-  def on_start_submission!
-    StoreSubmissions::AppStore::SubmitForReviewJob.perform_async(id)
   end
 
   def submit!
@@ -282,7 +283,17 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def on_start_prepare!
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
+  end
+
+  def on_finish_prepare!
+    event_stamp!(reason: :prepared, kind: :notice, data: stamp_data)
+  end
+
+  def on_start_submission!
+    event_stamp!(reason: :submitting_for_review, kind: :notice, data: stamp_data)
+    StoreSubmissions::AppStore::SubmitForReviewJob.perform_async(id)
   end
 
   def on_submit_for_review!(args = {resubmission: false})
@@ -295,6 +306,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def on_start_cancellation!
+    event_stamp!(reason: :cancelling, kind: :notice, data: stamp_data)
     StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id)
   end
 
