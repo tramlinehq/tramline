@@ -38,12 +38,11 @@ class Accounts::UsersController < SignedInApplicationController
     end
 
     if membership.update(role: params[:role])
-      redirect_to accounts_organization_teams_path(@current_organization), notice: "#{email} role was successfully updated to #{params[:role]}"
-      return
+      flash[:notice] = "#{email} role was successfully updated to #{params[:role]}"
     else
-      redirect_to accounts_organization_teams_path(@current_organization), alert: "Updating #{email} role failed"
-      return
+      flash[:alert] = "Updating #{email} role failed"
     end
+    redirect_to accounts_organization_teams_path(@current_organization)
   end
 
   private

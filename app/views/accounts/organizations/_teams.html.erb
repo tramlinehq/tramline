@@ -102,7 +102,7 @@
         <% end %>
         <% user_role = current_user_role %>
         <% member_role = member.role_for(current_organization) %>
-        <% if can_edit_user_role?(current_user, member, current_organization) %>
+        <% if can_current_user_edit_role?(member) %>
           <% row.with_cell(wrap: true) do %>
             <div class="flex gap-x-2 justify-end">
               <%= render V2::ModalComponent.new(title: "Edit role") do |modal| %>

@@ -1,10 +1,9 @@
 module OrganizationsHelper
-  def can_edit_user_role?(current_user, member, current_organization)
-    user_role = current_user.role_for(current_organization)
+  def can_current_user_edit_role?(member)
     member_role = member.role_for(current_organization)
 
-    ((user_role == "owner" && member_role.in?(["developer", "viewer"])) ||
-     (user_role == "developer" && member_role == "viewer")) &&
+    ((current_user_role == "owner" && member_role.in?(["developer", "viewer"])) ||
+     (current_user_role == "developer" && member_role == "viewer")) &&
       current_user.id != member.id
   end
 
