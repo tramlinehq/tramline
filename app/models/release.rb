@@ -177,7 +177,7 @@ class Release < ApplicationRecord
   friendly_id :human_slug, use: :slugged
 
   delegate :versioning_strategy, :patch_version_bump_only, :product_v2?, to: :train
-  delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
+  delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, to: :train
   delegate :platform, :organization, to: :app
 
   def self.pending_release?
@@ -468,7 +468,8 @@ class Release < ApplicationRecord
 
   def blocked_for_production_release?
     return true if upcoming?
-    ongoing? && train.hotfix_release.present?
+    return true if ongoing? && train.hotfix_release.present?
+    approvals_blocking?
   end
 
   def retrigger_for_hotfix?
@@ -535,13 +536,10 @@ class Release < ApplicationRecord
     train.update!(version_current: release_version)
   end
 
-  def temporary_unblock_metadata_edits?
-    Flipper.enabled?(:temporary_unblock_metadata_edits, self)
-  end
-
   def override_approvals(who)
     return unless active?
-    return if approvals_overridden?
+    return unless approvals_enabled?
+    return true if approvals_overridden?
 
     if who == release_pilot
       update(approval_overridden_by: who)
@@ -553,12 +551,12 @@ class Release < ApplicationRecord
     approval_overridden_by.present?
   end
 
-  def approvals?
-    approval_items.exists?
+  def approvals_finished?
+    approval_items.approved.size == approval_items.size
   end
 
-  def approvals_ready?
-    approvals_overridden? || (approval_items.approved.size == approval_items.size)
+  def approvals_blocking?
+    !approvals_overridden? && !approvals_finished?
   end
 
   private

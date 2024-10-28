@@ -165,7 +165,20 @@
         Set a schedule for automatic kickoff of your release train. Leave blank for only manual control.
       <% end %>
 
-      <%= render partial: "release_schedule_form", locals: { form: section.F } %>
+      <%= render partial: "release_schedule_form", locals: {form: section.F} %>
+    <% end %>
+
+    <%= f.with_advanced_section(heading: "Approvals before submissions") do |section| %>
+      <% section.with_description do %>
+        Allow Release pilots to create approval items, and assign them to specific individuals to manage stakeholder
+        approvals for the release. The release gets blocked from proceeding to store reviews or rollout until all items
+        are approved.
+      <% end %>
+
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :approvals_enabled,
+                                               on_label: "Submission approvals enabled",
+                                               off_label: "Submission approvals disabled") %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Build Queue") do |section| %>

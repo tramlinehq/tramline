@@ -5,7 +5,7 @@ class ApprovalAssignmentMailer < ApplicationMailer
     release = @approval_assignee.approval_item.release
     @release_version = release.release_version
     @release_train = release.train.name
-    @release_link = release.live_release_link
+    @release_link = release_approval_items_url(release)
 
     mail(
       to: @approval_assignee.assignee.email,

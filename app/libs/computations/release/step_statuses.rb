@@ -1,7 +1,7 @@
 class Computations::Release::StepStatuses
   using RefinedArray
   STATUS = [:blocked, :unblocked, :ongoing, :success, :none, :hidden].zip_map_self
-  PHASES = [:completed, :stopped, :kickoff, :stabilization, :review, :rollout, :finishing].zip_map_self
+  PHASES = [:completed, :stopped, :kickoff, :stabilization, :approvals, :review, :rollout, :finishing].zip_map_self
 
   def self.call(release)
     new(release).call
@@ -22,7 +22,7 @@ class Computations::Release::StepStatuses
         soak_period: demo? ? release_candidate_status : STATUS[:blocked],
         notes: notes_status,
         screenshots: STATUS[:blocked],
-        approvals: STATUS[:blocked],
+        approvals: approvals_status,
         app_submission: app_submission_status,
         rollout_to_users: rollout_to_users_status,
         wrap_up_automations: (wrap_up_automations_status unless any_platforms? { |rp| rp.conf.production_release? })
@@ -62,6 +62,13 @@ class Computations::Release::StepStatuses
     STATUS[:success]
   end
 
+  def approvals_status
+    return STATUS[:hidden] unless @release.train.approvals_enabled?
+    return STATUS[:none] if @release.approval_items.none?
+    return STATUS[:ongoing] if @release.approvals_blocking?
+    STATUS[:success]
+  end
+
   def app_submission_status
     return STATUS[:blocked] if all_platforms? { |rp| rp.production_releases.none? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.inflight_production_release.present? }
@@ -85,6 +92,7 @@ class Computations::Release::StepStatuses
     return PHASES[:completed] if finished?
     return PHASES[:stopped] if stopped? || stopped_after_partial_finish?
     return PHASES[:finishing] if Release::POST_RELEASE_STATES.include?(status)
+    return PHASES[:approvals] if @release.approvals_blocking?
     return PHASES[:rollout] if any_platforms? { |rp| rp.production_store_rollouts.present? }
     return PHASES[:review] if any_platforms? { |rp| rp.inflight_production_release.present? }
     return PHASES[:stabilization] if any_platforms? { |rp| rp.pre_prod_releases.any? }

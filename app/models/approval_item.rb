@@ -20,8 +20,9 @@ class ApprovalItem < ApplicationRecord
   belongs_to :status_changed_by, class_name: "Accounts::User", optional: true
   has_many :approval_assignees, dependent: :destroy
 
-  delegate :organization, :release_pilot, to: :release
+  delegate :organization, :train, :release_pilot, to: :release
 
+  validate :train_approvals_enabled, on: :create
   validate :release_pilots_as_authors_only, on: :create
   validates :content, presence: true, length: {maximum: ApprovalItem::MAX_CONTENT_LENGTH}, on: :create
 
@@ -57,6 +58,12 @@ class ApprovalItem < ApplicationRecord
 
   private
 
+  def train_approvals_enabled
+    unless train.approvals_enabled?
+      errors.add(:base, "Cannot create approvals when approvals are disabled on the train-level")
+    end
+  end
+
   def self_assigned?(assignee)
     approval_assignees.none? && author == assignee
   end
@@ -67,7 +74,3 @@ class ApprovalItem < ApplicationRecord
     end
   end
 end
-
-# release will have many approval items
-# can be assigned to anyone
-# can only be approved by the assigned users

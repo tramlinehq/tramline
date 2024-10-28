@@ -110,6 +110,11 @@ class ReleasePresenter < SimpleDelegator
     h.distance_of_time_in_words(scheduled_at, Time.current)
   end
 
+  def approvals_editable?
+    return false if approvals_overridden?
+    platform_runs.all?(&:production_release_in_pre_review?)
+  end
+
   def h
     @view_context
   end

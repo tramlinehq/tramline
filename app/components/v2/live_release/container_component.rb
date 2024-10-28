@@ -9,6 +9,7 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
     stabilization: ["Stabilizing the release", :routine],
     review: ["Under store review", :ongoing],
     rollout: ["Rolling out to users", :inert],
+    approvals: ["Requires approvals", :inert],
     stopped: ["Stopped", :failure]
   }
   SELECTED_TAB_STYLE = "active text-main bg-main-100 border-l-2 border-main-400"

@@ -48,7 +48,7 @@ class ReleasesController < SignedInApplicationController
     if @release.update(update_release_params)
       redirect_to overview_release_path(@release), notice: "Captain's log was updated!"
     else
-      render :edit, status: :unprocessable_entity
+      redirect_back fallback_location: root_path, flash: {error: "Captain's log could not be updated."}
     end
   end
 
@@ -56,7 +56,7 @@ class ReleasesController < SignedInApplicationController
     if @release.override_approvals(current_user)
       redirect_to release_approval_items_path(@release), notice: "Approvals have been overridden. The release can move ahead."
     else
-      render :edit, status: :unprocessable_entity
+      redirect_back fallback_location: root_path, flash: {error: "Approvals could not be overridden."}
     end
   end
 

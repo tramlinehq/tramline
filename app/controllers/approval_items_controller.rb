@@ -6,6 +6,13 @@ class ApprovalItemsController < SignedInApplicationController
 
   def index
     live_release!
+
+    unless @release.train.approvals_enabled?
+      redirect_to release_path(@release), flash: {error: "Approvals are disabled for this release."}
+      return
+    end
+
+    @release = ReleasePresenter.new(@release)
     @app = @release.app
     @available_assignees = Current.organization.users
     @approval_items = @release.approval_items.map { |i| ApprovalsPresenter.new(i, view_context) }
