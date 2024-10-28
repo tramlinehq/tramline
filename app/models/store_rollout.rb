@@ -28,15 +28,6 @@ class StoreRollout < ApplicationRecord
   delegate :train, to: :release_platform_run
   delegate :notify!, to: :train
 
-  STAMPABLE_REASONS = %w[
-    started
-    paused
-    resumed
-    increased
-    completed
-    halted
-    fully_released
-  ]
   STATES = {
     created: "created",
     started: "started",
@@ -94,7 +85,7 @@ class StoreRollout < ApplicationRecord
 
   def rollout_percentage_at(day)
     last_event = passports
-      .where(reason: [:started, :increased, :fully_released])
+      .where(reason: [:started, :updated, :completed, :fully_released])
       .where("DATE_TRUNC('day', event_timestamp) <= ?", day)
       .order(:event_timestamp)
       .last

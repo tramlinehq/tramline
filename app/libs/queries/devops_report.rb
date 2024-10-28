@@ -30,6 +30,7 @@ class Queries::DevopsReport
       duration: duration,
       frequency: frequency,
       time_in_review: time_in_review,
+      patch_fixes: patch_fixes,
       hotfixes: hotfixes,
       reldex_scores: reldex_scores,
       time_in_phases: time_in_phases,
@@ -48,7 +49,7 @@ class Queries::DevopsReport
   end
 
   memoize def frequency(period = :month, format = "%b", last: LAST_TIME_PERIOD)
-    finished_releases(last, hotfix: true)
+    finished_releases(last)
       .reorder("")
       .group_by_period(period, :completed_at, last: last, current: true, format:)
       .count
@@ -85,16 +86,35 @@ class Queries::DevopsReport
   end
 
   memoize def time_in_review(last: LAST_RELEASES)
-    releases_by_version(last)
-      .transform_values { |releases| releases.flat_map(&:release_platform_runs).filter(&:ios?) }
-      .transform_values { |runs| runs.flat_map(&:production_store_submissions).flat_map(&:review_time) }
-      .transform_values { {time: _1.sum / _1.size.to_f} }
+    # NOTE: we are looking for last n approved iOS store submissions not last n releases, hence the buffer
+    finished_releases(last + 10, hotfix: true)
+      .flat_map { |release| release.release_platform_runs.find(&:ios?) }
+      .compact
+      .flat_map(&:production_store_submissions)
+      .filter(&:approved?)
+      .sort_by(&:created_at)
+      .last(last)
+      .group_by(&:version_name)
+      .sort_by { |v, _| v.to_semverish }.to_h
+      .transform_values { _1.flat_map(&:review_time) }
+      .transform_values { {time: _1.sum(&:seconds) / _1.size.to_f} }
+  end
+
+  memoize def patch_fixes(last: LAST_RELEASES)
+    releases_by_version(last).transform_values do |releases|
+      platform_runs = releases.flat_map(&:release_platform_runs)
+      platform_runs.group_by(&:platform).transform_values { |run| [run[0].production_releases.size.pred, 0].max }
+    end
   end
 
   memoize def hotfixes(last: LAST_RELEASES)
     releases_by_version(last).transform_values do |releases|
-      platform_runs = releases.flat_map(&:release_platform_runs)
-      platform_runs.group_by(&:platform).transform_values { |run| [run[0].production_releases.size.pred, 0].max }
+      hotfixes = releases.flat_map(&:all_hotfixes)
+      if hotfixes.any?
+        hotfixes.flat_map(&:release_platform_runs).group_by(&:platform).transform_values(&:size)
+      else
+        releases.flat_map(&:release_platform_runs).group_by(&:platform).transform_values { 0 }
+      end
     end
   end
 

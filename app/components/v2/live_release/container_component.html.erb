@@ -18,11 +18,15 @@
 
             <div class="flex flex-row gap-2 justify-end items-baseline <%= hotfix_background %>">
               <% if cross_platform? %>
-                <div class="flex items-center gap-1">
-                  <%= render V2::IconComponent.new("v2/android.svg", size: :lg) %>
-                  <%= render V2::IconComponent.new("v2/plus_fat.svg", size: :lg) %>
-                  <%= render V2::IconComponent.new("v2/ios.svg", size: :lg) %>
-                </div>
+                <% if release.platform_runs.size > 1 %>
+                  <div class="flex items-center gap-1">
+                    <%= render V2::IconComponent.new("v2/android.svg", size: :lg) %>
+                    <%= render V2::IconComponent.new("v2/plus_fat.svg", size: :lg) %>
+                    <%= render V2::IconComponent.new("v2/ios.svg", size: :lg) %>
+                  </div>
+                <% else %>
+                  <%= render V2::IconComponent.new("v2/#{release.platform_runs.sole.platform}.svg", size: :lg) %>
+                <% end %>
               <% else %>
                 <%= render V2::IconComponent.new("v2/#{platform}.svg", size: :lg) %>
               <% end %>
