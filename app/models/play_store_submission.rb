@@ -114,7 +114,7 @@ class PlayStoreSubmission < StoreSubmission
 
   def post_review? = false
 
-  def pre_review? = PRE_PREPARE_STATES.include?(status) && editable?
+  def pre_review? = PRE_PREPARE_STATES.include?(status)
 
   def reviewable? = false
 

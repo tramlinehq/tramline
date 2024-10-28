@@ -128,7 +128,7 @@ class AppStoreSubmission < StoreSubmission
 
   after_create_commit :poll_external_status, unless: :in_data_migration_mode
 
-  def pre_review? = PRE_PREPARE_STATES.include?(status) && editable?
+  def pre_review? = PRE_PREPARE_STATES.include?(status)
 
   def change_build? = CHANGEABLE_STATES.include?(status) && editable?
 
