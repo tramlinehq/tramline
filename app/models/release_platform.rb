@@ -35,7 +35,7 @@ class ReleasePlatform < ApplicationRecord
       auto_promote: false,
       submissions: [
         {number: 1,
-         submission_type: "GooglePlayStoreSubmission",
+         submission_type: "PlayStoreSubmission",
          submission_config: GooglePlayStoreIntegration::PROD_CHANNEL,
          rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
          auto_promote: false}

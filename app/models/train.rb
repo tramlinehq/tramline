@@ -263,6 +263,7 @@ class Train < ApplicationRecord
     end
     NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
+
   # rubocop:enable Rails/SkipsModelValidations
 
   def display_name
@@ -437,9 +438,16 @@ class Train < ApplicationRecord
 
   def hotfixable?
     return false unless startable?
+    return false unless has_production_deployment?
     return false if hotfix_release.present?
-    return false if ongoing_release.present? && ongoing_release.production_release_happened? # TODO: remove this once we allow platform-specific hotfixes
-    hotfix_from.present? && release_platforms.any?(&:has_production_deployment?)
+    return false if hotfix_from.blank?
+    return true if ongoing_release.blank?
+
+    if product_v2?
+      !ongoing_release.production_release_active?
+    else
+      !ongoing_release.production_release_happened?
+    end
   end
 
   def devops_report
@@ -448,7 +456,11 @@ class Train < ApplicationRecord
   end
 
   def has_production_deployment?
-    release_platforms.any?(&:has_production_deployment?)
+    if product_v2?
+      release_platforms.any? { |rp| rp.platform_config.production_release? }
+    else
+      release_platforms.any?(&:has_production_deployment?)
+    end
   end
 
   def has_restricted_public_channels?

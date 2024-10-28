@@ -113,11 +113,7 @@ class ReleasesController < SignedInApplicationController
 
   def show_current_release
     redirect_to train_path, notice: "No release in progress." and return unless @release
-
-    set_commits
-    set_pull_requests
-
-    render :show
+    redirect_to release_path(@release)
   end
 
   def destroy
