@@ -78,9 +78,13 @@ def nuke_train(train)
       prun.store_submissions&.delete_all
       prun.production_releases.each do |pr|
         pr.release_health_metrics&.delete_all
+        pr.release_health_events&.delete_all
       end
       prun.production_releases&.delete_all
-      prun.builds&.delete_all
+      prun.builds.each do |build|
+        build.external_build&.delete
+      end
+      prun.builds.delete_all
       prun.workflow_runs&.delete_all
       prun.internal_releases&.delete_all
       prun.beta_releases&.delete_all
