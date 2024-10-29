@@ -12,7 +12,7 @@ FactoryBot.define do
     end
 
     trait :with_owner_membership do
-      after(:create) do |organization, _|
+      after(:build) do |organization, _|
         create(:user, :as_owner, member_organization: organization)
       end
     end

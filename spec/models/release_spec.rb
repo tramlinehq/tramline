@@ -638,4 +638,65 @@ describe Release do
       expect(release.approval_overridden_by).to eq(who)
     end
   end
+
+  describe "#blocked_for_production_release?" do
+    it "is true when release is upcoming" do
+      train = create(:train)
+      _ongoing = create(:release, :on_track, train:)
+      upcoming = create(:release, :on_track, train:)
+
+      expect(upcoming.blocked_for_production_release?).to be(true)
+    end
+
+    it "is true when it is an hotfix release is simultaneously ongoing" do
+      train = create(:train)
+      finished_release = create(:release, :finished, train:, completed_at: 2.days.ago, tag_name: "foo")
+      _hotfix_release = create(:release, :on_track, :hotfix, train:, hotfixed_from: finished_release)
+      ongoing_release = create(:release, :on_track, train:)
+
+      expect(ongoing_release.blocked_for_production_release?).to be(true)
+    end
+
+    context "when approvals are enabled" do
+      it "is true when approvals are blocking" do
+        train = create(:train, approvals_enabled: true)
+        pilot = create(:user, :with_email_authentication, :as_developer)
+        release = create(:release, release_pilot: pilot, train:)
+        _approval_items = create_list(:approval_item, 5, release:, author: pilot)
+        release.reload
+
+        expect(release.blocked_for_production_release?).to be(true)
+      end
+
+      it "is false when approvals are non-blocking" do
+        train = create(:train, approvals_enabled: true)
+        pilot = create(:user, :with_email_authentication, :as_developer)
+        release = create(:release, release_pilot: pilot, train:)
+        _approval_items = create_list(:approval_item, 5, :approved, release:, author: pilot)
+        release.reload
+
+        expect(release.blocked_for_production_release?).to be(false)
+      end
+
+      it "is true when approvals are not overridden" do
+        train = create(:train, approvals_enabled: true)
+        pilot = create(:user, :with_email_authentication, :as_developer)
+        release = create(:release, release_pilot: pilot, train:, approval_overridden_by: nil)
+        _approval_items = create_list(:approval_item, 5, release:, author: pilot)
+
+        expect(release.blocked_for_production_release?).to be(true)
+      end
+
+      it "is false when approvals are overridden (regardless of actual approvals)" do
+        train = create(:train, approvals_enabled: true)
+        pilot = create(:user, :with_email_authentication, :as_developer)
+        release = create(:release, release_pilot: pilot, train:, approval_overridden_by: pilot)
+
+        create_list(:approval_item, 5, release:, author: pilot)
+        create_list(:approval_item, 5, :approved, release:, author: pilot)
+
+        expect(release.blocked_for_production_release?).to be(false)
+      end
+    end
+  end
 end

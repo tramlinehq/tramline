@@ -556,7 +556,7 @@ class Release < ApplicationRecord
   end
 
   def approvals_blocking?
-    !approvals_overridden? && !approvals_finished?
+    !(approvals_overridden? || approvals_finished?)
   end
 
   private

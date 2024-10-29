@@ -17,6 +17,20 @@ describe ApprovalItem do
     expect(approval_item).not_to be_valid
   end
 
+  it "only allows creating items when enabled on a train level" do
+    pilot = create(:user, :with_email_authentication, :as_developer)
+    train = create(:train, approvals_enabled: false)
+    release = create(:release, train:, release_pilot: pilot)
+    approval_item = build(:approval_item, release:, author: pilot)
+    expect(approval_item).not_to be_valid
+
+    pilot = create(:user, :with_email_authentication, :as_developer)
+    train = create(:train, approvals_enabled: true)
+    release = create(:release, train:, release_pilot: pilot)
+    approval_item = create(:approval_item, release:, author: pilot)
+    expect(approval_item).to be_valid
+  end
+
   describe "#update_status" do
     let(:pilot) { create(:user, :with_email_authentication, :as_developer) }
     let(:release) { create(:release, release_pilot: pilot) }

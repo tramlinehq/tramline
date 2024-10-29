@@ -7,7 +7,7 @@ class ApprovalItemsController < SignedInApplicationController
   def index
     live_release!
 
-    unless @release.train.approvals_enabled?
+    unless @release.approvals_enabled?
       redirect_to release_path(@release), flash: {error: "Approvals are disabled for this release."}
       return
     end
