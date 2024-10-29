@@ -26,7 +26,7 @@ class ApprovalsPresenter < SimpleDelegator
   end
 
   def assignee_avatar(assignee)
-    h.user_avatar(assignee.preferred_name, limit: 2, size: 24, colors: 120)
+    h.user_avatar(assignee.preferred_name, limit: 2, size: 24)
   end
 
   def assignee_tooltip(assignee)

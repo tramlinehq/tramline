@@ -56,7 +56,7 @@
         <% end %>
 
         <% if @approval_items.none? %>
-          <%= render V2::EmptyStateComponent.new(text: "There are no items to approve for this release. Please add ", banner_image: "v2/list_checks.svg", type: :tiny) %>
+          <%= render V2::EmptyStateComponent.new(text: "There are no items to approve for this release. Add approvals to block submissions for this release.", banner_image: "v2/list_checks.svg", type: :tiny) %>
         <% else %>
           <%= render partial: "items", locals: {approval_items: @approval_items} %>
           <div class="text-secondary text-xs">
