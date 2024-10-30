@@ -5,6 +5,7 @@ export default class extends Controller {
   static values = {
     options: Object // The hierarchical data structure
   };
+  static outlets = ["input-select"]
 
   connect() {
     this.populateDropdown(this.selectTargets[0], this.optionsValue[this.selectTargets[0].dataset.level], true);
@@ -42,6 +43,7 @@ export default class extends Controller {
     if (selected) selectedValue = target.dataset.selectedValue
     target.innerHTML = options.map(option => this.__createOption(option, valueKey, displayKey, selectedValue)).join("");
     target.disabled = options.length === 0; // Disable if no options available
+    this.__updateOutlet()
   }
 
   __createOption(option, valueKey, displayKey, selectedValue) {
@@ -60,5 +62,15 @@ export default class extends Controller {
     }
 
     return parsedJSON;
+  }
+
+  __updateOutlet() {
+    if (this.hasInputSelectOutlet && this.inputSelectOutlets.length > 0) {
+      this.inputSelectOutlets.forEach(outlet => outlet.sync())
+    }
+  }
+
+  inputSelectOutletConnected(outlet, _) {
+    outlet.sync()
   }
 }
