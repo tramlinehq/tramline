@@ -26,12 +26,16 @@ class ApprovalItem < ApplicationRecord
   validate :release_pilots_as_authors_only, on: :create
   validates :content, presence: true, length: {maximum: ApprovalItem::MAX_CONTENT_LENGTH}, on: :create
 
+  before_destroy :ensure_not_started, prepend: true do
+    throw(:abort) if errors.present?
+  end
+
   enum :status, {
     not_started: "not_started",
     in_progress: "in_progress",
     blocked: "blocked",
     approved: "approved"
-  }
+  }, validate: true
 
   def update_status(status, assignee)
     return true if approved?
@@ -71,6 +75,12 @@ class ApprovalItem < ApplicationRecord
   def release_pilots_as_authors_only
     if author != release_pilot
       errors.add(:author, "must be a release pilot")
+    end
+  end
+
+  def ensure_not_started
+    unless not_started?
+      errors.add(:base, "Cannot delete an approval item that has already started.")
     end
   end
 end

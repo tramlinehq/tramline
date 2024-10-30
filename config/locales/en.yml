@@ -120,6 +120,12 @@ en:
         saml_redeem:
           failure: "Failed to accept the response from SSO provider."
   approval_items:
+    not_found: "Approval item not found."
+    destroy:
+      conflict: "Item was updated elsewhere, it cannot be deleted."
+      failure: "Failed to destroy the approval item. Please try again."
+    update:
+      failure: "Could not update approval item status. Please try again."
     create:
       success: "Approval item was successfully created."
 

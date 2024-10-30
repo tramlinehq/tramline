@@ -1,4 +1,4 @@
-<%= content_tag(:div, id: dom_id(item, :edit_approvals_content)) do %>
+<div class="flex item-gap-default">
   <% if item.approved? %>
     <div class="flex items-center gap-1">
       <%= render V2::IconComponent.new("v2/check.svg", size: :sm) %>
@@ -7,4 +7,14 @@
   <% else %>
     <%= item.content %>
   <% end %>
-<% end %>
+
+  <div class="flex items-center gap-0.5">
+    <% item.approval_assignees.collect do |assignee| %>
+      <%= render V2::TooltipComponent.new(item.assignee_tooltip(assignee), placement: "top") do |tooltip| %>
+        <% tooltip.with_body do %>
+          <%= item.assignee_avatar(assignee) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

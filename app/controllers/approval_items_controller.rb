@@ -12,10 +12,7 @@ class ApprovalItemsController < SignedInApplicationController
       return
     end
 
-    @release = ReleasePresenter.new(@release)
-    @app = @release.app
-    @available_assignees = Current.organization.users
-    @approval_items = @release.approval_items.map { |i| ApprovalsPresenter.new(i, view_context) }
+    set_approval_variables
   end
 
   def new
@@ -35,23 +32,47 @@ class ApprovalItemsController < SignedInApplicationController
 
   def update
     live_release!
-    @approval_item = ApprovalsPresenter.new(@release.approval_items.find(params[:id]), view_context)
+    @approval_item = @release.approval_items.find_by(id: params[:id])
+
+    unless @approval_item
+      approval_item_not_found
+      return
+    end
+
+    @approval_item = ApprovalsPresenter.new(@approval_item, view_context)
 
     if @approval_item.update_status(params[:status], current_user)
-      respond_to do |format|
-        format.turbo_stream do
-          render turbo_stream: [
-            turbo_stream.replace(dom_id(@approval_item, :edit_approvals_select), partial: "item_select", locals: {item: @approval_item}),
-            turbo_stream.replace(dom_id(@approval_item, :edit_approvals_content), partial: "item_content", locals: {item: @approval_item})
-          ]
-        end
-      end
+      set_approval_variables
+      render turbo_stream: refresh_items_stream
     else
-      respond_to do |format|
-        format.turbo_stream do
-          redirect_to release_approval_items_path(@release), status: :see_other
-        end
-      end
+      flash.now[:error] = I18n.t("approval_items.update.failure")
+      render turbo_stream: stream_flash
+    end
+  end
+
+  def destroy
+    live_release!
+    @approval_item = @release.approval_items.find_by(id: params[:id])
+
+    unless @approval_item
+      approval_item_not_found
+      return
+    end
+
+    unless @approval_item.not_started?
+      set_approval_variables
+      @approval_item = ApprovalsPresenter.new(@approval_item, view_context)
+      flash.now[:notice] = I18n.t("approval_items.destroy.conflict")
+      render turbo_stream: refresh_items_stream
+      return
+    end
+
+    if @approval_item.destroy
+      set_approval_variables
+      render turbo_stream: refresh_items_stream
+    else
+      flash.now[:error] = I18n.t("approval_items.destroy.failure")
+      render turbo_stream: stream_flash
     end
   end
 
@@ -72,5 +93,31 @@ class ApprovalItemsController < SignedInApplicationController
     assignee_ids.each do |assignee|
       @approval_item.approval_assignees.build(assignee_id: assignee) if assignee.present?
     end
+  end
+
+  def set_approval_variables
+    @approval_items = @release.reload.approval_items.map { |i| ApprovalsPresenter.new(i, view_context) }
+    @available_assignees = Current.organization.users
+    @release = ReleasePresenter.new(@release)
+    @app = @release.app
+  end
+
+  def approval_item_not_found
+    set_approval_variables
+    flash.now[:error] = I18n.t("approval_items.not_found")
+    render turbo_stream: refresh_items_stream
+  end
+
+  def refresh_items_stream
+    locals = {
+      release: @release,
+      available_assignees: @available_assignees,
+      items: @approval_items
+    }
+
+    [
+      stream_flash,
+      turbo_stream.update("list_approval_items", partial: "items", locals:)
+    ]
   end
 end

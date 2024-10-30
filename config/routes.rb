@@ -92,7 +92,7 @@ Rails.application.routes.draw do
           patch :override_approvals
         end
 
-        resources :approval_items, only: %i[index create update], shallow: false
+        resources :approval_items, only: %i[index create update destroy], shallow: false
 
         resources :commits, only: [], shallow: false do
           member do

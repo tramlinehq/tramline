@@ -1,14 +1,14 @@
-<%= content_tag(:div, id: dom_id(item, :edit_approvals_select)) do %>
-  <%= content_tag(:div, {data: {controller: "stream-effect",
-                                stream_effect_param_value: "status",
-                                stream_effect_url_value: release_approval_item_url(@release, item)}}) do %>
-    <div class="flex item-gap-default justify-end items-center">
-      <% unless item.not_started? %>
-        <mark class="text-xs px-0.5 px-1 leading-4 <%= item.status_color %>">
-          <%= item.status_notice %>
-        </mark>
-      <% end %>
+<%= content_tag(:div, {data: {controller: "stream-effect",
+                              stream_effect_param_value: "status",
+                              stream_effect_url_value: release_approval_item_url(release, item)}}) do %>
+  <div class="flex item-gap-default justify-end items-center">
+    <% unless item.not_started? %>
+      <mark class="text-xs px-0.5 px-1 leading-4 <%= item.status_color %>">
+        <%= item.status_notice %>
+      </mark>
+    <% end %>
 
+    <div class="flex items-center gap-2">
       <% if item.disabled? %>
         <%= render V2::TooltipComponent.new(item.status_tooltip, placement: "top") do |tooltip| %>
           <% tooltip.with_body do %>
@@ -25,7 +25,16 @@
                        class: "#{EnhancedFormHelper::AuthzForm::COMPACT_SELECT_CLASSES}",
                        data: {action: "change->stream-effect#update", stream_effect_target: "dispatch"} %>
       <% end %>
+
+      <%= render V2::ButtonComponent.new(
+        scheme: :naked_icon,
+        type: :action,
+        size: :none,
+        disabled: !item.not_started?,
+        html_options: {data: {action: "click->stream-effect#delete"}}) do |b|
+        b.with_icon("v2/trash.svg", size: :md)
+      end %>
     </div>
-  <% end %>
+  </div>
 <% end %>
 

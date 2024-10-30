@@ -31,6 +31,25 @@ describe ApprovalItem do
     expect(approval_item).to be_valid
   end
 
+  it "does not allow deleting items when they are not not_started" do
+    pilot = create(:user, :with_email_authentication, :as_developer)
+    release = create(:release, release_pilot: pilot)
+    approval_item = create(:approval_item, :approved, release:, author: pilot)
+
+    expect(approval_item.destroy).to be(false)
+    expect(approval_item.errors[:base]).to include("Cannot delete an approval item that has already started.")
+  end
+
+  it "does not allow invalid statuses" do
+    pilot = create(:user, :with_email_authentication, :as_developer)
+    release = create(:release, release_pilot: pilot)
+    approval_item_1 = build(:approval_item, status: nil, release:, author: pilot)
+    approval_item_2 = build(:approval_item, status: "killed", release:, author: pilot)
+
+    expect(approval_item_1).not_to be_valid
+    expect(approval_item_2).not_to be_valid
+  end
+
   describe "#update_status" do
     let(:pilot) { create(:user, :with_email_authentication, :as_developer) }
     let(:release) { create(:release, release_pilot: pilot) }
