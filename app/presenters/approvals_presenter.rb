@@ -8,9 +8,9 @@ class ApprovalsPresenter < SimpleDelegator
     approved: {text: "Approved", notice: "approved by", color: :success}
   }.with_indifferent_access
 
-  INFO = "Release pilots can create approval items, and assign them to specific individuals to manage stakeholder approvals for the release.".freeze
+  INFO = "Release captains can create approval items, and assign them to specific individuals to manage stakeholder approvals for the release.".freeze
   APPROVED_NOTICE = "No items with pending approvals. The release can move to the submission step.".freeze
-  FORCE_APPROVED_NOTICE = "Approvals have been force-approved by the release pilot. The release can now move to the submission step.".freeze
+  FORCE_APPROVED_NOTICE = "Approvals have been force-approved by the release captain. The release can now move to the submission step.".freeze
 
   def self.sanitized_statuses
     STATUS.transform_values { |value| value[:text] }.invert

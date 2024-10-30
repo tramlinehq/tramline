@@ -74,7 +74,7 @@ class ApprovalItem < ApplicationRecord
 
   def release_pilots_as_authors_only
     if author != release_pilot
-      errors.add(:author, "must be a release pilot")
+      errors.add(:author, "must be a release captain")
     end
   end
 
