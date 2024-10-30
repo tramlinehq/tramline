@@ -144,14 +144,18 @@
 
     <% if devops_report.present? %>
       <%= render V2::SectionComponent.new(style: :titled, title: "Mobile DevOps") do %>
-        <div class="grid grid-cols-3 item-gap-default">
+        <div class="grid grid-cols-4 item-gap-default">
           <%= render ChartComponent.new(devops_report.frequency) %>
           <%= render ChartComponent.new(devops_report.duration) %>
+          <div><!-- grid maintenance --></div>
+          <div><!-- grid maintenance --></div>
           <%= render ChartComponent.new(devops_report.patch_fixes) if devops_report.patch_fixes.present? %>
           <%= render ChartComponent.new(devops_report.hotfixes) if devops_report.hotfixes.present? %>
 
           <% if ios_enabled? %>
             <%= render ChartComponent.new(devops_report.time_in_review) %>
+          <% else %>
+            <div><!-- grid maintenance --></div>
           <% end %>
 
           <div class="col-span-2">
@@ -167,7 +171,7 @@
       <% end %>
 
       <%= render V2::SectionComponent.new(style: :titled, title: "Operational Efficiency") do %>
-        <div class="grid grid-cols-3 item-gap-default">
+        <div class="grid grid-cols-4 item-gap-default">
           <%= render ChartComponent.new(devops_report.contributors) %>
           <%= render ChartComponent.new(devops_report.stability_contributors) %>
 
