@@ -96,6 +96,8 @@
             <%= iosF.hidden_field :id %>
             <div><%= iosF.labeled_textarea :release_notes, "What's New?" %></div>
             <div><%= iosF.labeled_textarea :promo_text, "Promo Text" %></div>
+            <div><%= iosF.labeled_textarea :keywords, "Keywords", readonly: true, disabled: true %></div>
+            <div><%= iosF.labeled_textarea :description, "Description", readonly: true, disabled: true %></div>
           </div>
         <% end %>
       <% elsif component.cross_platform? %>
