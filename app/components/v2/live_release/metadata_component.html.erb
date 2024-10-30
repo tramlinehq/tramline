@@ -43,7 +43,7 @@
           <%= render V2::IconComponent.new("languages.svg", size: :xxl) %>
           <%= select_tag :language,
                          options_for_select(active_languages, language),
-                         disabled: true,
+                         disabled: false,
                          class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES,
                          data: { action: "change->stream-effect#fetch", stream_effect_target: "dispatch" } %>
         </div>
@@ -96,8 +96,8 @@
             <%= iosF.hidden_field :id %>
             <div><%= iosF.labeled_textarea :release_notes, "What's New?" %></div>
             <div><%= iosF.labeled_textarea :promo_text, "Promo Text" %></div>
-            <div><%= iosF.labeled_text_field :keywords, "Keywords" %></div>
-            <div><%= iosF.labeled_textarea :description, "Description" %></div>
+            <div><%= iosF.labeled_textarea :keywords, "Keywords", readonly: true, disabled: true %></div>
+            <div><%= iosF.labeled_textarea :description, "Description", readonly: true, disabled: true %></div>
           </div>
         <% end %>
       <% elsif component.cross_platform? %>
@@ -108,4 +108,3 @@
     <% end %>
   </div>
 <% end %>
-

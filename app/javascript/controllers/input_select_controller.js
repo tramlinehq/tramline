@@ -1,5 +1,5 @@
-import { Controller } from "@hotwired/stimulus";
-import SlimSelect from "slim-select";
+import {Controller} from "@hotwired/stimulus";
+import TomSelect from "tom-select";
 
 export default class extends Controller {
   static values = {
@@ -7,13 +7,26 @@ export default class extends Controller {
   };
 
   connect() {
-    this.slimselect = new SlimSelect({
-      select: this.element,
-      ...this.optionsValue
+    this.select = new TomSelect(this.element, {
+      maxOptions: 5,
+      addPrecedence: true,
+      diacritics: true,
+      onItemAdd: function () {
+        this.setTextboxValue('');
+      },
+      ...this.optionsValue,
     });
   }
 
   disconnect() {
-    this.slimselect.destroy();
+    if (this.select) {
+      this.select.destroy();
+    }
+  }
+
+  sync() {
+    if (this.select) {
+      this.select.sync();
+    }
   }
 }

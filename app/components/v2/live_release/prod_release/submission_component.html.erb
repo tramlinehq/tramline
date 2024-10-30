@@ -66,10 +66,10 @@
   <% if @blocked_notice %>
     <%= render V2::AlertComponent.new(kind: :banner,
                                       type: :notice,
-                                      title: "Release is locked",
+                                      title: "Release to production is blocked",
                                       full_screen: false,
-                                      info: { label: "Go to the blocking release", link: blocked_release_link }) do %>
-      You cannot start this submission until the <%= blocked_release_link_text %> is finished.
+                                      info: blocked_release_info[:info]) do %>
+      <%= blocked_release_info[:message] %>
     <% end %>
   <% end %>
 

@@ -2,25 +2,26 @@
 #
 # Table name: releases
 #
-#  id                       :uuid             not null, primary key
-#  branch_name              :string           not null
-#  completed_at             :datetime
-#  hotfixed_from            :uuid
-#  internal_notes           :jsonb
-#  is_automatic             :boolean          default(FALSE)
-#  is_v2                    :boolean          default(FALSE)
-#  new_hotfix_branch        :boolean          default(FALSE)
-#  original_release_version :string
-#  release_type             :string           not null
-#  scheduled_at             :datetime
-#  slug                     :string           indexed
-#  status                   :string           not null
-#  stopped_at               :datetime
-#  tag_name                 :string
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  release_pilot_id         :uuid
-#  train_id                 :uuid             not null, indexed
+#  id                        :uuid             not null, primary key
+#  branch_name               :string           not null
+#  completed_at              :datetime
+#  hotfixed_from             :uuid
+#  internal_notes            :jsonb
+#  is_automatic              :boolean          default(FALSE)
+#  is_v2                     :boolean          default(FALSE)
+#  new_hotfix_branch         :boolean          default(FALSE)
+#  original_release_version  :string
+#  release_type              :string           not null
+#  scheduled_at              :datetime
+#  slug                      :string           indexed
+#  status                    :string           not null
+#  stopped_at                :datetime
+#  tag_name                  :string
+#  created_at                :datetime         not null
+#  updated_at                :datetime         not null
+#  approval_overridden_by_id :uuid             indexed
+#  release_pilot_id          :uuid
+#  train_id                  :uuid             not null, indexed
 #
 class Release < ApplicationRecord
   has_paper_trail
@@ -51,6 +52,7 @@ class Release < ApplicationRecord
     release_branch_created
     kickoff_pr_succeeded
     version_changed
+    approvals_overwritten
     finalizing
     pre_release_pr_not_creatable
     pull_request_not_mergeable
@@ -99,6 +101,7 @@ class Release < ApplicationRecord
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
   belongs_to :release_pilot, class_name: "Accounts::User", optional: true
+  belongs_to :approval_overridden_by, class_name: "Accounts::User", optional: true
   has_one :scheduled_release, dependent: :destroy
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
@@ -111,6 +114,7 @@ class Release < ApplicationRecord
   has_many :build_queues, dependent: :destroy
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
+  has_many :approval_items, -> { order(:created_at) }, inverse_of: :release, dependent: :destroy
 
   has_many :store_rollouts, through: :release_platform_runs
   has_many :store_submissions, through: :release_platform_runs
@@ -173,7 +177,7 @@ class Release < ApplicationRecord
   friendly_id :human_slug, use: :slugged
 
   delegate :versioning_strategy, :patch_version_bump_only, :product_v2?, to: :train
-  delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
+  delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, to: :train
   delegate :platform, :organization, to: :app
 
   def self.pending_release?
@@ -464,7 +468,8 @@ class Release < ApplicationRecord
 
   def blocked_for_production_release?
     return true if upcoming?
-    ongoing? && train.hotfix_release.present?
+    return true if ongoing? && train.hotfix_release.present?
+    approvals_blocking?
   end
 
   def retrigger_for_hotfix?
@@ -531,8 +536,27 @@ class Release < ApplicationRecord
     train.update!(version_current: release_version)
   end
 
-  def temporary_unblock_metadata_edits?
-    Flipper.enabled?(:temporary_unblock_metadata_edits, self)
+  def override_approvals(who)
+    return unless active?
+    return unless approvals_enabled?
+    return true if approvals_overridden?
+
+    if who == release_pilot
+      update(approval_overridden_by: who)
+      event_stamp!(reason: :approvals_overwritten, kind: :notice)
+    end
+  end
+
+  def approvals_overridden?
+    approval_overridden_by.present?
+  end
+
+  def approvals_finished?
+    approval_items.approved.size == approval_items.size
+  end
+
+  def approvals_blocking?
+    !(approvals_overridden? || approvals_finished?)
   end
 
   private

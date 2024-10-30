@@ -147,10 +147,15 @@
         <div class="grid grid-cols-4 item-gap-default">
           <%= render ChartComponent.new(devops_report.frequency) %>
           <%= render ChartComponent.new(devops_report.duration) %>
-          <%= render ChartComponent.new(devops_report.hotfixes) %>
+          <div><!-- grid maintenance --></div>
+          <div><!-- grid maintenance --></div>
+          <%= render ChartComponent.new(devops_report.patch_fixes) if devops_report.patch_fixes.present? %>
+          <%= render ChartComponent.new(devops_report.hotfixes) if devops_report.hotfixes.present? %>
 
           <% if ios_enabled? %>
             <%= render ChartComponent.new(devops_report.time_in_review) %>
+          <% else %>
+            <div><!-- grid maintenance --></div>
           <% end %>
 
           <div class="col-span-2">
@@ -170,15 +175,15 @@
           <%= render ChartComponent.new(devops_report.contributors) %>
           <%= render ChartComponent.new(devops_report.stability_contributors) %>
 
-          <div><!-- grid maintenance --></div>
+          <% if teams_supported? %>
+            <div class="col-span-2">
+              <%= render ChartComponent.new(devops_report.team_contributors) %>
+            </div>
 
-          <div class="col-span-2">
-            <%= render ChartComponent.new(devops_report.team_contributors) %>
-          </div>
-
-          <div class="col-span-2">
-            <%= render ChartComponent.new(devops_report.team_stability_contributors) %>
-          </div>
+            <div class="col-span-2">
+              <%= render ChartComponent.new(devops_report.team_stability_contributors) %>
+            </div>
+          <% end %>
         </div>
       <% end %>
     <% end %>

@@ -177,4 +177,8 @@ class SignedInApplicationController < ApplicationController
   def v2?
     @train&.product_v2?
   end
+
+  def stream_flash
+    turbo_stream.update("flash_stream", V2::FlashComponent.new(flash))
+  end
 end

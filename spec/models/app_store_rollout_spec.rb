@@ -235,7 +235,15 @@ describe AppStoreRollout do
       allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { release_info })
       allow(rollout).to receive(:provider).and_return(providable_dbl)
       rollout.resume_release!
-      expect(rollout.started?).to be(true)
+      expect(rollout.reload.started?).to be(true)
+    end
+
+    it "updates the stage if the resumed rollout has moved on to the next stage" do
+      rollout = create(:store_rollout, :paused, :app_store, release_platform_run:, store_submission:, config: [1, 80], current_stage: 0)
+      allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { release_info })
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+      rollout.resume_release!
+      expect(rollout.reload.current_stage).to be(1)
     end
 
     it "does not resume the rollout if store call fails" do

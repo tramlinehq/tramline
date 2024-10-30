@@ -1,11 +1,13 @@
 class InternalReleasesController < SignedInApplicationController
   include Tabbable
+
   before_action :require_write_access!, except: %i[index]
   before_action :set_release_platform_run, only: %i[create]
+  before_action :live_release!, only: %i[index]
+  before_action :set_app, only: %i[index]
+  around_action :set_time_zone
 
   def index
-    live_release!
-    @app = @release.app
   end
 
   def create
@@ -22,5 +24,9 @@ class InternalReleasesController < SignedInApplicationController
 
   def set_release_platform_run
     @release_platform_run = ReleasePlatformRun.find(params[:id])
+  end
+
+  def set_app
+    @app = @release.app
   end
 end

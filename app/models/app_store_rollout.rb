@@ -38,11 +38,14 @@ class AppStoreRollout < StoreRollout
 
     event :start, after_commit: :on_start! do
       transitions from: :created, to: :started
-      transitions from: :paused, to: :started
     end
 
     event :pause do
       transitions from: :started, to: :paused
+    end
+
+    event :resume do
+      transitions from: :paused, to: :started
     end
 
     event :halt do
@@ -156,10 +159,11 @@ class AppStoreRollout < StoreRollout
 
   def resume_release!
     with_lock do
-      return unless may_start?
+      return unless may_resume?
 
       result = provider.resume_phased_release
       if result.ok?
+        resume!
         update_rollout(result.value!)
         event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
         notify!("Rollout has been resumed", :production_rollout_resumed, notification_params)

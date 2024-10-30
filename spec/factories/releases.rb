@@ -6,6 +6,7 @@ FactoryBot.define do
     branch_name { "branch" }
     original_release_version { "1.2.3" }
     release_type { "release" }
+    release_pilot_id { train.app.organization.owner.id }
 
     trait :hotfix do
       release_type { "hotfix" }

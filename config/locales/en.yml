@@ -119,6 +119,15 @@ en:
           failure: "Failed to login via Single Sign-On! Please contact support if the issue persists."
         saml_redeem:
           failure: "Failed to accept the response from SSO provider."
+  approval_items:
+    not_found: "Approval item not found."
+    destroy:
+      conflict: "Item was updated elsewhere, it cannot be deleted."
+      failure: "Failed to destroy the approval item. Please try again."
+    update:
+      failure: "Could not update approval item status. Please try again."
+    create:
+      success: "Approval item was successfully created."
 
   activerecord:
     models:
@@ -338,6 +347,7 @@ en:
           attachment_upload_in_progress: "store version is not in a valid state to submit for review, attachment uploads still in progress"
           localization_not_found: "the locale for release metadata doesn't exist in the store"
           unauthorized: "the request to the store failed due to authorization error"
+          developer_rejected: "the store version was rejected by you manually"
       test_flight_submission:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"
@@ -533,7 +543,6 @@ en:
       accepted: "Invitation was accepted. Please sign in to continue."
       already_accepted: "Invitation was already accepted!"
       failed: "Failed to accept your invitation. Please contact support!"
-
     invite_mailer:
       existing_user:
         subject: "%{sender} invited you to join the %{org} team on Tramline"
@@ -550,6 +559,10 @@ en:
         someone_invited_you: "You have been invited to join the <b>%{org}</b> team owned by <b>%{sender_email}</b> on Tramline as a %{role}. To get started, accept the invite below:"
         accept: "Accept invitation"
         ignore: "If you don't want to accept the invitation, please ignore this email. Your account won't be created until you access the link above and set your password."
+
+  approval_assignee_mailer:
+    notify:
+      subject: "Action Required: New approval item assigned on Tramline"
 
   mailer:
     generic:
@@ -609,17 +622,21 @@ en:
       duration:
         title: "Release duration"
         scope: "Last 6 releases"
-        help_text: "How long does the release take?"
+        help_text: "How long does the release take?\n<strong>Note</strong>: This does not include hotfix releases."
       frequency:
         title: "Release frequency"
         scope: "Last 6 months"
-        help_text: "How often do you release every month?\n<strong>Note</strong>: This includes hotfix releases."
+        help_text: "How often do you release every month?\n<strong>Note</strong>: This does not include hotfix releases."
       time_in_review:
         title: "Time in review (iOS)"
         scope: "Last 6 versions"
         help_text: "Time spent in review on the App Store.\n<strong>Note</strong>: This includes hotfix releases."
       hotfixes:
-        title: "Fixes during release"
+        title: "Fixes after the release (hotfixes)"
+        scope: "Last 6 releases"
+        help_text: "Fixes made after the release has reached all users in the store"
+      patch_fixes:
+        title: "Fixes during the release"
         scope: "Last 6 releases"
         help_text: "Fixes made after the release has partially reached the store"
       time_in_phases:

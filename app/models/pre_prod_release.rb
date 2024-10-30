@@ -31,8 +31,12 @@ class PreProdRelease < ApplicationRecord
   scope :inactive, -> { where(status: INACTIVE) }
 
   before_create :set_default_tester_notes
-  after_create_commit -> { previous&.mark_as_stale! }
-  after_create_commit -> { create_stamp!(data: stamp_data) }
+
+  # TODO: Remove this accessor, once the migration is complete
+  attr_accessor :in_data_migration_mode
+
+  after_create_commit -> { previous&.mark_as_stale! }, unless: :in_data_migration_mode
+  after_create_commit -> { create_stamp!(data: stamp_data) }, unless: :in_data_migration_mode
 
   delegate :release, :train, :platform, to: :release_platform_run
   delegate :notify!, :notify_with_snippet!, to: :train
@@ -73,7 +77,7 @@ class PreProdRelease < ApplicationRecord
   def trigger_submissions!
     return unless actionable?
     return finish! if conf.submissions.blank?
-    trigger_submission!(conf.submissions.first)
+    trigger_submission!(conf.first_submission)
   end
 
   def rollout_started!
@@ -99,8 +103,6 @@ class PreProdRelease < ApplicationRecord
     changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)
 
     return changes_since_last_run if last_successful_run.present?
-
-    return changes_since_last_release || [] if previous.blank?
     ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq { |c| c.commit_hash }
   end
 

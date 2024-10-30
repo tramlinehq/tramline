@@ -250,20 +250,18 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   @apply bg-main-50;
 }
 
-.ss-main {
-  padding: 0 0.625rem 0 0.625rem !important;
+.ts-control {
+  @apply bg-main-50 border-none p-0 !important;
 }
 
-.ss-main > .ss-single-selected {
-  @apply bg-main-50 !important;
-  border: none !important;
-  height: 2.625rem !important;
+.ts-control > .item {
+  @apply bg-blue-700 text-white py-0.5 px-1 !important;
 }
 
-.ss-main > .ss-multi-selected {
-  @apply bg-main-50 px-1 py-1 !important;
-  border: none !important;
+.ts-dropdown {
+  @apply border-default !important;
 }
+
 
 /* new styles */
 

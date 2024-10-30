@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_16_133305) do
+ActiveRecord::Schema[7.2].define(version: 2024_10_18_122153) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -79,6 +79,30 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_16_133305) do
     t.datetime "updated_at", null: false
     t.index ["app_config_id"], name: "index_app_variants_on_app_config_id"
     t.index ["bundle_identifier", "app_config_id"], name: "index_app_variants_on_bundle_identifier_and_app_config_id", unique: true
+  end
+
+  create_table "approval_assignees", force: :cascade do |t|
+    t.bigint "approval_item_id", null: false
+    t.uuid "assignee_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approval_item_id"], name: "index_approval_assignees_on_approval_item_id"
+    t.index ["assignee_id"], name: "index_approval_assignees_on_assignee_id"
+  end
+
+  create_table "approval_items", force: :cascade do |t|
+    t.string "content", null: false
+    t.string "status", default: "not_started"
+    t.datetime "status_changed_at"
+    t.uuid "status_changed_by_id"
+    t.uuid "author_id", null: false
+    t.uuid "release_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_approval_items_on_author_id"
+    t.index ["release_id"], name: "index_approval_items_on_release_id"
+    t.index ["status_changed_at"], name: "index_approval_items_on_status_changed_at"
+    t.index ["status_changed_by_id"], name: "index_approval_items_on_status_changed_by_id"
   end
 
   create_table "apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -667,6 +691,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_16_133305) do
     t.uuid "release_pilot_id"
     t.string "slug"
     t.boolean "is_v2", default: false
+    t.uuid "approval_overridden_by_id"
+    t.index ["approval_overridden_by_id"], name: "index_releases_on_approval_overridden_by_id"
     t.index ["slug"], name: "index_releases_on_slug", unique: true
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
@@ -882,6 +908,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_16_133305) do
     t.string "versioning_strategy", default: "semver"
     t.boolean "stop_automatic_releases_on_failure", default: false, null: false
     t.boolean "patch_version_bump_only", default: false, null: false
+    t.boolean "approvals_enabled", default: false, null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
@@ -973,6 +1000,11 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_16_133305) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "app_configs", "apps"
   add_foreign_key "app_variants", "app_configs"
+  add_foreign_key "approval_assignees", "approval_items"
+  add_foreign_key "approval_assignees", "users", column: "assignee_id"
+  add_foreign_key "approval_items", "releases"
+  add_foreign_key "approval_items", "users", column: "author_id"
+  add_foreign_key "approval_items", "users", column: "status_changed_by_id"
   add_foreign_key "apps", "organizations"
   add_foreign_key "build_artifacts", "step_runs"
   add_foreign_key "build_queues", "releases"
@@ -1021,6 +1053,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_16_133305) do
   add_foreign_key "release_platforms", "apps"
   add_foreign_key "release_step_configs", "release_platform_configs"
   add_foreign_key "releases", "trains"
+  add_foreign_key "releases", "users", column: "approval_overridden_by_id"
   add_foreign_key "rule_expressions", "release_health_rules"
   add_foreign_key "scheduled_releases", "trains"
   add_foreign_key "staged_rollouts", "deployment_runs"
