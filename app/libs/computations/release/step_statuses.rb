@@ -70,6 +70,7 @@ class Computations::Release::StepStatuses
   end
 
   def app_submission_status
+    return STATUS[:blocked] if @release.approvals_blocking?
     return STATUS[:blocked] if all_platforms? { |rp| rp.production_releases.none? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.inflight_production_release.present? }
     STATUS[:success]
@@ -92,9 +93,10 @@ class Computations::Release::StepStatuses
     return PHASES[:completed] if finished?
     return PHASES[:stopped] if stopped? || stopped_after_partial_finish?
     return PHASES[:finishing] if Release::POST_RELEASE_STATES.include?(status)
-    return PHASES[:approvals] if @release.approvals_blocking?
     return PHASES[:rollout] if any_platforms? { |rp| rp.production_store_rollouts.present? }
-    return PHASES[:review] if any_platforms? { |rp| rp.inflight_production_release.present? }
+    in_review = any_platforms? { |rp| rp.inflight_production_release.present? }
+    return PHASES[:approvals] if @release.approvals_blocking? && in_review
+    return PHASES[:review] if in_review
     return PHASES[:stabilization] if any_platforms? { |rp| rp.pre_prod_releases.any? }
     PHASES[:kickoff]
   end
