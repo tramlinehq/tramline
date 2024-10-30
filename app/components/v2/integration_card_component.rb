@@ -7,18 +7,20 @@ class V2::IntegrationCardComponent < V2::BaseComponent
     bitrise: "Access Token"
   }
 
-  def initialize(app, integration, category, existing_github_integration, existing_bitbucket_integration)
+  def initialize(app, integration, category)
     @app = app
     @integration = integration
     @category = category
-    @existing_github_integration = existing_github_integration
-    @existing_bitbucket_integration = existing_bitbucket_integration
   end
 
   attr_reader :integration
   delegate :connected?, :disconnected?, :providable, :connection_data, :providable_type, :ci_cd?, to: :integration, allow_nil: true
   alias_method :provider, :providable
   delegate :creatable?, :connectable?, to: :provider
+
+  def repeated_integration
+    Integration.existing_integration(@app, providable_type)
+  end
 
   def connect_path
     connect_app_integrations_path(@app, integration)

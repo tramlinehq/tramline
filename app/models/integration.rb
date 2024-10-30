@@ -7,13 +7,13 @@
 #  discarded_at    :datetime
 #  integrable_type :string
 #  metadata        :jsonb
-#  providable_type :string           indexed => [providable_id], indexed => [integrable_id, category, status]
+#  providable_type :string           indexed => [integrable_id, category, status]
 #  status          :string           indexed => [integrable_id, category, providable_type]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  app_id          :uuid             indexed
 #  integrable_id   :uuid             indexed => [category, providable_type, status]
-#  providable_id   :uuid             indexed => [providable_type]
+#  providable_id   :uuid
 #
 class Integration < ApplicationRecord
   has_paper_trail
@@ -198,12 +198,8 @@ class Integration < ApplicationRecord
       kept.build_channel.find(&:google_firebase_integration?)&.providable
     end
 
-    def existing_github_integration(app)
-      app.integrations.connected.find_by(providable_type: "GithubIntegration")
-    end
-
-    def existing_bitbucket_integration(app)
-      app.integrations.connected.find_by(providable_type: "BitbucketIntegration")
+    def existing_integration(app, providable_type)
+      app.integrations.connected.find_by(providable_type: providable_type)
     end
 
     private

@@ -1,10 +1,8 @@
 class V2::IntegrationListComponent < V2::BaseComponent
-  def initialize(app, integrations, existing_github_integration, existing_bitbucket_integration, pre_open_category: nil)
+  def initialize(app, integrations, pre_open_category: nil)
     @app = app
     @integrations_by_categories = integrations
     @pre_open_category = pre_open_category
-    @existing_github_integration = existing_github_integration
-    @existing_bitbucket_integration = existing_bitbucket_integration
   end
 
   def title(category)

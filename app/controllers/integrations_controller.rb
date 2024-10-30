@@ -15,13 +15,11 @@ class IntegrationsController < SignedInApplicationController
   def index
     @pre_open_category = Integration.categories[params[:integration_category]]
     set_integrations_by_categories
-    set_existing_github_integration
-    set_existing_bitbucket_integration
   end
 
   def reuse
     return redirect_to app_integrations_path(@app), alert: "Integration not found or not connected." unless @existing_integration&.connected?
-    new_integration = build_new_integration(@existing_integration)
+    new_integration = initiate_integration(@existing_integration)
     if new_integration.save
       redirect_to app_integrations_path(@app), notice: "#{@existing_integration.providable_type} integration reused successfully."
     else
@@ -63,12 +61,12 @@ class IntegrationsController < SignedInApplicationController
 
   private
 
-  def build_new_integration(existing_integration)
-    @app.integrations.new(
+  def initiate_integration(existing_integration)
+    @app.integrations.find_or_initialize_by(
       category: @integration.category,
       status: Integration.statuses[:connected],
       metadata: existing_integration.metadata,
-      providable: build_providable(existing_integration)
+      providable: existing_integration.providable
     )
   end
 
@@ -82,27 +80,6 @@ class IntegrationsController < SignedInApplicationController
 
   def set_existing_integration
     @existing_integration = Integration.find_by(id: params[:id])
-  end
-
-  def set_existing_github_integration
-    @existing_github_integration = Integration.existing_github_integration(@app)
-  end
-
-  def set_existing_bitbucket_integration
-    @existing_bitbucket_integration = Integration.existing_bitbucket_integration(@app)
-  end
-
-  def build_providable(existing_integration)
-    providable_class = existing_integration.providable_type.constantize
-
-    if existing_integration.providable_type == "GithubIntegration"
-      installation_id = existing_integration.providable.installation_id
-      providable_class.new(installation_id: installation_id)
-    else
-      oauth_access_token = existing_integration.providable.oauth_access_token
-      oauth_refresh_token = existing_integration.providable.oauth_refresh_token
-      providable_class.new(oauth_access_token: oauth_access_token, oauth_refresh_token: oauth_refresh_token)
-    end
   end
 
   def set_providable

@@ -30,7 +30,7 @@ describe IntegrationsController do
 
       it "reuses the integration and redirects to the integrations path with a success message" do
         new_integration = instance_double(Integration, save: true)
-        allow(controller).to receive(:build_new_integration).and_return(new_integration)
+        allow(controller).to receive(:initiate_integration).and_return(new_integration)
 
         post :reuse, params: {id: existing_integration.id, app_id: app.id}
 
@@ -40,7 +40,7 @@ describe IntegrationsController do
 
       it "fails to reuse the integration and redirects with an error message if saving the new integration fails" do
         new_integration = instance_double(Integration, save: false, errors: instance_double(ActiveModel::Errors, full_messages: ["Save failed"]))
-        allow(controller).to receive(:build_new_integration).and_return(new_integration)
+        allow(controller).to receive(:initiate_integration).and_return(new_integration)
 
         post :reuse, params: {id: existing_integration.id, app_id: app.id}
 

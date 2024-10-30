@@ -36,11 +36,8 @@
           <% if connectable? %>
             <div class="flex gap-4">
               <%= connectable_form_partial %>
-              <% if @existing_github_integration && providable_type == 'GithubIntegration' %>
-                <%= reusable_integration_form_partial(@existing_github_integration) %>
-              <% end %>
-              <% if @existing_bitbucket_integration && providable_type == 'BitbucketIntegration' %>
-                <%= reusable_integration_form_partial(@existing_bitbucket_integration) %>
+              <% if repeated_integration.present? %>
+                <%= reusable_integration_form_partial(repeated_integration) %>
               <% end %>
             </div>
           <% end %>

@@ -5,7 +5,7 @@
     <div id="<%= category %>">
       <div class="grid grid-cols-10 gap-6 mt-4">
         <% integrations.each do |integration| %>
-          <%= render V2::IntegrationCardComponent.new(@app, integration, category, @existing_github_integration, @existing_bitbucket_integration) %>
+          <%= render V2::IntegrationCardComponent.new(@app, integration, category) %>
         <% end %>
       </div>
     </div>
