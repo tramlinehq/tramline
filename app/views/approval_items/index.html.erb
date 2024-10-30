@@ -1,0 +1,9 @@
+<% icon = live_release_tab_configuration.dig(:store_release, :approvals, :icon) %>
+<%= render V2::LiveRelease::ContainerComponent.new(@release, title: @release.train.name) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "Approvals", subtitle: ApprovalsPresenter::INFO, icon:) do %>
+    <%= content_tag(:div, id: "list_approval_items") do %>
+      <%= render partial: "items", locals: { release: @release, items: @approval_items, available_assignees: @available_assignees } %>
+    <% end %>
+  <% end %>
+<% end %>

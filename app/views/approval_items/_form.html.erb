@@ -1,0 +1,34 @@
+<%= form_with(model:, url:, method: :post, builder: EnhancedFormHelper::AuthzForm) do |form| %>
+  <div class="grid gap-4 grid-cols-2 mb-4">
+    <div><%= form.labeled_textarea :content,
+                                   "Item content (#{ApprovalItem::MAX_CONTENT_LENGTH} characters max)",
+                                   required: true,
+                                   placeholder: "eg. Security review is required",
+                                   maxlength: ApprovalItem::MAX_CONTENT_LENGTH %></div>
+
+    <div>
+      <%= form.labeled_select :approval_assignees,
+                              "Assign item to team members",
+                              options_for_select(select_options),
+                              {},
+                              {
+                                multiple: true,
+                                placeholder: "Type to search...",
+                                data: {
+                                  controller: "input-select",
+                                  selected_value: form.object.approval_assignees
+                                }
+                              } %>
+
+      <div class="flex flex-col text-secondary mt-1 text-xs gap-2">
+        <p>
+          You can assign multiple users to a single item. If no one is assigned, only the release pilot will be able to
+          update the status.
+          <span class="font-medium">Tramline will notify the assignee(s) via email once the item is created.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <%= form.authz_submit "Add", "plus.svg" %>
+<% end %>

@@ -1,7 +1,7 @@
 require "rails_helper"
 
 describe Api::V1::BuildsController do
-  let(:organization) { create(:organization) }
+  let(:organization) { create(:organization, :with_owner_membership) }
   let(:app) { create(:app, :cross_platform, organization:) }
   let(:train) { create(:train, app:) }
   let(:release) { create(:release, train:) }
