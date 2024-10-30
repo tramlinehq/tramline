@@ -11,7 +11,7 @@ export default class extends Controller {
       maxOptions: 5,
       addPrecedence: true,
       diacritics: true,
-      onItemAdd: function() {
+      onItemAdd: function () {
         this.setTextboxValue('');
       },
       ...this.optionsValue,
@@ -21,6 +21,12 @@ export default class extends Controller {
   disconnect() {
     if (this.select) {
       this.select.destroy();
+    }
+  }
+
+  sync() {
+    if (this.select) {
+      this.select.sync();
     }
   }
 }
