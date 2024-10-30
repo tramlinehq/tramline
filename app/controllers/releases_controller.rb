@@ -4,7 +4,7 @@ class ReleasesController < SignedInApplicationController
   include Tabbable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: %i[show destroy update timeline]
+  before_action :set_release, only: %i[show destroy update timeline override_approvals]
   before_action :set_train_and_app, only: %i[show destroy update timeline]
 
   def index
@@ -48,7 +48,15 @@ class ReleasesController < SignedInApplicationController
     if @release.update(update_release_params)
       redirect_to overview_release_path(@release), notice: "Captain's log was updated!"
     else
-      render :edit, status: :unprocessable_entity
+      redirect_back fallback_location: root_path, flash: {error: "Captain's log could not be updated."}
+    end
+  end
+
+  def override_approvals
+    if @release.override_approvals(current_user)
+      redirect_to release_approval_items_path(@release), notice: "Approvals have been overridden. The release can move ahead."
+    else
+      redirect_back fallback_location: root_path, flash: {error: "Approvals could not be overridden."}
     end
   end
 

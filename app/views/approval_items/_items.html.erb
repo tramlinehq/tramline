@@ -1,0 +1,78 @@
+<% if release.approvals_finished? %>
+  <%= render V2::AlertComponent.new(type: :success, title: ApprovalsPresenter::APPROVED_NOTICE, full_screen: false) %>
+<% end %>
+
+<% if release.approvals_overridden? %>
+  <%= render V2::AlertComponent.new(type: :notice, title: ApprovalsPresenter::FORCE_APPROVED_NOTICE, full_screen: false) %>
+<% end %>
+
+<div class="flex flex-col section-gap-default mt-2">
+  <%= render V2::CardComponent.new(title: "Items", separator: false, size: :full) do |card| %>
+    <% card.with_action do %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :light,
+        options: root_path,
+        type: :link,
+        disabled: true,
+        size: :xxs,
+        label: "Copy from previous release") do |b|
+        b.with_icon("v2/square_stack.svg", size: :sm)
+      end %>
+    <% end %>
+
+    <% if release.approvals_blocking? %>
+      <% card.with_action do %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :danger,
+          label: "Override approvals",
+          options: override_approvals_release_path(release),
+          type: :button,
+          html_options:
+            {method: :patch,
+             data: {turbo_method: :patch,
+                    turbo_confirm: "This will override all the release approvals. Are you sure?"}}) do |b|
+          b.with_icon("v2/key_square.svg")
+        end %>
+      <% end %>
+    <% end %>
+
+    <% if release.approvals_editable? %>
+      <% card.with_action do %>
+        <%= render V2::ModalComponent.new(title: "Add approval item", dismissable: false) do |modal| %>
+          <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
+                  .with_icon("v2/plus.svg", size: :md) %>
+          <% modal.with_body do %>
+            <%= render partial: "form", locals: {
+              model: [release, release.approval_items.new],
+              url: release_approval_items_path(release),
+              select_options: ApprovalsPresenter.available_assignee_options(available_assignees)
+            } %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% if items.none? %>
+      <%= render V2::EmptyStateComponent.new(text: "There are no items to approve for this release. Add approvals to block submissions for this release.", banner_image: "v2/list_checks.svg", type: :tiny) %>
+    <% else %>
+      <%= render V2::TableComponent.new(columns: ["", ""]) do |table| %>
+        <% items.each do |item| %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              <%= render partial: "item_content", locals: {item:} %>
+            <% end %>
+
+            <% row.with_cell(wrap: true) do %>
+              <%= render partial: "item_select", locals: {release:, item:} %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <div class="text-secondary text-xs">
+        † Use the dropdown to change the status of any item. Once an item is approved, it cannot be reverted back.
+      </div>
+    <% end %>
+  <% end %>
+</div>
+

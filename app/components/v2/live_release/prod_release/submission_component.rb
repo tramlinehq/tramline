@@ -49,16 +49,32 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
     super
   end
 
-  def blocked_release_link
-    if release.ongoing?
-      hotfix_release_app_train_releases_path(release.train.app, release.train)
-    else
-      ongoing_release_app_train_releases_path(release.train.app, release.train)
-    end
-  end
+  memoize def blocked_release_info
+    train = release.train
+    app = train.app
 
-  def blocked_release_link_text
-    release.ongoing? ? "current hotfix release" : "current ongoing release"
+    if release.upcoming?
+      return {
+        message: "You cannot start this submission until the current ongoing release is finished.",
+        info: {label: "Go to the blocking release", link: ongoing_release_app_train_releases_path(app, train)}
+      }
+    end
+
+    if release.ongoing? && train.hotfix_release.present?
+      return {
+        message: "You cannot start this submission until the current hotfix release is finished.",
+        info: {label: "Go to the blocking release", link: hotfix_release_app_train_releases_path(app, train)}
+      }
+    end
+
+    if release.approvals_blocking?
+      return {
+        message: "You cannot start this submission until all the approvals are completed.",
+        info: {label: "Go to approvals", link: release_approval_items_path(release)}
+      }
+    end
+
+    nil
   end
 
   def status

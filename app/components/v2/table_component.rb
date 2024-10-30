@@ -4,7 +4,7 @@ class V2::TableComponent < V2::BaseComponent
   SIZES = %i[default compact].freeze
 
   renders_one :heading
-  renders_many :rows, ->(style: "") { RowComponent.new(style: style, size: @size) }
+  renders_many :rows, ->(style: "") { RowComponent.new(size: @size, style:) }
 
   def initialize(columns:, size: :default)
     raise ArgumentError, "Invalid size: #{size}" unless SIZES.include?(size)
@@ -39,7 +39,7 @@ class V2::TableComponent < V2::BaseComponent
     renders_many :cells, ->(style: "", wrap: false) { CellComponent.new(style:, wrap:, size: @size) }
     ROW_STYLE = "border-default-b"
 
-    def initialize(size:, style: "")
+    def initialize(size:, style:)
       @style = style
       @size = size
     end
