@@ -156,9 +156,7 @@ class StepRun < ApplicationRecord
       transitions from: [:deployment_started, :deployment_restarted], to: :failed_with_action_required
     end
 
-    event(:finish) do
-      after { event_stamp!(reason: :finished, kind: :success, data: stamp_data) }
-      after { finalize_release }
+    event(:finish, after_commit: :finalize_release) do
       transitions from: [:deployment_started, :deployment_restarted], to: :success
     end
 
@@ -515,6 +513,7 @@ class StepRun < ApplicationRecord
   end
 
   def finalize_release
+    event_stamp!(reason: :finished, kind: :success, data: stamp_data)
     Coordinators::FinishPlatformRun.call(release_platform_run) if release_platform_run.finalizable?
   end
 end

@@ -174,6 +174,8 @@
         <div class="grid grid-cols-4 item-gap-default">
           <%= render ChartComponent.new(devops_report.contributors) %>
           <%= render ChartComponent.new(devops_report.stability_contributors) %>
+          <div><!-- grid maintenance --></div>
+          <div><!-- grid maintenance --></div>
 
           <% if teams_supported? %>
             <div class="col-span-2">

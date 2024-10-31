@@ -71,7 +71,7 @@
     <% end %>
   <% end %>
 
-  <%= render V2::TableComponent.new(columns: ["Full Name", "Status", "Email", "Preferred Name", "Role", "VCS Username", "Team", "Invited By"]) do |table| %>
+  <%= render V2::TableComponent.new(columns: ["Full Name", "Status", "Email", "Preferred Name", "Role", "VCS Username", "Team", "Invited By", ""]) do |table| %>
     <% @users.each do |member| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
@@ -99,6 +99,24 @@
         <% end %>
         <% row.with_cell do %>
           <%= member.successful_invite_for(current_organization)&.sender&.email || "–" %>
+        <% end %>
+        <% user_role = current_user_role %>
+        <% member_role = member.role_for(current_organization) %>
+        <% if can_current_user_edit_role?(member) %>
+          <% row.with_cell(wrap: true) do %>
+            <div class="flex gap-x-2 justify-end">
+              <%= render V2::ModalComponent.new(title: "Edit role") do |modal| %>
+                <% modal.with_button(scheme: :light,
+                                    type: :action,
+                                    size: :xxs,
+                                    arrow: :none)
+                        .with_icon("v2/pencil.svg") %>
+                <% modal.with_body do %>
+                  <%= render partial: "accounts/invitations/edit_form", locals: { email: member.email, member_role: member_role } %>
+                <% end %>
+              </div>
+              <% end %>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>
