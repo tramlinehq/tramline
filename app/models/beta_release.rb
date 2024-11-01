@@ -17,7 +17,7 @@
 class BetaRelease < PreProdRelease
   STAMPABLE_REASONS = %w[created finished failed]
 
-  def tester_notes? = false
+  def tester_notes? = train.app.organization.tester_notes_in_beta_releases?
 
   def release_notes? = true
 
