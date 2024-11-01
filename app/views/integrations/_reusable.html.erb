@@ -3,10 +3,5 @@
   <%= form.fields_for :providable do |subform| %>
     <%= subform.hidden_field :type, value: type %>
   <% end %>
-  <%= form.authz_submit "Reuse existing installation", "plus.svg", scheme: :light, size: :xxs %>
-  <%= render InfoIconComponent.new do %>
-    <p>
-      Reuse existing <%= provider.display %> installation
-    </p>
-  <% end %>
+  <%= form.authz_submit "Reuse existing integration", "v2/repeat.svg", scheme: :supporting, size: :xxs %>
 <% end %>

@@ -34,7 +34,7 @@
         <% end %>
         <% if disconnected? %>
           <% if connectable? %>
-            <div class="flex gap-4">
+            <div class="flex gap-1">
               <%= connectable_form_partial %>
               <% if repeated_integration.present? %>
                 <%= reusable_integration_form_partial(repeated_integration) %>
