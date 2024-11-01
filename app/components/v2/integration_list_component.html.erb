@@ -3,13 +3,12 @@
                                       title: Integration.human_enum_name(:category, category),
                                       subtitle: Integration::CATEGORY_DESCRIPTIONS[category.to_sym].downcase) do |sc| %>
     <div id="<%= category %>">
-      <div class="grid grid-cols-12 gap-6 mt-4">
+      <div class="grid grid-cols-10 gap-6 mt-4">
         <% integrations.each do |integration| %>
           <%= render V2::IntegrationCardComponent.new(@app, integration, category) %>
         <% end %>
       </div>
     </div>
-
     <% if connected_integrations?(integrations) %>
       <% sc.with_sidenote do %>
         <%= render V2::ModalComponent.new(title: title(category), open: pre_open?(category)) do |modal| %>
@@ -28,7 +27,6 @@
     <% end %>
   <% end %>
 <% end %>
-
 <%= render V2::SectionComponent.new(style: :titled, title: "Coming Soon") do %>
   <div class="grid grid-cols-4 place-items-center justify-center text-slate-400 mt-12">
     <div><%= image_tag "integrations/logo_gitlab.png", title: "GitLab", width: 70, class: "opacity-30" %></div>

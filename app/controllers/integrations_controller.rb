@@ -4,7 +4,8 @@ class IntegrationsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[connect create index build_artifact_channels destroy]
   before_action :set_app_config_tabs, only: %i[index]
-  before_action :set_integration, only: %i[connect create]
+  before_action :set_integration, only: %i[connect create reuse]
+  before_action :set_existing_integration, only: %i[reuse]
   before_action :set_providable, only: %i[connect create]
 
   def connect
@@ -14,6 +15,16 @@ class IntegrationsController < SignedInApplicationController
   def index
     @pre_open_category = Integration.categories[params[:integration_category]]
     set_integrations_by_categories
+  end
+
+  def reuse
+    return redirect_to app_integrations_path(@app), alert: "Integration not found or not connected." unless @existing_integration&.connected?
+    new_integration = initiate_integration(@existing_integration)
+    if new_integration.save
+      redirect_to app_integrations_path(@app), notice: "#{@existing_integration.providable_type} integration reused successfully."
+    else
+      redirect_to app_integrations_path(@app), flash: {error: new_integration.errors.full_messages.to_sentence}
+    end
   end
 
   def create
@@ -50,12 +61,25 @@ class IntegrationsController < SignedInApplicationController
 
   private
 
+  def initiate_integration(existing_integration)
+    @app.integrations.find_or_initialize_by(
+      category: @integration.category,
+      status: Integration.statuses[:connected],
+      metadata: existing_integration.metadata,
+      providable: existing_integration.providable
+    )
+  end
+
   def set_integrations_by_categories
     @integrations_by_categories = Integration.by_categories_for(@app)
   end
 
   def set_integration
     @integration = @app.integrations.new(integrations_only_params)
+  end
+
+  def set_existing_integration
+    @existing_integration = Integration.find_by(id: params[:id])
   end
 
   def set_providable
