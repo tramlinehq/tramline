@@ -162,6 +162,10 @@ class Accounts::User < ApplicationRecord
     access_for(organization).role
   end
 
+  def membership_for(organization)
+    access_for(organization)
+  end
+
   def team_for(organization)
     access_for(organization)&.team
   end
