@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_10_28_064604) do
+ActiveRecord::Schema[7.2].define(version: 2024_11_02_204836) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -397,6 +397,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_10_28_064604) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "team_id"
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["organization_id"], name: "index_memberships_on_organization_id"
     t.index ["role"], name: "index_memberships_on_role"
     t.index ["user_id", "organization_id", "role"], name: "index_memberships_on_user_id_and_organization_id_and_role", unique: true

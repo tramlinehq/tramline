@@ -3,6 +3,7 @@
 # Table name: memberships
 #
 #  id              :uuid             not null, primary key
+#  discarded_at    :datetime         indexed
 #  role            :string           not null, indexed, indexed => [user_id, organization_id]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
@@ -11,6 +12,7 @@
 #  user_id         :uuid             indexed => [organization_id, role]
 #
 class Accounts::Membership < ApplicationRecord
+  include Discard::Model
   include Roleable
   has_paper_trail
 
