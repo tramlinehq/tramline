@@ -24,6 +24,17 @@ class Accounts::Membership < ApplicationRecord
   validate :team_can_only_be_set_once
   validate :valid_role_change, on: :update
 
+  before_discard :ensure_at_least_one_owner_remains
+
+  def ensure_at_least_one_owner_remains
+    return true unless role == Accounts::Membership.roles[:owner]
+
+    remaining_owners = organization.memberships.kept.where(role: Accounts::Membership.roles[:owner]).where.not(id: id)
+    if remaining_owners.empty?
+      errors.add(:base, "Organization must have at least one owner")
+    end
+  end
+
   def self.allowed_roles
     roles.except(:owner).transform_keys(&:titleize).to_a
   end
