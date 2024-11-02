@@ -11,13 +11,13 @@ lint:
   bin/rubocop --autocorrect
 
 rails +command="console":
-  docker exec -it site-web-1 bundle exec rails {{ command }}
+  docker exec -it tramline-web-1 bundle exec rails {{ command }}
 
 rake +command:
-  docker exec -it site-web-1 bundle exec rake {{ command }}
+  docker exec -it tramline-web-1 bundle exec rake {{ command }}
 
 bundle +command:
-  docker exec -it site-web-1 bundle {{ command }}
+  docker exec -it tramline-web-1 bundle {{ command }}
 
 devlog log_lines="1000":
   tail -f -n {{ log_lines }} log/development.log
