@@ -159,6 +159,7 @@ class PlayStoreRollout < StoreRollout
 
   def on_start!
     update_external_status
+    StoreRollouts::PlayStore::FinishPreviousRolloutJob.perform_later(id)
     super
   end
 

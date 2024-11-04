@@ -78,6 +78,11 @@
                   <% end %>
                 <% end %>
               <% end %>
+
+              <%= render V2::Form::SwitchComponent.new(form: sub_fields,
+                                                       field_name: :finish_rollout_in_next_release,
+                                                       on_label: "Rollout to 100% only when the next release starts rollout",
+                                                       off_label: "Do not modify the rollout in the next release") %>
             <% end %>
           <% end %>
         <% end %>

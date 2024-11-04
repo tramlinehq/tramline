@@ -522,6 +522,17 @@ class ReleasePlatformRun < ApplicationRecord
     update!(play_store_blocked: false)
   end
 
+  def previously_completed_rollout_run
+    train
+      .release_platform_runs
+      .includes(:production_store_rollouts)
+      .where.not(id: id)
+      .where(release_platform_id: release_platform_id)
+      .where(production_store_rollouts: {status: %w[completed fully_released]})
+      .reorder(completed_at: :desc, scheduled_at: :desc)
+      .first
+  end
+
   def conf = Config::ReleasePlatform.from_json(config)
 
   private
