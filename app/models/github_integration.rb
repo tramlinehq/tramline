@@ -206,7 +206,6 @@ class GithubIntegration < ApplicationRecord
   end
 
   def further_setup?
-    return true if integration.version_control?
     false
   end
 

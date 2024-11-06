@@ -224,6 +224,11 @@ class Integration < ApplicationRecord
     save!
   end
 
+  def further_setup?
+    return true if version_control?
+    providable.further_setup?
+  end
+
   def installation_state
     {
       organization_id: integrable.organization.id,
