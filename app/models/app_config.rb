@@ -92,9 +92,9 @@ class AppConfig < ApplicationRecord
       }
     end
 
-    if integrations.monitoring_provider.present?
+    if integrations.monitoring.present?
       categories[:monitoring] = {
-        further_setup: integrations.monitoring_provider.further_setup?,
+        further_setup: integrations.monitoring.any?(&:further_setup?),
         ready: bugsnag_ready?
       }
     end

@@ -225,7 +225,10 @@ class Integration < ApplicationRecord
   end
 
   def further_setup?
+    return unless connected?
+
     return true if version_control?
+    return false if notification?
     providable.further_setup?
   end
 
