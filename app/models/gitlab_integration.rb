@@ -104,10 +104,6 @@ class GitlabIntegration < ApplicationRecord
   }
 
   def install_path
-    unless integration.version_control? || integration.ci_cd?
-      raise Integration::IntegrationNotImplemented, "We don't support that yet!"
-    end
-
     BASE_INSTALLATION_URL
       .expand(params: {
         client_id: creds.integrations.gitlab.client_id,
