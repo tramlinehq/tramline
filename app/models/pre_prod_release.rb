@@ -53,6 +53,10 @@ class PreProdRelease < ApplicationRecord
 
   enum :status, STATES
 
+  def failure?
+    failed? || triggered_workflow_run.failure?
+  end
+
   def mark_as_stale!
     with_lock do
       return if finished?

@@ -61,6 +61,10 @@ class ProductionRelease < ApplicationRecord
     false
   end
 
+  def failure?
+    store_submission.failed?
+  end
+
   def rollout_active?
     store_rollout&.started?
   end
