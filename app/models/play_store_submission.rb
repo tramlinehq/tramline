@@ -249,7 +249,12 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def tester_notes
-    parent_release.tester_notes.truncate(MAX_NOTES_LENGTH)
+    [
+      {
+        language: release_platform_run.default_locale,
+        text: parent_release.tester_notes.truncate(MAX_NOTES_LENGTH)
+      }
+    ]
   end
 
   def release_notes
