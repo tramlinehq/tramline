@@ -15,7 +15,7 @@
 
     <div>
       <%= section.F.labeled_select :role, "Role",
-        options_for_select(available_roles_for_member(member_role)) %>
+        options_for_select(available_roles_for_member(member_role), member_role) %>
     </div>
   <% end %>
   <% f.with_action do %>
