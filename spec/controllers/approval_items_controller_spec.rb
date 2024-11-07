@@ -1,7 +1,8 @@
 require "rails_helper"
 
 describe ApprovalItemsController do
-  let(:organization) { create(:organization) }
+  let(:organization) { create(:organization, :with_owner_membership) }
+  let(:app) { create(:app, :android, organization:) }
   let(:current_user) { create(:user, unique_authn_id: Faker::Internet.email) }
 
   before do
@@ -11,7 +12,7 @@ describe ApprovalItemsController do
 
   describe "GET #index" do
     it "returns 200 when approvals are enabled" do
-      train = create(:train, approvals_enabled: true)
+      train = create(:train, approvals_enabled: true, app:)
       release = create(:release, train:)
 
       get :index, params: {release_id: release.id}
@@ -19,7 +20,7 @@ describe ApprovalItemsController do
     end
 
     it "redirects to the release page when approvals are disabled" do
-      train = create(:train, approvals_enabled: false)
+      train = create(:train, approvals_enabled: false, app:)
       release = create(:release, train:)
 
       get :index, params: {release_id: release.id}
@@ -30,7 +31,7 @@ describe ApprovalItemsController do
 
   describe "PATCH #update" do
     it "refreshes the stream with a flash when no item is found" do
-      train = create(:train, approvals_enabled: true)
+      train = create(:train, approvals_enabled: true, app:)
       release = create(:release, train:)
 
       patch :update, params: {id: 1, release_id: release.id}
@@ -42,7 +43,7 @@ describe ApprovalItemsController do
     end
 
     it "updates the status and refreshes the stream" do
-      train = create(:train, approvals_enabled: true)
+      train = create(:train, approvals_enabled: true, app:)
       release = create(:release, train:, release_pilot: current_user)
       item = create(:approval_item, release:, status: "not_started", author: current_user)
 
@@ -57,7 +58,7 @@ describe ApprovalItemsController do
 
   describe "DELETE #destroy" do
     it "refreshes the stream with a flash when no item is found" do
-      train = create(:train, approvals_enabled: true)
+      train = create(:train, approvals_enabled: true, app:)
       release = create(:release, train:)
 
       delete :destroy, params: {id: 1, release_id: release.id}
@@ -69,7 +70,7 @@ describe ApprovalItemsController do
     end
 
     it "refreshes the stream with a flash when item is already started" do
-      train = create(:train, approvals_enabled: true)
+      train = create(:train, approvals_enabled: true, app:)
       release = create(:release, train:, release_pilot: current_user)
       item = create(:approval_item, release:, status: "blocked", author: current_user)
 
@@ -83,7 +84,7 @@ describe ApprovalItemsController do
     end
 
     it "destroys the item and refreshes the stream" do
-      train = create(:train, approvals_enabled: true)
+      train = create(:train, approvals_enabled: true, app:)
       release = create(:release, train:, release_pilot: current_user)
       item = create(:approval_item, release:, status: "not_started", author: current_user)
 

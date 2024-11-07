@@ -640,6 +640,9 @@ describe Release do
   end
 
   describe "#blocked_for_production_release?" do
+    let(:organization) { create(:organization, :with_owner_membership) }
+    let(:app) { create(:app, :android, organization:) }
+
     it "is true when release is upcoming" do
       train = create(:train)
       _ongoing = create(:release, :on_track, train:)
@@ -659,8 +662,8 @@ describe Release do
 
     context "when approvals are enabled" do
       it "is true when approvals are blocking" do
-        train = create(:train, approvals_enabled: true)
-        pilot = create(:user, :with_email_authentication, :as_developer)
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
         release = create(:release, release_pilot: pilot, train:)
         _approval_items = create_list(:approval_item, 5, release:, author: pilot)
         release.reload
@@ -669,8 +672,8 @@ describe Release do
       end
 
       it "is false when approvals are non-blocking" do
-        train = create(:train, approvals_enabled: true)
-        pilot = create(:user, :with_email_authentication, :as_developer)
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
         release = create(:release, release_pilot: pilot, train:)
         _approval_items = create_list(:approval_item, 5, :approved, release:, author: pilot)
         release.reload
@@ -679,8 +682,8 @@ describe Release do
       end
 
       it "is true when approvals are not overridden" do
-        train = create(:train, approvals_enabled: true)
-        pilot = create(:user, :with_email_authentication, :as_developer)
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
         release = create(:release, release_pilot: pilot, train:, approval_overridden_by: nil)
         _approval_items = create_list(:approval_item, 5, release:, author: pilot)
 
@@ -688,8 +691,8 @@ describe Release do
       end
 
       it "is false when approvals are overridden (regardless of actual approvals)" do
-        train = create(:train, approvals_enabled: true)
-        pilot = create(:user, :with_email_authentication, :as_developer)
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
         release = create(:release, release_pilot: pilot, train:, approval_overridden_by: pilot)
 
         create_list(:approval_item, 5, release:, author: pilot)
