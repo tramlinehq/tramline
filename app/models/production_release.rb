@@ -31,7 +31,7 @@ class ProductionRelease < ApplicationRecord
 
   delegate :app, :train, :release, :platform, :release_platform, to: :release_platform_run
   delegate :monitoring_provider, to: :app
-  delegate :store_rollout, to: :store_submission
+  delegate :store_rollout, :prepared_at, to: :store_submission
   delegate :notify!, to: :train
   delegate :commit, :version_name, :build_number, to: :build
   delegate :release_health_rules, to: :release_platform
