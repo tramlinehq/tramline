@@ -129,7 +129,12 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def channels
-    CHANNELS.map(&:with_indifferent_access)
+    default_channels = CHANNELS.map(&:with_indifferent_access)
+    channel_data.each do |chan|
+      next if default_channels.pluck(:id).map(&:to_s).include?(chan[:name])
+      default_channels << {id: chan[:name], name: "Closed testing - #{chan[:name]}", is_production: false}.with_indifferent_access
+    end
+    default_channels
   end
 
   def pick_default_beta_channel
