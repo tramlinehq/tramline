@@ -26,13 +26,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create :draft_check
   after_create_commit :refresh_external_app
 
-  PROD_CHANNEL = {id: :production, name: "production", is_production: true}.freeze
-  BETA_CHANNEL = {id: :beta, name: "open testing", is_production: false}.freeze
+  PROD_CHANNEL = {id: :production, name: "Production", is_production: true}.freeze
+  BETA_CHANNEL = {id: :beta, name: "Open testing", is_production: false}.freeze
   CHANNELS = [
     PROD_CHANNEL,
     BETA_CHANNEL,
-    {id: :alpha, name: "closed testing", is_production: false},
-    {id: :internal, name: "internal testing", is_production: false}
+    {id: :alpha, name: "Closed testing - Alpha", is_production: false},
+    {id: :internal, name: "Internal testing", is_production: false}
   ]
   PUBLIC_CHANNELS = %w[production beta alpha]
   ACTIVE_STORE_STATUSES = %w[completed inProgress].freeze
