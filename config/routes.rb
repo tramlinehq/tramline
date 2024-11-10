@@ -50,6 +50,7 @@ Rails.application.routes.draw do
 
       resources :teams, only: %i[create update destroy]
       resources :invitations, only: [:create]
+      resources :memberships, only: [:destroy]
     end
 
     resource :user, only: [:edit, :update] do
