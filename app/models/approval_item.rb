@@ -23,7 +23,7 @@ class ApprovalItem < ApplicationRecord
   delegate :organization, :train, :release_pilot, to: :release
 
   validate :train_approvals_enabled, on: :create
-  validate :release_pilots_as_authors_only, on: :create
+  validate :writers_as_authors_only, on: :create
   validates :content, presence: true, length: {maximum: ApprovalItem::MAX_CONTENT_LENGTH}, on: :create
 
   before_destroy :ensure_not_started, prepend: true do
@@ -70,6 +70,12 @@ class ApprovalItem < ApplicationRecord
 
   def self_assigned?(assignee)
     approval_assignees.none? && author == assignee
+  end
+
+  def writers_as_authors_only
+    unless author.writer_for?(organization)
+      errors.add(:author, "must be a developer")
+    end
   end
 
   def release_pilots_as_authors_only

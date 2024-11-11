@@ -1,39 +1,42 @@
 require "rails_helper"
 
 describe ApprovalItem do
+  let(:organization) { create(:organization, :with_owner_membership) }
+  let(:app) { create(:app, :android, organization:) }
+  let(:approvals_enabled_train) { create(:train, approvals_enabled: true, app:) }
+  let(:approvals_disabled_train) { create(:train, approvals_enabled: false, app:) }
+
   it "has a valid factory" do
     expect(create(:approval_item)).to be_valid
   end
 
-  it "only allows release pilots to be authors" do
-    pilot = create(:user, :with_email_authentication, :as_developer)
-    release = create(:release, release_pilot: pilot)
+  it "only allows writers to be authors" do
+    pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
+    release = create(:release, release_pilot: pilot, train: approvals_enabled_train)
     approval_item = create(:approval_item, release:, author: pilot)
     expect(approval_item).to be_valid
 
-    pilot = create(:user, :as_developer, member_organization: release.organization)
-    release = create(:release)
+    pilot = create(:user, :as_viewer, member_organization: release.organization)
+    release = create(:release, train: approvals_enabled_train)
     approval_item = build(:approval_item, release:, author: pilot)
     expect(approval_item).not_to be_valid
   end
 
   it "only allows creating items when enabled on a train level" do
-    pilot = create(:user, :with_email_authentication, :as_developer)
-    train = create(:train, approvals_enabled: false)
-    release = create(:release, train:, release_pilot: pilot)
+    pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
+    release = create(:release, train: approvals_disabled_train, release_pilot: pilot)
     approval_item = build(:approval_item, release:, author: pilot)
     expect(approval_item).not_to be_valid
 
-    pilot = create(:user, :with_email_authentication, :as_developer)
-    train = create(:train, approvals_enabled: true)
-    release = create(:release, train:, release_pilot: pilot)
+    pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
+    release = create(:release, train: approvals_enabled_train, release_pilot: pilot)
     approval_item = create(:approval_item, release:, author: pilot)
     expect(approval_item).to be_valid
   end
 
   it "does not allow deleting items when they are not not_started" do
-    pilot = create(:user, :with_email_authentication, :as_developer)
-    release = create(:release, release_pilot: pilot)
+    pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
+    release = create(:release, release_pilot: pilot, train: approvals_enabled_train)
     approval_item = create(:approval_item, :approved, release:, author: pilot)
 
     expect(approval_item.destroy).to be(false)
@@ -41,8 +44,8 @@ describe ApprovalItem do
   end
 
   it "does not allow invalid statuses" do
-    pilot = create(:user, :with_email_authentication, :as_developer)
-    release = create(:release, release_pilot: pilot)
+    pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
+    release = create(:release, release_pilot: pilot, train: approvals_enabled_train)
     approval_item_1 = build(:approval_item, status: nil, release:, author: pilot)
     approval_item_2 = build(:approval_item, status: "killed", release:, author: pilot)
 
@@ -51,8 +54,8 @@ describe ApprovalItem do
   end
 
   describe "#update_status" do
-    let(:pilot) { create(:user, :with_email_authentication, :as_developer) }
-    let(:release) { create(:release, release_pilot: pilot) }
+    let(:pilot) { create(:user, :with_email_authentication, :as_developer, member_organization: organization) }
+    let(:release) { create(:release, release_pilot: pilot, train: approvals_enabled_train) }
     let(:approval_item) { create(:approval_item, release:, author: pilot) }
 
     it "can be updated by the assigned users" do
@@ -87,8 +90,8 @@ describe ApprovalItem do
   end
 
   describe ".approved" do
-    let(:pilot) { create(:user, :with_email_authentication, :as_developer) }
-    let(:release) { create(:release, release_pilot: pilot) }
+    let(:pilot) { create(:user, :with_email_authentication, :as_developer, member_organization: organization) }
+    let(:release) { create(:release, release_pilot: pilot, train: approvals_enabled_train) }
 
     it "returns only approved items" do
       _item_1 = create(:approval_item, release:, author: pilot)

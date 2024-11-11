@@ -30,10 +30,6 @@ class BitbucketIntegration < ApplicationRecord
   delegate :cache, to: Rails
 
   def install_path
-    unless integration.version_control? || integration.ci_cd?
-      raise Integration::IntegrationNotImplemented, "We don't support that yet!"
-    end
-
     BASE_INSTALLATION_URL
       .expand(params: {
         client_id: creds.integrations.bitbucket.client_id,
@@ -62,7 +58,6 @@ class BitbucketIntegration < ApplicationRecord
   def project_link = nil
 
   def further_setup?
-    return true if integration.version_control?
     false
   end
 
@@ -278,7 +273,6 @@ class BitbucketIntegration < ApplicationRecord
   }
 
   def workflows(branch_name)
-    return [] unless integration.ci_cd?
     cache.fetch(workflows_cache_key(branch_name), expires_in: 120.minutes) do
       with_api_retries { installation.list_pipeline_selectors(code_repository_name, branch_name) }
     end

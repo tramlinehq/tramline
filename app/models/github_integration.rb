@@ -109,10 +109,6 @@ class GithubIntegration < ApplicationRecord
   }
 
   def install_path
-    unless integration.version_control? || integration.ci_cd?
-      raise Integration::IntegrationNotImplemented, "We don't support that yet!"
-    end
-
     BASE_INSTALLATION_URL
       .expand(app_name: creds.integrations.github.app_name, params: {
         state: integration.installation_state
@@ -206,7 +202,6 @@ class GithubIntegration < ApplicationRecord
   end
 
   def further_setup?
-    return true if integration.version_control?
     false
   end
 
@@ -234,7 +229,6 @@ class GithubIntegration < ApplicationRecord
   ## CI/CD
 
   def workflows(_ = nil)
-    return [] unless integration.ci_cd?
     cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
       installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
     end

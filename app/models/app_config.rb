@@ -71,16 +71,16 @@ class AppConfig < ApplicationRecord
     integrations = app.integrations
     categories = {}.with_indifferent_access
 
-    if integrations.vcs_provider.present?
+    if integrations.version_control.present?
       categories[:version_control] = {
-        further_setup: integrations.vcs_provider.further_setup?,
+        further_setup: integrations.version_control.any?(&:further_setup?),
         ready: code_repository.present?
       }
     end
 
-    if integrations.ci_cd_provider.present?
+    if integrations.ci_cd.present?
       categories[:ci_cd] = {
-        further_setup: integrations.ci_cd_provider.further_setup?,
+        further_setup: integrations.ci_cd.any?(&:further_setup?),
         ready: bitrise_ready?
       }
     end
@@ -92,9 +92,9 @@ class AppConfig < ApplicationRecord
       }
     end
 
-    if integrations.monitoring_provider.present?
+    if integrations.monitoring.present?
       categories[:monitoring] = {
-        further_setup: integrations.monitoring_provider.further_setup?,
+        further_setup: integrations.monitoring.any?(&:further_setup?),
         ready: bugsnag_ready?
       }
     end

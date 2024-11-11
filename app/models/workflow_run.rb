@@ -126,6 +126,10 @@ class WorkflowRun < ApplicationRecord
     triggering_release.actionable? && FAILED_STATES.exclude?(status)
   end
 
+  def failure?
+    FAILED_STATES.include?(status)
+  end
+
   def find_and_update_external
     return if workflow_found?
     find_external_run.then { |wr| update_external_metadata!(wr) }

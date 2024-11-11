@@ -228,7 +228,9 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def failure?
-    step_runs.last&.failure?
+    return step_runs.last&.failure? unless release.is_v2?
+
+    latest_production_release&.failure? || latest_beta_release&.failure? || latest_internal_release&.failure?
   end
 
   # rubocop:disable Rails/SkipsModelValidations
