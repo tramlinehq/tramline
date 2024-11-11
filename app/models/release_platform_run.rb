@@ -523,14 +523,18 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def previously_completed_rollout_run
-    train
+    run = train
       .release_platform_runs
-      .includes(:production_store_rollouts)
+      .includes(finished_production_release: {store_submission: :store_rollout})
       .where.not(id: id)
       .where(release_platform_id: release_platform_id)
-      .where(production_store_rollouts: {status: %w[completed fully_released]})
+      .where(finished_production_release: {store_submission: {store_rollouts: {status: %w[completed fully_released]}}})
       .reorder(completed_at: :desc, scheduled_at: :desc)
       .first
+
+    return unless run
+    previous = run.finished_production_release.store_rollout
+    run if previous.completed? && !previous.hundred_percent?
   end
 
   def conf = Config::ReleasePlatform.from_json(config)

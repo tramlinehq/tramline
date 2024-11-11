@@ -62,27 +62,34 @@
 
                 <% if platform.android? %>
                   <% rollout.with_child do %>
-                    <div data-controller="domain--staged-rollout-help">
-                      <%= sub_fields.labeled_text_field :rollout_stages,
-                                                        "Rollout sequence",
-                                                        {value: sub_fields.object.rollout_stages.join(", "),
-                                                         placeholder: "1, 2, 5, 10, 20, 50, 100",
-                                                         data: {domain__staged_rollout_help_target: "input",
-                                                                action: "domain--staged-rollout-help#validateString"}} %>
+                    <div class="flex flex-col gap-6">
+                      <div data-controller="domain--staged-rollout-help">
+                        <%= sub_fields.labeled_text_field :rollout_stages,
+                                                          "Rollout sequence",
+                                                          {value: sub_fields.object.rollout_stages.join(", "),
+                                                           placeholder: "1, 2, 5, 10, 20, 50, 100",
+                                                           data: {domain__staged_rollout_help_target: "input",
+                                                                  action: "domain--staged-rollout-help#validateString"}} %>
 
-                      <div class="text-xs text-secondary mt-2">
-                        <span data-domain--staged-rollout-help-target="helpSuccessText"></span>
-                        <span data-domain--staged-rollout-help-target="helpErrorText" class="text-red-600"></span>
+                        <div class="text-xs text-secondary mt-2">
+                          <span data-domain--staged-rollout-help-target="helpSuccessText"></span>
+                          <span data-domain--staged-rollout-help-target="helpErrorText" class="text-red-600"></span>
+                        </div>
                       </div>
+
+                      <%= render V2::Form::SwitchComponent.new(form: sub_fields,
+                                                               field_name: :finish_rollout_in_next_release,
+                                                               on_label: "Cascading rollouts are enabled",
+                                                               off_label: "Cascading rollouts are disabled") do |c| %>
+                        <% c.with_info_icon do %>
+                          Cascading rollouts allow you to ensure that your previous rollout is fully completed before you start the rollouts for the current release.
+                          This is useful when you want to keep the last rollout stage to be less than 100% (like 99.9%) so that you get an opportunity to halt it before the next one starts.
+                        <% end %>
+                      <% end %>
                     </div>
                   <% end %>
                 <% end %>
               <% end %>
-
-              <%= render V2::Form::SwitchComponent.new(form: sub_fields,
-                                                       field_name: :finish_rollout_in_next_release,
-                                                       on_label: "Rollout to 100% only when the next release starts rollout",
-                                                       off_label: "Do not modify the rollout in the next release") %>
             <% end %>
           <% end %>
         <% end %>

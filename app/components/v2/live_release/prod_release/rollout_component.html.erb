@@ -1,7 +1,10 @@
 <div class="flex flex-col item-gap-default">
-  <%= render partial: "shared/play_store_review_rejected", locals: { show: show_blocked_message?,
-                                                                     build:,
-                                                                     actionable: false } %>
+  <% if cascading_rollout_notice? %>
+    <%= render V2::AlertComponent.new(type: :info, title: CASCADING_ROLLOUTS_NOTICE, full_screen: false) %>
+  <% end %>
+
+  <%= render partial: "shared/play_store_review_rejected", locals: {show: show_blocked_message?, build:, actionable: false} %>
+
   <div class="flex flex-col section-gap-default">
     <%= render V2::CardComponent.new(title: @title, separator: false, fixed_height: card_height, border_style:) do |card| %>
       <% card.with_action do %>
@@ -79,7 +82,7 @@
                                                    scheme: :link,
                                                    type: :link_external,
                                                    options: external_link,
-                                                   html_options: { class: "text-sm" },
+                                                   html_options: {class: "text-sm"},
                                                    authz: false,
                                                    size: :none) do |b|
                   b.with_icon(store_icon, size: :md)

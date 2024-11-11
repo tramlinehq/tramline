@@ -31,6 +31,7 @@ class Config::Submission < ApplicationRecord
   validates :number, presence: true, uniqueness: {scope: :release_step_config_id}
   validate :correct_rollout_stages, if: :rollout_enabled?
   validate :production_release_submission
+  validate :cascading_rollout_applicability, if: :finish_rollout_in_next_release?
 
   accepts_nested_attributes_for :submission_external, allow_destroy: true
   attr_accessor :read_only
@@ -45,6 +46,7 @@ class Config::Submission < ApplicationRecord
       integrable_id: integrable.id,
       integrable_type: integrable.class.name,
       submission_config: submission_external.as_json,
+      finish_rollout_in_next_release: finish_rollout_in_next_release,
       rollout_config: {
         enabled: rollout_enabled,
         stages: rollout_stages
@@ -99,6 +101,16 @@ class Config::Submission < ApplicationRecord
 
     if rollout_stages.any? { |value| value > FULL_ROLLOUT_VALUE }
       errors.add(:rollout_stages, :max_100)
+    end
+  end
+
+  def cascading_rollout_applicability
+    unless android?
+      errors.add(:base, "cascading rollouts are only available for android")
+    end
+
+    unless rollout_enabled?
+      errors.add(:base, "cascading rollouts are only available with staged rollouts")
     end
   end
 

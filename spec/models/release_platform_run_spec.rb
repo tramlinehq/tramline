@@ -644,7 +644,7 @@ describe ReleasePlatformRun do
     end
   end
 
-  describe ".previous_rollout_run" do
+  describe ".previously_completed_rollout_run" do
     let(:train) { create(:train) }
 
     it "returns nil when there is no previous rollout run" do
@@ -674,52 +674,58 @@ describe ReleasePlatformRun do
       let(:release_platform) { create(:release_platform, train:) }
       let(:previous_release) { create(:release, :finished, train:) }
       let(:previous_run) { create(:release_platform_run, :finished, release_platform:, release: previous_release) }
-      let(:previous_store_submission) { create(:play_store_submission, release_platform_run: previous_run) }
-
-      it "returns the previous rollout run when there is a previous rollout run" do
-        _previous_rollout = create(:store_rollout, :completed, type: "PlayStoreRollout", release_platform_run: previous_run, store_submission: previous_store_submission)
-
-        release = create(:release, :on_track, train:)
-        release_platform_run = create(:release_platform_run, release_platform:, release:)
-        store_submission = create(:play_store_submission, release_platform_run:)
-        _rollout = create(:store_rollout, :started, type: "PlayStoreRollout", release_platform_run:, store_submission:)
-
-        expect(release_platform_run.previously_completed_rollout_run).to eq(previous_run)
-      end
+      let(:previous_parent_release) { create(:production_release, :finished, release_platform_run: previous_run) }
+      let(:previous_store_submission) { create(:play_store_submission, parent_release: previous_parent_release, release_platform_run: previous_run) }
 
       it "returns nil for incomplete production store rollouts" do
         _previous_rollout = create(:store_rollout, :paused, type: "PlayStoreRollout", release_platform_run: previous_run, store_submission: previous_store_submission)
 
         release = create(:release, :on_track, train:)
         release_platform_run = create(:release_platform_run, release_platform:, release:)
-        store_submission = create(:play_store_submission, release_platform_run:)
+        parent_release = create(:production_release, :finished, release_platform_run:)
+        store_submission = create(:play_store_submission, parent_release:, release_platform_run:)
         _rollout = create(:store_rollout, :started, type: "PlayStoreRollout", release_platform_run:, store_submission:)
 
         expect(release_platform_run.previously_completed_rollout_run).to be_nil
       end
 
-      it "accepts rollouts that are fully_completed" do
-        _previous_rollout = create(:store_rollout, :fully_released, type: "PlayStoreRollout", release_platform_run: previous_run, store_submission: previous_store_submission)
+      it "returns the previous rollout run when there is a previous rollout run" do
+        _previous_rollout = create(:store_rollout, :completed, :last_but_not_hundred, type: "PlayStoreRollout", release_platform_run: previous_run, store_submission: previous_store_submission)
 
         release = create(:release, :on_track, train:)
         release_platform_run = create(:release_platform_run, release_platform:, release:)
-        store_submission = create(:play_store_submission, release_platform_run:)
+        parent_release = create(:production_release, :finished, release_platform_run:)
+        store_submission = create(:play_store_submission, parent_release:, release_platform_run:)
         _rollout = create(:store_rollout, :started, type: "PlayStoreRollout", release_platform_run:, store_submission:)
 
         expect(release_platform_run.previously_completed_rollout_run).to eq(previous_run)
       end
 
-      it "returns the last known good run with a completed prod rollout" do
-        _previous_rollout = create(:store_rollout, :completed, type: "PlayStoreRollout", release_platform_run: previous_run, store_submission: previous_store_submission)
-
-        last_release = create(:release, :finished, train:)
-        last_run = create(:release_platform_run, :stopped, release_platform:, release: last_release)
-        last_store_submission = create(:play_store_submission, release_platform_run: last_run)
-        _last_rollout = create(:store_rollout, :paused, type: "PlayStoreRollout", release_platform_run: last_run, store_submission: last_store_submission)
+      it "does not return rollouts that are fully_released" do
+        _previous_rollout = create(:store_rollout, :fully_released, type: "PlayStoreRollout", release_platform_run: previous_run, store_submission: previous_store_submission)
 
         release = create(:release, :on_track, train:)
         release_platform_run = create(:release_platform_run, release_platform:, release:)
-        store_submission = create(:play_store_submission, release_platform_run:)
+        parent_release = create(:production_release, :finished, release_platform_run:)
+        store_submission = create(:play_store_submission, parent_release:, release_platform_run:)
+        _rollout = create(:store_rollout, :started, type: "PlayStoreRollout", release_platform_run:, store_submission:)
+
+        expect(release_platform_run.previously_completed_rollout_run).to be_nil
+      end
+
+      it "returns the last known good run with a completed prod rollout" do
+        _previous_rollout = create(:store_rollout, :completed, :last_but_not_hundred, type: "PlayStoreRollout", release_platform_run: previous_run, store_submission: previous_store_submission)
+
+        last_release = create(:release, :finished, train:)
+        last_run = create(:release_platform_run, :stopped, release_platform:, release: last_release)
+        last_parent_release = create(:production_release, :finished, release_platform_run: last_run)
+        last_store_submission = create(:play_store_submission, parent_release: last_parent_release, release_platform_run: last_run)
+        _last_rollout = create(:store_rollout, :paused, :last_but_not_hundred, type: "PlayStoreRollout", release_platform_run: last_run, store_submission: last_store_submission)
+
+        release = create(:release, :on_track, train:)
+        release_platform_run = create(:release_platform_run, release_platform:, release:)
+        parent_release = create(:production_release, :finished, release_platform_run:)
+        store_submission = create(:play_store_submission, parent_release:, release_platform_run:)
         _rollout = create(:store_rollout, :started, type: "PlayStoreRollout", release_platform_run:, store_submission:)
 
         expect(release_platform_run.previously_completed_rollout_run).to eq(previous_run)
@@ -730,22 +736,61 @@ describe ReleasePlatformRun do
 
         previous_release = create(:release, :finished, train:)
         previous_run = create(:release_platform_run, :finished, release_platform:, release: previous_release, completed_at: Time.current - 2)
-        previous_store_submission = create(:play_store_submission, release_platform_run: previous_run)
-        _previous_rollout = create(:store_rollout, :completed, type: "PlayStoreRollout", release_platform_run: previous_run, store_submission: previous_store_submission)
+        previous_parent_release = create(:production_release, :finished, release_platform_run: previous_run)
+        previous_store_submission = create(:play_store_submission, parent_release: previous_parent_release, release_platform_run: previous_run)
+        _previous_rollout = create(:store_rollout, :completed, :last_but_not_hundred, type: "PlayStoreRollout", release_platform_run: previous_run, store_submission: previous_store_submission)
 
         last_release = create(:release, :stopped, train:)
         last_run = create(:release_platform_run, :stopped, release_platform:, release: last_release, scheduled_at: Time.current - 1)
-        last_store_submission = create(:play_store_submission, release_platform_run: last_run)
-        _last_rollout = create(:store_rollout, :completed, type: "PlayStoreRollout", release_platform_run: last_run, store_submission: last_store_submission)
+        last_parent_release = create(:production_release, :finished, release_platform_run: last_run)
+        last_store_submission = create(:play_store_submission, parent_release: last_parent_release, release_platform_run: last_run)
+        _last_rollout = create(:store_rollout, :completed, :last_but_not_hundred, type: "PlayStoreRollout", release_platform_run: last_run, store_submission: last_store_submission)
 
         release = create(:release, :on_track, train:)
         release_platform_run = create(:release_platform_run, release_platform:, release:, scheduled_at: Time.current)
-        store_submission = create(:play_store_submission, release_platform_run:)
+        parent_release = create(:production_release, :finished, release_platform_run:)
+        store_submission = create(:play_store_submission, parent_release:, release_platform_run:)
         _rollout = create(:store_rollout, :started, type: "PlayStoreRollout", release_platform_run:, store_submission:)
 
-        puts last_run.id
-        puts previous_run.id
         expect(release_platform_run.previously_completed_rollout_run).to eq(last_run)
+      end
+
+      it "only cares about the completed rollout that is the one before the current run" do
+        release_platform = create(:release_platform, train:)
+
+        previous_release = create(:release, :finished, train:)
+        previous_run = create(:release_platform_run, :finished, release_platform:, release: previous_release, completed_at: Time.current - 2)
+        previous_parent_release = create(:production_release, :finished, release_platform_run: previous_run)
+        previous_store_submission = create(:play_store_submission, parent_release: previous_parent_release, release_platform_run: previous_run)
+        _previous_rollout = create(:store_rollout, :completed, :last_but_not_hundred, type: "PlayStoreRollout", release_platform_run: previous_run, store_submission: previous_store_submission)
+
+        last_release = create(:release, :stopped, train:)
+        last_run = create(:release_platform_run, :stopped, release_platform:, release: last_release, scheduled_at: Time.current - 1)
+        last_parent_release = create(:production_release, :finished, release_platform_run: last_run)
+        last_store_submission = create(:play_store_submission, parent_release: last_parent_release, release_platform_run: last_run)
+        _last_rollout = create(:store_rollout, :fully_released, type: "PlayStoreRollout", release_platform_run: last_run, store_submission: last_store_submission)
+
+        release = create(:release, :on_track, train:)
+        release_platform_run = create(:release_platform_run, release_platform:, release:, scheduled_at: Time.current)
+        parent_release = create(:production_release, :finished, release_platform_run:)
+        store_submission = create(:play_store_submission, parent_release:, release_platform_run:)
+        _rollout = create(:store_rollout, :started, type: "PlayStoreRollout", release_platform_run:, store_submission:)
+
+        expect(release_platform_run.previously_completed_rollout_run).to be_nil
+      end
+
+      it "ignores completed rollouts that are already on 100% rollout" do
+        _previous_rollout = create(:store_rollout, :completed, config: [1, 100], current_stage: 1,
+          type: "PlayStoreRollout",
+          release_platform_run: previous_run, store_submission: previous_store_submission)
+
+        release = create(:release, :on_track, train:)
+        release_platform_run = create(:release_platform_run, release_platform:, release:)
+        parent_release = create(:production_release, :finished, release_platform_run:)
+        store_submission = create(:play_store_submission, parent_release:, release_platform_run:)
+        _rollout = create(:store_rollout, :started, type: "PlayStoreRollout", release_platform_run:, store_submission:)
+
+        expect(release_platform_run.previously_completed_rollout_run).to be_nil
       end
     end
   end
