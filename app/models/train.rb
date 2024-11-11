@@ -316,6 +316,7 @@ class Train < ApplicationRecord
     scheduled_releases.pending&.delete_all
   end
 
+  # TODO [V2]: Remove this method
   def startable?
     return false unless app.ready?
     return true if product_v2?
