@@ -135,11 +135,6 @@ class PlayStoreRollout < StoreRollout
     end
   end
 
-  def on_start!
-    update_external_status
-    super
-  end
-
   def rollout_in_progress?
     response = provider.find_build_in_track(submission_channel_id, build_number)
     response.present? && response[:status] == "inProgress"
@@ -165,6 +160,11 @@ class PlayStoreRollout < StoreRollout
 
   def rollout(value, retry_on_review_fail: false)
     provider.rollout_release(submission_channel_id, build_number, version_name, value, nil, retry_on_review_fail:)
+  end
+
+  def on_start!
+    update_external_status
+    super
   end
 
   def on_complete!

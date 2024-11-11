@@ -15,7 +15,8 @@ describe Coordinators::FinishPlatformRun do
     end
 
     it "starts post-release on release if only a single platform" do
-      release = create(:release)
+      release = create(:release, :with_no_platform_runs)
+      create(:release_platform_run, release:)
       release_platform_run = release.release_platform_runs.sole
       release_platform_run.start!
       build = create(:build)
