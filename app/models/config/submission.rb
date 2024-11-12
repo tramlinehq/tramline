@@ -112,6 +112,10 @@ class Config::Submission < ApplicationRecord
     unless rollout_enabled?
       errors.add(:base, "cascading rollouts are only available with staged rollouts")
     end
+
+    unless rollout_stages.last.to_f < 100.0
+      errors.add(:base, "if you enable cascading rollouts, ensure your last rollout is less than 100%")
+    end
   end
 
   def set_default_rollout_for_ios

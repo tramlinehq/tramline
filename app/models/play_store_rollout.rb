@@ -136,8 +136,7 @@ class PlayStoreRollout < StoreRollout
   end
 
   def rollout_in_progress?
-    response = provider.find_build_in_track(submission_channel_id, build_number)
-    response.present? && response[:status] == "inProgress"
+    provider.build_in_progress?(submission_channel_id, build_number)
   end
 
   private
