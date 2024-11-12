@@ -156,6 +156,7 @@ describe PlayStoreSubmission do
         rollout_status: :started,
         skip_rollout: true
       ) => {store_submission:}
+      allow(providable_dbl).to receive(:build_in_progress?).and_return(false)
       allow(providable_dbl).to receive(:find_build_in_track).and_return({status: "completed"})
 
       store_submission.fully_release_previous_production_rollout!
@@ -172,6 +173,7 @@ describe PlayStoreSubmission do
         rollout_status: :started,
         skip_rollout: true
       ) => {store_submission:}
+      allow(providable_dbl).to receive(:build_in_progress?).and_return(true)
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
 
       store_submission.fully_release_previous_production_rollout!
