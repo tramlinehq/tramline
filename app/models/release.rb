@@ -170,9 +170,6 @@ class Release < ApplicationRecord
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
-  # TODO: [V2] move this out to signals
-  after_create_commit -> { RefreshReportsJob.perform_later(hotfixed_from.id) }, if: -> { hotfix? && hotfixed_from.present? }
-
   attr_accessor :has_major_bump, :hotfix_platform, :custom_version
   friendly_id :human_slug, use: :slugged
 
