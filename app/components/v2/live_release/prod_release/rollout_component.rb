@@ -1,4 +1,7 @@
 class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
+  include Memery
+  CASCADING_ROLLOUTS_NOTICE = "Since cascading rollouts are enabled, this release will not fully rollout to 100% until rollout for the next release starts."
+
   def initialize(store_rollout, title: "Rollout Status")
     @store_rollout = store_rollout
     @title = title
@@ -43,6 +46,10 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
 
   def show_blocked_message?
     release_platform_run.play_store_blocked? && !store_submission.failed_with_action_required?
+  end
+
+  def cascading_rollout_notice?
+    store_submission.finish_rollout_in_next_release? && !store_rollout.created? && !store_rollout.fully_released?
   end
 
   def events

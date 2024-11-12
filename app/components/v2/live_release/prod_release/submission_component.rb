@@ -29,7 +29,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   attr_reader :submission
-  delegate :id, :inflight?, :actionable?, :release_platform_run, :external_link, :provider, to: :submission
+  delegate :id, :inflight?, :release_platform_run, :external_link, :provider, to: :submission
   delegate :release, to: :release_platform_run
 
   def show_blocked_message?
@@ -40,6 +40,11 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
 
   def blocked?
     release.blocked_for_production_release?
+  end
+
+  def actionable?
+    return false if cascading_rollout_actionable?
+    submission.actionable?
   end
 
   def inactive? = @inactive
@@ -131,15 +136,31 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
     end
   end
 
-  def action
-    return if blocked?
-    return unless actionable?
+  # rubocop:disable Rails/Delegate
+  memoize def previously_completed_rollout_run
+    release_platform_run.previously_completed_rollout_run
+  end
 
+  memoize def previously_completed_release
+    previously_completed_rollout_run&.release
+  end
+  # rubocop:enable Rails/Delegate
+
+  memoize def cascading_rollout_actionable?
+    submission.created? && submission.finish_rollout_in_next_release? && previously_completed_rollout_run.present?
+  end
+
+  def previously_completed_release_link
+    release_store_rollouts_path(previously_completed_release)
+  end
+
+  def action
     if submission.created?
       message = "You are about to prepare the submission for review.\nAre you sure?"
       {scheme: :default,
        type: :button,
        label: "Prepare for review",
+       disabled: !actionable?,
        options: prepare_store_submission_path(id),
        html_options: html_opts(:patch, message, params: {store_submission: {force: false}})}
     elsif submission.cancellable?
@@ -147,6 +168,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
       {scheme: :danger,
        type: :button,
        label: "Cancel submission",
+       disabled: !actionable?,
        options: cancel_store_submission_path(id),
        html_options: html_opts(:patch, message)}
     end
