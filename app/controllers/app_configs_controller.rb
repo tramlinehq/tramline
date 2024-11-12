@@ -67,6 +67,7 @@ class AppConfigsController < SignedInApplicationController
 
   def configure_monitoring
     set_monitoring_projects if further_setup_by_category?.dig(:monitoring, :further_setup)
+    set_firebase_apps if @app.crashlytics_connected?
   end
 
   def set_app_config

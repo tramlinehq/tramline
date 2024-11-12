@@ -95,7 +95,7 @@ class AppConfig < ApplicationRecord
     if integrations.monitoring.present?
       categories[:monitoring] = {
         further_setup: integrations.monitoring.any?(&:further_setup?),
-        ready: bugsnag_ready?
+        ready: (bugsnag_ready? || firebase_ready?)
       }
     end
 
@@ -108,6 +108,11 @@ class AppConfig < ApplicationRecord
 
   def bugsnag_release_stage(platform)
     pick_bugsnag_release_stage(platform)
+  end
+
+  def crashlytics_project(platform)
+    # apps connected through firebase
+    pick_firebase_app_id(platform)
   end
 
   def ci_cd_workflows

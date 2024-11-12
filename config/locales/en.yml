@@ -148,6 +148,7 @@ en:
       test_flight_submission: "TestFlight"
       google_firebase_submission: "Firebase App Distribution"
       play_store_submission: "Google Play Store"
+      crashlytics_integration: "Crashlytics"
     values:
       app:
         platform:
@@ -532,6 +533,14 @@ en:
               not_present: "the beta release must be configured"
             release_candidate_workflow:
               not_present: "the release candidate workflow must be configured"
+        crashlytics_integration:
+          attributes:
+            installation_error: "%{message}"
+            json_key:
+              key_format: "the supplied key format is incorrect, please check your key"
+              invalid_config: "configuration is invalid, please check"
+              permission_denied: "permission denied to access the project using the key"
+              unknown_failure: "an unrecognized error occurred connecting to Firebase, please check your project number and key"
 
   invitation:
     flash:
