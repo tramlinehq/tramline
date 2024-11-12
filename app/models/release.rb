@@ -64,6 +64,7 @@ class Release < ApplicationRecord
     finalize_failed
     stopped
     finished
+    release_tag_created
   ]
   # TODO: deprecate this
   STAMPABLE_REASONS.concat(["status_changed"])

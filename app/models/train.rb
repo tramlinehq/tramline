@@ -46,6 +46,7 @@ class Train < ApplicationRecord
   include Loggable
 
   BRANCHING_STRATEGIES = {
+    trunk: "Trunk",
     almost_trunk: "Almost Trunk",
     release_backmerge: "Release with Backmerge",
     parallel_working: "Parallel Working and Release"
@@ -540,7 +541,7 @@ class Train < ApplicationRecord
   end
 
   def set_branching_strategy
-    self.branching_strategy ||= "almost_trunk"
+    self.branching_strategy ||= "trunk"
   end
 
   def set_current_version

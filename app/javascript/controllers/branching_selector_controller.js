@@ -1,12 +1,13 @@
 import {Controller} from "@hotwired/stimulus";
 
 const STRATEGIES = {
+  trunk: "trunk",
   almost_trunk: "almost_trunk",
   release_backmerge: "release_backmerge",
   parallel_working: "parallel_working"
 }
 export default class extends Controller {
-  static targets = ["branchingStrategy", "almostTrunk", "releaseBackMerge", "parallelBranches", "backmerge"]
+  static targets = ["branchingStrategy", "almostTrunk", "trunk", "releaseBackMerge", "parallelBranches", "backmerge"]
 
   initialize() {
     this.showCorrectInputs()
@@ -20,7 +21,10 @@ export default class extends Controller {
     this.__resetFields()
     const selectedBranchingStrategy = this.branchingStrategyTarget.value
 
-    if (selectedBranchingStrategy === STRATEGIES.almost_trunk) {
+
+    if (selectedBranchingStrategy === STRATEGIES.trunk) {
+      this.__hideBackmergeConfig()
+    } else if (selectedBranchingStrategy === STRATEGIES.almost_trunk) {
       this.almostTrunkTarget.hidden = false
       this.__showBackmergeConfig()
     } else if (selectedBranchingStrategy === STRATEGIES.release_backmerge) {

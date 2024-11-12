@@ -89,6 +89,10 @@ module Coordinators
       # NewRelease.call(release)
     end
 
+    def self.process_commit_webhook(train, commit_params)
+      Res.new { Coordinators::Webhooks::CommitMonitor.process(train, commit_params) }
+    end
+
     def self.process_push_webhook(train, push_params)
       Res.new { Coordinators::Webhooks::Push.process(train, push_params) }
     end
