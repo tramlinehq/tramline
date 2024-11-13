@@ -35,6 +35,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     {id: :internal, name: "Internal testing", is_production: false}
   ]
   PUBLIC_CHANNELS = %w[production beta alpha]
+  IN_PROGRESS_STORE_STATUS = %w[inProgress].freeze
   ACTIVE_STORE_STATUSES = %w[completed inProgress].freeze
 
   DEVELOPER_URL_TEMPLATE =
@@ -211,6 +212,11 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def find_build_in_track(channel, build_number)
     installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS).dig(:releases)&.find { |r| r[:build_number] == build_number.to_s }
+  end
+
+  def build_in_progress?(channel, build_number)
+    response = find_build_in_track(channel, build_number)
+    response.present? && response[:status] == GooglePlayStoreIntegration::IN_PROGRESS_STORE_STATUS
   end
 
   private

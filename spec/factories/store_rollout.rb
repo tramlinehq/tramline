@@ -19,6 +19,11 @@ FactoryBot.define do
       type { "AppStoreRollout" }
     end
 
+    trait :last_but_not_hundred do
+      config { [1, 99.9] }
+      current_stage { 1 }
+    end
+
     trait :created do
       status { "created" }
     end

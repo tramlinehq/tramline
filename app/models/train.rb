@@ -57,6 +57,7 @@ class Train < ApplicationRecord
   has_many :deployment_runs, through: :releases
   has_many :external_releases, through: :deployment_runs
   has_many :release_platforms, -> { sequential }, dependent: :destroy, inverse_of: :train
+  has_many :release_platform_runs, -> { sequential }, through: :releases
   has_many :integrations, through: :app
   has_many :steps, through: :release_platforms
   has_many :deployments, through: :steps

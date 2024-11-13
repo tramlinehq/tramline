@@ -150,6 +150,10 @@ class StoreSubmission < ApplicationRecord
     nil
   end
 
+  def finish_rollout_in_next_release?
+    false
+  end
+
   def conf = Config::Submission.from_json(config, read_only: true)
 
   protected

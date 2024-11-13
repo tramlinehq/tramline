@@ -184,6 +184,15 @@ module Coordinators
       Res.new { Coordinators::StopRelease.call(release) }
     end
 
+    def self.fully_release_the_previous_rollout!(current_submission)
+      return Res.new { raise "release is not actionable" } unless current_submission.release_platform_run.on_track?
+      return Res.new { raise "submission has already started" } unless current_submission.created?
+      previous_rollout = current_submission.fully_release_previous_production_rollout!
+      return Res.new { raise "no previous rollout to complete" } if previous_rollout.nil?
+      return Res.new { raise previous_rollout.errors.full_messages.to_sentence } if previous_rollout.errors?
+      Res.new { true }
+    end
+
     def self.start_the_store_rollout!(rollout)
       return Res.new { raise "release is not actionable" } unless rollout.actionable?
       return Res.new { raise "rollout has already started" } unless rollout.created?
