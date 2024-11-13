@@ -25,6 +25,7 @@
 #
 class GoogleFirebaseSubmission < StoreSubmission
   # include Sandboxable
+  using RefinedArray
   include Displayable
 
   MAX_NOTES_LENGTH = 16_380
@@ -45,6 +46,10 @@ class GoogleFirebaseSubmission < StoreSubmission
     failed: "failed",
     failed_with_action_required: "failed_with_action_required"
   }
+
+  enum :failure_reason, {
+    unknown_failure: "unknown_failure"
+  }.merge(Installations::Google::Firebase::Error.reasons.zip_map_self).merge(Installations::Google::Firebase::OpError.reasons.zip_map_self)
 
   enum :status, STATES
   aasm safe_state_machine_params do
