@@ -115,7 +115,16 @@ module Coordinators
     def self.retry_workflow_run!(workflow_run)
       Res.new do
         raise "release is not actionable" unless workflow_run.triggering_release.actionable?
+        raise "workflow run is not retryable" unless workflow_run.may_retry?
         workflow_run.retry!
+      end
+    end
+
+    def self.fetch_workflow_run_status!(workflow_run)
+      Res.new do
+        raise "release is not actionable" unless workflow_run.triggering_release.actionable?
+        raise "workflow run is not in failed state" unless workflow_run.failed?
+        workflow_run.found!
       end
     end
 

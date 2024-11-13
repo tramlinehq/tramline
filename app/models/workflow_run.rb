@@ -82,7 +82,7 @@ class WorkflowRun < ApplicationRecord
     end
 
     event :found, after_commit: :on_found! do
-      transitions from: :triggered, to: :started
+      transitions from: [:failed, :triggered], to: :started
     end
 
     event :unavailable, after_commit: :on_unavailable! do

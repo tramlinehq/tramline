@@ -113,6 +113,10 @@ en:
     retry:
       success: "Workflow run was successfully retried."
       error: "Failed to retry the CI workflow! Contact support if the issue persists."
+      failure: "Failed to re-trigger the workflow — %{errors}"
+    fetch_status:
+      success: "Workflow run status is being fetched."
+      failure: "Failed to fetch the workflow status — %{errors}"
   authentication:
     sso:
       sessions:
