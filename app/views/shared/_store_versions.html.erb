@@ -33,6 +33,7 @@
 
     <%= render partial: "shared/show_time_ago",
                locals: { tooltip_text: release.last_activity_tooltip,
-                         last_activity_at: release.last_activity_at } %>
+                         time: release.last_activity_at,
+                         tick: false } %>
   </div>
 <% end %>

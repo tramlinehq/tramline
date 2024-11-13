@@ -5,8 +5,8 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
   CUSTOM_BOX_STYLE = "border-l-8 rounded-lg %s border-default-t border-default-b border-default-r box-padding rounded-r-lg"
   STATUS = {
     created: {text: "Not started", status: :inert},
-    preprocessing: {text: "Processing", status: :ongoing},
-    preparing: {text: "Processing", status: :ongoing},
+    preprocessing: {text: "Processing", status: :ongoing, kind: :spinner_pill},
+    preparing: {text: "Processing", status: :ongoing, kind: :spinner_pill},
     prepared: {text: "Submitted", status: :ongoing},
     failed_prepare: {text: "Failed to submit", status: :inert},
     submitted_for_review: {text: "Submitted for review", status: :inert},
@@ -37,10 +37,6 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
     CUSTOM_BOX_STYLE % status_border
   end
 
-  def last_activity_at
-    ago_in_words(last_activity_ts)
-  end
-
   def last_activity_ts
     if submission.store_rollout.present?
       submission.store_rollout.completed_at
@@ -51,6 +47,10 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
 
   def last_activity_tooltip
     "Last activity at #{time_format(last_activity_ts)}"
+  end
+
+  def last_activity_tick?
+    %w[preprocessing preparing created].include?(submission.status)
   end
 
   def status
