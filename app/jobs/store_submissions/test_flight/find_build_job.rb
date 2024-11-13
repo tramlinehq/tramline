@@ -4,7 +4,7 @@ class StoreSubmissions::TestFlight::FindBuildJob
   extend Backoffable
 
   queue_as :high
-  sidekiq_options retry: 8
+  sidekiq_options retry: 800
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(Installations::Error) && ex.reason == :build_not_found
