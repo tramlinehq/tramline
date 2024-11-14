@@ -27,7 +27,9 @@
         </div>
 
         <% if show_activity %>
-          <%= render partial: "shared/show_time_ago", locals: { tooltip_text: created_tooltip, last_activity_at: } %>
+          <%= render partial: "shared/show_time_ago", locals: { tooltip_text: created_tooltip,
+                                                                time: build_time,
+                                                                tick: build_time_tick? } %>
         <% end %>
       </div>
     <% end %>

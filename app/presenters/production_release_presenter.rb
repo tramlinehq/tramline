@@ -66,10 +66,6 @@ class ProductionReleasePresenter < SimpleDelegator
     (store_rollout || store_submission).updated_at
   end
 
-  def last_activity_at
-    h.ago_in_words(last_activity_ts)
-  end
-
   def last_activity_tooltip
     "Last activity at #{h.time_format(last_activity_ts)}"
   end

@@ -8,6 +8,7 @@
   <span class="inline-flex items-center <%= badge_style %>">
     <span class="inline-flex">
       <% if pill? %><span class="me-2 w-2 h-2 rounded-full <%= pill %>"></span><% end %>
+      <% if spinner_pill? %><%= render partial: "shared/status_pill_spinner", locals: {color: pill} %><% end %>
       <% if icon? %><span class="me-1 inline-flex"><%= icon %></span><% end %>
     </span>
     <% if link? %>

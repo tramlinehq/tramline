@@ -7,11 +7,12 @@ class V2::BadgeComponent < V2::BaseComponent
   KIND = {
     badge: "text-main dark:text-white text-xs font-medium px-1.5 py-0.5 rounded-md dark:text-secondary-50 border border-main-200 dark:border-main-600 bg-main-100 dark:bg-main-700",
     status_pill: "text-xs font-medium px-2.5 py-0.5 rounded-md",
+    spinner_pill: "text-xs font-medium px-2.5 py-0.5 rounded-md",
     status: "text-lg tracking-wide uppercase box-padding-sm border-default-md",
     featured: "text-xs font-medium px-2 py-0.5 rounded-md bg-main-500 text-main-100 tracking-wideish uppercase"
   }
 
-  STATUS_KINDS = [:status, :status_pill]
+  STATUS_KINDS = [:status, :status_pill, :spinner_pill]
 
   def initialize(text: nil, status: nil, color: nil, kind: :status_pill)
     raise ArgumentError, "Invalid kind" unless KIND.key?(kind.to_sym)
@@ -34,6 +35,10 @@ class V2::BadgeComponent < V2::BaseComponent
 
   def pill?
     @kind == :status_pill && !icon?
+  end
+
+  def spinner_pill?
+    @kind == :spinner_pill && !icon?
   end
 
   def pill
