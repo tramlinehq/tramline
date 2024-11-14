@@ -150,6 +150,10 @@ class StoreSubmission < ApplicationRecord
     nil
   end
 
+  def finish_rollout_in_next_release?
+    false
+  end
+
   def conf = Config::Submission.from_json(config, read_only: true)
 
   protected
@@ -183,7 +187,7 @@ class StoreSubmission < ApplicationRecord
 
   def stamp_data(failure_message: nil)
     failure_reason_data =
-      if failure_reason.present? && failure_reason != :unknown_failure
+      if failure_reason.present? && failure_reason != self.class.failure_reasons[:unknown_failure]
         display_attr(:failure_reason)
       else
         failure_message || self.class.human_attr_value(:failure_reason, :unknown_failure)

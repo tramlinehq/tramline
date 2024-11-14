@@ -28,9 +28,9 @@ class Queries::ReldexParameters
     days_since_last_release = 0
 
     platform_breakdowns = release_platform_runs.map { |run| Queries::PlatformBreakdown.call(run.id) }
-    stability_duration = (platform_breakdowns.filter_map(&:stability_duration) || 0).min / 1.day
-    rollout_duration = (platform_breakdowns.filter_map { |r| r.production_releases.rollout_duration } || 0).max / 1.day
-    rollout_fixes = (platform_breakdowns.filter_map { |r| r.production_releases.count - 1 } || 0).max
+    stability_duration = platform_breakdowns.map { |r| r.stability_duration || 0 }.min / 1.day
+    rollout_duration = platform_breakdowns.map { |r| r.production_releases.rollout_duration || 0 }.max / 1.day
+    rollout_fixes = platform_breakdowns.map { |r| [r.production_releases.count - 1, 0].max }.max
     days_since_last_release = (completed_at - previous_release&.completed_at) / 1.day if previous_release.present?
 
     if rollout_fixes > 0

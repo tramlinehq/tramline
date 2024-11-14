@@ -81,11 +81,7 @@ class ApprovalItemsController < SignedInApplicationController
   def approval_item_params
     params
       .require(:approval_item).permit(:content, approval_assignees: [])
-      .merge(author: release_pilot, status: ApprovalItem.statuses[:not_started])
-  end
-
-  def release_pilot
-    @release_pilot ||= @release.release_pilot
+      .merge(author: current_user, status: ApprovalItem.statuses[:not_started])
   end
 
   def assign_approval_assignees
