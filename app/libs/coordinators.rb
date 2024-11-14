@@ -142,7 +142,7 @@ module Coordinators
 
     def self.trigger_submission!(submission)
       Res.new do
-        raise "submission is not actionable" unless submission.actionable?
+        raise "submission is not triggerable" unless submission.triggerable?
         submission.trigger!
       end
     end
