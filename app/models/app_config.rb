@@ -95,7 +95,7 @@ class AppConfig < ApplicationRecord
     if integrations.monitoring.present?
       categories[:monitoring] = {
         further_setup: integrations.monitoring.any?(&:further_setup?),
-        ready: (bugsnag_ready? || firebase_ready?)
+        ready: bugsnag_ready? || firebase_ready?
       }
     end
 

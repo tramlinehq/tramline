@@ -136,9 +136,9 @@ module EnhancedFormHelper
     end
 
     def labeled_password_field(method, label_text, options = {})
-      hopts = { 
-        class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES), 
-        placeholder: "Enter #{label_text.downcase}" 
+      hopts = {
+        class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES),
+        placeholder: "Enter #{label_text.downcase}"
       }.merge(options)
       label_only(method, label_text) + password_field(method, hopts)
     end

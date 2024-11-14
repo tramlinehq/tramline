@@ -105,7 +105,7 @@ class App < ApplicationRecord
 
   def crashlytics_connected?
     integrations.crashlytics_integrations.any?
-  end 
+  end
 
   def bitbucket_connected?
     integrations.bitbucket_integrations.any?

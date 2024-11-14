@@ -1,10 +1,9 @@
 module Installations
   class Crashlytics::Error
-
     ERROR_CODES = {
-      'INVALID_LOGIN_CREDENTIALS' => 'The credentials provided are invalid.',
-      "WEAK_PASSWORD : Password should be at least 6 characters" => 'Password should be at least 6 characters for new Firebase user',
-      'API key not valid. Please pass a valid API key.' => 'API key not valid. Please pass a valid API key.'
+      "INVALID_LOGIN_CREDENTIALS" => "The credentials provided are invalid.",
+      "WEAK_PASSWORD : Password should be at least 6 characters" => "Password should be at least 6 characters for new Firebase user",
+      "API key not valid. Please pass a valid API key." => "API key not valid. Please pass a valid API key."
     }
 
     def self.set_error_message(message)
