@@ -54,7 +54,7 @@ class PreProdRelease < ApplicationRecord
   enum :status, STATES
 
   def failure?
-    failed? || triggered_workflow_run.failure?
+    failed? || triggered_workflow_run.failure? || store_submissions.any?(&:failed?)
   end
 
   def mark_as_stale!

@@ -153,7 +153,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def retrigger!
-    return unless created? || cancelled?
+    return if created?
 
     reset_store_info!
     trigger!
