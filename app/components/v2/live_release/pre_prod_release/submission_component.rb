@@ -50,7 +50,7 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def last_activity_tick?
-    %w[preprocessing preparing created].include?(submission.status)
+    %w[preprocessing preparing].include?(submission.status)
   end
 
   def status
