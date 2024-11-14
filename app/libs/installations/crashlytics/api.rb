@@ -60,6 +60,8 @@ module Installations
           case dataset.dataset_id
           when /^analytics_\d+$/ then target_datasets[:ga4] = dataset_pattern(dataset)
           when /crashlytics/i then target_datasets[:crashlytics] = dataset_pattern(dataset)
+          else
+            Rails.logger.warn("Dataset ID does not match expected datasets: #{dataset.dataset_id}")
           end
         end
         target_datasets
