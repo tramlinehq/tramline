@@ -255,7 +255,7 @@ class AppStoreSubmission < StoreSubmission
   # app.ios_store_provider
   def provider = conf.integrable.ios_store_provider
 
-  def notification_params
+  def notification_params(failure_message: nil)
     super.merge(
       requires_review: true,
       submission_channel: submission_channel.name
@@ -330,15 +330,16 @@ class AppStoreSubmission < StoreSubmission
     )
   end
 
-  def on_fail_prepare!
-    event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data)
-    notify!("Submission failed", :submission_failed, notification_params)
+  def on_fail_prepare!(args = nil)
+    failure_error = args&.fetch(:error, nil)
+    event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
+    notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
   end
 
   def on_fail!(args = nil)
     failure_error = args&.fetch(:error, nil)
     event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
-    notify!("Submission failed", :submission_failed, notification_params)
+    notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
   end
 
   def update_store_version
