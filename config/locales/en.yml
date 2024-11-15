@@ -113,6 +113,10 @@ en:
     retry:
       success: "Workflow run was successfully retried."
       error: "Failed to retry the CI workflow! Contact support if the issue persists."
+      failure: "Failed to re-trigger the workflow — %{errors}"
+    fetch_status:
+      success: "Workflow run status is being fetched."
+      failure: "Failed to fetch the workflow status — %{errors}"
   authentication:
     sso:
       sessions:
@@ -180,6 +184,7 @@ en:
           internal_release_finished: "Internal release finished"
           internal_release_failed: "Internal release failed"
           beta_submission_finished: "Beta submission finished"
+          internal_submission_finished: "Internal submission finished"
           submission_failed: "Submission failed"
           production_submission_started: "Production submission started"
           production_submission_in_review: "Production submission in review"

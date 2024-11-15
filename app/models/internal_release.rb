@@ -32,6 +32,11 @@ class InternalRelease < PreProdRelease
     end
   end
 
+  def rollout_complete!(submission)
+    notify!("Internal submission finished", :internal_submission_finished, submission.notification_params)
+    super
+  end
+
   def tester_notes? = true
 
   def release_notes? = false
