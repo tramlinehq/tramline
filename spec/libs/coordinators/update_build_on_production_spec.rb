@@ -101,6 +101,14 @@ describe Coordinators::UpdateBuildOnProduction do
       }.to change(production_release, :build_id).to(new_build.id)
     end
 
+    it "does not update the build on the production release if attach build fails" do
+      new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
+      new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
+      store_submission.update!(status: "preparing")
+      described_class.call(store_submission, new_build.id)
+      expect(production_release.reload.build).to eq(build)
+    end
+
     it "retriggers the store submission if the submission was previously triggered" do
       allow(StoreSubmissions::PlayStore::UploadJob).to receive(:perform_later)
       new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
@@ -108,6 +116,15 @@ describe Coordinators::UpdateBuildOnProduction do
       described_class.call(store_submission, new_build.id)
       expect(store_submission.reload.preprocessing?).to be(true)
       expect(StoreSubmissions::PlayStore::UploadJob).to have_received(:perform_later).with(store_submission.id).once
+    end
+
+    it "does not retrigger the store submission if attach build fails" do
+      allow(StoreSubmissions::PlayStore::UploadJob).to receive(:perform_later)
+      new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
+      new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
+      store_submission.update!(status: "preparing")
+      described_class.call(store_submission, new_build.id)
+      expect(StoreSubmissions::PlayStore::UploadJob).not_to have_received(:perform_later).with(store_submission.id)
     end
 
     it "does not retrigger the store submission if the submission was not previously triggered" do
@@ -211,12 +228,29 @@ describe Coordinators::UpdateBuildOnProduction do
       }.to change(store_submission, :build_id).to(new_build.id)
     end
 
-    it "updates the build number on the production release" do
+    it "does not update the build on the production release if attach build fails" do
+      new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
+      new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
+      store_submission.update!(status: "preparing")
+      described_class.call(store_submission, new_build.id)
+      expect(production_release.reload.build).to eq(build)
+    end
+
+    it "updates the build on the production release if attach build succeeds" do
       new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
       new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
       expect {
         described_class.call(store_submission, new_build.id)
       }.to change(production_release, :build_id).to(new_build.id)
+    end
+
+    it "does not retrigger the store submission if attach build fails" do
+      allow(StoreSubmissions::AppStore::FindBuildJob).to receive(:perform_async)
+      new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
+      new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
+      store_submission.update!(status: "preparing")
+      described_class.call(store_submission, new_build.id)
+      expect(StoreSubmissions::AppStore::FindBuildJob).not_to have_received(:perform_async).with(store_submission.id)
     end
 
     it "retriggers the store submission if the submission was previously triggered" do

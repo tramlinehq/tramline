@@ -180,4 +180,25 @@ describe PlayStoreSubmission do
       expect(prev_rollout.reload.status).to eq("fully_released")
     end
   end
+
+  describe "#attach_build" do
+    let(:build) { create(:build) }
+    let(:production_release) { create(:production_release, :inflight, build:) }
+    let(:submission) { create(:play_store_submission, :created, build:, parent_release: production_release) }
+
+    it "attaches the new build to the submission" do
+      new_build = create(:build)
+      submission.attach_build(new_build)
+      expect(submission.reload.build).to eq(new_build)
+    end
+
+    [:preparing, :finished_manually, :failed_with_action_required].each do |state|
+      it "does not change the build if the submission is in #{state} state" do
+        submission.update!(status: state)
+        new_build = create(:build)
+        submission.attach_build(new_build)
+        expect(submission.reload.build).to eq(build)
+      end
+    end
+  end
 end

@@ -342,4 +342,24 @@ describe AppStoreSubmission do
       expect(submission.reload.approved?).to be(true)
     end
   end
+
+  describe "#attach_build" do
+    let(:build) { create(:build) }
+    let(:submission) { create(:app_store_submission, :created, build: build) }
+
+    it "attaches the new build to the submission" do
+      new_build = create(:build)
+      submission.attach_build(new_build)
+      expect(submission.reload.build).to eq(new_build)
+    end
+
+    [:preparing, :cancelling].each do |state|
+      it "does not change the build if the submission is in #{state} state" do
+        submission.update!(status: state)
+        new_build = create(:build)
+        submission.attach_build(new_build)
+        expect(submission.reload.build).to eq(build)
+      end
+    end
+  end
 end

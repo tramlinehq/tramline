@@ -65,7 +65,7 @@ class PlayStoreSubmission < StoreSubmission
     state(*STATES.keys)
 
     event :preprocess do
-      transitions from: [:created, :prepared], to: :preprocessing
+      transitions from: CHANGEABLE_STATES, to: :preprocessing
     end
 
     event :start_prepare, after: :on_start_prepare! do
