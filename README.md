@@ -284,7 +284,7 @@ just pre-setup
 This will setup the rails credentials via an interactive script. Once this is done, you should be able to boot up the application.
 
 > [!NOTE]
-> Booting is insufficient to make Tramline useful for dev, you'd have to setup some basic integrations as well. See [here](/integrations).
+> Booting is insufficient to make Tramline entirely useful for dev. To run a proper release flow, you'd have to setup some basic integrations as well. See [here](#integrations-1).
 
 ### Running
 
