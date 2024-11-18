@@ -273,9 +273,9 @@ Install `just` by following the instructions [here](https://github.com/casey/jus
 
 **secret credentials**
 
-If you're a **trusted contributor**, reach out to the existing developers for access to the dev `master.key`. Place the `master.key` file in the `config` directory or set `RAILS_MASTER_KEY` in `.env.development`.
+If you're a _trusted contributor_, reach out to the existing developers for access to the dev `master.key`. Place the `master.key` file in the `config` directory or set `RAILS_MASTER_KEY` in `.env.development`.
 
-If you're a **new external contributor**, run the following to setup your own credentials:
+If you're a _new external contributor_, run the following to setup your own credentials:
 
 ```bash
 just pre-setup
