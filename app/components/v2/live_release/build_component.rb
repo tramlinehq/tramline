@@ -5,15 +5,15 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
 
   WORKFLOW_STATUS = {
     created: {text: "Waiting", status: :inert},
-    triggering: {text: "Preparing workflow", status: :ongoing},
-    triggered: {text: "Workflow started", status: :ongoing},
+    triggering: {text: "Preparing workflow", status: :ongoing, kind: :spinner_pill},
+    triggered: {text: "Workflow started", status: :ongoing, kind: :spinner_pill},
     unavailable: {text: "Build unavailable", status: :failure},
-    started: {text: "Workflow running", status: :ongoing},
+    started: {text: "Workflow running", status: :ongoing, kind: :spinner_pill},
     failed: {text: "Workflow failed", status: :failure},
     halted: {text: "Workflow halted", status: :failure},
-    finished: {text: "Workflow finished", status: :success},
+    finished: {text: "Workflow finished", status: :ongoing},
     cancelled: {text: "Workflow cancelled", status: :inert},
-    cancelling: {text: "Cancelling the workflow", status: :ongoing},
+    cancelling: {text: "Cancelling the workflow", status: :ongoing, kind: :spinner_pill},
     cancelled_before_start: {text: "Workflow cancelled", status: :inert}
   }
 
@@ -43,8 +43,12 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
     "Build ##{external_number}"
   end
 
-  def last_activity_at
-    ago_in_words(build.updated_at)
+  def build_time
+    build.generated_at || build.updated_at
+  end
+
+  def build_time_tick?
+    %w[triggering triggered started].include?(build.workflow_run.status)
   end
 
   def workflow_status
@@ -65,6 +69,6 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
   end
 
   def created_tooltip
-    "Originally created on #{time_format(build.generated_at)}"
+    "Originally created on #{time_format(build_time)}"
   end
 end
