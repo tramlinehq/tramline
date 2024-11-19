@@ -65,7 +65,7 @@ class PlayStoreSubmission < StoreSubmission
     state(*STATES.keys)
 
     event :preprocess do
-      transitions from: :created, to: :preprocessing
+      transitions from: CHANGEABLE_STATES, to: :preprocessing
     end
 
     event :start_prepare, after: :on_start_prepare! do
@@ -183,7 +183,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def retrigger!
-    return unless created?
+    return if created?
 
     reset_store_info!
     trigger!

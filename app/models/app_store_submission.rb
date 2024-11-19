@@ -49,8 +49,8 @@ class AppStoreSubmission < StoreSubmission
   }
   FINAL_STATES = %w[approved]
   IMMUTABLE_STATES = %w[preparing approved submitting_for_review submitted_for_review cancelling]
-  PRE_PREPARE_STATES = %w[created preprocessing cancelled review_failed failed]
-  CHANGEABLE_STATES = %w[created preprocessing prepared cancelled review_failed failed approved]
+  PRE_PREPARE_STATES = %w[created cancelled review_failed failed]
+  CHANGEABLE_STATES = %w[created prepared failed_prepare cancelled review_failed failed approved]
   CANCELABLE_STATES = %w[submitted_for_review]
   STAMPABLE_REASONS = %w[
     triggered
@@ -82,7 +82,7 @@ class AppStoreSubmission < StoreSubmission
     state(*STATES.keys)
 
     event :start_prepare, after_commit: :on_start_prepare! do
-      transitions to: :preparing
+      transitions from: CHANGEABLE_STATES, to: :preparing
     end
 
     event :finish_prepare, after_commit: :on_finish_prepare! do
@@ -153,7 +153,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def retrigger!
-    return unless created? || cancelled?
+    return if created?
 
     reset_store_info!
     trigger!
