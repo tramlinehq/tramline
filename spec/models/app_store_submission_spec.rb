@@ -353,7 +353,7 @@ describe AppStoreSubmission do
       expect(submission.reload.build).to eq(new_build)
     end
 
-    [:preparing, :cancelling].each do |state|
+    (described_class::STATES.values - described_class::CHANGEABLE_STATES).each do |state|
       it "does not change the build if the submission is in #{state} state" do
         submission.update!(status: state)
         new_build = create(:build)
