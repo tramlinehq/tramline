@@ -89,13 +89,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_prepare?
     return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
-    if build_present_in_store?
-      release_info = @build.value!
-      prepare_and_update!(release_info)
-      StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, release_info.id)
-      return
-    end
-
     result = nil
     filename = build.artifact.file.filename.to_s
     build.artifact.with_open do |file|
@@ -184,14 +177,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     self.store_status = build_status
     self.store_release = release_info.release
     save!
-  end
-
-  def find_build
-    @build ||= provider.find_build(build_number, version_name, platform)
-  end
-
-  def build_present_in_store?
-    find_build.ok?
   end
 
   def external_id

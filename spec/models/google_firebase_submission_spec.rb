@@ -19,7 +19,6 @@ describe GoogleFirebaseSubmission do
 
     it "preprocesses the submission if build not in store" do
       expected_job = StoreSubmissions::GoogleFirebase::UploadJob
-      allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise })
       allow(expected_job).to receive(:perform_later)
 
       submission.trigger!
@@ -52,22 +51,8 @@ describe GoogleFirebaseSubmission do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
-      allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise })
       allow(providable_dbl).to receive(:public_icon_img)
       allow(providable_dbl).to receive(:project_link)
-    end
-
-    it "prepares and updates the submission if build already in store" do
-      expected_job = StoreSubmissions::GoogleFirebase::PrepareForReleaseJob
-      allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { release_info_obj })
-      allow(expected_job).to receive(:perform_later)
-
-      submission.upload_build!
-      submission.reload
-
-      expect(submission.preparing?).to be(true)
-      expect(submission.store_link).to eq(release_info[:firebase_console_uri])
-      expect(expected_job).to have_received(:perform_later).with(submission.id).once
     end
 
     it "starts the upload" do
