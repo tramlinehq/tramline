@@ -12,7 +12,7 @@ class ReleaseKickoffJob < ApplicationJob
     result = Action.start_release!(scheduled_release.train, automatic: true)
 
     if result.ok?
-      scheduled_release.update!(is_success: true, release: response.value!)
+      scheduled_release.update!(is_success: true, release: result.value!)
     else
       scheduled_release.update!(failure_reason: result.error.message)
     end
