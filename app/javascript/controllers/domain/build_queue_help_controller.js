@@ -4,9 +4,16 @@ const BASE_HELP_TEXT = "Changes will be applied to the release every "
 const ERR_HELP_TEXT = "You must set a valid build queue config when it is enabled"
 
 export default class extends Controller {
-  static targets = ["checkbox", "size", "waitTimeValue", "waitTimeUnit", "output", "errOutput"];
+  static targets = ["checkbox", "size", "waitTimeValue", "waitTimeUnit", "output", "errOutput"]
+  static values = {
+    branchingStrategy: String
+  }
 
   initialize() {
+    this.change();
+  }
+
+  branchingStrategyValueChanged() {
     this.change();
   }
 
@@ -29,7 +36,13 @@ export default class extends Controller {
     const waitTimeUnit = this.waitTimeUnitTarget.value
     const waitTimeValue = this.waitTimeValueTarget.value
 
-    this.outputTarget.textContent = `${BASE_HELP_TEXT}${waitTimeValue} ${waitTimeUnit} OR ${size} commits`
+    if (this.branchingStrategyValue === "trunk") {
+      this.outputTarget.textContent = "Changes will be applied manually"
+      this.__changeInputStates(true)
+    } else {
+      this.outputTarget.textContent = `${BASE_HELP_TEXT}${waitTimeValue} ${waitTimeUnit} OR ${size} commits`
+      this.__changeInputStates(false)
+    }
   }
 
   __resetContents() {
@@ -39,5 +52,11 @@ export default class extends Controller {
 
   __isEmptyConfig() {
     return this.sizeTarget.value === "" || this.waitTimeUnitTarget.value === "" || this.waitTimeValueTarget.value === ""
+  }
+
+  __changeInputStates(enabled) {
+    this.sizeTarget.disabled = enabled
+    this.waitTimeValueTarget.disabled = enabled
+    this.waitTimeUnitTarget.disabled = enabled
   }
 }

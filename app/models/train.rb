@@ -107,6 +107,8 @@ class Train < ApplicationRecord
   after_initialize :set_backmerge_config, if: :persisted?
   after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
+  before_create :set_release_branch, if: -> { branching_strategy == "trunk" }
+  before_create :set_build_queue_values, if: -> { branching_strategy == "trunk" }
   before_create :set_ci_cd_workflows
   before_create :set_current_version
   before_create :set_default_status
@@ -384,6 +386,10 @@ class Train < ApplicationRecord
     branching_strategy == "almost_trunk"
   end
 
+  def trunk?
+    branching_strategy == "trunk"
+  end
+
   def backmerge_disabled?
     vcs_provider&.integration&.bitbucket_integration? || !almost_trunk?
   end
@@ -515,6 +521,11 @@ class Train < ApplicationRecord
   end
 
   def set_build_queue_config
+    if branching_strategy == "trunk"
+      self.build_queue_wait_time_unit = "hours"
+      self.build_queue_wait_time_value = 0
+      return
+    end
     return if build_queue_wait_time.blank?
     parts = build_queue_wait_time.parts
     self.build_queue_wait_time_unit = parts.keys.first.to_s
@@ -523,6 +534,15 @@ class Train < ApplicationRecord
 
   def set_backmerge_config
     self.continuous_backmerge_enabled = continuous_backmerge?
+  end
+
+  def set_release_branch
+    self.release_branch = working_branch
+  end
+
+  def set_build_queue_values
+    self.build_queue_size = 0
+    self.build_queue_enabled = true
   end
 
   def set_notifications_config
@@ -590,6 +610,7 @@ class Train < ApplicationRecord
   end
 
   def build_queue_config
+    return if branching_strategy == "trunk"
     if build_queue_enabled?
       errors.add(:build_queue_size, :config_required) unless build_queue_size.present? && build_queue_wait_time.present?
       errors.add(:build_queue_size, :invalid_size) if build_queue_size && build_queue_size < 1

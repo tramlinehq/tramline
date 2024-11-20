@@ -30,6 +30,10 @@ class V2::LiveRelease::ChangesetTrackingComponent < V2::BaseComponent
 
   def apply_help_text
     return if change_queue_commits.blank?
-    "#{change_queue_commits_count} commit(s) in the queue. These will be automatically applied in #{time_in_words(build_queue&.scheduled_at)} or after #{build_queue&.build_queue_size} commits."
+    if release.train.trunk?
+      "#{change_queue_commits_count} commit(s) in the queue."
+    else
+      "#{change_queue_commits_count} commit(s) in the queue. These will be automatically applied in #{time_in_words(build_queue&.scheduled_at)} or after #{build_queue&.build_queue_size} commits."
+    end
   end
 end

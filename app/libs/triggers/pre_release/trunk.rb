@@ -23,12 +23,12 @@ class Triggers::PreRelease
       GitHub::Result.new do
         head_sha = train.vcs_provider.branch_head_sha(working_branch)
         tag_name = "v#{train.next_version}"
-        
+
         train.vcs_provider.create_tag!(tag_name, head_sha).then do |value|
-          stamp_data = { working_branch:, tag_name: }
+          stamp_data = {working_branch:, tag_name:}
           release.event_stamp_now!(
-            reason: :release_tag_created, 
-            kind: :success, 
+            reason: :release_tag_created,
+            kind: :success,
             data: stamp_data
           )
           GitHub::Result.new { value }
@@ -39,4 +39,4 @@ class Triggers::PreRelease
       end
     end
   end
-end 
+end

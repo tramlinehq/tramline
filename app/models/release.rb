@@ -276,7 +276,8 @@ class Release < ApplicationRecord
   end
 
   def create_build_queue!
-    build_queues.create!(scheduled_at: (Time.current + train.build_queue_wait_time), is_active: true)
+    wait_time = train.build_queue_wait_time || 0
+    build_queues.create!(scheduled_at: (Time.current + wait_time), is_active: true)
   end
 
   def applied_commits
@@ -298,7 +299,11 @@ class Release < ApplicationRecord
   end
 
   def queue_commit?
-    active_build_queue.present? && release_changes?
+    if train.trunk?
+      active_build_queue.present?
+    else
+      active_build_queue.present? && release_changes?
+    end
   end
 
   def release_changes?
@@ -555,6 +560,13 @@ class Release < ApplicationRecord
 
   def approvals_blocking?
     !(approvals_overridden? || approvals_finished?)
+  end
+
+  def self.find_active_for_train(train_id)
+    where(train_id: train_id)
+      .where.not(status: TERMINAL_STATES)
+      .order(created_at: :desc)
+      .first
   end
 
   private

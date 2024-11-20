@@ -1,11 +1,15 @@
-<div data-controller="domain--build-queue-help">
+<div id="build-queue"
+     data-controller="domain--build-queue-help"
+     data-domain--build-queue-help-branching-strategy-value="<%= @train.branching_strategy %>">
   <%= render V2::Form::SwitchComponent.new(form:,
                                            field_name: :build_queue_enabled,
                                            on_label: "Build Queue enabled",
                                            off_label: "Build Queue disabled",
                                            hide_child: !@train.build_queue_enabled,
                                            switch_data: { action: "domain--build-queue-help#change",
-                                                          domain__build_queue_help_target: "checkbox" }) do |component| %>
+                                                          domain__build_queue_help_target: "checkbox",
+                                                          branching_selector_target: "buildQueueToggle" },
+                                                          ) do |component| %>
     <% component.with_child do %>
       <div class="flex flex-row gap-x-2 items-baseline">
         <%= form.label_only :build_queue_size, "Apply after" %>

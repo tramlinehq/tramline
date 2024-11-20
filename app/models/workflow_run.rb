@@ -200,10 +200,18 @@ class WorkflowRun < ApplicationRecord
   private
 
   def trigger_external_run!
+    raise ArgumentError, "No tag found for workflow" if release_platform_run.tag_name.blank?
+
     deploy_action_enabled = organization.deploy_action_enabled? || app.deploy_action_enabled? || train.deploy_action_enabled?
 
     ci_cd_provider
-      .trigger_workflow_run!(conf.identifier, release_branch, workflow_inputs, commit_hash, deploy_action_enabled)
+      .trigger_workflow_run!(
+        conf.identifier,
+        release_platform_run.tag_name,
+        workflow_inputs,
+        commit_hash,
+        deploy_action_enabled
+      )
       .then { |wr| update_external_metadata!(wr) }
   end
 

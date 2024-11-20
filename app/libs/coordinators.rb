@@ -47,6 +47,10 @@ module Coordinators
       Coordinators::ProcessCommits.call(release, head_commit, rest_commits)
     end
 
+    def self.commit_has_landed!(release, head_commit)
+      Coordinators::ProcessCommit.call(release, head_commit)
+    end
+
     def self.build_queue_can_be_applied!(build_queue)
       Coordinators::ApplyBuildQueue.call(build_queue)
     end
@@ -85,12 +89,12 @@ module Coordinators
       Res.new { Coordinators::StartRelease.call(train, **release_params) }
     end
 
-    def self.process_commit_webhook(train, commit_params)
-      Res.new { Coordinators::Webhooks::CommitMonitor.process(train, commit_params) }
-    end
-
     def self.process_push_webhook(train, push_params)
       Res.new { Coordinators::Webhooks::Push.process(train, push_params) }
+    end
+
+    def self.process_commit_webhook(train, commit_params)
+      Res.new { Coordinators::Webhooks::Commit.process(train, commit_params) }
     end
 
     def self.process_pull_request_webhook(train, pull_request_params)

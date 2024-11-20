@@ -9,7 +9,6 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   def events
     case event_type
     when "push"
-      monitor_commits
       handle_push
     when "ping"
       handle_ping
@@ -26,20 +25,12 @@ class IntegrationListeners::GithubController < IntegrationListenerController
     head :accepted
   end
 
-  def monitor_commits
-    return unless train.product_v2?
-    return unless train.branching_strategy == "trunk"
-    #todo handle errors and v1
-    result = Action.process_commit_webhook(train, push_params)
-    response = result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing commit")
-    Rails.logger.debug { response.body }
-    head response.status
-  end
-
   def handle_push
-    return unless train.branching_strategy != "trunk"
     response =
-      if train.product_v2?
+      if train.trunk?
+        result = Action.process_commit_webhook(train, push_params)
+        result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing commit")
+      elsif train.product_v2?
         result = Action.process_push_webhook(train, push_params)
         result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing push")
       else
