@@ -74,6 +74,9 @@ en:
       success: "The submission has been created successfully."
       failure: "Failed to create submission — %{errors}"
       invalid_build: "The build is not valid to start a submission."
+    fully_release_previous_rollout:
+      success: "The previous rollout was fully released."
+      failure: "Failed to release the previous rollout — %{errors}"
   store_rollouts:
     switcher:
       ios:
@@ -110,6 +113,10 @@ en:
     retry:
       success: "Workflow run was successfully retried."
       error: "Failed to retry the CI workflow! Contact support if the issue persists."
+      failure: "Failed to re-trigger the workflow — %{errors}"
+    fetch_status:
+      success: "Workflow run status is being fetched."
+      failure: "Failed to fetch the workflow status — %{errors}"
   authentication:
     sso:
       sessions:
@@ -177,6 +184,7 @@ en:
           internal_release_finished: "Internal release finished"
           internal_release_failed: "Internal release failed"
           beta_submission_finished: "Beta submission finished"
+          internal_submission_finished: "Internal submission finished"
           submission_failed: "Submission failed"
           production_submission_started: "Production submission started"
           production_submission_in_review: "Production submission in review"

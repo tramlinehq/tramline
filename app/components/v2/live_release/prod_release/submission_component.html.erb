@@ -3,17 +3,51 @@
 <% end %>
 
 <div class="flex flex-col item-gap-default">
-  <div>
-    <% if release_platform_run.metadata_editable_v2? %>
-      <%= render V2::AlertComponent.new(type: :info, title: "You can edit the release notes until you \"Prepare for review\". Once prepared, you won't be able to change the release notes.", full_screen: false) %>
-    <% else %>
-      <%= render V2::AlertComponent.new(type: :info, title: "Release notes cannot be edited any longer. Cancel the review process to edit the release notes.", full_screen: false) %>
-    <% end %>
-  </div>
+  <% if cascading_rollout_actionable? %>
+    <%= render V2::AlertComponent.new(kind: :announcement,
+                                      type: :announce,
+                                      title: "There's a pending rollout to complete",
+                                      full_screen: false) do %>
 
-  <%= render partial: "shared/play_store_review_rejected", locals: { show: show_blocked_message?,
-                                                                     build: current_build,
-                                                                     actionable: false } %>
+      <div class="flex flex-col gap-2 mt-1 text-sm">
+        <p>
+          Since cascading rollouts are enabled, you must fully release the previous rollout from
+          <span class="font-semibold tracking-wide">release <%= previously_completed_release.release_version %></span>
+          to 100% before
+          starting the current one.
+        </p>
+
+        <div class="flex flex-row items-end gap-2">
+          <%= render V2::ButtonComponent.new(
+            label: "Fully release previous rollout",
+            scheme: :default,
+            options: fully_release_previous_rollout_store_submission_path(id),
+            size: :xxs,
+            html_options: html_opts(:patch, "Are you sure you want to fully rollout #{previously_completed_release.release_version}?")
+          ) %>
+
+          <%= render V2::ButtonComponent.new(label: "Go to previous rollout ↗",
+                                             scheme: :link,
+                                             type: :link_external,
+                                             options: previously_completed_release_link,
+                                             html_options: {class: "text-sm"},
+                                             authz: false,
+                                             size: :none,
+                                             arrow: :none) %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if release_platform_run.metadata_editable_v2? %>
+    <div>
+      <%= render V2::AlertComponent.new(type: :info, title: "You can edit the release notes until you prepare for review. Once prepared, you won't be able to change the release notes.", full_screen: false) %>
+    </div>
+  <% end %>
+
+  <%= render partial: "shared/play_store_review_rejected", locals: {show: show_blocked_message?,
+                                                                    build: current_build,
+                                                                    actionable: false} %>
 
   <% if @new_submission_prompt %>
     <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "New RC Build is available") do |ann| %>
@@ -133,7 +167,7 @@
                                                  type: :button,
                                                  label: "Submit for review",
                                                  options: submit_for_review_store_submission_path(id),
-                                                 html_options: { method: :patch, data: { turbo_method: :patch } }) %>
+                                                 html_options: {method: :patch, data: {turbo_method: :patch}}) %>
             </div>
           <% end %>
         <% end %>
@@ -160,10 +194,10 @@
                                                      show_activity: false,
                                                      show_commit: true) %>
 
-      <%= render partial: "shared/play_store_review_rejected", locals: { show: submission.failed_with_action_required?,
-                                                                         build: current_build,
-                                                                         actionable: true,
-                                                                         channel_name: submission.submission_channel.name } %>
+      <%= render partial: "shared/play_store_review_rejected", locals: {show: submission.failed_with_action_required?,
+                                                                        build: current_build,
+                                                                        actionable: true,
+                                                                        channel_name: submission.submission_channel.name} %>
 
       <%= render V2::SectionComponent.new(style: :titled, title: "External info", size: :micro) do %>
         <div class="flex">
@@ -174,7 +208,7 @@
                 <%= render V2::ButtonComponent.new(scheme: :naked_icon,
                                                    type: :link_external,
                                                    options: external_link,
-                                                   html_options: { class: "text-xs" },
+                                                   html_options: {class: "text-xs"},
                                                    authz: false,
                                                    size: :none) do |b| %>
                   <% b.with_icon("v2/external_link.svg", size: :md) %>

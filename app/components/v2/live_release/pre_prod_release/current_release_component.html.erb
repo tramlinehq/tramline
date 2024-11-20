@@ -41,12 +41,23 @@
 
     <% if retriggerable? %>
       <% card.with_action do %>
-
         <%= render V2::ButtonComponent.new(label: "Retrigger build",
                                            scheme: :default,
                                            options: retry_workflow_run_path(workflow_run),
                                            size: :xxs,
                                            html_options: html_opts(:patch, "Are you sure you want to retrigger the build?")) %>
+
+      <% end %>
+    <% end %>
+
+    <% if workflow_run.failed? %>
+      <% card.with_action do %>
+        <%= render V2::ButtonComponent.new(label: "Re-fetch build status",
+                                           scheme: :light,
+                                           options: fetch_status_workflow_run_path(workflow_run),
+                                           size: :xxs,
+                                           html_options: html_opts(:patch, "Are you sure you want to re-fetch the build status?")) %>
+
       <% end %>
     <% end %>
 

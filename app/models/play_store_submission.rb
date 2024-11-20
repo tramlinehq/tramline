@@ -65,7 +65,7 @@ class PlayStoreSubmission < StoreSubmission
     state(*STATES.keys)
 
     event :preprocess do
-      transitions from: :created, to: :preprocessing
+      transitions from: CHANGEABLE_STATES, to: :preprocessing
     end
 
     event :start_prepare, after: :on_start_prepare! do
@@ -100,6 +100,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   delegate :play_store_blocked?, to: :release_platform_run
+  delegate :finish_rollout_in_next_release?, to: :conf
 
   def change_build? = CHANGEABLE_STATES.include?(status) && editable?
 
@@ -182,7 +183,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def retrigger!
-    return unless created?
+    return if created?
 
     reset_store_info!
     trigger!
@@ -216,7 +217,7 @@ class PlayStoreSubmission < StoreSubmission
     save!
   end
 
-  def notification_params
+  def notification_params(failure_message: nil)
     super.merge(
       requires_review: false,
       submission_channel: "#{display} - #{submission_channel.name}"
@@ -239,6 +240,20 @@ class PlayStoreSubmission < StoreSubmission
     end
 
     false
+  end
+
+  def fully_release_previous_production_rollout!
+    return unless created?
+    return unless parent_release.production?
+    return if play_store_rollout.present?
+    return unless finish_rollout_in_next_release?
+
+    previous_run = release_platform_run.previously_completed_rollout_run
+    return if previous_run.blank?
+
+    previous_rollout = previous_run.finished_production_release.store_rollout
+    previous_rollout.release_fully! if previous_rollout.rollout_in_progress?
+    previous_rollout
   end
 
   private
@@ -276,7 +291,7 @@ class PlayStoreSubmission < StoreSubmission
   def on_fail!(args = nil)
     failure_error = args&.fetch(:error, nil)
     event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
-    notify!("Submission failed", :submission_failed, notification_params)
+    notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
   end
 
   def build_present_in_store?

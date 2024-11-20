@@ -50,7 +50,7 @@ class PlayStoreRollout < StoreRollout
 
     event :fully_release, after_commit: :on_complete! do
       after { set_completed_at! }
-      transitions from: :started, to: :fully_released
+      transitions from: [:completed, :started], to: :fully_released
     end
   end
 
@@ -133,6 +133,10 @@ class PlayStoreRollout < StoreRollout
         fail!(result.error)
       end
     end
+  end
+
+  def rollout_in_progress?
+    provider.build_in_progress?(submission_channel_id, build_number)
   end
 
   private

@@ -26,6 +26,8 @@ describe PreProdRelease do
     before do
       allow_any_instance_of(PlayStoreSubmission).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:find_build).and_return(true)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
     end
 
     it "triggers the next submission" do

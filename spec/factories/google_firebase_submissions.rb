@@ -15,7 +15,7 @@ FactoryBot.define do
     }
 
     trait :with_store_release do
-      store_release { {"id" => 1} }
+      store_release { {"id" => "projects/#{Faker::Number.number(digits: 8)}/apps/#{Faker::Lorem.word}/releases/1"} }
     end
 
     trait :preprocessing do

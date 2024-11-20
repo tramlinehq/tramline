@@ -42,6 +42,7 @@ class NotificationSetting < ApplicationRecord
     internal_release_finished: "internal_release_finished",
     internal_release_failed: "internal_release_failed",
     beta_submission_finished: "beta_submission_finished",
+    internal_submission_finished: "internal_submission_finished",
     submission_failed: "submission_failed",
     production_submission_started: "production_submission_started",
     production_submission_in_review: "production_submission_in_review",

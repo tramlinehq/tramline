@@ -155,7 +155,9 @@ class Commit < ApplicationRecord
         commit_url: url,
         commit_author: author_name,
         commit_author_email: author_email,
-        commit_message: message,
+        # NOTE: Truncate the message to 200 characters to avoid Slack notifications from exceeding the 2000 character limit
+        # and also to not pollute the notifications channel with too much information
+        commit_message: message.truncate(200),
         commit_timestamp: timestamp
       }
     )

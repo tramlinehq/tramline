@@ -25,10 +25,11 @@
 #
 class GoogleFirebaseSubmission < StoreSubmission
   # include Sandboxable
+  using RefinedArray
   include Displayable
 
   MAX_NOTES_LENGTH = 16_380
-  DEEP_LINK = Addressable::Template.new("https://appdistribution.firebase.google.com/testerapps/{platform}/releases/{external_release_id}")
+  DEEP_LINK = "https://appdistribution.firebase.google.com/testerapps/"
   UploadNotComplete = Class.new(StandardError)
 
   STAMPABLE_REASONS = %w[
@@ -45,6 +46,10 @@ class GoogleFirebaseSubmission < StoreSubmission
     failed: "failed",
     failed_with_action_required: "failed_with_action_required"
   }
+
+  enum :failure_reason, {
+    unknown_failure: "unknown_failure"
+  }.merge(Installations::Google::Firebase::Error.reasons.zip_map_self).merge(Installations::Google::Firebase::OpError.reasons.zip_map_self)
 
   enum :status, STATES
   aasm safe_state_machine_params do
@@ -140,7 +145,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   # app.firebase_build_channel_provider
   def provider = conf.integrable.firebase_build_channel_provider
 
-  def notification_params
+  def notification_params(failure_message: nil)
     super.merge(submission_channel: "#{display} - #{submission_channel.name}")
   end
 
@@ -171,7 +176,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   def on_fail!(args = nil)
     failure_error = args&.fetch(:error, nil)
     event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
-    notify!("Submission failed", :submission_failed, notification_params)
+    notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
   end
 
   def update_store_info!(release_info, build_status)
@@ -195,7 +200,8 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def deep_link
     return if external_id.blank?
-    DEEP_LINK.expand(platform:, external_release_id: external_id).to_s
+    parsed_external_id = external_id.split("apps/").last
+    DEEP_LINK + parsed_external_id
   end
 
   def stamp_data(failure_message: nil)

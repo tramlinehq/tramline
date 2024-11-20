@@ -17,6 +17,7 @@
 class StoreRollout < ApplicationRecord
   has_paper_trail
   using RefinedString
+  using RefinedFloat
   include AASM
   include Loggable
   include Displayable
@@ -92,6 +93,11 @@ class StoreRollout < ApplicationRecord
     return 0.0 unless last_event
     return 100.0 if last_event.reason == "fully_released"
     last_event.metadata["rollout_percentage"].safe_float
+  end
+
+  def hundred_percent?
+    return false if current_stage.nil?
+    config[current_stage].to_f.equal_to?(100.0)
   end
 
   protected

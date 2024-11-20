@@ -256,6 +256,7 @@ Rails.application.routes.draw do
       patch :prepare
       patch :cancel
       patch :remove_from_review
+      patch :fully_release_previous_rollout
     end
   end
 
@@ -268,6 +269,7 @@ Rails.application.routes.draw do
     member do
       patch :retry
       patch :trigger
+      patch :fetch_status
     end
   end
 

@@ -108,9 +108,9 @@ class StoreSubmission < ApplicationRecord
     submission.trigger! if auto_promote
   end
 
-  def notification_params
+  def notification_params(failure_message: nil)
     parent_release.notification_params.merge(
-      submission_failure_reason: (display_attr(:failure_reason) if failure_reason.present?),
+      submission_failure_reason: (get_failure_message(failure_message) if failure_reason.present?),
       submission_asset_link: provider&.public_icon_img,
       project_link: external_link,
       deep_link: deep_link
@@ -150,6 +150,10 @@ class StoreSubmission < ApplicationRecord
     nil
   end
 
+  def finish_rollout_in_next_release?
+    false
+  end
+
   def conf = Config::Submission.from_json(config, read_only: true)
 
   protected
@@ -182,16 +186,18 @@ class StoreSubmission < ApplicationRecord
   end
 
   def stamp_data(failure_message: nil)
-    failure_reason_data =
-      if failure_reason.present? && failure_reason != :unknown_failure
-        display_attr(:failure_reason)
-      else
-        failure_message || self.class.human_attr_value(:failure_reason, :unknown_failure)
-      end
     {
       version: version_name,
       build_number: build_number,
-      failure_reason: failure_reason_data
+      failure_reason: (get_failure_message(failure_message) if failure_reason.present?)
     }
+  end
+
+  def get_failure_message(default_message = nil)
+    if failure_reason.present? && failure_reason != self.class.failure_reasons[:unknown_failure]
+      display_attr(:failure_reason)
+    else
+      default_message || self.class.human_attr_value(:failure_reason, :unknown_failure)
+    end
   end
 end
