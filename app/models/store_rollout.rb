@@ -44,6 +44,7 @@ class StoreRollout < ApplicationRecord
   delegate :version_name, :build_number, to: :build
   delegate :train, :platform, to: :release_platform_run
   delegate :notify!, to: :train
+  delegate :stale?, :actionable?, to: :parent_release
 
   scope :production, -> { joins(store_submission: :production_release) }
 
@@ -57,7 +58,14 @@ class StoreRollout < ApplicationRecord
 
   def reached_last_stage? = next_rollout_percentage.nil?
 
-  delegate :stale?, :actionable?, to: :parent_release
+  def release_info
+    {
+      build_version: version_name,
+      build_number:,
+      updated_at:,
+      platform:
+    }
+  end
 
   def stage
     (current_stage || 0).succ
