@@ -40,8 +40,6 @@
 # • It currently does not have any state of its own.
 module Coordinators
   # TODO: [V2] fixes:
-  # start release
-  # push processing
   # metadata
 
   module Signals
@@ -83,10 +81,8 @@ module Coordinators
   module Actions
     Res = GitHub::Result
 
-    def self.start_release!(release)
-      # TODO: [V2] trigger a release
-      # PreRelease.call(release)
-      # NewRelease.call(release)
+    def self.start_release!(train, **release_params)
+      Res.new { Coordinators::StartRelease.call(train, **release_params) }
     end
 
     def self.process_push_webhook(train, push_params)
@@ -146,7 +142,7 @@ module Coordinators
 
     def self.trigger_submission!(submission)
       Res.new do
-        raise "submission is not actionable" unless submission.actionable?
+        raise "submission is not triggerable" unless submission.triggerable?
         submission.trigger!
       end
     end
