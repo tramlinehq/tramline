@@ -1,9 +1,8 @@
 require "rails_helper"
 
-ANDROID_APP = "Android App"
-IOS_APP = "iOS App"
-APP_ONE = "App One"
-FIND_RELEASE_SHARED_EXAMPLE = "find_release with correct arguments"
+FIND_RELEASE_DESCRIPTION = "find_release with correct arguments".freeze
+ANDROID_APP_NAME = "Android App".freeze
+IOS_APP_NAME = "iOS App".freeze
 
 RSpec.describe CrashlyticsIntegration do
   let(:crashlytics_integration) { create(:crashlytics_integration) }
@@ -36,8 +35,10 @@ RSpec.describe CrashlyticsIntegration do
     let(:ios_app) { create(:app, :ios) }
 
     before do
-      allow(crashlytics_integration).to receive(:list_apps).with(platform: "android").and_return([{app_id: "android_app", display_name: ANDROID_APP}])
-      allow(crashlytics_integration).to receive(:list_apps).with(platform: "ios").and_return([{app_id: "ios_app", display_name: IOS_APP}])
+      allow(crashlytics_integration).to receive(:list_apps)
+        .with(platform: "android").and_return([{app_id: "android_app", display_name: ANDROID_APP_NAME}])
+      allow(crashlytics_integration).to receive(:list_apps)
+        .with(platform: "ios").and_return([{app_id: "ios_app", display_name: IOS_APP_NAME}])
     end
 
     it "returns the apps based on the integrable platform" do
@@ -45,35 +46,45 @@ RSpec.describe CrashlyticsIntegration do
       ios_integration = create(:integration, integrable: ios_app)
 
       crashlytics_integration.integration = android_integration
-      expect(crashlytics_integration.setup).to eq({android: [{app_id: "android_app", display_name: ANDROID_APP}]})
+      expect(crashlytics_integration.setup).to eq({android: [{app_id: "android_app", display_name: ANDROID_APP_NAME}]})
 
       crashlytics_integration.integration = ios_integration
-      expect(crashlytics_integration.setup).to eq({ios: [{app_id: "ios_app", display_name: IOS_APP}]})
+      expect(crashlytics_integration.setup).to eq({ios: [{app_id: "ios_app", display_name: IOS_APP_NAME}]})
     end
   end
 
   describe "#find_release" do
     let(:version) { "1.0.0" }
     let(:build_number) { "100" }
+    let(:bundle_identifier) { "com.example.app" }
+    let(:platform) { "ios" }
 
     before do
+      allow(api_instance).to receive(:find_release)
       allow(crashlytics_integration.integration.app.config).to receive_messages(
-        firebase_ios_config: {"app_id" => "sampleiosappid", "display_name" => IOS_APP},
-        firebase_android_config: {"app_id" => "sampleandroidappid", "display_name" => ANDROID_APP}
+        firebase_crashlytics_ios_config: {"app_id" => "sampleiosappid", "display_name" => IOS_APP_NAME},
+        firebase_crashlytics_android_config: {"app_id" => "sampleandroidappid", "display_name" => ANDROID_APP_NAME}
       )
+      allow(crashlytics_integration.integrable).to receive(:bundle_identifier).and_return(bundle_identifier)
     end
 
-    shared_examples FIND_RELEASE_SHARED_EXAMPLE do |platform|
+    shared_examples FIND_RELEASE_DESCRIPTION do |platform|
       it "calls the API find_release method with correct arguments for #{platform.capitalize} platform" do
         project = crashlytics_integration.project(platform)
         crashlytics_integration.find_release(platform, version, build_number)
 
-        expect(api_instance).to have_received(:find_release).with(project, version, build_number, CrashlyticsIntegration::RELEASE_TRANSFORMATIONS)
+        expect(api_instance).to have_received(:find_release).with(
+          project,
+          version,
+          build_number,
+          CrashlyticsIntegration::RELEASE_TRANSFORMATIONS,
+          bundle_identifier
+        )
       end
     end
 
-    it_behaves_like FIND_RELEASE_SHARED_EXAMPLE, "android"
-    it_behaves_like FIND_RELEASE_SHARED_EXAMPLE, "ios"
+    it_behaves_like FIND_RELEASE_DESCRIPTION, "android"
+    it_behaves_like FIND_RELEASE_DESCRIPTION, "ios"
 
     it "returns nil if version is blank" do
       expect(crashlytics_integration.find_release("android", nil, build_number)).to be_nil
@@ -81,7 +92,12 @@ RSpec.describe CrashlyticsIntegration do
   end
 
   describe "#list_apps" do
-    let(:apps) { [{platform: "android", app_id: "1", display_name: APP_ONE}, {platform: "ios", app_id: "2", display_name: IOS_APP}] }
+    let(:apps) do
+      [
+        {platform: "android", app_id: "1", display_name: "Test Android App"},
+        {platform: "ios", app_id: "2", display_name: "Test iOS App"}
+      ]
+    end
 
     before do
       allow(Rails.cache).to receive(:fetch).and_yield
@@ -90,12 +106,12 @@ RSpec.describe CrashlyticsIntegration do
 
     it "fetches and caches apps filtered by platform" do
       result = crashlytics_integration.list_apps(platform: "android")
-      expect(result).to eq([{app_id: "1", display_name: APP_ONE}])
+      expect(result).to eq([{app_id: "1", display_name: "Test Android App"}])
     end
 
     it "returns only iOS apps when platform is ios" do
       result = crashlytics_integration.list_apps(platform: "ios")
-      expect(result).to eq([{app_id: "2", display_name: IOS_APP}])
+      expect(result).to eq([{app_id: "2", display_name: "Test iOS App"}])
     end
   end
 

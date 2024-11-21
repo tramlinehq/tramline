@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_11_05_084059) do
+ActiveRecord::Schema[7.2].define(version: 2024_11_20_045747) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -58,6 +58,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_05_084059) do
     t.jsonb "bugsnag_android_config"
     t.string "bitbucket_workspace"
     t.jsonb "ci_cd_workflows"
+    t.jsonb "firebase_crashlytics_ios_config"
+    t.jsonb "firebase_crashlytics_android_config"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -218,7 +220,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_05_084059) do
   create_table "crashlytics_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "json_key"
     t.string "project_number"
-    t.string "code"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

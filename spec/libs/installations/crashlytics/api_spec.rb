@@ -1,17 +1,16 @@
 require "rails_helper"
 
 Dataset = Struct.new(:dataset_id, :project_id)
-
+APP_IDENTIFIER = "com.example.app"
 APP_ONE = "App One"
-ANDROID_APP = "Android App"
-IOS_APP = "iOS App"
+APP_TWO = "App Two"
 
 describe Installations::Crashlytics::Api, type: :integration do
   let(:project_number) { Faker::Number.number(digits: 8).to_s }
   let(:json_key) { StringIO.new({client_email: "client@test.com", private_key: "private_key"}.to_json) }
   let(:api_instance) { described_class.new(project_number, json_key) }
 
-  let(:app_id) { "com.example.app" }
+  let(:app_id) { APP_IDENTIFIER }
   let(:version) { "1.0.0" }
   let(:build_number) { "100" }
   let(:payload) do
@@ -30,11 +29,33 @@ describe Installations::Crashlytics::Api, type: :integration do
   let(:transforms) { CrashlyticsIntegration::RELEASE_TRANSFORMATIONS }
 
   describe "#find_release" do
+    let(:app_id) { Faker::Alphanumeric.alphanumeric(number: 8) }
+    let(:app_version) { "1.0.0" }
+    let(:app_version_code) { "100" }
+    let(:bundle_identifier) { APP_IDENTIFIER }
+    let(:transforms) { CrashlyticsIntegration::RELEASE_TRANSFORMATIONS }
+    let(:payload) do
+      {
+        version_name: app_version,
+        errors_count: 10,
+        new_errors_count: 5,
+        sessions: 200,
+        sessions_in_last_day: 100,
+        sessions_with_errors: 50,
+        daily_users: 150,
+        daily_users_with_errors: 30,
+        external_release_id: "release_123",
+        total_sessions_in_last_day: 150
+      }
+    end
+
     context "when release data is found" do
       it "returns the transformed release data" do
-        allow(api_instance).to receive(:fetch_crash_data).with(app_id, version).and_return(payload)
+        allow(api_instance).to receive(:fetch_crash_data)
+          .with(app_id, app_version, app_version_code, bundle_identifier)
+          .and_return(payload)
 
-        result = api_instance.find_release(app_id, version, build_number, transforms)
+        result = api_instance.find_release(app_id, app_version, app_version_code, transforms, bundle_identifier)
         expected_data = {
           "daily_users" => 150,
           "daily_users_with_errors" => 30,
@@ -53,8 +74,13 @@ describe Installations::Crashlytics::Api, type: :integration do
 
     context "when no release data is found" do
       it "returns nil" do
-        allow(api_instance).to receive(:fetch_crash_data).with(app_id, version).and_return(nil)
-        expect(api_instance.find_release(app_id, version, build_number, transforms)).to be_nil
+        allow(api_instance).to receive(:fetch_crash_data)
+          .with(app_id, app_version, app_version_code, bundle_identifier)
+          .and_return(nil)
+
+        result = api_instance.find_release(app_id, app_version, app_version_code, transforms, bundle_identifier)
+
+        expect(result).to be_nil
       end
     end
   end
@@ -64,7 +90,7 @@ describe Installations::Crashlytics::Api, type: :integration do
     let(:mock_apps) {
       [
         {app_id: "app_1", display_name: APP_ONE, platform: "ios"},
-        {app_id: "app_2", display_name: ANDROID_APP, platform: "android"}
+        {app_id: "app_2", display_name: APP_TWO, platform: "android"}
       ]
     }
     let(:firebase_service) { instance_double(Installations::Google::Firebase::Api) }
@@ -89,7 +115,7 @@ describe Installations::Crashlytics::Api, type: :integration do
       end
 
       it "fails when the platform field is missing in transformations" do
-        incomplete_mock_apps = [{app_id: "app_1", display_name: APP_ONE}, {app_id: "app_2", display_name: ANDROID_APP}]
+        incomplete_mock_apps = [{app_id: "app_1", display_name: APP_ONE}, {app_id: "app_2", display_name: APP_TWO}]
         allow(firebase_service).to receive(:list_apps).with(transforms).and_return(incomplete_mock_apps)
 
         expect(api_instance.list_apps(transforms)).not_to eq(mock_apps)
@@ -122,21 +148,37 @@ describe Installations::Crashlytics::Api, type: :integration do
 
   describe "#fetch_crash_data" do
     let(:app_id) { Faker::Alphanumeric.alphanumeric(number: 8) }
-    let(:release_data) { {analytics_data: [{version_name: "1.0.0"}], crashlytics_data: [{version_name: "1.0.0"}]} }
+    let(:app_version) { "1.0.0" }
+    let(:app_version_code) { "100" }
+    let(:bundle_identifier) { APP_IDENTIFIER }
+    let(:release_data) do
+      {
+        analytics_data: [{version_name: app_version}],
+        crashlytics_data: [{version_name: app_version}]
+      }
+    end
 
     before do
-      allow(api_instance).to receive(:release_data).with(app_id).and_return(release_data)
+      allow(api_instance).to receive(:release_data)
+        .with(app_id, app_version, app_version_code, bundle_identifier)
+        .and_return(release_data)
     end
 
     context "when data for the version is found" do
       it "merges analytics and crashlytics data for a matching version" do
-        expect(api_instance.send(:fetch_crash_data, app_id, "1.0.0")).to eq(version_name: "1.0.0")
+        result = api_instance.send(:fetch_crash_data, app_id, app_version, app_version_code, bundle_identifier)
+        expect(result).to eq(version_name: app_version)
       end
     end
 
     context "when version is not found" do
       it "returns an empty hash" do
-        expect(api_instance.send(:fetch_crash_data, app_id, "2.0.0")).to eq({})
+        allow(api_instance).to receive(:release_data)
+          .with(app_id, "2.0.0", app_version_code, bundle_identifier)
+          .and_return({analytics_data: [], crashlytics_data: []})
+
+        result = api_instance.send(:fetch_crash_data, app_id, "2.0.0", app_version_code, bundle_identifier)
+        expect(result).to eq({})
       end
     end
   end

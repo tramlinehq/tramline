@@ -1,10 +1,10 @@
 require "google/cloud/bigquery"
 require "json"
-require_relative "error"
 
 module Installations
   class Crashlytics::Api
     include Loggable
+    include Memery
 
     BIGQUERY = ::Google::Cloud::Bigquery
 
@@ -15,13 +15,10 @@ module Installations
       @json_key = json_key
     end
 
-    def find_release(app_id, app_version, app_version_code, transforms)
+    def find_release(app_id, app_version, app_version_code, transforms, bundle_identifier)
       execute do
-        crash_data = fetch_crash_data(app_id, app_version)
+        crash_data = fetch_crash_data(app_id, app_version, app_version_code, bundle_identifier)
         return if crash_data.blank?
-        # Ensure all required keys are included
-        crash_data = ensure_required_keys(crash_data, transforms)
-        # Transform the data with the specified transformations
         Installations::Response::Keys.transform([crash_data], transforms).first
       end
     end
@@ -30,26 +27,34 @@ module Installations
       execute { firebase_management_service.list_apps(transforms) }
     end
 
+    def get_bq_data
+      query = <<-SQL.squish
+        SELECT event_timestamp
+        FROM `#{datasets[:ga4]}` 
+        WHERE event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY));
+      SQL
+      execute { bigquery_client.query(query) }
+    end
+
+    # Fetch release data (memoized to avoid unnecessary calls)
+    memoize def release_data(app_id, app_version, app_version_code, bundle_identifier)
+      analytics_data = get_data(analytics_query(datasets[:ga4], app_id, app_version))
+      crashlytics_data = get_data(crashlytics_query(datasets[:crashlytics], app_version, app_version_code, bundle_identifier))
+      {analytics_data: analytics_data, crashlytics_data: crashlytics_data}
+    end
+
     private
 
     # Fetch and merge analytics and crashlytics data
-    def fetch_crash_data(app_id, app_version)
-      analytics = release_data(app_id)[:analytics_data].find { |a| a[:version_name] == app_version } || {}
-      crashlytics = release_data(app_id)[:crashlytics_data].find { |c| c[:version_name] == app_version } || {}
+    def fetch_crash_data(app_id, app_version, app_version_code, bundle_identifier)
+      analytics = release_data(app_id, app_version, app_version_code, bundle_identifier)[:analytics_data].find { |a| a[:version_name] == app_version } || {}
+      crashlytics = release_data(app_id, app_version, app_version_code, bundle_identifier)[:crashlytics_data].find { |c| c[:version_name] == app_version } || {}
       analytics.merge(crashlytics)
     end
 
-    # Ensure required keys are present in the crash data
-    def ensure_required_keys(crash_data, transforms)
-      transforms.each do |old_key, new_key|
-        crash_data[new_key] ||= crash_data[old_key] if crash_data.has_key?(old_key)
-      end
-      crash_data
-    end
-
     # Memoized BigQuery client
-    def bigquery_client
-      @bigquery_client ||= BIGQUERY.new(credentials: key_file)
+    memoize def bigquery_client
+      BIGQUERY.new(credentials: key_file)
     end
 
     # Query dataset names and return relevant datasets
@@ -83,44 +88,41 @@ module Installations
     end
 
     # Query string for Crashlytics data
-    def crashlytics_query(dataset_name)
-      execute { build_crashlytics_query(dataset_name) }
+    def crashlytics_query(dataset_name, version_name, version_code, bundle_identifier)
+      build_crashlytics_query(dataset_name, version_name, version_code, bundle_identifier)
     end
 
-    # Query string for Analytics data
-    def analytics_query(dataset_name, app_id)
-      execute { build_analytics_query(dataset_name, app_id) }
+    def analytics_query(dataset_name, app_id, version_name)
+      # Query string for Analytics data
+      build_analytics_query(dataset_name, app_id, version_name)
     end
 
     # Run the BigQuery query and fetch the data
     def get_data(query)
-      bigquery_client.query(query)
-    end
-
-    # Fetch release data (memoized to avoid unnecessary calls)
-    def release_data(app_id)
-      @release_data ||= begin
-        analytics_data = get_data(analytics_query(datasets[:ga4], app_id))
-        crashlytics_data = get_data(crashlytics_query(datasets[:crashlytics]))
-        {analytics_data: analytics_data, crashlytics_data: crashlytics_data}
-      end
+      execute { bigquery_client.query(query) }
     end
 
     # Build the SQL query for Crashlytics data
-    def build_crashlytics_query(dataset_name)
+    def build_crashlytics_query(dataset_name, version_name, version_code, bundle_identifier)
       <<-SQL.squish
         WITH combined_events AS (
-          SELECT * FROM `#{dataset_name}`
-        ),
-        latest_version AS (
-          SELECT MAX(application.display_version) AS latest_build_version
-          FROM combined_events
-        ),
-        errors_with_version AS (
           SELECT
             issue_id,
             application.display_version AS version_name,
             application.build_version AS version_code,
+            error_type,
+            event_timestamp,
+            bundle_identifier
+          FROM `#{dataset_name}`
+          WHERE event_timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY)
+            AND application.display_version = "#{version_name}"
+            AND bundle_identifier = "#{bundle_identifier}"
+        ),
+        errors_with_version AS (
+          SELECT
+            issue_id,
+            version_name,
+            version_code,
             error_type
           FROM combined_events
           WHERE error_type IS NOT NULL
@@ -128,7 +130,7 @@ module Installations
         previous_errors AS (
           SELECT DISTINCT issue_id
           FROM errors_with_version
-          WHERE version_name < (SELECT MAX(application.display_version) FROM combined_events)
+          WHERE version_code < "#{version_code}"
         ),
         new_errors AS (
           SELECT
@@ -136,7 +138,6 @@ module Installations
             e.version_name,
             e.version_code
           FROM errors_with_version e
-          JOIN latest_version lv ON e.version_name = lv.latest_build_version
           LEFT JOIN previous_errors pe ON e.issue_id = pe.issue_id
           WHERE pe.issue_id IS NULL
         )
@@ -147,32 +148,62 @@ module Installations
         FROM errors_with_version e
         LEFT JOIN new_errors ne ON e.issue_id = ne.issue_id
         GROUP BY e.version_name
-        ORDER BY e.version_name;
+        ORDER BY e.version_name
       SQL
     end
 
     # Build the SQL query for Analytics data
-    def build_analytics_query(dataset_name, app_id)
+    def build_analytics_query(dataset_name, app_id, version_name)
       <<-SQL.squish
         WITH combined_events AS (
-          SELECT * FROM `#{dataset_name}`
+          SELECT
+            event_name,
+            event_timestamp,
+            ep.key AS event_param_key,
+            ep.value.int_value AS ga_session_id,
+            app_info.version AS version_name,
+            app_info.firebase_app_id,
+            user_id,
+            user_pseudo_id
+          FROM `#{dataset_name}` AS e,
+          UNNEST(event_params) AS ep
+          WHERE 
+            app_info.firebase_app_id = "#{app_id}" 
+            AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY))
+            AND ep.key = 'ga_session_id'
+            AND ep.value.int_value IS NOT NULL
         ),
         total_sessions AS (
-          SELECT COUNTIF(event_name = 'session_start' AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY))) AS total_sessions_in_last_day
-          FROM combined_events
+            SELECT
+              COUNTIF(event_name = 'session_start' 
+                      AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY))) 
+              AS total_sessions_in_last_day
+            FROM
+              combined_events
+            WHERE 
+              event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY))
         )
         SELECT
-          app_info.version AS version_name,
+          version_name,
           COUNT(CASE WHEN event_name = 'session_start' THEN 1 END) AS sessions,
-          COUNT(DISTINCT COALESCE(user_id, user_pseudo_id)) AS daily_users,
-          COUNT(DISTINCT CASE WHEN event_name = 'session_start' AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)) THEN COALESCE(user_id, user_pseudo_id) END) AS sessions_in_last_day,
-          COUNTIF(event_name = 'app_exception') AS sessions_with_errors,
+          COUNT(DISTINCT ga_session_id) AS daily_users,
+          COUNT(DISTINCT CASE 
+                          WHEN event_name = 'session_start' 
+                                AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY))
+                          THEN ga_session_id
+                        END) AS sessions_in_last_day,
+          COUNT(DISTINCT CASE WHEN event_name = 'app_exception' THEN ga_session_id END) AS sessions_with_errors,
           ts.total_sessions_in_last_day AS total_sessions_in_last_day,
           COUNT(DISTINCT CASE WHEN event_name = 'app_exception' THEN COALESCE(user_id, user_pseudo_id) END) AS daily_users_with_errors
-        FROM combined_events, total_sessions AS ts
-        WHERE app_info.firebase_app_id = '#{app_id}'
-        GROUP BY app_info.version, ts.total_sessions_in_last_day
-        ORDER BY app_info.version;
+        FROM
+          combined_events,
+          total_sessions AS ts
+        WHERE 
+          version_name = "#{version_name}"
+        GROUP BY 
+          version_name, ts.total_sessions_in_last_day
+        ORDER BY 
+          version_name;
       SQL
     end
 
@@ -184,10 +215,9 @@ module Installations
 
     # Handle errors
     def execute
-      yield
-    rescue => e
-      elog(e)
-      nil
+      yield if block_given?
+    rescue ::Google::Apis::ServerError, ::Google::Apis::ClientError, ::Google::Apis::AuthorizationError => e
+      raise Installations::Google::Firebase::Error.new(e)
     end
   end
 end
