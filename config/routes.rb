@@ -273,6 +273,7 @@ Rails.application.routes.draw do
     member do
       patch :retry
       patch :trigger
+      patch :fetch_status
     end
   end
 

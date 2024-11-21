@@ -243,6 +243,16 @@ That should be it! You can use the default DNS from `site-web` to launch Tramlin
 
 ## Local development 🛠️
 
+### Env vars
+
+First copy the sample env file,
+
+```bash
+cp .env.development.sample .env.development
+```
+
+`.env.development` is gitignored, so changes will remain local.
+
 ### Pre-requisites
 
 For local development, clone this repository and install the following pre-requisites:
@@ -255,9 +265,26 @@ Follow the instructions [here](https://docs.docker.com/engine/install/) to insta
 
 Setup an account (free or otherwise) [here](https://ngrok.com/). ngrok is required for using [webhooks](#webhooks) from our third-party integrations like GitHub, GitLab, Bitbucket, etc. Follow the instructions [here](https://ngrok.com/download) to install ngrok on your machine if you don't have it already. Add your token in `.env.development` under `NGROK_AUTHTOKEN`.
 
-**master.key**
+**justfile**
 
-Reach out to the existing developers for access to the `master.key`. Place the `master.key` file in the `config` directory or set `RAILS_MASTER_KEY` in `.env.development`.
+There's a `Justfile` that you can use to run common commands including starting the development environment, running specs, linting, etc.
+
+Install `just` by following the instructions [here](https://github.com/casey/just?tab=readme-ov-file#installation).
+
+**secret credentials**
+
+If you're a _trusted contributor_, reach out to the existing developers for access to the dev `master.key`. Place the `master.key` file in the `config` directory or set `RAILS_MASTER_KEY` in `.env.development`.
+
+If you're a _new external contributor_, run the following to setup your own credentials:
+
+```bash
+just pre-setup
+```
+
+This will setup the rails credentials via an interactive script. Once this is done, you should be able to boot up the application.
+
+> [!NOTE]
+> Booting is insufficient to make Tramline entirely useful for dev. To run a proper release flow, you'd have to setup some basic integrations as well. See [here](#integrations-1).
 
 ### Running
 
@@ -269,11 +296,7 @@ docker compose up
 
 Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 
-We have a `Justfile` that you can use to run common commands including starting the development environment, running specs, linting, etc.
-
-Install `just` by following the instructions [here](https://github.com/casey/just?tab=readme-ov-file#installation).
-
-Below are some common commands you can use:
+Below are some common commands you can use via `just`:
 
 - `just start` – Starts the development environment
 - `just spec` – Runs the specs
@@ -286,6 +309,27 @@ Below are some common commands you can use:
 - `just shell` – Opens a shell in any docker container
 
 In case the above list is stale, run `just --summary` to see the full list.
+
+### Integrations
+
+Tramline is an integration-heavy service. It doesn't do much without some basic integration setup. Even though we connect to a lot of third-party services, for a basic development setup, only GitHub is truly necessary. So to setup an integration with GitHub, you must [create an OAuth GitHub app](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app) first. And then run the following:
+
+```bash
+just rails credentials:edit
+```
+
+Fill the following content/section in the credentials file:
+
+```bash
+integrations:
+  github:
+    app_name:
+    app_id:
+    private_pem: |
+```
+
+> [!TIP]
+> After saving credentials, restart the web service to take effect.
 
 ### Webhooks
 

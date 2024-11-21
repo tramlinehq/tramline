@@ -1,5 +1,6 @@
 class TrainsController < SignedInApplicationController
   include Tabbable
+  include Loggable
   using RefinedString
   using RefinedInteger
 
@@ -34,6 +35,10 @@ class TrainsController < SignedInApplicationController
     else
       render :new, status: :unprocessable_entity
     end
+  rescue Installations::Error => ex
+    elog(ex)
+    flash[:error] = "Failed to create the release train as some of your integrations are not configured correctly. Please use the chat icon at the bottom right to contact support."
+    render :new, status: :unprocessable_entity
   end
 
   def update

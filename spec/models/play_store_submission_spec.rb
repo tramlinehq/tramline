@@ -74,6 +74,7 @@ describe PlayStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
       allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
     end
 
@@ -177,6 +178,27 @@ describe PlayStoreSubmission do
       store_submission.fully_release_previous_production_rollout!
 
       expect(prev_rollout.reload.status).to eq("fully_released")
+    end
+  end
+
+  describe "#attach_build" do
+    let(:build) { create(:build) }
+    let(:production_release) { create(:production_release, :inflight, build:) }
+    let(:submission) { create(:play_store_submission, :created, build:, parent_release: production_release) }
+
+    it "attaches the new build to the submission" do
+      new_build = create(:build)
+      submission.attach_build(new_build)
+      expect(submission.reload.build).to eq(new_build)
+    end
+
+    (described_class::STATES.values - described_class::CHANGEABLE_STATES).each do |state|
+      it "does not change the build if the submission is in #{state} state" do
+        submission.update!(status: state)
+        new_build = create(:build)
+        submission.attach_build(new_build)
+        expect(submission.reload.build).to eq(build)
+      end
     end
   end
 end

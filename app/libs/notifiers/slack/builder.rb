@@ -28,6 +28,7 @@ module Notifiers
         internal_release_finished: Renderers::InternalReleaseFinished,
         internal_release_failed: Renderers::InternalReleaseFailed,
         beta_submission_finished: Renderers::BetaSubmissionFinished,
+        internal_submission_finished: Renderers::InternalSubmissionFinished,
         submission_failed: Renderers::SubmissionFailed,
         production_submission_started: Renderers::ProductionSubmissionStarted,
         production_submission_in_review: Renderers::ProductionSubmissionInReview,

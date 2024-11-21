@@ -30,6 +30,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     internal_release_finished: {icon: "v2/sparkles.svg", description: "The release finished successfully"},
     internal_release_failed: {icon: "v2/alert_circle.svg", description: "The release failed"},
     beta_submission_finished: {icon: "v2/sparkles.svg", description: "The beta submission finished successfully"},
+    internal_submission_finished: {icon: "v2/sparkles.svg", description: "The internal submission finished successfully"},
     submission_failed: {icon: "v2/alert_circle.svg", description: "The beta submission failed"},
     production_submission_started: {icon: "v2/play.svg", description: "A production submission started"},
     production_submission_in_review: {icon: "v2/clipboard_list.svg", description: "A production submission is in review"},

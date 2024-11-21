@@ -9,8 +9,8 @@ usage() {
 }
 
 check_dependencies() {
-  if ! command -v rails &>/dev/null; then
-    echo "ERROR: Rails is not installed. Please install it and try again."
+  if [[ ! -x "bin/rails" ]]; then
+    echo "ERROR: bin/rails is not available. Is rails setup?"
     exit 1
   fi
 }

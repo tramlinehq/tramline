@@ -40,7 +40,7 @@ class ExternalApp < ApplicationRecord
       @localization = localization
     end
 
-    def supported? = AppStores::Localizable.supported_locale_tag?(locale)
+    def supported? = AppStores::Localizable.supported_locale_tag?(locale, @external_app.platform)
 
     def locale = @localization["language"]
 

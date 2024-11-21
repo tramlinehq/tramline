@@ -35,12 +35,12 @@ class ReleasesController < SignedInApplicationController
       redirect_back fallback_location: root_path, flash: {error: "Cannot start hotfix for this train!"} and return
     end
 
-    response = Triggers::Release.call(@train, has_major_bump:, release_type:, new_hotfix_branch:, hotfix_platform:, custom_version:)
+    result = Action.start_release!(@train, has_major_bump:, release_type:, new_hotfix_branch:, hotfix_platform:, custom_version:)
 
-    if response.success?
-      redirect_to current_release_path(response.body), notice: "A new release has started successfully."
+    if result.ok?
+      redirect_to current_release_path(result.value!), notice: "A new release has started successfully."
     else
-      redirect_back fallback_location: root_path, flash: {error: response.body}
+      redirect_back fallback_location: root_path, flash: {error: result.error.message}
     end
   end
 

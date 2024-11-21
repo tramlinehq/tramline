@@ -29,7 +29,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   include Displayable
 
   MAX_NOTES_LENGTH = 16_380
-  DEEP_LINK = Addressable::Template.new("https://appdistribution.firebase.google.com/testerapps/{platform}/releases/{external_release_id}")
+  DEEP_LINK = "https://appdistribution.firebase.google.com/testerapps/"
   UploadNotComplete = Class.new(StandardError)
 
   STAMPABLE_REASONS = %w[
@@ -89,13 +89,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_prepare?
     return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
-    if build_present_in_store?
-      release_info = @build.value!
-      prepare_and_update!(release_info)
-      StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, release_info.id)
-      return
-    end
-
     result = nil
     filename = build.artifact.file.filename.to_s
     build.artifact.with_open do |file|
@@ -145,7 +138,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   # app.firebase_build_channel_provider
   def provider = conf.integrable.firebase_build_channel_provider
 
-  def notification_params
+  def notification_params(failure_message: nil)
     super.merge(submission_channel: "#{display} - #{submission_channel.name}")
   end
 
@@ -176,7 +169,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   def on_fail!(args = nil)
     failure_error = args&.fetch(:error, nil)
     event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
-    notify!("Submission failed", :submission_failed, notification_params)
+    notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
   end
 
   def update_store_info!(release_info, build_status)
@@ -186,21 +179,14 @@ class GoogleFirebaseSubmission < StoreSubmission
     save!
   end
 
-  def find_build
-    @build ||= provider.find_build(build_number, version_name, platform)
-  end
-
-  def build_present_in_store?
-    find_build.ok?
-  end
-
   def external_id
     store_release.try(:[], "id")
   end
 
   def deep_link
     return if external_id.blank?
-    DEEP_LINK.expand(platform:, external_release_id: external_id).to_s
+    parsed_external_id = external_id.split("apps/").last
+    DEEP_LINK + parsed_external_id
   end
 
   def stamp_data(failure_message: nil)

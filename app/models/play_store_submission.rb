@@ -65,7 +65,7 @@ class PlayStoreSubmission < StoreSubmission
     state(*STATES.keys)
 
     event :preprocess do
-      transitions from: :created, to: :preprocessing
+      transitions from: CHANGEABLE_STATES, to: :preprocessing
     end
 
     event :start_prepare, after: :on_start_prepare! do
@@ -183,7 +183,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def retrigger!
-    return unless created?
+    return if created?
 
     reset_store_info!
     trigger!
@@ -217,7 +217,7 @@ class PlayStoreSubmission < StoreSubmission
     save!
   end
 
-  def notification_params
+  def notification_params(failure_message: nil)
     super.merge(
       requires_review: false,
       submission_channel: "#{display} - #{submission_channel.name}"
@@ -291,7 +291,7 @@ class PlayStoreSubmission < StoreSubmission
   def on_fail!(args = nil)
     failure_error = args&.fetch(:error, nil)
     event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
-    notify!("Submission failed", :submission_failed, notification_params)
+    notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
   end
 
   def build_present_in_store?

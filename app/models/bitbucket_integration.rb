@@ -171,7 +171,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def commit_log(from_branch, to_branch)
-    installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
+    with_api_retries { installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS) }
   end
 
   def diff_between?(from_branch, to_branch, from_type: :branch)

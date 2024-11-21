@@ -24,9 +24,11 @@ export default class extends Controller {
     }
   }
 
-  sync() {
+  sync(clearSelected) {
     if (this.select) {
-      this.select.sync();
+      if (clearSelected) this.select.clear(true); // clear selected options
+      this.select.clearOptions(); // clear unselected options
+      this.select.sync(); // sync from the select element
     }
   }
 }

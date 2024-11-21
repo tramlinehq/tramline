@@ -15,6 +15,10 @@ export default class extends Controller {
         this.targetTime = new Date().getTime() + this.countDownHoursValue * 60 * 60 * 1000
         this.updateCountDown()
       } else if (this.directionValue === "up") {
+        if (!this.isValidTimeInEpoch(this.countUpTimeValue)) {
+          return
+        }
+
         this.targetTime = this.countUpTimeValue
         this.updateCountUp()
       }
@@ -49,5 +53,9 @@ export default class extends Controller {
     seconds = seconds.toString().padStart(2, '0');
     this.outputTarget.textContent = `${minutes}m ${seconds}s`;
     setTimeout(() => this.updateCountUp(), 1000);
+  }
+
+  isValidTimeInEpoch(time) {
+    return !(time === null || time === undefined || time === "" || time === 0);
   }
 }

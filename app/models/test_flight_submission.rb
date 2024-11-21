@@ -146,7 +146,7 @@ class TestFlightSubmission < StoreSubmission
   # app.ios_store_provider
   def provider = conf.integrable.ios_store_provider
 
-  def notification_params
+  def notification_params(failure_message: nil)
     super.merge(submission_channel: "#{display} - #{submission_channel.name}")
   end
 
@@ -178,7 +178,7 @@ class TestFlightSubmission < StoreSubmission
   def on_fail!(args = nil)
     failure_error = args&.fetch(:error, nil)
     event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
-    notify!("Submission failed", :submission_failed, notification_params)
+    notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
   end
 
   def on_finish!
