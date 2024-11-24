@@ -1,17 +1,12 @@
 class Triggers::PullRequest
   include Memery
 
-  class CreateError < StandardError; end
-
-  class MergeError < StandardError; end
-
-  delegate :transaction, to: ::PullRequest
+  CreateError = Class.new(StandardError)
+  MergeError = Class.new(StandardError)
 
   def self.create_and_merge!(**args)
     new(**args).create_and_merge!
   end
-
-  delegate :train, to: :release
 
   def initialize(release:, new_pull_request:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true, existing_pr: nil)
     @release = release
@@ -24,31 +19,41 @@ class Triggers::PullRequest
     @existing_pr = existing_pr
   end
 
+  delegate :train, to: :release
+
   def create_and_merge!
     pr_in_work = existing_pr
 
-    if existing_pr.present?
-      pr_data = train.vcs_provider.get_pr(existing_pr.number)
+    if pr_in_work.present?
+      pr_data = repo_integration.get_pr(pr_in_work.number)
       if repo_integration.pr_closed?(pr_data)
-        # FIXME: update the PR details, not just state
-        return GitHub::Result.new { existing_pr.close! }
+        return GitHub::Result.new { pr_in_work.close! } # FIXME: update the PR details, not just state
       end
     end
 
-    if existing_pr.blank?
-      create_res = create!
-      if create_res.ok?
-        pr_in_work = @new_pull_request.update_or_insert!(create_res.value!)
+    if pr_in_work.blank?
+      result = create!
+
+      if result.ok?
+        pr_in_work = @new_pull_request.update_or_insert!(result.value!)
       else
-        if create_res.error.is_a?(Installations::Error) && create_res.error.reason == :pull_request_without_commits && @allow_without_diff
+        # ignore the specific create error if PRs are allowed without diffs
+        if @allow_without_diff && pr_without_commits_error?(result)
           return GitHub::Result.new { true }
         end
 
-        return CreateError res.error.message
+        # otherwise, just raise a standard create error
+        return GitHub::Result.new { raise CreateError, result.error.message }
       end
     end
 
+    # defensive check to ensure the PR is not closed in between (via a webhook perhaps)
+    pr_in_work.reload
     return GitHub::Result.new { pr_in_work } if pr_in_work.closed?
+
+    # try and merge, when:
+    # - create PR is successful
+    # - or PR already exists and is _not_ already closed
     merge!(pr_in_work).then { GitHub::Result.new { pr_in_work.close! } }
   end
 
@@ -70,7 +75,7 @@ class Triggers::PullRequest
       repo_integration.merge_pr!(pr.number)
     rescue Installations::Error => ex
       if ex.reason == :pull_request_not_mergeable
-        release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: { url: pr.url, number: pr.number })
+        release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: {url: pr.url, number: pr.number})
         raise MergeError, "Failed to merge the Pull Request"
       else
         raise ex
@@ -78,7 +83,11 @@ class Triggers::PullRequest
     end
   end
 
-  def repo_integration
+  memoize def repo_integration
     train.vcs_provider
+  end
+
+  def pr_without_commits_error?(result)
+    result.error.is_a?(Installations::Error) && result.error.reason == :pull_request_without_commits
   end
 end

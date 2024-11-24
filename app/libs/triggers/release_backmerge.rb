@@ -40,7 +40,7 @@ class Triggers::ReleaseBackmerge
     if res && !res.ok?
       elog(res.error)
       commit.update!(backmerge_failure: true)
-      release.event_stamp!(reason: :backmerge_failure, kind: :error, data: { commit_url: commit.url, commit_sha: commit.short_sha })
+      release.event_stamp!(reason: :backmerge_failure, kind: :error, data: {commit_url: commit.url, commit_sha: commit.short_sha})
       commit.notify!("Backmerge to the working branch failed", :backmerge_failed, commit.notification_params)
     end
   end
