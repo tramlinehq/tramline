@@ -25,50 +25,57 @@ class Triggers::PullRequest
   end
 
   def create_and_merge!
+    pr_in_work = existing_pr
+
     if existing_pr.present?
-      @pull_request = existing_pr
-      pr_data = train.vcs_provider.get_pr(@pull_request.number)
-      # FIXME: update the PR details, not just state
-      return GitHub::Result.new { @pull_request.close! } if repo_integration.pr_closed?(pr_data)
-    else
-      return GitHub::Result.new { allow_without_diff } unless create.ok?
-      @pull_request = @new_pull_request.update_or_insert!(create.value!)
+      pr_data = train.vcs_provider.get_pr(existing_pr.number)
+      if repo_integration.pr_closed?(pr_data)
+        # FIXME: update the PR details, not just state
+        return GitHub::Result.new { existing_pr.close! }
+      end
     end
 
-    return GitHub::Result.new { @pull_request } if @pull_request.closed?
+    if existing_pr.blank?
+      create_res = create!
+      if create_res.ok?
+        pr_in_work = @new_pull_request.update_or_insert!(create_res.value!)
+      else
+        if create_res.error.is_a?(Installations::Error) && create_res.error.reason == :pull_request_without_commits && @allow_without_diff
+          return GitHub::Result.new { true }
+        end
 
-    merge.then { GitHub::Result.new { @pull_request.close! } }
+        return CreateError res.error.message
+      end
+    end
+
+    return GitHub::Result.new { pr_in_work } if pr_in_work.closed?
+    merge!(pr_in_work).then { GitHub::Result.new { pr_in_work.close! } }
   end
 
   private
 
   attr_reader :release, :to_branch_ref, :from_branch_ref, :title, :description, :existing_pr
 
-  memoize def create
+  def create!
     GitHub::Result.new do
       repo_integration.create_pr!(to_branch_ref, from_branch_ref, title, description)
     rescue Installations::Error => ex
       return repo_integration.find_pr(to_branch_ref, from_branch_ref) if ex.reason == :pull_request_already_exists
-      raise CreateError, "Could not create a Pull Request" if ex.reason == :pull_request_without_commits
       raise ex
     end
   end
 
-  memoize def merge
+  def merge!(pr)
     GitHub::Result.new do
-      repo_integration.merge_pr!(@pull_request.number)
+      repo_integration.merge_pr!(pr.number)
     rescue Installations::Error => ex
       if ex.reason == :pull_request_not_mergeable
-        release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: {url: @pull_request.url, number: @pull_request.number})
+        release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: { url: pr.url, number: pr.number })
         raise MergeError, "Failed to merge the Pull Request"
       else
         raise ex
       end
     end
-  end
-
-  def allow_without_diff
-    @allow_without_diff ? true : raise(CreateError, "Could not create a Pull Request without a diff")
   end
 
   def repo_integration

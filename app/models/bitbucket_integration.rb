@@ -61,6 +61,8 @@ class BitbucketIntegration < ApplicationRecord
     false
   end
 
+  def supports_cherry_pick? = false
+
   def public_icon_img
     PUBLIC_ICON
   end
