@@ -1,6 +1,12 @@
 class Triggers::ReleaseBackmerge
   include Loggable
 
+  PR_TITLE = "[%s] Continuous merge back from release"
+  PR_DESCRIPTION = <<~TEXT
+    Release %s (%s) has new changes on this release branch.
+    Merge these changes back into `%s` to keep it in sync.
+  TEXT
+
   def self.call(commit)
     new(commit).call
   end
@@ -10,12 +16,6 @@ class Triggers::ReleaseBackmerge
     @release = commit.release
   end
 
-  # after a commit is created, backmerge is initiated
-  # check is train has continuous backmerge enabled
-  # if yes, check if the vcs provider supports cherry-picking
-  # if yes, cherry-pick the commit
-  # if no, create a new PR for the release branch to the working branch
-  #
   def call
     return unless train.almost_trunk?
     return unless train.continuous_backmerge?
@@ -30,8 +30,8 @@ class Triggers::ReleaseBackmerge
           new_pull_request: release.pull_requests.ongoing.open.build,
           to_branch_ref: working_branch,
           from_branch_ref: release_branch,
-          title: pr_title,
-          description: pr_description,
+          title: PR_TITLE % release_version,
+          description: PR_DESCRIPTION % [release_version, train.name, working_branch],
           existing_pr: release.pull_requests.ongoing.open.first
         )
       end
@@ -48,17 +48,6 @@ class Triggers::ReleaseBackmerge
   private
 
   attr_reader :release, :commit
-  delegate :train, :release_branch, to: :release
+  delegate :train, :release_branch, :release_version, to: :release
   delegate :working_branch, to: :train
-
-  def pr_title
-    "[#{release.release_version}] Continuous back merge from release"
-  end
-
-  def pr_description
-    <<~TEXT
-      The release train #{train.name} with version #{release.release_version} has new changes on the release branch.
-      The #{release_branch} branch has to be merged into #{working_branch} branch to keep the working branch in sync.
-    TEXT
-  end
 end
