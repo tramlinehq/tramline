@@ -12,4 +12,7 @@ Sidekiq.configure_server do |config|
       Sidekiq::Cron::Job.load_from_hash YAML.load_file(schedule_file)
     end
   end
+
+  config.server_middleware do |chain|
+  end
 end

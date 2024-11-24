@@ -12,7 +12,7 @@ class SignedInApplicationController < ApplicationController
   before_action :turbo_frame_request_variant
   before_action :set_currents
   before_action :set_paper_trail_whodunnit
-  before_action :set_sentry_context, if: -> { Rails.env.production? }
+  before_action :set_sentry_context, unless: -> { Rails.env.production? }
   before_action :require_login, unless: :authentication_controllers?
   before_action :track_behaviour
   before_action :set_app
@@ -100,8 +100,9 @@ class SignedInApplicationController < ApplicationController
 
   def set_sentry_context
     return unless current_user
-    Sentry.set_user(id: current_user.id, username: current_user.full_name, email: current_user.email)
+
     Sentry.configure_scope do |scope|
+      scope.set_user(id: current_user.id, username: current_user.full_name, email: current_user.email)
       scope.set_context(
         "Domain",
         {
@@ -141,6 +142,16 @@ class SignedInApplicationController < ApplicationController
     end
 
     @app = current_organization.apps.friendly.find(app_id)
+    Sentry.configure_scope do |scope|
+      scope.set_context(
+        "Domain",
+        {
+          organization_slug: current_organization&.slug,
+          app_slug: @app&.slug,
+          release_slug: @release&.slug
+        }
+      )
+    end
   end
 
   def default_app

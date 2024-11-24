@@ -64,6 +64,7 @@ class ReleasesController < SignedInApplicationController
     live_release!
     set_train_and_app
     set_pull_requests
+    raise IndexError
   end
 
   def changeset_tracking
