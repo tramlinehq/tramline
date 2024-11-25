@@ -14,8 +14,12 @@ class WorkflowProcessors::Bitbucket::WorkflowRun
 
   def failed?
     return false unless pipeline_completed?
-    (status == "FAILED" && status_type == "pipeline_state_completed_failed") ||
-      (status == "ERROR" && status_type == "pipeline_state_completed_error")
+    status == "FAILED" && status_type == "pipeline_state_completed_failed"
+  end
+
+  def error?
+    return false unless pipeline_completed?
+    status == "ERROR" && status_type == "pipeline_state_completed_error"
   end
 
   def halted?

@@ -34,6 +34,11 @@ class WorkflowProcessors::WorkflowRunV2
     if successful?
       workflow_run.add_metadata!(artifacts_url:, started_at:, finished_at:)
       workflow_run.finish!
+    elsif error? && workflow_run.allow_error?
+      workflow_run.add_metadata!(artifacts_url:, started_at:, finished_at:)
+      workflow_run.finish!
+    elsif error?
+      workflow_run.fail!
     elsif failed?
       workflow_run.fail!
     elsif halted?
