@@ -129,7 +129,8 @@ describe Installations::Bitbucket::Api, type: :integration do
             title: pr_title,
             source: {branch: {name: patch_branch_name}},
             destination: {branch: {name: working_branch}},
-            description: pr_body
+            description: pr_body,
+            close_source_branch: true
           }.to_json)
       ).to have_been_made
 
