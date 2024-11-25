@@ -1,12 +1,6 @@
 class Triggers::ReleaseBackmerge
   include Loggable
 
-  PR_TITLE = "[%s] Continuous merge back from release"
-  PR_DESCRIPTION = <<~TEXT
-    Release %s (%s) has new changes on this release branch.
-    Merge these changes back into `%s` to keep it in sync.
-  TEXT
-
   def self.call(commit)
     new(commit).call
   end
@@ -36,6 +30,5 @@ class Triggers::ReleaseBackmerge
   private
 
   attr_reader :release, :commit
-  delegate :train, :release_branch, :release_version, to: :release
-  delegate :working_branch, to: :train
+  delegate :train, to: :release
 end
