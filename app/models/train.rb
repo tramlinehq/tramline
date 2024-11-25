@@ -152,6 +152,10 @@ class Train < ApplicationRecord
     Flipper.enabled?(:deploy_action_enabled, self)
   end
 
+  def temporarily_allow_workflow_errors?
+    Flipper.enabled?(:temporarily_allow_workflow_errors, self)
+  end
+
   def workflows
     @workflows ||= ci_cd_provider.workflows(working_branch)
   end
