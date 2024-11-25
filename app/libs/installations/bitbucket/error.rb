@@ -20,6 +20,10 @@ module Installations
       {
         message_matcher: /You can't merge until you resolve all merge conflicts/i,
         decorated_reason: :pull_request_not_mergeable
+      },
+      {
+        message_matcher: /failed merge checks/i,
+        decorated_reason: :pull_request_not_mergeable
       }
     ]
 

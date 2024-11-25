@@ -247,6 +247,22 @@ module Installations
         .then { |commit| self.class.parse_author_info(commit) }
     end
 
+    def patch_pr(repo_slug, branch, patch_branch_name, sha, pr_title, pr_description, transforms)
+      # create patch branch from the sha - 1 api call
+      # create a PR - 1 api call
+      # merge the PR - 1 api call
+      # get the updated PR - 1 api call
+
+      # TOTAL - 3-4 api calls
+      create_branch!(repo_slug, sha, patch_branch_name, source_type: :commit)
+      pr = create_pr!(repo_slug, branch, patch_branch_name, pr_title, pr_description, transforms)
+      merge_pr!(repo_slug, pr[:number])
+      get_pr(repo_slug, pr[:number], transforms)
+    rescue Installations::Error => ex
+      raise ex unless ex.reason == :pull_request_not_mergeable
+      pr
+    end
+
     # CI/CD
 
     def list_pipeline_selectors(repo_slug, branch_name = "main")

@@ -22,19 +22,7 @@ class Triggers::ReleaseBackmerge
 
     res = release.with_lock do
       return GitHub::Result.new {} unless release.committable?
-      if train.vcs_provider.supports_cherry_pick?
-        Triggers::PatchPullRequest.create!(release, commit)
-      else
-        Triggers::PullRequest.create_and_merge!(
-          release: release,
-          new_pull_request: release.pull_requests.ongoing.open.build,
-          to_branch_ref: working_branch,
-          from_branch_ref: release_branch,
-          title: PR_TITLE % release_version,
-          description: PR_DESCRIPTION % [release_version, train.name, working_branch],
-          existing_pr: release.pull_requests.ongoing.open.first
-        )
-      end
+      Triggers::PatchPullRequest.create!(release, commit)
     end
 
     if res && !res.ok?

@@ -205,8 +205,6 @@ class GithubIntegration < ApplicationRecord
     false
   end
 
-  def supports_cherry_pick? = true
-
   def connection_data
     return unless integration.metadata
     "Organization: #{integration.metadata["account_name"]} (#{integration.metadata["account_id"]})"
@@ -298,8 +296,8 @@ class GithubIntegration < ApplicationRecord
     installation.create_pr!(code_repository_name, to_branch_ref, from, title, description, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
-  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
-    installation.cherry_pick_pr(code_repository_name, to_branch, commit_hash, patch_branch, pr_title_prefix, PR_TRANSFORMATIONS).merge_if_present(source: :github)
+  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title, pr_description)
+    installation.cherry_pick_pr(code_repository_name, to_branch, commit_hash, patch_branch, pr_title, pr_description, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
   def enable_auto_merge!(pr_number)

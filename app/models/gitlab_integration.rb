@@ -211,8 +211,6 @@ class GitlabIntegration < ApplicationRecord
 
   def project_link = nil
 
-  def supports_cherry_pick? = true
-
   def connection_data
     return unless integration.metadata
     "Organization: #{integration.metadata["name"]} (#{integration.metadata["username"]})"

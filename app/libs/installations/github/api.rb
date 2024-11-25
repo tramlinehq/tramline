@@ -307,7 +307,7 @@ module Installations
       end
     end
 
-    def cherry_pick_pr(repo, branch, sha, patch_branch_name, pr_title_prefix, transforms)
+    def cherry_pick_pr(repo, branch, sha, patch_branch_name, patch_pr_title, patch_pr_description, transforms)
       # get_head_commit on working branch -- 1 api call
       # get commit we need to cherry pick - 1 api call
       # create a temp commit with correct tree and parent - 1 api call
@@ -333,14 +333,6 @@ module Installations
         merge_tree = @client.merge(repo, patch_branch_name, sha).dig(:commit, :tree, :sha)
         cherry_commit = @client.create_commit(repo, commit_to_pick_msg, merge_tree, branch_head[:sha], cherry_commit_authors)[:sha]
         @client.update_ref(repo, "heads/#{patch_branch_name}", cherry_commit, true)
-
-        patch_pr_description = <<~TEXT
-          - Cherry-pick #{sha} commit
-          - Authored by: @#{commit_to_pick_login}
-
-          #{commit_to_pick_msg}
-        TEXT
-        patch_pr_title = "#{pr_title_prefix} #{commit_to_pick_msg.split("\n").first}".gsub(/\s*\(#\d+\)/, "").squish
 
         @client
           .create_pull_request(repo, branch, patch_branch_name, patch_pr_title, patch_pr_description)
