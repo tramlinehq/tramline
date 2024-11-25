@@ -37,10 +37,9 @@ class Triggers::PatchPullRequest
   end
 
   def pr_description
-    authored_by = commit.author_login.present? ? "@#{commit.author_login}" : commit.author_email
     <<~TEXT
       - Cherry-pick #{commit.commit_hash} commit
-      - Authored by: #{authored_by}
+      - Authored by: @#{commit.author_login || commit.author_name}
 
       #{commit.message}
     TEXT
