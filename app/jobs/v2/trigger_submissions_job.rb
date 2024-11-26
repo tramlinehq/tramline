@@ -1,6 +1,8 @@
 class V2::TriggerSubmissionsJob < ApplicationJob
   include Loggable
 
+  MAX_RETRIES = 3
+
   queue_as :high
 
   def perform(workflow_run_id, retry_count = 0)
@@ -8,12 +10,14 @@ class V2::TriggerSubmissionsJob < ApplicationJob
     Coordinators::TriggerSubmissions.call(workflow_run)
   rescue Installations::Error => ex
     raise unless ex.reason == :artifact_not_found
-    if retry_count > 3
+    if retry_count >= MAX_RETRIES
       elog(ex)
       workflow_run&.triggering_release&.fail!
     else
       Rails.logger.debug { "Failed to fetch build artifact for workflow run #{workflow_run_id}, retrying in 30 seconds" }
-      V2::TriggerSubmissionsJob.set(wait_time: 30.seconds).perform_later(workflow_run_id, retry_count + 1)
+      V2::TriggerSubmissionsJob
+        .set(wait_time: retry_count * 10.seconds)
+        .perform_later(workflow_run_id, retry_count + 1)
     end
   rescue => ex
     elog(ex)
