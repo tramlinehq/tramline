@@ -306,18 +306,18 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def get_artifact_v2(_, _, external_workflow_run_id:)
-    raise Integration::NoBuildArtifactAvailable if external_workflow_run_id.blank?
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if external_workflow_run_id.blank?
 
     # bitbucket expects uuids surrounded by curly braces, like {uuid} in all api requests
     # except for the file name, where it doesn't for some reason
     artifact_name = "build-#{external_workflow_run_id}".gsub(/{/, "").gsub(/}/, "")
 
     artifact = with_api_retries { installation.get_file(code_repository_name, artifact_name, ARTIFACTS_TRANSFORMATIONS) }
-    raise Integration::NoBuildArtifactAvailable if artifact.blank?
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank?
 
     Rails.logger.debug { "Downloading artifact #{artifact}" }
     artifact_file = with_api_retries { installation.download_artifact(artifact[:archive_download_url]) }
-    raise Integration::NoBuildArtifactAvailable if artifact_file.blank?
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_file.blank?
 
     {artifact:, stream: Artifacts::Stream.new(artifact_file)}
   end
