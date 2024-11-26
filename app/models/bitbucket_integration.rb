@@ -244,12 +244,16 @@ class BitbucketIntegration < ApplicationRecord
     with_api_retries { installation.merge_pr!(code_repository_name, pr_number) }
   end
 
-  def create_patch_pr!(_to_branch, _patch_branch, _commit_hash, _pr_title_prefix)
-    raise NotImplementedError
+  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title, pr_description)
+    with_api_retries do
+      installation
+        .patch_pr(code_repository_name, to_branch, patch_branch, commit_hash, pr_title, pr_description, PR_TRANSFORMATIONS)
+        .merge_if_present(source: :bitbucket)
+    end
   end
 
   def enable_auto_merge!(_pr_number)
-    raise NotImplementedError
+    true
   end
 
   # CI/CD
