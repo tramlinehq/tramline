@@ -3,7 +3,7 @@ x-app: &app
     dockerfile: ./dev.Dockerfile
     context: .
     args:
-      RUBY_VERSION: '3.3.5'
+      RUBY_VERSION: '3.3.6'
       PG_MAJOR: '14'
   image: tramline-site-dev:1.0.0
   environment: &env
