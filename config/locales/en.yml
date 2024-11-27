@@ -473,6 +473,7 @@ en:
           attributes:
             release_notes:
               no_special_characters: "only allows letters, numbers, emojis, and some special characters"
+              too_long: "is too long (maximum is %{max_length} characters)"
             promo_text:
               no_special_characters: "only allows letters, numbers, emojis, and some special characters"
         integration:
