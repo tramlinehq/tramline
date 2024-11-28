@@ -3,9 +3,6 @@ require "json"
 
 module Installations
   class Crashlytics::Api
-    include Loggable
-    include Memery
-
     BIGQUERY = ::Google::Cloud::Bigquery
 
     attr_reader :json_key, :project_number
@@ -26,7 +23,7 @@ module Installations
     def get_bq_data
       query = <<-SQL.squish
         SELECT event_timestamp
-        FROM `#{datasets[:ga4]}` 
+        FROM `#{datasets[:ga4]}`
         WHERE event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY));
       SQL
       execute { bigquery_client.query(query) }
@@ -40,9 +37,8 @@ module Installations
       analytics_data.merge(crashlytics_data)
     end
 
-    # Memoized BigQuery client
-    memoize def bigquery_client
-      BIGQUERY.new(credentials: key_file)
+    def bigquery_client
+      @bigquery_client ||= BIGQUERY.new(credentials: key_file)
     end
 
     # Query dataset names and return relevant datasets
@@ -61,28 +57,15 @@ module Installations
       end
     end
 
-    # Build the dataset pattern for query purposes
     def dataset_pattern(dataset)
       "#{dataset.project_id}.#{dataset.dataset_id}.*"
     end
 
-    # Query string for Crashlytics data
-    def crashlytics_query(dataset_name, version_name, version_code, bundle_identifier)
-      build_crashlytics_query(dataset_name, version_name, version_code, bundle_identifier)
-    end
-
-    def analytics_query(dataset_name, app_id, version_name)
-      # Query string for Analytics data
-      build_analytics_query(dataset_name, app_id, version_name)
-    end
-
-    # Run the BigQuery query and fetch the data
     def get_data(query)
       execute { bigquery_client.query(query) }
     end
 
-    # Build the SQL query for Crashlytics data
-    def build_crashlytics_query(dataset_name, version_name, version_code, bundle_identifier)
+    def crashlytics_query(dataset_name, version_name, version_code, bundle_identifier)
       <<-SQL.squish
         WITH combined_events AS (
           SELECT
@@ -131,8 +114,7 @@ module Installations
       SQL
     end
 
-    # Build the SQL query for Analytics data
-    def build_analytics_query(dataset_name, app_id, version_name)
+    def analytics_query(dataset_name, app_id, version_name)
       <<-SQL.squish
         WITH combined_events AS (
           SELECT
@@ -146,28 +128,28 @@ module Installations
             user_pseudo_id
           FROM `#{dataset_name}` AS e,
           UNNEST(event_params) AS ep
-          WHERE 
-            app_info.firebase_app_id = "#{app_id}" 
+          WHERE
+            app_info.firebase_app_id = "#{app_id}"
             AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY))
             AND ep.key = 'ga_session_id'
             AND ep.value.int_value IS NOT NULL
         ),
         total_sessions AS (
             SELECT
-              COUNTIF(event_name = 'session_start' 
-                      AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY))) 
+              COUNTIF(event_name = 'session_start'
+                      AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)))
               AS total_sessions_in_last_day
             FROM
               combined_events
-            WHERE 
+            WHERE
               event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY))
         )
         SELECT
           version_name,
           COUNT(CASE WHEN event_name = 'session_start' THEN 1 END) AS sessions,
           COUNT(DISTINCT ga_session_id) AS daily_users,
-          COUNT(DISTINCT CASE 
-                          WHEN event_name = 'session_start' 
+          COUNT(DISTINCT CASE
+                          WHEN event_name = 'session_start'
                                 AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY))
                           THEN ga_session_id
                         END) AS sessions_in_last_day,
@@ -177,22 +159,20 @@ module Installations
         FROM
           combined_events,
           total_sessions AS ts
-        WHERE 
+        WHERE
           version_name = "#{version_name}"
-        GROUP BY 
+        GROUP BY
           version_name, ts.total_sessions_in_last_day
-        ORDER BY 
+        ORDER BY
           version_name;
       SQL
     end
 
-    # Parse JSON key
     def key_file
       json_key.rewind
       JSON.parse(json_key.read)
     end
 
-    # Handle errors
     def execute
       yield if block_given?
     rescue ::Google::Apis::ServerError, ::Google::Apis::ClientError, ::Google::Apis::AuthorizationError => e
