@@ -545,6 +545,7 @@ en:
             json_key:
               key_format: "the supplied key format is incorrect, please check your key"
               invalid_config: "configuration is invalid, please check"
+              no_bq_datasets: "no BigQuery datasets are accessible for this project"
               permission_denied: "permission denied to access the project using the key"
               unknown_failure: "an unrecognized error occurred connecting to Firebase, please check your project number and key"
 

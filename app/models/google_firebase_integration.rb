@@ -19,7 +19,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
   include Firebasable
 
   delegate :firebase_app, to: :config
-  alias_method :firebase_installation, :installation
 
   attr_accessor :json_key_file
 
@@ -30,6 +29,8 @@ class GoogleFirebaseIntegration < ApplicationRecord
   def installation
     Installations::Google::Firebase::Api.new(project_number, access_key)
   end
+
+  alias_method :firebase_installation, :installation
 
   def controllable_rollout?
     false

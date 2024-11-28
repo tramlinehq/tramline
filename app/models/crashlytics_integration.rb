@@ -14,6 +14,7 @@ class CrashlyticsIntegration < ApplicationRecord
   include Providable
   include Displayable
   include Firebasable
+  include Loggable
 
   delegate :crashlytics_project, to: :config
 
@@ -53,12 +54,16 @@ class CrashlyticsIntegration < ApplicationRecord
   def bq_access?
     data = installation.get_bq_data
     data.present?
+  rescue Google::Cloud::PermissionDeniedError => ex
+    # TODO: this exception should be handled by the api layer with a crashlytics specific error and reason,
+    # and the reason should be checked here instead of a Google::Cloud::PermissionDeniedError directly
+    elog(ex)
+    nil
   end
 
   def correct_key
-    if installation.list_apps(APPS_TRANSFORMATIONS).blank? && !bq_access?
-      errors.add(:json_key, :invalid_config)
-    end
+    errors.add(:json_key, :invalid_config) if firebase_installation.list_apps(APPS_TRANSFORMATIONS).blank?
+    errors.add(:json_key, :no_bq_datasets) unless bq_access?
   rescue RuntimeError
     errors.add(:json_key, :key_format)
   rescue Installations::Google::Firebase::Error => ex
