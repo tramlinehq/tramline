@@ -18,8 +18,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
   include Displayable
   include Firebasable
 
-  delegate :integrable, to: :integration
-  delegate :config, to: :integrable
   delegate :firebase_app, to: :config
   alias_method :firebase_installation, :installation
 

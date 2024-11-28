@@ -15,17 +15,9 @@ class CrashlyticsIntegration < ApplicationRecord
   include Displayable
   include Firebasable
 
-  delegate :integrable, to: :integration
-  delegate :crashlytics_project, to: :app_config
-  alias_method :project, :crashlytics_project
+  delegate :crashlytics_project, to: :config
 
   API = Installations::Crashlytics::Api
-
-  APPS_TRANSFORMATIONS = {
-    app_id: :app_id,
-    display_name: :display_name,
-    platform: :platform
-  }
 
   RELEASE_TRANSFORMATIONS = {
     new_errors_count: :new_errors_count,
@@ -53,14 +45,10 @@ class CrashlyticsIntegration < ApplicationRecord
 
   def find_release(platform, version, build_number)
     return nil if version.blank?
-    installation.find_release(project(platform), version, build_number, RELEASE_TRANSFORMATIONS, integrable.bundle_identifier)
+    installation.find_release(crashlytics_project(platform), version, build_number, RELEASE_TRANSFORMATIONS, integrable.bundle_identifier)
   end
 
   private
-
-  def app_config
-    (integration.integrable_type == "App") ? integration.integrable.config : integration.integrable.app_config
-  end
 
   def bq_access?
     data = installation.get_bq_data

@@ -3,11 +3,20 @@ module Firebasable
 
   CACHE_EXPIRY = 1.month
 
+  APPS_TRANSFORMATIONS = {
+    app_id: :app_id,
+    display_name: :display_name,
+    platform: :platform
+  }
+
   included do
     encrypts :json_key, deterministic: true
 
     delegate :cache, to: Rails
     validate :correct_key, on: :create
+
+    delegate :integrable, to: :integration
+    delegate :config, to: :integrable
   end
 
   def access_key
