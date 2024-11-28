@@ -49,7 +49,7 @@ class ReleaseMetadata < ApplicationRecord
   private
 
   def notes_length
-    errors.add(:release_notes, :too_long, max_length: notes_max_length) if release_notes.length > notes_max_length
+    errors.add(:release_notes, :too_long, max_length: notes_max_length, platform: release_platform_run.platform) if release_notes.length > notes_max_length
   end
 
   def notes_max_length
