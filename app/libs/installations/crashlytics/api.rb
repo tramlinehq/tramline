@@ -36,20 +36,12 @@ module Installations
       execute { bigquery_client.query(query) }
     end
 
-    # Fetch release data (memoized to avoid unnecessary calls)
-    memoize def release_data(app_id, app_version, app_version_code, bundle_identifier)
-      analytics_data = get_data(analytics_query(datasets[:ga4], app_id, app_version))
-      crashlytics_data = get_data(crashlytics_query(datasets[:crashlytics], app_version, app_version_code, bundle_identifier))
-      {analytics_data: analytics_data, crashlytics_data: crashlytics_data}
-    end
-
     private
 
-    # Fetch and merge analytics and crashlytics data
     def fetch_crash_data(app_id, app_version, app_version_code, bundle_identifier)
-      analytics = release_data(app_id, app_version, app_version_code, bundle_identifier)[:analytics_data].find { |a| a[:version_name] == app_version } || {}
-      crashlytics = release_data(app_id, app_version, app_version_code, bundle_identifier)[:crashlytics_data].find { |c| c[:version_name] == app_version } || {}
-      analytics.merge(crashlytics)
+      analytics_data = get_data(analytics_query(datasets[:ga4], app_id, app_version)).find { |a| a[:version_name] == app_version } || {}
+      crashlytics_data = get_data(crashlytics_query(datasets[:crashlytics], app_version, app_version_code, bundle_identifier)).find { |a| a[:version_name] == app_version } || {}
+      analytics_data.merge(crashlytics_data)
     end
 
     # Memoized BigQuery client

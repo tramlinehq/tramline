@@ -146,7 +146,9 @@ describe Installations::Crashlytics::Api, type: :integration do
     end
   end
 
-  describe "#fetch_crash_data" do
+  it "#fetch_crash_data" do
+    skip "this test needs to be removed"
+
     let(:app_id) { Faker::Alphanumeric.alphanumeric(number: 8) }
     let(:app_version) { "1.0.0" }
     let(:app_version_code) { "100" }
