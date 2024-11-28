@@ -85,7 +85,9 @@ describe Installations::Crashlytics::Api, type: :integration do
     end
   end
 
-  describe "#list_apps" do
+  it "#list_apps" do
+    skip "this test needs to be removed or moved to firebase api"
+
     let(:transforms) { {"app_id" => "app_id", "display_name" => "display_name", "platform" => "platform"} }
     let(:mock_apps) {
       [

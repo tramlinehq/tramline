@@ -49,7 +49,7 @@ module Firebasable
 
   def list_apps(platform:)
     apps = cache.fetch(list_apps_cache_key, expires_in: CACHE_EXPIRY) do
-      installation.list_apps(self.class::APPS_TRANSFORMATIONS)
+      firebase_installation.list_apps(self.class::APPS_TRANSFORMATIONS)
     end
 
     apps.select { |app| app[:platform] == platform }.map { |app| app.slice(:app_id, :display_name) }

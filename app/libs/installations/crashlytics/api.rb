@@ -23,10 +23,6 @@ module Installations
       end
     end
 
-    def list_apps(transforms)
-      execute { firebase_management_service.list_apps(transforms) }
-    end
-
     def get_bq_data
       query = <<-SQL.squish
         SELECT event_timestamp
@@ -68,15 +64,6 @@ module Installations
     # Build the dataset pattern for query purposes
     def dataset_pattern(dataset)
       "#{dataset.project_id}.#{dataset.dataset_id}.*"
-    end
-
-    # Firebase APIs
-    def firebase_management_service
-      Installations::Google::Firebase::Api.new(project_number, json_key)
-    end
-
-    def firebase_client
-      execute { firebase_management_service.set_firebase_client }
     end
 
     # Query string for Crashlytics data

@@ -43,6 +43,10 @@ class CrashlyticsIntegration < ApplicationRecord
     API.new(project_number, access_key)
   end
 
+  def firebase_installation
+    Installations::Google::Firebase::Api.new(project_number, access_key)
+  end
+
   def to_s
     "crashlytics"
   end

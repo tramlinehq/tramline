@@ -21,6 +21,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   delegate :integrable, to: :integration
   delegate :config, to: :integrable
   delegate :firebase_app, to: :config
+  alias_method :firebase_installation, :installation
 
   attr_accessor :json_key_file
 
