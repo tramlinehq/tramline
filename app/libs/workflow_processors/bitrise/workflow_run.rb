@@ -21,6 +21,8 @@ class WorkflowProcessors::Bitrise::WorkflowRun
     status == "aborted"
   end
 
+  def error? = false
+
   def artifacts_url
     @integration.artifact_url(workflow_run[:slug], @build_artifact_name_pattern)
   end

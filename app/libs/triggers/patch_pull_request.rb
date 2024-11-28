@@ -13,7 +13,7 @@ class Triggers::PatchPullRequest
 
   def create!
     GitHub::Result.new do
-      repo_integration.create_patch_pr!(working_branch, patch_branch, commit.commit_hash, pr_title_prefix)
+      repo_integration.create_patch_pr!(working_branch, patch_branch, commit.commit_hash, pr_title, pr_description)
     rescue Installations::Error => ex
       raise ex unless ex.reason == :pull_request_already_exists
       logger.debug { "Patch Pull Request: Pull Request Already exists for #{commit.short_sha} to #{working_branch}" }
@@ -32,12 +32,21 @@ class Triggers::PatchPullRequest
   delegate :logger, to: Rails
   attr_reader :release, :commit
 
-  def patch_branch
-    "patch-#{working_branch}-#{commit.short_sha}"
+  def pr_title
+    "[PATCH] [#{release.release_version}] #{commit.message.split("\n").first}".gsub(/\s*\(#\d+\)/, "").squish
   end
 
-  def pr_title_prefix
-    "[PATCH] [#{release.release_version}]"
+  def pr_description
+    <<~TEXT
+      - Cherry-pick #{commit.commit_hash} commit
+      - Authored by: @#{commit.author_login || commit.author_name}
+
+      #{commit.message}
+    TEXT
+  end
+
+  def patch_branch
+    "patch-#{working_branch}-#{commit.short_sha}"
   end
 
   def stamp_pr_success(pr)

@@ -39,9 +39,9 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
 
   def last_activity_ts
     if submission.store_rollout.present?
-      submission.store_rollout.completed_at
+      submission.store_rollout.completed_at || submission.store_rollout.updated_at
     else
-      submission.approved_at || submission.prepared_at || submission.created_at
+      submission.approved_at || submission.prepared_at || submission.updated_at
     end
   end
 

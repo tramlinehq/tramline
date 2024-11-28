@@ -137,15 +137,15 @@ class BitriseIntegration < ApplicationRecord
   end
 
   def get_artifact(artifact_url, _)
-    raise Integration::NoBuildArtifactAvailable if artifact_url.blank?
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_url.blank?
     Artifacts::Stream.new(installation.artifact_io_stream(artifact_url))
   end
 
   def get_artifact_v2(artifact_url, _, _)
-    raise Integration::NoBuildArtifactAvailable if artifact_url.blank?
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_url.blank?
 
     artifact = installation.artifact(artifact_url, ARTIFACTS_TRANSFORMATIONS)
-    raise Integration::NoBuildArtifactAvailable if artifact.blank?
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank?
 
     stream = installation.download_artifact(artifact[:archive_download_url])
     {artifact:, stream: Artifacts::Stream.new(stream)}

@@ -30,7 +30,6 @@ class Integration < ApplicationRecord
 
   IntegrationNotImplemented = Class.new(StandardError)
   UnsupportedAction = Class.new(StandardError)
-  NoBuildArtifactAvailable = Class.new(StandardError)
 
   APP_VARIANT_PROVIDABLE_TYPES = %w[GoogleFirebaseIntegration]
 

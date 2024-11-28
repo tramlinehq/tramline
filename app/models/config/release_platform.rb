@@ -175,9 +175,8 @@ class Config::ReleasePlatform < ApplicationRecord
   # Ensure internal releases have workflows and submissions configured together
   def internal_releases
     workflow = internal_workflow.present? && !internal_workflow.marked_for_destruction?
-    release = internal_valid? && internal_release.submissions&.reject(&:marked_for_destruction?).present?
 
-    if workflow != release
+    if workflow != internal_valid?
       errors.add(:base, :internal_releases_are_incomplete)
     end
   end

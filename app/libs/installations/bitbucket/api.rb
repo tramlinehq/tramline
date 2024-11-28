@@ -166,7 +166,7 @@ module Installations
       execute(:get, REPO_TAG_URL.expand(repo_slug:, tag_name:).to_s)
     end
 
-    def create_pr!(repo_slug, to, from, title, description, transforms)
+    def create_pr!(repo_slug, to, from, title, description, transforms, close_source_branch: false)
       raise Installations::Error.new("Should not create a Pull Request without a diff", reason: :pull_request_without_commits) unless diff?(repo_slug, to, from)
 
       params = {
@@ -174,7 +174,8 @@ module Installations
           title:,
           source: {branch: {name: from}},
           destination: {branch: {name: to}},
-          description:
+          description:,
+          close_source_branch:
         }
       }
 
@@ -245,6 +246,22 @@ module Installations
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
         .then { |commit| self.class.parse_author_info(commit) }
+    end
+
+    def patch_pr(repo_slug, branch, patch_branch_name, sha, pr_title, pr_description, transforms)
+      # create patch branch from the sha - 1 api call
+      # create a PR - 1 api call
+      # merge the PR - 1 api call
+      # get the updated PR - 1 api call
+
+      # TOTAL - 3-4 api calls
+      create_branch!(repo_slug, sha, patch_branch_name, source_type: :commit)
+      pr = create_pr!(repo_slug, branch, patch_branch_name, pr_title, pr_description, transforms, close_source_branch: true)
+      merge_pr!(repo_slug, pr[:number])
+      get_pr(repo_slug, pr[:number], transforms)
+    rescue Installations::Error => ex
+      raise ex unless ex.reason == :pull_request_not_mergeable
+      pr
     end
 
     # CI/CD

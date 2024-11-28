@@ -1,0 +1,166 @@
+{
+  "comment_count": 0,
+  "task_count": 0,
+  "type": "pullrequest",
+  "id": 21,
+  "title": "[PATCH] [1.4.0] fourth change on the release branch",
+  "description": "- Cherry-pick efd3c2dd77698c99c614caddd6fffdbca0af7869 commit\n- Authored by: nivedita@tramline.app\n\nfourth change on the release branch",
+  "rendered": {
+    "title": {
+      "type": "rendered",
+      "raw": "[PATCH] [1.4.0] fourth change on the release branch",
+      "markup": "markdown",
+      "html": "\u003cp\u003e[PATCH] [1.4.0] fourth change on the release branch\u003c/p\u003e"
+    },
+    "description": {
+      "type": "rendered",
+      "raw": "- Cherry-pick efd3c2dd77698c99c614caddd6fffdbca0af7869 commit\n- Authored by: @nivedita@tramline.app\n\nfourth change on the release branch",
+      "markup": "markdown",
+      "html": "\u003cul\u003e\n\u003cli\u003eCherry-pick \u003ca href=\"https://bitbucket.org/tramline/ueno/commits/efd3c2dd77698c99c614caddd6fffdbca0af7869\" rel=\"nofollow\" class=\"ap-connect-link\"\u003eefd3c2dd77698c99c614caddd6fffdbca0af7869\u003c/a\u003e commit\u003c/li\u003e\n\u003cli\u003eAuthored by: @nivedita@tramline.app\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003efourth change on the release branch\u003c/p\u003e"
+    }
+  },
+  "state": "OPEN",
+  "merge_commit": null,
+  "close_source_branch": false,
+  "closed_by": null,
+  "author": {
+    "display_name": "Nivedita Priyadarshini",
+    "links": {
+      "self": {
+        "href": "https://api.bitbucket.org/2.0/users/%7Bdb534ec4-33b8-4595-9012-8a86593ac4dd%7D"
+      },
+      "avatar": {
+        "href": "https://secure.gravatar.com/avatar/cb35b6f8b777e174b0c46cdbf51a3a64?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FNP-0.png"
+      },
+      "html": {
+        "href": "https://bitbucket.org/%7Bdb534ec4-33b8-4595-9012-8a86593ac4dd%7D/"
+      }
+    },
+    "type": "user",
+    "uuid": "{db534ec4-33b8-4595-9012-8a86593ac4dd}",
+    "account_id": "712020:07879f2c-20ca-488b-b5f3-0fd492b8c939",
+    "nickname": "Nivedita Priyadarshini"
+  },
+  "reason": "",
+  "created_on": "2024-11-25T10:15:34.674533+00:00",
+  "updated_on": "2024-11-25T10:15:36.166209+00:00",
+  "destination": {
+    "branch": {
+      "name": "main"
+    },
+    "commit": {
+      "hash": "0c1b802fdbf4",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/0c1b802fdbf4"
+        },
+        "html": {
+          "href": "https://bitbucket.org/tramline/ueno/commits/0c1b802fdbf4"
+        }
+      },
+      "type": "commit"
+    },
+    "repository": {
+      "type": "repository",
+      "full_name": "tramline/ueno",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno"
+        },
+        "html": {
+          "href": "https://bitbucket.org/tramline/ueno"
+        },
+        "avatar": {
+          "href": "https://bytebucket.org/ravatar/%7Babd86e4d-4ad5-4d31-b727-9ccf26604d37%7D?ts=3627142"
+        }
+      },
+      "name": "ueno",
+      "uuid": "{abd86e4d-4ad5-4d31-b727-9ccf26604d37}"
+    }
+  },
+  "source": {
+    "branch": {
+      "name": "patch-main-efd3c2d",
+      "links": {},
+      "sync_strategies": [
+        "merge_commit",
+        "rebase"
+      ]
+    },
+    "commit": {
+      "hash": "efd3c2dd7769",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/commit/efd3c2dd7769"
+        },
+        "html": {
+          "href": "https://bitbucket.org/tramline/ueno/commits/efd3c2dd7769"
+        }
+      },
+      "type": "commit"
+    },
+    "repository": {
+      "type": "repository",
+      "full_name": "tramline/ueno",
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno"
+        },
+        "html": {
+          "href": "https://bitbucket.org/tramline/ueno"
+        },
+        "avatar": {
+          "href": "https://bytebucket.org/ravatar/%7Babd86e4d-4ad5-4d31-b727-9ccf26604d37%7D?ts=3627142"
+        }
+      },
+      "name": "ueno",
+      "uuid": "{abd86e4d-4ad5-4d31-b727-9ccf26604d37}"
+    }
+  },
+  "reviewers": [],
+  "participants": [],
+  "links": {
+    "self": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pullrequests/21"
+    },
+    "html": {
+      "href": "https://bitbucket.org/tramline/ueno/pull-requests/21"
+    },
+    "commits": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pullrequests/21/commits"
+    },
+    "approve": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pullrequests/21/approve"
+    },
+    "request-changes": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pullrequests/21/request-changes"
+    },
+    "diff": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/diff/tramline/ueno:efd3c2dd7769%0D0c1b802fdbf4?from_pullrequest_id=21\u0026topic=true"
+    },
+    "diffstat": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/diffstat/tramline/ueno:efd3c2dd7769%0D0c1b802fdbf4?from_pullrequest_id=21\u0026topic=true"
+    },
+    "comments": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pullrequests/21/comments"
+    },
+    "activity": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pullrequests/21/activity"
+    },
+    "merge": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pullrequests/21/merge"
+    },
+    "decline": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pullrequests/21/decline"
+    },
+    "statuses": {
+      "href": "https://api.bitbucket.org/2.0/repositories/tramline/ueno/pullrequests/21/statuses"
+    }
+  },
+  "summary": {
+    "type": "rendered",
+    "raw": "- Cherry-pick efd3c2dd77698c99c614caddd6fffdbca0af7869 commit\n- Authored by: @nivedita@tramline.app\n\nfourth change on the release branch",
+    "markup": "markdown",
+    "html": "\u003cul\u003e\n\u003cli\u003eCherry-pick \u003ca href=\"https://bitbucket.org/tramline/ueno/commits/efd3c2dd77698c99c614caddd6fffdbca0af7869\" rel=\"nofollow\" class=\"ap-connect-link\"\u003eefd3c2dd77698c99c614caddd6fffdbca0af7869\u003c/a\u003e commit\u003c/li\u003e\n\u003cli\u003eAuthored by: @nivedita@tramline.app\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003efourth change on the release branch\u003c/p\u003e"
+  }
+}

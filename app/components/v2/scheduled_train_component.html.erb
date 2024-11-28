@@ -81,7 +81,7 @@
     <% if future_release.present? %>
       <%= render partial: "scheduled_release/show", locals: {
         header: time_text(future_release),
-        title: train.next_version,
+        title: next_version,
         empty_icon: "v2/calendar.svg",
         status: scheduled_release_status(future_release),
         box_classes: nil,
@@ -89,7 +89,7 @@
       } %>
       <%= render partial: "scheduled_release/show", locals: {
         header: time_text(future_release),
-        title: train.next_to_next_version,
+        title: next_next_version,
         empty_icon: "v2/calendar.svg",
         status: scheduled_release_status(future_release),
         box_classes: "opacity-50",

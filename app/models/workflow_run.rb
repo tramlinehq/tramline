@@ -122,6 +122,10 @@ class WorkflowRun < ApplicationRecord
     workflow_run.initiate!
   end
 
+  def allow_error?
+    train.temporarily_allow_workflow_errors?
+  end
+
   def active?
     triggering_release.actionable? && FAILED_STATES.exclude?(status)
   end

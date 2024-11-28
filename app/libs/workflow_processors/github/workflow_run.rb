@@ -19,6 +19,8 @@ class WorkflowProcessors::Github::WorkflowRun
     status == "completed" && conclusion == "cancelled"
   end
 
+  def error? = false
+
   def artifacts_url
     workflow_run[:artifacts_url]
   end

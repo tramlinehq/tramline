@@ -123,7 +123,7 @@ module Installations
 
     private
 
-    NOTES_MAX_LENGTH = 495
+    NOTES_MAX_LENGTH = 500
 
     attr_writer :track_name, :version_code, :release_version, :rollout_percentage
 
