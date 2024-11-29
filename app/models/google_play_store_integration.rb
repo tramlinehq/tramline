@@ -216,7 +216,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def build_in_progress?(channel, build_number)
     response = find_build_in_track(channel, build_number)
-    response.present? && response[:status] == GooglePlayStoreIntegration::IN_PROGRESS_STORE_STATUS
+    response.present? && GooglePlayStoreIntegration::IN_PROGRESS_STORE_STATUS.include?(response[:status])
   end
 
   private
