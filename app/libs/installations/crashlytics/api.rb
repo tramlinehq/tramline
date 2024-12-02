@@ -77,7 +77,6 @@ module Installations
             bundle_identifier
           FROM `#{dataset_name}`
           WHERE event_timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY)
-            AND application.display_version = "#{version_name}"
             AND bundle_identifier = "#{bundle_identifier}"
         ),
         errors_with_version AS (
@@ -88,10 +87,12 @@ module Installations
             error_type
           FROM combined_events
           WHERE error_type IS NOT NULL
+          AND version_code = "#{version_code}"
+          AND application.display_version = "#{version_name}"
         ),
         previous_errors AS (
           SELECT DISTINCT issue_id
-          FROM errors_with_version
+          FROM combined_events
           WHERE version_code < "#{version_code}"
         ),
         new_errors AS (
@@ -108,7 +109,7 @@ module Installations
           COUNT(*) AS errors_count,
           COUNT(DISTINCT ne.issue_id) AS new_errors_count
         FROM errors_with_version e
-        LEFT JOIN new_errors ne ON e.issue_id = ne.issue_id
+        LEFT JOIN new_errors ne ON e.version_code = ne.version_code
         GROUP BY e.version_name
         ORDER BY e.version_name
       SQL
@@ -120,7 +121,6 @@ module Installations
           SELECT
             event_name,
             event_timestamp,
-            ep.key AS event_param_key,
             ep.value.int_value AS ga_session_id,
             app_info.version AS version_name,
             app_info.firebase_app_id,
