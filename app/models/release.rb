@@ -519,7 +519,7 @@ class Release < ApplicationRecord
   end
 
   def failure_anywhere?
-    FAILED_STATES.include?(status) || release_platform_runs.any?(&:failure?)
+    release_platform_runs.any?(&:failure?)
   end
 
   def previous_release

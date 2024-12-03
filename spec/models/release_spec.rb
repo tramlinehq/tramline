@@ -548,10 +548,10 @@ describe Release do
   end
 
   describe "#failure_anywhere?" do
-    it "returns true if post release has failed" do
+    it "returns false if post release has failed" do
       release = create(:release, :post_release_failed)
 
-      expect(release.failure_anywhere?).to be(true)
+      expect(release.failure_anywhere?).to be(false)
     end
 
     it "returns false if no failure" do
@@ -602,6 +602,68 @@ describe Release do
 
       it "returns true if either of the release platform run have failures" do
         _ios_step_run = create(:step_run, :ci_workflow_failed, release_platform_run: ios_release_platform_run, step: ios_step)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+    end
+
+    context "when failure in a v2 release platform run" do
+      let(:release) { create(:release, :on_track, :with_no_platform_runs, is_v2: true) }
+      let(:release_platform_run) { create(:release_platform_run, :on_track, release:) }
+
+      it "returns false if the latest production release has failed" do
+        production_release = create(:production_release, :inflight, release_platform_run:)
+        _submission = create(:play_store_submission, :failed, release_platform_run:, parent_release: production_release)
+
+        expect(release.failure_anywhere?).to be(false)
+      end
+
+      it "returns false if a latest production release exists" do
+        _production_release = create(:production_release, :inflight, release_platform_run:)
+
+        expect(release.failure_anywhere?).to be(false)
+      end
+
+      it "returns true if the latest beta release has failed" do
+        _beta_release = create(:beta_release, :failed, release_platform_run:)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+
+      it "returns true if the latest internal release has failed" do
+        _internal_release = create(:internal_release, :failed, release_platform_run:)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+
+      it "returns false if the latest beta release has not failed, but latest internal release has failed" do
+        _internal_release = create(:internal_release, :failed, release_platform_run:)
+        beta_release = create(:beta_release, :finished, release_platform_run:)
+        _workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release: beta_release)
+        _submission = create(:play_store_submission, :prepared, release_platform_run:, parent_release: beta_release)
+
+        expect(release.failure_anywhere?).to be(false)
+      end
+
+      it "returns true if the latest internal release has failed after a beta release is a success" do
+        _beta_release = create(:beta_release, :finished, release_platform_run:)
+        _internal_release = create(:internal_release, :failed, release_platform_run:)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+
+      it "returns true if either of the release platform run have failures" do
+        app = create(:app, :cross_platform)
+        train = create(:train, :with_no_platforms, app:)
+        ios_release_platform = create(:release_platform, train:, platform: "ios")
+        android_release_platform = create(:release_platform, train:, platform: "android")
+        release = create(:release, :on_track, :with_no_platform_runs, train:, is_v2: true)
+        ios_release_platform_run = create(:release_platform_run, :on_track, release:, release_platform: ios_release_platform)
+        android_release_platform_run = create(:release_platform_run, :on_track, release:, release_platform: android_release_platform)
+        _beta_release = create(:beta_release, :failed, release_platform_run: android_release_platform_run)
+        ios_beta_release = create(:beta_release, :finished, release_platform_run: ios_release_platform_run)
+        _workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release: ios_beta_release)
+        _submission = create(:app_store_submission, :prepared, release_platform_run:, parent_release: ios_beta_release)
 
         expect(release.failure_anywhere?).to be(true)
       end

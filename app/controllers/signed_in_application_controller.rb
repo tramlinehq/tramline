@@ -101,6 +101,16 @@ class SignedInApplicationController < ApplicationController
   def set_sentry_context
     return unless current_user
     Sentry.set_user(id: current_user.id, username: current_user.full_name, email: current_user.email)
+    Sentry.configure_scope do |scope|
+      scope.set_context(
+        "Domain",
+        {
+          organization_slug: current_organization&.slug,
+          app_slug: @app&.slug,
+          release_slug: @release&.slug
+        }
+      )
+    end
   end
 
   def set_currents

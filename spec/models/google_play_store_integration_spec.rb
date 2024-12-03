@@ -146,4 +146,54 @@ describe GooglePlayStoreIntegration do
       expect(api_double).to have_received(:halt_release).with("track", 1, "1.0.0", 0.01, skip_review: false).once
     end
   end
+
+  describe "#build_in_progress?" do
+    let(:app) { create(:app, platform: :android) }
+    let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
+    let(:google_integration) { integration.providable }
+    let(:file) { Tempfile.new("test_artifact.aab") }
+    let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
+    let(:in_progress_track_data) {
+      {
+        name: :track,
+        releases: [
+          {
+            localizations: [{release_notes: {language: "en-US", text: "text"}}],
+            version_string: "1.0.0",
+            status: "inProgress",
+            user_fraction: 0.99,
+            build_number: "1"
+          }
+        ]
+      }
+    }
+    let(:completed_track_data) {
+      {
+        name: :track,
+        releases: [
+          {
+            localizations: [{release_notes: {language: "en-US", text: "text"}}],
+            version_string: "1.0.0",
+            status: "completed",
+            user_fraction: 1.0,
+            build_number: "1"
+          }
+        ]
+      }
+    }
+
+    before do
+      allow(google_integration).to receive(:installation).and_return(api_double)
+    end
+
+    it "returns true when the release is in progress" do
+      allow(api_double).to receive(:get_track).and_return(in_progress_track_data)
+      expect(google_integration.build_in_progress?("track", 1)).to be true
+    end
+
+    it "returns false when the release is not in progress" do
+      allow(api_double).to receive(:get_track).and_return(completed_track_data)
+      expect(google_integration.build_in_progress?("track", 1)).to be false
+    end
+  end
 end

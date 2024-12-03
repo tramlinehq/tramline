@@ -35,6 +35,7 @@ class App < ApplicationRecord
   has_many :releases, through: :trains
   has_many :step_runs, through: :releases
   has_many :deployment_runs, through: :releases
+  has_many :production_store_rollouts, -> { production }, through: :releases
   has_many :builds, through: :releases
   has_many :release_platforms, dependent: :destroy
   has_many :release_platform_runs, through: :releases

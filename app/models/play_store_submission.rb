@@ -228,7 +228,7 @@ class PlayStoreSubmission < StoreSubmission
     elog(error)
 
     return if fail_with_review_rejected!(error)
-    return fail!(reason: error.reason) if error.is_a?(Installations::Google::PlayDeveloper::Error)
+    return fail!(reason: error.reason, error: error) if error.is_a?(Installations::Google::PlayDeveloper::Error)
     fail!
   end
 

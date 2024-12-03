@@ -473,6 +473,7 @@ en:
           attributes:
             release_notes:
               no_special_characters: "only allows letters, numbers, emojis, and some special characters"
+              too_long: "is too long for %{platform} (maximum is %{max_length} characters)"
             promo_text:
               no_special_characters: "only allows letters, numbers, emojis, and some special characters"
         integration:
@@ -575,6 +576,23 @@ en:
   mailer:
     generic:
       team_name: "The Tramline team"
+
+  views:
+    rollout:
+      android:
+        created: "Start the rollout to initiate your staged rollout sequence."
+        started: "Increase the rollout to move to the next stage of your rollout sequence."
+        paused: "Resume rollout to continue your rollout sequence."
+        halted: "Resume rollout to continue your rollout sequence."
+        completed: "The rollout has been completed."
+        fully_released: "The rollout has been fully released to all users."
+      ios:
+        created: "Start the rollout to kickoff the phased release."
+        started: "App Store will automatically move the phased release to the next stage every 24 hours."
+        paused: "Resume rollout to continue your phased release."
+        halted: "Resume rollout to continue your phased release."
+        completed: "The rollout has been completed."
+        fully_released: "The rollout has been fully released to all users."
 
   errors:
     format: "%{attribute} → %{message}"

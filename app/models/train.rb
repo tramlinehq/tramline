@@ -155,6 +155,10 @@ class Train < ApplicationRecord
     Flipper.enabled?(:deploy_action_enabled, self)
   end
 
+  def temporarily_allow_workflow_errors?
+    Flipper.enabled?(:temporarily_allow_workflow_errors, self)
+  end
+
   def workflows
     @workflows ||= ci_cd_provider.workflows(working_branch)
   end
@@ -391,7 +395,7 @@ class Train < ApplicationRecord
   end
 
   def backmerge_disabled?
-    vcs_provider&.integration&.bitbucket_integration? || !almost_trunk?
+    !almost_trunk?
   end
 
   def create_vcs_release!(branch_name, tag_name, release_diff = nil)
@@ -594,7 +598,6 @@ class Train < ApplicationRecord
 
   def backmerge_config
     errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && continuous_backmerge?
-    errors.add(:backmerge_strategy, :disabled_for_bitbucket) if vcs_provider&.integration&.bitbucket_integration? && continuous_backmerge?
   end
 
   def tag_release_config
