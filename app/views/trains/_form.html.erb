@@ -8,7 +8,8 @@
 <% end %>
 
 <div data-controller="branching-selector"
-     data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
+     data-branching-selector-domain--release-schedule-help-outlet="#release-schedule"
+     data-branching-selector-domain--build-queue-help-outlet="#build-queue">
   <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
     <% f.with_section(heading: "Basic") do |section| %>
       <% section.with_description do %>
@@ -125,8 +126,12 @@
           <%= section.F.labeled_select :branching_strategy, "Strategy",
                                        options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
                                        {},
-                                       { data: { action: 'branching-selector#change',
-                                                 branching_selector_target: "branchingStrategy" },
+                                       { data: { 
+                                           action: 'branching-selector#change',
+                                           build_queue_help_target: "branchingStrategy",
+                                           domain__build_queue_help_target: "branchingStrategy",
+                                           branching_selector_target: "branchingStrategy" 
+                                         },
                                          disabled: train.persisted? } %>
         </div>
 
