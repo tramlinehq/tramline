@@ -7,7 +7,7 @@
   <% end %>
 <% end %>
 
-<div data-controller="branching-selector"
+<div data-controller="branching-selector freeze-version"
      data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
   <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
     <% f.with_section(heading: "Basic") do |section| %>
@@ -158,6 +158,20 @@
       </div>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Freeze release version") do |section| %>
+      <% section.with_description do %>
+        Versions are automatically managed and bumped by Tramline.
+        Turn this on if you want to keep a single static release version for all releases.
+      <% end %>
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :freeze_version,
+                                               on_label: "Freeze release version enabled",
+                                               off_label: "Freeze release version disabled",
+                                               switch_data: { action: "freeze-version#change",
+                                                    freeze_version_target: "freezeReleaseVersion" }) %>
+
+    <% end %>
+
     <%= f.with_advanced_section(heading: "Release Schedule",
                                 html_options: { hidden: true,
                                                 data: { branching_selector_target: "schedule" } }) do |section| %>
@@ -259,7 +273,8 @@
       <%= render V2::Form::SwitchComponent.new(form: section.F,
                                                field_name: :patch_version_bump_only,
                                                on_label: "Only patch version will change between releases",
-                                               off_label: "Minor version will change between releases (default)") %>
+                                               off_label: "Minor version will change between releases (default)",
+                                               switch_data: { freeze_version_target: "patchVersionBumpOnly" }) %>
     <% end %>
 
     <% f.with_action do %>
