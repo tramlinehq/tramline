@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_11_04_165116) do
+ActiveRecord::Schema[7.2].define(version: 2024_11_20_045747) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -58,6 +58,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_04_165116) do
     t.jsonb "bugsnag_android_config"
     t.string "bitbucket_workspace"
     t.jsonb "ci_cd_workflows"
+    t.jsonb "firebase_crashlytics_ios_config"
+    t.jsonb "firebase_crashlytics_android_config"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -213,6 +215,13 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_04_165116) do
     t.index ["release_id", "timestamp"], name: "index_commits_on_release_id_and_timestamp"
     t.index ["release_platform_id"], name: "index_commits_on_release_platform_id"
     t.index ["release_platform_run_id"], name: "index_commits_on_release_platform_run_id"
+  end
+
+  create_table "crashlytics_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "json_key"
+    t.string "project_number"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "data_migrations", primary_key: "version", id: :string, force: :cascade do |t|

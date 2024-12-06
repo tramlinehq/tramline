@@ -79,6 +79,7 @@ gem "color", "~> 1.8"
 gem "descope", "~> 1.0"
 gem "invisible_captcha", "~> 2.3"
 gem "csv", "~> 3.3"
+gem "google-cloud-bigquery"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

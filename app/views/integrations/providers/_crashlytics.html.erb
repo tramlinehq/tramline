@@ -1,0 +1,26 @@
+<%= render V2::FormComponent.new(model: [app, integration], url: app_crashlytics_integration_path(app)) do |f| %>
+  <% f.with_section(heading: "Add") do |section| %>
+    <% section.with_description do %>
+      <p>Your Service Account Key</p>
+      <p class="mt-2 text-xs">
+        <%= link_to_external "How to create a firebase service account?",
+                             "https://docs.tramline.app/integrations/distribution/firebase",
+                             class: "underline" %>
+        <p>1. In Firebase Project Settings > General, find and note the Project Number.</p>
+        <p>2. Google Cloud Console > IAM & Admin > Service Accounts, select your account, go to Keys, and Add Key to create a new JSON key.</p>
+      </p>
+    <% end %>
+
+    <%= section.F.hidden_field :category, value: category %>
+
+    <% section.F.fields_for :providable do |subf| %>
+      <%= subf.hidden_field :type, value: integration.providable_type %>
+      <div><%= subf.labeled_text_field :project_number, "Project Number", required: true %></div>
+      <div><%= subf.labeled_file_field :json_key_file, "Upload Service Account JSON Key", "Only .json files.", accept: "application/json", required: true %></div>
+    <% end %>
+  <% end %>
+
+  <% f.with_action do %>
+    <%= f.F.authz_submit "Create", "plus.svg", size: :xs %>
+  <% end %>
+<% end %>
