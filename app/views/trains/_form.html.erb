@@ -8,6 +8,8 @@
 <% end %>
 
 <div data-controller="branching-selector freeze-version"
+  id="freeze-version"
+    data-freeze-version-domain--version-name-help-outlet="#version-name"
      data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
   <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
     <% f.with_section(heading: "Basic") do |section| %>
@@ -45,6 +47,7 @@
       <% end %>
 
       <div data-controller="domain--version-name-help"
+          data-domain--version-name-help-freeze-version-outlet="#freeze-version" id="version-name"
            data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
         <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>
         <div class="flex flex-row gap-x-2 items-center">
