@@ -8,7 +8,7 @@ class Api::V1::ReleasesController < ApiController
 
   def all_versions
     releases
-      .flat_map { |release| release.is_v2? ? release.production_store_rollouts.flat_map(&:release_info) : release.all_store_step_runs&.map(&:release_info) }
+      .flat_map { |release| release.is_v2? ? release.production_store_rollouts.reorder(:updated_at).flat_map(&:release_info) : release.all_store_step_runs&.map(&:release_info) }
       .then { |store_releases| store_releases.group_by { _1[:platform] } }
   end
 
