@@ -54,13 +54,9 @@ class Train < ApplicationRecord
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
   has_many :active_runs, -> { pending_release.includes(:all_commits) }, class_name: "Release", inverse_of: :train, dependent: :destroy
-  has_many :deployment_runs, through: :releases
-  has_many :external_releases, through: :deployment_runs
   has_many :release_platforms, -> { sequential }, dependent: :destroy, inverse_of: :train
   has_many :release_platform_runs, -> { sequential }, through: :releases
   has_many :integrations, through: :app
-  has_many :steps, through: :release_platforms
-  has_many :deployments, through: :steps
   has_many :scheduled_releases, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
   has_one :release_index, dependent: :destroy
@@ -443,10 +439,10 @@ class Train < ApplicationRecord
     release_platforms.any? { |rp| rp.platform_config.production_release? }
   end
 
+  # TODO: [V2] move this check to the new config model
   def has_restricted_public_channels?
     return false if app.ios?
-
-    deployments.any? { |d| GooglePlayStoreIntegration::PUBLIC_CHANNELS.include?(d.deployment_channel) }
+    false
   end
 
   def stop_failed_ongoing_release!

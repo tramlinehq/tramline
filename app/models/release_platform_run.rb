@@ -346,10 +346,6 @@ class ReleasePlatformRun < ApplicationRecord
     latest_production_release&.version_bump_required?
   end
 
-  def patch_fix?
-    on_track? && in_store_resubmission?
-  end
-
   def notification_params
     release.notification_params.merge(
       {

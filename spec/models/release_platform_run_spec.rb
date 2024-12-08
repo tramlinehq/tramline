@@ -29,38 +29,6 @@ describe ReleasePlatformRun do
     end
   end
 
-  # TODO: [V2] Replace this with a test that uses the new models
-  # describe "#patch_fix?" do
-  #   let(:factory_tree) { create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release]) }
-  #   let(:train) { factory_tree[:train] }
-  #   let(:release_platform) { factory_tree[:release_platform] }
-  #   let(:release_step) { factory_tree[:step] }
-  #   let(:release) { create(:release, train:) }
-  #   let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
-  #   let(:production_deployment) { factory_tree[:deployment] }
-  #   let(:regular_deployment) { create(:deployment, step: release_step, integration: production_deployment.integration) }
-  #   let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:, release:) }
-  #
-  #   it "is false when it has step run and production deployment run has not started rollout" do
-  #     release_step_run = create(:step_run, step: release_step, release_platform_run:)
-  #     create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
-  #     release_platform_run.bump_version!
-  #     expect(release_platform_run).not_to be_patch_fix
-  #   end
-  #
-  #   it "is true when it has step run and production deployment run has started rollout" do
-  #     release_step_run = create(:step_run, step: release_step, release_platform_run:, build_version: release_platform_run.release_version)
-  #     create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
-  #     release_platform_run.bump_version!
-  #     expect(release_platform_run).to be_patch_fix
-  #   end
-  #
-  #   it "is false release train is finished" do
-  #     release_platform_run.update(status: "finished")
-  #     expect(release_platform_run).not_to be_patch_fix
-  #   end
-  # end
-
   describe "#version_bump_required?" do
     let(:release) { create(:release, :with_no_platform_runs, is_v2: true) }
     let(:run_version) { "1.2.0" }

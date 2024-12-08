@@ -91,24 +91,12 @@ class Commit < ApplicationRecord
     url
   end
 
-  def run_for(step, release_platform_run)
-    step_runs.where(step:, release_platform_run:).last
-  end
-
   def stale?
     release.applied_commits.last != self
   end
 
   def short_sha
     commit_hash[0, 7]
-  end
-
-  def step_runs_for(platform_run)
-    step_runs.where(release_platform_run: platform_run).includes(:step)
-  end
-
-  def applied_at
-    step_runs.map(&:created_at).min
   end
 
   def notification_params

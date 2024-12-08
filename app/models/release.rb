@@ -384,11 +384,6 @@ class Release < ApplicationRecord
     end
   end
 
-  def patch_fix?
-    return false unless committable?
-    release_platform_runs.any?(&:patch_fix?)
-  end
-
   def ready_to_be_finalized?
     release_platform_runs.all? { |prun| prun.finished? || prun.stopped? }
   end
