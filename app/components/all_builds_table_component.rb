@@ -4,7 +4,6 @@ class AllBuildsTableComponent < ViewComponent::Base
   include LinkHelper
   include AssetsHelper
   include ReleasesHelper
-  include DeploymentsHelper
 
   def initialize(builds:, paginator:, query_params:)
     @builds = builds

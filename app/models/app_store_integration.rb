@@ -96,14 +96,6 @@ class AppStoreIntegration < ApplicationRecord
   APP_STORE_CONNECT_URL_TEMPLATE =
     Addressable::Template.new("https://appstoreconnect.apple.com/apps/{app_id}/testflight/ios/{external_id}")
 
-  unless Set.new(BUILD_TRANSFORMATIONS.keys).superset?(Set.new(ExternalRelease.minimum_required))
-    raise InvalidTransformations
-  end
-
-  unless Set.new(RELEASE_TRANSFORMATIONS.keys).superset?(Set.new(ExternalRelease.minimum_required))
-    raise InvalidTransformations
-  end
-
   def access_key
     OpenSSL::PKey::EC.new(p8_key)
   end

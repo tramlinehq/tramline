@@ -87,10 +87,6 @@
       </div>
     </div>
 
-    <% if release.is_v2? %>
-      <%= render V2::PlatformOverviewV2Component.new(release, occupy: false) %>
-    <% else %>
-      <%= render V2::PlatformOverviewComponent.new(release, occupy: false) %>
-    <% end %>
+    <%= render V2::PlatformOverviewV2Component.new(release, occupy: false) %>
   <% end %>
 <% end %>

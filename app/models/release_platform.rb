@@ -59,9 +59,6 @@ class ReleasePlatform < ApplicationRecord
   has_many :release_health_rules, -> { kept }, dependent: :destroy, inverse_of: :release_platform
   has_many :all_release_health_rules, dependent: :destroy, inverse_of: :release_platform, class_name: "ReleaseHealthRule"
   has_many :release_platform_runs, inverse_of: :release_platform, dependent: :destroy
-  has_many :steps, -> { kept.order(:step_number) }, inverse_of: :release_platform, dependent: :destroy
-  has_many :all_steps, -> { order(:step_number) }, class_name: "Step", inverse_of: :release_platform, dependent: :destroy
-  has_many :deployments, through: :steps
 
   scope :sequential, -> { order(NATURAL_ORDER) }
 
@@ -82,45 +79,8 @@ class ReleasePlatform < ApplicationRecord
     }.invert
   end
 
-  def active_steps_for(release)
-    # no release
-    return steps unless release
-    return steps if release.active?
-
-    # historical release only
-    all_steps
-      .where(created_at: ..release.end_time)
-      .where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
-  end
-
-  def has_release_step?
-    steps.release.any?
-  end
-
-  alias_method :startable?, :has_release_step?
-
-  def has_production_deployment?
-    release_step&.has_production_deployment?
-  end
-
-  def has_review_steps?
-    steps.review.exists?
-  end
-
-  def release_step
-    steps.release.first
-  end
-
   def display_name
     name&.parameterize
-  end
-
-  def ordered_steps_until(step_number)
-    steps.where(step_number: ..step_number).order(:step_number)
-  end
-
-  def valid_steps?
-    steps.release.size == 1
   end
 
   def store_provider

@@ -45,8 +45,7 @@ class ReleasePresenter < SimpleDelegator
   end
 
   memoize def breakdown
-    return Queries::ReleaseBreakdown.new(id) if is_v2?
-    Queries::ReleaseSummary.all(id)
+    Queries::ReleaseBreakdown.new(id)
   end
 
   memoize def platform_runs

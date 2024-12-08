@@ -169,150 +169,100 @@ describe Train do
   end
 
   describe "#hotfixable?" do
-    context "when not v2" do
-      let(:factory_tree) {
-        create_deployment_tree(:android,
-          :with_production_channel,
-          step_traits: [:release],
-          train_traits: [:with_almost_trunk, :active])
-      }
-      let(:train) { factory_tree[:train] }
-      let(:release_platform) { factory_tree[:release_platform] }
-      let(:step) { factory_tree[:step] }
-      let(:deployment) { factory_tree[:deployment] }
-      let(:release) { create(:release, :finished, :with_no_platform_runs, train:) }
+    let(:train) { create(:train, :with_no_platforms) }
 
-      before do
-        _finished_release_run = create(:release_platform_run, release:, release_platform:)
-        Flipper.disable_actor(:product_v2, train)
-      end
-
-      it "is false if there is already another hotfix in progress" do
-        hotfix_release = create(:release, :hotfix, :with_no_platform_runs, train:, hotfixed_from: release)
-        create(:release_platform_run, release: hotfix_release, release_platform: create(:release_platform, train:))
-
-        expect(train.reload.hotfixable?).to be(false)
-      end
-
-      it "is false if there is an ongoing release in rollout stage" do
-        ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:, hotfixed_from: release)
-        release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform:)
-        step_run = create(:step_run, :deployment_started, step:, release_platform_run:)
-        create(:deployment_run, :rollout_started, deployment:, step_run:)
-
-        expect(train.reload.hotfixable?).to be(false)
-      end
-
-      it "is true if there is an ongoing release is in stability stage" do
-        ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:, hotfixed_from: release)
-        release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform:)
-        step_run = create(:step_run, :deployment_started, step:, release_platform_run:)
-        create(:deployment_run, :started, deployment:, step_run:)
-
-        expect(train.reload.hotfixable?).to be(true)
-      end
-
-      it "is true when a production train with a release to hotfix is available" do
-        expect(train.reload.hotfixable?).to be(true)
-      end
+    before do
+      create(:release_platform, train:)
     end
 
-    context "when v2" do
-      let(:train) { create(:train, :with_no_platforms) }
+    it "is false when the train has no production releases" do
+      release_platform = train.release_platforms.sole
+      new_beta_step = Config::ReleaseStep.from_json(
+        {
+          kind: "beta",
+          auto_promote: false,
+          submissions: [
+            {number: 1,
+             submission_type: "AppStoreSubmission",
+             submission_config: {id: "123", name: "Internal"},
+             rollout_config: {enabled: false},
+             integrable_id: train.app.id,
+             integrable_type: "App",
+             auto_promote: false}
+          ]
+        }.with_indifferent_access
+      )
+      release_platform.platform_config.update!(production_release: nil, beta_release: new_beta_step)
+      expect(train.reload.hotfixable?).to be(false)
+    end
 
-      before do
-        create(:release_platform, train:)
-      end
+    it "is false when there is no completed release to hotfix" do
+      expect(train.reload.hotfixable?).to be(false)
+    end
 
-      it "is false when the train has no production releases" do
-        release_platform = train.release_platforms.sole
-        new_beta_step = Config::ReleaseStep.from_json(
-          {
-            kind: "beta",
-            auto_promote: false,
-            submissions: [
-              {number: 1,
-               submission_type: "AppStoreSubmission",
-               submission_config: {id: "123", name: "Internal"},
-               rollout_config: {enabled: false},
-               integrable_id: train.app.id,
-               integrable_type: "App",
-               auto_promote: false}
-            ]
-          }.with_indifferent_access
-        )
-        release_platform.platform_config.update!(production_release: nil, beta_release: new_beta_step)
-        expect(train.reload.hotfixable?).to be(false)
-      end
+    it "is true when there is a completed release to hotfix and no ongoing release" do
+      create(:release, :finished, train:)
+      expect(train.reload.hotfixable?).to be(true)
+    end
 
-      it "is false when there is no completed release to hotfix" do
-        expect(train.reload.hotfixable?).to be(false)
-      end
+    it "is false when there is already an ongoing hotfix release" do
+      create(:release, :hotfix, :on_track, train:)
+      expect(train.reload.hotfixable?).to be(false)
+    end
 
-      it "is true when there is a completed release to hotfix and no ongoing release" do
-        create(:release, :finished, train:)
-        expect(train.reload.hotfixable?).to be(true)
-      end
+    it "is false when the ongoing release is being actively rolled out" do
+      _completed_release = create(:release, :finished, train:)
+      ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
+      release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.sole)
+      production_release = create(:production_release, :active, release_platform_run:, build: create(:build))
+      create(:play_store_submission, :prepared, parent_release: production_release)
+      create(:store_rollout, :started, release_platform_run:, store_submission: production_release.store_submission)
+      expect(train.reload.hotfixable?).to be(false)
+    end
 
-      it "is false when there is already an ongoing hotfix release" do
-        create(:release, :hotfix, :on_track, train:)
-        expect(train.reload.hotfixable?).to be(false)
-      end
+    it "is true when the ongoing release is ready to rollout" do
+      _completed_release = create(:release, :finished, train:)
+      ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
+      release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.sole)
+      production_release = create(:production_release, :active, release_platform_run:, build: create(:build))
+      create(:play_store_submission, :prepared, parent_release: production_release)
+      create(:store_rollout, :created, release_platform_run:, store_submission: production_release.store_submission)
+      expect(train.reload.hotfixable?).to be(true)
+    end
 
-      it "is false when the ongoing release is being actively rolled out" do
-        _completed_release = create(:release, :finished, train:)
-        ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
-        release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.sole)
-        production_release = create(:production_release, :active, release_platform_run:, build: create(:build))
-        create(:play_store_submission, :prepared, parent_release: production_release)
-        create(:store_rollout, :started, release_platform_run:, store_submission: production_release.store_submission)
-        expect(train.reload.hotfixable?).to be(false)
-      end
+    it "is true when the ongoing release production rollout is halted" do
+      _completed_release = create(:release, :finished, train:)
+      ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
+      release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.sole)
+      production_release = create(:production_release, :active, release_platform_run:, build: create(:build))
+      create(:play_store_submission, :prepared, parent_release: production_release)
+      create(:store_rollout, :halted, release_platform_run:, store_submission: production_release.store_submission)
+      expect(train.reload.hotfixable?).to be(true)
+    end
 
-      it "is true when the ongoing release is ready to rollout" do
-        _completed_release = create(:release, :finished, train:)
-        ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
-        release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.sole)
-        production_release = create(:production_release, :active, release_platform_run:, build: create(:build))
-        create(:play_store_submission, :prepared, parent_release: production_release)
-        create(:store_rollout, :created, release_platform_run:, store_submission: production_release.store_submission)
-        expect(train.reload.hotfixable?).to be(true)
-      end
+    it "is true when the ongoing release production rollout is paused" do
+      _completed_release = create(:release, :finished, train:)
+      ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
+      release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.sole)
+      production_release = create(:production_release, :active, release_platform_run:, build: create(:build))
+      create(:play_store_submission, :prepared, parent_release: production_release)
+      create(:store_rollout, :paused, release_platform_run:, store_submission: production_release.store_submission)
+      expect(train.reload.hotfixable?).to be(true)
+    end
 
-      it "is true when the ongoing release production rollout is halted" do
-        _completed_release = create(:release, :finished, train:)
-        ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
-        release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.sole)
-        production_release = create(:production_release, :active, release_platform_run:, build: create(:build))
-        create(:play_store_submission, :prepared, parent_release: production_release)
-        create(:store_rollout, :halted, release_platform_run:, store_submission: production_release.store_submission)
-        expect(train.reload.hotfixable?).to be(true)
-      end
+    it "is true when the ongoing release is not being actively rolled out" do
+      _completed_release = create(:release, :finished, train:)
+      ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
+      release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.first)
+      create(:production_release, :inflight, release_platform_run:, build: create(:build))
+      expect(train.reload.hotfixable?).to be(true)
+    end
 
-      it "is true when the ongoing release production rollout is paused" do
-        _completed_release = create(:release, :finished, train:)
-        ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
-        release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.sole)
-        production_release = create(:production_release, :active, release_platform_run:, build: create(:build))
-        create(:play_store_submission, :prepared, parent_release: production_release)
-        create(:store_rollout, :paused, release_platform_run:, store_submission: production_release.store_submission)
-        expect(train.reload.hotfixable?).to be(true)
-      end
-
-      it "is true when the ongoing release is not being actively rolled out" do
-        _completed_release = create(:release, :finished, train:)
-        ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
-        release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.first)
-        create(:production_release, :inflight, release_platform_run:, build: create(:build))
-        expect(train.reload.hotfixable?).to be(true)
-      end
-
-      it "is true when the ongoing release is in stability stage" do
-        _completed_release = create(:release, :finished, train:)
-        ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
-        create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.sole)
-        expect(train.reload.hotfixable?).to be(true)
-      end
+    it "is true when the ongoing release is in stability stage" do
+      _completed_release = create(:release, :finished, train:)
+      ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:)
+      create(:release_platform_run, release: ongoing_release, release_platform: train.release_platforms.sole)
+      expect(train.reload.hotfixable?).to be(true)
     end
   end
 

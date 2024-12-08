@@ -229,16 +229,16 @@ describe Release do
   describe "#create_vcs_release!" do
     let(:train) { create(:train, :active) }
     let(:release_platform) { create(:release_platform, train:) }
-    let(:step) { create(:step, release_platform:) }
     let(:release) { create(:release, train:) }
-    let(:release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform:) }
     let(:tag_exists_error) { Installations::Error.new("Should not create a tag", reason: :tag_reference_already_exists) }
     let(:release_exists_error) { Installations::Error.new("Should not create a release", reason: :tagged_release_already_exists) }
 
+    before do
+      create(:release_platform_run, :on_track, release:, release_platform:)
+    end
+
     it "saves a new tag with the base name" do
       allow_any_instance_of(GithubIntegration).to receive(:create_release!)
-      commit = create(:commit, :without_trigger, release:)
-      create(:step_run, release_platform_run:, commit:)
 
       release.create_vcs_release!
       expect(release.tag_name).to eq("v1.2.3")
@@ -247,7 +247,6 @@ describe Release do
     it "saves base name + last commit sha" do
       raise_times(GithubIntegration, tag_exists_error, :create_release!, 1)
       commit = create(:commit, :without_trigger, release:)
-      create(:step_run, release_platform_run:, commit:)
 
       release.create_vcs_release!
       expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}")
@@ -259,7 +258,6 @@ describe Release do
       freeze_time do
         now = Time.now.to_i
         commit = create(:commit, :without_trigger, release:)
-        create(:step_run, release_platform_run:, commit:)
 
         release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}-#{now}")
@@ -272,8 +270,6 @@ describe Release do
 
       it "saves a new tag with the base name + suffix" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
-        commit = create(:commit, :without_trigger, release:)
-        create(:step_run, release_platform_run:, commit:)
 
         release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{suffix}")
@@ -282,7 +278,6 @@ describe Release do
       it "saves base name + suffix + last commit sha" do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
         commit = create(:commit, :without_trigger, release:)
-        create(:step_run, release_platform_run:, commit:)
 
         release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}")
@@ -294,7 +289,6 @@ describe Release do
         freeze_time do
           now = Time.now.to_i
           commit = create(:commit, :without_trigger, release:)
-          create(:step_run, release_platform_run:, commit:)
 
           release.create_vcs_release!
           expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
@@ -307,8 +301,6 @@ describe Release do
 
       it "does not create tag" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
-        commit = create(:commit, :without_trigger, release:)
-        create(:step_run, release_platform_run:, commit:)
 
         release.create_vcs_release!
         expect_any_instance_of(GithubIntegration).not_to receive(:create_release!)
@@ -437,10 +429,10 @@ describe Release do
   end
 
   describe "#stability_commits" do
-    let(:factory_tree) { create_deployment_run_tree(:android, release_traits: [:on_track]) }
-    let(:release) { factory_tree[:release] }
+    let(:release) { create(:release, :on_track) }
 
     it "returns the subsequent commits made on the release branch after release starts" do
+      _initial_commit = create(:commit, :without_trigger, release:)
       stability_commits = create_list(:commit, 4, release:)
       expect(release.stability_commits).to exist
       expect(release.stability_commits).to match_array(stability_commits)
@@ -448,6 +440,7 @@ describe Release do
     end
 
     it "returns nothing if no fixes are made" do
+      _initial_commit = create(:commit, :without_trigger, release:)
       expect(release.all_commits).to exist
       expect(release.stability_commits).to be_none
     end
@@ -485,66 +478,67 @@ describe Release do
       expect(stopped_release.index_score).to be_nil
     end
 
-    [
-      [PERFECT_SCORE_COMPONENTS, 1.0],
-      [PERFECT_SCORE_COMPONENTS.merge(stability_changes: {input: 11, range_value: 0.5, value: 0.075}), 0.925],
-      [PERFECT_SCORE_COMPONENTS.merge(
-        duration: {input: 15, range_value: 0.5, value: 0.025},
-        rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
-        stability_changes: {input: 11, range_value: 0.5, value: 0.075}
-      ), 0.825],
-      [PERFECT_SCORE_COMPONENTS.merge(
-        hotfixes: {input: 1, range_value: 0, value: 0},
-        duration: {input: 15, range_value: 0.5, value: 0.025},
-        rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
-        stability_changes: {input: 11, range_value: 0.5, value: 0.075}
-      ), 0.525],
-      [PERFECT_SCORE_COMPONENTS.merge(
-        hotfixes: {input: 1, range_value: 0, value: 0},
-        rollout_fixes: {input: 2, range_value: 0, value: 0},
-        duration: {input: 15, range_value: 0.5, value: 0.025},
-        rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
-        stability_changes: {input: 11, range_value: 0.5, value: 0.075}
-      ), 0.325]
-    ].each do |components, final_score|
-      it "returns the index score for a finished release" do
-        create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release]) => { step:, deployment:, train: }
-
-        travel_to(components[:duration][:input].days.ago)
-        release = create(:release, :on_track, :with_no_platform_runs, train:)
-        release_platform_run = create(:release_platform_run, release:)
-        create_list(:commit, components[:stability_changes][:input] + 1, release:)
-        travel_back
-
-        travel_to((components[:rollout_duration][:input] - 2).days.ago)
-        submitted_step_run = create(:step_run, :deployment_started, release_platform_run:, step:)
-        create(:deployment_run, :rollout_started, step_run: submitted_step_run, deployment:)
-        travel_back
-
-        travel_to(components[:rollout_duration][:input].days.ago)
-        step_runs = create_list(:step_run, components[:rollout_fixes][:input], :deployment_started, release_platform_run:, step:)
-        step_runs.each do |step_run|
-          create(:deployment_run, :rollout_started, step_run:, deployment:)
-        end
-        step_run = create(:step_run, :deployment_started, release_platform_run:)
-        deployment_run = create(:deployment_run, :rollout_started, step_run:, deployment:)
-        travel_back
-
-        deployment_run.complete!
-        release.update! completed_at: Time.current, status: :finished
-        create_list(:release, components[:hotfixes][:input], :hotfix, hotfixed_from: release)
-
-        expected_range_values = components.transform_values { |v| v[:range_value] }
-        expected_values = components.transform_values { |v| v[:value] }
-
-        score = release.index_score
-
-        expect(score).to be_a(ReleaseIndex::Score)
-        expect(score.components.map { |c| [c.release_index_component.name.to_sym, c.range_value] }.to_h).to eq(expected_range_values)
-        expect(score.components.map { |c| [c.release_index_component.name.to_sym, c.value] }.to_h).to eq(expected_values)
-        expect(score.value).to eq(final_score)
-      end
-    end
+    # TODO: [V2] Replace this with a test that uses the new index score calculation
+    # [
+    #   [PERFECT_SCORE_COMPONENTS, 1.0],
+    #   [PERFECT_SCORE_COMPONENTS.merge(stability_changes: {input: 11, range_value: 0.5, value: 0.075}), 0.925],
+    #   [PERFECT_SCORE_COMPONENTS.merge(
+    #     duration: {input: 15, range_value: 0.5, value: 0.025},
+    #     rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
+    #     stability_changes: {input: 11, range_value: 0.5, value: 0.075}
+    #   ), 0.825],
+    #   [PERFECT_SCORE_COMPONENTS.merge(
+    #     hotfixes: {input: 1, range_value: 0, value: 0},
+    #     duration: {input: 15, range_value: 0.5, value: 0.025},
+    #     rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
+    #     stability_changes: {input: 11, range_value: 0.5, value: 0.075}
+    #   ), 0.525],
+    #   [PERFECT_SCORE_COMPONENTS.merge(
+    #     hotfixes: {input: 1, range_value: 0, value: 0},
+    #     rollout_fixes: {input: 2, range_value: 0, value: 0},
+    #     duration: {input: 15, range_value: 0.5, value: 0.025},
+    #     rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
+    #     stability_changes: {input: 11, range_value: 0.5, value: 0.075}
+    #   ), 0.325]
+    # ].each do |components, final_score|
+    #   it "returns the index score for a finished release" do
+    #     create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release]) => { step:, deployment:, train: }
+    #
+    #     travel_to(components[:duration][:input].days.ago)
+    #     release = create(:release, :on_track, :with_no_platform_runs, train:)
+    #     release_platform_run = create(:release_platform_run, release:)
+    #     create_list(:commit, components[:stability_changes][:input] + 1, release:)
+    #     travel_back
+    #
+    #     travel_to((components[:rollout_duration][:input] - 2).days.ago)
+    #     submitted_step_run = create(:step_run, :deployment_started, release_platform_run:, step:)
+    #     create(:deployment_run, :rollout_started, step_run: submitted_step_run, deployment:)
+    #     travel_back
+    #
+    #     travel_to(components[:rollout_duration][:input].days.ago)
+    #     step_runs = create_list(:step_run, components[:rollout_fixes][:input], :deployment_started, release_platform_run:, step:)
+    #     step_runs.each do |step_run|
+    #       create(:deployment_run, :rollout_started, step_run:, deployment:)
+    #     end
+    #     step_run = create(:step_run, :deployment_started, release_platform_run:)
+    #     deployment_run = create(:deployment_run, :rollout_started, step_run:, deployment:)
+    #     travel_back
+    #
+    #     deployment_run.complete!
+    #     release.update! completed_at: Time.current, status: :finished
+    #     create_list(:release, components[:hotfixes][:input], :hotfix, hotfixed_from: release)
+    #
+    #     expected_range_values = components.transform_values { |v| v[:range_value] }
+    #     expected_values = components.transform_values { |v| v[:value] }
+    #
+    #     score = release.index_score
+    #
+    #     expect(score).to be_a(ReleaseIndex::Score)
+    #     expect(score.components.map { |c| [c.release_index_component.name.to_sym, c.range_value] }.to_h).to eq(expected_range_values)
+    #     expect(score.components.map { |c| [c.release_index_component.name.to_sym, c.value] }.to_h).to eq(expected_values)
+    #     expect(score.value).to eq(final_score)
+    #   end
+    # end
   end
 
   describe "#failure_anywhere?" do
@@ -558,53 +552,6 @@ describe Release do
       release = create(:release, :on_track)
 
       expect(release.failure_anywhere?).to be(false)
-    end
-
-    context "when failure in a release platform run" do
-      let(:factory_tree) { create_cross_platform_deployment_tree(nil) }
-      let(:release) { create(:release, :on_track, :with_no_platform_runs, train: factory_tree[:train]) }
-      let(:android_release_platform) { factory_tree.dig(:android, :release_platform) }
-      let(:ios_release_platform) { factory_tree.dig(:ios, :release_platform) }
-      let(:android_step) { factory_tree.dig(:android, :step) }
-      let(:ios_step) { factory_tree.dig(:ios, :step) }
-      let(:android_release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform: android_release_platform) }
-      let(:ios_release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform: ios_release_platform) }
-
-      it "returns false if an old step run has failed" do
-        _old_step_run = create(:step_run, :deployment_failed, release_platform_run: android_release_platform_run, step: android_step)
-        _new_step_run = create(:step_run, :deployment_started, release_platform_run: android_release_platform_run, step: android_step)
-
-        expect(release.failure_anywhere?).to be(false)
-      end
-
-      it "returns true if the latest step run has failed" do
-        _old_step_run = create(:step_run, :deployment_failed, release_platform_run: android_release_platform_run, step: android_step)
-        _new_step_run = create(:step_run, :ci_workflow_failed, release_platform_run: android_release_platform_run, step: android_step)
-
-        expect(release.failure_anywhere?).to be(true)
-      end
-
-      it "returns false if a penultimate deployment run for the last step has failed" do
-        step_run = create(:step_run, :deployment_started, release_platform_run: android_release_platform_run, step: android_step)
-        _old_deployment_run = create(:deployment_run, :failed, step_run: step_run)
-        _new_deployment_run = create(:deployment_run, :rollout_started, step_run: step_run)
-
-        expect(release.failure_anywhere?).to be(false)
-      end
-
-      it "returns true if the last deployment run for the last step has failed" do
-        step_run = create(:step_run, :deployment_started, release_platform_run: android_release_platform_run, step: android_step)
-        _old_deployment_run = create(:deployment_run, :released, step_run: step_run)
-        _new_deployment_run = create(:deployment_run, :failed, step_run: step_run)
-
-        expect(release.failure_anywhere?).to be(true)
-      end
-
-      it "returns true if either of the release platform run have failures" do
-        _ios_step_run = create(:step_run, :ci_workflow_failed, release_platform_run: ios_release_platform_run, step: ios_step)
-
-        expect(release.failure_anywhere?).to be(true)
-      end
     end
 
     context "when failure in a v2 release platform run" do

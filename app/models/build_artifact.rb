@@ -15,7 +15,8 @@ require "zip"
 class BuildArtifact < ApplicationRecord
   include Rails.application.routes.url_helpers
 
-  belongs_to :step_run, optional: true, inverse_of: :build_artifact
+  self.ignored_columns += ["step_run_id"]
+
   belongs_to :build, optional: true, inverse_of: :artifact
   has_one_attached :file
 
@@ -31,7 +32,7 @@ class BuildArtifact < ApplicationRecord
   end
 
   def parent
-    step_run || build
+    build
   end
 
   def save_file!(artifact_stream)

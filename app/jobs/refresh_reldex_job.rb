@@ -6,17 +6,9 @@ class RefreshReldexJob < ApplicationJob
     train = Train.find(train_id)
 
     train.releases.finished.each do |release|
-      if release.is_v2?
-        Queries::ReleaseBreakdown.warm(release.id, [:reldex])
-      else
-        Queries::ReleaseSummary.warm(release.id)
-      end
+      Queries::ReleaseBreakdown.warm(release.id, [:reldex])
     end
 
-    if train.product_v2?
-      Queries::DevopsReport.warm(train)
-    else
-      Charts::DevopsReport.warm(train)
-    end
+    Queries::DevopsReport.warm(train)
   end
 end

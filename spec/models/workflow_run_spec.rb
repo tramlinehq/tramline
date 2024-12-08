@@ -62,8 +62,6 @@ describe WorkflowRun do
     end
 
     it "updates build number" do
-      allow(Releases::FindWorkflowRun).to receive(:perform_async)
-
       expect(workflow_run.build.build_number).to be_nil
       workflow_run.trigger!
       expect(workflow_run.build.build_number).not_to be_empty

@@ -1,5 +1,4 @@
 class V2::CommitComponent < V2::BaseComponent
-  include ReleasesHelper
   OUTER_CLASSES = "py-1.5 px-2 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
 
   def initialize(commit:, avatar: true, detailed: true)

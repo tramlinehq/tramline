@@ -1,9 +1,4 @@
 module TrainsHelper
-  def steps_heading(release_platform)
-    return release_platform.display_attr(:platform) + " Steps" if release_platform.app.cross_platform?
-    "Steps"
-  end
-
   def start_release_text(train, major: false)
     text = train.automatic? ? "Manually start " : "Start "
     text += major ? "major " : "minor "

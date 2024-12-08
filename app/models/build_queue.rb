@@ -20,17 +20,6 @@ class BuildQueue < ApplicationRecord
 
   after_create_commit :schedule_kickoff!
 
-  def apply!
-    head_commit&.trigger_step_runs
-    update!(applied_at: Time.current, is_active: false)
-    release.create_build_queue!
-  end
-
-  def add_commit!(commit, can_apply: true)
-    commits << commit
-    apply! if commits.size >= build_queue_size && can_apply
-  end
-
   def add_commit_v2!(commit, can_apply: true)
     commits << commit
     if commits.size >= build_queue_size && can_apply

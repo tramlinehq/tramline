@@ -12,14 +12,7 @@ class ReleasesController < SignedInApplicationController
   end
 
   def show
-    if @release.is_v2?
-      redirect_to live_release_active_tab
-      return
-    end
-
-    set_commits
-    set_pull_requests
-    render :show
+    redirect_to live_release_active_tab
   end
 
   def create
@@ -205,10 +198,6 @@ class ReleasesController < SignedInApplicationController
     @post_release_prs = @release.post_release_prs
     @ongoing_open_release_prs = @release.backmerge_prs.open
     @mid_release_prs = @release.mid_release_prs
-  end
-
-  def set_commits
-    @commits = @release.applied_commits.sequential.includes(step_runs: :step)
   end
 
   def current_release_path(current_release)

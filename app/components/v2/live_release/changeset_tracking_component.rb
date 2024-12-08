@@ -4,7 +4,7 @@ class V2::LiveRelease::ChangesetTrackingComponent < V2::BaseComponent
   def initialize(release)
     @release = release
     @build_queue = release.active_build_queue
-    @applied_commits = release.applied_commits.sequential.includes(step_runs: :step)
+    @applied_commits = release.applied_commits.sequential
     @mid_release_prs = release.mid_release_prs.open
     @open_backmerge_prs = release.pull_requests.ongoing.open
     @change_queue_commits = @build_queue&.commits&.sequential

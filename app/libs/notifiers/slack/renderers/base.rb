@@ -1,6 +1,5 @@
 class Notifiers::Slack::Renderers::Base
   include Rails.application.routes.url_helpers
-  include DeploymentsHelper
   include ActionView::Helpers::JavaScriptHelper
 
   NOTIFIERS_RELATIVE_PATH = "app/views/notifiers/slack".freeze
@@ -46,11 +45,6 @@ class Notifiers::Slack::Renderers::Base
 
   def template_file
     File.read(File.join(ROOT_PATH, self.class::TEMPLATE_FILE))
-  end
-
-  def deployment_channel_display_name
-    return unless @deployment_channel
-    deployment_channel_name(@deployment_channel)
   end
 
   def safe_string(s) = escape_javascript(s)

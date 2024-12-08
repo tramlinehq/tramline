@@ -98,12 +98,6 @@ Rails.application.routes.draw do
 
         resources :approval_items, only: %i[index create update destroy], shallow: false
 
-        resources :commits, only: [], shallow: false do
-          member do
-            post :apply
-          end
-        end
-
         get :edit, to: "release_metadata#index", path: :metadata, as: :metadata_edit
         patch :update, to: "release_metadata#update_all", path: :metadata, as: :metadata_update
         get :index, to: "beta_releases#index", as: :release_candidates, path: :release_candidates
@@ -111,45 +105,9 @@ Rails.application.routes.draw do
         get :index, to: "store_rollouts#index", path: :rollout, as: :store_rollouts
         get :index, to: "internal_releases#index", as: :internal_builds, path: :internal_builds
 
-        resources :release_platforms, shallow: false, only: [] do
-          resources :release_metadata, only: %i[edit update]
-        end
-
         resources :build_queues, only: [], shallow: false do
           member do
             post :apply
-          end
-        end
-
-        resources :step_runs, only: [], shallow: false do
-          member do
-            post :start
-            patch :retry_ci_workflow
-            patch :sync_store_status
-          end
-
-          resources :deployments, only: [] do
-            member do
-              post :start
-            end
-
-            resources :deployment_runs, only: [], shallow: true do
-              member do
-                patch :submit_for_review
-                patch :start_release
-                patch :prepare_release
-              end
-
-              resource :staged_rollout, only: [] do
-                member do
-                  patch :increase
-                  patch :halt
-                  patch :fully_release
-                  patch :pause
-                  patch :resume
-                end
-              end
-            end
           end
         end
 

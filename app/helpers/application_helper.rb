@@ -78,10 +78,6 @@ module ApplicationHelper
     end
   end
 
-  def step_color(step_kind)
-    (step_kind == "release") ? "amber" : "slate"
-  end
-
   def version_in_progress(version)
     version.to_semverish.to_s(patch_glob: true)
   end
