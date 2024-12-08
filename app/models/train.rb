@@ -94,7 +94,6 @@ class Train < ApplicationRecord
   validate :build_queue_config
   validate :backmerge_config
   validate :tag_release_config
-  validate :valid_train_configuration, on: :activate_context
   validate :working_branch_presence, on: :create
   validate :ci_cd_workflows_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
@@ -321,13 +320,6 @@ class Train < ApplicationRecord
     scheduled_releases.pending&.delete_all
   end
 
-  # TODO [V2]: Remove this method
-  def startable?
-    return false unless app.ready?
-    return true if product_v2?
-    release_platforms.all?(&:startable?)
-  end
-
   def activatable?
     automatic? && startable? && !active?
   end
@@ -337,22 +329,14 @@ class Train < ApplicationRecord
   end
 
   def manually_startable?
-    startable? && !inactive?
+    !inactive?
   end
 
   def upcoming_release_startable?
-    if product_v2?
-      manually_startable? &&
-        ongoing_release.present? &&
-        ongoing_release.production_release_active? &&
-        upcoming_release.blank?
-    else
-      manually_startable? &&
-        release_platforms.any?(&:has_production_deployment?) &&
-        ongoing_release.present? &&
-        (release_platforms.all?(&:has_review_steps?) || ongoing_release.production_release_happened?) &&
-        upcoming_release.blank?
-    end
+    manually_startable? &&
+      ongoing_release.present? &&
+      ongoing_release.production_release_active? &&
+      upcoming_release.blank?
   end
 
   def continuous_backmerge?
@@ -443,30 +427,20 @@ class Train < ApplicationRecord
   end
 
   def hotfixable?
-    return false unless startable?
     return false unless has_production_deployment?
     return false if hotfix_release.present?
     return false if hotfix_from.blank?
     return true if ongoing_release.blank?
 
-    if product_v2?
-      !ongoing_release.production_release_active?
-    else
-      !ongoing_release.production_release_happened?
-    end
+    !ongoing_release.production_release_active?
   end
 
   def devops_report
-    return Queries::DevopsReport.new(self) if product_v2?
-    Charts::DevopsReport.new(self)
+    Queries::DevopsReport.new(self)
   end
 
   def has_production_deployment?
-    if product_v2?
-      release_platforms.any? { |rp| rp.platform_config.production_release? }
-    else
-      release_platforms.any?(&:has_production_deployment?)
-    end
+    release_platforms.any? { |rp| rp.platform_config.production_release? }
   end
 
   def has_restricted_public_channels?
@@ -559,12 +533,6 @@ class Train < ApplicationRecord
 
   def ensure_deletable
     errors.add(:trains, "cannot delete a train if there are releases made from it!") if releases.present?
-  end
-
-  def valid_train_configuration
-    unless release_platforms.all?(&:valid_steps?)
-      errors.add(:train, "there should be one release step for all platforms")
-    end
   end
 
   def valid_schedule

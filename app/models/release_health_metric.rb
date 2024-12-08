@@ -19,7 +19,8 @@
 #  production_release_id      :uuid             indexed
 #
 class ReleaseHealthMetric < ApplicationRecord
-  belongs_to :deployment_run, optional: true
+  self.ignored_columns += ["deployment_run_id"]
+
   belongs_to :production_release, optional: true
   has_many :release_health_events, dependent: :nullify
 
@@ -95,7 +96,7 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def parent
-    deployment_run || production_release
+    production_release
   end
 
   def create_health_event(release_health_rule)
@@ -106,7 +107,7 @@ class ReleaseHealthMetric < ApplicationRecord
     current_status = is_healthy ? ReleaseHealthEvent.health_statuses[:healthy] : ReleaseHealthEvent.health_statuses[:unhealthy]
     return if last_event.present? && last_event.health_status == current_status
 
-    release_health_events.create(deployment_run:, production_release:, release_health_rule:, health_status: current_status, event_timestamp: Time.current)
+    release_health_events.create(production_release:, release_health_rule:, health_status: current_status, event_timestamp: Time.current)
   end
 
   def last_event_for(rule)

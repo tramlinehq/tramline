@@ -6,8 +6,8 @@ class TrainsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate]
   around_action :set_time_zone
-  before_action :set_train, only: %i[edit update destroy activate deactivate steps rules]
-  before_action :set_train_config_tabs, only: %i[edit update steps rules destroy activate deactivate]
+  before_action :set_train, only: %i[edit update destroy activate deactivate rules]
+  before_action :set_train_config_tabs, only: %i[edit update rules destroy activate deactivate]
   before_action :validate_integration_status, only: %i[new create]
   before_action :set_notification_channels, only: %i[new create edit update]
 
@@ -16,10 +16,6 @@ class TrainsController < SignedInApplicationController
   end
 
   def edit
-    @edit_not_allowed = @train.active_runs.exists?
-  end
-
-  def steps
     @edit_not_allowed = @train.active_runs.exists?
   end
 

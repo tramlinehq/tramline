@@ -108,8 +108,6 @@ class Release < ApplicationRecord
   has_many :release_metadata, through: :release_platform_runs
   has_many :all_commits, dependent: :destroy, inverse_of: :release, class_name: "Commit"
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
-  has_many :step_runs, through: :release_platform_runs
-  has_many :deployment_runs, through: :step_runs
   has_many :builds, through: :release_platform_runs
   has_many :build_queues, dependent: :destroy
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
@@ -173,7 +171,7 @@ class Release < ApplicationRecord
   attr_accessor :has_major_bump, :hotfix_platform, :custom_version
   friendly_id :human_slug, use: :slugged
 
-  delegate :versioning_strategy, :patch_version_bump_only, :product_v2?, to: :train
+  delegate :versioning_strategy, :patch_version_bump_only, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, to: :train
   delegate :platform, :organization, to: :app
 
@@ -192,13 +190,7 @@ class Release < ApplicationRecord
     return if hotfix?
     return unless finished?
 
-    reldex_params =
-      if is_v2?
-        Queries::ReldexParameters.call(self)
-      else
-        Computations::Release::ReldexParameters.call(self)
-      end
-
+    reldex_params = Queries::ReldexParameters.call(self)
     train.release_index&.score(**reldex_params)
   end
 
@@ -248,13 +240,6 @@ class Release < ApplicationRecord
   def duration
     return unless finished?
     ActiveSupport::Duration.build(completed_at - scheduled_at)
-  end
-
-  def all_store_step_runs
-    deployment_runs
-      .reached_production
-      .map(&:step_run)
-      .sort_by(&:updated_at)
   end
 
   def unmerged_commits
@@ -381,14 +366,6 @@ class Release < ApplicationRecord
 
   def pull_requests_url(open = false)
     train.vcs_provider&.pull_requests_url(branch_name, open:)
-  end
-
-  def metadata_editable?
-    release_platform_runs.any?(&:metadata_editable?)
-  end
-
-  def release_step_started?
-    release_platform_runs.any?(&:release_step_started?)
   end
 
   class PreReleaseUnfinishedError < StandardError; end

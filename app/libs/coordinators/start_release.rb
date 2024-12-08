@@ -27,8 +27,6 @@ class Coordinators::StartRelease
     raise "Could not kickoff a hotfix because the source tag does not exist" if hotfix_from_new_branch? && !hotfix_tag_exists?
     raise "Could not kickoff a hotfix because the source release branch does not exist" if hotfix_from_previous_branch? && !hotfix_branch_exists?
     raise "Cannot start a train that is not active!" if train.inactive?
-    # TODO [V2]: Remove this method
-    raise "Cannot start a train that has no release step. Please add at least one release step to the train." unless train.startable?
     raise "No more releases can be started until the ongoing release is finished!" if train.ongoing_release.present? && automatic
     raise "No more releases can be started until the ongoing release is finished!" if train.upcoming_release.present? && !hotfix?
     raise "Upcoming releases are not allowed for your train." if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?

@@ -18,10 +18,10 @@ class ReleaseHealthEvent < ApplicationRecord
   include Displayable
 
   self.implicit_order_column = :event_timestamp
+  self.ignored_columns += ["deployment_run_id"]
 
   enum :health_status, {healthy: "healthy", unhealthy: "unhealthy"}
 
-  belongs_to :deployment_run, optional: true
   belongs_to :production_release, optional: true
   belongs_to :release_health_rule
   belongs_to :release_health_metric
@@ -35,7 +35,7 @@ class ReleaseHealthEvent < ApplicationRecord
   private
 
   def parent
-    deployment_run || production_release
+    production_release
   end
 
   def notify_health_rule_triggered

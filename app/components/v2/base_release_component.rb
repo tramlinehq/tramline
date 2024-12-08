@@ -48,9 +48,9 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     @release.slug
   end
 
+  # TODO: [V2] is this needed? if yes, eager load v2 models
   def platform_runs
-    @platform_runs ||=
-      @release.release_platform_runs.includes(step_runs: {deployment_runs: [:staged_rollout]})
+    @platform_runs ||= @release.release_platform_runs
   end
 
   def cross_platform?
@@ -87,32 +87,6 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   def backmerges?
     @release.continuous_backmerge?
-  end
-
-  def step_summary(platform)
-    @step_summary ||= Queries::ReleaseSummary::StepsSummary.from_release(@release).all
-    platform_steps = @step_summary.select { |step| step.platform_raw == platform }
-
-    initial_data = {started_at: nil, ended_at: nil, builds_created_count: 0, duration: "--"}
-    initial_phase_data = {review: initial_data.dup, release: initial_data.dup}
-
-    result = platform_steps.each_with_object(initial_phase_data) do |step, acc|
-      acc[step.phase.to_sym][:started_at] = [step.started_at, acc[step.phase.to_sym][:started_at]].compact.min
-      acc[step.phase.to_sym][:ended_at] = [step.ended_at, acc[step.phase.to_sym][:ended_at]].compact.max
-      acc[step.phase.to_sym][:builds_created_count] += step.builds_created_count || 0
-    end
-
-    [:review, :release].each do |phase|
-      next unless result[phase][:started_at]
-      duration = distance_of_time_in_words(result[phase][:started_at], result[phase][:ended_at] || Time.current)
-      result[phase][:duration] = duration
-    end
-
-    result
-  end
-
-  memoize def release_summary
-    Queries::ReleaseSummary.all(@release.id)
   end
 
   def commit_count
