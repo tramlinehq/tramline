@@ -29,9 +29,10 @@ class Queries::ReleaseBreakdown
   end
 
   def team_stability_commits
-    cache_fetch(:team_stability_commits) do
-      release.stability_commits.count_by_team(release.organization)
-    end
+    # NOTE: should not be cached until explicitly done at the end of the release since this data is changing throughout the release
+    part_cache_key = cache_key(:team_stability_commits)
+    return cache.fetch(part_cache_key) if cache.exist?(part_cache_key)
+    release.stability_commits.count_by_team(release.organization)
   end
 
   def team_release_commits

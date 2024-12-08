@@ -29,7 +29,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   attr_reader :submission
-  delegate :id, :inflight?, :actionable?, :release_platform_run, :external_link, :provider, to: :submission
+  delegate :id, :inflight?, :release_platform_run, :external_link, :provider, to: :submission
   delegate :release, to: :release_platform_run
 
   def show_blocked_message?
@@ -42,6 +42,11 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
     release.blocked_for_production_release?
   end
 
+  def actionable?
+    return false if cascading_rollout_actionable?
+    submission.actionable?
+  end
+
   def inactive? = @inactive
 
   def before_render
@@ -49,16 +54,32 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
     super
   end
 
-  def blocked_release_link
-    if release.ongoing?
-      hotfix_release_app_train_releases_path(release.train.app, release.train)
-    else
-      ongoing_release_app_train_releases_path(release.train.app, release.train)
-    end
-  end
+  memoize def blocked_release_info
+    train = release.train
+    app = train.app
 
-  def blocked_release_link_text
-    release.ongoing? ? "current hotfix release" : "current ongoing release"
+    if release.upcoming?
+      return {
+        message: "You cannot start this submission until the current ongoing release is finished.",
+        info: {label: "Go to the blocking release", link: ongoing_release_app_train_releases_path(app, train)}
+      }
+    end
+
+    if release.ongoing? && train.hotfix_release.present?
+      return {
+        message: "You cannot start this submission until the current hotfix release is finished.",
+        info: {label: "Go to the blocking release", link: hotfix_release_app_train_releases_path(app, train)}
+      }
+    end
+
+    if release.approvals_blocking?
+      return {
+        message: "You cannot start this submission until all the approvals are completed.",
+        info: {label: "Go to approvals", link: release_approval_items_path(release)}
+      }
+    end
+
+    nil
   end
 
   def status
@@ -115,15 +136,31 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
     end
   end
 
-  def action
-    return if blocked?
-    return unless actionable?
+  # rubocop:disable Rails/Delegate
+  memoize def previously_completed_rollout_run
+    release_platform_run.previously_completed_rollout_run
+  end
 
+  memoize def previously_completed_release
+    previously_completed_rollout_run&.release
+  end
+  # rubocop:enable Rails/Delegate
+
+  memoize def cascading_rollout_actionable?
+    submission.created? && submission.finish_rollout_in_next_release? && previously_completed_rollout_run.present?
+  end
+
+  def previously_completed_release_link
+    release_store_rollouts_path(previously_completed_release)
+  end
+
+  def action
     if submission.created?
       message = "You are about to prepare the submission for review.\nAre you sure?"
       {scheme: :default,
        type: :button,
        label: "Prepare for review",
+       disabled: !actionable?,
        options: prepare_store_submission_path(id),
        html_options: html_opts(:patch, message, params: {store_submission: {force: false}})}
     elsif submission.cancellable?
@@ -131,6 +168,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
       {scheme: :danger,
        type: :button,
        label: "Cancel submission",
+       disabled: !actionable?,
        options: cancel_store_submission_path(id),
        html_options: html_opts(:patch, message)}
     end

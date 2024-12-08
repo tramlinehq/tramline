@@ -2,9 +2,8 @@ import {Controller} from "@hotwired/stimulus";
 
 export default class extends Controller {
   static targets = ["select"];
-  static values = {
-    options: Object // The hierarchical data structure
-  };
+  static values = {options: Object}; // The hierarchical data structure
+  static outlets = ["input-select"]
 
   connect() {
     this.populateDropdown(this.selectTargets[0], this.optionsValue[this.selectTargets[0].dataset.level], true);
@@ -40,14 +39,29 @@ export default class extends Controller {
     const displayKey = target.dataset.levelDisplayKey
     let selectedValue;
     if (selected) selectedValue = target.dataset.selectedValue
-    target.innerHTML = options.map(option => this.__createOption(option, valueKey, displayKey, selectedValue)).join("");
+
+    this.__refreshInputSelectOutlet(target.id, true)
+    target.innerHTML = options.map((option, i) => this.__createOption(option, valueKey, displayKey, selectedValue, i)).join("");
     target.disabled = options.length === 0; // Disable if no options available
+    this.__refreshInputSelectOutlet(target.id, false)
   }
 
-  __createOption(option, valueKey, displayKey, selectedValue) {
+  __createOption(option, valueKey, displayKey, selectedValue, optionIndex) {
     const optionValue = option[valueKey];
     const optionName = option[displayKey];
-    return `<option value=${JSON.stringify(optionValue)} ${(selectedValue && selectedValue !== "" && selectedValue === optionValue) ? "selected" : ""}>${optionName}</option>`;
+    let selected = ""
+
+    // if there's no selected value, pick the first one
+    if ((!selectedValue || selectedValue === "") && optionIndex === 0) {
+      selected = "selected"
+    }
+
+    // assign selected option
+    if (selectedValue && selectedValue !== "" && selectedValue === optionValue) {
+      selected = "selected"
+    }
+
+    return `<option value=${JSON.stringify(optionValue)} ${selected}>${optionName}</option>`;
   }
 
   __safeJSONParse(str) {
@@ -60,5 +74,20 @@ export default class extends Controller {
     }
 
     return parsedJSON;
+  }
+
+  // when the outlet gets force-updated
+  __refreshInputSelectOutlet(selectId, clearSelected) {
+    if (this.hasInputSelectOutlet && this.inputSelectOutlets.length > 0) {
+      let selectedOutlet = this.inputSelectOutlets.find(outlet => outlet.element.getAttribute("id") === selectId);
+      if (selectedOutlet) {
+        selectedOutlet.sync(clearSelected);
+      }
+    }
+  }
+
+  // when the outlet first gets connected
+  inputSelectOutletConnected(outlet, _) {
+    outlet.sync(false)
   }
 }

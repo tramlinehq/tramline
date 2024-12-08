@@ -89,6 +89,10 @@ def nuke_train(train)
       prun.internal_releases&.delete_all
       prun.beta_releases&.delete_all
     end
+    run.approval_items.each do |approval_item|
+      approval_item.approval_assignees&.delete_all
+    end
+    run.approval_items&.delete_all
     run.pull_requests&.delete_all
     run.release_platform_runs&.delete_all
     run.all_commits.each do |commit|

@@ -74,6 +74,9 @@ en:
       success: "The submission has been created successfully."
       failure: "Failed to create submission — %{errors}"
       invalid_build: "The build is not valid to start a submission."
+    fully_release_previous_rollout:
+      success: "The previous rollout was fully released."
+      failure: "Failed to release the previous rollout — %{errors}"
   store_rollouts:
     switcher:
       ios:
@@ -110,6 +113,10 @@ en:
     retry:
       success: "Workflow run was successfully retried."
       error: "Failed to retry the CI workflow! Contact support if the issue persists."
+      failure: "Failed to re-trigger the workflow — %{errors}"
+    fetch_status:
+      success: "Workflow run status is being fetched."
+      failure: "Failed to fetch the workflow status — %{errors}"
   authentication:
     sso:
       sessions:
@@ -119,6 +126,15 @@ en:
           failure: "Failed to login via Single Sign-On! Please contact support if the issue persists."
         saml_redeem:
           failure: "Failed to accept the response from SSO provider."
+  approval_items:
+    not_found: "Approval item not found."
+    destroy:
+      conflict: "Item was updated elsewhere, it cannot be deleted."
+      failure: "Failed to destroy the approval item. Please try again."
+    update:
+      failure: "Could not update approval item status. Please try again."
+    create:
+      success: "Approval item was successfully created."
 
   activerecord:
     models:
@@ -168,6 +184,7 @@ en:
           internal_release_finished: "Internal release finished"
           internal_release_failed: "Internal release failed"
           beta_submission_finished: "Beta submission finished"
+          internal_submission_finished: "Internal submission finished"
           submission_failed: "Submission failed"
           production_submission_started: "Production submission started"
           production_submission_in_review: "Production submission in review"
@@ -456,6 +473,7 @@ en:
           attributes:
             release_notes:
               no_special_characters: "only allows letters, numbers, emojis, and some special characters"
+              too_long: "is too long for %{platform} (maximum is %{max_length} characters)"
             promo_text:
               no_special_characters: "only allows letters, numbers, emojis, and some special characters"
         integration:
@@ -534,7 +552,6 @@ en:
       accepted: "Invitation was accepted. Please sign in to continue."
       already_accepted: "Invitation was already accepted!"
       failed: "Failed to accept your invitation. Please contact support!"
-
     invite_mailer:
       existing_user:
         subject: "%{sender} invited you to join the %{org} team on Tramline"
@@ -552,9 +569,30 @@ en:
         accept: "Accept invitation"
         ignore: "If you don't want to accept the invitation, please ignore this email. Your account won't be created until you access the link above and set your password."
 
+  approval_assignee_mailer:
+    notify:
+      subject: "Action Required: New approval item assigned on Tramline"
+
   mailer:
     generic:
       team_name: "The Tramline team"
+
+  views:
+    rollout:
+      android:
+        created: "Start the rollout to initiate your staged rollout sequence."
+        started: "Increase the rollout to move to the next stage of your rollout sequence."
+        paused: "Resume rollout to continue your rollout sequence."
+        halted: "Resume rollout to continue your rollout sequence."
+        completed: "The rollout has been completed."
+        fully_released: "The rollout has been fully released to all users."
+      ios:
+        created: "Start the rollout to kickoff the phased release."
+        started: "App Store will automatically move the phased release to the next stage every 24 hours."
+        paused: "Resume rollout to continue your phased release."
+        halted: "Resume rollout to continue your phased release."
+        completed: "The rollout has been completed."
+        fully_released: "The rollout has been fully released to all users."
 
   errors:
     format: "%{attribute} → %{message}"

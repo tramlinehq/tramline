@@ -3,6 +3,7 @@ FactoryBot.define do
     release_platform_run { association :release_platform_run }
     build { association :build, :rc, release_platform_run: }
     status { "inflight" }
+    config { release_platform_run.conf.production_release.as_json }
 
     trait :active do
       status { "active" }

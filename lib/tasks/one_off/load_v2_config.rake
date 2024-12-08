@@ -18,9 +18,7 @@ namespace :one_off do
 end
 
 def submission_type(deployment)
-  return unless deployment&.integration
-
-  case deployment.integration.providable_type
+  case deployment.integration&.providable_type
   when "GooglePlayStoreIntegration"
     "PlayStoreSubmission"
   when "AppStoreIntegration"

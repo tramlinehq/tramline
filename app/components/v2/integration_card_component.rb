@@ -18,8 +18,16 @@ class V2::IntegrationCardComponent < V2::BaseComponent
   alias_method :provider, :providable
   delegate :creatable?, :connectable?, to: :provider
 
+  def repeated_integration
+    Integration.existing_integration(@app, providable_type)
+  end
+
   def connect_path
     connect_app_integrations_path(@app, integration)
+  end
+
+  def reuse_existing_integration_path(existing_integration)
+    reuse_app_integration_path(@app, existing_integration)
   end
 
   def logo
@@ -38,6 +46,11 @@ class V2::IntegrationCardComponent < V2::BaseComponent
   def connectable_form_partial
     render(partial: "integrations/connectable",
       locals: {app: @app, integration: @integration, category: @category, url: connect_path, type: providable_type})
+  end
+
+  def reusable_integration_form_partial(existing_integration)
+    render(partial: "integrations/reusable",
+      locals: {app: @app, integration: @integration, category: @category, url: reuse_existing_integration_path(existing_integration), type: providable_type, provider: provider})
   end
 
   def disconnectable?

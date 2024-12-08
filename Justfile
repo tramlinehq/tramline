@@ -10,6 +10,9 @@ spec:
 lint:
   bin/rubocop --autocorrect
 
+pre-setup:
+  docker compose run pre-setup
+
 rails +command="console":
   docker exec -it site-web-1 bundle exec rails {{ command }}
 

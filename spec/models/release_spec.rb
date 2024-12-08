@@ -548,10 +548,10 @@ describe Release do
   end
 
   describe "#failure_anywhere?" do
-    it "returns true if post release has failed" do
+    it "returns false if post release has failed" do
       release = create(:release, :post_release_failed)
 
-      expect(release.failure_anywhere?).to be(true)
+      expect(release.failure_anywhere?).to be(false)
     end
 
     it "returns false if no failure" do
@@ -604,6 +604,163 @@ describe Release do
         _ios_step_run = create(:step_run, :ci_workflow_failed, release_platform_run: ios_release_platform_run, step: ios_step)
 
         expect(release.failure_anywhere?).to be(true)
+      end
+    end
+
+    context "when failure in a v2 release platform run" do
+      let(:release) { create(:release, :on_track, :with_no_platform_runs, is_v2: true) }
+      let(:release_platform_run) { create(:release_platform_run, :on_track, release:) }
+
+      it "returns false if the latest production release has failed" do
+        production_release = create(:production_release, :inflight, release_platform_run:)
+        _submission = create(:play_store_submission, :failed, release_platform_run:, parent_release: production_release)
+
+        expect(release.failure_anywhere?).to be(false)
+      end
+
+      it "returns false if a latest production release exists" do
+        _production_release = create(:production_release, :inflight, release_platform_run:)
+
+        expect(release.failure_anywhere?).to be(false)
+      end
+
+      it "returns true if the latest beta release has failed" do
+        _beta_release = create(:beta_release, :failed, release_platform_run:)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+
+      it "returns true if the latest internal release has failed" do
+        _internal_release = create(:internal_release, :failed, release_platform_run:)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+
+      it "returns false if the latest beta release has not failed, but latest internal release has failed" do
+        _internal_release = create(:internal_release, :failed, release_platform_run:)
+        beta_release = create(:beta_release, :finished, release_platform_run:)
+        _workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release: beta_release)
+        _submission = create(:play_store_submission, :prepared, release_platform_run:, parent_release: beta_release)
+
+        expect(release.failure_anywhere?).to be(false)
+      end
+
+      it "returns true if the latest internal release has failed after a beta release is a success" do
+        _beta_release = create(:beta_release, :finished, release_platform_run:)
+        _internal_release = create(:internal_release, :failed, release_platform_run:)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+
+      it "returns true if either of the release platform run have failures" do
+        app = create(:app, :cross_platform)
+        train = create(:train, :with_no_platforms, app:)
+        ios_release_platform = create(:release_platform, train:, platform: "ios")
+        android_release_platform = create(:release_platform, train:, platform: "android")
+        release = create(:release, :on_track, :with_no_platform_runs, train:, is_v2: true)
+        ios_release_platform_run = create(:release_platform_run, :on_track, release:, release_platform: ios_release_platform)
+        android_release_platform_run = create(:release_platform_run, :on_track, release:, release_platform: android_release_platform)
+        _beta_release = create(:beta_release, :failed, release_platform_run: android_release_platform_run)
+        ios_beta_release = create(:beta_release, :finished, release_platform_run: ios_release_platform_run)
+        _workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release: ios_beta_release)
+        _submission = create(:app_store_submission, :prepared, release_platform_run:, parent_release: ios_beta_release)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+    end
+  end
+
+  describe "#override_approvals" do
+    it "updates the approval_overridden_by field only if the release is active" do
+      who = create(:user, :with_email_authentication, :as_developer)
+      release = create(:release, :stopped, release_pilot: who)
+
+      release.override_approvals(who)
+
+      expect(release.approval_overridden_by).to be_nil
+    end
+
+    it "updates the approval_overridden_by only if the user is the release pilot" do
+      who = create(:user, :with_email_authentication, :as_developer)
+      release = create(:release, release_pilot: who)
+
+      release.override_approvals(who)
+
+      expect(release.approval_overridden_by).to eq(who)
+    end
+
+    it "does nothing if approvals are already overridden" do
+      who = create(:user, :with_email_authentication, :as_developer)
+      new_who = create(:user, :with_email_authentication, :as_developer)
+      release = create(:release, release_pilot: who)
+
+      release.override_approvals(who)
+      release.override_approvals(new_who)
+
+      expect(release.approval_overridden_by).to eq(who)
+    end
+  end
+
+  describe "#blocked_for_production_release?" do
+    let(:organization) { create(:organization, :with_owner_membership) }
+    let(:app) { create(:app, :android, organization:) }
+
+    it "is true when release is upcoming" do
+      train = create(:train)
+      _ongoing = create(:release, :on_track, train:)
+      upcoming = create(:release, :on_track, train:)
+
+      expect(upcoming.blocked_for_production_release?).to be(true)
+    end
+
+    it "is true when it is an hotfix release is simultaneously ongoing" do
+      train = create(:train)
+      finished_release = create(:release, :finished, train:, completed_at: 2.days.ago, tag_name: "foo")
+      _hotfix_release = create(:release, :on_track, :hotfix, train:, hotfixed_from: finished_release)
+      ongoing_release = create(:release, :on_track, train:)
+
+      expect(ongoing_release.blocked_for_production_release?).to be(true)
+    end
+
+    context "when approvals are enabled" do
+      it "is true when approvals are blocking" do
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
+        release = create(:release, release_pilot: pilot, train:)
+        _approval_items = create_list(:approval_item, 5, release:, author: pilot)
+        release.reload
+
+        expect(release.blocked_for_production_release?).to be(true)
+      end
+
+      it "is false when approvals are non-blocking" do
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
+        release = create(:release, release_pilot: pilot, train:)
+        _approval_items = create_list(:approval_item, 5, :approved, release:, author: pilot)
+        release.reload
+
+        expect(release.blocked_for_production_release?).to be(false)
+      end
+
+      it "is true when approvals are not overridden" do
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
+        release = create(:release, release_pilot: pilot, train:, approval_overridden_by: nil)
+        _approval_items = create_list(:approval_item, 5, release:, author: pilot)
+
+        expect(release.blocked_for_production_release?).to be(true)
+      end
+
+      it "is false when approvals are overridden (regardless of actual approvals)" do
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
+        release = create(:release, release_pilot: pilot, train:, approval_overridden_by: pilot)
+
+        create_list(:approval_item, 5, release:, author: pilot)
+        create_list(:approval_item, 5, :approved, release:, author: pilot)
+
+        expect(release.blocked_for_production_release?).to be(false)
       end
     end
   end

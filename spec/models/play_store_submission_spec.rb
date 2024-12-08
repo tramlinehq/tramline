@@ -74,6 +74,7 @@ describe PlayStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
       allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
     end
 
@@ -87,6 +88,117 @@ describe PlayStoreSubmission do
       submission.retry!
       expect(submission.finished_manually?).to be(false)
       expect(submission.failed_with_action_required?).to be(true)
+    end
+  end
+
+  describe "#fully_release_previous_production_rollout!" do
+    let(:train) { create(:train) }
+    let(:release_platform) { create(:release_platform, train:, platform: "android") }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow(providable_dbl).to receive(:find_build_in_track).and_return({status: "inProgress"})
+      allow_any_instance_of(PlayStoreRollout).to receive(:provider).and_return(providable_dbl)
+    end
+
+    it "skips if the current rollout exists" do
+      prev_rollout = create_production_rollout_tree(train, release_platform).dig(:store_rollout)
+      create_production_rollout_tree(
+        train,
+        release_platform,
+        release_status: :on_track,
+        rollout_status: :created,
+        skip_rollout: false
+      ) => {store_submission:}
+
+      store_submission.fully_release_previous_production_rollout!
+
+      expect(prev_rollout.reload.status).to eq("completed")
+    end
+
+    it "skips if the config is not set to finish previous rollout" do
+      prev_rollout = create_production_rollout_tree(train, release_platform).dig(:store_rollout)
+      create_production_rollout_tree(
+        train,
+        release_platform,
+        release_status: :on_track,
+        rollout_status: :started,
+        skip_rollout: true
+      ) => {store_submission:}
+      store_submission.update!(config: store_submission.config.merge(finish_rollout_in_next_release: false))
+
+      store_submission.fully_release_previous_production_rollout!
+
+      expect(prev_rollout.reload.status).to eq("completed")
+    end
+
+    it "skips if the submission is not in a created state" do
+      prev_rollout = create_production_rollout_tree(train, release_platform).dig(:store_rollout)
+      create_production_rollout_tree(
+        train,
+        release_platform,
+        release_status: :on_track,
+        rollout_status: :started,
+        submission_status: :preprocessing,
+        skip_rollout: true
+      ) => {store_submission:}
+
+      store_submission.fully_release_previous_production_rollout!
+
+      expect(prev_rollout.reload.status).to eq("completed")
+    end
+
+    it "skips if the previous rollout is not in progress on the store" do
+      prev_rollout = create_production_rollout_tree(train, release_platform).dig(:store_rollout)
+      create_production_rollout_tree(
+        train,
+        release_platform,
+        release_status: :on_track,
+        rollout_status: :started,
+        skip_rollout: true
+      ) => {store_submission:}
+      allow(providable_dbl).to receive_messages(build_in_progress?: false, find_build_in_track: {status: "completed"})
+
+      store_submission.fully_release_previous_production_rollout!
+
+      expect(prev_rollout.reload.status).not_to eq("fully_released")
+    end
+
+    it "completes the previous rollout" do
+      prev_rollout = create_production_rollout_tree(train, release_platform).dig(:store_rollout)
+      create_production_rollout_tree(
+        train,
+        release_platform,
+        release_status: :on_track,
+        rollout_status: :started,
+        skip_rollout: true
+      ) => {store_submission:}
+      allow(providable_dbl).to receive_messages(build_in_progress?: true, rollout_release: GitHub::Result.new)
+
+      store_submission.fully_release_previous_production_rollout!
+
+      expect(prev_rollout.reload.status).to eq("fully_released")
+    end
+  end
+
+  describe "#attach_build" do
+    let(:build) { create(:build) }
+    let(:production_release) { create(:production_release, :inflight, build:) }
+    let(:submission) { create(:play_store_submission, :created, build:, parent_release: production_release) }
+
+    it "attaches the new build to the submission" do
+      new_build = create(:build)
+      submission.attach_build(new_build)
+      expect(submission.reload.build).to eq(new_build)
+    end
+
+    (described_class::STATES.values - described_class::CHANGEABLE_STATES).each do |state|
+      it "does not change the build if the submission is in #{state} state" do
+        submission.update!(status: state)
+        new_build = create(:build)
+        submission.attach_build(new_build)
+        expect(submission.reload.build).to eq(build)
+      end
     end
   end
 end

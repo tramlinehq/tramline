@@ -71,6 +71,10 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:deploy_action_enabled, self)
   end
 
+  def tester_notes_in_beta_releases?
+    Flipper.enabled?(:tester_notes_in_beta_releases, self)
+  end
+
   def owner
     users.includes(:memberships).where(memberships: {role: "owner"}).sole
   end

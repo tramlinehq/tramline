@@ -65,4 +65,12 @@ class V2::ScheduledTrainComponent < V2::BaseComponent
     return unless future_release
     future_release.scheduled_at + train.repeat_duration
   end
+
+  def next_version
+    (ongoing_release || train).next_version
+  end
+
+  def next_next_version
+    (ongoing_release || train).next_to_next_version
+  end
 end

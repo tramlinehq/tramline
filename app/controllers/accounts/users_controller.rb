@@ -1,5 +1,6 @@
 class Accounts::UsersController < SignedInApplicationController
-  before_action :set_user, only: %i[edit update]
+  before_action :set_user, only: %i[edit update update_user_role]
+  before_action :set_organization, only: %i[update_user_role]
 
   def edit
   end
@@ -10,6 +11,38 @@ class Accounts::UsersController < SignedInApplicationController
     else
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def update_user_role
+    email = params[:email]
+    member = Accounts::User.find_via_email(email)
+
+    if member.nil?
+      redirect_to accounts_organization_teams_path(@current_organization), alert: "User #{email} not found"
+      return
+    end
+
+    if @user.id == member.id
+      redirect_to accounts_organization_teams_path(@current_organization), alert: "User #{email} cannot change their own role."
+      return
+    end
+
+    current_organization_id = @current_organization.id
+
+    organization = Accounts::Organization.find(current_organization_id)
+    membership = member.memberships.find_by(organization: organization)
+
+    if membership.nil?
+      redirect_to accounts_organization_teams_path(@current_organization), alert: "User #{email} memberships not found"
+      return
+    end
+
+    if membership.update(role: params[:role])
+      flash[:notice] = "#{email} role was successfully updated to #{params[:role]}"
+    else
+      flash[:alert] = "Updating #{email} role failed"
+    end
+    redirect_to accounts_organization_teams_path(@current_organization)
   end
 
   private
@@ -32,5 +65,9 @@ class Accounts::UsersController < SignedInApplicationController
     params
       .require(:accounts_user)
       .permit(memberships_attributes: [:id, :team_id])
+  end
+
+  def set_organization
+    @current_organization = current_organization
   end
 end

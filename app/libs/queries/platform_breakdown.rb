@@ -59,7 +59,7 @@ class Queries::PlatformBreakdown
     rc_builds = run.rc_builds
 
     stability_s_ts = internal_releases.vmin_by(:created_at) || beta_releases.vmin_by(:created_at)
-    stability_e_ts = prod_releases.vmin_by(:created_at) || (run.active? ? Time.current : rc_builds.vmax_by(:updated_at))
+    stability_e_ts = prod_releases.vmin_by(:prepared_at) || (run.active? ? Time.current : rc_builds.vmax_by(:updated_at))
 
     prod_submission_s_ts = prod_releases.vmin_by(:created_at)
     prod_submission_e_ts = rollouts.vmin_by(:created_at)

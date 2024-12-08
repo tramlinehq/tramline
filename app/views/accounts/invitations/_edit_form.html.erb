@@ -1,0 +1,24 @@
+<%= render V2::FormComponent.new(email:,
+                                 member_role:,
+                                 url: update_user_role_accounts_user_path(),
+                                 method: :patch) do |f| %>
+  <% f.with_section(heading: "Basic") do |section| %>
+    <% section.with_description do %>
+      <div>Change the user role.</div>
+    <% end %>
+
+    <%= section.F.hidden_field :email, value: email %>
+
+    <div>
+      <%= section.F.labeled_email_field :email, "Email", value: email, disabled: true %>
+    </div>
+
+    <div>
+      <%= section.F.labeled_select :role, "Role",
+        options_for_select(available_roles_for_member(member_role), member_role) %>
+    </div>
+  <% end %>
+  <% f.with_action do %>
+    <% f.F.authz_submit "Save", "v2/archive.svg", size: :xs %>
+  <% end %>
+<% end %>

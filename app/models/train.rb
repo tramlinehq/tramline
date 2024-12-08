@@ -3,6 +3,7 @@
 # Table name: trains
 #
 #  id                                 :uuid             not null, primary key
+#  approvals_enabled                  :boolean          default(FALSE), not null
 #  backmerge_strategy                 :string           default("on_finalize"), not null
 #  branching_strategy                 :string           not null
 #  build_queue_enabled                :boolean          default(FALSE)
@@ -56,6 +57,7 @@ class Train < ApplicationRecord
   has_many :deployment_runs, through: :releases
   has_many :external_releases, through: :deployment_runs
   has_many :release_platforms, -> { sequential }, dependent: :destroy, inverse_of: :train
+  has_many :release_platform_runs, -> { sequential }, through: :releases
   has_many :integrations, through: :app
   has_many :steps, through: :release_platforms
   has_many :deployments, through: :steps
@@ -148,6 +150,10 @@ class Train < ApplicationRecord
 
   def deploy_action_enabled?
     Flipper.enabled?(:deploy_action_enabled, self)
+  end
+
+  def temporarily_allow_workflow_errors?
+    Flipper.enabled?(:temporarily_allow_workflow_errors, self)
   end
 
   def workflows
@@ -315,6 +321,7 @@ class Train < ApplicationRecord
     scheduled_releases.pending&.delete_all
   end
 
+  # TODO [V2]: Remove this method
   def startable?
     return false unless app.ready?
     return true if product_v2?
@@ -381,7 +388,7 @@ class Train < ApplicationRecord
   end
 
   def backmerge_disabled?
-    vcs_provider&.integration&.bitbucket_integration? || !almost_trunk?
+    !almost_trunk?
   end
 
   def create_vcs_release!(branch_name, tag_name, release_diff = nil)
@@ -570,7 +577,6 @@ class Train < ApplicationRecord
 
   def backmerge_config
     errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && continuous_backmerge?
-    errors.add(:backmerge_strategy, :disabled_for_bitbucket) if vcs_provider&.integration&.bitbucket_integration? && continuous_backmerge?
   end
 
   def tag_release_config

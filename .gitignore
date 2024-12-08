@@ -12,10 +12,6 @@
 /bundle
 bundle/
 
-# Ignore all environment files (except templates).
-/.env*
-!/.env*.erb
-
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
@@ -39,6 +35,7 @@ bundle/
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 /config/credentials/staging.key
+.env.development
 
 # Ignore IntelliJ things
 .idea

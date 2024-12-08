@@ -31,7 +31,8 @@ class SignedInApplicationController < ApplicationController
     :logout_path,
     :ci_cd_provider_logo,
     :vcs_provider_logo,
-    :teams_supported?
+    :teams_supported?,
+    :current_user_role
 
   rescue_from NotAuthorizedError, with: :user_not_authorized
 
@@ -100,6 +101,16 @@ class SignedInApplicationController < ApplicationController
   def set_sentry_context
     return unless current_user
     Sentry.set_user(id: current_user.id, username: current_user.full_name, email: current_user.email)
+    Sentry.configure_scope do |scope|
+      scope.set_context(
+        "Domain",
+        {
+          organization_slug: current_organization&.slug,
+          app_slug: @app&.slug,
+          release_slug: @release&.slug
+        }
+      )
+    end
   end
 
   def set_currents
@@ -158,6 +169,10 @@ class SignedInApplicationController < ApplicationController
     @teams_supported ||= current_organization&.teams_supported?
   end
 
+  def current_user_role
+    current_user.role_for(current_organization)
+  end
+
   def default_timezones
     ActiveSupport::TimeZone.all.select { |tz| tz.match?(DEFAULT_TIMEZONE_LIST_REGEX) }
   end
@@ -176,5 +191,9 @@ class SignedInApplicationController < ApplicationController
 
   def v2?
     @train&.product_v2?
+  end
+
+  def stream_flash
+    turbo_stream.update("flash_stream", V2::FlashComponent.new(flash))
   end
 end

@@ -228,7 +228,10 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def failure?
-    step_runs.last&.failure?
+    return step_runs.last&.failure? unless release.is_v2?
+    return false if latest_production_release.present?
+
+    pre_prod_releases.reorder(created_at: :desc).first&.failure?
   end
 
   # rubocop:disable Rails/SkipsModelValidations
@@ -315,12 +318,13 @@ class ReleasePlatformRun < ApplicationRecord
     on_track? && !started_store_release?
   end
 
-  def metadata_editable_v2?
-    return true if release.temporary_unblock_metadata_edits?
+  def production_release_in_pre_review?
     return unless active?
-    return false if active_production_release.present? && inflight_production_release.blank?
+    return if active_production_release.present? && inflight_production_release.blank?
     inflight_production_release.blank? || inflight_production_release.store_submission.pre_review?
   end
+
+  alias_method :metadata_editable_v2?, :production_release_in_pre_review?
 
   # FIXME: move to release and change it for proper movement UI
   def overall_movement_status
@@ -519,6 +523,21 @@ class ReleasePlatformRun < ApplicationRecord
 
   def unblock_play_store_submissions!
     update!(play_store_blocked: false)
+  end
+
+  def previously_completed_rollout_run
+    run = train
+      .release_platform_runs
+      .includes(finished_production_release: {store_submission: :store_rollout})
+      .where.not(id: id)
+      .where(release_platform_id: release_platform_id)
+      .where(finished_production_release: {store_submission: {store_rollouts: {status: %w[completed fully_released]}}})
+      .reorder(completed_at: :desc, scheduled_at: :desc)
+      .first
+
+    return unless run
+    previous = run.finished_production_release.store_rollout
+    run if previous.completed? && !previous.hundred_percent?
   end
 
   def conf = Config::ReleasePlatform.from_json(config)

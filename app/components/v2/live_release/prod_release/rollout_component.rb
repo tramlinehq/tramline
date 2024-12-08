@@ -1,4 +1,7 @@
 class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
+  include Memery
+  CASCADING_ROLLOUTS_NOTICE = "Since cascading rollouts are enabled, this release will not fully rollout to 100% until rollout for the next release starts."
+
   def initialize(store_rollout, title: "Rollout Status")
     @store_rollout = store_rollout
     @title = title
@@ -27,7 +30,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
     :latest_events,
     :external_link,
     :automatic_rollout?, :id, to: :store_rollout
-  delegate :release, to: :release_platform_run
+  delegate :release, :platform, to: :release_platform_run
 
   def decorated_status
     status_picker(STATUS, status)
@@ -43,6 +46,10 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
 
   def show_blocked_message?
     release_platform_run.play_store_blocked? && !store_submission.failed_with_action_required?
+  end
+
+  def cascading_rollout_notice?
+    store_submission.finish_rollout_in_next_release? && !store_rollout.created? && !store_rollout.fully_released?
   end
 
   def events
@@ -61,22 +68,9 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
   end
 
   def action_help
-    case store_rollout.status.to_sym
-    when :created
-      "Start the rollout to initiate your staged rollout sequence."
-    when :started
-      "Increase the rollout to move to the next stage of your rollout sequence."
-    when :paused
-      "Resume rollout to continue your rollout sequence."
-    when :halted
-      "Resume rollout to continue your rollout sequence."
-    when :completed
-      "The rollout has been completed."
-    when :fully_released
-      "The rollout has been fully released to all users."
-    else
-      raise "Invalid status: #{store_rollout.status}"
-    end
+    I18n.t("views.rollout.#{platform}.#{store_rollout.status.to_sym}")
+  rescue I18n::MissingTranslationData
+    ""
   end
 
   def stages

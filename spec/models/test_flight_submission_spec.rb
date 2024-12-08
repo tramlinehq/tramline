@@ -81,6 +81,8 @@ describe TestFlightSubmission do
       before do
         allow(provider_dbl).to receive(:update_release_notes)
         allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { build_info })
+        allow(provider_dbl).to receive(:public_icon_img)
+        allow(provider_dbl).to receive(:project_link)
         allow(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to receive(:perform_later)
       end
 
@@ -143,6 +145,8 @@ describe TestFlightSubmission do
 
     before do
       allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { in_progress_build_info })
+      allow(provider_dbl).to receive(:public_icon_img)
+      allow(provider_dbl).to receive(:project_link)
     end
 
     it "raises error when build is not in terminal state" do

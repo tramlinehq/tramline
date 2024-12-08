@@ -3,7 +3,7 @@ x-app: &app
     dockerfile: ./dev.Dockerfile
     context: .
     args:
-      RUBY_VERSION: '3.3.5'
+      RUBY_VERSION: '3.3.6'
       PG_MAJOR: '14'
   image: tramline-site-dev:1.0.0
   environment: &env
@@ -38,6 +38,18 @@ x-backend: &backend
       condition: service_healthy
 
 services:
+  pre-setup:
+    <<: *app
+    volumes:
+      - .:/rails:cached
+      - bundle:/usr/local/bundle
+      - rails_cache:/app/tmp/cache
+    command: [ "/bin/bash", "/rails/bin/setup.creds", "-e", "dev" ]
+    stdin_open: true
+    tty: true
+    profiles:
+      - pre-setup
+
   setup:
     <<: *backend
     command: [ "/bin/bash", "/rails/bin/setup.docker.dev" ]

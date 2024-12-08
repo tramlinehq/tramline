@@ -52,7 +52,11 @@ Rails.application.routes.draw do
       resources :invitations, only: [:create]
     end
 
-    resource :user, only: [:edit, :update]
+    resource :user, only: [:edit, :update] do
+      member do
+        patch :update_user_role
+      end
+    end
   end
 
   resources :apps do
@@ -89,7 +93,10 @@ Rails.application.routes.draw do
           get :regression_testing
           get :soak
           get :wrap_up_automations
+          patch :override_approvals
         end
+
+        resources :approval_items, only: %i[index create update destroy], shallow: false
 
         resources :commits, only: [], shallow: false do
           member do
@@ -162,6 +169,9 @@ Rails.application.routes.draw do
     end
 
     resources :integrations, only: %i[index create destroy] do
+      member do
+        post :reuse
+      end
       collection do
         get :connect, to: "integrations#connect", as: :connect
 
@@ -246,6 +256,7 @@ Rails.application.routes.draw do
       patch :prepare
       patch :cancel
       patch :remove_from_review
+      patch :fully_release_previous_rollout
     end
   end
 
@@ -258,6 +269,7 @@ Rails.application.routes.draw do
     member do
       patch :retry
       patch :trigger
+      patch :fetch_status
     end
   end
 

@@ -309,7 +309,7 @@ GEM
     invisible_captcha (2.3.0)
       rails (>= 5.2)
     io-console (0.7.2)
-    irb (1.14.0)
+    irb (1.14.1)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     iso8601 (0.13.0)
@@ -362,7 +362,7 @@ GEM
       activesupport (>= 4)
       railties (>= 4)
       request_store (~> 1.0)
-    loofah (2.22.0)
+    loofah (2.23.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
     mail (2.8.1)
@@ -532,7 +532,7 @@ GEM
       netrc (~> 0.8)
     retriable (3.1.2)
     retryable (3.0.5)
-    rexml (3.3.7)
+    rexml (3.3.9)
     rgeo (2.4.0)
     rgeo-geojson (2.1.1)
       rgeo (>= 1.0.0)
@@ -675,9 +675,8 @@ GEM
     thor (1.2.2)
     timeout (0.4.1)
     trailblazer-option (0.1.2)
-    turbo-rails (2.0.6)
+    turbo-rails (2.0.11)
       actionpack (>= 6.0.0)
-      activejob (>= 6.0.0)
       railties (>= 6.0.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
@@ -711,7 +710,7 @@ GEM
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
     zache (0.13.2)
-    zeitwerk (2.6.18)
+    zeitwerk (2.7.1)
 
 PLATFORMS
   aarch64-linux
@@ -835,7 +834,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 3.3.5p100
+   ruby 3.3.6p108
 
 BUNDLED WITH
    2.5.16

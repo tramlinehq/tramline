@@ -63,9 +63,11 @@ def convert_review_step!(release_platform_run)
   review_step_run = review_runs.shift
   previous = nil
   idx = 0
+  size = review_runs.size
 
   while review_step_run.present?
-    pre_prod_release = create_pre_prod_release!(release_platform_run, review_step_run, previous, idx, "internal")
+    is_latest = idx == size - 1
+    pre_prod_release = create_pre_prod_release!(release_platform_run, review_step_run, previous, idx, is_latest, "internal")
     previous = pre_prod_release
     review_step_run = review_runs.shift
     idx += 1
@@ -80,15 +82,17 @@ def convert_release_step!(prun)
   previous_pre_prod_release = nil
   previous_production_release = nil
   idx = 0
+  size = release_step_runs.size
   production_release_config = prun.conf.production_release.as_json
 
   while release_step_run.present?
-    pre_prod_release = create_pre_prod_release!(prun, release_step_run, previous_pre_prod_release, idx, "release_candidate")
+    is_latest = idx == size - 1
+    pre_prod_release = create_pre_prod_release!(prun, release_step_run, previous_pre_prod_release, idx, is_latest, "release_candidate")
     release_step_run.deployment_runs.filter(&:production_channel?).each do |drun|
       production_release = prun.production_releases.create!(
         config: production_release_config,
         build: pre_prod_release.build,
-        status: compute_production_release_status(release_step_run, idx),
+        status: compute_production_release_status(release_step_run, is_latest),
         previous: previous_production_release,
         created_at: release_step_run.created_at,
         updated_at: release_step_run.updated_at
@@ -168,9 +172,9 @@ def convert_release_step!(prun)
   end
 end
 
-def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind)
+def create_pre_prod_release!(release_platform_run, step_run, previous, idx, is_latest, kind)
   commit = step_run.commit
-  status = compute_pre_prod_release_status(step_run, idx)
+  status = compute_pre_prod_release_status(step_run, is_latest)
   tester_notes = step_run.build_notes
   pre_prod_release_attrs = {
     commit:,
@@ -229,7 +233,7 @@ def create_pre_prod_release!(release_platform_run, step_run, previous, idx, kind
   step_run.build_artifact&.update!(build_id: build.id)
   step_run.external_build&.update!(build_id: build.id)
 
-  step_run.deployment_runs.reject(&:production_channel?).each_with_index do |deployment_run, idx|
+  step_run.deployment_runs.reject(&:production_channel?).each_with_index do |deployment_run, _|
     create_pre_prod_submission(release_platform_run, step_run, deployment_run, pre_prod_release, build)
   end
 
@@ -369,24 +373,24 @@ def compute_store_rollout_status(staged_rollout)
   end
 end
 
-def compute_production_release_status(step_run, idx)
+def compute_production_release_status(step_run, is_latest)
   if step_run.success?
     "finished"
-  elsif step_run.deployment_started? && idx == 0
+  elsif step_run.deployment_started? && is_latest
     "active"
-  elsif step_run.active? && idx == 0
+  elsif step_run.active? && is_latest
     "inflight"
   else
     "stale"
   end
 end
 
-def compute_pre_prod_release_status(step_run, idx)
+def compute_pre_prod_release_status(step_run, is_latest)
   if step_run.success?
     "finished"
   elsif step_run.failed?
     "failed"
-  elsif step_run.deployment_started? && idx == 0
+  elsif step_run.deployment_started? && is_latest
     "created"
   else
     "stale"
