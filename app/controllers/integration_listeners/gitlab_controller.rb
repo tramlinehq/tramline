@@ -27,7 +27,10 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
 
   def handle_push
     response =
-      if train.product_v2?
+      if train.trunk?
+        result = Action.process_commit_webhook(train, push_params)
+        result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing push")
+      elsif train.product_v2?
         result = Action.process_push_webhook(train, push_params)
         result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing push")
       else
