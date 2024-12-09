@@ -168,7 +168,8 @@ class TrainsController < SignedInApplicationController
       :tag_releases,
       :tag_suffix,
       :patch_version_bump_only,
-      :approvals_enabled
+      :approvals_enabled,
+      :copy_approvals
     )
   end
 

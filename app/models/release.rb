@@ -168,14 +168,34 @@ class Release < ApplicationRecord
   after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
+  after_commit -> { Releases::CopyPreviousApprovalsJob.perform_later(id) }, on: :create, if: :copy_approvals_enabled?
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
   attr_accessor :has_major_bump, :hotfix_platform, :custom_version
   friendly_id :human_slug, use: :slugged
 
   delegate :versioning_strategy, :patch_version_bump_only, :product_v2?, to: :train
-  delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, to: :train
+  delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
   delegate :platform, :organization, to: :app
+
+  def copy_previous_approvals
+    previous_release = fetch_previous_finished_release
+    return if previous_release.blank?
+    previous_release.approval_items.find_each do |approval_item|
+      new_approval_item = approval_items.find_or_initialize_by(
+        content: approval_item.content,
+        author_id: approval_item.author_id
+      )
+      new_approval_item.approval_assignees = approval_item.approval_assignees.map do |approval_assignee|
+        new_approval_item.approval_assignees.find_or_initialize_by(
+          assignee_id: approval_assignee.assignee_id
+        )
+      end
+
+      new_approval_item.save!
+    end
+    approval_items.present?
+  end
 
   def self.pending_release?
     pending_release.exists?
@@ -554,6 +574,22 @@ class Release < ApplicationRecord
 
   def approvals_blocking?
     !(approvals_overridden? || approvals_finished?)
+  end
+
+  def copy_approvals_enabled?
+    copy_approvals? && release?
+  end
+
+  def copy_approval_restricted?
+    fetch_previous_finished_release.nil? || approval_items.present? || hotfix?
+  end
+
+  def fetch_previous_finished_release
+    train.releases
+      .release
+      .finished
+      .order(created_at: :desc)
+      .first
   end
 
   private
