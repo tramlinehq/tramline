@@ -12,6 +12,6 @@ module Integrable
   delegate :draft_check?, to: :android_store_provider, allow_nil: true
 
   def firebase_connected?
-    integrations.google_firebase_integrations.any?
+    integrations.google_firebase_integrations.any? || integrations.crashlytics_integrations.any?
   end
 end
