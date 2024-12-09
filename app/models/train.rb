@@ -11,6 +11,7 @@
 #  build_queue_wait_time              :interval
 #  compact_build_notes                :boolean          default(FALSE)
 #  description                        :string
+#  freeze_version                     :boolean          default(FALSE)
 #  kickoff_at                         :datetime
 #  manual_release                     :boolean          default(FALSE)
 #  name                               :string           not null
