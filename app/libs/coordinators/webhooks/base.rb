@@ -18,7 +18,7 @@ class Coordinators::Webhooks::Base
   end
 
   def release
-    @release ||= train.active_runs.for_branch(branch_name)
+    @release ||= train.active_runs.find_active_for_train(train.id)
   end
 
   private

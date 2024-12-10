@@ -13,6 +13,8 @@ class TrainsController < SignedInApplicationController
 
   def new
     @train = @app.trains.new
+    @train.build_queue_wait_time_value = 0
+    @train.build_queue_size = 0
   end
 
   def edit
@@ -29,7 +31,6 @@ class TrainsController < SignedInApplicationController
 
   def create
     @train = @app.trains.new(parsed_train_params)
-
     if @train.save
       new_train_redirect
     else

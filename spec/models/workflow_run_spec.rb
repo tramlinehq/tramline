@@ -7,6 +7,8 @@ describe WorkflowRun do
     expect(create(:workflow_run)).to be_valid
   end
 
+  version = "v1.0.0"
+
   describe "#trigger!" do
     let(:ci_ref) { Faker::Lorem.word }
     let(:ci_link) { Faker::Internet.url }
@@ -23,6 +25,8 @@ describe WorkflowRun do
     context "when workflow not found" do
       before do
         allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return(nil)
+        allow(workflow_run.release_platform_run).to receive(:tag_name).and_return(version)
+        allow(workflow_run.ci_cd_provider).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:})
       end
 
       it "transitions state to triggered" do
@@ -43,6 +47,7 @@ describe WorkflowRun do
     context "when workflow found" do
       before do
         allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:})
+        allow(workflow_run.release_platform_run).to receive(:tag_name).and_return(version)
       end
 
       it "transitions state to started" do
@@ -63,6 +68,8 @@ describe WorkflowRun do
 
     it "updates build number" do
       allow(Releases::FindWorkflowRun).to receive(:perform_async)
+      allow(workflow_run.release_platform_run).to receive(:tag_name).and_return(version)
+      allow(workflow_run.ci_cd_provider).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:})
 
       expect(workflow_run.build.build_number).to be_nil
       workflow_run.trigger!
