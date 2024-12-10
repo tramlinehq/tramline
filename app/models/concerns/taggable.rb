@@ -9,9 +9,8 @@ module Taggable
   # ...and so on
   #
   # note: avoids appending increasing numbers to avoid keeping state
-  # note: relies on last_commit and base_tag_name methods
-  def unique_tag_name(currently)
-    sha = last_commit.short_sha
+  # note: relies on a 'base_tag_name' method
+  def unique_tag_name(currently, sha)
     return [base_tag_name, "-", sha].join if currently.end_with?(base_tag_name)
     [base_tag_name, "-", sha, "-", Time.now.to_i].join
   end

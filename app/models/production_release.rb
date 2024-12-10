@@ -105,13 +105,18 @@ class ProductionRelease < ApplicationRecord
 
   def rollout_started!
     return unless inflight?
+
     previous&.mark_as_stale!
     update!(status: STATES[:active])
     notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
 
-    return if beyond_monitoring_period?
-    return if monitoring_provider.blank?
-    V2::FetchHealthMetricsJob.perform_later(id)
+    if train.tag_all_store_releases?
+      ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id, commit)
+    end
+
+    if !beyond_monitoring_period? && monitoring_provider.present?
+      V2::FetchHealthMetricsJob.perform_later(id)
+    end
   end
 
   def beyond_monitoring_period?
