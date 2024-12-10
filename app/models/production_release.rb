@@ -111,7 +111,7 @@ class ProductionRelease < ApplicationRecord
     notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
 
     if train.tag_all_store_releases?
-      ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id, commit)
+      ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id, commit.id)
     end
 
     if !beyond_monitoring_period? && monitoring_provider.present?
