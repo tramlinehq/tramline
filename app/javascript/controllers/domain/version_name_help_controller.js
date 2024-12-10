@@ -19,6 +19,8 @@ export default class extends Controller {
     "helpTextVal"
   ]
 
+  static outlets = ["freeze-version"]
+
   initialize() {
     this.majorVersion = ""
     this.minorVersion = ""
@@ -59,6 +61,10 @@ export default class extends Controller {
 
   __nextReleaseVersion() {
     try {
+      if (this.hasFreezeVersionOutlet &&
+          this.freezeVersionOutlet.freezeReleaseVersionTarget.checked) {
+        return this.__versionString();
+      }
       return bumpVersion([0, 1, 0], this.__versionString())
     } catch (error) {
       return emptyVersion
