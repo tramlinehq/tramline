@@ -425,8 +425,8 @@ class ReleasePlatformRun < ApplicationRecord
     train.vcs_provider&.tag_url(tag_name)
   end
 
-  # # recursively attempt to create a release tag until a unique one gets created
-  # # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
+  # recursively attempt to create a release tag until a unique one gets created
+  # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_tag!(commit, input_tag_name = base_tag_name)
     train.create_tag!(input_tag_name, commit.commit_hash)
     update!(tag_name: input_tag_name)
