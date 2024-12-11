@@ -4,7 +4,7 @@ class ReleasesController < SignedInApplicationController
   include Tabbable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: %i[show destroy update timeline override_approvals]
+  before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals]
   before_action :set_train_and_app, only: %i[show destroy update timeline]
 
   def index
@@ -57,6 +57,14 @@ class ReleasesController < SignedInApplicationController
       redirect_to release_approval_items_path(@release), notice: "Approvals have been overridden. The release can move ahead."
     else
       redirect_back fallback_location: root_path, flash: {error: "Approvals could not be overridden."}
+    end
+  end
+
+  def copy_approvals
+    if @release.copy_previous_approvals
+      redirect_to release_approval_items_path(@release), notice: "Approvals have been successfully copied."
+    else
+      redirect_back fallback_location: root_path, flash: {error: "Unable to copy approvals from previous release."}
     end
   end
 
