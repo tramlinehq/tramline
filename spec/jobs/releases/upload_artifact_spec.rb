@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Releases::UploadArtifact do
+RSpec.describe Releases::UploadArtifact do
   describe "#perform" do
     let(:artifacts_url) { Faker::Internet.url }
     let(:artifact_fixture) { "spec/fixtures/storage/test_artifact.aab.zip" }
@@ -18,16 +18,51 @@ describe Releases::UploadArtifact do
       expect(step_run.build_artifact).to be_present
     end
 
-    it "retries if artifacts are not found" do
-      expect(
-        described_class.sidekiq_retry_in_block.call(1, Installations::Error.new("Could not find the artifact", reason: :artifact_not_found))
-      ).to be >= 10.seconds
-    end
+    describe "retry behavior" do
+      it "retries with correct backoff when artifact is not found" do
+        error = Installations::Error.new("Could not find the artifact", reason: :artifact_not_found)
+        allow_any_instance_of(GithubIntegration).to receive(:get_artifact).and_raise(error)
+        allow(described_class).to receive(:perform_in)
 
-    it "does not retry if there are unexpected errors" do
-      expect(
-        described_class.sidekiq_retry_in_block.call(1, StandardError.new)
-      ).to be(:kill)
+        job = described_class.new
+        expect {
+          job.perform(step_run.id, artifacts_url)
+        }.to raise_error(Installations::Error)
+
+        expect(described_class).to have_received(:perform_in).with(
+          15, # Actual backoff time
+          step_run.id,
+          hash_including(
+            "retry_count" => 1,
+            "step_run_id" => step_run.id,
+            "original_exception" => hash_including(
+              "class" => "Installations::Error",
+              "message" => "Could not find the artifact"
+            )
+          )
+        )
+      end
+
+      it "handles retries exhausted" do
+        error = Installations::Error.new("Could not find the artifact", reason: :artifact_not_found)
+        job = described_class.new
+
+        allow(StepRun).to receive(:find).and_return(step_run)
+        allow(step_run).to receive(:build_upload_failed!)
+        allow(step_run).to receive(:event_stamp!)
+
+        job.handle_retries_exhausted(
+          step_run_id: step_run.id,
+          last_exception: error
+        )
+
+        expect(step_run).to have_received(:build_upload_failed!)
+        expect(step_run).to have_received(:event_stamp!).with(
+          reason: :build_unavailable,
+          kind: :error,
+          data: {version: step_run.build_version}
+        )
+      end
     end
 
     it "does nothing if the run is not active" do
