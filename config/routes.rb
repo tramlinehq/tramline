@@ -194,6 +194,10 @@ Rails.application.routes.draw do
         resource :google_firebase, only: [:create],
           controller: "integrations/google_firebase",
           as: :google_firebase_integration
+
+        resource :crashlytics, only: [:create],
+          controller: "integrations/crashlytics",
+          as: :crashlytics_integration
       end
 
       resources :slack, only: [],
