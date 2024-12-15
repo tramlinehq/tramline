@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_11_04_165116) do
+ActiveRecord::Schema[7.2].define(version: 2024_11_15_100841) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -58,6 +58,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_04_165116) do
     t.jsonb "bugsnag_android_config"
     t.string "bitbucket_workspace"
     t.jsonb "ci_cd_workflows"
+    t.jsonb "jira_config", default: {}, null: false
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -388,6 +389,15 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_04_165116) do
     t.index ["organization_id"], name: "index_invites_on_organization_id"
     t.index ["recipient_id"], name: "index_invites_on_recipient_id"
     t.index ["sender_id"], name: "index_invites_on_sender_id"
+  end
+
+  create_table "jira_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "oauth_access_token"
+    t.string "oauth_refresh_token"
+    t.string "cloud_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cloud_id"], name: "index_jira_integrations_on_cloud_id"
   end
 
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
