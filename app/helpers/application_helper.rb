@@ -188,4 +188,16 @@ module ApplicationHelper
     return NOT_AVAILABLE unless seconds
     distance_of_time_in_words(0, seconds, include_seconds: true)
   end
+
+  def page_title(page_name, current_organization, app, release)
+    suffix = "Tramline"
+    middle_section = app&.name || current_organization&.name
+    prefix = if release&.original_release_version.present?
+      release.original_release_version
+    else
+      page_name || middle_section
+    end
+
+    [prefix.humanize, middle_section.humanize, suffix.humanize].compact.join(" | ")
+  end
 end

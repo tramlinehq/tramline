@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   layout -> { ensure_supported_layout("application") }
   before_action :store_user_location!, if: :storable_location?
   helper_method :writer?
-
+  before_action :set_page_name
   class NotAuthorizedError < StandardError; end
 
   def raise_not_found
@@ -38,6 +38,12 @@ class ApplicationController < ActionController::Base
 
   def current_user
     @current_user ||= current_email_authentication&.user || @current_sso_user
+  end
+
+  private
+
+  def set_page_name
+    @page_name = (params[:action].humanize == "Index") ? params[:controller].humanize : params[:action].humanize
   end
 
   protected
