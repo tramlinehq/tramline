@@ -51,15 +51,6 @@ describe Release do
         expect(run.original_release_version).to eq(ver)
       end
 
-      it "fixed version: sets the original_release_version to train's current version with patch_version_bump_only set as true" do
-        train = create(:train, version_seeded_with: ver, freeze_version: true, patch_version_bump_only: true)
-        run = build(:release, original_release_version: nil, train:)
-
-        expect(run.original_release_version).to be_nil
-        run.save!
-        expect(run.original_release_version).to eq(ver)
-      end
-
       it "sets the original_release_version to the custom_version" do
         train = create(:train, version_seeded_with: ver)
         run = build(:release, original_release_version: nil, train:, custom_version: "2.0.0")

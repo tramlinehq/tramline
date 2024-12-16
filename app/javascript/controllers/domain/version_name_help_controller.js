@@ -16,10 +16,9 @@ export default class extends Controller {
     "patchInput",
     "nextVersion",
     "currentVersion",
-    "helpTextVal"
+    "helpTextVal",
+    "freezeReleaseVersion"
   ]
-
-  static outlets = ["freeze-version"]
 
   initialize() {
     this.majorVersion = ""
@@ -61,8 +60,7 @@ export default class extends Controller {
 
   __nextReleaseVersion() {
     try {
-      if (this.hasFreezeVersionOutlet &&
-          this.freezeVersionOutlet.freezeReleaseVersionTarget.checked) {
+      if (this.freezeReleaseVersionTarget.checked) {
         return this.__versionString();
       }
       return bumpVersion([0, 1, 0], this.__versionString())
@@ -89,5 +87,15 @@ export default class extends Controller {
 
   __allButMinorMissing() {
     return this.__is_present(this.majorVersion) && this.__is_present(this.patchVersion) && !this.__is_present(this.minorVersion)
+  }
+
+  updateVersion() {
+    if (this.hasNextVersionTarget && this.__isSemVer(this.__versionString())) {
+      if (this.freezeReleaseVersionTarget.checked) {
+        this.nextVersionTarget.innerHTML = this.__versionString();
+      } else {
+        this.nextVersionTarget.innerHTML = this.__nextReleaseVersion();
+      }
+    }
   }
 }
