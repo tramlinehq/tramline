@@ -1,14 +1,10 @@
 <%= render V2::FormComponent.new(model: [app, integration], url: app_crashlytics_integration_path(app)) do |f| %>
   <% f.with_section(heading: "Add") do |section| %>
     <% section.with_description do %>
-      <p>Your Service Account Key</p>
-      <p class="mt-2 text-xs">
-        <%= link_to_external "How to create a firebase service account?",
-                             "https://docs.tramline.app/integrations/distribution/firebase",
-                             class: "underline" %>
-        <p>1. In Firebase Project Settings > General, find and note the Project Number.</p>
-        <p>2. Google Cloud Console > IAM & Admin > Service Accounts, select your account, go to Keys, and Add Key to create a new JSON key.</p>
-      </p>
+      <p class="mt-2">In Firebase Project Settings > General, find and note the Project Number.</p>
+      <p class="mt-2 text-xs"><%= link_to_external "How to create a service account for Crashlytics?",
+                                   "https://docs.tramline.app/integrations/monitoring/crashlytics#service-account-for-bigquery-access",
+                                   class: "underline" %></p>
     <% end %>
 
     <%= section.F.hidden_field :category, value: category %>

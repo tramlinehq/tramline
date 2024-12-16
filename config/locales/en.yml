@@ -152,7 +152,7 @@ en:
       test_flight_submission: "TestFlight"
       google_firebase_submission: "Firebase App Distribution"
       play_store_submission: "Google Play Store"
-      crashlytics_integration: "Crashlytics"
+      crashlytics_integration: "Firebase Crashlytics"
     values:
       app:
         platform:
