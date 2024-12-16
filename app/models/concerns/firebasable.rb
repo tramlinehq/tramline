@@ -73,4 +73,8 @@ module Firebasable
   def correct_key
     raise NotImplementedError, "Each model must define its own `correct_key` method"
   end
+
+  def list_apps_cache_key
+    "google_firebase_integration/#{id}/list_apps"
+  end
 end

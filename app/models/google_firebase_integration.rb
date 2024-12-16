@@ -210,10 +210,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
     errors.add(:json_key, ex.reason)
   end
 
-  def list_apps_cache_key
-    "google_firebase_integration/#{id}/list_apps"
-  end
-
   def build_channels_cache_key
     "google_firebase_integration/#{id}/build_channels"
   end

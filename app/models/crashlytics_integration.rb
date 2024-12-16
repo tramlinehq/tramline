@@ -51,8 +51,9 @@ class CrashlyticsIntegration < ApplicationRecord
     installation.find_release(crashlytics_project(platform), version, build_number, RELEASE_TRANSFORMATIONS, integrable.bundle_identifier)
   end
 
+  # FIXME: This is an incomplete URL. The full URL should contain the project id.
   def dashboard_url(platform:, release_id:)
-    "https://console.firebase.google.com"
+    "https://console.firebase.google.com".freeze
   end
 
   private
@@ -73,9 +74,5 @@ class CrashlyticsIntegration < ApplicationRecord
     errors.add(:json_key, :key_format)
   rescue Installations::Google::Firebase::Error => ex
     errors.add(:json_key, ex.reason)
-  end
-
-  def list_apps_cache_key
-    "google_firebase_integration/#{id}/list_apps"
   end
 end

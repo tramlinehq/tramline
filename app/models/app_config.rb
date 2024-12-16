@@ -113,7 +113,6 @@ class AppConfig < ApplicationRecord
   end
 
   def crashlytics_project(platform)
-    # apps connected through firebase
     pick_firebase_crashlytics_app_id(platform)
   end
 
