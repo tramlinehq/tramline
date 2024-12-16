@@ -97,7 +97,7 @@ class AppConfig < ApplicationRecord
     if integrations.monitoring.present?
       categories[:monitoring] = {
         further_setup: integrations.monitoring.any?(&:further_setup?),
-        ready: bugsnag_ready? || firebase_crashlytics_ready?
+        ready: bugsnag_ready? && firebase_crashlytics_ready?
       }
     end
 
@@ -142,7 +142,7 @@ class AppConfig < ApplicationRecord
   end
 
   def firebase_crashlytics_ready?
-    return true unless app.firebase_connected?
+    return true unless app.firebase_crashlytics_connected?
     configs_ready?(firebase_crashlytics_ios_config, firebase_crashlytics_android_config)
   end
 
