@@ -51,11 +51,16 @@ class CrashlyticsIntegration < ApplicationRecord
     installation.find_release(crashlytics_project(platform), version, build_number, RELEASE_TRANSFORMATIONS, integrable.bundle_identifier)
   end
 
+  def dashboard_url(platform:, release_id:)
+    "https://console.firebase.google.com"
+  end
+
   private
 
   def bq_access?
-    data = installation.get_bq_data
-    data.present?
+    datasets = installation.datasets
+    return false if datasets.blank?
+    datasets.key?(:ga4) && datasets.key?(:crashlytics)
   rescue Installations::Crashlytics::Error => ex
     elog(ex.reason)
     nil

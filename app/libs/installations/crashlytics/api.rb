@@ -20,28 +20,6 @@ module Installations
       end
     end
 
-    def get_bq_data
-      query = <<-SQL.squish
-        SELECT event_timestamp
-        FROM `#{datasets[:ga4]}`
-        WHERE event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY));
-      SQL
-      execute { bigquery_client.query(query) }
-    end
-
-    private
-
-    def fetch_crash_data(app_id, app_version, app_version_code, bundle_identifier)
-      analytics_data = get_data(analytics_query(datasets[:ga4], app_id, app_version)).find { |a| a[:version_name] == app_version } || {}
-      crashlytics_data = get_data(crashlytics_query(datasets[:crashlytics], app_version, app_version_code, bundle_identifier)).find { |a| a[:version_name] == app_version } || {}
-      analytics_data.merge(crashlytics_data)
-    end
-
-    def bigquery_client
-      @bigquery_client ||= BIGQUERY.new(credentials: key_file)
-    end
-
-    # Query dataset names and return relevant datasets
     def datasets
       execute do
         target_datasets = {}
@@ -55,6 +33,18 @@ module Installations
         end
         target_datasets
       end
+    end
+
+    private
+
+    def fetch_crash_data(app_id, app_version, app_version_code, bundle_identifier)
+      analytics_data = get_data(analytics_query(datasets[:ga4], app_id, app_version)).find { |a| a[:version_name] == app_version } || {}
+      crashlytics_data = get_data(crashlytics_query(datasets[:crashlytics], app_version, app_version_code, bundle_identifier)).find { |a| a[:version_name] == app_version } || {}
+      analytics_data.merge(crashlytics_data)
+    end
+
+    def bigquery_client
+      @bigquery_client ||= BIGQUERY.new(credentials: key_file)
     end
 
     def dataset_pattern(dataset)
