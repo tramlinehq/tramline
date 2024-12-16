@@ -64,7 +64,7 @@ class StoreRollout < ApplicationRecord
       build_number:,
       updated_at:,
       platform:,
-      rollout_percentage: last_rollout_percentage_fmt,
+      rollout_percentage: last_rollout_percentage_fmt
     }
   end
 
@@ -144,7 +144,7 @@ class StoreRollout < ApplicationRecord
       current_stage: stage,
       version: version_name,
       build_number: build_number,
-      rollout_percentage: last_rollout_percentage_fmt,
+      rollout_percentage: last_rollout_percentage_fmt
     }
   end
 
