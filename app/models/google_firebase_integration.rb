@@ -10,47 +10,27 @@
 #
 class GoogleFirebaseIntegration < ApplicationRecord
   has_paper_trail
-  encrypts :json_key, deterministic: true
 
   self.ignored_columns += %w[app_id]
 
   include Loggable
   include Providable
   include Displayable
+  include Firebasable
 
-  delegate :cache, to: Rails
-  delegate :integrable, to: :integration
-  delegate :config, to: :integrable
   delegate :firebase_app, to: :config
-
-  validate :correct_key, on: :create
 
   attr_accessor :json_key_file
 
   after_create_commit :fetch_channels
 
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/firebase_small.png".freeze
-  CACHE_EXPIRY = 1.month
-
-  def access_key
-    StringIO.new(json_key)
-  end
 
   def installation
     Installations::Google::Firebase::Api.new(project_number, access_key)
   end
 
-  def creatable?
-    true
-  end
-
-  def connectable?
-    false
-  end
-
-  def store?
-    false
-  end
+  alias_method :firebase_installation, :installation
 
   def controllable_rollout?
     false
@@ -58,10 +38,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def to_s
     "firebase"
-  end
-
-  def connection_data
-    "Project: #{project_number}"
   end
 
   GROUPS_TRANSFORMATIONS = {
@@ -78,37 +54,14 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   EMPTY_CHANNEL = {id: :no_testers, name: "No testers (upload only)"}
 
+  CACHE_EXPIRY = 1.month
+
   def fetch_channels
     RefreshFirebaseChannelsJob.perform_later(id)
   end
 
   def channels
     installation.list_groups(GROUPS_TRANSFORMATIONS)
-  end
-
-  def further_setup?
-    true
-  end
-
-  def setup
-    android = list_apps(platform: "android")
-    ios = list_apps(platform: "ios")
-
-    case integrable.platform
-    when "android" then {android: android}
-    when "ios" then {ios: ios}
-    when "cross_platform" then {ios: ios, android: android}
-    else
-      raise ArgumentError, "Invalid platform"
-    end
-  end
-
-  def list_apps(platform:)
-    apps = cache.fetch(list_apps_cache_key, expires_in: CACHE_EXPIRY) do
-      installation.list_apps(APPS_TRANSFORMATIONS)
-    end
-
-    apps.select { |app| app[:platform] == platform }.map { |app| app.slice(:app_id, :display_name) }
   end
 
   def populate_channels!
@@ -165,10 +118,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
       ),
         BUILD_TRANSFORMATIONS)
     end
-  end
-
-  def metadata
-    {}
   end
 
   # FIXME: This is an incomplete URL. The full URL should contain the project id.
@@ -259,10 +208,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
     errors.add(:json_key, :key_format)
   rescue Installations::Google::Firebase::Error => ex
     errors.add(:json_key, ex.reason)
-  end
-
-  def list_apps_cache_key
-    "google_firebase_integration/#{id}/list_apps"
   end
 
   def build_channels_cache_key
