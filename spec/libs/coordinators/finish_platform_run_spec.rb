@@ -33,11 +33,13 @@ describe Coordinators::FinishPlatformRun do
       release = create(:release, train:)
       release_platform = create(:release_platform, train:)
       release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)
+      commit = create(:commit, release:)
+      release_platform_run.update!(last_commit: commit)
       allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
 
       described_class.call(release_platform_run)
 
-      expect(ReleasePlatformRuns::CreateTagJob).to have_received(:perform_later).with(release_platform_run.id).once
+      expect(ReleasePlatformRuns::CreateTagJob).to have_received(:perform_later).with(release_platform_run.id, commit.id).once
     end
 
     it "does not schedule a platform-specific tag job if cross-platform app tagging all store releases" do
