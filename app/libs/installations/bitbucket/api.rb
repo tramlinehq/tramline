@@ -102,8 +102,8 @@ module Installations
     end
 
     def list_repos(workspace, transforms)
-      execute(:get, REPOS_URL.expand(workspace:).to_s)
-        .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
+      paginated_execute(:get, REPOS_URL.expand(workspace:).to_s)
+        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
     def create_repo_webhook!(repo_slug, url, transforms)
