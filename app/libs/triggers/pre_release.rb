@@ -2,6 +2,7 @@ class Triggers::PreRelease
   include Memery
 
   RELEASE_HANDLERS = {
+    "trunk" => Trunk,
     "almost_trunk" => AlmostTrunk,
     "parallel_working" => ParallelBranches,
     "release_backmerge" => ReleaseBackMerge

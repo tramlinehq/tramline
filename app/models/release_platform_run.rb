@@ -286,7 +286,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def bump_version!
-    return unless version_bump_required?
+    return unless version_bump_required? || train.trunk?
 
     self.in_store_resubmission = true
 
