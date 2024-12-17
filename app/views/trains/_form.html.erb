@@ -7,7 +7,7 @@
   <% end %>
 <% end %>
 
-<div data-controller="branching-selector disable domain--version-name-help"
+<div data-controller="branching-selector dependent-disable domain--version-name-help"
      data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
   <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
     <% f.with_section(heading: "Basic") do |section| %>
@@ -258,8 +258,8 @@
                                                field_name: :freeze_version,
                                                on_label: "Freeze release version enabled",
                                                off_label: "Freeze release version disabled",
-                                               switch_data: { action: "disable#change domain--version-name-help#updateVersion",
-                                                    disable_target: "primary", domain__version_name_help_target: "freezeReleaseVersion" }) %>
+                                               switch_data: { action: "dependent-disable#change domain--version-name-help#updateVersion",
+                                                              dependent_disable_target: "primary", domain__version_name_help_target: "freezeReleaseVersion" }) %>
 
     <% end %>
 
@@ -273,7 +273,7 @@
                                                field_name: :patch_version_bump_only,
                                                on_label: "Only patch version will change between releases",
                                                off_label: "Minor version will change between releases (default)",
-                                               switch_data: { disable_target: "secondary", action: "disable#change" }) %>
+                                               switch_data: { dependent_disable_target: "secondary", action: "dependent-disable#change" }) %>
     <% end %>
 
     <% f.with_action do %>
