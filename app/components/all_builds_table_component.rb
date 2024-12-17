@@ -50,10 +50,14 @@ class AllBuildsTableComponent < ViewComponent::Base
     status_badge(build.external_release_status.titleize.humanize, %w[mx-1], :routine)
   end
 
-  def deployments(build)
+  def submissions(build)
     tag.div do
-      build.deployments.collect do |d|
-        concat tag.div show_deployment(d)
+      if build.submissions.blank?
+        concat "–"
+      else
+        build.submissions.collect do |submission|
+          concat tag.div submission.submission_info
+        end
       end
     end
   end

@@ -80,6 +80,10 @@ class Config::Submission < ApplicationRecord
     submission_type.classify.constantize.model_name.human
   end
 
+  def submission_info
+    "#{display} • #{submission_external.name}"
+  end
+
   def production_release_submission
     if production?
       errors.add(:integrable_type, :variant_not_allowed) if integrable_type == "AppVariant"
