@@ -66,8 +66,7 @@ class Coordinators::ProcessCommits
   # This is to ensure that the head commit is always the one on the top
   def fudge_timestamp(commit)
     original_time = commit[:timestamp]
-    ms = 0.001
-    new_time = original_time + ms
+    new_time = original_time + 0.001
     commit[:timestamp] = new_time
     commit
   end
