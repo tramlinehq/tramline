@@ -224,6 +224,10 @@ class Release < ApplicationRecord
     release_platform_runs.all?(&:production_release_active?)
   end
 
+  def production_release_started?
+    release_platform_runs.all? { |rpr| rpr.active_production_release.present? }
+  end
+
   def backmerge_failure_count
     return 0 unless continuous_backmerge?
     all_commits.size - backmerge_prs.size - 1

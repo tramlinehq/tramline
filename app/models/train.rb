@@ -346,7 +346,7 @@ class Train < ApplicationRecord
     if product_v2?
       manually_startable? &&
         ongoing_release.present? &&
-        ongoing_release.production_release_active? &&
+        ongoing_release.production_release_started? &&
         upcoming_release.blank?
     else
       manually_startable? &&

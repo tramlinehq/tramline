@@ -63,7 +63,8 @@ class StoreRollout < ApplicationRecord
       build_version: version_name,
       build_number:,
       updated_at:,
-      platform:
+      platform:,
+      rollout_percentage: last_rollout_percentage_fmt
     }
   end
 
@@ -82,6 +83,12 @@ class StoreRollout < ApplicationRecord
     return 0 if created? || current_stage.nil?
     return config.last if reached_last_stage?
     config[current_stage]
+  end
+
+  def last_rollout_percentage_fmt
+    perc = last_rollout_percentage
+    fmt = (perc % 1 == 0) ? "%.0f" : "%.02f"
+    fmt % perc
   end
 
   def latest_events(n = nil)
@@ -105,7 +112,7 @@ class StoreRollout < ApplicationRecord
 
   def hundred_percent?
     return false if current_stage.nil?
-    config[current_stage].to_f.equal_to?(100.0)
+    last_rollout_percentage.to_f.equal_to?(100.0)
   end
 
   protected
@@ -133,20 +140,12 @@ class StoreRollout < ApplicationRecord
   end
 
   def stamp_data
-    data = {
+    {
       current_stage: stage,
       version: version_name,
-      build_number: build_number
+      build_number: build_number,
+      rollout_percentage: last_rollout_percentage_fmt
     }
-
-    data[:rollout_percentage] =
-      if is_staged_rollout? && current_stage.present?
-        "%.2f" % config[current_stage]
-      else
-        "100"
-      end
-
-    data
   end
 
   def on_start!

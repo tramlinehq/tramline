@@ -47,6 +47,11 @@ class ProductionRelease < ApplicationRecord
   INITIAL_STATE = STATES[:inflight]
   ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
+  JOB_FREQUENCY = {
+    CrashlyticsIntegration => 30.minutes,
+    BugsnagIntegration => 5.minutes
+  }
+
   enum :status, STATES
 
   def tester_notes? = false
@@ -114,9 +119,9 @@ class ProductionRelease < ApplicationRecord
       ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id, commit.id)
     end
 
-    if !beyond_monitoring_period? && monitoring_provider.present?
-      V2::FetchHealthMetricsJob.perform_later(id)
-    end
+    return if beyond_monitoring_period?
+    return if monitoring_provider.blank?
+    V2::FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[monitoring_provider.class])
   end
 
   def beyond_monitoring_period?
