@@ -206,16 +206,56 @@ describe Coordinators::ProcessCommits do
 
         expect(Coordinators::CreateBetaRelease).not_to have_received(:call)
       end
+
+      it "computes the head commit correctly" do
+        release = create(:release, :created, :with_no_platform_runs, train:)
+        _release_platform_run = create(:release_platform_run, release_platform:, release:)
+        t = Time.current
+        t_minus_ms = Time.new(t.year, t.month, t.day, t.hour, t.min, t.sec, t.utc_offset).iso8601(3)
+        allow(Coordinators::CreateBetaRelease).to receive(:call)
+        commit_attributes = {
+          commit_hash: "1",
+          message: Faker::Lorem.sentence,
+          timestamp: t_minus_ms,
+          author_name: Faker::Name.name,
+          author_email: Faker::Internet.email,
+          url: Faker::Internet.url,
+          branch_name: Faker::Lorem.word
+        }
+        other_commit_attributes = [
+          {
+            commit_hash: "3",
+            message: Faker::Lorem.sentence,
+            timestamp: t_minus_ms,
+            author_name: Faker::Name.name,
+            author_email: Faker::Internet.email,
+            url: Faker::Internet.url,
+            branch_name: Faker::Lorem.word
+          },
+          {
+            commit_hash: "2",
+            message: Faker::Lorem.sentence,
+            timestamp: t_minus_ms,
+            author_name: Faker::Name.name,
+            author_email: Faker::Internet.email,
+            url: Faker::Internet.url,
+            branch_name: Faker::Lorem.word
+          }
+        ]
+
+        described_class.call(release, commit_attributes, other_commit_attributes)
+        release.reload
+
+        expect(release.active_build_queue.head_commit.commit_hash).to eq("1")
+      end
     end
 
     context "when fudging head commit timestamp" do
       it "adds 100 milliseconds" do
         release = create(:release, :created, :with_no_platform_runs, train:)
         _release_platform_run = create(:release_platform_run, release_platform:, release:)
-
         t = Time.current
         t_minus_ms = Time.new(t.year, t.month, t.day, t.hour, t.min, t.sec, t.utc_offset)
-
         commit_attributes = {
           commit_hash: head_commit_hash,
           message: Faker::Lorem.sentence,
@@ -237,10 +277,8 @@ describe Coordinators::ProcessCommits do
       it "ensures the commit order is maintained" do
         release = create(:release, :created, :with_no_platform_runs, train:)
         _release_platform_run = create(:release_platform_run, release_platform:, release:)
-
         t = Time.current
         t_minus_ms = Time.new(t.year, t.month, t.day, t.hour, t.min, t.sec, t.utc_offset).iso8601(3)
-
         commit_attributes = {
           commit_hash: "1",
           message: Faker::Lorem.sentence,
@@ -250,7 +288,6 @@ describe Coordinators::ProcessCommits do
           url: Faker::Internet.url,
           branch_name: Faker::Lorem.word
         }
-
         other_commit_attributes = [
           {
             commit_hash: "3",

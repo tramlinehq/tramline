@@ -63,6 +63,7 @@ class Coordinators::ProcessCommits
 
   # To ensure that the HEAD commit is always on the top
   # We fudge it to add 100 ms after the original timestamp
+  # This can happen in a rare scenario when all the commits are on the same second
   def fudge_timestamp(commit)
     original_time = Time.zone.parse(commit[:timestamp])
     new_time = original_time + 0.1
