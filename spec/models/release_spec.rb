@@ -41,6 +41,24 @@ describe Release do
         run.save!
         expect(run.original_release_version).to eq(expect[:major])
       end
+
+      it "fixed version: sets the original_release_version to train's current version" do
+        train = create(:train, version_seeded_with: ver, freeze_version: true)
+        run = build(:release, original_release_version: nil, train:)
+
+        expect(run.original_release_version).to be_nil
+        run.save!
+        expect(run.original_release_version).to eq(ver)
+      end
+
+      it "sets the original_release_version to the custom_version" do
+        train = create(:train, version_seeded_with: ver)
+        run = build(:release, original_release_version: nil, train:, custom_version: "2.0.0")
+
+        expect(run.original_release_version).to be_nil
+        run.save!
+        expect(run.original_release_version).to eq("2.0.0")
+      end
     end
 
     context "when hotfix release" do

@@ -2,20 +2,22 @@
 #
 # Table name: app_configs
 #
-#  id                      :uuid             not null, primary key
-#  bitbucket_workspace     :string
-#  bugsnag_android_config  :jsonb
-#  bugsnag_ios_config      :jsonb
-#  ci_cd_workflows         :jsonb
-#  code_repository         :json
-#  firebase_android_config :jsonb
-#  firebase_ios_config     :jsonb
-#  notification_channel    :json
-#  created_at              :datetime         not null
-#  updated_at              :datetime         not null
-#  app_id                  :uuid             not null, indexed
-#  bitrise_project_id      :jsonb
-#  bugsnag_project_id      :jsonb
+#  id                                  :uuid             not null, primary key
+#  bitbucket_workspace                 :string
+#  bugsnag_android_config              :jsonb
+#  bugsnag_ios_config                  :jsonb
+#  ci_cd_workflows                     :jsonb
+#  code_repository                     :json
+#  firebase_android_config             :jsonb
+#  firebase_crashlytics_android_config :jsonb
+#  firebase_crashlytics_ios_config     :jsonb
+#  firebase_ios_config                 :jsonb
+#  notification_channel                :json
+#  created_at                          :datetime         not null
+#  updated_at                          :datetime         not null
+#  app_id                              :uuid             not null, indexed
+#  bitrise_project_id                  :jsonb
+#  bugsnag_project_id                  :jsonb
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
@@ -95,7 +97,7 @@ class AppConfig < ApplicationRecord
     if integrations.monitoring.present?
       categories[:monitoring] = {
         further_setup: integrations.monitoring.any?(&:further_setup?),
-        ready: bugsnag_ready?
+        ready: bugsnag_ready? && firebase_crashlytics_ready?
       }
     end
 
@@ -108,6 +110,10 @@ class AppConfig < ApplicationRecord
 
   def bugsnag_release_stage(platform)
     pick_bugsnag_release_stage(platform)
+  end
+
+  def crashlytics_project(platform)
+    pick_firebase_crashlytics_app_id(platform)
   end
 
   def ci_cd_workflows
@@ -132,6 +138,11 @@ class AppConfig < ApplicationRecord
   def firebase_ready?
     return true unless app.firebase_connected?
     configs_ready?(firebase_ios_config, firebase_android_config)
+  end
+
+  def firebase_crashlytics_ready?
+    return true unless app.firebase_crashlytics_connected?
+    configs_ready?(firebase_crashlytics_ios_config, firebase_crashlytics_android_config)
   end
 
   def bitrise_ready?

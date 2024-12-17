@@ -152,6 +152,7 @@ en:
       test_flight_submission: "TestFlight"
       google_firebase_submission: "Firebase App Distribution"
       play_store_submission: "Google Play Store"
+      crashlytics_integration: "Firebase Crashlytics"
     values:
       app:
         platform:
@@ -538,6 +539,15 @@ en:
               not_present: "the beta release must be configured"
             release_candidate_workflow:
               not_present: "the release candidate workflow must be configured"
+        crashlytics_integration:
+          attributes:
+            json_key:
+              key_format: "the supplied key format is incorrect, please check your key"
+              invalid_config: "configuration is invalid, please check"
+              no_bq_datasets: "the Google Analytics or Crashlytics dataset is not accessible in BigQuery for this project"
+              permission_denied: "permission denied to access the project using the key"
+              project_deleted: "the project has been deleted and is no longer accessible"
+              unknown_failure: "an unrecognized error occurred connecting to Firebase, please check your project number and key"
 
   invitation:
     flash:

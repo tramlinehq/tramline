@@ -110,6 +110,7 @@ namespace :anonymize do
         whitelist_timestamps
       end
 
+      # TODO [V2]: Remove this
       table "steps" do
         continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && !Step.exists?(record["id"]) }
 
@@ -126,6 +127,7 @@ namespace :anonymize do
         end
       end
 
+      # TODO [V2]: Remove this
       table "deployments" do
         continue { |index, record| Step.exists?(record["step_id"]) && !Deployment.exists?(record["id"]) }
 
@@ -168,11 +170,11 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "train_id", "branch_name", "status", "original_release_version", "release_version", "scheduled_at",
-          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch",
-          "internal_notes", "is_v2"
+          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch", "is_v2"
         whitelist_timestamps
 
         anonymize("release_pilot_id").using FieldStrategy::SelectFromList.new(user_ids)
+        anonymize("internal_notes") { |_| Release::DEFAULT_INTERNAL_NOTES }
       end
 
       table "build_queues" do
@@ -239,8 +241,21 @@ namespace :anonymize do
         primary_key "id"
         whitelist "release_platform_id", "code_name", "scheduled_at", "commit_sha", "status", "branch_name",
           "release_version", "completed_at", "stopped_at", "original_release_version", "release_id",
-          "tag_name", "in_store_resubmission", "last_commit_id", "play_store_blocked", "config"
+          "tag_name", "in_store_resubmission", "last_commit_id", "play_store_blocked"
         whitelist_timestamps
+        anonymize("config") do |field|
+          c = field.value
+          c.dig("beta_release", "submissions")&.each do |submission|
+            submission["integrable_id"] = app.id
+          end
+          c.dig("internal_release", "submissions")&.each do |submission|
+            submission["integrable_id"] = app.id
+          end
+          c.dig("production_release", "submissions")&.each do |submission|
+            submission["integrable_id"] = app.id
+          end
+          c
+        end
       end
 
       table "release_metadata" do
@@ -253,6 +268,7 @@ namespace :anonymize do
         anonymize("promo_text").using FieldStrategy::LoremIpsum.new
       end
 
+      # TODO [V2]: Remove this
       table "step_runs" do
         continue { |index, record| Step.exists?(record["step_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !StepRun.exists?(record["id"]) }
 
@@ -272,6 +288,7 @@ namespace :anonymize do
         whitelist_timestamps
       end
 
+      # TODO [V2]: Remove this
       table "deployment_runs" do
         continue { |index, record| Deployment.exists?(record["deployment_id"]) && StepRun.exists?(record["step_run_id"]) && !DeploymentRun.exists?(record["id"]) }
 
@@ -280,6 +297,7 @@ namespace :anonymize do
         whitelist_timestamps
       end
 
+      # TODO [V2]: Remove this
       table "external_releases" do
         continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ExternalRelease.exists?(record["id"]) }
 
@@ -290,10 +308,75 @@ namespace :anonymize do
         anonymize("build_number").using FieldStrategy::FormattedStringNumber.new
       end
 
+      # TODO [V2]: Remove this
       table "staged_rollouts" do
         continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !StagedRollout.exists?(record["id"]) }
         primary_key "id"
         whitelist "deployment_run_id", "config", "status", "current_stage"
+        whitelist_timestamps
+      end
+
+      table "pre_prod_releases" do
+        continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !PreProdRelease.exists?(record["id"]) }
+        primary_key "id"
+        whitelist "release_platform_run_id", "status", "commit_id", "parent_internal_release_id", "type"
+        whitelist_timestamps
+        anonymize("previous_id") { |_| nil }
+        anonymize("config") do |field|
+          c = field.value
+          c.dig("submissions")&.each do |submission|
+            submission["integrable_id"] = app.id
+          end
+          c
+        end
+      end
+
+      table "workflow_runs" do
+        continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !WorkflowRun.exists?(record["id"]) }
+        primary_key "id"
+        whitelist "finished_at", "kind", "started_at", "status", "workflow_config", "commit_id", "pre_prod_release_id", "release_platform_run_id"
+        whitelist_timestamps
+      end
+
+      table "builds" do
+        continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !Build.exists?(record["id"]) }
+        primary_key "id"
+        whitelist "build_number", "generated_at", "sequence_number", "size_in_bytes", "version_name", "commit_id", "release_platform_run_id", "workflow_run_id"
+        whitelist_timestamps
+      end
+
+      table "production_releases" do
+        continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !ProductionRelease.exists?(record["id"]) }
+        primary_key "id"
+        whitelist "release_platform_run_id", "status", "commit_id", "build_id"
+        whitelist_timestamps
+        anonymize("previous_id") { |_| nil }
+        anonymize("config") do |field|
+          c = field.value
+          c.dig("submissions")&.each do |submission|
+            submission["integrable_id"] = app.id
+          end
+          c
+        end
+      end
+
+      table "store_submissions" do
+        continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !StoreSubmission.exists?(record["id"]) }
+        primary_key "id"
+        whitelist "approved_at", "failure_reason", "name", "parent_release_type", "prepared_at", "rejected_at", "sequence_number", "status",
+          "store_release", "store_status", "submitted_at", "type", "build_id", "parent_release_id", "release_platform_run_id"
+        whitelist_timestamps
+        anonymize("config") do |field|
+          c = field.value
+          c["integrable_id"] = app.id
+          c
+        end
+      end
+
+      table "store_rollouts" do
+        continue { |index, record| StoreSubmission.exists?(record["store_submission_id"]) && !StoreRollout.exists?(record["id"]) }
+        primary_key "id"
+        whitelist "completed_at", "config", "current_stage", "is_staged_rollout", "status", "type", "store_submission_id", "release_platform_run_id"
         whitelist_timestamps
       end
 
