@@ -14,7 +14,8 @@ FactoryBot.define do
           release_candidate: {
             name: Faker::FunnyName.name,
             id: Faker::Number.number(digits: 8),
-            artifact_name_pattern: nil
+            artifact_name_pattern: nil,
+            kind: "release_candidate"
           }
         },
         internal_release: nil,
@@ -55,7 +56,8 @@ FactoryBot.define do
             release_candidate: {
               name: Faker::FunnyName.name,
               id: Faker::Number.number(digits: 8),
-              artifact_name_pattern: nil
+              artifact_name_pattern: nil,
+              kind: "release_candidate"
             }
           },
           internal_release: nil,
@@ -115,10 +117,10 @@ FactoryBot.define do
   end
 end
 
-def create_production_rollout_tree(train, release_platform, release_status: :finished, rollout_status: :completed, submission_status: :created, skip_rollout: false)
-  release = create(:release, release_status, train:)
+def create_production_rollout_tree(train, release_platform, release_traits: [:finished], run_status: :finished, rollout_status: :completed, submission_status: :created, skip_rollout: false)
+  release = create(:release, *release_traits, train:)
   platform = release_platform.platform
-  release_platform_run = create(:release_platform_run, platform.to_sym, :finished, release_platform:, release:)
+  release_platform_run = create(:release_platform_run, platform.to_sym, run_status, release_platform:, release:)
   parent_release = create(:production_release, :finished, config: release_platform_run.conf.production_release.as_json, release_platform_run:)
   store_submission = create(:play_store_submission, status: submission_status, config: parent_release.conf.submissions.first, parent_release:, release_platform_run:)
 
