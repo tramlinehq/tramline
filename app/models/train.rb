@@ -11,6 +11,7 @@
 #  build_queue_wait_time              :interval
 #  compact_build_notes                :boolean          default(FALSE)
 #  description                        :string
+#  freeze_version                     :boolean          default(FALSE)
 #  kickoff_at                         :datetime
 #  manual_release                     :boolean          default(FALSE)
 #  name                               :string           not null
@@ -98,6 +99,7 @@ class Train < ApplicationRecord
   validate :working_branch_presence, on: :create
   validate :ci_cd_workflows_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
+  validate :version_config_constraints
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -599,6 +601,12 @@ class Train < ApplicationRecord
     else
       errors.add(:build_queue_size, :config_not_allowed) if build_queue_size.present?
       errors.add(:build_queue_wait_time, :config_not_allowed) if build_queue_wait_time.present?
+    end
+  end
+
+  def version_config_constraints
+    if freeze_version && patch_version_bump_only
+      errors.add(:base, "both freeze_version and patch_version_bump_only cannot be true at the same time")
     end
   end
 end

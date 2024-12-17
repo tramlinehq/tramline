@@ -7,7 +7,7 @@
   <% end %>
 <% end %>
 
-<div data-controller="branching-selector"
+<div data-controller="branching-selector dependent-disable domain--version-name-help"
      data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
   <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
     <% f.with_section(heading: "Basic") do |section| %>
@@ -44,8 +44,7 @@
           </span>
       <% end %>
 
-      <div data-controller="domain--version-name-help"
-           data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
+      <div data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
         <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>
         <div class="flex flex-row gap-x-2 items-center">
           <%= section.F.text_field_without_label :major_version_seed, "major",
@@ -250,6 +249,20 @@
       <% end %>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Freeze release version") do |section| %>
+      <% section.with_description do %>
+        Versions are automatically managed and bumped by Tramline.
+        Turn this on if you want to keep a single static release version for all releases.
+      <% end %>
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :freeze_version,
+                                               on_label: "Freeze release version enabled",
+                                               off_label: "Freeze release version disabled",
+                                               switch_data: { action: "dependent-disable#change domain--version-name-help#updateVersion",
+                                                              dependent_disable_target: "primary", domain__version_name_help_target: "freezeReleaseVersion" }) %>
+
+    <% end %>
+
     <%= f.with_advanced_section(heading: "Patch Version Change Only") do |section| %>
       <% section.with_description do %>
         By default, minor version of the app is bumped up between each successful release of the train.
@@ -259,7 +272,8 @@
       <%= render V2::Form::SwitchComponent.new(form: section.F,
                                                field_name: :patch_version_bump_only,
                                                on_label: "Only patch version will change between releases",
-                                               off_label: "Minor version will change between releases (default)") %>
+                                               off_label: "Minor version will change between releases (default)",
+                                               switch_data: { dependent_disable_target: "secondary", action: "dependent-disable#change" }) %>
     <% end %>
 
     <% f.with_action do %>

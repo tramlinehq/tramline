@@ -583,6 +583,11 @@ class Release < ApplicationRecord
   end
 
   def set_version
+    if train.freeze_version? && custom_version.blank?
+      self.original_release_version = train.version_current
+      return
+    end
+
     if custom_version.present?
       self.original_release_version = custom_version
       return
