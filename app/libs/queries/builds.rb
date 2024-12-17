@@ -4,7 +4,7 @@ class Queries::Builds
   DEFAULT_SORT_COLUMN = "version_code"
 
   BASE_ATTR_MAPPING = {
-    version_code: Build.arel_table[:build_number],
+    version_code: Arel::Nodes::NamedFunction.new("CAST", [Build.arel_table[:build_number].as("integer")]),
     version_name: Build.arel_table[:version_name],
     ci_link: WorkflowRun.arel_table[:external_url],
     train_name: Train.arel_table[:name],
