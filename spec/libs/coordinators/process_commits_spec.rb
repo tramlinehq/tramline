@@ -4,11 +4,12 @@ require "rails_helper"
 
 describe Coordinators::ProcessCommits do
   let(:head_commit_hash) { SecureRandom.uuid.split("-").join }
+  let(:ts) { Time.current.iso8601(3) }
   let(:head_commit_attributes) do
     {
       commit_hash: head_commit_hash,
       message: Faker::Lorem.sentence,
-      timestamp: Time.current,
+      timestamp: ts,
       author_name: Faker::Name.name,
       author_email: Faker::Internet.email,
       url: Faker::Internet.url,
@@ -20,7 +21,7 @@ describe Coordinators::ProcessCommits do
       {
         commit_hash: "2",
         message: Faker::Lorem.sentence,
-        timestamp: Time.current,
+        timestamp: ts,
         author_name: Faker::Name.name,
         author_email: Faker::Internet.email,
         url: Faker::Internet.url,
@@ -29,7 +30,7 @@ describe Coordinators::ProcessCommits do
       {
         commit_hash: "1",
         message: Faker::Lorem.sentence,
-        timestamp: Time.current,
+        timestamp: ts,
         author_name: Faker::Name.name,
         author_email: Faker::Internet.email,
         url: Faker::Internet.url,
@@ -208,7 +209,7 @@ describe Coordinators::ProcessCommits do
     end
 
     context "when fudging head commit timestamp" do
-      it "adds 1 millisecond" do
+      it "adds 100 milliseconds" do
         release = create(:release, :created, :with_no_platform_runs, train:)
         _release_platform_run = create(:release_platform_run, release_platform:, release:)
 
@@ -218,7 +219,7 @@ describe Coordinators::ProcessCommits do
         commit_attributes = {
           commit_hash: head_commit_hash,
           message: Faker::Lorem.sentence,
-          timestamp: t_minus_ms,
+          timestamp: t_minus_ms.iso8601(3),
           author_name: Faker::Name.name,
           author_email: Faker::Internet.email,
           url: Faker::Internet.url,
@@ -230,7 +231,7 @@ describe Coordinators::ProcessCommits do
 
         commit_ts = release.last_commit.timestamp
         fudged = ((commit_ts - t_minus_ms) * 1000).round
-        expect(fudged).to eq(1)
+        expect(fudged).to eq(100)
       end
 
       it "ensures the commit order is maintained" do
@@ -238,7 +239,7 @@ describe Coordinators::ProcessCommits do
         _release_platform_run = create(:release_platform_run, release_platform:, release:)
 
         t = Time.current
-        t_minus_ms = Time.new(t.year, t.month, t.day, t.hour, t.min, t.sec, t.utc_offset)
+        t_minus_ms = Time.new(t.year, t.month, t.day, t.hour, t.min, t.sec, t.utc_offset).iso8601(3)
 
         commit_attributes = {
           commit_hash: "1",

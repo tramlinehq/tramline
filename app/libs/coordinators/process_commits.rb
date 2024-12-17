@@ -61,12 +61,12 @@ class Coordinators::ProcessCommits
       .merge(parents: commit_log.find { _1[:commit_hash] == attributes[:commit_hash] }&.dig(:parents))
   end
 
-  # To ensure that the HEAD commit is always on top
-  # We fudge it to be 1 millisecond after the original timestamp
+  # To ensure that the HEAD commit is always on the top
+  # We fudge it to add 100 ms after the original timestamp
   def fudge_timestamp(commit)
-    original_time = commit[:timestamp]
-    new_time = original_time + 0.001
-    commit[:timestamp] = new_time
+    original_time = Time.zone.parse(commit[:timestamp])
+    new_time = original_time + 0.1
+    commit[:timestamp] = new_time.iso8601(5) # 5 digit ms precision
     commit
   end
 
