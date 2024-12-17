@@ -101,6 +101,10 @@ class App < ApplicationRecord
     integrations.bugsnag_integrations.any?
   end
 
+  def crashlytics_connected?
+    integrations.crashlytics_integrations.any?
+  end
+
   def bitbucket_connected?
     integrations.bitbucket_integrations.any?
   end

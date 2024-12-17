@@ -321,13 +321,13 @@ class ReleasePlatformRun < ApplicationRecord
 
   # recursively attempt to create a release tag until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
-  def create_tag!(input_tag_name = base_tag_name)
-    train.create_tag!(input_tag_name, last_commit.commit_hash)
+  def create_tag!(commit, input_tag_name = base_tag_name)
+    train.create_tag!(input_tag_name, commit.commit_hash)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :tag_created, kind: :notice, data: {tag: tag_name})
   rescue Installations::Error => ex
     raise unless ex.reason == :tag_reference_already_exists
-    create_tag!(unique_tag_name(input_tag_name))
+    create_tag!(commit, unique_tag_name(input_tag_name, commit.short_sha))
   end
 
   # Play Store does not have constraints around version name

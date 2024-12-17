@@ -234,7 +234,7 @@ describe ReleasePlatformRun do
       commit = create(:commit, :without_trigger, release:)
       release_platform_run.update!(last_commit: commit)
 
-      release_platform_run.create_tag!
+      release_platform_run.create_tag!(commit)
       expect(release_platform_run.tag_name).to eq("v1.2.3-android")
     end
 
@@ -243,7 +243,7 @@ describe ReleasePlatformRun do
       commit = create(:commit, :without_trigger, release:)
       release_platform_run.update!(last_commit: commit)
 
-      release_platform_run.create_tag!
+      release_platform_run.create_tag!(commit)
       expect(release_platform_run.tag_name).to eq("v1.2.3-android-#{commit.short_sha}")
     end
 
@@ -255,7 +255,7 @@ describe ReleasePlatformRun do
         commit = create(:commit, :without_trigger, release:)
         release_platform_run.update!(last_commit: commit)
 
-        release_platform_run.create_tag!
+        release_platform_run.create_tag!(commit)
         expect(release_platform_run.tag_name).to eq("v1.2.3-android-#{commit.short_sha}-#{now}")
       end
     end
