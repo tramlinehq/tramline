@@ -207,29 +207,75 @@ describe Coordinators::ProcessCommits do
       end
     end
 
-    it "fudges the timestamp of the head commit by 1 millisecond" do
-      release = create(:release, :created, :with_no_platform_runs, train:)
-      _release_platform_run = create(:release_platform_run, release_platform:, release:)
+    context "when fudging head commit timestamp" do
+      it "adds 1 millisecond" do
+        release = create(:release, :created, :with_no_platform_runs, train:)
+        _release_platform_run = create(:release_platform_run, release_platform:, release:)
 
-      t = Time.current
-      t_minus_ms = Time.new(t.year, t.month, t.day, t.hour, t.min, t.sec, t.utc_offset)
+        t = Time.current
+        t_minus_ms = Time.new(t.year, t.month, t.day, t.hour, t.min, t.sec, t.utc_offset)
 
-      commit_attributes = {
-        commit_hash: head_commit_hash,
-        message: Faker::Lorem.sentence,
-        timestamp: t_minus_ms,
-        author_name: Faker::Name.name,
-        author_email: Faker::Internet.email,
-        url: Faker::Internet.url,
-        branch_name: Faker::Lorem.word
-      }
+        commit_attributes = {
+          commit_hash: head_commit_hash,
+          message: Faker::Lorem.sentence,
+          timestamp: t_minus_ms,
+          author_name: Faker::Name.name,
+          author_email: Faker::Internet.email,
+          url: Faker::Internet.url,
+          branch_name: Faker::Lorem.word
+        }
 
-      described_class.call(release, commit_attributes, [])
-      release.reload
+        described_class.call(release, commit_attributes, [])
+        release.reload
 
-      commit_ts = release.last_commit.timestamp
-      fudged = ((commit_ts - t_minus_ms) * 1000).round
-      expect(fudged).to eq(1)
+        commit_ts = release.last_commit.timestamp
+        fudged = ((commit_ts - t_minus_ms) * 1000).round
+        expect(fudged).to eq(1)
+      end
+
+      it "ensures the commit order is maintained" do
+        release = create(:release, :created, :with_no_platform_runs, train:)
+        _release_platform_run = create(:release_platform_run, release_platform:, release:)
+
+        t = Time.current
+        t_minus_ms = Time.new(t.year, t.month, t.day, t.hour, t.min, t.sec, t.utc_offset)
+
+        commit_attributes = {
+          commit_hash: "1",
+          message: Faker::Lorem.sentence,
+          timestamp: t_minus_ms,
+          author_name: Faker::Name.name,
+          author_email: Faker::Internet.email,
+          url: Faker::Internet.url,
+          branch_name: Faker::Lorem.word
+        }
+
+        other_commit_attributes = [
+          {
+            commit_hash: "3",
+            message: Faker::Lorem.sentence,
+            timestamp: t_minus_ms,
+            author_name: Faker::Name.name,
+            author_email: Faker::Internet.email,
+            url: Faker::Internet.url,
+            branch_name: Faker::Lorem.word
+          },
+          {
+            commit_hash: "2",
+            message: Faker::Lorem.sentence,
+            timestamp: t_minus_ms,
+            author_name: Faker::Name.name,
+            author_email: Faker::Internet.email,
+            url: Faker::Internet.url,
+            branch_name: Faker::Lorem.word
+          }
+        ]
+
+        described_class.call(release, commit_attributes, other_commit_attributes)
+        release.reload
+
+        expect(release.all_commits.sequential.first.commit_hash).to eq("1")
+      end
     end
   end
 end
