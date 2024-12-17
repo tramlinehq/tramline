@@ -34,7 +34,7 @@ class Coordinators::ProcessCommits
   private
 
   def create_head_commit!
-    commit = Commit.find_or_create_by!(commit_params(head_commit))
+    commit = Commit.find_or_create_by!(commit_params(fudge_timestamp(head_commit)))
     if release.queue_commit?
       queue_commit!(commit)
     else
@@ -59,6 +59,16 @@ class Coordinators::ProcessCommits
       .slice(:commit_hash, :message, :timestamp, :author_name, :author_email, :author_login, :url)
       .merge(release:)
       .merge(parents: commit_log.find { _1[:commit_hash] == attributes[:commit_hash] }&.dig(:parents))
+  end
+
+  # To ensure that the HEAD commit is always on the top
+  # We fudge it to add 100 ms after the original timestamp
+  # This can happen in a rare scenario when all the commits are on the same second
+  def fudge_timestamp(commit)
+    original_time = Time.zone.parse(commit[:timestamp])
+    new_time = original_time + 0.1
+    commit[:timestamp] = new_time.iso8601(5) # 5 digit ms precision
+    commit
   end
 
   # TODO: fetch parents for Gitlab commits also
