@@ -61,9 +61,8 @@ class Coordinators::ProcessCommits
       .merge(parents: commit_log.find { _1[:commit_hash] == attributes[:commit_hash] }&.dig(:parents))
   end
 
-  # In some VCS providers, there is no millisecond precision in the timestamp
-  # So we fudge it to be 1 millisecond after the original timestamp
-  # This is to ensure that the head commit is always the one on the top
+  # To ensure that the HEAD commit is always on top
+  # We fudge it to be 1 millisecond after the original timestamp
   def fudge_timestamp(commit)
     original_time = commit[:timestamp]
     new_time = original_time + 0.001
