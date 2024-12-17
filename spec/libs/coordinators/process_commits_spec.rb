@@ -206,5 +206,30 @@ describe Coordinators::ProcessCommits do
         expect(Coordinators::CreateBetaRelease).not_to have_received(:call)
       end
     end
+
+    it "fudges the timestamp of the head commit by 1 millisecond" do
+      release = create(:release, :created, :with_no_platform_runs, train:)
+      _release_platform_run = create(:release_platform_run, release_platform:, release:)
+
+      t = Time.current
+      t_minus_ms = Time.new(t.year, t.month, t.day, t.hour, t.min, t.sec, t.utc_offset)
+
+      commit_attributes = {
+        commit_hash: head_commit_hash,
+        message: Faker::Lorem.sentence,
+        timestamp: t_minus_ms,
+        author_name: Faker::Name.name,
+        author_email: Faker::Internet.email,
+        url: Faker::Internet.url,
+        branch_name: Faker::Lorem.word
+      }
+
+      described_class.call(release, commit_attributes, [])
+      release.reload
+
+      commit_ts = release.last_commit.timestamp
+      fudged = ((commit_ts - t_minus_ms) * 1000).round
+      expect(fudged).to eq(1)
+    end
   end
 end

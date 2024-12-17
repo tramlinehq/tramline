@@ -34,7 +34,7 @@ class Coordinators::ProcessCommits
   private
 
   def create_head_commit!
-    commit = Commit.find_or_create_by!(commit_params(head_commit))
+    commit = Commit.find_or_create_by!(commit_params(fudge_timestamp(head_commit)))
     if release.queue_commit?
       queue_commit!(commit)
     else
@@ -59,6 +59,17 @@ class Coordinators::ProcessCommits
       .slice(:commit_hash, :message, :timestamp, :author_name, :author_email, :author_login, :url)
       .merge(release:)
       .merge(parents: commit_log.find { _1[:commit_hash] == attributes[:commit_hash] }&.dig(:parents))
+  end
+
+  # In some VCS providers, there is no millisecond precision in the timestamp
+  # So we fudge it to be 1 millisecond after the original timestamp
+  # This is to ensure that the head commit is always the one on the top
+  def fudge_timestamp(commit)
+    original_time = commit[:timestamp]
+    ms = 0.001
+    new_time = original_time + ms
+    commit[:timestamp] = new_time
+    commit
   end
 
   # TODO: fetch parents for Gitlab commits also
