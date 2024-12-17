@@ -48,8 +48,8 @@ class ProductionRelease < ApplicationRecord
   ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
   JOB_FREQUENCY = {
-    "Crashlytics" => 30.minutes,
-    "Bugsnag" => 5.minutes
+    CrashlyticsIntegration => 30.minutes,
+    BugsnagIntegration => 5.minutes
   }
 
   enum :status, STATES
@@ -121,7 +121,7 @@ class ProductionRelease < ApplicationRecord
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
-    V2::FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[monitoring_provider.display])
+    V2::FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[monitoring_provider.class])
   end
 
   def beyond_monitoring_period?
