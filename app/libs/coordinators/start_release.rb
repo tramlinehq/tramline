@@ -34,7 +34,7 @@ class Coordinators::StartRelease
     raise "Hotfix platform - #{hotfix_platform} is not valid!" if invalid_hotfix_platform?
 
     kickoff
-    RefreshReportsJob.perform_later(release.hotfixed_from.id) if release.hotfix?
+    Coordinators::Signals.release_has_started!(release)
     release
   end
 

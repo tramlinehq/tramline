@@ -163,8 +163,6 @@ class Release < ApplicationRecord
   before_create :set_internal_notes
   after_create :create_platform_runs!
   after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
-  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
-  after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
   attr_accessor :has_major_bump, :hotfix_platform, :custom_version

@@ -43,6 +43,13 @@ module Coordinators
   # metadata
 
   module Signals
+    def self.release_has_started!(release)
+      release.notify!("New release has commenced!", :release_started, release.notification_params)
+      Releases::PreReleaseJob.perform_later(release.id)
+      Releases::FetchCommitLogJob.perform_later(release.id)
+      RefreshReportsJob.perform_later(release.hotfixed_from.id) if release.hotfix?
+    end
+
     def self.commits_have_landed!(release, head_commit, rest_commits)
       Coordinators::ProcessCommits.call(release, head_commit, rest_commits)
     end

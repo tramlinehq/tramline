@@ -24,11 +24,6 @@ class Coordinators::ProcessCommits
       create_other_commits!
       create_head_commit!
     end
-
-    # TODO: [V2] move this to trigger release
-    if release.all_commits.size.eql?(1)
-      release.notify!("New release has commenced!", :release_started, release.notification_params)
-    end
   end
 
   private
