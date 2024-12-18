@@ -8,7 +8,9 @@ class EventTimeline::EventMessageComponent < ViewComponent::Base
     PreProdRelease => "box",
     ProductionRelease => "box",
     ReleasePlatformRun => "bolt",
-    Release => "bolt"
+    Release => "bolt",
+    WorkflowRun => "workflow",
+    Build => "drill"
   }
 
   BADGE = {
