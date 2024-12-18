@@ -20,17 +20,33 @@ describe Triggers::ReleaseBackmerge do
     expect(Triggers::PatchPullRequest).not_to have_received(:create!)
   end
 
-  it "does nothing if cherry-picks are not allowed and it is not a head commit" do
-    app = create(:app, platform: :android)
-    vcs_providable = create(:bitbucket_integration, :without_callbacks_and_validations)
-    _vcs_provider = create(:integration, category: "version_control", providable: vcs_providable, integrable: app)
-    train = create(:train, :with_almost_trunk, app:, backmerge_strategy: "continuous")
-    release = create(:release, :on_track, train:)
-    commit = create(:commit, release:)
+  context "when single_pr_backmerge_for_multi_commit_push is configured" do
+    it "creates a patch PR when it is off and is_head_commit is irrelevant" do
+      Flipper.disable_actor(:single_pr_backmerge_for_multi_commit_push, train.organization)
+      commit = create(:commit, release:)
 
-    described_class.call(commit, is_head_commit: false)
+      described_class.call(commit, is_head_commit: [true, false].sample)
 
-    expect(Triggers::PatchPullRequest).not_to have_received(:create!)
+      expect(Triggers::PatchPullRequest).to have_received(:create!)
+    end
+
+    it "does not create patch PR when it is on and it is not a head commit" do
+      Flipper.enable_actor(:single_pr_backmerge_for_multi_commit_push, train.organization)
+      commit = create(:commit, release:)
+
+      described_class.call(commit, is_head_commit: false)
+
+      expect(Triggers::PatchPullRequest).not_to have_received(:create!)
+    end
+
+    it "creates patch PR when it is on and it is a head commit" do
+      Flipper.enable_actor(:single_pr_backmerge_for_multi_commit_push, train.organization)
+      commit = create(:commit, release:)
+
+      described_class.call(commit, is_head_commit: true)
+
+      expect(Triggers::PatchPullRequest).to have_received(:create!)
+    end
   end
 
   it "does not create a patch PR it there is only one commit" do

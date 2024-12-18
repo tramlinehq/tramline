@@ -12,8 +12,12 @@ class Triggers::ReleaseBackmerge
   end
 
   def call
+    if release.organization.single_pr_backmerge_for_multi_commit_push? && !@is_head_commit
+      return
+    end
+
     result = release.with_lock do
-      return GitHub::Result.new {} if skip_backmerge?
+      return GitHub::Result.new {} unless backmerge_allowed?
       Triggers::PatchPullRequest.create!(release, commit)
     end
 
@@ -27,14 +31,10 @@ class Triggers::ReleaseBackmerge
 
   private
 
-  def skip_backmerge?
-    !train.almost_trunk? ||
-      !train.continuous_backmerge? ||
-      (!release.vcs_provider.cherry_picks_allowed? && !is_head_commit) ||
-      !release.committable? ||
-      !release.release_changes?
+  def backmerge_allowed?
+    train.almost_trunk? && train.continuous_backmerge? && release.committable? && release.release_changes?
   end
 
-  attr_reader :release, :commit, :is_head_commit
+  attr_reader :release, :commit
   delegate :train, to: :release
 end

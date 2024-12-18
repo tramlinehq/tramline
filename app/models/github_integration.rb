@@ -205,8 +205,6 @@ class GithubIntegration < ApplicationRecord
     false
   end
 
-  def cherry_picks_allowed? = true
-
   def connection_data
     return unless integration.metadata
     "Organization: #{integration.metadata["account_name"]} (#{integration.metadata["account_id"]})"

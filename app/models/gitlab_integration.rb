@@ -132,8 +132,6 @@ class GitlabIntegration < ApplicationRecord
     false
   end
 
-  def cherry_picks_allowed? = true
-
   def find_or_create_webhook!(id:, train_id:)
     GitHub::Result.new do
       if id
