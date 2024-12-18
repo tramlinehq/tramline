@@ -309,12 +309,6 @@ class ReleasePlatformRun < ApplicationRecord
     Flipper.enabled?(:temporary_unblock_upcoming, self)
   end
 
-  def final_build_artifact
-    return unless finished?
-    # TODO: [V2] what is this for? how to get for v2?
-    nil
-  end
-
   def tag_url
     train.vcs_provider&.tag_url(tag_name)
   end

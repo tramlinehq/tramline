@@ -32,7 +32,6 @@ class Release < ApplicationRecord
   include Versionable
   include Displayable
   include Linkable
-  include ActionView::Helpers::DateHelper
 
   using RefinedString
 
@@ -392,16 +391,6 @@ class Release < ApplicationRecord
     release_platform_runs.all? { |prun| prun.finished? || prun.stopped? }
   end
 
-  def finalize_phase_metadata
-    {
-      total_run_time: distance_of_time_in_words(created_at, completed_at),
-      release_tag: tag_name,
-      release_tag_url: tag_url,
-      store_url: (app.store_link unless app.cross_platform?),
-      final_artifact_url: (release_platform_runs.first&.final_build_artifact&.download_url unless app.cross_platform?)
-    }
-  end
-
   def live_release_link
     return if Rails.env.test?
     release_url(self, link_params)
@@ -555,13 +544,13 @@ class Release < ApplicationRecord
   end
 
   def set_version
-    if train.freeze_version? && custom_version.blank?
-      self.original_release_version = train.version_current
+    if custom_version.present?
+      self.original_release_version = custom_version
       return
     end
 
-    if custom_version.present?
-      self.original_release_version = custom_version
+    if train.freeze_version?
+      self.original_release_version = train.version_current
       return
     end
 
