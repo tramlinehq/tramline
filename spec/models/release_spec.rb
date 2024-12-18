@@ -496,67 +496,65 @@ describe Release do
       expect(stopped_release.index_score).to be_nil
     end
 
-    # TODO: [V2] Replace this with a test that uses the new index score calculation
-    # [
-    #   [PERFECT_SCORE_COMPONENTS, 1.0],
-    #   [PERFECT_SCORE_COMPONENTS.merge(stability_changes: {input: 11, range_value: 0.5, value: 0.075}), 0.925],
-    #   [PERFECT_SCORE_COMPONENTS.merge(
-    #     duration: {input: 15, range_value: 0.5, value: 0.025},
-    #     rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
-    #     stability_changes: {input: 11, range_value: 0.5, value: 0.075}
-    #   ), 0.825],
-    #   [PERFECT_SCORE_COMPONENTS.merge(
-    #     hotfixes: {input: 1, range_value: 0, value: 0},
-    #     duration: {input: 15, range_value: 0.5, value: 0.025},
-    #     rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
-    #     stability_changes: {input: 11, range_value: 0.5, value: 0.075}
-    #   ), 0.525],
-    #   [PERFECT_SCORE_COMPONENTS.merge(
-    #     hotfixes: {input: 1, range_value: 0, value: 0},
-    #     rollout_fixes: {input: 2, range_value: 0, value: 0},
-    #     duration: {input: 15, range_value: 0.5, value: 0.025},
-    #     rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
-    #     stability_changes: {input: 11, range_value: 0.5, value: 0.075}
-    #   ), 0.325]
-    # ].each do |components, final_score|
-    #   it "returns the index score for a finished release" do
-    #     create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release]) => { step:, deployment:, train: }
-    #
-    #     travel_to(components[:duration][:input].days.ago)
-    #     release = create(:release, :on_track, :with_no_platform_runs, train:)
-    #     release_platform_run = create(:release_platform_run, release:)
-    #     create_list(:commit, components[:stability_changes][:input] + 1, release:)
-    #     travel_back
-    #
-    #     travel_to((components[:rollout_duration][:input] - 2).days.ago)
-    #     submitted_step_run = create(:step_run, :deployment_started, release_platform_run:, step:)
-    #     create(:deployment_run, :rollout_started, step_run: submitted_step_run, deployment:)
-    #     travel_back
-    #
-    #     travel_to(components[:rollout_duration][:input].days.ago)
-    #     step_runs = create_list(:step_run, components[:rollout_fixes][:input], :deployment_started, release_platform_run:, step:)
-    #     step_runs.each do |step_run|
-    #       create(:deployment_run, :rollout_started, step_run:, deployment:)
-    #     end
-    #     step_run = create(:step_run, :deployment_started, release_platform_run:)
-    #     deployment_run = create(:deployment_run, :rollout_started, step_run:, deployment:)
-    #     travel_back
-    #
-    #     deployment_run.complete!
-    #     release.update! completed_at: Time.current, status: :finished
-    #     create_list(:release, components[:hotfixes][:input], :hotfix, hotfixed_from: release)
-    #
-    #     expected_range_values = components.transform_values { |v| v[:range_value] }
-    #     expected_values = components.transform_values { |v| v[:value] }
-    #
-    #     score = release.index_score
-    #
-    #     expect(score).to be_a(ReleaseIndex::Score)
-    #     expect(score.components.map { |c| [c.release_index_component.name.to_sym, c.range_value] }.to_h).to eq(expected_range_values)
-    #     expect(score.components.map { |c| [c.release_index_component.name.to_sym, c.value] }.to_h).to eq(expected_values)
-    #     expect(score.value).to eq(final_score)
-    #   end
-    # end
+    [
+      [PERFECT_SCORE_COMPONENTS, 1.0],
+      [PERFECT_SCORE_COMPONENTS.merge(stability_changes: {input: 11, range_value: 0.5, value: 0.075}), 0.925],
+      [PERFECT_SCORE_COMPONENTS.merge(
+        duration: {input: 15, range_value: 0.5, value: 0.025},
+        rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
+        stability_changes: {input: 11, range_value: 0.5, value: 0.075}
+      ), 0.825],
+      [PERFECT_SCORE_COMPONENTS.merge(
+        hotfixes: {input: 1, range_value: 0, value: 0},
+        duration: {input: 15, range_value: 0.5, value: 0.025},
+        rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
+        stability_changes: {input: 11, range_value: 0.5, value: 0.075}
+      ), 0.525],
+      [PERFECT_SCORE_COMPONENTS.merge(
+        hotfixes: {input: 1, range_value: 0, value: 0},
+        rollout_fixes: {input: 2, range_value: 0, value: 0},
+        duration: {input: 15, range_value: 0.5, value: 0.025},
+        rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
+        stability_changes: {input: 11, range_value: 0.5, value: 0.075}
+      ), 0.325]
+    ].each do |components, final_score|
+      it "returns the index score for a finished release" do
+        train = create(:train, :with_no_platforms)
+        release_platform = create(:release_platform, train:)
+
+        travel_to(components[:duration][:input].days.ago)
+        release = create(:release, :on_track, :with_no_platform_runs, train:)
+        release_platform_run = create(:release_platform_run, release:, release_platform:)
+        create_list(:commit, components[:stability_changes][:input] + 1, release:)
+        travel_back
+
+        travel_to(components[:rollout_duration][:input].days.ago)
+        production_releases = create_list(:production_release, components[:rollout_fixes][:input], :stale, release_platform_run:, build: create(:build, release_platform_run:))
+        production_releases.each do |production_release|
+          store_submission = create(:play_store_submission, :prepared, parent_release: production_release)
+          create(:store_rollout, :started, release_platform_run:, store_submission:)
+        end
+        production_release = create(:production_release, :active, release_platform_run:, build: create(:build, release_platform_run:))
+        store_submission = create(:play_store_submission, :prepared, parent_release: production_release)
+        store_rollout = create(:store_rollout, :started, release_platform_run:, store_submission:)
+        travel_back
+
+        store_rollout.update!(status: :completed)
+        production_release.update!(status: :finished)
+        release.update! completed_at: Time.current, status: :finished
+        create_list(:release, components[:hotfixes][:input], :hotfix, hotfixed_from: release)
+
+        expected_range_values = components.transform_values { |v| v[:range_value] }
+        expected_values = components.transform_values { |v| v[:value] }
+
+        score = release.index_score
+
+        expect(score).to be_a(ReleaseIndex::Score)
+        expect(score.components.map { |c| [c.release_index_component.name.to_sym, c.range_value] }.to_h).to eq(expected_range_values)
+        expect(score.components.map { |c| [c.release_index_component.name.to_sym, c.value] }.to_h).to eq(expected_values)
+        expect(score.value).to eq(final_score)
+      end
+    end
   end
 
   describe "#failure_anywhere?" do

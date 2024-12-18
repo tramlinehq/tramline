@@ -45,128 +45,97 @@ describe ReleasePlatformRun do
     end
   end
 
-  # TODO: [V2] Replace this with a test that uses the new models
-  # describe "#bump_version!" do
-  #   [[:android, :with_production_channel],
-  #    [:android, :with_staged_rollout],
-  #    [:ios, :with_production_channel],
-  #    [:ios, :with_phased_release]].each do |platform, deployment_trait|
-  #     test_case_help = [platform, deployment_trait].join(", ").humanize.downcase
-  #
-  #     it "updates the minor version if the current version is a partial semver with #{test_case_help}" do
-  #       release_version = "1.2"
-  #       create_deployment_tree(platform, deployment_trait, step_traits: [:release]) => { train:, release_platform:, step:, deployment: }
-  #       release = create(:release, train:)
-  #       release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
-  #       step_run = create(:step_run, release_platform_run:, step:, build_version: release_version)
-  #       create(:deployment_run, :rollout_started, deployment:, step_run:)
-  #
-  #       release_platform_run.bump_version!
-  #       release_platform_run.reload
-  #
-  #       expect(release_platform_run.release_version).to eq("1.3")
-  #     end
-  #
-  #     it "updates the patch version if the current version is a proper semver with #{test_case_help}" do
-  #       release_version = "1.2.3"
-  #       create_deployment_tree(platform, deployment_trait, step_traits: [:release]) => { train:, release_platform:, step:, deployment: }
-  #       release = create(:release, train:)
-  #       release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
-  #       step_run = create(:step_run, release_platform_run:, step:, build_version: release_version)
-  #       create(:deployment_run, :rollout_started, deployment:, step_run:)
-  #
-  #       release_platform_run.bump_version!
-  #       release_platform_run.reload
-  #
-  #       expect(release_platform_run.release_version).to eq("1.2.4")
-  #     end
-  #   end
-  #
-  #   it "does not do anything if no production deployments" do
-  #     release_version = "1.2.3"
-  #     create_deployment_tree => { train:, release_platform:, step: }
-  #     release = create(:release, train:)
-  #     release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
-  #     step_run = create(:step_run, step:, release_platform_run:)
-  #     create(:deployment_run, step_run: step_run)
-  #
-  #     expect {
-  #       release_platform_run.bump_version!
-  #     }.not_to change { release_platform_run.release_version }
-  #   end
-  #
-  #   context "when upcoming release and proper semver" do
-  #     let(:ongoing_release_version) { "1.2.3" }
-  #     let(:upcoming_release_version) { "1.3.0" }
-  #     let(:factory_tree) { create_deployment_tree(:android, :with_production_channel, step_traits: [:release]) }
-  #     let(:train) { factory_tree[:train] }
-  #     let(:release_platform) { factory_tree[:release_platform] }
-  #     let(:step) { factory_tree[:step] }
-  #     let(:deployment) { factory_tree[:deployment] }
-  #     let(:release) { create(:release, train:) }
-  #     let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
-  #     let(:upcoming_release) { create(:release, :with_no_platform_runs, train:, original_release_version: upcoming_release_version) }
-  #
-  #     it "bumps patch version" do
-  #       ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version: ongoing_release_version)
-  #       _upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
-  #       step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step:, build_version: ongoing_release_platform_run.release_version)
-  #       create(:deployment_run, :rollout_started, deployment:, step_run: step_run)
-  #
-  #       ongoing_release_platform_run.bump_version!
-  #       ongoing_release_platform_run.reload
-  #
-  #       expect(ongoing_release_platform_run.release_version).to eq("1.2.4")
-  #     end
-  #   end
-  #
-  #   context "when upcoming release and partial semver" do
-  #     let(:ongoing_release_version) { "1.2" }
-  #     let(:upcoming_release_version) { "1.3" }
-  #     let(:factory_tree) { create_deployment_tree(:android, :with_production_channel, step_traits: [:release]) }
-  #     let(:train) { factory_tree[:train] }
-  #     let(:release_platform) { factory_tree[:release_platform] }
-  #     let(:step) { factory_tree[:step] }
-  #     let(:deployment) { factory_tree[:deployment] }
-  #     let(:release) { create(:release, train:) }
-  #     let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
-  #     let(:upcoming_release) { create(:release, :with_no_platform_runs, train:, original_release_version: upcoming_release_version) }
-  #
-  #     it "bumps version to higher than current upcoming release version" do
-  #       ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
-  #       _upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
-  #       step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step:, build_version: ongoing_release_platform_run.release_version)
-  #       create(:deployment_run, :rollout_started, deployment:, step_run: step_run)
-  #
-  #       ongoing_release_platform_run.bump_version!
-  #       ongoing_release_platform_run.reload
-  #
-  #       expect(ongoing_release_platform_run.release_version).to eq("1.4")
-  #     end
-  #   end
-  #
-  #   context "when no upcoming release and partial semver" do
-  #     let(:ongoing_release_version) { "1.2" }
-  #     let(:factory_tree) { create_deployment_tree(:android, :with_production_channel, step_traits: [:release]) }
-  #     let(:train) { factory_tree[:train] }
-  #     let(:release_platform) { factory_tree[:release_platform] }
-  #     let(:step) { factory_tree[:step] }
-  #     let(:deployment) { factory_tree[:deployment] }
-  #     let(:release) { create(:release, train:) }
-  #     let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
-  #
-  #     it "bumps version to next release version" do
-  #       ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
-  #       step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step:, build_version: ongoing_release_platform_run.release_version)
-  #       create(:deployment_run, :rollout_started, deployment:, step_run: step_run)
-  #
-  #       ongoing_release_platform_run.bump_version!
-  #       ongoing_release_platform_run.reload
-  #
-  #       expect(ongoing_release_platform_run.release_version).to eq("1.3")
-  #     end
-  #   end
-  # end
+  describe "#bump_version!" do
+    it "updates the minor version if the current version is a partial semver" do
+      release_version = "1.2"
+      release = create(:release, :with_no_platform_runs)
+      release_platform_run = create(:release_platform_run, :on_track, release:, release_version:)
+      build = create(:build, release_platform_run:, version_name: release_version)
+      _production_release = create(:production_release, :active, build:, release_platform_run:)
+
+      release_platform_run.bump_version!
+      expect(release_platform_run.release_version).to eq("1.3")
+    end
+
+    it "updates the patch version if the current version is a proper semver" do
+      release_version = "1.2.3"
+      release = create(:release, :with_no_platform_runs)
+      release_platform_run = create(:release_platform_run, :on_track, release:, release_version:)
+      build = create(:build, release_platform_run:, version_name: release_version)
+      _production_release = create(:production_release, :active, build:, release_platform_run:)
+
+      release_platform_run.bump_version!
+      expect(release_platform_run.release_version).to eq("1.2.4")
+    end
+
+    it "does not bump version if there are no production release" do
+      release_version = "1.2.3"
+      release = create(:release, :with_no_platform_runs)
+      release_platform_run = create(:release_platform_run, :on_track, release:, release_version:)
+
+      expect {
+        release_platform_run.bump_version!
+      }.not_to change { release_platform_run.release_version }
+    end
+
+    context "when upcoming release and proper semver" do
+      let(:ongoing_release_version) { "1.2.3" }
+      let(:upcoming_release_version) { "1.3.0" }
+      let(:train) { create(:train, :with_no_platforms) }
+      let(:release_platform) { create(:release_platform, train:) }
+      let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
+      let(:upcoming_release) { create(:release, :with_no_platform_runs, train:, original_release_version: upcoming_release_version) }
+
+      it "bumps patch version" do
+        ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
+        _upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
+        build = create(:build, release_platform_run: ongoing_release_platform_run, version_name: ongoing_release_version)
+        _production_release = create(:production_release, :active, build:, release_platform_run: ongoing_release_platform_run)
+
+        ongoing_release_platform_run.bump_version!
+
+        expect(ongoing_release_platform_run.reload.release_version).to eq("1.2.4")
+      end
+    end
+
+    context "when upcoming release and partial semver" do
+      let(:ongoing_release_version) { "1.2" }
+      let(:upcoming_release_version) { "1.3" }
+      let(:train) { create(:train, :with_no_platforms) }
+      let(:release_platform) { create(:release_platform, train:) }
+      let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
+      let(:upcoming_release) { create(:release, :with_no_platform_runs, train:, original_release_version: upcoming_release_version) }
+
+      it "bumps version to higher than current upcoming release version" do
+        ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
+        _upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
+        build = create(:build, release_platform_run: ongoing_release_platform_run, version_name: ongoing_release_version)
+        _production_release = create(:production_release, :active, build:, release_platform_run: ongoing_release_platform_run)
+
+        ongoing_release_platform_run.bump_version!
+
+        expect(ongoing_release_platform_run.reload.release_version).to eq("1.4")
+      end
+    end
+
+    context "when no upcoming release and partial semver" do
+      let(:ongoing_release_version) { "1.2" }
+      let(:train) { create(:train, :with_no_platforms) }
+      let(:release_platform) { create(:release_platform, train:) }
+      let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
+
+      it "bumps version to next release version" do
+        ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
+        build = create(:build, release_platform_run: ongoing_release_platform_run, version_name: ongoing_release_version)
+        _production_release = create(:production_release, :active, build:, release_platform_run: ongoing_release_platform_run)
+
+        ongoing_release_platform_run.bump_version!
+        ongoing_release_platform_run.reload
+
+        expect(ongoing_release_platform_run.release_version).to eq("1.3")
+      end
+    end
+  end
 
   describe "#correct_version!" do
     let(:app) { create(:app, :android) }
