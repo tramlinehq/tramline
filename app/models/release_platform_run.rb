@@ -191,8 +191,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def check_release_health
-    # TODO: [V2] move this to production_releases
-    nil
+    production_releases.each(&:check_release_health)
   end
 
   def release_metadatum

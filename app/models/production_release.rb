@@ -163,6 +163,11 @@ class ProductionRelease < ApplicationRecord
     false
   end
 
+  def check_release_health
+    return unless latest_health_data&.fresh?
+    latest_health_data.check_release_health
+  end
+
   def conf = Config::ReleaseStep.from_json(config)
 
   def production? = true
