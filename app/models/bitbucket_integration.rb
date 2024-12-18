@@ -57,9 +57,9 @@ class BitbucketIntegration < ApplicationRecord
 
   def project_link = nil
 
-  def further_setup?
-    false
-  end
+  def further_setup? = false
+
+  def cherry_picks_allowed? = false
 
   def public_icon_img
     PUBLIC_ICON

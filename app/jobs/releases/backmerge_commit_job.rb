@@ -3,9 +3,8 @@ class Releases::BackmergeCommitJob < ApplicationJob
 
   queue_as :high
 
-  def perform(commit_id)
+  def perform(commit_id, is_head_commit: false)
     commit = Commit.find_by(id: commit_id)
-    return unless commit.release.committable?
-    Triggers::ReleaseBackmerge.call(commit)
+    Triggers::ReleaseBackmerge.call(commit, is_head_commit:)
   end
 end

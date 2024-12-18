@@ -35,6 +35,8 @@ class Coordinators::ProcessCommits
 
   def create_head_commit!
     commit = Commit.find_or_create_by!(commit_params(fudge_timestamp(head_commit)))
+    Releases::BackmergeCommitJob.perform_later(commit.id, is_head_commit: true)
+
     if release.queue_commit?
       queue_commit!(commit)
     else
@@ -45,6 +47,8 @@ class Coordinators::ProcessCommits
   def create_other_commits!
     rest_commits.each do |rest_commit|
       commit = Commit.find_or_create_by!(commit_params(rest_commit))
+      Releases::BackmergeCommitJob.perform_later(commit.id, is_head_commit: false)
+
       queue_commit!(commit, can_apply: false)
     end
   end
