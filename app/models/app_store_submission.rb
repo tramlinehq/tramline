@@ -275,11 +275,11 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def poll_external_status
-    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_later(id, can_retry: true)
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, {"can_retry" => true})
   end
 
   def update_external_status
-    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_later(id, can_retry: false)
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, {"can_retry" => false})
   end
 
   def on_start_prepare!
@@ -312,7 +312,7 @@ class AppStoreSubmission < StoreSubmission
 
   def on_cancel!
     event_stamp!(reason: :cancelled, kind: :error, data: stamp_data)
-    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_later(id, can_retry: false)
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, {"can_retry" => false})
   end
 
   def on_reject!

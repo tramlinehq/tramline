@@ -1,5 +1,4 @@
-class WorkflowRuns::FindJob
-  include Sidekiq::Job
+class WorkflowRuns::FindJob < ApplicationJob
   extend Loggable
   extend Backoffable
 

@@ -1,5 +1,4 @@
-class StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob
-  include Sidekiq::Job
+class StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob < ApplicationJob
   extend Loggable
   extend Backoffable
 

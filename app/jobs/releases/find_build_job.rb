@@ -1,5 +1,4 @@
-class Releases::FindBuildJob
-  include Sidekiq::Job
+class Releases::FindBuildJob < ApplicationJob
   extend Loggable
   extend Backoffable
 

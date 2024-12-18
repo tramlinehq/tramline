@@ -52,7 +52,7 @@ module Coordinators
     end
 
     def self.workflow_run_finished!(workflow_run_id)
-      V2::TriggerSubmissionsJob.perform_later(workflow_run_id)
+      V2::TriggerSubmissionsJob.perform_async(workflow_run_id)
     end
 
     def self.internal_release_finished!(build)
@@ -258,7 +258,7 @@ module Coordinators
           release.start_post_release_phase!
         end
 
-        V2::FinalizeReleaseJob.perform_later(release.id, true)
+        V2::FinalizeReleaseJob.perform_async(release.id, true)
       end
     end
 
@@ -270,7 +270,7 @@ module Coordinators
           release.start_post_release_phase!
         end
 
-        V2::FinalizeReleaseJob.perform_later(release.id)
+        V2::FinalizeReleaseJob.perform_async(release.id)
       end
     end
   end

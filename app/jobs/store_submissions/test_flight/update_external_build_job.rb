@@ -1,5 +1,4 @@
-class StoreSubmissions::TestFlight::UpdateExternalBuildJob
-  include Sidekiq::Job
+class StoreSubmissions::TestFlight::UpdateExternalBuildJob < ApplicationJob
   extend Loggable
   extend Backoffable
 

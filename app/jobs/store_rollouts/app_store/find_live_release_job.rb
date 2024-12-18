@@ -1,5 +1,4 @@
-class StoreRollouts::AppStore::FindLiveReleaseJob
-  include Sidekiq::Job
+class StoreRollouts::AppStore::FindLiveReleaseJob < ApplicationJob
   extend Loggable
   extend Backoffable
 

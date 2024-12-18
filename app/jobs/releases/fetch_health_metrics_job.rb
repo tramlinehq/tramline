@@ -11,7 +11,7 @@ class Releases::FetchHealthMetricsJob < ApplicationJob
     begin
       run.fetch_health_data!
     ensure
-      Releases::FetchHealthMetricsJob.set(wait: frequency).perform_later(deployment_run_id, frequency)
+      Releases::FetchHealthMetricsJob.set(wait: frequency).perform_async(deployment_run_id, frequency)
     end
   end
 end

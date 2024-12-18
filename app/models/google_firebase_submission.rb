@@ -82,7 +82,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     # return mock_upload_to_firebase if sandbox_mode?
 
     preprocess!
-    StoreSubmissions::GoogleFirebase::UploadJob.perform_later(id)
+    StoreSubmissions::GoogleFirebase::UploadJob.perform_async(id)
   end
 
   def upload_build!
@@ -113,7 +113,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     raise UploadNotComplete unless op_info.done?
 
     prepare_and_update!(op_info.release, op_info.status)
-    StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, op_info.release.id)
+    StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, op_info.release.id)
   end
 
   def update_build_notes!(release_name)
@@ -158,7 +158,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def on_prepare!
-    StoreSubmissions::GoogleFirebase::PrepareForReleaseJob.perform_later(id)
+    StoreSubmissions::GoogleFirebase::PrepareForReleaseJob.perform_async(id)
   end
 
   def on_finish!

@@ -1,5 +1,4 @@
-class StoreSubmissions::AppStore::FindBuildJob
-  include Sidekiq::Job
+class StoreSubmissions::AppStore::FindBuildJob < ApplicationJob
   extend Loggable
   extend Backoffable
 

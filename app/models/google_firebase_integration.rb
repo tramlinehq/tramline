@@ -57,7 +57,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   CACHE_EXPIRY = 1.month
 
   def fetch_channels
-    RefreshFirebaseChannelsJob.perform_later(id)
+    RefreshFirebaseChannelsJob.perform_async(id)
   end
 
   def channels

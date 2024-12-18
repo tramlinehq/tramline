@@ -47,7 +47,7 @@ module Deployments
           run.create_external_release(similar_run.external_release.attributes.except("id", "created_at", "updated_at"))
           return run.upload!
         end
-        Deployments::GoogleFirebase::UploadJob.perform_later(run.id)
+        Deployments::GoogleFirebase::UploadJob.perform_async(run.id)
       end
 
       def upload!
@@ -87,7 +87,7 @@ module Deployments
           status: op_info.status,
           external_link: release_info.console_link)
         run.upload!
-        Deployments::GoogleFirebase::UpdateBuildNotesJob.perform_later(run.id, release_info.id)
+        Deployments::GoogleFirebase::UpdateBuildNotesJob.perform_async(run.id, release_info.id)
       end
 
       def update_build_notes!(release_id)

@@ -39,7 +39,7 @@ class BuildQueue < ApplicationRecord
   end
 
   def schedule_kickoff!
-    BuildQueueApplicationJob.set(wait_until: scheduled_at).perform_later(id)
+    BuildQueueApplicationJob.set(wait_until: scheduled_at).perform_async(id)
   end
 
   def head_commit = commits.last

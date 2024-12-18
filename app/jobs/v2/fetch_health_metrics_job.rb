@@ -10,7 +10,7 @@ class V2::FetchHealthMetricsJob < ApplicationJob
     begin
       production_release.fetch_health_data!
     ensure
-      V2::FetchHealthMetricsJob.set(wait: frequency).perform_later(production_release_id, frequency)
+      V2::FetchHealthMetricsJob.set(wait: frequency).perform_async(production_release_id, frequency)
     end
   end
 end

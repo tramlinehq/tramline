@@ -1,5 +1,4 @@
-class Releases::UploadArtifact
-  include Sidekiq::Job
+class Releases::UploadArtifact < ApplicationJob
   extend Loggable
   queue_as :high
 

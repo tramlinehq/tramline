@@ -21,7 +21,7 @@ class WorkflowProcessors::WorkflowRun
   private
 
   def re_enqueue
-    WorkflowProcessors::WorkflowRunJob.set(wait: wait_time).perform_later(step_run.id)
+    WorkflowProcessors::WorkflowRunJob.set(wait: wait_time).perform_async(step_run.id)
   end
 
   attr_reader :step_run

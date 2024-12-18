@@ -19,14 +19,14 @@ describe GoogleFirebaseSubmission do
 
     it "preprocesses the submission if build not in store" do
       expected_job = StoreSubmissions::GoogleFirebase::UploadJob
-      allow(expected_job).to receive(:perform_later)
+      allow(expected_job).to receive(:perform_async)
 
       submission.trigger!
       submission.reload
 
       expect(submission.preprocessing?).to be(true)
       expect(submission.store_link).to be_nil
-      expect(expected_job).to have_received(:perform_later).with(submission.id).once
+      expect(expected_job).to have_received(:perform_async).with(submission.id).once
     end
   end
 
@@ -116,26 +116,26 @@ describe GoogleFirebaseSubmission do
     it "prepares and updates the submission" do
       expected_job = StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob
       allow(providable_dbl).to receive(:get_upload_status).and_return(GitHub::Result.new { op_info_obj })
-      allow(expected_job).to receive(:perform_later)
+      allow(expected_job).to receive(:perform_async)
 
       submission.update_upload_status!("op_name")
       submission.reload
 
       expect(submission.preparing?).to be(true)
       expect(submission.store_link).to eq(op_info[:response][:release][:firebaseConsoleUri])
-      expect(expected_job).to have_received(:perform_later).with(submission.id, op_info[:response][:release][:name]).once
+      expect(expected_job).to have_received(:perform_async).with(submission.id, op_info[:response][:release][:name]).once
     end
 
     it "fails if upload check fails" do
       expected_job = StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob
       allow(providable_dbl).to receive(:get_upload_status).and_return(GitHub::Result.new { raise })
-      allow(expected_job).to receive(:perform_later)
+      allow(expected_job).to receive(:perform_async)
 
       submission.update_upload_status!("op_name")
       submission.reload
 
       expect(submission.failed?).to be(true)
-      expect(expected_job).not_to have_received(:perform_later)
+      expect(expected_job).not_to have_received(:perform_async)
     end
 
     it "throws up if upload is not complete" do

@@ -26,19 +26,19 @@ describe Deployments::GooglePlayStore::Release do
       deployment2 = create(:deployment, step: step, integration: integration)
       _uploaded_run = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
       deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
-      allow(Deployments::SlackJob).to receive(:perform_later)
+      allow(Deployments::SlackJob).to receive(:perform_async)
 
       described_class.kickoff!(deployment_run)
-      expect(Deployments::SlackJob).to have_received(:perform_later).with(deployment_run.id).once
+      expect(Deployments::SlackJob).to have_received(:perform_async).with(deployment_run.id).once
       expect(deployment_run.reload.started?).to be(true)
     end
 
     it "starts upload if it is the only deployment with google play store" do
-      allow(Deployments::GooglePlayStore::Upload).to receive(:perform_later)
+      allow(Deployments::GooglePlayStore::Upload).to receive(:perform_async)
 
       described_class.kickoff!(deployment_run)
 
-      expect(Deployments::GooglePlayStore::Upload).to have_received(:perform_later).with(deployment_run.id).once
+      expect(Deployments::GooglePlayStore::Upload).to have_received(:perform_async).with(deployment_run.id).once
       expect(deployment_run.reload.started?).to be(true)
     end
 
@@ -46,10 +46,10 @@ describe Deployments::GooglePlayStore::Release do
       skip "not implemented yet"
       deployment = create(:deployment, :with_slack, step: step)
       deployment_run = create(:deployment_run, :started, deployment: deployment, step_run: step_run)
-      allow(Deployments::SlackJob).to receive(:perform_later)
+      allow(Deployments::SlackJob).to receive(:perform_async)
 
       described_class.kickoff!(deployment_run)
-      expect(Deployments::SlackJob).to have_received(:perform_later).with(deployment_run.id).once
+      expect(Deployments::SlackJob).to have_received(:perform_async).with(deployment_run.id).once
       expect(deployment_run.reload.started?).to be(true)
     end
 
@@ -57,10 +57,10 @@ describe Deployments::GooglePlayStore::Release do
       deployment1 = create(:deployment, step: step)
       _ignored_run = create(:deployment_run, :released, deployment: deployment1, step_run: step_run)
 
-      allow(Deployments::GooglePlayStore::Upload).to receive(:perform_later)
+      allow(Deployments::GooglePlayStore::Upload).to receive(:perform_async)
 
       described_class.kickoff!(deployment_run)
-      expect(Deployments::GooglePlayStore::Upload).to have_received(:perform_later).with(deployment_run.id).once
+      expect(Deployments::GooglePlayStore::Upload).to have_received(:perform_async).with(deployment_run.id).once
       expect(deployment_run.reload.started?).to be(true)
     end
   end

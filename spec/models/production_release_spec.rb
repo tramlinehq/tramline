@@ -71,11 +71,11 @@ RSpec.describe ProductionRelease do
     end
 
     it "creates a tag for the the production release" do
-      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
+      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_async)
 
       production_release.rollout_started!
 
-      expect(ReleasePlatformRuns::CreateTagJob).to have_received(:perform_later).with(release_platform_run.id, production_release.commit.id)
+      expect(ReleasePlatformRuns::CreateTagJob).to have_received(:perform_async).with(release_platform_run.id, production_release.commit.id)
     end
   end
 end

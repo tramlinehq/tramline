@@ -237,7 +237,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def on_initiate!
-    WorkflowRuns::TriggerJob.perform_later(id)
+    WorkflowRuns::TriggerJob.perform_async(id)
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
   end
 
@@ -247,11 +247,11 @@ class WorkflowRun < ApplicationRecord
   end
 
   def on_found!
-    WorkflowRuns::PollRunStatusJob.perform_later(id)
+    WorkflowRuns::PollRunStatusJob.perform_async(id)
   end
 
   def on_retry!
-    WorkflowRuns::TriggerJob.perform_later(id, retrigger: true)
+    WorkflowRuns::TriggerJob.perform_async(id, {"retrigger" => true})
     event_stamp!(reason: :retried, kind: :notice, data: stamp_data)
   end
 
@@ -277,7 +277,7 @@ class WorkflowRun < ApplicationRecord
 
   def on_cancel!
     return unless cancelling?
-    WorkflowRuns::CancelJob.perform_later(id)
+    WorkflowRuns::CancelJob.perform_async(id)
   end
 
   def stamp_data

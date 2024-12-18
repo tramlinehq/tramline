@@ -1,5 +1,4 @@
-class Deployments::AppStoreConnect::UpdateExternalReleaseJob
-  include Sidekiq::Job
+class Deployments::AppStoreConnect::UpdateExternalReleaseJob < ApplicationJob
   extend Loggable
   extend Backoffable
 

@@ -1,5 +1,4 @@
-class StoreSubmissions::TestFlight::FindBuildJob
-  include Sidekiq::Job
+class StoreSubmissions::TestFlight::FindBuildJob < ApplicationJob
   extend Loggable
   extend Backoffable
 

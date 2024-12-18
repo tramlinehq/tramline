@@ -153,7 +153,7 @@ class DeploymentRun < ApplicationRecord
       transitions from: :started, to: :uploading
     end
 
-    event :upload, after_commit: -> { Deployments::ReleaseJob.perform_later(id) } do
+    event :upload, after_commit: -> { Deployments::ReleaseJob.perform_async(id) } do
       transitions from: [:started, :uploading], to: :uploaded
     end
 
@@ -327,7 +327,7 @@ class DeploymentRun < ApplicationRecord
 
   def kickoff!
     return complete! if external?
-    return Deployments::SlackJob.perform_later(id) if slack_integration?
+    return Deployments::SlackJob.perform_async(id) if slack_integration?
     return Deployments::AppStoreConnect::Release.kickoff!(self) if app_store_integration?
     return Deployments::GooglePlayStore::Release.kickoff!(self) if google_play_store_integration?
     Deployments::GoogleFirebase::Release.kickoff!(self) if google_firebase_integration?
@@ -531,8 +531,8 @@ class DeploymentRun < ApplicationRecord
 
   def on_release_started
     event_stamp!(reason: :release_started, kind: :notice, data: stamp_data)
-    ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id) if production_channel? && train.tag_all_store_releases?
-    Releases::FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[app.monitoring_provider.display]) if app.monitoring_provider.present?
+    ReleasePlatformRuns::CreateTagJob.perform_async(release_platform_run.id) if production_channel? && train.tag_all_store_releases?
+    Releases::FetchHealthMetricsJob.perform_async(id, JOB_FREQUENCY[app.monitoring_provider.display]) if app.monitoring_provider.present?
   end
 
   def mark_reviewed

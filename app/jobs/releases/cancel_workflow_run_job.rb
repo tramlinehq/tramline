@@ -3,7 +3,15 @@ class Releases::CancelWorkflowRunJob < ApplicationJob
   WorkflowRunNotFound = Class.new(StandardError)
 
   queue_as :high
-  retry_on WorkflowRunNotFound, wait: ->(c) { backoff_in(attempt: c, period: :seconds, type: :linear) }, attempts: 500
+  sidekiq_options retry: 500
+
+  sidekiq_retry_in do |count, exception|
+    if exception.is_a?(WorkflowRunNotFound)
+      backoff_in(attempt: count, period: :seconds, type: :linear).to_i
+    else
+      :kill
+    end
+  end
 
   def perform(step_run_id)
     step_run = StepRun.find(step_run_id)

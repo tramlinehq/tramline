@@ -1,9 +1,13 @@
 class WorkflowRuns::CancelJob < ApplicationJob
   extend Backoffable
+
   WorkflowRunNotFound = Class.new(StandardError)
 
-  queue_as :high
-  retry_on WorkflowRunNotFound, wait: ->(c) { backoff_in(attempt: c, period: :seconds, type: :linear) }, attempts: 500
+  sidekiq_options queue: :high, retry: 500
+
+  sidekiq_retry_in do |count, exception|
+    backoff_in(attempt: count, period: :seconds, type: :linear) if exception.is_a?(WorkflowRunNotFound)
+  end
 
   def perform(workflow_run_id)
     workflow_run = WorkflowRun.find(workflow_run_id)
