@@ -71,6 +71,7 @@ class ReleasePlatform < ApplicationRecord
 
   delegate :integrations, :ci_cd_provider, to: :train
   delegate :ready?, :default_locale, to: :app
+  delegate :has_restricted_public_channels?, to: :platform_config
 
   def self.allowed_platforms
     {

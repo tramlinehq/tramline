@@ -441,10 +441,9 @@ class Train < ApplicationRecord
     release_platforms.any? { |rp| rp.platform_config.production_release? }
   end
 
-  # TODO: [V2] move this check to the new config model
   def has_restricted_public_channels?
     return false if app.ios?
-    false
+    release_platforms.any(&:has_restricted_public_channels?)
   end
 
   def stop_failed_ongoing_release!

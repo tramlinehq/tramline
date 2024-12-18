@@ -60,6 +60,11 @@ class Config::Submission < ApplicationRecord
     submission_type.constantize
   end
 
+  def restricted_public_channel?
+    return false unless submission_type == "GooglePlayStoreSubmission"
+    GooglePlayStoreIntegration::PUBLIC_CHANNELS.include?(submission_external.identifier)
+  end
+
   def next
     release_step_config.submissions.where("number > ?", number).order(:number).first
   end
