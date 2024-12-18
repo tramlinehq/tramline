@@ -12,10 +12,9 @@ describe Installations::Crashlytics::Api, type: :integration do
     StringIO.new(File.read("spec/fixtures/crashlytics/service_account.json"))
   end
   let(:api_instance) { described_class.new(project_number, json_key) }
-
-  let(:app_id) { APP_IDENTIFIER }
   let(:version) { APP_VERSION }
   let(:build_number) { "100" }
+  let(:platform) { "android" }
   let(:transforms) { CrashlyticsIntegration::RELEASE_TRANSFORMATIONS }
   let(:bigquery_client) { instance_double(Google::Cloud::Bigquery::Project) }
   let(:datasets) do
@@ -63,7 +62,7 @@ describe Installations::Crashlytics::Api, type: :integration do
       end
 
       it "returns the transformed release data" do
-        result = api_instance.find_release(app_id, version, build_number, transforms, bundle_identifier)
+        result = api_instance.find_release(bundle_identifier, platform, version, build_number, transforms)
         expected_data = {
           "daily_users" => 150,
           "daily_users_with_errors" => 30,
@@ -86,7 +85,7 @@ describe Installations::Crashlytics::Api, type: :integration do
       end
 
       it "returns nil" do
-        result = api_instance.find_release(app_id, version, build_number, transforms, bundle_identifier)
+        result = api_instance.find_release(bundle_identifier, platform, version, build_number, transforms)
         expect(result).to be_nil
       end
     end

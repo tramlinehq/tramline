@@ -12,9 +12,9 @@ module Installations
       @json_key = json_key
     end
 
-    def find_release(app_id, app_version, app_version_code, transforms, bundle_identifier)
+    def find_release(bundle_identifier, platform, app_version, app_version_code, transforms)
       execute do
-        crash_data = fetch_crash_data(app_id, app_version, app_version_code, bundle_identifier)
+        crash_data = fetch_crash_data(bundle_identifier, platform.upcase, app_version, app_version_code)
         return if crash_data.blank?
         Installations::Response::Keys.transform([crash_data], transforms).first
       end
@@ -37,9 +37,9 @@ module Installations
 
     private
 
-    def fetch_crash_data(app_id, app_version, app_version_code, bundle_identifier)
-      analytics_data = get_data(analytics_query(datasets[:ga4], app_id, app_version)).find { |a| a[:version_name] == app_version } || {}
-      crashlytics_data = get_data(crashlytics_query(datasets[:crashlytics], app_version, app_version_code, bundle_identifier)).find { |a| a[:version_name] == app_version } || {}
+    def fetch_crash_data(bundle_identifier, platform, app_version, app_version_code)
+      analytics_data = get_data(analytics_query(datasets[:ga4], bundle_identifier, platform, app_version)).find { |a| a[:version_name] == app_version } || {}
+      crashlytics_data = get_data(crashlytics_query(datasets[:crashlytics], bundle_identifier, platform, app_version, app_version_code)).find { |a| a[:version_name] == app_version } || {}
       analytics_data.merge(crashlytics_data)
     end
 
@@ -55,7 +55,7 @@ module Installations
       execute { bigquery_client.query(query) }
     end
 
-    def crashlytics_query(dataset_name, version_name, version_code, bundle_identifier)
+    def crashlytics_query(dataset_name, bundle_identifier, platform, version_name, version_code)
       <<-SQL.squish
         WITH combined_events AS (
           SELECT
@@ -66,8 +66,9 @@ module Installations
             event_timestamp,
             bundle_identifier
           FROM `#{dataset_name}`
-          WHERE event_timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY)
+          WHERE event_timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
             AND bundle_identifier = "#{bundle_identifier}"
+            AND platform = "#{platform}"
         ),
         errors_with_version AS (
           SELECT
@@ -105,7 +106,7 @@ module Installations
       SQL
     end
 
-    def analytics_query(dataset_name, app_id, version_name)
+    def analytics_query(dataset_name, bundle_identifier, platform, version_name)
       <<-SQL.squish
         WITH combined_events AS (
           SELECT
@@ -119,8 +120,9 @@ module Installations
           FROM `#{dataset_name}` AS e,
           UNNEST(event_params) AS ep
           WHERE
-            app_info.firebase_app_id = "#{app_id}"
-            AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY))
+            app_info.id = "#{bundle_identifier}"
+            AND platform = "#{platform}"
+            AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY))
             AND ep.key = 'ga_session_id'
             AND ep.value.int_value IS NOT NULL
         ),
