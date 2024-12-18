@@ -21,12 +21,10 @@
 class ReleaseHealthMetric < ApplicationRecord
   self.ignored_columns += ["deployment_run_id"]
 
-  belongs_to :production_release, optional: true
+  belongs_to :production_release
   has_many :release_health_events, dependent: :nullify
 
-  validate :at_least_one_parent
-
-  delegate :release_health_rules, to: :parent
+  delegate :release_health_rules, to: :production_release
 
   after_create_commit :check_release_health
 
@@ -59,7 +57,7 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def staged_rollout
-    parent.rollout_percentage
+    production_release.rollout_percentage
   end
 
   def check_release_health
@@ -91,14 +89,6 @@ class ReleaseHealthMetric < ApplicationRecord
 
   private
 
-  def at_least_one_parent
-    errors.add(:base, "Release health metrics must have at least one of production_release or deployment_run") if parent.blank?
-  end
-
-  def parent
-    production_release
-  end
-
   def create_health_event(release_health_rule)
     return unless release_health_rule.actionable?(self)
 
@@ -111,7 +101,7 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def last_event_for(rule)
-    parent.release_health_events.where(release_health_rule: rule).last
+    production_release.release_health_events.where(release_health_rule: rule).last
   end
 
   def healthy_for_triggers?(rule, metric_name)
