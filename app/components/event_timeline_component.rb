@@ -8,8 +8,9 @@ class EventTimelineComponent < ViewComponent::Base
   end
 
   EXCLUSIONS = {
-    "DeploymentRun" => ["created"],
-    "StepRun" => %w[build_available finished]
+    "StoreSubmission" => ["created"],
+    "PreProdRelease" => ["created"],
+    "ProductionRelease" => ["created"]
   }
 
   def events_by_days

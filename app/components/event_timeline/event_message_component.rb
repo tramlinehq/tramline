@@ -3,9 +3,10 @@ class EventTimeline::EventMessageComponent < ViewComponent::Base
   include ApplicationHelper
 
   STAMPABLE_ICONS = {
-    DeploymentRun => "truck_delivery",
+    StoreSubmission => "truck_delivery",
     Commit => "git_commit",
-    StepRun => "box",
+    PreProdRelease => "box",
+    ProductionRelease => "box",
     ReleasePlatformRun => "bolt",
     Release => "bolt"
   }
