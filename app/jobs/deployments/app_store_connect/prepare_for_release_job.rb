@@ -1,25 +1,37 @@
 class Deployments::AppStoreConnect::PrepareForReleaseJob
   include Sidekiq::Job
-  extend Backoffable
+  include RetryableJob
 
+  self.MAX_RETRIES = 3
   queue_as :high
-  sidekiq_options retry: 3
 
-  sidekiq_retry_in do |count, ex|
+  def compute_backoff(retry_count)
+    ex = @last_exception
     if ex.is_a?(Deployments::AppStoreConnect::Release::PreparedVersionNotFoundError)
-      backoff_in(attempt: count, period: :minutes, type: :static, factor: 1).to_i
+      1.minute.to_i
     else
-      :kill
+      super
     end
   end
 
-  sidekiq_retries_exhausted do |msg, ex|
-    run = DeploymentRun.find(msg["args"].first)
-    run.fail_with_error(ex)
+  def perform(deployment_run_id, force = false, retry_args = {})
+    @last_exception = retry_args.is_a?(Hash) ? retry_args[:last_exception] : nil
+
+    retry_args = {} if retry_args.is_a?(Integer)
+    retry_count = retry_args[:retry_count] || 0
+
+    run = DeploymentRun.find(deployment_run_id)
+
+    begin
+      Deployments::AppStoreConnect::Release.prepare_for_release!(run, force: force)
+    rescue Deployments::AppStoreConnect::Release::PreparedVersionNotFoundError => e
+      retry_with_backoff(e, {deployment_run_id: deployment_run_id, retry_count: retry_count})
+      raise e
+    end
   end
 
-  def perform(deployment_run_id, force = false)
-    run = DeploymentRun.find(deployment_run_id)
-    Deployments::AppStoreConnect::Release.prepare_for_release!(run, force:)
+  def on_retries_exhausted(context)
+    run = DeploymentRun.find(context[:deployment_run_id])
+    run.fail_with_error(context[:last_exception])
   end
 end
