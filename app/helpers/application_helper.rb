@@ -44,23 +44,6 @@ module ApplicationHelper
     end
   end
 
-  def write_only(&block)
-    return concat(content_tag(:div, capture(&block), class: "hidden")) unless writer?
-    yield(block)
-  end
-
-  def sidebar_active_path(path, style)
-    if current_page?(path)
-      style
-    end
-  end
-
-  def sidebar_active_resource(resource, style)
-    if resource.eql?(controller_name)
-      style
-    end
-  end
-
   def toggle_for(hide, full_width: false, &block)
     render(
       partial: "shared/toggle_button",
@@ -68,14 +51,6 @@ module ApplicationHelper
         hide: hide, block: block, full_width: full_width
       }
     )
-  end
-
-  def dynamic_header_color
-    if Rails.env.development?
-      "bg-rose-100"
-    else
-      "bg-white"
-    end
   end
 
   def version_in_progress(version)
@@ -110,15 +85,6 @@ module ApplicationHelper
     }
   end
 
-  NOTE_BOX_COLORS = {
-    info: "text-amber-500",
-    error: "text-red-500"
-  }.freeze
-
-  def note_box_color(type)
-    NOTE_BOX_COLORS[type]
-  end
-
   def status_badge(status, custom = [], fixed = nil, pulse: false)
     return if status.blank?
 
@@ -140,10 +106,6 @@ module ApplicationHelper
     classes << "animate-pulse" if pulse
     classes.concat(styles) if styles
     content_tag(:span, status, class: classes)
-  end
-
-  def dev_show(&blk)
-    yield blk if Rails.env.development?
   end
 
   def display_channels(channels, with_none: false)
@@ -171,10 +133,6 @@ module ApplicationHelper
 
   def user_avatar(name, **)
     Initials.svg(name, **)
-  end
-
-  def safe_simple_format(text)
-    simple_format(h(text))
   end
 
   def comment
