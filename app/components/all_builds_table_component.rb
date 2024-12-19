@@ -3,7 +3,6 @@ class AllBuildsTableComponent < ViewComponent::Base
   include ApplicationHelper
   include LinkHelper
   include AssetsHelper
-  include ReleasesHelper
 
   def initialize(builds:, paginator:, query_params:)
     @builds = builds
@@ -34,7 +33,8 @@ class AllBuildsTableComponent < ViewComponent::Base
   end
 
   def release_status(build)
-    release_status_badge(build.release_status)
+    ReleasePresenter::RELEASE_STATUS.fetch(build.release_status.to_sym) => {text:, status:}
+    status_badge(text, status)
   end
 
   def release_platform(build)
