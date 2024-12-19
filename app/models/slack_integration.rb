@@ -19,7 +19,7 @@ class SlackIntegration < ApplicationRecord
   include Loggable
   include Rails.application.routes.url_helpers
 
-  delegate :app, to: :integration
+  delegate :integrable, to: :integration
   delegate :cache, to: Rails
 
   attr_accessor :code
@@ -106,7 +106,7 @@ class SlackIntegration < ApplicationRecord
   end
 
   def channels_cache_key
-    "app/#{app.id}/slack_integration/#{id}/channels"
+    "app/#{integrable.id}/slack_integration/#{id}/channels"
   end
 
   def notify!(channel, message, type, params, file_id = nil, file_title = nil)

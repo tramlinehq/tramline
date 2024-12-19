@@ -19,6 +19,7 @@ class ReleasePlatform < ApplicationRecord
   include Displayable
 
   self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id status config]
+
   NATURAL_ORDER = Arel.sql("CASE WHEN platform = 'android' THEN 1 WHEN platform = 'ios' THEN 2 ELSE 3 END")
   DEFAULT_PROD_RELEASE_CONFIG = {
     android: {
