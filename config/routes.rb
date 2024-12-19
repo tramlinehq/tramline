@@ -71,7 +71,6 @@ Rails.application.routes.draw do
 
     resources :trains, only: %i[new create edit update destroy] do
       member do
-        get :steps
         get :rules
         patch :activate
         patch :deactivate
@@ -81,7 +80,6 @@ Rails.application.routes.draw do
       resources :notification_settings, only: %i[index update edit]
 
       resources :release_platforms, path: :platforms, as: :platforms do
-        resources :steps, only: %i[new create update]
         resources :release_health_rules, path: :rules
         resource :release_platform_configs, only: %i[edit update], path: :submissions, as: :submission_config, controller: "config/release_platforms"
       end

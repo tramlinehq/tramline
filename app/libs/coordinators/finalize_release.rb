@@ -1,6 +1,5 @@
 class Coordinators::FinalizeRelease
   include Loggable
-  include ActionView::Helpers::DateHelper
 
   def self.call(release, force_finalize = false)
     new(release, force_finalize).call
@@ -47,9 +46,7 @@ class Coordinators::FinalizeRelease
   def on_finish!
     release.update_train_version!
     release.event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
-    notify_data = release.notification_params
-      .merge(total_run_time: distance_of_time_in_words(release.created_at, release.completed_at))
-    release.notify!("Release has finished!", :release_ended, notify_data)
+    release.notify!("Release has finished!", :release_ended, release.notification_params)
     RefreshReportsJob.perform_later(release.id)
   end
 
