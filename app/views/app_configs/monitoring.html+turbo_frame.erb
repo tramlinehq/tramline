@@ -21,14 +21,6 @@
             stage: @config.bugsnag_android_release_stage
           } %>
         <% end %>
-      <% elsif @app.crashlytics_connected? %>
-        <%= render partial: "app_configs/crashlytics_form", locals: {
-          f: f,
-          config: @config,
-          integrable: @app,
-          firebase_crashlytics_ios_apps: @firebase_crashlytics_ios_apps,
-          firebase_crashlytics_android_apps: @firebase_crashlytics_android_apps
-        } %>
       <% end %>
 
       <% f.with_action do %>
