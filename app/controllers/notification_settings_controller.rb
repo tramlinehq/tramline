@@ -10,7 +10,7 @@ class NotificationSettingsController < SignedInApplicationController
 
   def index
     if @train.send_notifications?
-      @notification_settings = @train.notification_settings
+      @notification_settings = @train.notification_settings.where(kind: NotificationSetting.kinds.values)
     end
 
     set_train_config_tabs
