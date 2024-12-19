@@ -300,12 +300,12 @@ class Release < ApplicationRecord
     TERMINAL_STATES.exclude?(status)
   end
 
-  def queue_commit?
-    active_build_queue.present? && release_changes?
+  def queue_commit?(commit)
+    active_build_queue.present? && stability_commit?(commit)
   end
 
-  def release_changes?
-    all_commits.size > 1
+  def stability_commit?(commit)
+    first_commit != commit
   end
 
   def end_time
