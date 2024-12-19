@@ -13,7 +13,6 @@
 #  description                        :string
 #  freeze_version                     :boolean          default(FALSE)
 #  kickoff_at                         :datetime
-#  manual_release                     :boolean          default(FALSE)
 #  name                               :string           not null
 #  notification_channel               :jsonb
 #  patch_version_bump_only            :boolean          default(FALSE), not null
