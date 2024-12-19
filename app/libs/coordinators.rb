@@ -169,7 +169,7 @@ module Coordinators
     def self.prepare_production_submission!(submission)
       Res.new do
         raise "production release is not editable" unless submission.editable?
-        submission.start_prepare!
+        submission.trigger!
         submission.notify!("Production submission started", :production_submission_started, submission.notification_params)
       end
     end
