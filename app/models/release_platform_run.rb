@@ -122,7 +122,7 @@ class ReleasePlatformRun < ApplicationRecord
     (finished ? beta_releases.finished : beta_releases).order(created_at: :desc).first
   end
 
-  # TODO: [V2] eager loading here is too expensive
+  # TODO: eager loading here is too expensive
   def latest_internal_release(finished: false)
     (finished ? internal_releases.finished : internal_releases)
       .includes(:commit, :store_submissions, triggered_workflow_run: {build: [:commit, :artifact]}, release_platform_run: [:release])
@@ -150,7 +150,7 @@ class ReleasePlatformRun < ApplicationRecord
     beta_releases.order(created_at: :desc).offset(1)
   end
 
-  # TODO: [V2] eager loading here is too expensive
+  # TODO: eager loading here is too expensive
   def older_internal_releases
     internal_releases
       .order(created_at: :desc)
@@ -257,8 +257,6 @@ class ReleasePlatformRun < ApplicationRecord
     train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
   end
 
-  # TODO: [V2] this is a workaround to handle drifted cross-platform releases
-  # Figure out of a way to deprecate last_commit from rpr and rely on release instead
   def update_last_commit!(commit)
     return if commit.blank?
     return if last_commit&.commit_hash == commit.commit_hash

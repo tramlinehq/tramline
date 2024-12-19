@@ -343,7 +343,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def update_store_version
-    # TODO: [V2] [post-alpha] update store version details when release metadata changes
+    # TODO: update store version details when release metadata changes
     # update whats new, build
   end
 
