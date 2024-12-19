@@ -188,7 +188,7 @@ class TrainsController < SignedInApplicationController
 
   def set_notification_channels
     @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
-    @current_notification_channel = @train&.notification_channel || @app.config.notification_channel
+    @current_notification_channel = @train&.notification_channel
   end
 
   def build_queue_config_params
