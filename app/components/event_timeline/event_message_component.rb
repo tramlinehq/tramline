@@ -1,5 +1,4 @@
 class EventTimeline::EventMessageComponent < ViewComponent::Base
-  include AssetsHelper
   include ApplicationHelper
 
   STAMPABLE_ICONS = {

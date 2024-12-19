@@ -2,7 +2,6 @@ class AllBuildsTableComponent < ViewComponent::Base
   include Pagy::Frontend
   include ApplicationHelper
   include LinkHelper
-  include AssetsHelper
 
   def initialize(builds:, paginator:, query_params:)
     @builds = builds

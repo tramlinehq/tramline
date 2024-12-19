@@ -1,7 +1,5 @@
 class NotificationSettingsComponent < ViewComponent::Base
   include ApplicationHelper
-  include ButtonHelper
-  include AssetsHelper
 
   InvalidNotificationSettings = Class.new(StandardError)
 

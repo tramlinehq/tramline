@@ -1,6 +1,5 @@
 class EventTimelineComponent < ViewComponent::Base
   include ApplicationHelper
-  include AssetsHelper
 
   def initialize(app:, events:)
     @app = app
