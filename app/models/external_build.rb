@@ -2,12 +2,11 @@
 #
 # Table name: external_builds
 #
-#  id          :uuid             not null, primary key
-#  metadata    :jsonb            not null
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  build_id    :uuid             indexed
-#  step_run_id :uuid             indexed
+#  id         :uuid             not null, primary key
+#  metadata   :jsonb            not null
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#  build_id   :uuid             indexed
 #
 class ExternalBuild < ApplicationRecord
   has_paper_trail

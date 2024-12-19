@@ -8,7 +8,6 @@
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  build_id     :uuid             indexed
-#  step_run_id  :uuid             indexed
 #
 require "zip"
 

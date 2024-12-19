@@ -40,7 +40,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
   end
 
   def release_options
-    return [] unless train.manually_startable?
+    return [] if train.inactive?
     upcoming_release_startable = train.upcoming_release_startable?
     return [] if train.ongoing_release && !upcoming_release_startable
 

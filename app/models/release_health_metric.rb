@@ -14,7 +14,6 @@
 #  total_sessions_in_last_day :bigint
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  deployment_run_id          :uuid             indexed
 #  external_release_id        :string
 #  production_release_id      :uuid             indexed
 #

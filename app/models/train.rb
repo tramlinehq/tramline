@@ -326,12 +326,8 @@ class Train < ApplicationRecord
     automatic? && active? && active_runs.none?
   end
 
-  def manually_startable?
-    !inactive?
-  end
-
   def upcoming_release_startable?
-    manually_startable? &&
+    !inactive? &&
       ongoing_release.present? &&
       ongoing_release.production_release_started? &&
       upcoming_release.blank?
@@ -343,10 +339,6 @@ class Train < ApplicationRecord
 
   def branching_strategy_name
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
-  end
-
-  def build_channel_integrations
-    integrations.build_channel
   end
 
   def active_release_for?(branch_name)

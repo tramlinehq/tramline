@@ -2,23 +2,14 @@
 #
 # Table name: release_platforms
 #
-#  id                       :uuid             not null, primary key
-#  branching_strategy       :string
-#  description              :string
-#  name                     :string           not null
-#  platform                 :string
-#  release_backmerge_branch :string
-#  release_branch           :string
-#  slug                     :string
-#  status                   :string
-#  version_current          :string
-#  version_seeded_with      :string
-#  working_branch           :string
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  app_id                   :uuid             not null, indexed
-#  train_id                 :uuid
-#  vcs_webhook_id           :string
+#  id         :uuid             not null, primary key
+#  name       :string           not null
+#  platform   :string
+#  slug       :string
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#  app_id     :uuid             not null, indexed
+#  train_id   :uuid
 #
 
 class ReleasePlatform < ApplicationRecord
@@ -27,8 +18,7 @@ class ReleasePlatform < ApplicationRecord
   extend FriendlyId
   include Displayable
 
-  # self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id status]
-  self.ignored_columns += %w[config]
+  self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id status config]
   NATURAL_ORDER = Arel.sql("CASE WHEN platform = 'android' THEN 1 WHEN platform = 'ios' THEN 2 ELSE 3 END")
   DEFAULT_PROD_RELEASE_CONFIG = {
     android: {
@@ -98,12 +88,6 @@ class ReleasePlatform < ApplicationRecord
     store_provider.present?
   end
 
-  def build_channel_integrations
-    integrations
-      .build_channel
-      .where(providable_type: Integration::ALLOWED_INTEGRATIONS_FOR_APP[platform][:build_channel])
-  end
-
   def active_locales
     app.latest_external_apps[platform.to_sym]&.active_locales
   end
@@ -115,6 +99,8 @@ class ReleasePlatform < ApplicationRecord
   def production_submission_type
     DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym][:submissions].first[:submission_type] if production_ready?
   end
+
+  private
 
   # setup production if the store integrations are added
   # otherwise use the first build channel integration and setup beta releases
