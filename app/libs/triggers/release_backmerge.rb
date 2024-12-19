@@ -32,7 +32,7 @@ class Triggers::ReleaseBackmerge
   private
 
   def backmerge_allowed?
-    train.almost_trunk? && train.continuous_backmerge? && release.committable? && release.release_changes?
+    train.almost_trunk? && train.continuous_backmerge? && release.committable? && release.stability_commit?(commit)
   end
 
   attr_reader :release, :commit
