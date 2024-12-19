@@ -6,11 +6,7 @@ class EventTimelineComponent < ViewComponent::Base
     @events = events
   end
 
-  EXCLUSIONS = {
-    "StoreSubmission" => ["created"],
-    "PreProdRelease" => ["created"],
-    "ProductionRelease" => ["created"]
-  }
+  EXCLUSIONS = {}
 
   def events_by_days
     @events
