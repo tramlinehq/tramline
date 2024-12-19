@@ -76,7 +76,7 @@ class Accounts::Organization < ApplicationRecord
   end
 
   # TODO: This should eventually become a config, but right now this is only implemented for the Bitbucket integration
-  # So we currently implement this as a feature flag for specific orgs
+  # So we currently do this as a feature flag for specific orgs
   def single_pr_backmerge_for_multi_commit_push?
     Flipper.enabled?(:single_pr_backmerge_for_multi_commit_push, self)
   end

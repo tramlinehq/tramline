@@ -28,7 +28,11 @@ class Coordinators::ProcessCommits
     end
 
     attempt_backmerge!(created_head_commit, created_rest_commits)
-    notify!
+
+    # TODO: [V2] move this to trigger release
+    if release.all_commits.size.eql?(1)
+      release.notify!("New release has commenced!", :release_started, release.notification_params)
+    end
   end
 
   private
@@ -95,13 +99,6 @@ class Coordinators::ProcessCommits
     return unless created_head_commit
     Releases::BackmergeCommitJob.perform_later(created_head_commit.id, is_head_commit: true)
     created_rest_commits.each { |c| Releases::BackmergeCommitJob.perform_later(c.id, is_head_commit: false) }
-  end
-
-  # TODO: [V2] move this to trigger release
-  def notify!
-    if release.all_commits.size.eql?(1)
-      release.notify!("New release has commenced!", :release_started, release.notification_params)
-    end
   end
 
   delegate :train, to: :release
