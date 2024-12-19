@@ -15,10 +15,9 @@ module Tabbable
   def set_train_config_tabs
     @tab_configuration = [
       [1, "Release Settings", edit_app_train_path(@app, @train), "v2/cog.svg"],
-      ([2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"] unless v2?),
-      ([2, "Android Flow Settings", edit_app_train_platform_submission_config_path(@app, @train, :android), "v2/logo_google_play_store_bw.svg"] if @app.cross_platform? && v2?),
-      ([3, "iOS Flow Settings", edit_app_train_platform_submission_config_path(@app, @train, :ios), "v2/logo_app_store_bw.svg"] if @app.cross_platform? && v2?),
-      ([2, "Submission Settings", edit_app_train_platform_submission_config_path(@app, @train, @app.platform), "v2/sliders.svg"] if v2? && !@app.cross_platform? && v2?),
+      ([2, "Android Flow Settings", edit_app_train_platform_submission_config_path(@app, @train, :android), "v2/logo_google_play_store_bw.svg"] if @app.cross_platform?),
+      ([3, "iOS Flow Settings", edit_app_train_platform_submission_config_path(@app, @train, :ios), "v2/logo_app_store_bw.svg"] if @app.cross_platform?),
+      ([2, "Submission Settings", edit_app_train_platform_submission_config_path(@app, @train, @app.platform), "v2/sliders.svg"] unless @app.cross_platform?),
       [4, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
       [5, "Release Health Rules", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
       [6, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"]

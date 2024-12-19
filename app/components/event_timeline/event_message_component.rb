@@ -1,13 +1,15 @@
 class EventTimeline::EventMessageComponent < ViewComponent::Base
-  include AssetsHelper
   include ApplicationHelper
 
   STAMPABLE_ICONS = {
-    DeploymentRun => "truck_delivery",
+    StoreSubmission => "truck_delivery",
     Commit => "git_commit",
-    StepRun => "box",
+    PreProdRelease => "box",
+    ProductionRelease => "box",
     ReleasePlatformRun => "bolt",
-    Release => "bolt"
+    Release => "bolt",
+    WorkflowRun => "workflow",
+    Build => "drill"
   }
 
   BADGE = {

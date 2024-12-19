@@ -189,10 +189,6 @@ class SignedInApplicationController < ApplicationController
     request.variant = :turbo_frame if turbo_frame_request?
   end
 
-  def v2?
-    @train&.product_v2?
-  end
-
   def stream_flash
     turbo_stream.update("flash_stream", V2::FlashComponent.new(flash))
   end

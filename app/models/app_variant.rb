@@ -17,7 +17,6 @@ class AppVariant < ApplicationRecord
   include AppConfigurable
 
   belongs_to :app_config
-  has_many :steps, dependent: :nullify
 
   validates :bundle_identifier, presence: true, uniqueness: {scope: :app_config_id}
   validate :duplicate_bundle_identifier

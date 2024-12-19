@@ -10,7 +10,6 @@
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
-#  notification_channel    :json
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
@@ -18,11 +17,10 @@
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
-  include Notifiable
   include AppConfigurable
 
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
-  self.ignored_columns += %w[bugsnag_project_id firebase_crashlytics_android_config firebase_crashlytics_ios_config]
+  self.ignored_columns += %w[bugsnag_project_id firebase_crashlytics_android_config firebase_crashlytics_ios_config notification_channel]
 
   belongs_to :app
   has_many :variants, class_name: "AppVariant", dependent: :destroy
@@ -102,11 +100,21 @@ class AppConfig < ApplicationRecord
   end
 
   def bugsnag_project(platform)
-    pick_bugsnag_project_id(platform)
+    case platform
+    when "android" then bugsnag_android_config["project_id"]
+    when "ios" then bugsnag_ios_config["project_id"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
   end
 
   def bugsnag_release_stage(platform)
-    pick_bugsnag_release_stage(platform)
+    case platform
+    when "android" then bugsnag_android_config["release_stage"]
+    when "ios" then bugsnag_ios_config["release_stage"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
   end
 
   def ci_cd_workflows
