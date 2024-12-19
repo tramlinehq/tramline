@@ -16,7 +16,7 @@ describe PlayStoreRollout do
       allow(prod_double).to receive(:rollout_started!)
       allow(prod_double).to receive(:rollout_complete!)
       allow(rollout).to receive_messages(provider: providable_dbl, parent_release: prod_double)
-      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_async)
     end
 
     it "starts the production release" do
@@ -69,7 +69,7 @@ describe PlayStoreRollout do
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
-      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_async)
     end
 
     it "completes the rollout if no more stages left" do
@@ -96,7 +96,7 @@ describe PlayStoreRollout do
       allow(rollout).to receive(:provider).and_return(providable_dbl)
 
       rollout.move_to_next_stage!
-      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_async).with(store_submission.id)
     end
 
     it "does not update the external release if the rollout was already started" do
@@ -105,7 +105,7 @@ describe PlayStoreRollout do
       allow(rollout).to receive(:provider).and_return(providable_dbl)
 
       rollout.move_to_next_stage!
-      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).not_to have_received(:perform_later)
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).not_to have_received(:perform_async)
     end
 
     it "promotes the deployment run with the next stage percentage" do
@@ -171,7 +171,7 @@ describe PlayStoreRollout do
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
-      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_async)
     end
 
     it "does nothing if the rollout hasn't started" do
@@ -229,7 +229,7 @@ describe PlayStoreRollout do
 
       rollout.release_fully!
 
-      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_async).with(store_submission.id)
     end
 
     it "retries (with skip review) when review fails" do
@@ -250,7 +250,7 @@ describe PlayStoreRollout do
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
-      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_async)
     end
 
     it "halts the rollout if started" do
@@ -290,7 +290,7 @@ describe PlayStoreRollout do
 
       rollout.halt_release!
 
-      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_async).with(store_submission.id)
     end
 
     it "retries (with skip review) when review fails" do
@@ -311,7 +311,7 @@ describe PlayStoreRollout do
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
-      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_async)
     end
 
     it "resumes the rollout if halted" do
@@ -342,7 +342,7 @@ describe PlayStoreRollout do
 
       rollout.resume_release!
 
-      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_async).with(store_submission.id)
     end
 
     it "retries (with skip review) when review fails" do

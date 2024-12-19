@@ -110,7 +110,7 @@ class StepRun < ApplicationRecord
       transitions from: :on_track, to: :ci_workflow_triggered
     end
 
-    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) } do
+    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_async(id) } do
       transitions from: [:ci_workflow_triggered], to: :ci_workflow_started
     end
 
@@ -160,7 +160,7 @@ class StepRun < ApplicationRecord
       transitions from: [:deployment_started, :deployment_restarted], to: :success
     end
 
-    event(:cancel, after_commit: -> { Releases::CancelWorkflowRunJob.perform_later(id) }) do
+    event(:cancel, after_commit: -> { Releases::CancelWorkflowRunJob.perform_async(id) }) do
       transitions from: WORKFLOW_IMMUTABLE, to: :cancelled
       transitions from: WORKFLOW_IN_PROGRESS, to: :cancelling
       transitions from: WORKFLOW_NOT_STARTED, to: :cancelled_before_start
@@ -411,7 +411,7 @@ class StepRun < ApplicationRecord
   def handle_post_create_tasks
     populate_build_notes
     # FIXME: solve this correctly, we rely on wait time to ensure steps are triggered in correct order
-    Releases::TriggerWorkflowRunJob.set(wait: BASE_WAIT_TIME * step_number).perform_later(id)
+    Releases::TriggerWorkflowRunJob.set(wait: BASE_WAIT_TIME * step_number).perform_async(id)
     create_stamp!(data: stamp_data)
   end
 
@@ -493,11 +493,11 @@ class StepRun < ApplicationRecord
     Releases::FindWorkflowRun.perform_async(id)
     event_stamp!(reason: :ci_triggered, kind: :notice, data: stamp_data)
     notify!("Step has been triggered!", :step_started, notification_params)
-    Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
+    Releases::CancelStepRun.perform_async(previous_step_run.id) if previous_step_run&.may_cancel?
   end
 
   def after_retrigger_ci
-    WorkflowProcessors::WorkflowRunJob.perform_later(id)
+    WorkflowProcessors::WorkflowRunJob.perform_async(id)
     event_stamp!(reason: :ci_retriggered, kind: :notice, data: stamp_data)
   end
 

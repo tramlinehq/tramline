@@ -311,11 +311,11 @@ describe StepRun do
     it "stamps an event" do
       id = step_run.id
       name = step_run.class.name
-      allow(PassportJob).to receive(:perform_later)
+      allow(PassportJob).to receive(:perform_async)
 
       step_run.trigger_ci_worfklow_run!
 
-      expect(PassportJob).to have_received(:perform_later).with(id, name, hash_including(reason: :ci_triggered)).once
+      expect(PassportJob).to have_received(:perform_async).with(id, name, hash_including("reason" => "ci_triggered")).once
     end
 
     it "triggers find workflow run" do
@@ -339,38 +339,38 @@ describe StepRun do
 
     (StepRun::STATES.keys - StepRun::END_STATES).each do |trait|
       it "cancels previous running step run when #{trait}" do
-        allow(Releases::CancelStepRun).to receive(:perform_later)
+        allow(Releases::CancelStepRun).to receive(:perform_async)
         previous_step_run = create(:step_run, trait, step: step_run.step,
           release_platform_run: step_run.release_platform_run,
           scheduled_at: 10.minutes.before(step_run.scheduled_at))
 
         step_run.trigger_ci_worfklow_run!
 
-        expect(Releases::CancelStepRun).to have_received(:perform_later).with(previous_step_run.id).once
+        expect(Releases::CancelStepRun).to have_received(:perform_async).with(previous_step_run.id).once
       end
 
       it "does not cancel later running step run when #{trait}" do
-        allow(Releases::CancelStepRun).to receive(:perform_later)
+        allow(Releases::CancelStepRun).to receive(:perform_async)
         previous_step_run = create(:step_run, trait, step: step_run.step,
           release_platform_run: step_run.release_platform_run,
           scheduled_at: 10.minutes.after(step_run.scheduled_at))
 
         step_run.trigger_ci_worfklow_run!
 
-        expect(Releases::CancelStepRun).not_to have_received(:perform_later).with(previous_step_run.id)
+        expect(Releases::CancelStepRun).not_to have_received(:perform_async).with(previous_step_run.id)
       end
     end
 
     StepRun::END_STATES.each do |trait|
       it "does not cancel previous step run when #{trait}" do
-        allow(Releases::CancelStepRun).to receive(:perform_later)
+        allow(Releases::CancelStepRun).to receive(:perform_async)
         previous_step_run = create(:step_run, trait, step: step_run.step,
           release_platform_run: step_run.release_platform_run,
           scheduled_at: 10.minutes.before(step_run.scheduled_at))
 
         step_run.trigger_ci_worfklow_run!
 
-        expect(Releases::CancelStepRun).not_to have_received(:perform_later).with(previous_step_run.id)
+        expect(Releases::CancelStepRun).not_to have_received(:perform_async).with(previous_step_run.id)
       end
     end
   end
@@ -467,7 +467,7 @@ describe StepRun do
 
     context "when retriable" do
       it "retries the same workflow run" do
-        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_later)
+        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_async)
         allow(providable).to receive(:workflow_retriable?).and_return(true)
         allow(providable).to receive(:retry_workflow_run!)
 
@@ -477,7 +477,7 @@ describe StepRun do
       end
 
       it "does not update the build number" do
-        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_later)
+        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_async)
         allow(providable).to receive(:workflow_retriable?).and_return(true)
         allow(providable).to receive(:retry_workflow_run!)
 
@@ -489,7 +489,7 @@ describe StepRun do
 
     context "when non-retriable" do
       it "triggers a new workflow run" do
-        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_later)
+        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_async)
         allow(providable).to receive(:workflow_retriable?).and_return(false)
         allow(providable).to receive(:trigger_workflow_run!)
 
@@ -499,7 +499,7 @@ describe StepRun do
       end
 
       it "does not update the build number" do
-        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_later)
+        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_async)
         allow(providable).to receive(:workflow_retriable?).and_return(false)
         allow(providable).to receive(:trigger_workflow_run!)
 
@@ -585,20 +585,20 @@ describe StepRun do
     end
 
     it "cancels the CI workflow if step run is in ci workflow started state" do
-      allow(Releases::CancelWorkflowRunJob).to receive(:perform_later)
+      allow(Releases::CancelWorkflowRunJob).to receive(:perform_async)
       step_run = create(:step_run, :ci_workflow_started, step: step)
       step_run.cancel!
 
-      expect(Releases::CancelWorkflowRunJob).to have_received(:perform_later).with(step_run.id).once
+      expect(Releases::CancelWorkflowRunJob).to have_received(:perform_async).with(step_run.id).once
       expect(step_run.reload.cancelling?).to be(true)
     end
 
     it "attempts to cancels the CI workflow if step run is in ci workflow triggered state" do
-      allow(Releases::CancelWorkflowRunJob).to receive(:perform_later)
+      allow(Releases::CancelWorkflowRunJob).to receive(:perform_async)
       step_run = create(:step_run, :ci_workflow_triggered, step: step)
       step_run.cancel!
 
-      expect(Releases::CancelWorkflowRunJob).to have_received(:perform_later).with(step_run.id).once
+      expect(Releases::CancelWorkflowRunJob).to have_received(:perform_async).with(step_run.id).once
       expect(step_run.reload.cancelling?).to be(true)
     end
   end

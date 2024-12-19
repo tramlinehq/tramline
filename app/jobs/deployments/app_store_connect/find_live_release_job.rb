@@ -1,5 +1,4 @@
-class Deployments::AppStoreConnect::FindLiveReleaseJob
-  include Sidekiq::Job
+class Deployments::AppStoreConnect::FindLiveReleaseJob < ApplicationJob
   extend Loggable
   extend Backoffable
 

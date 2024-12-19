@@ -1,5 +1,4 @@
-class Releases::FindWorkflowRun
-  include Sidekiq::Job
+class Releases::FindWorkflowRun < ApplicationJob
   include Loggable
 
   queue_as :high

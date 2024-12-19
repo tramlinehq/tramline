@@ -1,5 +1,4 @@
-class StoreSubmissions::AppStore::SubmitForReviewJob
-  include Sidekiq::Job
+class StoreSubmissions::AppStore::SubmitForReviewJob < ApplicationJob
   extend Backoffable
 
   def perform(submission_id)

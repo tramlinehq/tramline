@@ -80,14 +80,14 @@ module Deployments
 
       def kickoff!
         return run.start_prepare_release! if app_store_release?
-        Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(run.id) if test_flight_release?
+        Deployments::AppStoreConnect::TestFlightReleaseJob.perform_async(run.id) if test_flight_release?
       end
 
       # NOTE: likely moves to internal/beta step
       def to_test_flight!
         return unless test_flight_release?
 
-        Deployments::AppStoreConnect::UpdateBuildNotesJob.perform_later(run.id)
+        Deployments::AppStoreConnect::UpdateBuildNotesJob.perform_async(run.id)
 
         return internal_release! if internal_channel?
 

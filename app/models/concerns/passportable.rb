@@ -6,32 +6,36 @@ module Passportable
   end
 
   def event_stamp!(reason:, kind:, data: {}, ts: Time.current)
-    PassportJob.perform_later(
+    PassportJob.perform_async(
       id,
       self.class.name,
-      reason:,
-      kind:,
-      message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
-      metadata: data,
-      event_timestamp: ts,
-      automatic: automatic?,
-      author_id: Current.user&.id,
-      author_metadata: author_metadata
+      {
+        "reason" => reason.to_s,
+        "kind" => kind.to_s,
+        "message" => I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
+        "metadata" => data.deep_transform_keys(&:to_s),
+        "event_timestamp" => ts.iso8601,
+        "automatic" => automatic?,
+        "author_id" => Current.user&.id,
+        "author_metadata" => author_metadata
+      }
     )
   end
 
   def event_stamp_now!(reason:, kind:, data: {})
-    PassportJob.perform_now(
+    PassportJob.new.perform(
       id,
       self.class.name,
-      reason:,
-      kind:,
-      message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
-      metadata: data,
-      event_timestamp: Time.current,
-      automatic: automatic?,
-      author_id: Current.user&.id,
-      author_metadata: author_metadata
+      {
+        "reason" => reason.to_s,
+        "kind" => kind.to_s,
+        "message" => I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
+        "metadata" => data,
+        "event_timestamp" => Time.current.iso8601,
+        "automatic" => automatic?,
+        "author_id" => Current.user&.id,
+        "author_metadata" => author_metadata
+      }
     )
   end
 

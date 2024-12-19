@@ -1,5 +1,4 @@
-class Deployments::AppStoreConnect::PrepareForReleaseJob
-  include Sidekiq::Job
+class Deployments::AppStoreConnect::PrepareForReleaseJob < ApplicationJob
   extend Backoffable
 
   queue_as :high

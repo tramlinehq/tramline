@@ -259,7 +259,7 @@ class App < ApplicationRecord
   end
 
   def refresh_external_app
-    RefreshExternalAppJob.perform_later(id)
+    RefreshExternalAppJob.perform_async(id)
   end
 
   def notification_params

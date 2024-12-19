@@ -48,7 +48,7 @@ class Coordinators::FinalizeRelease
     release.event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     notify_data = release.notification_params.merge(release.finalize_phase_metadata)
     release.notify!("Release has finished!", :release_ended, notify_data)
-    RefreshReportsJob.perform_later(release.id)
+    RefreshReportsJob.perform_async(release.id)
   end
 
   def on_failure!

@@ -116,12 +116,12 @@ class ProductionRelease < ApplicationRecord
     notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
 
     if train.tag_all_store_releases?
-      ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id, commit.id)
+      ReleasePlatformRuns::CreateTagJob.perform_async(release_platform_run.id, commit.id)
     end
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
-    V2::FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[monitoring_provider.class])
+    V2::FetchHealthMetricsJob.perform_async(id, JOB_FREQUENCY[monitoring_provider.class])
   end
 
   def beyond_monitoring_period?

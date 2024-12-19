@@ -49,10 +49,10 @@ describe DeploymentRun do
         play_upload_job = Deployments::GooglePlayStore::Upload
         deployment = create(:deployment, integration: step.train.build_channel_integrations.first, step: step)
         deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
-        allow(play_upload_job).to receive(:perform_later)
+        allow(play_upload_job).to receive(:perform_async)
 
         deployment_run.dispatch!
-        expect(play_upload_job).to have_received(:perform_later).with(deployment_run.id).once
+        expect(play_upload_job).to have_received(:perform_async).with(deployment_run.id).once
       end
 
       it "starts deploy for slack if deployment has slack integration" do
@@ -60,10 +60,10 @@ describe DeploymentRun do
         slack_integration = create(:integration, :with_slack, app: step.app)
         deployment = create(:deployment, integration: slack_integration, step: step)
         deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
-        allow(slack_deploy_job).to receive(:perform_later)
+        allow(slack_deploy_job).to receive(:perform_async)
 
         deployment_run.dispatch!
-        expect(slack_deploy_job).to have_received(:perform_later).with(deployment_run.id).once
+        expect(slack_deploy_job).to have_received(:perform_async).with(deployment_run.id).once
       end
     end
 
@@ -86,10 +86,10 @@ describe DeploymentRun do
         job = Deployments::AppStoreConnect::TestFlightReleaseJob
         deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
         deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
-        allow(job).to receive(:perform_later)
+        allow(job).to receive(:perform_async)
 
         deployment_run.dispatch!
-        expect(job).to have_received(:perform_later).with(deployment_run.id).once
+        expect(job).to have_received(:perform_async).with(deployment_run.id).once
       end
     end
   end

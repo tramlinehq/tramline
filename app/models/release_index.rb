@@ -23,7 +23,7 @@ class ReleaseIndex < ApplicationRecord
   validate :validate_weightage_sum
   validate :constrained_tolerable_range
 
-  after_update -> { RefreshReldexJob.perform_later(train.id) }
+  after_update -> { RefreshReldexJob.perform_async(train.id) }
 
   DEFAULT_TOLERABLE_RANGE = 0.5..0.8
 

@@ -6,7 +6,7 @@ describe Deployments::AppStoreConnect::Release do
     let(:app_store_job) { Deployments::AppStoreConnect::PrepareForReleaseJob }
 
     before do
-      allow(test_flight_job).to receive(:perform_later)
+      allow(test_flight_job).to receive(:perform_async)
       allow(app_store_job).to receive(:perform_async)
     end
 
@@ -15,7 +15,7 @@ describe Deployments::AppStoreConnect::Release do
       expect(described_class.kickoff!(run)).to be_nil
 
       expect(app_store_job).not_to have_received(:perform_async)
-      expect(test_flight_job).not_to have_received(:perform_later)
+      expect(test_flight_job).not_to have_received(:perform_async)
     end
 
     context "when production channel" do
@@ -36,7 +36,7 @@ describe Deployments::AppStoreConnect::Release do
       it "starts adding to beta group when testflight" do
         described_class.kickoff!(run)
 
-        expect(test_flight_job).to have_received(:perform_later).with(run.id).once
+        expect(test_flight_job).to have_received(:perform_async).with(run.id).once
       end
     end
   end

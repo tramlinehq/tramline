@@ -22,7 +22,7 @@ class WorkflowProcessors::WorkflowRunV2
   private
 
   def re_enqueue
-    WorkflowRuns::PollRunStatusJob.set(wait: wait_time).perform_later(workflow_run.id)
+    WorkflowRuns::PollRunStatusJob.set(wait: wait_time).perform_async(workflow_run.id)
   end
 
   attr_reader :workflow_run

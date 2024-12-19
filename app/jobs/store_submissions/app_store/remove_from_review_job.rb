@@ -1,5 +1,4 @@
-class StoreSubmissions::AppStore::RemoveFromReviewJob
-  include Sidekiq::Job
+class StoreSubmissions::AppStore::RemoveFromReviewJob < ApplicationJob
   extend Backoffable
 
   def perform(submission_id)

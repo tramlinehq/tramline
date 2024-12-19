@@ -92,7 +92,7 @@ class SlackIntegration < ApplicationRecord
   end
 
   def fetch_channels
-    RefreshSlackChannelsJob.perform_later(id)
+    RefreshSlackChannelsJob.perform_async(id)
   end
 
   def populate_channels!

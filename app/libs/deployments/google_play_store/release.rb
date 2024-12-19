@@ -48,7 +48,7 @@ module Deployments
 
       def kickoff!
         return run.upload! if run.step_run.similar_deployment_runs_for(run).any?(&:has_uploaded?)
-        Deployments::GooglePlayStore::Upload.perform_later(run.id)
+        Deployments::GooglePlayStore::Upload.perform_async(run.id)
       end
 
       # NOTE: likely moves to internal/beta step

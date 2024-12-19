@@ -103,7 +103,7 @@ class Integration < ApplicationRecord
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
 
   before_create :set_connected
-  after_create_commit -> { IntegrationMetadataJob.perform_later(id) }
+  after_create_commit -> { IntegrationMetadataJob.perform_async(id) }
 
   class << self
     def by_categories_for(app)

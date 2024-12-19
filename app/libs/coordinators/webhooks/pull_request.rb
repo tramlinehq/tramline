@@ -3,11 +3,11 @@ class Coordinators::Webhooks::PullRequest < Coordinators::Webhooks::Base
     return Response.new(:accepted, "Invalid repo/branch") unless valid_repo?
 
     if opened? && train.active_release_for?(base_branch_name)
-      Webhooks::OpenPullRequestJob.perform_later(train.id, pull_request)
+      Webhooks::OpenPullRequestJob.perform_async(train.id, pull_request)
     end
 
     if closed? && open_active_prs?
-      Webhooks::ClosePullRequestJob.perform_later(train.id, pull_request)
+      Webhooks::ClosePullRequestJob.perform_async(train.id, pull_request)
     end
 
     Response.new(:accepted)

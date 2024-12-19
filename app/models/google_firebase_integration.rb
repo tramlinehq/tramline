@@ -110,7 +110,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def fetch_channels
-    RefreshFirebaseChannelsJob.perform_later(id)
+    RefreshFirebaseChannelsJob.perform_async(id)
   end
 
   def channels
