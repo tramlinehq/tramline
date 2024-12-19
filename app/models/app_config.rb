@@ -101,11 +101,21 @@ class AppConfig < ApplicationRecord
   end
 
   def bugsnag_project(platform)
-    pick_bugsnag_project_id(platform)
+    case platform
+    when "android" then bugsnag_android_config["project_id"]
+    when "ios" then bugsnag_ios_config["project_id"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
   end
 
   def bugsnag_release_stage(platform)
-    pick_bugsnag_release_stage(platform)
+    case platform
+    when "android" then bugsnag_android_config["release_stage"]
+    when "ios" then bugsnag_ios_config["release_stage"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
   end
 
   def ci_cd_workflows
