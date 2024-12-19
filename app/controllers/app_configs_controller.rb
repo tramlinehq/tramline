@@ -86,9 +86,7 @@ class AppConfigsController < SignedInApplicationController
         :bugsnag_ios_project_id,
         :bugsnag_android_release_stage,
         :bugsnag_android_project_id,
-        :bitbucket_workspace,
-        :firebase_crashlytics_android_config,
-        :firebase_crashlytics_ios_config
+        :bitbucket_workspace
       )
   end
 
@@ -100,8 +98,6 @@ class AppConfigsController < SignedInApplicationController
       .merge(bugsnag_config(app_config_params.slice(*BUGSNAG_CONFIG_PARAMS)))
       .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
       .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)
-      .merge(firebase_crashlytics_android_config: app_config_params[:firebase_crashlytics_android_config]&.safe_json_parse)
-      .merge(firebase_crashlytics_ios_config: app_config_params[:firebase_crashlytics_ios_config]&.safe_json_parse)
       .except(*BUGSNAG_CONFIG_PARAMS)
       .compact
   end
@@ -112,7 +108,6 @@ class AppConfigsController < SignedInApplicationController
 
   def set_monitoring_projects
     @monitoring_projects = @app.monitoring_provider.setup
-    @firebase_crashlytics_android_apps, @firebase_crashlytics_ios_apps = @monitoring_projects[:android], @monitoring_projects[:ios] if @app.crashlytics_connected?
   end
 
   def set_firebase_apps
