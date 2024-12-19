@@ -244,6 +244,10 @@ class Release < ApplicationRecord
     release_platform_runs.all?(&:production_release_active?)
   end
 
+  def production_release_started?
+    release_platform_runs.all? { |rpr| rpr.active_production_release.present? }
+  end
+
   def backmerge_failure_count
     return 0 unless continuous_backmerge?
     all_commits.size - backmerge_prs.size - 1
@@ -316,12 +320,12 @@ class Release < ApplicationRecord
     TERMINAL_STATES.exclude?(status)
   end
 
-  def queue_commit?
-    active_build_queue.present? && release_changes?
+  def queue_commit?(commit)
+    active_build_queue.present? && stability_commit?(commit)
   end
 
-  def release_changes?
-    all_commits.size > 1
+  def stability_commit?(commit)
+    first_commit != commit
   end
 
   def end_time
@@ -374,7 +378,7 @@ class Release < ApplicationRecord
     event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
   rescue Installations::Error => ex
     raise unless [:tag_reference_already_exists, :tagged_release_already_exists].include?(ex.reason)
-    create_vcs_release!(unique_tag_name(input_tag_name))
+    create_vcs_release!(unique_tag_name(input_tag_name, last_commit.short_sha))
   end
 
   def release_diff
@@ -615,6 +619,11 @@ class Release < ApplicationRecord
   end
 
   def set_version
+    if train.freeze_version? && custom_version.blank?
+      self.original_release_version = train.version_current
+      return
+    end
+
     if custom_version.present?
       self.original_release_version = custom_version
       return

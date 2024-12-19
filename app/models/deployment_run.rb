@@ -97,6 +97,11 @@ class DeploymentRun < ApplicationRecord
     failed: "failed"
   }
 
+  JOB_FREQUENCY = {
+    "Crashlytics" => 30.minutes,
+    "Bugsnag" => 5.minutes
+  }
+
   READY_STATES = [STATES[:rollout_started], STATES[:ready_to_release], STATES[:released]]
   STORE_SUBMISSION_STATES = READY_STATES + [STATES[:submitted_for_review], STATES[:review_failed]]
   FAILED_STATES = [STATES[:failed], STATES[:failed_prepare_release], STATES[:failed_with_action_required]]
@@ -527,7 +532,7 @@ class DeploymentRun < ApplicationRecord
   def on_release_started
     event_stamp!(reason: :release_started, kind: :notice, data: stamp_data)
     ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id) if production_channel? && train.tag_all_store_releases?
-    Releases::FetchHealthMetricsJob.perform_later(id) if app.monitoring_provider.present?
+    Releases::FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[app.monitoring_provider.display]) if app.monitoring_provider.present?
   end
 
   def mark_reviewed
