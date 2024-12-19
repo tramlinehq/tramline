@@ -15,7 +15,6 @@
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
 #  bitrise_project_id      :jsonb
-#  bugsnag_project_id      :jsonb
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
@@ -23,7 +22,7 @@ class AppConfig < ApplicationRecord
   include AppConfigurable
 
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
-  # self.ignored_columns += ["bugsnag_project_id"]
+  self.ignored_columns += %w[bugsnag_project_id firebase_crashlytics_android_config firebase_crashlytics_ios_config]
 
   belongs_to :app
   has_many :variants, class_name: "AppVariant", dependent: :destroy

@@ -75,6 +75,12 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:tester_notes_in_beta_releases, self)
   end
 
+  # TODO: This should eventually become a config, but right now this is only implemented for the Bitbucket integration
+  # So we currently do this as a feature flag for specific orgs
+  def single_pr_backmerge_for_multi_commit_push?
+    Flipper.enabled?(:single_pr_backmerge_for_multi_commit_push, self)
+  end
+
   def owner
     users.includes(:memberships).where(memberships: {role: "owner"}).sole
   end

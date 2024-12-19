@@ -4,6 +4,7 @@ class V2::IntegrationCardComponent < V2::BaseComponent
     bugsnag: "Auth Token",
     firebase: "Firebase Service Account JSON Key",
     google_play_store: "Service Account JSON Key",
+    crashlytics: "Service Account JSON Key",
     bitrise: "Access Token"
   }
 

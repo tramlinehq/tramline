@@ -29,6 +29,7 @@ class Build < ApplicationRecord
   belongs_to :workflow_run
   has_one :artifact, class_name: "BuildArtifact", dependent: :nullify, inverse_of: :build
   has_many :production_releases, dependent: :nullify, inverse_of: :build
+  has_many :store_submissions, dependent: :nullify, inverse_of: :build
   has_one :external_build, dependent: :destroy, inverse_of: :build
 
   scope :internal, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:internal]}) }

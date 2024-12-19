@@ -14,4 +14,8 @@ module Integrable
   def firebase_connected?
     integrations.google_firebase_integrations.any?
   end
+
+  def firebase_crashlytics_connected?
+    integrations.crashlytics_integrations.any?
+  end
 end

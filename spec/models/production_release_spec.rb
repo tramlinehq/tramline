@@ -47,4 +47,35 @@ RSpec.describe ProductionRelease do
       end
     end
   end
+
+  describe "#rollout_started!" do
+    let(:train) { create(:train, tag_all_store_releases: true, tag_platform_releases: true) }
+    let(:release) { create(:release, train:) }
+    let(:release_platform) { create(:release_platform, train:) }
+    let(:release_platform_run) { create(:release_platform_run, release_platform:, release:) }
+    let(:build) { create(:build, release_platform_run:) }
+    let(:production_release) { create(:production_release, :inflight, build:, release_platform_run:) }
+
+    before do
+      create(:store_rollout,
+        :play_store,
+        :started,
+        store_submission: create(:play_store_submission, :prepared, parent_release: production_release),
+        release_platform_run:)
+    end
+
+    it "marks the inflight production release as active" do
+      production_release.rollout_started!
+
+      expect(production_release.active?).to be(true)
+    end
+
+    it "creates a tag for the the production release" do
+      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
+
+      production_release.rollout_started!
+
+      expect(ReleasePlatformRuns::CreateTagJob).to have_received(:perform_later).with(release_platform_run.id, production_release.commit.id)
+    end
+  end
 end

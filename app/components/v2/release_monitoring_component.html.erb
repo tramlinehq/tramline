@@ -44,7 +44,7 @@
   <% end %>
 
   <% if :errors.in? metrics %>
-    <% if empty_component? %>
+    <% if errors_count.blank? || new_errors_count.blank? %>
       <%= render StatCardComponent.new("Errors",
                                        type: :empty,
                                        empty_stat_help_text: "This data gets pulled from your monitoring integration.") %>

@@ -10,7 +10,6 @@
 #
 class GoogleFirebaseIntegration < ApplicationRecord
   has_paper_trail
-  encrypts :json_key, deterministic: true
 
   self.ignored_columns += %w[app_id]
 
@@ -18,51 +17,20 @@ class GoogleFirebaseIntegration < ApplicationRecord
   include Providable
   include Displayable
 
+  attr_accessor :json_key_file
+
+  encrypts :json_key, deterministic: true
+
+  validate :correct_key, on: :create
+
   delegate :cache, to: Rails
   delegate :integrable, to: :integration
   delegate :config, to: :integrable
   delegate :firebase_app, to: :config
 
-  validate :correct_key, on: :create
-
-  attr_accessor :json_key_file
-
   after_create_commit :fetch_channels
 
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/firebase_small.png".freeze
-  CACHE_EXPIRY = 1.month
-
-  def access_key
-    StringIO.new(json_key)
-  end
-
-  def installation
-    Installations::Google::Firebase::Api.new(project_number, access_key)
-  end
-
-  def creatable?
-    true
-  end
-
-  def connectable?
-    false
-  end
-
-  def store?
-    false
-  end
-
-  def controllable_rollout?
-    false
-  end
-
-  def to_s
-    "firebase"
-  end
-
-  def connection_data
-    "Project: #{project_number}"
-  end
 
   GROUPS_TRANSFORMATIONS = {
     id: :name,
@@ -78,16 +46,42 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   EMPTY_CHANNEL = {id: :no_testers, name: "No testers (upload only)"}
 
-  def fetch_channels
-    RefreshFirebaseChannelsJob.perform_later(id)
+  CACHE_EXPIRY = 1.month
+
+  def installation
+    Installations::Google::Firebase::Api.new(project_number, access_key)
   end
 
-  def channels
-    installation.list_groups(GROUPS_TRANSFORMATIONS)
+  def controllable_rollout?
+    false
+  end
+
+  def to_s
+    "firebase"
+  end
+
+  def access_key
+    StringIO.new(json_key)
+  end
+
+  def creatable?
+    true
+  end
+
+  def connectable?
+    false
+  end
+
+  def store?
+    false
   end
 
   def further_setup?
     true
+  end
+
+  def connection_data
+    "Project: #{project_number}"
   end
 
   def setup
@@ -105,10 +99,22 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def list_apps(platform:)
     apps = cache.fetch(list_apps_cache_key, expires_in: CACHE_EXPIRY) do
-      installation.list_apps(APPS_TRANSFORMATIONS)
+      installation.list_apps(self.class::APPS_TRANSFORMATIONS)
     end
 
     apps.select { |app| app[:platform] == platform }.map { |app| app.slice(:app_id, :display_name) }
+  end
+
+  def metadata
+    {}
+  end
+
+  def fetch_channels
+    RefreshFirebaseChannelsJob.perform_later(id)
+  end
+
+  def channels
+    installation.list_groups(GROUPS_TRANSFORMATIONS)
   end
 
   def populate_channels!
@@ -165,10 +171,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
       ),
         BUILD_TRANSFORMATIONS)
     end
-  end
-
-  def metadata
-    {}
   end
 
   # FIXME: This is an incomplete URL. The full URL should contain the project id.
@@ -261,11 +263,11 @@ class GoogleFirebaseIntegration < ApplicationRecord
     errors.add(:json_key, ex.reason)
   end
 
-  def list_apps_cache_key
-    "google_firebase_integration/#{id}/list_apps"
-  end
-
   def build_channels_cache_key
     "google_firebase_integration/#{id}/build_channels"
+  end
+
+  def list_apps_cache_key
+    "google_firebase_integration/#{id}/list_apps"
   end
 end

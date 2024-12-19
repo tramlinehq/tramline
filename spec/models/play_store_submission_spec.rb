@@ -106,7 +106,7 @@ describe PlayStoreSubmission do
       create_production_rollout_tree(
         train,
         release_platform,
-        release_status: :on_track,
+        release_traits: [:on_track],
         rollout_status: :created,
         skip_rollout: false
       ) => {store_submission:}
@@ -121,7 +121,7 @@ describe PlayStoreSubmission do
       create_production_rollout_tree(
         train,
         release_platform,
-        release_status: :on_track,
+        release_traits: [:on_track],
         rollout_status: :started,
         skip_rollout: true
       ) => {store_submission:}
@@ -137,7 +137,7 @@ describe PlayStoreSubmission do
       create_production_rollout_tree(
         train,
         release_platform,
-        release_status: :on_track,
+        release_traits: [:on_track],
         rollout_status: :started,
         submission_status: :preprocessing,
         skip_rollout: true
@@ -153,7 +153,7 @@ describe PlayStoreSubmission do
       create_production_rollout_tree(
         train,
         release_platform,
-        release_status: :on_track,
+        release_traits: [:on_track],
         rollout_status: :started,
         skip_rollout: true
       ) => {store_submission:}
@@ -169,7 +169,7 @@ describe PlayStoreSubmission do
       create_production_rollout_tree(
         train,
         release_platform,
-        release_status: :on_track,
+        release_traits: [:on_track],
         rollout_status: :started,
         skip_rollout: true
       ) => {store_submission:}

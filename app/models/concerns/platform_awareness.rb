@@ -1,10 +1,11 @@
 module PlatformAwareness
+  INVALID_PLATFORM_ERROR = "platform must be valid"
   def pick_firebase_app_id(platform)
     case platform
     when "android" then firebase_android_config["app_id"]
     when "ios" then firebase_ios_config["app_id"]
     else
-      raise ArgumentError, "platform must be valid"
+      raise ArgumentError, INVALID_PLATFORM_ERROR
     end
   end
 
@@ -13,7 +14,7 @@ module PlatformAwareness
     when "android" then bugsnag_android_config["release_stage"]
     when "ios" then bugsnag_ios_config["release_stage"]
     else
-      raise ArgumentError, "platform must be valid"
+      raise ArgumentError, INVALID_PLATFORM_ERROR
     end
   end
 
@@ -22,7 +23,16 @@ module PlatformAwareness
     when "android" then bugsnag_android_config["project_id"]
     when "ios" then bugsnag_ios_config["project_id"]
     else
-      raise ArgumentError, "platform must be valid"
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
+  end
+
+  def pick_firebase_crashlytics_app_id(platform)
+    case platform
+    when "android" then firebase_crashlytics_android_config["app_id"]
+    when "ios" then firebase_crashlytics_ios_config["app_id"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
     end
   end
 end

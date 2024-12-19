@@ -7,9 +7,20 @@ class Api::V1::ReleasesController < ApiController
   private
 
   def all_versions
-    releases
-      .flat_map { |release| release.is_v2? ? release.production_store_rollouts.reorder(:updated_at).flat_map(&:release_info) : release.all_store_step_runs&.map(&:release_info) }
-      .then { |store_releases| store_releases.group_by { _1[:platform] } }
+    store_releases = releases.flat_map do |release|
+      if release.is_v2?
+        release
+          .production_store_rollouts
+          .reorder(:updated_at)
+          .flat_map(&:release_info)
+      else
+        release
+          .all_store_step_runs
+          &.map(&:release_info)
+      end
+    end
+
+    store_releases.group_by { |sr| sr[:platform] }
   end
 
   def releases
@@ -18,6 +29,7 @@ class Api::V1::ReleasesController < ApiController
         .releases
         .where(branch_name: release_param)
         .or(authorized_organization.releases.where(id: release_param))
+        .or(authorized_organization.releases.where(slug: release_param))
   end
 
   def release_param

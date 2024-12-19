@@ -39,7 +39,7 @@ class ReleaseMetadata < ApplicationRecord
   validate :notes_length
 
   # NOTE: strip and normalize line endings across various OSes
-  normalizes :release_notes, with: ->(notes) { notes.strip.gsub("\r\n?", "\n") }
+  normalizes :release_notes, with: ->(notes) { notes.strip.gsub("\r\n", "\n") }
 
   def self.find_by_id_and_language(id, language, platform)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, platform)

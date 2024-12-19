@@ -32,7 +32,13 @@ class V2::ReleaseMonitoringComponent < V2::BaseComponent
     monitoring_provider.dashboard_url(platform:, release_id: release_data&.external_release_id)
   end
 
+  def show_stats?
+    return true if monitoring_provider.is_a?(BugsnagIntegration)
+    current_user.show_crashlytics_stats?
+  end
+
   def release_data
+    return nil unless show_stats?
     @release_data ||= parent_release.latest_health_data
   end
 
@@ -53,10 +59,12 @@ class V2::ReleaseMonitoringComponent < V2::BaseComponent
   end
 
   def errors_count
+    return if release_data&.errors_count.blank?
     metric_data("errors_count", release_data.errors_count)
   end
 
   def new_errors_count
+    return if release_data&.new_errors_count.blank?
     metric_data("new_errors_count", release_data.new_errors_count)
   end
 

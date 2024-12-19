@@ -53,6 +53,10 @@ class Accounts::User < ApplicationRecord
     Flipper.enabled?(:super_admin, self)
   end
 
+  def show_crashlytics_stats?
+    Flipper.enabled?(:show_crashlytics_stats, self)
+  end
+
   def email_authentication
     email_authentications.first
   end

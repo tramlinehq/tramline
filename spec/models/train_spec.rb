@@ -399,4 +399,27 @@ describe Train do
       expect(release.reload.stopped?).to be(true)
     end
   end
+
+  describe "version config constraints validations" do
+    it "is valid when neither freeze_version nor patch_version_bump_only is true" do
+      train = build(:train, freeze_version: false, patch_version_bump_only: false)
+      expect(train).to be_valid
+    end
+
+    it "is valid when only freeze_version is true" do
+      train = build(:train, freeze_version: true, patch_version_bump_only: false)
+      expect(train).to be_valid
+    end
+
+    it "is valid when only patch_version_bump_only is true" do
+      train = build(:train, freeze_version: false, patch_version_bump_only: true)
+      expect(train).to be_valid
+    end
+
+    it "is not valid when both freeze_version and patch_version_bump_only are true" do
+      train = build(:train, freeze_version: true, patch_version_bump_only: true)
+      expect(train).not_to be_valid
+      expect(train.errors[:base]).to include("both freeze_version and patch_version_bump_only cannot be true at the same time")
+    end
+  end
 end
