@@ -571,7 +571,7 @@ describe Release do
     end
 
     context "when failure in a v2 release platform run" do
-      let(:release) { create(:release, :on_track, :with_no_platform_runs, is_v2: true) }
+      let(:release) { create(:release, :on_track, :with_no_platform_runs) }
       let(:release_platform_run) { create(:release_platform_run, :on_track, release:) }
 
       it "returns false if the latest production release has failed" do
@@ -620,7 +620,7 @@ describe Release do
         train = create(:train, :with_no_platforms, app:)
         ios_release_platform = create(:release_platform, train:, platform: "ios")
         android_release_platform = create(:release_platform, train:, platform: "android")
-        release = create(:release, :on_track, :with_no_platform_runs, train:, is_v2: true)
+        release = create(:release, :on_track, :with_no_platform_runs, train:)
         ios_release_platform_run = create(:release_platform_run, :on_track, release:, release_platform: ios_release_platform)
         android_release_platform_run = create(:release_platform_run, :on_track, release:, release_platform: android_release_platform)
         _beta_release = create(:beta_release, :failed, release_platform_run: android_release_platform_run)

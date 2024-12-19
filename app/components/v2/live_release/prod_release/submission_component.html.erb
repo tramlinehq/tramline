@@ -39,7 +39,7 @@
     <% end %>
   <% end %>
 
-  <% if release_platform_run.metadata_editable_v2? %>
+  <% if release_platform_run.metadata_editable? %>
     <div>
       <%= render V2::AlertComponent.new(type: :info, title: "You can edit the release notes until you prepare for review. Once prepared, you won't be able to change the release notes.", full_screen: false) %>
     </div>

@@ -30,7 +30,7 @@ describe ReleasePlatformRun do
   end
 
   describe "#version_bump_required?" do
-    let(:release) { create(:release, :with_no_platform_runs, is_v2: true) }
+    let(:release) { create(:release, :with_no_platform_runs) }
     let(:run_version) { "1.2.0" }
     let(:release_platform_run) { create(:release_platform_run, release:, release_version: run_version) }
 

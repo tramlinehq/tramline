@@ -77,11 +77,9 @@ class TrainsController < SignedInApplicationController
   def new_train_redirect
     if @app.trains.size == 1
       redirect_to app_path(@app), notice: "Train was successfully created."
-    elsif v2?
+    else
       platform = @train.release_platforms.first.platform
       redirect_to edit_app_train_platform_submission_config_path(@app, @train, platform), notice: "Train was successfully created."
-    else
-      redirect_to steps_app_train_path(@app, @train), notice: "Train was successfully created."
     end
   end
 
@@ -119,7 +117,6 @@ class TrainsController < SignedInApplicationController
       :release_schedule_enabled,
       :stop_automatic_releases_on_failure,
       :continuous_backmerge_enabled,
-      :manual_release,
       :compact_build_notes,
       :tag_all_store_releases,
       :tag_platform_releases,
@@ -158,7 +155,6 @@ class TrainsController < SignedInApplicationController
       :release_schedule_enabled,
       :stop_automatic_releases_on_failure,
       :continuous_backmerge_enabled,
-      :manual_release,
       :compact_build_notes,
       :tag_all_store_releases,
       :tag_platform_releases,

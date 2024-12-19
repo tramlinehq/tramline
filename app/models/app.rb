@@ -114,7 +114,7 @@ class App < ApplicationRecord
   end
 
   def guided_train_setup?
-    trains.none? || train_in_creation&.product_v2?
+    trains.none? || train_in_creation.present?
   end
 
   def train_in_creation

@@ -296,7 +296,7 @@ describe Train do
 
     it "stops the ongoing release which is in failed state" do
       train = create(:train, :active, :with_schedule, stop_automatic_releases_on_failure: true)
-      release = create(:release, :on_track, :with_no_platform_runs, train:, is_v2: true)
+      release = create(:release, :on_track, :with_no_platform_runs, train:)
       release_platform_run = create(:release_platform_run, release:)
       _beta_release = create(:beta_release, :failed, release_platform_run:)
 

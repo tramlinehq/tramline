@@ -16,10 +16,10 @@ class Queries::Events
   attr_reader :release, :params
 
   def all
-    Passport.where(stampable_id: v2_stampable_ids).order(event_timestamp: :desc)
+    Passport.where(stampable_id: stampable_ids).order(event_timestamp: :desc)
   end
 
-  def v2_stampable_ids
+  def stampable_ids
     run_ids = release
       .release_platform_runs
       .joins(:release_platform)

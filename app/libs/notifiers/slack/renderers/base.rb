@@ -6,7 +6,6 @@ class Notifiers::Slack::Renderers::Base
   ROOT_PATH = Rails.root.join(NOTIFIERS_RELATIVE_PATH)
   HEADER_TEMPLATE = "header.json.erb".freeze
   FOOTER_TEMPLATE = "footer.json.erb".freeze
-  FOOTER_V2_TEMPLATE = "footer_v2.json.erb".freeze
 
   def self.render_json(**args)
     new(**args).render_json
@@ -39,7 +38,7 @@ class Notifiers::Slack::Renderers::Base
   end
 
   def render_footer
-    file = File.read(File.join(ROOT_PATH, @is_v2 ? FOOTER_V2_TEMPLATE : FOOTER_TEMPLATE))
+    file = File.read(File.join(ROOT_PATH, FOOTER_TEMPLATE))
     ERB.new(file).result(binding)
   end
 

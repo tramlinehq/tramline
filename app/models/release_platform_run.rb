@@ -302,7 +302,7 @@ class ReleasePlatformRun < ApplicationRecord
     inflight_production_release.blank? || inflight_production_release.store_submission.pre_review?
   end
 
-  alias_method :metadata_editable_v2?, :production_release_in_pre_review?
+  alias_method :metadata_editable?, :production_release_in_pre_review?
 
   def temporary_unblock_upcoming?
     Flipper.enabled?(:temporary_unblock_upcoming, self)

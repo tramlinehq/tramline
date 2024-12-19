@@ -42,9 +42,10 @@ class Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
   include Rails.application.routes.url_helpers
-  include Notifiable
   include Versionable
   include Loggable
+
+  self.ignored_columns += ["manual_release"]
 
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
@@ -141,6 +142,7 @@ class Train < ApplicationRecord
     Flipper.enabled?(:one_percent_beta_release, self)
   end
 
+  # TODO: remove this after full removal of v2, it is used only for one-off rake tasks
   def product_v2?
     Flipper.enabled?(:product_v2, self)
   end
@@ -402,8 +404,7 @@ class Train < ApplicationRecord
         train_current_version: version_current,
         train_next_version: next_version,
         train_url: train_link,
-        working_branch:,
-        is_v2: product_v2?
+        working_branch:
       }
     )
   end

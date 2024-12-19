@@ -25,6 +25,6 @@ class V2::LiveRelease::MetadataComponent < V2::BaseComponent
   end
 
   def editable?
-    @release.release_platform_runs.any?(&:metadata_editable_v2?)
+    @release.release_platform_runs.any?(&:metadata_editable?)
   end
 end
