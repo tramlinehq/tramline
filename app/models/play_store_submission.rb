@@ -110,7 +110,7 @@ class PlayStoreSubmission < StoreSubmission
 
   def finished?
     return true if finished_manually?
-    FINAL_STATES.include?(status) && store_rollout.finished?
+    FINAL_STATES.include?(status) && store_rollout&.finished?
   end
 
   def post_review? = false
