@@ -18,22 +18,17 @@ describe Release do
 
   describe "after_commit callback#Releases::CopyPreviousApprovalsJob" do
     it "enqueues the CopyPreviousApprovalsJob after commit when copy_approvals_enabled? returns true" do
-      allow(release).to receive(:copy_approvals_enabled?).and_return(true)
-
       allow(Releases::CopyPreviousApprovalsJob).to receive(:perform_later)
-
+      release.train.update(copy_approvals: true)
       release.run_callbacks(:commit) { true }
-
       expect(Releases::CopyPreviousApprovalsJob).to have_received(:perform_later).with(release.id)
     end
 
-    it "does not enqueue the CopyPreviousApprovalsJob if copy_approvals_enabled? returns false" do
-      allow(release).to receive(:copy_approvals_enabled?).and_return(false)
-
+    it "does not enqueue the CopyPreviousApprovalsJob if copys_approvals_enabled? returns false" do
+      release.train.update(copy_approvals: false)
       allow(Releases::CopyPreviousApprovalsJob).to receive(:perform_later)
 
       release.run_callbacks(:commit) { true }
-
       expect(Releases::CopyPreviousApprovalsJob).not_to have_received(:perform_later)
     end
   end
@@ -73,10 +68,9 @@ describe Release do
       before do
         previous_release_two.approval_items << approval_item_two
         previous_release_one.approval_items << approval_item
-        allow(release).to receive_messages(
-          copy_approvals?: true,
-          fetch_previous_finished_release: previous_release_one
-        )
+
+        allow(train).to receive(:previously_finished_release).and_return(previous_release_one)
+        allow(release).to receive(:copy_approvals?).and_return(true)
       end
 
       it "copies approval items from the previous release" do
@@ -92,10 +86,8 @@ describe Release do
       let(:release) { build(:release) }
 
       before do
-        allow(release).to receive_messages(
-          copy_approvals?: true,
-          fetch_previous_finished_release: nil
-        )
+        allow(train).to receive(:previously_finished_release).and_return(nil)
+        allow(release).to receive(:copy_approvals?).and_return(true)
       end
 
       it "handles copying approvals when no previous approvals exist" do
@@ -107,31 +99,32 @@ describe Release do
   end
 
   describe "#copy_approvals_enabled?" do
-    it "returns true if copy_approvals? is true and release is not nil" do
-      allow(release).to receive_messages(copy_approvals?: true, release?: true)
-
-      expect(release.copy_approvals_enabled?).to be(true)
+    context "when copy_approvals? is true and release is not nil" do
+      it "returns true if copy_approvals? is true and release is not nil" do
+        release.train.update(copy_approvals: true)
+        expect(release.copy_approvals_enabled?).to be(true)
+      end
     end
 
-    it "returns false if copy_approvals? is false" do
-      allow(release).to receive(:copy_approvals?).and_return(false)
-
-      expect(release.copy_approvals_enabled?).to be(false)
+    context "when the train does not have copy_approvals enabled" do
+      it "returns false" do
+        release.train.update(copy_approvals: false)
+        expect(release.copy_approvals_enabled?).to be(false)
+      end
     end
 
-    it "returns false if release? is false" do
-      allow(release).to receive(:release?).and_return(false)
-
-      expect(release.copy_approvals_enabled?).to be(false)
+    context "when release is hotfix" do
+      it "returns false" do
+        release.update(release_type: "hotfix")
+        expect(release&.copy_approvals_enabled?).to be(false)
+      end
     end
   end
 
   describe "#copy_approval_restricted?" do
-    let(:release) { create(:release) }
-
     context "when no valid previous release is found, it disables the 'Copy from previous release' button" do
       before do
-        allow(release).to receive(:fetch_previous_finished_release).and_return(nil)
+        allow(train).to receive(:previously_finished_release).and_return(nil)
       end
 
       it "returns true regardless of other conditions" do
@@ -141,7 +134,7 @@ describe Release do
 
     context "when fetch_previous_finished_release is not nil" do
       before do
-        allow(release).to receive(:fetch_previous_finished_release).and_return(instance_double(described_class))
+        allow(train).to receive(:previously_finished_release).and_return(instance_double(described_class))
       end
 
       context "when approval_items are present" do
@@ -180,7 +173,7 @@ describe Release do
       let(:release_b) { create(:release, train: train, release_type: :hotfix, status: :finished, created_at: 2.days.ago) }
 
       it "fetches the most recent finished release of type release" do
-        result = release.fetch_previous_finished_release
+        result = train.previously_finished_release
         expect(result).to eq(release_a)
       end
     end
@@ -190,7 +183,7 @@ describe Release do
       let!(:release_b) { create(:release, train: train, release_type: :release, status: :finished, created_at: 2.days.ago) }
 
       it "fetches the most recent finished release of type release" do
-        result = release.fetch_previous_finished_release
+        result = train.previously_finished_release
         expect(result).to eq(release_b)
       end
     end
@@ -200,7 +193,7 @@ describe Release do
       let(:release_b) { create(:release, train: train, release_type: :release, status: :stopped, created_at: 2.days.ago) }
 
       it "fetches the most recent finished release of type release" do
-        result = release.fetch_previous_finished_release
+        result = train.previously_finished_release
         expect(result).to eq(release_a)
       end
     end

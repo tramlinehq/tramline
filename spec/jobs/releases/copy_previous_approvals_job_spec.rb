@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Releases::CopyPreviousApprovalsJob do
+describe Releases::CopyPreviousApprovalsJob do
   let(:release) { create(:release) }
   let(:release_id) { release.id }
 

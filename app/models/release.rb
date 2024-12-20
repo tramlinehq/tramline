@@ -174,8 +174,9 @@ class Release < ApplicationRecord
   delegate :platform, :organization, to: :app
 
   def copy_previous_approvals
-    previous_release = fetch_previous_finished_release
+    previous_release = train.previously_finished_release
     return if previous_release.blank?
+
     previous_release.approval_items.find_each do |approval_item|
       new_approval_item = approval_items.find_or_initialize_by(
         content: approval_item.content,
@@ -187,8 +188,12 @@ class Release < ApplicationRecord
         )
       end
 
-      new_approval_item.save!
+      unless new_approval_item.save
+        Rails.logger.error "Failed to save approval item: #{new_approval_item.errors.full_messages.join(", ")}"
+        return false
+      end
     end
+
     approval_items.present?
   end
 
@@ -546,15 +551,15 @@ class Release < ApplicationRecord
   end
 
   def copy_approval_restricted?
-    fetch_previous_finished_release.nil? || approval_items.present? || hotfix?
+    previous_release_or_hotfix? || approval_items_exist?
   end
 
-  def fetch_previous_finished_release
-    train.releases
-      .release
-      .finished
-      .order(created_at: :desc)
-      .first
+  def previous_release_or_hotfix?
+    train.previously_finished_release.nil? || hotfix?
+  end
+
+  def approval_items_exist?
+    approval_items.present?
   end
 
   private
@@ -580,11 +585,6 @@ class Release < ApplicationRecord
   end
 
   def set_version
-    if train.freeze_version? && custom_version.blank?
-      self.original_release_version = train.version_current
-      return
-    end
-
     if custom_version.present?
       self.original_release_version = custom_version
       return

@@ -5,24 +5,21 @@ describe Train do
     let(:copy_approval_train) { create(:train, copy_approvals: true) }
 
     context "when approvals are not enabled" do
-      before do
-        allow(copy_approval_train).to receive(:approvals_enabled?).and_return(false)
-      end
+      let(:copy_approval_train) { create(:train, copy_approvals: true, approvals_enabled: false) }
 
       it "sets copy_approvals to false before update" do
         copy_approval_train.update!(name: "Updated Train Name") # Trigger the update
         expect(copy_approval_train.reload.copy_approvals).to be(false)
       end
 
-      it "ensureses both approvals_enabled and copy_approvals are false when explicitly set" do
+      it "ensures both approvals_enabled and copy_approvals are false when explicitly set" do
         copy_approval_train.update!(copy_approvals: true, approvals_enabled: false)
         expect(copy_approval_train.reload.copy_approvals).to be(false)
         expect(copy_approval_train.approvals_enabled?).to be(false)
       end
 
-      it "keepses both approvals_enabled and copy_approvals as false when explicitly set" do
-        copy_approval_train.update!(copy_approvals: false, approvals_enabled: false) # Explicit update
-        expect(copy_approval_train.reload.copy_approvals).to be(false)
+      it "keeps both approvals_enabled and copy_approvals as false when explicitly set" do
+        copy_approval_train.update!(copy_approvals: false, approvals_enabled: false)
         expect(copy_approval_train.approvals_enabled?).to be(false)
       end
     end
@@ -33,12 +30,12 @@ describe Train do
       end
 
       it "does not change copy_approvals when no custom value is provided" do
-        copy_approval_train.update!(name: "Updated Train Name") # Trigger the update
+        copy_approval_train.update!(name: "Updated Train Name")
         expect(copy_approval_train.reload.copy_approvals).to be(true)
       end
 
       it "allows setting a custom value for copy_approvals when approvals are enabled" do
-        copy_approval_train.update!(copy_approvals: false) # Set custom value
+        copy_approval_train.update!(copy_approvals: false)
         expect(copy_approval_train.reload.copy_approvals).to be(false)
       end
     end

@@ -188,6 +188,10 @@ class Train < ApplicationRecord
     releases.finished.reorder(completed_at: :desc).first
   end
 
+  def previously_finished_release
+    releases.finished.order(created_at: :desc).first
+  end
+
   def automatic?
     kickoff_at.present? && repeat_duration.present?
   end
