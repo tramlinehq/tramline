@@ -1,3 +1,5 @@
+# TODO: Delete this in favor of Commit::ContinuousBackmergeJob
+# Keeping around to copy over tests
 class Triggers::ReleaseBackmerge
   include Loggable
 
@@ -13,7 +15,7 @@ class Triggers::ReleaseBackmerge
 
   def call
     if release.organization.single_pr_backmerge_for_multi_commit_push? && !@is_head_commit
-      return
+      return GitHub::Result.new {}
     end
 
     result = release.with_lock do

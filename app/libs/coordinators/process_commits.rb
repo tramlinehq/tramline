@@ -92,8 +92,8 @@ class Coordinators::ProcessCommits
 
   def attempt_backmerge!(created_head_commit, created_rest_commits)
     return unless created_head_commit
-    Releases::BackmergeCommitJob.perform_later(created_head_commit.id, is_head_commit: true)
-    created_rest_commits.each { |c| Releases::BackmergeCommitJob.perform_later(c.id, is_head_commit: false) }
+    Commit::ContinuousBackmergeJob.perform_later(created_head_commit.id, is_head_commit: true)
+    created_rest_commits.each { |c| Commit::ContinuousBackmergeJob.perform_later(c.id, is_head_commit: false) }
   end
 
   delegate :train, to: :release
