@@ -92,6 +92,7 @@ Rails.application.routes.draw do
           get :soak
           get :wrap_up_automations
           patch :override_approvals
+          post :copy_approvals
         end
 
         resources :approval_items, only: %i[index create update destroy], shallow: false

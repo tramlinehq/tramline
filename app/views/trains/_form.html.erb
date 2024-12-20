@@ -173,10 +173,24 @@
         are approved.
       <% end %>
 
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                               field_name: :approvals_enabled,
-                                               on_label: "Submission approvals enabled",
-                                               off_label: "Submission approvals disabled") %>
+      <div data-controller="toggle-switch">
+        <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                 field_name: :approvals_enabled,
+                                                 on_label: "Submission approvals enabled",
+                                                 off_label: "Submission approvals disabled",
+                                                 hide_child: section.F.object.approvals_enabled != true,
+                                                 switch_data: { action: "toggle-switch#change",
+                                                                toggle_switch_target: "checkbox" }) do |component| %>
+          <% component.with_child do %>
+            <div data-toggle-switch-target="child" hidden>
+              <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                       field_name: :copy_approvals,
+                                                       on_label: "Always copy approvals from previous release",
+                                                       off_label: "Do not copy approvals from previous release") %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Build Queue") do |section| %>
