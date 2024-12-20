@@ -1,13 +1,9 @@
 class ReleaseMetadataController < SignedInApplicationController
   include Tabbable
 
-  before_action :require_write_access!, only: %i[edit update]
-  before_action :set_release, only: %i[edit update index update_all]
-  before_action :set_release_platform, only: %i[edit update]
-  before_action :set_release_platform_run, only: %i[edit update]
-  before_action :set_train, only: %i[edit update index update_all]
-  before_action :set_app_from_train, only: %i[edit update index update_all]
-  before_action :ensure_editable, only: %i[edit update]
+  before_action :set_release, only: %i[index update_all]
+  before_action :set_train, only: %i[index update_all]
+  before_action :set_app_from_train, only: %i[index update_all]
 
   def index
     set_metadata
@@ -15,20 +11,6 @@ class ReleaseMetadataController < SignedInApplicationController
     respond_to do |format|
       format.html
       format.turbo_stream
-    end
-  end
-
-  def edit
-    @release_metadatum = @release_platform_run.release_metadatum
-  end
-
-  def update
-    @release_metadatum = ReleaseMetadata.find(params[:id])
-
-    if @release_metadatum.update(release_metadata_params)
-      redirect_to release_path(@release), notice: t(".success")
-    else
-      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -80,20 +62,8 @@ class ReleaseMetadataController < SignedInApplicationController
     @android_metadata = @release.android_release_platform_run&.metadata_for(@language, :android)
   end
 
-  def release_metadata_params
-    params.require(:release_metadata).permit(:release_notes, :promo_text)
-  end
-
   def set_release
     @release = Release.friendly.find(params[:release_id])
-  end
-
-  def set_release_platform
-    @release_platform = @release.release_platforms.friendly.find(params[:release_platform_id])
-  end
-
-  def set_release_platform_run
-    @release_platform_run = @release.release_platform_runs.find_by(release_platform: @release_platform)
   end
 
   def set_train
@@ -102,12 +72,5 @@ class ReleaseMetadataController < SignedInApplicationController
 
   def set_app_from_train
     @app = @train.app
-  end
-
-  def ensure_editable
-    unless @release_platform_run.metadata_editable?
-      redirect_back fallback_location: release_path(@release),
-        flash: {error: t(".metadata_not_editable")}
-    end
   end
 end

@@ -16,8 +16,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
   include Displayable
   include Loggable
 
-  delegate :app, to: :integration, allow_nil: true
-  delegate :refresh_external_app, to: :app
+  delegate :integrable, to: :integration, allow_nil: true
+  delegate :refresh_external_app, :bundle_identifier, to: :integrable, allow_nil: true
 
   validate :correct_key, on: :create
 
@@ -50,7 +50,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def installation
-    Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier, access_key)
+    Installations::Google::PlayDeveloper::Api.new(bundle_identifier, access_key)
   end
 
   def create_draft_release(channel, build_number, version, release_notes, retry_on_review_fail: false)
@@ -104,7 +104,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def draft_check
-    app&.set_draft_status!
+    integrable&.set_draft_status!
   end
 
   def draft_check?
@@ -126,7 +126,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def connection_data
-    "Bundle Identifier: #{app.bundle_identifier}"
+    "Bundle Identifier: #{bundle_identifier}"
   end
 
   def channels

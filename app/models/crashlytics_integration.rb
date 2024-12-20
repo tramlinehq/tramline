@@ -56,7 +56,7 @@ class CrashlyticsIntegration < ApplicationRecord
   end
 
   def further_setup?
-    true
+    false
   end
 
   def connection_data

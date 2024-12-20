@@ -7,10 +7,10 @@
     {
       "type": "context",
       "elements": [
-        <% if @deployment_channel_asset_link && @project_link %>
+        <% if @submission_asset_link && @project_link %>
         {
           "type": "image",
-          "image_url": "<%= @deployment_channel_asset_link %>",
+          "image_url": "<%= @submission_asset_link %>",
           "alt_text": "console"
         },
         {
@@ -18,10 +18,10 @@
           "text": "<<%= @project_link %>|Console>"
         },
         <% end %>
-        <% if @deployment_channel_asset_link && @deep_link %>
+        <% if @submission_asset_link && @deep_link %>
         {
           "type": "image",
-          "image_url": "<%= @deployment_channel_asset_link %>",
+          "image_url": "<%= @submission_asset_link %>",
           "alt_text": "console"
         },
         {
@@ -40,6 +40,7 @@
           "text": "<<%= @artifact_download_link %>|Download from Tramline>"
         },
         <% end %>
+
         {
           "type": "image",
           "image_url": "https://storage.googleapis.com/tramline-public-assets/tramline-small.png",
@@ -69,30 +70,6 @@
           "text": "Train: <%= @train_name %>",
           "emoji": true
         }
-        <% if @step_name.present? %>
-        ,{
-          "type": "plain_text",
-          "text": "•",
-          "emoji": false
-        },
-        {
-          "type": "plain_text",
-          "text": "Step: <%= @step_name %>",
-          "emoji": true
-        }
-        <% end %>
-        <% if @deployment_channel.present? %>
-        ,{
-          "type": "plain_text",
-          "text": "•",
-          "emoji": false
-        },
-        {
-          "type": "plain_text",
-          "text": "Deployment: <%= @deployment_channel_type %> + <%= deployment_channel_display_name %>",
-          "emoji": true
-        }
-        <% end %>
       ]
     },
     {

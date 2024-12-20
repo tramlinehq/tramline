@@ -28,11 +28,6 @@ class Coordinators::ProcessCommits
     end
 
     attempt_backmerge!(created_head_commit, created_rest_commits)
-
-    # TODO: [V2] move this to trigger release
-    if release.all_commits.size.eql?(1)
-      release.notify!("New release has commenced!", :release_started, release.notification_params)
-    end
   end
 
   private

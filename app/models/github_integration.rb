@@ -19,8 +19,8 @@ class GithubIntegration < ApplicationRecord
   validates :installation_id, presence: true
 
   delegate :code_repository_name, :code_repo_namespace, :code_repo_name_only, to: :app_config
-  delegate :app, to: :integration
-  delegate :organization, to: :app
+  delegate :integrable, to: :integration
+  delegate :organization, to: :integrable
   delegate :cache, to: Rails
 
   BASE_INSTALLATION_URL =
@@ -367,7 +367,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def app_config
-    app.config
+    integrable.config
   end
 
   def events_url(params)
@@ -379,6 +379,6 @@ class GithubIntegration < ApplicationRecord
   end
 
   def workflows_cache_key
-    "app/#{app.id}/github_integration/#{id}/workflows"
+    "app/#{integrable.id}/github_integration/#{id}/workflows"
   end
 end
