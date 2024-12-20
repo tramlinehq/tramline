@@ -14,7 +14,7 @@
       </div>
 
       <div class="flex items-center">
-        <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
+        <%= render V2::IconComponent.new("v2/dotted_line.svg", size: :md, classes: "mx-2 text-secondary") %>
         <span class="text-secondary font-normal"><%= ago_in_words(store_rollout.updated_at) %></span>
       </div>
     </div>

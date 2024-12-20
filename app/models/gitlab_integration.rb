@@ -321,7 +321,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def app_config
-    integration.app.config
+    integration.integrable.config
   end
 
   def redirect_uri

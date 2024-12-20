@@ -1,3 +1,0 @@
-<%= turbo_stream.update @target do %>
-  <%= options_for_select(display_channels(@build_channels) { |chan| deployment_channel_name(chan) }) %>
-<% end %>

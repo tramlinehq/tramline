@@ -2,9 +2,6 @@ class AllBuildsTableComponent < ViewComponent::Base
   include Pagy::Frontend
   include ApplicationHelper
   include LinkHelper
-  include AssetsHelper
-  include ReleasesHelper
-  include DeploymentsHelper
 
   def initialize(builds:, paginator:, query_params:)
     @builds = builds
@@ -35,7 +32,8 @@ class AllBuildsTableComponent < ViewComponent::Base
   end
 
   def release_status(build)
-    release_status_badge(build.release_status)
+    ReleasePresenter::RELEASE_STATUS.fetch(build.release_status.to_sym) => {text:, status:}
+    status_badge(text, status)
   end
 
   def release_platform(build)
@@ -50,10 +48,14 @@ class AllBuildsTableComponent < ViewComponent::Base
     status_badge(build.external_release_status.titleize.humanize, %w[mx-1], :routine)
   end
 
-  def deployments(build)
+  def submissions(build)
     tag.div do
-      build.deployments.collect do |d|
-        concat tag.div show_deployment(d)
+      if build.submissions.blank?
+        concat "–"
+      else
+        build.submissions.collect do |submission|
+          concat tag.div submission.submission_info
+        end
       end
     end
   end

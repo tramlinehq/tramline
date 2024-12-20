@@ -67,8 +67,8 @@ class AddProductV2SchemaChanges < ActiveRecord::Migration[7.0]
       end
 
       change_table :store_submissions do |t|
-        t.references :parent_release, polymorphic: true, null: true, index: true, type: :uuid # TODO: [V2] add the not-null constraint back in a later migration
-        t.jsonb :config, null: true # TODO: [V2] add the not-null constraint back in a later migration
+        t.references :parent_release, polymorphic: true, null: true, index: true, type: :uuid # TODO: add the not-null constraint back in a later migration
+        t.jsonb :config, null: true # TODO: add the not-null constraint back in a later migration
         t.integer :sequence_number, null: false, default: 0, limit: 2, index: true
       end
 

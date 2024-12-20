@@ -20,7 +20,6 @@ class ReleaseMetadata < ApplicationRecord
   belongs_to :release, inverse_of: :release_metadata
   belongs_to :release_platform_run, inverse_of: :release_metadata, optional: true
 
-  NOTES_MAX_LENGTH = 4000 # TODO [V2]: remove this and use the platform-specific notes max length
   IOS_NOTES_MAX_LENGTH = 4000
   ANDROID_NOTES_MAX_LENGTH = 500
   # NOTE: Refer to https://www.regular-expressions.info/unicode.html for supporting more unicode characters

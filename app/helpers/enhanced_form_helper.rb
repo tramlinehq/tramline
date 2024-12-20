@@ -1,6 +1,4 @@
 module EnhancedFormHelper
-  include ButtonHelper
-
   class BetterForm < ActionView::Helpers::FormBuilder
     def mandatory_label(method, *args)
       options = args.extract_options!

@@ -9,7 +9,7 @@
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_app_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_app_completed %>
-              <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
+              <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
             <% end %>
           </div>
         </div>
@@ -24,7 +24,7 @@
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_version_control_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_version_control_completed %>
-              <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
+              <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
             <% end %>
           </div>
         </div>
@@ -46,7 +46,7 @@
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_ci_cd_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_ci_cd_completed %>
-              <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
+              <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
             <% end %>
           </div>
         </div>
@@ -69,7 +69,7 @@
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_build_channel_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_build_channel_completed %>
-              <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
+              <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
             <% end %>
           </div>
         </div>
@@ -116,7 +116,7 @@
             <div class="flex items-center">
               <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
                 <% if completed %>
-                  <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
+                  <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
                 <% end %>
               </div>
             </div>

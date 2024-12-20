@@ -56,7 +56,7 @@ class BitriseIntegration < ApplicationRecord
 
   encrypts :access_token, deterministic: true
 
-  delegate :app, to: :integration
+  delegate :integrable, to: :integration
   delegate :bitrise_project, to: :app_config
   alias_method :project, :bitrise_project
   delegate :cache, to: Rails
@@ -162,7 +162,7 @@ class BitriseIntegration < ApplicationRecord
   private
 
   def app_config
-    app.config
+    integrable.config
   end
 
   def correct_key
@@ -172,6 +172,6 @@ class BitriseIntegration < ApplicationRecord
   end
 
   def workflows_cache_key
-    "app/#{app.id}/bitrise_integration/#{id}/workflows"
+    "app/#{integrable.id}/bitrise_integration/#{id}/workflows"
   end
 end
