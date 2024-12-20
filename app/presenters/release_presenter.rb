@@ -45,8 +45,7 @@ class ReleasePresenter < SimpleDelegator
   end
 
   memoize def breakdown
-    return Queries::ReleaseBreakdown.new(id) if is_v2?
-    Queries::ReleaseSummary.all(id)
+    Queries::ReleaseBreakdown.new(id)
   end
 
   memoize def platform_runs
@@ -57,12 +56,7 @@ class ReleasePresenter < SimpleDelegator
     release_version
   end
 
-  def reldex
-    return breakdown.reldex if is_v2?
-    breakdown&.fetch(:reldex, nil)
-  end
-
-  delegate :team_release_commits, :team_stability_commits, to: :breakdown
+  delegate :team_release_commits, :team_stability_commits, :reldex, to: :breakdown
 
   def hotfix_badge
     if hotfix?

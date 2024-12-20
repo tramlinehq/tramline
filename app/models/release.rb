@@ -32,7 +32,6 @@ class Release < ApplicationRecord
   include Versionable
   include Displayable
   include Linkable
-  include ActionView::Helpers::DateHelper
 
   using RefinedString
 
@@ -108,8 +107,6 @@ class Release < ApplicationRecord
   has_many :release_metadata, through: :release_platform_runs
   has_many :all_commits, dependent: :destroy, inverse_of: :release, class_name: "Commit"
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
-  has_many :step_runs, through: :release_platform_runs
-  has_many :deployment_runs, through: :step_runs
   has_many :builds, through: :release_platform_runs
   has_many :build_queues, dependent: :destroy
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
@@ -166,15 +163,13 @@ class Release < ApplicationRecord
   before_create :set_internal_notes
   after_create :create_platform_runs!
   after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
-  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
-  after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
   after_commit -> { Releases::CopyPreviousApprovalsJob.perform_later(id) }, on: :create, if: :copy_approvals_enabled?
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
   attr_accessor :has_major_bump, :hotfix_platform, :custom_version
   friendly_id :human_slug, use: :slugged
 
-  delegate :versioning_strategy, :patch_version_bump_only, :product_v2?, to: :train
+  delegate :versioning_strategy, :patch_version_bump_only, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
   delegate :platform, :organization, to: :app
 
@@ -212,13 +207,7 @@ class Release < ApplicationRecord
     return if hotfix?
     return unless finished?
 
-    reldex_params =
-      if is_v2?
-        Queries::ReldexParameters.call(self)
-      else
-        Computations::Release::ReldexParameters.call(self)
-      end
-
+    reldex_params = Queries::ReldexParameters.call(self)
     train.release_index&.score(**reldex_params)
   end
 
@@ -272,13 +261,6 @@ class Release < ApplicationRecord
   def duration
     return unless finished?
     ActiveSupport::Duration.build(completed_at - scheduled_at)
-  end
-
-  def all_store_step_runs
-    deployment_runs
-      .reached_production
-      .map(&:step_run)
-      .sort_by(&:updated_at)
   end
 
   def unmerged_commits
@@ -407,14 +389,6 @@ class Release < ApplicationRecord
     train.vcs_provider&.pull_requests_url(branch_name, open:)
   end
 
-  def metadata_editable?
-    release_platform_runs.any?(&:metadata_editable?)
-  end
-
-  def release_step_started?
-    release_platform_runs.any?(&:release_step_started?)
-  end
-
   class PreReleaseUnfinishedError < StandardError; end
 
   def close_pre_release_prs
@@ -431,23 +405,8 @@ class Release < ApplicationRecord
     end
   end
 
-  def patch_fix?
-    return false unless committable?
-    release_platform_runs.any?(&:patch_fix?)
-  end
-
   def ready_to_be_finalized?
     release_platform_runs.all? { |prun| prun.finished? || prun.stopped? }
-  end
-
-  def finalize_phase_metadata
-    {
-      total_run_time: distance_of_time_in_words(created_at, completed_at),
-      release_tag: tag_name,
-      release_tag_url: tag_url,
-      store_url: (app.store_link unless app.cross_platform?),
-      final_artifact_url: (release_platform_runs.first&.final_build_artifact&.download_url unless app.cross_platform?)
-    }
   end
 
   def live_release_link
@@ -462,7 +421,9 @@ class Release < ApplicationRecord
         release_branch_url: branch_url,
         release_url: live_release_link,
         release_version: release_version,
-        is_release_unhealthy: unhealthy?
+        is_release_unhealthy: unhealthy?,
+        release_completed_at: completed_at,
+        release_started_at: scheduled_at
       }
     )
   end
@@ -626,6 +587,11 @@ class Release < ApplicationRecord
 
     if custom_version.present?
       self.original_release_version = custom_version
+      return
+    end
+
+    if train.freeze_version?
+      self.original_release_version = train.version_current
       return
     end
 

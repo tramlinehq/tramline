@@ -6,8 +6,8 @@ class TrainsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate]
   around_action :set_time_zone
-  before_action :set_train, only: %i[edit update destroy activate deactivate steps rules]
-  before_action :set_train_config_tabs, only: %i[edit update steps rules destroy activate deactivate]
+  before_action :set_train, only: %i[edit update destroy activate deactivate rules]
+  before_action :set_train_config_tabs, only: %i[edit update rules destroy activate deactivate]
   before_action :validate_integration_status, only: %i[new create]
   before_action :set_notification_channels, only: %i[new create edit update]
 
@@ -16,10 +16,6 @@ class TrainsController < SignedInApplicationController
   end
 
   def edit
-    @edit_not_allowed = @train.active_runs.exists?
-  end
-
-  def steps
     @edit_not_allowed = @train.active_runs.exists?
   end
 
@@ -81,11 +77,9 @@ class TrainsController < SignedInApplicationController
   def new_train_redirect
     if @app.trains.size == 1
       redirect_to app_path(@app), notice: "Train was successfully created."
-    elsif v2?
+    else
       platform = @train.release_platforms.first.platform
       redirect_to edit_app_train_platform_submission_config_path(@app, @train, platform), notice: "Train was successfully created."
-    else
-      redirect_to steps_app_train_path(@app, @train), notice: "Train was successfully created."
     end
   end
 
@@ -123,7 +117,6 @@ class TrainsController < SignedInApplicationController
       :release_schedule_enabled,
       :stop_automatic_releases_on_failure,
       :continuous_backmerge_enabled,
-      :manual_release,
       :compact_build_notes,
       :tag_all_store_releases,
       :tag_platform_releases,
@@ -162,7 +155,6 @@ class TrainsController < SignedInApplicationController
       :release_schedule_enabled,
       :stop_automatic_releases_on_failure,
       :continuous_backmerge_enabled,
-      :manual_release,
       :compact_build_notes,
       :tag_all_store_releases,
       :tag_platform_releases,
@@ -197,7 +189,7 @@ class TrainsController < SignedInApplicationController
 
   def set_notification_channels
     @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
-    @current_notification_channel = @train&.notification_channel || @app.config.notification_channel
+    @current_notification_channel = @train&.notification_channel
   end
 
   def build_queue_config_params

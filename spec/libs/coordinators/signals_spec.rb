@@ -43,7 +43,7 @@ describe Coordinators::Signals do
       }
     }
   }
-  let(:release) { create(:release, :on_track, is_v2: true) }
+  let(:release) { create(:release, :on_track) }
   let(:release_platform_run) { create(:release_platform_run, :on_track, release:) }
 
   describe ".beta_release_is_finished!" do

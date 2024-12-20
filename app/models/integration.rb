@@ -11,7 +11,6 @@
 #  status          :string           indexed => [integrable_id, category, providable_type]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  app_id          :uuid             indexed
 #  integrable_id   :uuid             indexed => [category, providable_type, status]
 #  providable_id   :uuid
 #
@@ -21,7 +20,8 @@ class Integration < ApplicationRecord
   using RefinedString
   include Discard::Model
 
-  # self.ignored_columns += %w[app_id]
+  self.ignored_columns += %w[app_id]
+
   belongs_to :app, optional: true
 
   PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration CrashlyticsIntegration]

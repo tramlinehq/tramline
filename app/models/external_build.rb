@@ -2,19 +2,19 @@
 #
 # Table name: external_builds
 #
-#  id          :uuid             not null, primary key
-#  metadata    :jsonb            not null
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  build_id    :uuid             indexed
-#  step_run_id :uuid             indexed
+#  id         :uuid             not null, primary key
+#  metadata   :jsonb            not null
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#  build_id   :uuid             indexed
 #
 class ExternalBuild < ApplicationRecord
   has_paper_trail
 
   METADATA_SCHEMA = Rails.root.join("config/schema/external_build_metadata.json")
 
-  belongs_to :step_run, inverse_of: :external_build, optional: true
+  self.ignored_columns += ["step_run_id"]
+
   belongs_to :build, inverse_of: :external_build, optional: true
 
   # rubocop:disable Rails/SkipsModelValidations
@@ -22,7 +22,7 @@ class ExternalBuild < ApplicationRecord
     validate_metadata_schema(new_metadata)
     return self if errors.present?
 
-    unique_by = step_run.present? ? [:step_run_id] : [:build_id]
+    unique_by = [:build_id]
 
     ExternalBuild.upsert_all(
       [attributes_for_upsert(new_metadata)],
@@ -34,7 +34,6 @@ class ExternalBuild < ApplicationRecord
 
   def attributes_for_upsert(new_metadata)
     {metadata: new_metadata.index_by { |item| item[:identifier] },
-     step_run_id: step_run_id,
      build_id: build_id}
   end
 

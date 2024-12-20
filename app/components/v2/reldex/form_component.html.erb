@@ -48,7 +48,7 @@
       </div>
     <% end %>
 
-    <section data-controller="domain--release-index" data-domain--release-index-error-classes-value="<%= error_message_classes %>">
+    <section data-controller="domain--reldex" data-domain--reldex-error-classes-value="<%= error_message_classes %>">
       <div class="grid grid-cols-1 items-center divide-default">
         <div class="px-1 py-2 grid grid-cols-6 gap-x-10 uppercase text-secondary dark:text-white text-xs font-medium items-center">
           <div class="col-span-2">Component</div>
@@ -56,7 +56,7 @@
           <div class="col-span-3">Acceptable Range</div>
         </div>
         <% components.each do |component| %>
-          <div class="" data-controller="domain--release-index-component">
+          <div class="" data-controller="domain--reldex-component">
             <div class="px-1 py-3 grid grid-cols-6 items-start gap-x-10 text-sm">
               <% section.F.fields_for :release_index_components, component do |component_fields| %>
                 <div class="col-span-2">
@@ -73,7 +73,7 @@
                       <% end %>
                     <% end %>
                   </div>
-                  <div hidden data-domain--release-index-component-target="inactive">
+                  <div hidden data-domain--reldex-component-target="inactive">
                     <%= render V2::BadgeComponent.new(text: "Excluded", kind: :badge) %>
                   </div>
                 </div>
@@ -82,9 +82,9 @@
                                                                   compact: true,
                                                                   step: 1,
                                                                   in: 0..100,
-                                                                  data: { domain__release_index_target: "weight",
-                                                                          domain__release_index_component_target: "weight",
-                                                                          action: "domain--release-index#computeTotal domain--release-index-component#markActionable" } %>
+                                                                  data: { domain__reldex_target: "weight",
+                                                                          domain__reldex_component_target: "weight",
+                                                                          action: "domain--reldex#computeTotal domain--reldex-component#markActionable" } %>
                 </div>
                 <div class="col-span-3">
                   <div class="mt-3">
@@ -98,10 +98,10 @@
         <div class="px-1 py-2 grid grid-cols-6 gap-x-10 text-secondary dark:text-white text-xs items-center">
           <div class="col-span-2 uppercase font-medium">Total</div>
           <div class="col-span-1">
-            <div data-domain--release-index-target="total"></div>
+            <div data-domain--reldex-target="total"></div>
           </div>
           <div class="col-span-3">
-            <div class="text-red-600 dark:text-red-400" data-domain--release-index-target="errorMessage"></div>
+            <div class="text-red-600 dark:text-red-400" data-domain--reldex-target="errorMessage"></div>
           </div>
         </div>
       </div>
