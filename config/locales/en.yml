@@ -664,26 +664,26 @@ en:
     format: "%{attribute} → %{message}"
     messages:
       http_code:
-        "400":
+        '400':
           title: "The request you submitted was invalid or malformed"
-        "403":
+        '403':
           title: "You don't have permissions to view this page"
-        "404":
+        '404':
           title: "Not Found"
           content: "Hmm...this page does not exist. Try searching for something else!"
-        "406":
+        '406':
           title: "This page is not available in the requested format."
-        "410":
+        '410':
           title: "The page you were looking for doesn't exist here anymore."
-        "422":
+        '422':
           title: "Security verification failed"
           content: "Security verification failed. Are you blocking cookies maybe?"
-        "429":
+        '429':
           title: "Too many requests"
-        "500":
+        '500':
           title: "This page is not correct"
           content: "Tramline made a boo-boo, please go back and try again. 😭"
-        "503":
+        '503':
           title: "The page could not be served due to a temporary server failure."
       password:
         password_strength: "Choose a stronger password. Try a mix of letters, numbers, and symbols. <a class='underline' href='https://www.useapassphrase.com'>Use a passphrase</a> can be quite helpful."
