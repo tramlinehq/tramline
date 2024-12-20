@@ -205,6 +205,8 @@ class GithubIntegration < ApplicationRecord
     false
   end
 
+  def enable_auto_merge? = true
+
   def connection_data
     return unless integration.metadata
     "Organization: #{integration.metadata["account_name"]} (#{integration.metadata["account_id"]})"

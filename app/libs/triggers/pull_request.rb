@@ -9,7 +9,7 @@ class Triggers::PullRequest
     new(**args).create_and_merge!
   end
 
-  def _initialize(release:, new_pull_request:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true, existing_pr: nil, enable_auto_merge: false, patch_pr: false, patch_commit: nil)
+  def initialize(release:, new_pull_request:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true, existing_pr: nil, patch_pr: false, patch_commit: nil)
     @release = release
     @to_branch_ref = to_branch_ref
     @from_branch_ref = from_branch_ref
@@ -18,26 +18,14 @@ class Triggers::PullRequest
     @new_pull_request = new_pull_request
     @allow_without_diff = allow_without_diff
     @existing_pr = existing_pr
-    @enable_auto_merge = enable_auto_merge
     @patch_pr = patch_pr
     @patch_commit = patch_commit
-  end
-
-  def initialize(release:, new_pull_request:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true, existing_pr: nil)
-    @release = release
-    @to_branch_ref = to_branch_ref
-    @from_branch_ref = from_branch_ref
-    @title = title
-    @description = description
-    @new_pull_request = new_pull_request
-    @allow_without_diff = allow_without_diff
-    @existing_pr = existing_pr
   end
 
   delegate :train, to: :release
 
   def create_and_merge!
-    pr_in_work = existing_pr
+    pr_in_work = existing_pr if existing_pr&.persisted?
 
     if pr_in_work.present?
       pr_data = repo_integration.get_pr(pr_in_work.number)
@@ -66,8 +54,11 @@ class Triggers::PullRequest
     pr_in_work.reload
     return GitHub::Result.new { pr_in_work } if pr_in_work.closed?
 
-    # FIXME
-    return repo_integration.enable_auto_merge!(pr_in_work.number) if @enable_auto_merge
+    # enable auto-merge if possible and avoid merging manually
+    if enable_auto_merge?
+      repo_integration.enable_auto_merge!(pr_in_work.number)
+      return GitHub::Result.new { pr_in_work }
+    end
 
     # try and merge, when:
     # - create PR is successful
@@ -81,7 +72,7 @@ class Triggers::PullRequest
 
   def create!
     GitHub::Result.new do
-      repo_integration.create_pr!(to_branch_ref, from_branch_ref, title, description)
+      create_new_pr!
     rescue Installations::Error => ex
       return repo_integration.find_pr(to_branch_ref, from_branch_ref) if ex.reason == :pull_request_already_exists
       raise ex
@@ -104,19 +95,23 @@ class Triggers::PullRequest
     end
   end
 
-  memoize def repo_integration
-    train.vcs_provider
-  end
-
   def pr_without_commits_error?(result)
     result.error.is_a?(Installations::Error) && result.error.reason == :pull_request_without_commits
   end
 
   def create_new_pr!
     if @patch_pr && @patch_commit
-      repo_integration.create_patch_pr!(working_branch, patch_branch, @patch_commit&.commit_hash, pr_title, pr_description)
+      repo_integration.create_patch_pr!(to_branch_ref, from_branch_ref, @patch_commit&.commit_hash, title, description)
     else
       repo_integration.create_pr!(to_branch_ref, from_branch_ref, title, description)
     end
+  end
+
+  def enable_auto_merge?
+    repo_integration.enable_auto_merge?
+  end
+
+  memoize def repo_integration
+    train.vcs_provider
   end
 end
