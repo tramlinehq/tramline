@@ -1,4 +1,70 @@
 en:
+  page_titles:
+    default_suffix: "Tramline"
+    controllers:
+      apps:
+        name: "Apps"
+        actions:
+          index: "Apps" # "Apps | Ueno | Tramline"
+          show: "App Details" # "App Details | Ueno | Tramline"
+          new: "App New" # "App New | Ueno | Tramline" (instead of "New App")
+          edit: "App Edit" # "App Edit | Ueno | Tramline" (instead of "Edit App")
+      # Releases Controller
+      releases:
+        name: "Releases"
+        actions:
+          index: "Releases" # "Releases | Ueno | Tramline"
+          show: "Release Details" # "Release Details | Ueno | Tramline"
+          new: "Release New" # "Release New | Ueno | Tramline" (instead of "New Release")
+          edit: "Release Edit" # "Release Edit | Ueno | Tramline" (instead of "Edit Release")
+      # Trains Controller
+      trains:
+        name: "Trains"
+        actions:
+          index: "Trains" # "Trains | Ueno | Tramline"
+          show: "Train Details" # "Train Details | Ueno | Tramline"
+          new: "Train New" # "Train New | Ueno | Tramline" (instead of "New Train")
+          edit: "Train Edit" # "Train Edit | Ueno | Tramline" (instead of "Edit Train")
+      # Organizations Controller (Accounts::Organizations)
+      organizations:
+        name: "Organizations"
+        actions:
+          index: "Organizations"
+          show: "Organization Details"
+          new: "Organization New"
+          edit: "Organization Edit"
+      # Users Controller (Accounts::Users)
+      users:
+        name: "Users"
+        actions:
+          index: "Users"
+          show: "User Details"
+          new: "User New"
+          edit: "User Edit"
+      # Admin::SettingsController
+      settings:
+        name: "Settings"
+        actions:
+          index: "Settings"
+          show: "Setting Details"
+          new: "Setting New"
+          edit: "Setting Edit"
+      # Integrations Controller
+      integrations:
+        name: "Integrations"
+        actions:
+          index: "Integrations"
+          show: "Integration Details"
+          new: "Integration New"
+          edit: "Integration Edit"
+      # ReleaseHealthRules Controller
+      release_health_rules:
+        name: "Release Health Rules"
+        actions:
+          index: "Rules"
+          show: "Rule Details"
+          new: "Rule New"
+          edit: "Rule Edit"
   config:
     release_platforms:
       success: "Platform configuration was successfully updated."
@@ -598,26 +664,26 @@ en:
     format: "%{attribute} → %{message}"
     messages:
       http_code:
-        '400':
+        "400":
           title: "The request you submitted was invalid or malformed"
-        '403':
+        "403":
           title: "You don't have permissions to view this page"
-        '404':
+        "404":
           title: "Not Found"
           content: "Hmm...this page does not exist. Try searching for something else!"
-        '406':
+        "406":
           title: "This page is not available in the requested format."
-        '410':
+        "410":
           title: "The page you were looking for doesn't exist here anymore."
-        '422':
+        "422":
           title: "Security verification failed"
           content: "Security verification failed. Are you blocking cookies maybe?"
-        '429':
+        "429":
           title: "Too many requests"
-        '500':
+        "500":
           title: "This page is not correct"
           content: "Tramline made a boo-boo, please go back and try again. 😭"
-        '503':
+        "503":
           title: "The page could not be served due to a temporary server failure."
       password:
         password_strength: "Choose a stronger password. Try a mix of letters, numbers, and symbols. <a class='underline' href='https://www.useapassphrase.com'>Use a passphrase</a> can be quite helpful."

@@ -190,7 +190,7 @@ module ApplicationHelper
   end
 
   def page_title(page_name, current_organization, app, release)
-    suffix = "Tramline"
+    suffix = I18n.t("page_titles.default_suffix", default: "Tramline")
     middle_section = app&.name || current_organization&.name
     prefix = if release&.original_release_version.present?
       release.original_release_version
@@ -198,6 +198,6 @@ module ApplicationHelper
       page_name || middle_section
     end
 
-    [prefix.humanize, middle_section.humanize, suffix.humanize].compact.join(" | ")
+    [prefix.titleize, middle_section.titleize, suffix.titleize].compact.join(" | ")
   end
 end
