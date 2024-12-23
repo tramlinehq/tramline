@@ -8,16 +8,39 @@
 
 <div class="flex flex-col section-gap-default mt-2">
   <%= render V2::CardComponent.new(title: "Items", separator: false, size: :full) do |card| %>
-    <% card.with_action do %>
-      <%= render V2::ButtonComponent.new(
-        scheme: :light,
-        options: root_path,
-        type: :link,
-        disabled: true,
-        size: :xxs,
-        label: "Copy from previous release") do |b|
-        b.with_icon("v2/square_stack.svg", size: :sm)
-      end %>
+    <% if release.approvals_editable? %>
+      <% card.with_action do %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :light,
+          options: copy_approvals_release_path(release),
+          type: :button,
+          disabled: release.copy_approvals_disabled?,
+          size: :xxs,
+          label: "Copy from previous release",
+          html_options: {
+            method: :post,
+            data: {
+              turbo_method: :post,
+              turbo_confirm: "This will copy all the release approvals from the last release. Are you sure?"
+            }
+          }
+        ) do |b| %>
+          <%= b.with_icon("v2/square_stack.svg", size: :sm) %>
+        <% end %>
+      <% end %>
+      <% card.with_action do %>
+        <%= render V2::ModalComponent.new(title: "Add approval item", dismissable: false) do |modal| %>
+          <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
+                  .with_icon("v2/plus.svg", size: :md) %>
+          <% modal.with_body do %>
+            <%= render partial: "form", locals: {
+              model: [release, release.approval_items.new],
+              url: release_approval_items_path(release),
+              select_options: ApprovalsPresenter.available_assignee_options(available_assignees)
+            } %>
+          <% end %>
+        <% end %>
+      <% end %>
     <% end %>
 
     <% if release.approvals_blocking? %>
@@ -33,22 +56,6 @@
                     turbo_confirm: "This will override all the release approvals. Are you sure?"}}) do |b|
           b.with_icon("v2/key_square.svg")
         end %>
-      <% end %>
-    <% end %>
-
-    <% if release.approvals_editable? %>
-      <% card.with_action do %>
-        <%= render V2::ModalComponent.new(title: "Add approval item", dismissable: false) do |modal| %>
-          <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                  .with_icon("v2/plus.svg", size: :md) %>
-          <% modal.with_body do %>
-            <%= render partial: "form", locals: {
-              model: [release, release.approval_items.new],
-              url: release_approval_items_path(release),
-              select_options: ApprovalsPresenter.available_assignee_options(available_assignees)
-            } %>
-          <% end %>
-        <% end %>
       <% end %>
     <% end %>
 
