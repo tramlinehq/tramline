@@ -10,6 +10,179 @@ PERFECT_SCORE_COMPONENTS = {
 }
 
 describe Release do
+  let(:train) { create(:train) }
+  let(:release) { create(:release, train: train) }
+  let(:previous_release_one) { create(:release, train: train, status: "finished", created_at: 1.day.ago) }
+  let(:approval_item) { create(:approval_item, release: previous_release_one) }
+  let(:assignee) { create(:approval_assignee, approval_item:) }
+
+  describe "after_commit callback#Releases::CopyPreviousApprovalsJob" do
+    it "enqueues the CopyPreviousApprovalsJob after commit when copy_approvals_enabled? returns true" do
+      allow(Releases::CopyPreviousApprovalsJob).to receive(:perform_later)
+      release.train.update(copy_approvals: true)
+      release.run_callbacks(:commit) { true }
+      expect(Releases::CopyPreviousApprovalsJob).to have_received(:perform_later).with(release.id)
+    end
+
+    it "does not enqueue the CopyPreviousApprovalsJob if copys_approvals_enabled? returns false" do
+      release.train.update(copy_approvals: false)
+      allow(Releases::CopyPreviousApprovalsJob).to receive(:perform_later)
+
+      release.run_callbacks(:commit) { true }
+      expect(Releases::CopyPreviousApprovalsJob).not_to have_received(:perform_later)
+    end
+  end
+
+  describe "delegates" do
+    it "delegates app to train" do
+      expect(release.app).to eq(train.app)
+    end
+
+    it "delegates vcs_provider to train" do
+      expect(release.vcs_provider).to eq(train.vcs_provider)
+    end
+
+    it "delegates release_platforms to train" do
+      expect(release.release_platforms).to eq(train.release_platforms)
+    end
+
+    it "delegates continuous_backmerge? to train" do
+      expect(release.continuous_backmerge?).to eq(train.continuous_backmerge?)
+    end
+
+    it "delegates approvals_enabled? to train" do
+      expect(release.approvals_enabled?).to eq(train.approvals_enabled?)
+    end
+
+    it "delegates copy_approvals? to train" do
+      expect(release.copy_approvals?).to eq(train.copy_approvals?)
+    end
+  end
+
+  describe "#copy_previous_approvals" do
+    context "when a previous release exists" do
+      let(:included_fields) { %w[author_id content] }
+      let(:previous_release_two) { create(:release, train: train, status: "finished", created_at: 2.days.ago) }
+      let(:approval_item_two) { create(:approval_item, release: previous_release_one) }
+
+      before do
+        previous_release_two.approval_items << approval_item_two
+        previous_release_one.approval_items << approval_item
+
+        allow(train).to receive(:previously_finished_release).and_return(previous_release_one)
+        allow(release).to receive(:copy_approvals?).and_return(true)
+      end
+
+      it "copies approval items from the previous release" do
+        release.copy_previous_approvals
+
+        expect(release.approval_items.count).to eq(1)
+        expect(release.approval_items.first.attributes.slice(*included_fields))
+          .to eq(approval_item.attributes.slice(*included_fields))
+      end
+    end
+
+    context "when no previous release is found" do
+      let(:release) { build(:release) }
+
+      before do
+        allow(train).to receive(:previously_finished_release).and_return(nil)
+        allow(release).to receive(:copy_approvals?).and_return(true)
+      end
+
+      it "handles copying approvals when no previous approvals exist" do
+        release.copy_previous_approvals
+
+        expect(release.approval_items).to be_empty
+      end
+    end
+  end
+
+  describe "#copy_approvals_enabled?" do
+    context "when copy_approvals? is true and release is not nil" do
+      it "returns true if copy_approvals? is true and release is not nil" do
+        release.train.update(copy_approvals: true)
+        expect(release.copy_approvals_enabled?).to be(true)
+      end
+    end
+
+    context "when the train does not have copy_approvals enabled" do
+      it "returns false" do
+        release.train.update(copy_approvals: false)
+        expect(release.copy_approvals_enabled?).to be(false)
+      end
+    end
+
+    context "when release is hotfix" do
+      it "returns false" do
+        release.update(release_type: "hotfix")
+        expect(release&.copy_approvals_enabled?).to be(false)
+      end
+    end
+  end
+
+  describe "#copy_approvals_allowed?" do
+    context "when previously finished release is not available" do
+      before do
+        allow(train).to receive(:previously_finished_release).and_return(nil)
+      end
+
+      it "returns true regardless of other conditions" do
+        expect(release.copy_approvals_allowed?).to be(false)
+      end
+    end
+
+    context "when previously finished release is available" do
+      before do
+        allow(train).to receive(:previously_finished_release).and_return(instance_double(described_class))
+      end
+
+      it "returns false when it is a hotfix" do
+        allow(release).to receive(:hotfix?).and_return(true)
+        expect(release.copy_approvals_allowed?).to be(false)
+      end
+
+      it "returns true when it is not a hotfix" do
+        allow(release).to receive(:hotfix?).and_return(false)
+        expect(release.copy_approvals_allowed?).to be(true)
+      end
+    end
+  end
+
+  describe "#fetch_previous_finished_release" do
+    let(:release) { create(:release, train: train, release_type: :release, created_at: Time.current) }
+
+    context "when the previous release of type release exists" do
+      let!(:release_a) { create(:release, train: train, release_type: :release, status: :finished, created_at: 3.days.ago) }
+      let(:release_b) { create(:release, train: train, release_type: :hotfix, status: :finished, created_at: 2.days.ago) }
+
+      it "fetches the most recent finished release of type release" do
+        result = train.previously_finished_release
+        expect(result).to eq(release_a)
+      end
+    end
+
+    context "when the previous release of type hotfix exists" do
+      let(:release_a) { create(:release, train: train, release_type: :hotfix, status: :finished, created_at: 3.days.ago) }
+      let!(:release_b) { create(:release, train: train, release_type: :release, status: :finished, created_at: 2.days.ago) }
+
+      it "fetches the most recent finished release of type release" do
+        result = train.previously_finished_release
+        expect(result).to eq(release_b)
+      end
+    end
+
+    context "when the previous releases of type release exist but one is unfinished" do
+      let!(:release_a) { create(:release, train: train, release_type: :release, status: :finished, created_at: 3.days.ago) }
+      let(:release_b) { create(:release, train: train, release_type: :release, status: :stopped, created_at: 2.days.ago) }
+
+      it "fetches the most recent finished release of type release" do
+        result = train.previously_finished_release
+        expect(result).to eq(release_a)
+      end
+    end
+  end
+
   it "has a valid factory" do
     expect(create(:release)).to be_valid
   end

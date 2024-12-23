@@ -918,6 +918,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_11_27_134403) do
     t.boolean "stop_automatic_releases_on_failure", default: false, null: false
     t.boolean "patch_version_bump_only", default: false, null: false
     t.boolean "approvals_enabled", default: false, null: false
+    t.boolean "copy_approvals", default: false
     t.boolean "freeze_version", default: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end

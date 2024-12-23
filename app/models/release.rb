@@ -163,14 +163,39 @@ class Release < ApplicationRecord
   before_create :set_internal_notes
   after_create :create_platform_runs!
   after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
+  after_commit -> { Releases::CopyPreviousApprovalsJob.perform_later(id) }, on: :create, if: :copy_approvals_enabled?
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
   attr_accessor :has_major_bump, :hotfix_platform, :custom_version
   friendly_id :human_slug, use: :slugged
 
   delegate :versioning_strategy, :patch_version_bump_only, to: :train
-  delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, to: :train
+  delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
   delegate :platform, :organization, to: :app
+
+  def copy_previous_approvals
+    previous_release = train.previously_finished_release
+    return if previous_release.blank?
+
+    previous_release.approval_items.find_each do |approval_item|
+      new_approval_item = approval_items.find_or_initialize_by(
+        content: approval_item.content,
+        author_id: approval_item.author_id
+      )
+      new_approval_item.approval_assignees = approval_item.approval_assignees.map do |approval_assignee|
+        new_approval_item.approval_assignees.find_or_initialize_by(
+          assignee_id: approval_assignee.assignee_id
+        )
+      end
+
+      unless new_approval_item.save
+        Rails.logger.error "Failed to save approval item: #{new_approval_item.errors.full_messages.join(", ")}"
+        return false
+      end
+    end
+
+    approval_items.present?
+  end
 
   def self.pending_release?
     pending_release.exists?
@@ -519,6 +544,14 @@ class Release < ApplicationRecord
 
   def approvals_blocking?
     !(approvals_overridden? || approvals_finished?)
+  end
+
+  def copy_approvals_enabled?
+    copy_approvals? && release?
+  end
+
+  def copy_approvals_allowed?
+    train.previously_finished_release.present? && !hotfix?
   end
 
   private
