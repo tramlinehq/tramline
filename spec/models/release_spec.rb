@@ -142,7 +142,7 @@ describe Release do
         expect(release.copy_approvals_allowed?).to be(false)
       end
 
-      it "returns true when its not a hotfix" do
+      it "returns true when it is not a hotfix" do
         allow(release).to receive(:hotfix?).and_return(false)
         expect(release.copy_approvals_allowed?).to be(true)
       end
