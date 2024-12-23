@@ -261,7 +261,8 @@ class Release < ApplicationRecord
   end
 
   def create_build_queue!
-    build_queues.create!(scheduled_at: (Time.current + train.build_queue_wait_time), is_active: true)
+    wait_time = train.build_queue_wait_time || 0
+    build_queues.create!(scheduled_at: (Time.current + wait_time), is_active: true)
   end
 
   def applied_commits
@@ -283,7 +284,11 @@ class Release < ApplicationRecord
   end
 
   def queue_commit?(commit)
-    active_build_queue.present? && stability_commit?(commit)
+    if train.trunk?
+      active_build_queue.present?
+    else
+      active_build_queue.present? && stability_commit?(commit)
+    end
   end
 
   def stability_commit?(commit)
@@ -334,7 +339,9 @@ class Release < ApplicationRecord
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_vcs_release!(input_tag_name = base_tag_name)
     return unless train.tag_releases?
-    return if tag_name.present?
+    unless train.trunk?
+      return if tag_name.present?
+    end
     train.create_vcs_release!(release_branch, input_tag_name, release_diff)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
@@ -519,6 +526,13 @@ class Release < ApplicationRecord
 
   def approvals_blocking?
     !(approvals_overridden? || approvals_finished?)
+  end
+
+  def self.find_active_for_train(train_id)
+    where(train_id:)
+      .where.not(status: TERMINAL_STATES)
+      .order(created_at: :desc)
+      .first
   end
 
   private

@@ -27,6 +27,11 @@
 
   <% if post_release_started? %>
     <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: false) %>
+  <% elsif trunk? %>
+    <p>
+      Since we're doing a trunk-based branching strategy, there's no end-of-release housekeeping required on Tramline's end.
+      We'll just refresh the DevOps reports and charts for you after the release is complete.
+    </p>
   <% else %>
     <div class="flex flex-col gap-2 text-sm text-secondary">
       <% if train.tag_releases? %>

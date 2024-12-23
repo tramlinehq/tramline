@@ -15,6 +15,7 @@ class Coordinators::ApplyBuildQueue
 
       if build_queue.head_commit.present?
         Coordinators::ApplyCommit.call(release, build_queue.head_commit)
+        release.create_vcs_release! if release.train.trunk?
       end
 
       build_queue.update!(applied_at: Time.current, is_active: false)
