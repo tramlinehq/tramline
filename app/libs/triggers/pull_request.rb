@@ -74,8 +74,8 @@ class Triggers::PullRequest
     GitHub::Result.new do
       create_new_pr!
     rescue Installations::Error => ex
-      return repo_integration.find_pr(to_branch_ref, from_branch_ref) if ex.reason == :pull_request_already_exists
-      raise ex
+      raise ex unless ex.reason == :pull_request_already_exists
+      repo_integration.find_pr(to_branch_ref, from_branch_ref)
     end
   end
 

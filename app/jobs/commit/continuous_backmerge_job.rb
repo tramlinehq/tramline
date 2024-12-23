@@ -17,13 +17,13 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
     return unless result
     return handle_success(commit.pull_request.reload) if result.ok?
     return handle_retry(count, is_head_commit) if retryable?(result)
-    handle_failure(result)
+    handle_failure(result.error)
   end
 
   private
 
-  def handle_failure(result)
-    elog(result.error)
+  def handle_failure(err)
+    elog(err)
     commit.update!(backmerge_failure: true)
     release.event_stamp!(reason: :backmerge_failure, kind: :error, data: stamp_data)
     commit.notify!("Backmerge to the working branch failed", :backmerge_failed, commit.notification_params)
@@ -47,22 +47,15 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
   end
 
   def retryable?(result)
-    result &&
-      !result.ok? &&
+    !result.ok? &&
       result.error.is_a?(Installations::Error) &&
       result.error.reason == :pull_request_failed_merge_check
   end
 
   def handle_success(pr)
-    if pr
-      release.event_stamp!(
-        reason: :backmerge_pr_created,
-        kind: :success,
-        data: stamp_data(pr)
-      )
-
-      logger.debug { "Patch Pull Request: Created a patch PR successfully: #{pr}" }
-    end
+    return unless pr
+    logger.debug { "Patch Pull Request: Created a patch PR successfully: #{pr}" }
+    release.event_stamp!(reason: :backmerge_pr_created, kind: :success, data: stamp_data(pr))
   end
 
   def stamp_data(pr = nil)
