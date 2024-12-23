@@ -34,11 +34,17 @@ describe Triggers::PatchPullRequest do
 
   before do
     allow(train).to receive(:vcs_provider).and_return(repo_integration)
-    allow(repo_integration).to receive_messages(create_patch_pr!: created_pr, enable_auto_merge!: true)
+    allow(repo_integration).to receive_messages(
+      create_patch_pr!: created_pr,
+      get_pr: created_pr,
+      pr_closed?: false,
+      enable_auto_merge!: true,
+      enable_auto_merge?: true
+    )
   end
 
   it "creates a patch PR" do
-    described_class.create!(release, commit)
+    described_class.call(release, commit)
 
     expect(repo_integration).to have_received(:create_patch_pr!).with(
       train.working_branch,
@@ -47,18 +53,34 @@ describe Triggers::PatchPullRequest do
       expected_title,
       expected_description
     )
+    expect(commit.reload.pull_request).to be_present
+  end
+
+  it "updates the existing PR if it already exists" do
+    existing_pr = create(:pull_request, release:, commit:, phase: :ongoing)
+
+    described_class.call(release, commit)
+
+    expect(repo_integration).not_to have_received(:create_patch_pr!).with(
+      train.working_branch,
+      expected_patch_branch,
+      commit.commit_hash,
+      expected_title,
+      expected_description
+    )
+    expect(commit.reload.pull_request).to eq(existing_pr)
   end
 
   it "finds the PR if it already exists" do
     allow(repo_integration).to receive(:create_patch_pr!).and_raise(Installations::Error.new("duplicate", reason: :pull_request_already_exists))
     allow(repo_integration).to receive(:find_pr).and_return(created_pr)
 
-    described_class.create!(release, commit)
+    described_class.call(release, commit)
     expect(repo_integration).to have_received(:find_pr)
   end
 
   it "creates an ongoing PR for the release" do
-    described_class.create!(release, commit)
+    described_class.call(release, commit)
 
     expect(release.pull_requests.ongoing.size).to eq(1)
     persisted_pr = release.pull_requests.ongoing.sole
@@ -68,7 +90,7 @@ describe Triggers::PatchPullRequest do
   end
 
   it "enables auto merge for the created patch PR" do
-    described_class.create!(release, commit)
+    described_class.call(release, commit)
 
     expect(repo_integration).to have_received(:enable_auto_merge!)
   end

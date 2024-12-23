@@ -20,6 +20,7 @@
 #  release_platform_run_id :uuid             indexed
 #
 class Commit < ApplicationRecord
+  has_paper_trail
   include Passportable
   include Commitable
 

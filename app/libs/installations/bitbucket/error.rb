@@ -22,8 +22,8 @@ module Installations
         decorated_reason: :pull_request_not_mergeable
       },
       {
-        message_matcher: /failed merge checks/i,
-        decorated_reason: :pull_request_not_mergeable
+        message_matcher: /failed merge check/i,
+        decorated_reason: :pull_request_failed_merge_check
       }
     ]
 

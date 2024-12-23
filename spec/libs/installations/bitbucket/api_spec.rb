@@ -107,10 +107,6 @@ describe Installations::Bitbucket::Api, type: :integration do
         .to_return_json(body: {})
       create_pr_request = stub_request(:post, described_class::PRS_URL.expand(repo_slug:).to_s)
         .to_return_json(body: pr_response)
-      merge_pr_request = stub_request(:post, described_class::PR_MERGE_URL.expand(repo_slug:, pr_number: pr_response["id"]).to_s)
-        .to_return_json(body: {})
-      get_pr_request = stub_request(:get, described_class::PR_URL.expand(repo_slug:, pr_number: pr_response["id"]).to_s)
-        .to_return_json(body: pr_response)
 
       described_class
         .new(access_token)
@@ -132,16 +128,6 @@ describe Installations::Bitbucket::Api, type: :integration do
             description: pr_body,
             close_source_branch: true
           }.to_json)
-      ).to have_been_made
-
-      expect(
-        merge_pr_request
-          .with(headers: {"Authorization" => "Bearer #{access_token}"})
-      ).to have_been_made
-
-      expect(
-        get_pr_request
-          .with(headers: {"Authorization" => "Bearer #{access_token}"})
       ).to have_been_made
     end
   end

@@ -23,6 +23,8 @@
 #  source_id               :string           not null, indexed
 #
 class PullRequest < ApplicationRecord
+  has_paper_trail
+
   class UnsupportedPullRequestSource < StandardError; end
 
   belongs_to :release
