@@ -60,6 +60,11 @@ class Config::Submission < ApplicationRecord
     submission_type.constantize
   end
 
+  def restricted_public_channel?
+    return false unless submission_type == "GooglePlayStoreSubmission"
+    GooglePlayStoreIntegration::PUBLIC_CHANNELS.include?(submission_external.identifier)
+  end
+
   def next
     release_step_config.submissions.where("number > ?", number).order(:number).first
   end
@@ -78,6 +83,10 @@ class Config::Submission < ApplicationRecord
 
   def display
     submission_type.classify.constantize.model_name.human
+  end
+
+  def submission_info
+    "#{display} • #{submission_external.name}"
   end
 
   def production_release_submission

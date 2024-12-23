@@ -60,7 +60,7 @@ class Computations::Release::StepStatuses
   end
 
   def notes_status
-    return STATUS[:unblocked] if any_platforms? { |rp| rp.metadata_editable_v2? }
+    return STATUS[:unblocked] if any_platforms? { |rp| rp.metadata_editable? }
     STATUS[:success]
   end
 

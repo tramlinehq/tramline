@@ -25,7 +25,7 @@ class BitbucketIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
-  delegate :app, to: :integration
+  delegate :integrable, to: :integration
   delegate :code_repository_name, to: :app_config
   delegate :cache, to: Rails
 
@@ -367,7 +367,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def app_config
-    app.config
+    integrable.config
   end
 
   def redirect_uri
@@ -379,6 +379,6 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def workflows_cache_key(branch_name)
-    "app/#{app.id}/bitbucket_integration/#{id}/workflows/#{branch_name}"
+    "app/#{integrable.id}/bitbucket_integration/#{id}/workflows/#{branch_name}"
   end
 end

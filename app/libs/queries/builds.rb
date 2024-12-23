@@ -4,20 +4,15 @@ class Queries::Builds
   DEFAULT_SORT_COLUMN = "version_code"
 
   BASE_ATTR_MAPPING = {
-    version_code: StepRun.arel_table[:build_number],
-    version_name: StepRun.arel_table[:build_version],
-    ci_link: StepRun.arel_table[:ci_link],
-    step_status: StepRun.arel_table[:status],
-    step_name: Step.arel_table[:name],
+    version_code: Arel::Nodes::NamedFunction.new("CAST", [Build.arel_table[:build_number].as("integer")]),
+    version_name: Build.arel_table[:version_name],
+    ci_link: WorkflowRun.arel_table[:external_url],
     train_name: Train.arel_table[:name],
     platform: ReleasePlatform.arel_table[:platform],
-    release_status: ReleasePlatformRun.arel_table[:status]
+    release_status: ReleasePlatformRun.arel_table[:status],
+    built_at: Build.arel_table[:generated_at],
+    kind: WorkflowRun.arel_table[:kind]
   }
-  ANDROID_ATTR_MAPPING =
-    BASE_ATTR_MAPPING.merge(built_at: BuildArtifact.arel_table[:generated_at])
-  IOS_ATTR_MAPPING =
-    BASE_ATTR_MAPPING
-      .merge(built_at: ExternalRelease.arel_table[:added_at], external_release_status: ExternalRelease.arel_table[:status])
 
   def self.all(**params)
     new(**params).all
@@ -34,91 +29,44 @@ class Queries::Builds
   end
 
   attr_reader :app, :sort_column, :sort_direction, :params
-  delegate :android?, :ios?, :cross_platform?, to: :app
 
   def all
-    return android_all if android?
-    return ios_all if ios?
-    android_all + ios_all if cross_platform?
+    selected_records
+      .to_a
+      .map do |record|
+      attributes =
+        record
+          .attributes
+          .with_indifferent_access
+          .merge(download_url: record.artifact&.download_url)
+          .merge(submissions: record.store_submissions.order(created_at: :asc).filter(&:finished?).map(&:conf))
+          .except(:id, :workflow_run_id)
+
+      Queries::Build.new(attributes)
+    end
   end
 
   def count
-    return android_records.size if android?
-    return ios_records.size if ios?
-    android_records.size + ios_records.size if cross_platform?
+    selected_records.size
   end
 
-  def android_all
-    selected_android_records.to_a.map do |record|
-      deployments = record.step_run.deployment_runs.map(&:deployment)
-      attributes =
-        record
-          .attributes
-          .with_indifferent_access
-          .merge(download_url: record.download_url)
-          .merge(deployments: deployments)
-          .except(:id, :step_run_id)
-
-      Queries::Build.new(attributes)
-    end
-  end
-
-  memoize def selected_android_records
-    android_records
-      .select(select_attrs(ANDROID_ATTR_MAPPING))
+  memoize def selected_records
+    records
+      .select(select_attrs(BASE_ATTR_MAPPING))
       .order(params.sort)
       .limit(params.limit)
       .offset(params.offset)
   end
 
-  memoize def android_records
-    BuildArtifact
-      .with_attached_file
-      .joins(join_step_run_tree)
-      .includes(step_run: {step: [deployments: :integration]})
-      .select(:id, :step_run_id)
+  memoize def records
+    Build
+      .ready
+      .joins(:workflow_run, release_platform_run: [{release_platform: [train: :app]}])
+      .includes(:store_submissions)
+      .select(:id, :workflow_run_id)
       .where(apps: {id: app.id})
       .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.search_by(search_params)))
-      .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(ANDROID_ATTR_MAPPING)))
-  end
-
-  def ios_all
-    selected_ios_records.to_a.map do |record|
-      attributes =
-        record
-          .attributes
-          .with_indifferent_access
-          .merge(deployments: ios_deployments(record))
-          .except(:id, :deployment_run_ids)
-
-      Queries::Build.new(attributes)
-    end
-  end
-
-  memoize def selected_ios_records
-    ios_records
-      .select(select_attrs(IOS_ATTR_MAPPING.except(:version_code)))
-      .order(params.sort)
-      .limit(params.limit)
-      .offset(params.offset)
-  end
-
-  memoize def ios_records
-    ExternalRelease
-      .joins(deployment_run: [join_step_run_tree])
-      .select("DISTINCT (external_releases.build_number) AS version_code")
-      .select(distinct_deployment_runs)
-      .where(apps: {id: app.id})
-      .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.search_by(search_params)))
-      .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(IOS_ATTR_MAPPING)))
-  end
-
-  def ios_deployments(record)
-    ios_deployment_runs.filter { |dr| dr.id.in?(record.deployment_run_ids) }.map(&:deployment)
-  end
-
-  memoize def ios_deployment_runs
-    DeploymentRun.for_ids(selected_ios_records.flat_map(&:deployment_run_ids))
+      .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(BASE_ATTR_MAPPING)))
   end
 
   class Queries::Build
@@ -131,12 +79,10 @@ class Queries::Builds
     attribute :train_name, :string
     attribute :platform, :string
     attribute :release_status, :string
-    attribute :step_name, :string
-    attribute :step_status, :string
+    attribute :kind, :string
     attribute :ci_link, :string
     attribute :download_url, :string
-    attribute :deployments, array: true, default: []
-    attribute :external_release_status, :string
+    attribute :submissions, array: true, default: []
 
     def inspect
       format(
@@ -148,23 +94,13 @@ class Queries::Builds
 
   private
 
-  def join_step_run_tree
-    {step_run: [{release_platform_run: [{release_platform: [train: :app]}]}, :step]}
-  end
-
   def search_params
-    {StepRun.arel_table => %w[build_version build_number]}
+    {Build.arel_table => %w[version_name build_number]}
   end
 
   def select_attrs(attrs_mapping)
     attrs_mapping.map do |attr_name, column|
       column.as(attr_name.to_s)
     end
-  end
-
-  def distinct_deployment_runs
-    array_agg = Arel::Nodes::NamedFunction.new "array_agg", [ExternalRelease.arel_table[:deployment_run_id]]
-    window = Arel::Nodes::Window.new.partition(ExternalRelease.arel_table[:build_number])
-    array_agg.over(window).as("deployment_run_ids")
   end
 end

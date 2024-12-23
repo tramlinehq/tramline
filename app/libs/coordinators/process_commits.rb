@@ -12,45 +12,46 @@ class Coordinators::ProcessCommits
   end
 
   def call
+    created_head_commit = nil
+    created_rest_commits = []
+
     release.with_lock do
       return unless release.committable?
-      release.close_pre_release_prs
 
+      release.close_pre_release_prs
       if release.created?
         release.start!
         release.release_platform_runs.each(&:start!)
       end
 
-      create_other_commits!
-      create_head_commit!
+      created_rest_commits, created_head_commit = create_other_commits!, create_head_commit!
     end
 
-    # TODO: [V2] move this to trigger release
-    if release.all_commits.size.eql?(1)
-      release.notify!("New release has commenced!", :release_started, release.notification_params)
-    end
+    attempt_backmerge!(created_head_commit, created_rest_commits)
   end
 
   private
 
   def create_head_commit!
-    commit = Commit.find_or_create_by!(commit_params(head_commit))
-    if release.queue_commit?
+    commit = Commit.find_or_create_by!(commit_params(fudge_timestamp(head_commit)))
+    if release.queue_commit?(commit)
       queue_commit!(commit)
     else
       Coordinators::ApplyCommit.call(release, commit)
     end
+    commit
   end
 
   def create_other_commits!
-    rest_commits.each do |rest_commit|
+    rest_commits.map do |rest_commit|
       commit = Commit.find_or_create_by!(commit_params(rest_commit))
       queue_commit!(commit, can_apply: false)
+      commit
     end
   end
 
   def queue_commit!(commit, can_apply: true)
-    return unless release.queue_commit?
+    return unless release.queue_commit?(commit)
     release.active_build_queue.add_commit_v2!(commit, can_apply:)
   end
 
@@ -59,6 +60,16 @@ class Coordinators::ProcessCommits
       .slice(:commit_hash, :message, :timestamp, :author_name, :author_email, :author_login, :url)
       .merge(release:)
       .merge(parents: commit_log.find { _1[:commit_hash] == attributes[:commit_hash] }&.dig(:parents))
+  end
+
+  # To ensure that the HEAD commit is always on the top
+  # We fudge it to add 100 ms after the original timestamp
+  # This can happen in a rare scenario when all the commits are on the same second
+  def fudge_timestamp(commit)
+    original_time = Time.zone.parse(commit[:timestamp])
+    new_time = original_time + 0.1
+    commit[:timestamp] = new_time.iso8601(5) # 5 digit ms precision
+    commit
   end
 
   # TODO: fetch parents for Gitlab commits also
@@ -77,6 +88,12 @@ class Coordinators::ProcessCommits
     return commit if commit[:parents].present?
 
     train.vcs_provider.get_commit(commit[:commit_hash])
+  end
+
+  def attempt_backmerge!(created_head_commit, created_rest_commits)
+    return unless created_head_commit
+    Releases::BackmergeCommitJob.perform_later(created_head_commit.id, is_head_commit: true)
+    created_rest_commits.each { |c| Releases::BackmergeCommitJob.perform_later(c.id, is_head_commit: false) }
   end
 
   delegate :train, to: :release

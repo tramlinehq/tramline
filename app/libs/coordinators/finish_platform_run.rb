@@ -19,8 +19,8 @@ class Coordinators::FinishPlatformRun
       end
     end
 
-    RefreshPlatformBreakdownJob.perform_later(release_platform_run.id) if release.is_v2?
-    ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id) if train.tag_platform_at_release_end?
+    RefreshPlatformBreakdownJob.perform_later(release_platform_run.id)
+    ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id, last_commit.id) if train.tag_platform_at_release_end?
     release_platform_run.event_stamp!(reason: :finished, kind: :success, data: {version: release_platform_run.release_version})
     app.refresh_external_app
     V2::FinalizeReleaseJob.perform_later(release.id)
@@ -28,5 +28,5 @@ class Coordinators::FinishPlatformRun
 
   attr_reader :release_platform_run
   delegate :train, :with_lock, to: :release
-  delegate :release, :app, to: :release_platform_run
+  delegate :release, :app, :last_commit, to: :release_platform_run
 end

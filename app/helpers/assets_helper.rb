@@ -1,6 +1,4 @@
 module AssetsHelper
-  include SvgHelper
-
   def inline_svg(asset_name, classname: "svg-container")
     return if asset_name.blank?
     content_tag(:div, safe_svg(inline_file(asset_name)), class: classname)
@@ -15,5 +13,9 @@ module AssetsHelper
       asset_path = Rails.application.assets_manifest.assets[asset_name]
       Rails.root.join("public/assets/#{asset_path}").read
     end
+  end
+
+  def safe_svg(body)
+    sanitize(body, tags: Loofah::HTML5::WhiteList::SVG_ELEMENTS, attributes: Loofah::HTML5::WhiteList::SVG_ATTRIBUTES)
   end
 end

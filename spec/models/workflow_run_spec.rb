@@ -67,7 +67,6 @@ describe WorkflowRun do
     end
 
     it "updates build number" do
-      allow(Releases::FindWorkflowRun).to receive(:perform_async)
       allow(workflow_run.release_platform_run).to receive(:tag_name).and_return(version)
       allow(workflow_run.ci_cd_provider).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:})
 

@@ -30,11 +30,9 @@ class IntegrationListeners::GithubController < IntegrationListenerController
       if train.trunk?
         result = Action.process_commit_webhook(train, push_params)
         result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing commit")
-      elsif train.product_v2?
+      else
         result = Action.process_push_webhook(train, push_params)
         result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing push")
-      else
-        WebhookHandlers::Push.process(train, push_params)
       end
 
     Rails.logger.debug { response.body }
@@ -42,14 +40,8 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def handle_pull_request
-    response =
-      if train.product_v2?
-        result = Action.process_pull_request_webhook(train, pull_request_params)
-        result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing pull request")
-      else
-        WebhookHandlers::PullRequest.process(train, pull_request_params)
-      end
-
+    result = Action.process_pull_request_webhook(train, pull_request_params)
+    response = result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing pull request")
     Rails.logger.debug { response.body }
     head response.status
   end

@@ -11,7 +11,6 @@
 #  status          :string           indexed => [integrable_id, category, providable_type]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  app_id          :uuid             indexed
 #  integrable_id   :uuid             indexed => [category, providable_type, status]
 #  providable_id   :uuid
 #
@@ -21,10 +20,11 @@ class Integration < ApplicationRecord
   using RefinedString
   include Discard::Model
 
-  # self.ignored_columns += %w[app_id]
+  self.ignored_columns += %w[app_id]
+
   belongs_to :app, optional: true
 
-  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration]
+  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration CrashlyticsIntegration]
   delegated_type :providable, types: PROVIDER_TYPES, autosave: true, validate: false
   delegated_type :integrable, types: INTEGRABLE_TYPES, autosave: true, validate: false
 
@@ -39,21 +39,21 @@ class Integration < ApplicationRecord
       "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
-      "monitoring" => %w[BugsnagIntegration]
+      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration]
     },
     android: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
-      "monitoring" => %w[BugsnagIntegration]
+      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration]
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
-      "monitoring" => %w[BugsnagIntegration]
+      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration]
     }
   }.with_indifferent_access
 
@@ -209,8 +209,7 @@ class Integration < ApplicationRecord
   end
 
   def disconnectable?
-    return false if app.active_runs.exists?
-    Step.kept.where(integration: self).none?
+    app.active_runs.none?
   end
 
   def disconnect

@@ -20,7 +20,6 @@ class ReleaseMetadata < ApplicationRecord
   belongs_to :release, inverse_of: :release_metadata
   belongs_to :release_platform_run, inverse_of: :release_metadata, optional: true
 
-  NOTES_MAX_LENGTH = 4000 # TODO [V2]: remove this and use the platform-specific notes max length
   IOS_NOTES_MAX_LENGTH = 4000
   ANDROID_NOTES_MAX_LENGTH = 500
   # NOTE: Refer to https://www.regular-expressions.info/unicode.html for supporting more unicode characters
@@ -39,7 +38,7 @@ class ReleaseMetadata < ApplicationRecord
   validate :notes_length
 
   # NOTE: strip and normalize line endings across various OSes
-  normalizes :release_notes, with: ->(notes) { notes.strip.gsub("\r\n?", "\n") }
+  normalizes :release_notes, with: ->(notes) { notes.strip.gsub("\r\n", "\n") }
 
   def self.find_by_id_and_language(id, language, platform)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, platform)

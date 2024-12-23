@@ -29,12 +29,10 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
     response =
       if train.trunk?
         result = Action.process_commit_webhook(train, push_params)
-        result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing push")
-      elsif train.product_v2?
+        result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing push") 
+      else
         result = Action.process_push_webhook(train, push_params)
         result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing push")
-      else
-        WebhookHandlers::Push.process(train, push_params)
       end
 
     Rails.logger.debug { response.body }
@@ -42,14 +40,8 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
   end
 
   def handle_pull_request
-    response =
-      if train.product_v2?
-        result = Action.process_pull_request_webhook(train, pull_request_params)
-        result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing pull request")
-      else
-        WebhookHandlers::PullRequest.process(train, pull_request_params)
-      end
-
+    result = Action.process_pull_request_webhook(train, pull_request_params)
+    response = result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing pull request")
     Rails.logger.debug { response.body }
     head response.status
   end

@@ -20,14 +20,6 @@
         </div>
       </th>
 
-      <% if external_release_status? %>
-        <th class="px-2 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">
-            <%= sort_link(column: "external_release_status", label: "External Status") %>
-          </div>
-        </th>
-      <% end %>
-
       <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <div class="font-semibold text-left">
@@ -50,13 +42,13 @@
 
       <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
-          <%= sort_link(column: "step_name", label: "Step") %>
+          <%= sort_link(column: "kind", label: "Kind") %>
         </div>
       </th>
 
       <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
-          <%= Deployment.display.pluralize %>
+          <span>Submissions</span>
         </div>
       </th>
 
@@ -91,14 +83,6 @@
           </div>
         </td>
 
-        <% if external_release_status? %>
-          <td class="px-2 py-3 whitespace-nowrap">
-            <div class="text-left">
-              <%= external_release_status(build) %>
-            </div>
-          </td>
-        <% end %>
-
         <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
             <%= time_format build.built_at, with_year: true %>
@@ -119,13 +103,13 @@
 
         <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= build.step_name %>
+            <%= build.kind.humanize %>
           </div>
         </td>
 
         <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= deployments(build) %>
+            <%= submissions(build) %>
           </div>
         </td>
 
@@ -134,13 +118,13 @@
             <span>
               <% if build.ci_link.present? %>
                 <%= link_to_external build.ci_link, title: "link to CI" do %>
-                  <%= inline_svg('workflow.svg', classname: "inline-flex w-5 mr-2") %>
+                  <%= render V2::IconComponent.new("workflow.svg", size: :lg) %>
                 <% end %>
               <% end %>
 
               <% if build.download_url.present? %>
                 <%= link_to_external build.download_url, title: "download build" do %>
-                  <%= inline_svg('download.svg', classname: "inline-flex w-5") %>
+                  <%= render V2::IconComponent.new("download.svg", size: :lg) %>
                 <% end %>
               <% end %>
             </span>

@@ -8,15 +8,15 @@
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  build_id     :uuid             indexed
-#  step_run_id  :uuid             indexed
 #
 require "zip"
 
 class BuildArtifact < ApplicationRecord
   include Rails.application.routes.url_helpers
 
-  belongs_to :step_run, optional: true, inverse_of: :build_artifact
-  belongs_to :build, optional: true, inverse_of: :artifact
+  self.ignored_columns += ["step_run_id"]
+
+  belongs_to :build, inverse_of: :artifact
   has_one_attached :file
 
   delegate :create_and_upload!, to: ActiveStorage::Blob
@@ -30,10 +30,6 @@ class BuildArtifact < ApplicationRecord
     find_by(id: attachment.record_id)
   end
 
-  def parent
-    step_run || build
-  end
-
   def save_file!(artifact_stream)
     transaction do
       self.file = create_and_upload!(io: artifact_stream.file, filename: gen_filename(artifact_stream.ext))
@@ -43,7 +39,7 @@ class BuildArtifact < ApplicationRecord
   end
 
   def gen_filename(ext)
-    "#{app.slug}-#{parent.build_version}-build#{ext}"
+    "#{app.slug}-#{build.build_version}-build#{ext}"
   end
 
   def get_filename
@@ -65,7 +61,7 @@ class BuildArtifact < ApplicationRecord
   end
 
   def app
-    parent.release_platform_run.app
+    build.release_platform_run.app
   end
 
   delegate :organization, to: :app
