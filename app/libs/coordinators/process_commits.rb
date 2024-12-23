@@ -35,7 +35,7 @@ class Coordinators::ProcessCommits
   def create_head_commit!
     commit = Commit.find_or_create_by!(commit_params(fudge_timestamp(head_commit)))
     if release.queue_commit?(commit)
-      queue_commit!(commit)
+      queue_commit!(commit, can_apply: !release.train.trunk?)
     else
       Coordinators::ApplyCommit.call(release, commit)
     end

@@ -63,7 +63,6 @@ class Release < ApplicationRecord
     finalize_failed
     stopped
     finished
-    release_tag_created
   ]
   # TODO: deprecate this
   STAMPABLE_REASONS.concat(["status_changed"])
@@ -340,7 +339,9 @@ class Release < ApplicationRecord
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_vcs_release!(input_tag_name = base_tag_name)
     return unless train.tag_releases?
-    return if tag_name.present?
+    unless train.trunk?
+      return if tag_name.present?
+    end
     train.create_vcs_release!(release_branch, input_tag_name, release_diff)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
@@ -528,7 +529,7 @@ class Release < ApplicationRecord
   end
 
   def self.find_active_for_train(train_id)
-    where(train_id: train_id)
+    where(train_id:)
       .where.not(status: TERMINAL_STATES)
       .order(created_at: :desc)
       .first

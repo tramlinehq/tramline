@@ -104,8 +104,8 @@ class Train < ApplicationRecord
   after_initialize :set_backmerge_config, if: :persisted?
   after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
-  before_create :set_release_branch, if: -> { branching_strategy == "trunk" }
-  before_create :set_build_queue_values, if: -> { branching_strategy == "trunk" }
+  before_create :set_release_branch, if: :trunk?
+  before_create :set_build_queue_values, if: :trunk?
   before_create :set_ci_cd_workflows
   before_create :set_current_version
   before_create :set_default_status
@@ -489,7 +489,7 @@ class Train < ApplicationRecord
   end
 
   def set_build_queue_config
-    if branching_strategy == "trunk"
+    if trunk?
       self.build_queue_wait_time_unit = "hours"
       self.build_queue_wait_time_value = 0
       return
@@ -571,7 +571,7 @@ class Train < ApplicationRecord
   end
 
   def build_queue_config
-    return if branching_strategy == "trunk"
+    return if trunk?
     if build_queue_enabled?
       errors.add(:build_queue_size, :config_required) unless build_queue_size.present? && build_queue_wait_time.present?
       errors.add(:build_queue_size, :invalid_size) if build_queue_size && build_queue_size < 1

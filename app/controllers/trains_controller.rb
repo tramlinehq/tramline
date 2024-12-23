@@ -27,6 +27,7 @@ class TrainsController < SignedInApplicationController
 
   def create
     @train = @app.trains.new(parsed_train_params)
+
     if @train.save
       new_train_redirect
     else

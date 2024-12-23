@@ -2,7 +2,6 @@ class Triggers::PreRelease
   include Memery
 
   RELEASE_HANDLERS = {
-    "trunk" => Trunk,
     "almost_trunk" => AlmostTrunk,
     "parallel_working" => ParallelBranches,
     "release_backmerge" => ReleaseBackMerge
@@ -21,6 +20,7 @@ class Triggers::PreRelease
   attr_reader :release
 
   def call
+    return if train.trunk?
     RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
   rescue Triggers::PullRequest::CreateError
     release.event_stamp!(reason: :pre_release_pr_not_creatable, kind: :error, data: {release_branch:})

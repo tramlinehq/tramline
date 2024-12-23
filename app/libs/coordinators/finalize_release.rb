@@ -17,6 +17,8 @@ class Coordinators::FinalizeRelease
   }
 
   def call
+    return on_finish! if train.trunk?
+
     release.with_lock do
       return unless release.post_release_started?
       open_pull_requests = release.pull_requests.automatic.open

@@ -125,12 +125,10 @@
           <%= section.F.labeled_select :branching_strategy, "Strategy",
                                        options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
                                        {},
-                                       { data: { 
-                                           action: 'branching-selector#change',
-                                           build_queue_help_target: "branchingStrategy",
-                                           domain__build_queue_help_target: "branchingStrategy",
-                                           branching_selector_target: "branchingStrategy" 
-                                         },
+                                       { data: { action: 'domain--branching-selector#change',
+                                                 build_queue_help_target: "branchingStrategy",
+                                                 domain__build_queue_help_target: "branchingStrategy",
+                                                 domain__branching_selector_target: "branchingStrategy" },
                                          disabled: train.persisted? } %>
         </div>
 

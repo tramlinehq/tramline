@@ -16,7 +16,6 @@ export default class extends Controller {
 
   change() {
     this.showCorrectInputs()
-    
     if (this.hasDomainBuildQueueHelpOutlet) {
       this.domainBuildQueueHelpOutlet.branchingStrategyValue = this.branchingStrategyTarget.value
     }

@@ -265,8 +265,12 @@ class ReleasePlatformRun < ApplicationRecord
     update!(last_commit: commit)
   end
 
+  def should_bump_version?
+    train.trunk? || version_bump_required?
+  end
+
   def bump_version!
-    return unless version_bump_required? || train.trunk?
+    return unless should_bump_version?
 
     self.in_store_resubmission = true
 
