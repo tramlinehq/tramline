@@ -121,46 +121,30 @@ describe Release do
     end
   end
 
-  describe "#copy_approval_restricted?" do
-    context "when no valid previous release is found, it disables the 'Copy from previous release' button" do
+  describe "#copy_approvals_allowed?" do
+    context "when previously finished release is not available" do
       before do
         allow(train).to receive(:previously_finished_release).and_return(nil)
       end
 
       it "returns true regardless of other conditions" do
-        expect(release.copy_approval_restricted?).to be(true)
+        expect(release.copy_approvals_allowed?).to be(false)
       end
     end
 
-    context "when fetch_previous_finished_release is not nil" do
+    context "when previously finished release is available" do
       before do
         allow(train).to receive(:previously_finished_release).and_return(instance_double(described_class))
       end
 
-      context "when approval_items are present" do
-        before do
-          create(:approval_item, release: release)
-        end
-
-        it "returns true" do
-          expect(release.copy_approval_restricted?).to be(true)
-        end
+      it "returns false when it is a hotfix" do
+        allow(release).to receive(:hotfix?).and_return(true)
+        expect(release.copy_approvals_allowed?).to be(false)
       end
 
-      context "when hotfix? is true" do
-        before do
-          allow(release).to receive(:hotfix?).and_return(true)
-        end
-
-        it "returns true" do
-          expect(release.copy_approval_restricted?).to be(true)
-        end
-      end
-
-      context "when neither approval_items are present nor hotfix? is true" do
-        it "returns false" do
-          expect(release.copy_approval_restricted?).to be(false)
-        end
+      it "returns true when its not a hotfix" do
+        allow(release).to receive(:hotfix?).and_return(false)
+        expect(release.copy_approvals_allowed?).to be(true)
       end
     end
   end

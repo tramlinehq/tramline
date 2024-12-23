@@ -14,7 +14,7 @@
           scheme: :light,
           options: copy_approvals_release_path(release),
           type: :button,
-          disabled: release.copy_approval_restricted?,
+          disabled: release.copy_approvals_disabled?,
           size: :xxs,
           label: "Copy from previous release",
           html_options: {

@@ -8,8 +8,6 @@ class Releases::CopyPreviousApprovalsJob < ApplicationJob
       return
     end
 
-    if release.previous_release_or_hotfix?
-      release.copy_previous_approvals
-    end
+    release.copy_previous_approvals if release.copy_approvals_allowed?
   end
 end

@@ -550,16 +550,8 @@ class Release < ApplicationRecord
     copy_approvals? && release?
   end
 
-  def copy_approval_restricted?
-    previous_release_or_hotfix? || approval_items_exist?
-  end
-
-  def previous_release_or_hotfix?
-    train.previously_finished_release.nil? || hotfix?
-  end
-
-  def approval_items_exist?
-    approval_items.present?
+  def copy_approvals_allowed?
+    train.previously_finished_release.present? && !hotfix?
   end
 
   private
