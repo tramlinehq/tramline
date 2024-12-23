@@ -8,7 +8,7 @@ class Triggers::PatchPullRequest
     @commit = commit
     @pull_request = Triggers::PullRequest.new(
       release: release,
-      new_pull_request: commit.build_pull_request(release:, phase: :ongoing),
+      new_pull_request: (commit.build_pull_request(release:, phase: :ongoing) if commit.pull_request.blank?),
       to_branch_ref: working_branch,
       from_branch_ref: patch_branch,
       title: pr_title,

@@ -34,7 +34,13 @@ describe Triggers::PatchPullRequest do
 
   before do
     allow(train).to receive(:vcs_provider).and_return(repo_integration)
-    allow(repo_integration).to receive_messages(create_patch_pr!: created_pr, enable_auto_merge!: true, enable_auto_merge?: true)
+    allow(repo_integration).to receive_messages(
+      create_patch_pr!: created_pr,
+      get_pr: created_pr,
+      pr_closed?: false,
+      enable_auto_merge!: true,
+      enable_auto_merge?: true
+    )
   end
 
   it "creates a patch PR" do
@@ -47,6 +53,22 @@ describe Triggers::PatchPullRequest do
       expected_title,
       expected_description
     )
+    expect(commit.reload.pull_request).to be_present
+  end
+
+  it "updates the existing PR if it already exists" do
+    existing_pr = create(:pull_request, release:, commit:, phase: :ongoing)
+
+    described_class.call(release, commit)
+
+    expect(repo_integration).not_to have_received(:create_patch_pr!).with(
+      train.working_branch,
+      expected_patch_branch,
+      commit.commit_hash,
+      expected_title,
+      expected_description
+    )
+    expect(commit.reload.pull_request).to eq(existing_pr)
   end
 
   it "finds the PR if it already exists" do

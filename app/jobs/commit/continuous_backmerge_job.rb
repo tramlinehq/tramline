@@ -34,7 +34,7 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
     if count < MAX_RETRIES
       attempt = count + 1
       Commit::ContinuousBackmergeJob
-        .set(wait: backoff_in(attempt:, period: :minutes, type: :static, factor: 1))
+        .set(wait: backoff_in(attempt:, period: :minutes, type: :linear, factor: 1))
         .perform_later(commit.id, is_head_commit:, count: attempt)
     end
   end
@@ -48,9 +48,7 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
   end
 
   def retryable?(result)
-    !result.ok? &&
-      result.error.is_a?(Installations::Error) &&
-      result.error.reason == :pull_request_failed_merge_check
+    !result.ok? && result.error.is_a?(Triggers::PullRequest::RetryableMergeError)
   end
 
   def handle_success(pr)
