@@ -320,7 +320,7 @@ class Train < ApplicationRecord
   end
 
   def activatable?
-    automatic? && startable? && !active?
+    automatic? && !active?
   end
 
   def deactivatable?
@@ -417,6 +417,7 @@ class Train < ApplicationRecord
   end
 
   def hotfixable?
+    return false unless app.ready?
     return false unless has_production_deployment?
     return false if hotfix_release.present?
     return false if hotfix_from.blank?
