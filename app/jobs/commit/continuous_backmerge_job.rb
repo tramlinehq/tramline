@@ -15,7 +15,8 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
     end
 
     return unless result
-    return handle_success(commit.pull_request.reload) if result.ok?
+    commit.reload # ensure the commit is updated with the latest data, and no stale state is associated with it
+    return handle_success(commit.pull_request) if result.ok?
     return handle_retry(count, is_head_commit) if retryable?(result)
     handle_failure(result.error)
   end
