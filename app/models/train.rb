@@ -189,7 +189,7 @@ class Train < ApplicationRecord
   end
 
   def previously_finished_release
-    releases.finished.order(created_at: :desc).first
+    releases.release.finished.reorder(completed_at: :desc).first
   end
 
   def automatic?
