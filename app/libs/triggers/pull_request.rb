@@ -87,7 +87,6 @@ class Triggers::PullRequest
         release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: {url: pr.url, number: pr.number})
         raise MergeError, "Failed to merge the Pull Request"
       elsif ex.reason == :pull_request_failed_merge_check
-        release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: {url: pr.url, number: pr.number})
         raise RetryableMergeError, "Failed to merge the Pull Request because of merge checks."
       else
         raise ex

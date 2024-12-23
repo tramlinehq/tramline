@@ -1,5 +1,5 @@
 class Commit::ContinuousBackmergeJob < ApplicationJob
-  MAX_RETRIES = 5
+  MAX_RETRIES = 32
   include Loggable
   include Backoffable
   queue_as :high
@@ -34,7 +34,7 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
     if count < MAX_RETRIES
       attempt = count + 1
       Commit::ContinuousBackmergeJob
-        .set(wait: backoff_in(attempt:, period: :minutes, type: :linear, factor: 1))
+        .set(wait: backoff_in(attempt:, period: :minutes, type: :linear, factor: 5))
         .perform_later(commit.id, is_head_commit:, count: attempt)
     end
   end
