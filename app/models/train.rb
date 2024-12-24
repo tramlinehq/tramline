@@ -25,6 +25,7 @@
 #  stop_automatic_releases_on_failure :boolean          default(FALSE), not null
 #  tag_all_store_releases             :boolean          default(FALSE)
 #  tag_platform_releases              :boolean          default(FALSE)
+#  tag_prefix                         :string
 #  tag_releases                       :boolean          default(TRUE)
 #  tag_suffix                         :string
 #  version_current                    :string

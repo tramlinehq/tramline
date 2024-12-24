@@ -49,7 +49,7 @@ namespace :anonymize do
         whitelist "name", "slug", "description", "status", "branching_strategy", "version_seeded_with", "version_current",
           "repeat_duration", "build_queue_wait_time", "build_queue_size", "backmerge_strategy", "manual_release",
           "tag_platform_releases", "tag_all_store_releases", "compact_build_notes", "tag_releases", "build_queue_enabled",
-          "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_enabled", "tag_suffix", "tag_platform_releases"
+          "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_enabled", "tag_suffix", "tag_prefix", "tag_platform_releases"
         whitelist_timestamps
         anonymize("app_id") { |field| app.id }
         anonymize("notification_channel") { |field| {"id" => "dummy", "name" => "test", "is_private" => false} }
