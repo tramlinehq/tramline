@@ -12,6 +12,7 @@ FactoryBot.define do
     tag_platform_releases { false }
     tag_all_store_releases { false }
     tag_releases { true }
+    tag_prefix { nil }
     tag_suffix { nil }
     versioning_strategy { "semver" }
     approvals_enabled { true }

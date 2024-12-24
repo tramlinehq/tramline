@@ -558,6 +558,7 @@ class Release < ApplicationRecord
 
   def base_tag_name
     tag = "v#{release_version}"
+    tag = train.tag_prefix + "-" + tag if train.tag_prefix.present?
     tag += "-hotfix" if hotfix?
     tag += "-" + train.tag_suffix if train.tag_suffix.present?
     tag
