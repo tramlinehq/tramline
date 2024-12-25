@@ -15,12 +15,12 @@ export default class extends Controller {
     if (this.checkboxTarget.checked) {
       this.outputTarget.innerHTML = this.onLabelValue
       if (this.hasChildTarget) {
-        this.childTarget.hidden = false
+        this.childTargets.forEach((child) => (child.hidden = false));
       }
     } else {
       this.outputTarget.innerHTML = this.offLabelValue
       if (this.hasChildTarget) {
-        this.childTarget.hidden = true
+        this.childTargets.forEach((child) => (child.hidden = true));
       }
     }
   }
