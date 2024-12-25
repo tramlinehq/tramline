@@ -126,6 +126,19 @@ services:
       retries: 2
       start_period: 3s
 
+  rspec:
+    <<: *backend
+    command: bash -c "RAILS_ENV=test bin/rails db:create && bundle exec rspec"
+    environment:
+      <<: *env
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/tramline_site_test
+    depends_on:
+      postgres:
+        condition: service_healthy
+      setup:
+        condition: service_completed_successfully
+
 volumes:
   bundle:
   rails_cache:
