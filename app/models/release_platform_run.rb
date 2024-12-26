@@ -194,10 +194,6 @@ class ReleasePlatformRun < ApplicationRecord
     production_releases.each(&:check_release_health)
   end
 
-  def release_metadatum
-    release_metadata.where(locale: ReleaseMetadata::DEFAULT_LOCALES).first
-  end
-
   def default_release_metadata
     release_metadata.where(default_locale: true).first
   end
@@ -342,7 +338,7 @@ class ReleasePlatformRun < ApplicationRecord
       {
         release_version: release_version,
         app_platform: release_platform.display_attr(:platform),
-        release_notes: release_metadatum&.release_notes
+        release_notes: default_release_metadata&.release_notes
       }
     )
   end
