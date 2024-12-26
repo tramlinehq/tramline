@@ -24,7 +24,7 @@ class Coordinators::ApplyCommit
   private
 
   def trigger(run)
-    return unless change_auto_applicable?(run)
+    return unless apply_change?(run)
 
     if run.conf.internal_release?
       Coordinators::CreateInternalRelease.call(run, commit)
@@ -37,7 +37,7 @@ class Coordinators::ApplyCommit
     release.hotfixed_from.last_commit.commit_hash != commit.commit_hash
   end
 
-  def change_auto_applicable?(run)
+  def apply_change?(run)
     return true if run.train.auto_apply_patch_changes?
 
     !run.version_bump_required?
