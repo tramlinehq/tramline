@@ -211,6 +211,17 @@
                                                html_options: { disabled: train.backmerge_disabled? }) %>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Auto-apply patch changes") do |section| %>
+      <% section.with_description do %>
+        Disable this if you want to manually apply the commits after the initial rollout has started.
+      <% end %>
+
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :auto_apply_patch_changes,
+                                               on_label: "Auto-apply patch changes",
+                                               off_label: "Manually apply patch changes") %>
+    <% end %>
+
     <%= f.with_advanced_section(heading: "Compact Build Notes") do |section| %>
       <% section.with_description do %>
         Compact the build notes by picking only the first line of commit messages.

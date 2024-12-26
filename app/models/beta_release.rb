@@ -39,9 +39,4 @@ class BetaRelease < PreProdRelease
       Signal.beta_release_is_finished!(build)
     end
   end
-
-  def new_commit_available?
-    return unless release_platform_run.on_track?
-    release_platform_run.last_commit != commit
-  end
 end

@@ -47,4 +47,23 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
   def latest_commit
     release_platform_run.last_commit
   end
+
+  def new_pre_prod_release_options
+    if pre_prod_release.is_a?(BetaRelease)
+      kind = "Release Candidate"
+      path = pre_prod_beta_run_path(release_platform_run)
+    else
+      kind = "Internal Build"
+      path = pre_prod_internal_run_path(release_platform_run)
+    end
+
+    {
+      label: "Create #{kind}",
+      scheme: :default,
+      type: :button,
+      options: path,
+      size: :xxs,
+      html_options: html_opts(:post, "Are you sure you want to create the #{kind}?")
+    }
+  end
 end
