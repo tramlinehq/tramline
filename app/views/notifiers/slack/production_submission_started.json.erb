@@ -6,6 +6,13 @@
         "type": "mrkdwn",
         "text": "A new production submission *<%= @release_version %> (<%= @build_number %>)* is getting prepared for review."
       }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<%= sanitized_release_notes %>"
+      }
     }
   ]
 }
