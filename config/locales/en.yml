@@ -65,6 +65,20 @@ en:
           show: "Rule Details"
           new: "Rule New"
           edit: "Rule Edit"
+      release_indices:
+        name: "Reldex"
+        actions:
+          index: "Reldex"
+          show: "Reldex Details"
+          edit: "Reldex Edit"
+      store_submissions:
+        name: "Submissions"
+        actions:
+          index: "Submissions"
+          show: "Submission Details"
+          new: "Submission New"
+          edit: "Submission Edit"
+
   config:
     release_platforms:
       success: "Platform configuration was successfully updated."
@@ -108,7 +122,7 @@ en:
       failure: "Failed to remove rule: %{errors}"
   release_indices:
     update:
-      success: "Release Index config was successfully updated."
+      success: "Reldex config was successfully updated."
       failure: "Failed to update config: %{errors}"
   store_submissions:
     trigger:
