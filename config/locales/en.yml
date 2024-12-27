@@ -1,4 +1,84 @@
 en:
+  page_titles:
+    default_suffix: "Tramline"
+    controllers:
+      apps:
+        name: "Apps"
+        actions:
+          index: "Apps" # "Apps | Ueno | Tramline"
+          show: "App Details" # "App Details | Ueno | Tramline"
+          new: "App New" # "App New | Ueno | Tramline" (instead of "New App")
+          edit: "App Edit" # "App Edit | Ueno | Tramline" (instead of "Edit App")
+      # Releases Controller
+      releases:
+        name: "Releases"
+        actions:
+          index: "Releases" # "Releases | Ueno | Tramline"
+          show: "Release Details" # "Release Details | Ueno | Tramline"
+          new: "Release New" # "Release New | Ueno | Tramline" (instead of "New Release")
+          edit: "Release Edit" # "Release Edit | Ueno | Tramline" (instead of "Edit Release")
+      # Trains Controller
+      trains:
+        name: "Trains"
+        actions:
+          index: "Trains" # "Trains | Ueno | Tramline"
+          show: "Train Details" # "Train Details | Ueno | Tramline"
+          new: "Train New" # "Train New | Ueno | Tramline" (instead of "New Train")
+          edit: "Train Edit" # "Train Edit | Ueno | Tramline" (instead of "Edit Train")
+      # Organizations Controller (Accounts::Organizations)
+      organizations:
+        name: "Organizations"
+        actions:
+          index: "Organizations"
+          show: "Organization Details"
+          new: "Organization New"
+          edit: "Organization Edit"
+      # Users Controller (Accounts::Users)
+      users:
+        name: "Users"
+        actions:
+          index: "Users"
+          show: "User Details"
+          new: "User New"
+          edit: "User Edit"
+      # Admin::SettingsController
+      settings:
+        name: "Settings"
+        actions:
+          index: "Settings"
+          show: "Setting Details"
+          new: "Setting New"
+          edit: "Setting Edit"
+      # Integrations Controller
+      integrations:
+        name: "Integrations"
+        actions:
+          index: "Integrations"
+          show: "Integration Details"
+          new: "Integration New"
+          edit: "Integration Edit"
+      # ReleaseHealthRules Controller
+      release_health_rules:
+        name: "Release Health Rules"
+        actions:
+          index: "Rules"
+          show: "Rule Details"
+          new: "Rule New"
+          edit: "Rule Edit"
+      release_indices:
+        name: "Reldex"
+        actions:
+          index: "Reldex"
+          show: "Reldex Details"
+          edit: "Reldex Edit"
+      store_submissions:
+        name: "Submissions"
+        actions:
+          index: "Submissions"
+          show: "Submission Details"
+          new: "Submission New"
+          edit: "Submission Edit"
+
   config:
     release_platforms:
       success: "Platform configuration was successfully updated."
