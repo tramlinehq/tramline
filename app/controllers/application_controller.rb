@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   layout -> { ensure_supported_layout("application") }
   before_action :store_user_location!, if: :storable_location?
   helper_method :writer?
-  before_action :set_page_name
+  
   class NotAuthorizedError < StandardError; end
 
   def raise_not_found
@@ -38,27 +38,6 @@ class ApplicationController < ActionController::Base
 
   def current_user
     @current_user ||= current_email_authentication&.user || @current_sso_user
-  end
-
-  private
-
-  def set_page_name
-    user_facing_actions = %w[new index show edit]
-
-    if user_facing_actions.include?(params[:action])
-      controller_key = params[:controller].split("/").last
-      action = params[:action]
-      controller_name = I18n.t("page_titles.controllers.#{controller_key}.name", default: controller_key)
-      action_name = I18n.t("page_titles.controllers.#{controller_key}.actions.#{action}", default: action)
-      suffix = action_suffix?(action) ? action_name : controller_name
-      @page_name = suffix
-    else
-      @page_name = params[:action]
-    end
-  end
-
-  def action_suffix?(action)
-    %w[new edit].include?(action)
   end
 
   protected
