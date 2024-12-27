@@ -4,8 +4,10 @@ class ReleasesController < SignedInApplicationController
   include Tabbable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: %i[show destroy update timeline override_approvals]
+  before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals]
   before_action :set_train_and_app, only: %i[show destroy update timeline]
+  before_action :ensure_approval_items_exist, only: %i[copy_approvals]
+  before_action :ensure_approval_items_copyable, only: %i[copy_approvals]
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
@@ -50,6 +52,14 @@ class ReleasesController < SignedInApplicationController
       redirect_to release_approval_items_path(@release), notice: "Approvals have been overridden. The release can move ahead."
     else
       redirect_back fallback_location: root_path, flash: {error: "Approvals could not be overridden."}
+    end
+  end
+
+  def copy_approvals
+    if @release.copy_previous_approvals
+      redirect_to release_approval_items_path(@release), notice: "Approvals have been successfully copied."
+    else
+      redirect_back fallback_location: root_path, flash: {error: "Unable to copy approvals from previous release."}
     end
   end
 
@@ -235,6 +245,18 @@ class ReleasesController < SignedInApplicationController
       {hotfix_platform: nil}
     elsif config_params[:platform_specific_hotfix] == "true"
       {hotfix_platform: config_params[:hotfix_platform]}
+    end
+  end
+
+  def ensure_approval_items_exist
+    if @release.approval_items.exists?
+      redirect_back fallback_location: root_path, flash: {error: "Cannot copy approvals: approval items already exist."}
+    end
+  end
+
+  def ensure_approval_items_copyable
+    unless @release.copy_approvals_allowed?
+      redirect_back fallback_location: root_path, flash: {error: "Cannot copy over approvals."}
     end
   end
 end

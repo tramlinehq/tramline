@@ -180,7 +180,15 @@
       <%= render V2::Form::SwitchComponent.new(form: section.F,
                                                field_name: :approvals_enabled,
                                                on_label: "Submission approvals enabled",
-                                               off_label: "Submission approvals disabled") %>
+                                               off_label: "Submission approvals disabled",
+                                               hide_child: !train.approvals_enabled?) do |component| %>
+        <% component.with_child do %>
+          <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                   field_name: :copy_approvals,
+                                                   on_label: "Always copy approvals from previous release",
+                                                   off_label: "Do not copy approvals from previous release") %>
+        <% end %>
+      <% end %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Build Queue") do |section| %>
@@ -205,6 +213,17 @@
                                                on_label: "Continuous Backmerge enabled",
                                                off_label: "Continuous Backmerge disabled",
                                                html_options: { disabled: train.backmerge_disabled? }) %>
+    <% end %>
+
+    <%= f.with_advanced_section(heading: "Auto-apply patch changes") do |section| %>
+      <% section.with_description do %>
+        Disable this if you want to manually apply the commits after the initial rollout has started.
+      <% end %>
+
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :auto_apply_patch_changes,
+                                               on_label: "Auto-apply patch changes",
+                                               off_label: "Manually apply patch changes") %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Compact Build Notes") do |section| %>

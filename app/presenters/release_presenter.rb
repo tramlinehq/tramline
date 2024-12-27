@@ -109,6 +109,10 @@ class ReleasePresenter < SimpleDelegator
     platform_runs.all?(&:production_release_in_pre_review?)
   end
 
+  def copy_approvals_disabled?
+    !copy_approvals_allowed? || approval_items.present?
+  end
+
   def h
     @view_context
   end

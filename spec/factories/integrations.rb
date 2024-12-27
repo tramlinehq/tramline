@@ -4,6 +4,12 @@ FactoryBot.define do
     providable factory: %i[google_firebase_integration without_callbacks_and_validations]
     category { "build_channel" }
 
+    trait :with_bitbucket do
+      integrable factory: %i[app android]
+      providable factory: %i[bitbucket_integration without_callbacks_and_validations]
+      category { "version_control" }
+    end
+
     trait :with_google_play_store do
       integrable factory: %i[app android]
       providable factory: %i[google_play_store_integration without_callbacks_and_validations]

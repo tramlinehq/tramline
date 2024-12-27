@@ -4,12 +4,14 @@
 #
 #  id                                 :uuid             not null, primary key
 #  approvals_enabled                  :boolean          default(FALSE), not null
+#  auto_apply_patch_changes           :boolean          default(TRUE)
 #  backmerge_strategy                 :string           default("on_finalize"), not null
 #  branching_strategy                 :string           not null
 #  build_queue_enabled                :boolean          default(FALSE)
 #  build_queue_size                   :integer
 #  build_queue_wait_time              :interval
 #  compact_build_notes                :boolean          default(FALSE)
+#  copy_approvals                     :boolean          default(FALSE)
 #  description                        :string
 #  freeze_version                     :boolean          default(FALSE)
 #  kickoff_at                         :datetime
@@ -113,8 +115,13 @@ class Train < ApplicationRecord
   after_create :create_default_notification_settings
   after_create :create_release_index
   after_create -> { Flipper.enable_actor(:product_v2, self) }
+  before_update :disable_copy_approvals, unless: :approvals_enabled?
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
+
+  def disable_copy_approvals
+    self.copy_approvals = false
+  end
 
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
@@ -183,6 +190,10 @@ class Train < ApplicationRecord
 
   def hotfix_from
     releases.finished.reorder(completed_at: :desc).first
+  end
+
+  def previously_finished_release
+    releases.release.finished.reorder(completed_at: :desc).first
   end
 
   def automatic?

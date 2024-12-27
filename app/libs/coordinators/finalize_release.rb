@@ -31,12 +31,12 @@ class Coordinators::FinalizeRelease
         result = HANDLERS[train.branching_strategy].call(release)
         release.reload
 
-        if result.ok?
+        if result.ok? && release.pull_requests.open.none?
           release.finish!
           on_finish!
         else
+          elog(result.error) unless result.ok?
           release.fail_post_release_phase!
-          elog(result.error)
           on_failure!
         end
       end
