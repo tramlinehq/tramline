@@ -15,7 +15,7 @@ lint:
   bin/rubocop --autocorrect
 
 pre-setup:
-  docker compose run pre-setup
+  docker compose run --rm pre-setup
 
 rails +command="console":
   docker exec -it tramline-web-1 bundle exec rails {{ command }}
