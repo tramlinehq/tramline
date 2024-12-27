@@ -4,8 +4,12 @@ start:
 restart container="web":
   docker compose restart {{ container }}
 
-spec:
-  docker compose run --rm rspec
+spec file="":
+  if [ -z {{ file }} ]; then \
+    docker compose run --rm rspec; \
+  else \
+    docker compose run --rm rspec bundle exec rspec {{ file }}; \
+  fi
 
 lint:
   bin/rubocop --autocorrect
