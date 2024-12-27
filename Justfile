@@ -6,9 +6,9 @@ restart container="web":
 
 spec file="":
   if [ -z {{ file }} ]; then \
-    docker compose run --rm rspec; \
+    docker compose run --rm spec; \
   else \
-    docker compose run --rm rspec bundle exec rspec {{ file }}; \
+    docker compose run --rm spec bundle exec rspec {{ file }}; \
   fi
 
 lint:
