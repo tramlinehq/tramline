@@ -2,7 +2,7 @@
 <html class="light">
 <head>
   <%= render partial: "shared/favicon" %>
-  <title><%= current_organization.name %> | Tramline</title>
+  <title><%= page_title(@page_name, current_organization, @app, @release) %></title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>

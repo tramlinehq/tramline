@@ -16,6 +16,7 @@ class SignedInApplicationController < ApplicationController
   before_action :require_login, unless: :authentication_controllers?
   before_action :track_behaviour
   before_action :set_app
+  before_action :set_page_name
 
   helper_method :current_organization,
     :current_user,
@@ -35,6 +36,27 @@ class SignedInApplicationController < ApplicationController
     :current_user_role
 
   rescue_from NotAuthorizedError, with: :user_not_authorized
+
+  private
+
+  def set_page_name
+    user_facing_actions = %w[new index show edit]
+
+    if user_facing_actions.include?(params[:action])
+      controller_key = params[:controller].split("/").last
+      action = params[:action]
+      controller_name = I18n.t("page_titles.controllers.#{controller_key}.name", default: controller_key)
+      action_name = I18n.t("page_titles.controllers.#{controller_key}.actions.#{action}", default: action)
+      suffix = action_suffix?(action) ? action_name : controller_name
+      @page_name = suffix
+    else
+      @page_name = params[:action]
+    end
+  end
+
+  def action_suffix?(action)
+    %w[new edit].include?(action)
+  end
 
   protected
 
