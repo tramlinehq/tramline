@@ -5,7 +5,7 @@ restart container="web":
   docker compose restart {{ container }}
 
 spec:
-  bundle exec rspec
+  docker compose run --rm rspec
 
 lint:
   bin/rubocop --autocorrect
