@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   layout -> { ensure_supported_layout("application") }
   before_action :store_user_location!, if: :storable_location?
   helper_method :writer?
-  
+
   class NotAuthorizedError < StandardError; end
 
   def raise_not_found
