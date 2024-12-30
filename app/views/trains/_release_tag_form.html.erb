@@ -5,24 +5,22 @@
                                          hide_child: @train.tag_releases?) do |component| %>
   <% component.with_child do %>
     <section data-controller="help-text">
-      <div data-controller="domain--release-prefix-suffix-help"
-           data-domain--release-prefix-suffix-help-version-value="<%= @train.version_current || @train.version_seeded_with || "1.0.0" %>"
-           data-domain--release-prefix-suffix-help-version-prefix-current-value="<%= @train.tag_prefix %>"
-           data-domain--release-prefix-suffix-help-version-suffix-current-value="<%= @train.tag_suffix %>"
-           data-domain--release-prefix-suffix-help-prefix-value="v">
+      <div data-controller="string-affix"
+           data-string-affix-base-string-value="<%= @train.version_current || @train.version_seeded_with || "1.0.0" %>"
+           data-string-affix-common-prefix-value="v">
         <%= form.labeled_text_field :tag_prefix, "Tag prefix",
                                     placeholder: "Eg., foo",
                                     autocomplete: "off",
-                                    data: { domain__release_prefix_suffix_help_target: "prefixInput",
-                                            action: "domain--release-prefix-suffix-help#set" } %>
+                                    data: { string_affix_target: "prefixInput",
+                                            action: "string-affix#set" } %>
         <%= form.labeled_text_field :tag_suffix, "Tag suffix",
                                     placeholder: "Eg., nightly",
                                     autocomplete: "off",
-                                    data: { domain__release_prefix_suffix_help_target: "suffixInput",
-                                            action: "domain--release-prefix-suffix-help#set" } %>
+                                    data: { string_affix_target: "suffixInput",
+                                            action: "string-affix#set" } %>
         <div class="text-sm mt-1">
           These are appended to the <strong>tag name</strong> of the release, as follows:&nbsp;
-          <span class="font-mono" data-domain--release-prefix-suffix-help-target="helpText"></span>
+          <span class="font-mono" data-string-affix-target="helpText"></span>
         </div>
       </div>
     </section>
