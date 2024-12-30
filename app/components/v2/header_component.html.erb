@@ -47,7 +47,7 @@
           <% end %>
 
           <% if default_app %>
-            <%= inline_svg("layer_separator.svg", classname: "w-3 h-3 text-secondary dark:text-secondary-50") %>
+            <%= render V2::IconComponent.new("layer_separator.svg", size: :sm, classes: "text-secondary dark:text-secondary-50") %>
 
             <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
               <% button = dropdown.with_button(size: :xs) %>

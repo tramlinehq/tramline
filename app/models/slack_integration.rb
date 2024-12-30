@@ -19,7 +19,7 @@ class SlackIntegration < ApplicationRecord
   include Loggable
   include Rails.application.routes.url_helpers
 
-  delegate :app, to: :integration
+  delegate :integrable, to: :integration
   delegate :cache, to: Rails
 
   attr_accessor :code
@@ -105,14 +105,8 @@ class SlackIntegration < ApplicationRecord
       .map { |c| c.slice(:id, :name, :is_private) }
   end
 
-  def build_channels(with_production:)
-    cache
-      .fetch(channels_cache_key, expires_in: CACHE_EXPIRY) { get_all_channels }
-      .map { |c| c.slice(:id, :name) }
-  end
-
   def channels_cache_key
-    "app/#{app.id}/slack_integration/#{id}/channels"
+    "app/#{integrable.id}/slack_integration/#{id}/channels"
   end
 
   def notify!(channel, message, type, params, file_id = nil, file_title = nil)
@@ -140,10 +134,6 @@ class SlackIntegration < ApplicationRecord
     installation.upload_file(file, file_name)
   rescue => e
     elog(e)
-  end
-
-  def deploy!(channel, params)
-    notify!(channel, DEPLOY_MESSAGE, :deployment_finished, params)
   end
 
   def notifier(type, params)

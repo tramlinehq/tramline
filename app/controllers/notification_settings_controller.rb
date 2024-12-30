@@ -10,11 +10,7 @@ class NotificationSettingsController < SignedInApplicationController
 
   def index
     if @train.send_notifications?
-      @notification_settings = if @train.product_v2?
-        @train.notification_settings.where(kind: NotificationSetting.kinds.values - NotificationSetting::DEPRECATED_KINDS.values)
-      else
-        @train.notification_settings.where(kind: NotificationSetting.kinds.values - NotificationSetting::V2_KINDS.values)
-      end
+      @notification_settings = @train.notification_settings.where(kind: NotificationSetting.kinds.values)
     end
 
     set_train_config_tabs

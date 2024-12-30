@@ -13,12 +13,13 @@ class CrashlyticsIntegration < ApplicationRecord
 
   include Providable
   include Displayable
-  include Firebasable
   include Loggable
+
+  encrypts :json_key, deterministic: true
 
   validate :correct_key, on: :create
 
-  delegate :crashlytics_project, to: :config
+  delegate :integrable, to: :integration
 
   API = Installations::Crashlytics::Api
 
@@ -38,17 +39,41 @@ class CrashlyticsIntegration < ApplicationRecord
     API.new(project_number, access_key)
   end
 
-  def firebase_installation
-    Installations::Google::Firebase::Api.new(project_number, access_key)
+  def access_key
+    StringIO.new(json_key)
+  end
+
+  def creatable?
+    true
+  end
+
+  def connectable?
+    false
+  end
+
+  def store?
+    false
+  end
+
+  def further_setup?
+    false
+  end
+
+  def connection_data
+    "Project: #{project_number}"
   end
 
   def to_s
     "crashlytics"
   end
 
+  def metadata
+    {}
+  end
+
   def find_release(platform, version, build_number)
     return nil if version.blank?
-    installation.find_release(crashlytics_project(platform), version, build_number, RELEASE_TRANSFORMATIONS, integrable.bundle_identifier)
+    installation.find_release(integrable.bundle_identifier, platform, version, build_number, RELEASE_TRANSFORMATIONS)
   end
 
   # FIXME: This is an incomplete URL. The full URL should contain the project id.
@@ -68,7 +93,6 @@ class CrashlyticsIntegration < ApplicationRecord
   end
 
   def correct_key
-    errors.add(:json_key, :invalid_config) if firebase_installation.list_apps(APPS_TRANSFORMATIONS).blank?
     errors.add(:json_key, :no_bq_datasets) unless bq_access?
   rescue RuntimeError
     errors.add(:json_key, :key_format)

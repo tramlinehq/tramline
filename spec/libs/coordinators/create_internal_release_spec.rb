@@ -65,7 +65,7 @@ describe Coordinators::CreateInternalRelease do
     }
   }
   let(:initial_version) { "1.2.0" }
-  let(:release) { create(:release, :on_track, is_v2: true, original_release_version: initial_version) }
+  let(:release) { create(:release, :on_track, original_release_version: initial_version) }
   let(:release_platform_run) { create(:release_platform_run, :on_track, release:, release_version: initial_version) }
   let(:commit) { create(:commit, release: release_platform_run.release) }
 

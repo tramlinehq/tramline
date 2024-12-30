@@ -1,7 +1,5 @@
 class V2::ExternalAppComponent < V2::BaseComponent
   include ApplicationHelper
-  include ButtonHelper
-  include AssetsHelper
 
   LOGOS = {
     android: "integrations/logo_google_play_store.png",

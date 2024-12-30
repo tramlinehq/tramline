@@ -1,5 +1,4 @@
 class ChartComponent < V2::BaseComponent
-  include AssetsHelper
   using RefinedHash
   CHART_TYPES = %w[area line stacked-bar polar-area]
   InvalidChartType = Class.new(StandardError)

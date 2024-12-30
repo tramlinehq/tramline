@@ -2,30 +2,25 @@
 #
 # Table name: app_configs
 #
-#  id                                  :uuid             not null, primary key
-#  bitbucket_workspace                 :string
-#  bugsnag_android_config              :jsonb
-#  bugsnag_ios_config                  :jsonb
-#  ci_cd_workflows                     :jsonb
-#  code_repository                     :json
-#  firebase_android_config             :jsonb
-#  firebase_crashlytics_android_config :jsonb
-#  firebase_crashlytics_ios_config     :jsonb
-#  firebase_ios_config                 :jsonb
-#  notification_channel                :json
-#  created_at                          :datetime         not null
-#  updated_at                          :datetime         not null
-#  app_id                              :uuid             not null, indexed
-#  bitrise_project_id                  :jsonb
-#  bugsnag_project_id                  :jsonb
+#  id                      :uuid             not null, primary key
+#  bitbucket_workspace     :string
+#  bugsnag_android_config  :jsonb
+#  bugsnag_ios_config      :jsonb
+#  ci_cd_workflows         :jsonb
+#  code_repository         :json
+#  firebase_android_config :jsonb
+#  firebase_ios_config     :jsonb
+#  created_at              :datetime         not null
+#  updated_at              :datetime         not null
+#  app_id                  :uuid             not null, indexed
+#  bitrise_project_id      :jsonb
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
-  include Notifiable
   include AppConfigurable
 
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
-  # self.ignored_columns += ["bugsnag_project_id"]
+  self.ignored_columns += %w[bugsnag_project_id firebase_crashlytics_android_config firebase_crashlytics_ios_config notification_channel]
 
   belongs_to :app
   has_many :variants, class_name: "AppVariant", dependent: :destroy
@@ -97,7 +92,7 @@ class AppConfig < ApplicationRecord
     if integrations.monitoring.present?
       categories[:monitoring] = {
         further_setup: integrations.monitoring.any?(&:further_setup?),
-        ready: bugsnag_ready? && firebase_crashlytics_ready?
+        ready: bugsnag_ready?
       }
     end
 
@@ -105,15 +100,21 @@ class AppConfig < ApplicationRecord
   end
 
   def bugsnag_project(platform)
-    pick_bugsnag_project_id(platform)
+    case platform
+    when "android" then bugsnag_android_config["project_id"]
+    when "ios" then bugsnag_ios_config["project_id"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
   end
 
   def bugsnag_release_stage(platform)
-    pick_bugsnag_release_stage(platform)
-  end
-
-  def crashlytics_project(platform)
-    pick_firebase_crashlytics_app_id(platform)
+    case platform
+    when "android" then bugsnag_android_config["release_stage"]
+    when "ios" then bugsnag_ios_config["release_stage"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
   end
 
   def ci_cd_workflows
@@ -138,11 +139,6 @@ class AppConfig < ApplicationRecord
   def firebase_ready?
     return true unless app.firebase_connected?
     configs_ready?(firebase_ios_config, firebase_android_config)
-  end
-
-  def firebase_crashlytics_ready?
-    return true unless app.firebase_crashlytics_connected?
-    configs_ready?(firebase_crashlytics_ios_config, firebase_crashlytics_android_config)
   end
 
   def bitrise_ready?

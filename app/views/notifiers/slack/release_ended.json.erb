@@ -11,17 +11,8 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *total run time* was *<%= @total_run_time %>*"
+        "text": "The *total run time* was *<%= total_run_time %>*"
       }
     }
-    <% if @final_artifact_url %>
-    ,{
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "*Download* the <<%= @final_artifact_url %>|final artifact>"
-      }
-    }
-    <% end %>
   ]
 }

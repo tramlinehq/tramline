@@ -51,11 +51,6 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :production_store_rollouts, -> { production }, class_name: "StoreRollout", dependent: :destroy, inverse_of: :release_platform_run
   has_many :production_store_submissions, -> { production }, class_name: "StoreSubmission", dependent: :destroy, inverse_of: :release_platform_run
 
-  # NOTE: deprecated after v2
-  has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
-  has_many :deployment_runs, through: :step_runs
-  has_many :running_steps, through: :step_runs, source: :step
-
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_submitted_production, -> { on_track.reject(&:production_release_submitted?) }
 
@@ -70,19 +65,15 @@ class ReleasePlatformRun < ApplicationRecord
 
   enum :status, STATES
 
-  before_create :set_config, if: -> { release.is_v2? }
+  before_create :set_config
   after_create :set_default_release_metadata
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
   delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, :release_branch, to: :release
-  delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
+  delegate :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
 
   def external_builds
-    if release.is_v2?
-      ExternalBuild.where(build_id: builds.select(:id))
-    else
-      ExternalBuild.where(step_run_id: step_runs.select(:id))
-    end
+    ExternalBuild.where(build_id: builds.select(:id))
   end
 
   def start!
@@ -131,7 +122,7 @@ class ReleasePlatformRun < ApplicationRecord
     (finished ? beta_releases.finished : beta_releases).order(created_at: :desc).first
   end
 
-  # TODO: [V2] eager loading here is too expensive
+  # TODO: eager loading here is too expensive
   def latest_internal_release(finished: false)
     (finished ? internal_releases.finished : internal_releases)
       .includes(:commit, :store_submissions, triggered_workflow_run: {build: [:commit, :artifact]}, release_platform_run: [:release])
@@ -159,7 +150,7 @@ class ReleasePlatformRun < ApplicationRecord
     beta_releases.order(created_at: :desc).offset(1)
   end
 
-  # TODO: [V2] eager loading here is too expensive
+  # TODO: eager loading here is too expensive
   def older_internal_releases
     internal_releases
       .order(created_at: :desc)
@@ -200,11 +191,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def check_release_health
-    deployment_runs.each(&:check_release_health)
-  end
-
-  def release_metadatum
-    release_metadata.where(locale: ReleaseMetadata::DEFAULT_LOCALES).first
+    production_releases.each(&:check_release_health)
   end
 
   def default_release_metadata
@@ -212,23 +199,14 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def show_health?
-    if release.is_v2?
-      latest_production_release&.show_health?
-    else
-      deployment_runs.any?(&:show_health?)
-    end
+    latest_production_release&.show_health?
   end
 
   def unhealthy?
-    if release.is_v2?
-      latest_production_release&.unhealthy?
-    else
-      latest_store_release&.unhealthy?
-    end
+    latest_production_release&.unhealthy?
   end
 
   def failure?
-    return step_runs.last&.failure? unless release.is_v2?
     return false if latest_production_release.present?
 
     pre_prod_releases.reorder(created_at: :desc).first&.failure?
@@ -275,8 +253,6 @@ class ReleasePlatformRun < ApplicationRecord
     train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
   end
 
-  # TODO: [V2] this is a workaround to handle drifted cross-platform releases
-  # Figure out of a way to deprecate last_commit from rpr and rely on release instead
   def update_last_commit!(commit)
     return if commit.blank?
     return if last_commit&.commit_hash == commit.commit_hash
@@ -314,111 +290,16 @@ class ReleasePlatformRun < ApplicationRecord
     upcoming.release_version
   end
 
-  def metadata_editable?
-    on_track? && !started_store_release?
-  end
-
   def production_release_in_pre_review?
     return unless active?
     return if active_production_release.present? && inflight_production_release.blank?
     inflight_production_release.blank? || inflight_production_release.store_submission.pre_review?
   end
 
-  alias_method :metadata_editable_v2?, :production_release_in_pre_review?
-
-  # FIXME: move to release and change it for proper movement UI
-  def overall_movement_status
-    steps.to_h do |step|
-      run = last_commit&.run_for(step, self)
-      [step, run.present? ? run.status_summary : {not_started: true}]
-    end
-  end
-
-  def manually_startable_step?(step)
-    return false if train.inactive?
-    return false unless on_track?
-    return false if last_commit.blank?
-    return false if ongoing_release_step?(step) && train.hotfix_release.present?
-    return true if (hotfix? || patch_fix?) && last_commit.run_for(step, self).blank?
-    return false if upcoming_release_step?(step)
-    return true if step.first? && step_runs_for(step).empty?
-    return false if step.first?
-
-    (next_step == step) && previous_step_run_for(step).success?
-  end
-
-  def step_start_blocked?(step)
-    return false if train.inactive?
-    return false unless on_track?
-    return false if last_commit.blank?
-    return true if train.hotfix_release.present? && train.hotfix_release != release && step.release?
-
-    (next_step == step) && previous_step_run_for(step)&.success? && upcoming_release_step?(step)
-  end
+  alias_method :metadata_editable?, :production_release_in_pre_review?
 
   def temporary_unblock_upcoming?
     Flipper.enabled?(:temporary_unblock_upcoming, self)
-  end
-
-  def upcoming_release_step?(step)
-    step.release? && release.upcoming? && !temporary_unblock_upcoming?
-  end
-
-  def ongoing_release_step?(step)
-    step.release? && release.ongoing?
-  end
-
-  def step_runs_for(step)
-    step_runs.where(step:)
-  end
-
-  def previous_step_run_for(step)
-    last_run_for(step.previous)
-  end
-
-  def finalizable?
-    on_track? && finished_steps?
-  end
-
-  def next_step
-    return steps.first if step_runs.empty? || last_commit.blank?
-    return steps.first if last_commit.step_runs_for(self).empty?
-    last_commit.step_runs_for(self).joins(:step).order(:step_number).last.step.next
-  end
-
-  def running_step?
-    step_runs.on_track.exists?
-  end
-
-  def last_run_for(step)
-    return if last_commit.blank?
-    last_commit.step_runs_for(self).where(step: step).sequential.last
-  end
-
-  def current_step_number
-    return if steps.blank?
-    return steps.minimum(:step_number) if running_steps.blank?
-    running_steps.order(:step_number).last.step_number
-  end
-
-  def finished_steps?
-    return false if release_platform.release_step.blank?
-    return false if last_commit.blank?
-
-    last_commit.run_for(release_platform.release_step, self)&.success?
-  end
-
-  def last_good_step_run
-    step_runs
-      .where(status: StepRun.statuses[:success])
-      .joins(:step)
-      .order(step_number: :desc, updated_at: :desc)
-      .first
-  end
-
-  def final_build_artifact
-    return unless finished?
-    last_good_step_run&.build_artifact
   end
 
   def tag_url
@@ -449,54 +330,7 @@ class ReleasePlatformRun < ApplicationRecord
   # Patch fix commit: no bump required
   # --
   def version_bump_required?
-    if release.is_v2?
-      latest_production_release&.version_bump_required?
-    else
-      store_release = latest_deployed_store_release
-      store_release&.status&.in?(DeploymentRun::READY_STATES) && store_release.step_run.basic_build_version == release_version
-    end
-  end
-
-  def patch_fix?
-    on_track? && in_store_resubmission?
-  end
-
-  def release_step_started?
-    step_runs_for(release_platform.release_step).present?
-  end
-
-  def production_release_happened?
-    step_runs
-      .includes(:deployment_runs)
-      .where(step: release_platform.release_step)
-      .not_failed
-      .any?(&:production_release_happened?)
-  end
-
-  def production_release_submitted?
-    step_runs
-      .includes(:deployment_runs)
-      .where(step: release_platform.release_step)
-      .not_failed
-      .any?(&:production_release_submitted?)
-  end
-
-  def commit_applied?(commit)
-    step_runs.exists?(commit: commit)
-  end
-
-  def previous_successful_run_before(step_run)
-    step_runs
-      .where(step: step_run.step)
-      .where(scheduled_at: ..step_run.scheduled_at)
-      .where.not(id: step_run.id)
-      .success
-      .order(scheduled_at: :asc)
-      .last
-  end
-
-  def commits_between(older_step_run, newer_step_run)
-    all_commits.between(older_step_run, newer_step_run)
+    latest_production_release&.version_bump_required?
   end
 
   def notification_params
@@ -504,17 +338,9 @@ class ReleasePlatformRun < ApplicationRecord
       {
         release_version: release_version,
         app_platform: release_platform.display_attr(:platform),
-        release_notes: release_metadatum&.release_notes
+        release_notes: default_release_metadata&.release_notes
       }
     )
-  end
-
-  def store_releases
-    deployment_runs.reached_production.sort_by(&:scheduled_at).reverse
-  end
-
-  def store_submitted_releases
-    deployment_runs.reached_submission.sort_by(&:scheduled_at).reverse
   end
 
   def block_play_store_submissions!
@@ -547,32 +373,6 @@ class ReleasePlatformRun < ApplicationRecord
   def base_tag_name
     return "v#{release_version}-hotfix-#{platform}" if hotfix?
     "v#{release_version}-#{platform}"
-  end
-
-  def started_store_release?
-    latest_store_release.present?
-  end
-
-  def latest_store_release
-    last_run_for(release_platform.release_step)
-      &.deployment_runs
-      &.not_failed
-      &.find { |dr| dr.deployment.production_channel? }
-  end
-
-  def latest_deployed_store_release
-    last_successful_run_for(release_platform.release_step)
-      &.deployment_runs
-      &.not_failed
-      &.find { |dr| dr.deployment.production_channel? }
-  end
-
-  def last_successful_run_for(step)
-    step_runs
-      .where(step: step)
-      .not_failed
-      .order(scheduled_at: :asc)
-      .last
   end
 
   def set_config

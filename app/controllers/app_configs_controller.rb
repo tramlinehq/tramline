@@ -39,7 +39,6 @@ class AppConfigsController < SignedInApplicationController
     when Integration.categories[:version_control] then configure_version_control
     when Integration.categories[:ci_cd] then configure_ci_cd
     when Integration.categories[:monitoring] then configure_monitoring
-    when Integration.categories[:notification] then configure_notification_channel
     when Integration.categories[:build_channel] then configure_build_channel
     else raise "Invalid integration category."
     end
@@ -51,10 +50,6 @@ class AppConfigsController < SignedInApplicationController
 
   def configure_version_control
     set_code_repositories if further_setup_by_category?.dig(:version_control, :further_setup)
-  end
-
-  def configure_notification_channel
-    set_notification_channels if @app.notifications_set_up?
   end
 
   def configure_ci_cd
@@ -78,7 +73,6 @@ class AppConfigsController < SignedInApplicationController
       .require(:app_config)
       .permit(
         :code_repository,
-        :notification_channel,
         :bitrise_project_id,
         :firebase_android_config,
         :firebase_ios_config,
@@ -86,22 +80,17 @@ class AppConfigsController < SignedInApplicationController
         :bugsnag_ios_project_id,
         :bugsnag_android_release_stage,
         :bugsnag_android_project_id,
-        :bitbucket_workspace,
-        :firebase_crashlytics_android_config,
-        :firebase_crashlytics_ios_config
+        :bitbucket_workspace
       )
   end
 
   def parsed_app_config_params
     app_config_params
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
-      .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
       .merge(bitrise_project_id: app_config_params[:bitrise_project_id]&.safe_json_parse)
       .merge(bugsnag_config(app_config_params.slice(*BUGSNAG_CONFIG_PARAMS)))
       .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
       .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)
-      .merge(firebase_crashlytics_android_config: app_config_params[:firebase_crashlytics_android_config]&.safe_json_parse)
-      .merge(firebase_crashlytics_ios_config: app_config_params[:firebase_crashlytics_ios_config]&.safe_json_parse)
       .except(*BUGSNAG_CONFIG_PARAMS)
       .compact
   end
@@ -112,7 +101,6 @@ class AppConfigsController < SignedInApplicationController
 
   def set_monitoring_projects
     @monitoring_projects = @app.monitoring_provider.setup
-    @firebase_crashlytics_android_apps, @firebase_crashlytics_ios_apps = @monitoring_projects[:android], @monitoring_projects[:ios] if @app.crashlytics_connected?
   end
 
   def set_firebase_apps
@@ -124,10 +112,6 @@ class AppConfigsController < SignedInApplicationController
     @workspaces = @app.vcs_provider.workspaces || []
     workspace = params[:workspace] || @workspaces.first
     @code_repositories = @app.vcs_provider.repos(workspace)
-  end
-
-  def set_notification_channels
-    @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
   end
 
   def set_integration_category

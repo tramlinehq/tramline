@@ -23,9 +23,9 @@ class AppStoreIntegration < ApplicationRecord
   include Displayable
   include Loggable
 
-  delegate :app, to: :integration
+  delegate :integrable, to: :integration
   delegate :cache, to: Rails
-  delegate :refresh_external_app, to: :app
+  delegate :refresh_external_app, :bundle_identifier, to: :integrable
 
   validate :correct_key, on: :create
   before_create :set_external_details_on_app
@@ -96,20 +96,12 @@ class AppStoreIntegration < ApplicationRecord
   APP_STORE_CONNECT_URL_TEMPLATE =
     Addressable::Template.new("https://appstoreconnect.apple.com/apps/{app_id}/testflight/ios/{external_id}")
 
-  unless Set.new(BUILD_TRANSFORMATIONS.keys).superset?(Set.new(ExternalRelease.minimum_required))
-    raise InvalidTransformations
-  end
-
-  unless Set.new(RELEASE_TRANSFORMATIONS.keys).superset?(Set.new(ExternalRelease.minimum_required))
-    raise InvalidTransformations
-  end
-
   def access_key
     OpenSSL::PKey::EC.new(p8_key)
   end
 
   def installation
-    Installations::Apple::AppStoreConnect::Api.new(app.bundle_identifier, key_id, issuer_id, access_key)
+    Installations::Apple::AppStoreConnect::Api.new(bundle_identifier, key_id, issuer_id, access_key)
   end
 
   def creatable?
@@ -145,7 +137,7 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def connection_data
-    "Bundle Identifier: #{app.bundle_identifier}"
+    "Bundle Identifier: #{bundle_identifier}"
   end
 
   def find_build(build_number)
@@ -242,7 +234,7 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def build_channels_cache_key
-    "app/#{app.id}/app_store_integration/#{id}/build_channels"
+    "app/#{integrable.id}/app_store_integration/#{id}/build_channels"
   end
 
   def to_s
@@ -250,23 +242,23 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def deep_link(_, _)
-    "itms-beta://beta.itunes.apple.com/v1/app/#{app.external_id}"
+    "itms-beta://beta.itunes.apple.com/v1/app/#{integrable.external_id}"
   end
 
   def inflight_store_link
-    "https://appstoreconnect.apple.com/apps/#{app.external_id}/distribution/ios/version/inflight"
+    "https://appstoreconnect.apple.com/apps/#{integrable.external_id}/distribution/ios/version/inflight"
   end
 
   def deliverable_store_link
-    "https://appstoreconnect.apple.com/apps/#{app.external_id}/distribution/ios/version/deliverable"
+    "https://appstoreconnect.apple.com/apps/#{integrable.external_id}/distribution/ios/version/deliverable"
   end
 
   def build_info(build_info)
-    TestFlightInfo.new(build_info.merge(external_link: APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id: app.external_id, external_id: build_info[:external_id]).to_s))
+    TestFlightInfo.new(build_info.merge(external_link: APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id: integrable.external_id, external_id: build_info[:external_id]).to_s))
   end
 
   def release_info(build_info)
-    AppStoreReleaseInfo.new(build_info.merge(external_link: APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id: app.external_id, external_id: build_info[:external_id]).to_s))
+    AppStoreReleaseInfo.new(build_info.merge(external_link: APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id: integrable.external_id, external_id: build_info[:external_id]).to_s))
   end
 
   def correct_key
@@ -276,7 +268,7 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def set_external_details_on_app
-    app.set_external_details(find_app[:id])
+    integrable.set_external_details(find_app[:id])
   end
 
   class TestFlightInfo

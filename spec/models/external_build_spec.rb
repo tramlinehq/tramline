@@ -6,7 +6,7 @@ describe ExternalBuild do
   end
 
   describe "#update_or_insert!" do
-    let(:step_run) { create(:step_run) }
+    let(:test_build) { create(:build) }
     let(:metadata) { [{identifier: "foo", value: 100, type: "number"}.with_indifferent_access] }
     let(:invalid_metadata) { [{value: 100, type: "number"}.with_indifferent_access] }
     let(:updated_metadata) {
@@ -15,7 +15,7 @@ describe ExternalBuild do
     }
 
     it "creates new record" do
-      external_build_metadata = build(:external_build, step_run:)
+      external_build_metadata = build(:external_build, build: test_build)
 
       persisted_metadata = external_build_metadata.update_or_insert!(metadata)
 
@@ -23,7 +23,7 @@ describe ExternalBuild do
     end
 
     it "updates existing record" do
-      existing_metadata = create(:external_build, step_run:, metadata: metadata.index_by { |k| k[:identifier] })
+      existing_metadata = create(:external_build, build: test_build, metadata: metadata.index_by { |k| k[:identifier] })
 
       existing_metadata.update_or_insert!(updated_metadata)
 
@@ -31,7 +31,7 @@ describe ExternalBuild do
     end
 
     it "validates the metadata" do
-      external_build_metadata = build(:external_build, step_run:)
+      external_build_metadata = build(:external_build, build: test_build)
 
       persisted_metadata = external_build_metadata.update_or_insert!(invalid_metadata)
 

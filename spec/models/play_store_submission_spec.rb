@@ -97,6 +97,10 @@ describe PlayStoreSubmission do
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
+      release_platform.platform_config.production_release.submissions.first.update!(
+        finish_rollout_in_next_release: true,
+        rollout_stages: [1, 2, 5, 10, 20, 50, 99.9]
+      )
       allow(providable_dbl).to receive(:find_build_in_track).and_return({status: "inProgress"})
       allow_any_instance_of(PlayStoreRollout).to receive(:provider).and_return(providable_dbl)
     end

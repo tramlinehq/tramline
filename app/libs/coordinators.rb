@@ -39,10 +39,14 @@
 # • This does not replace internal state machines of other sub-models.
 # • It currently does not have any state of its own.
 module Coordinators
-  # TODO: [V2] fixes:
-  # metadata
-
   module Signals
+    def self.release_has_started!(release)
+      release.notify!("New release has commenced!", :release_started, release.notification_params)
+      Releases::PreReleaseJob.perform_later(release.id)
+      Releases::FetchCommitLogJob.perform_later(release.id)
+      RefreshReportsJob.perform_later(release.hotfixed_from.id) if release.hotfix?
+    end
+
     def self.commits_have_landed!(release, head_commit, rest_commits)
       Coordinators::ProcessCommits.call(release, head_commit, rest_commits)
     end
@@ -95,10 +99,6 @@ module Coordinators
 
     def self.apply_build_queue!(build_queue)
       Res.new { Coordinators::ApplyBuildQueue.call(build_queue) }
-    end
-
-    def self.save_metadata!(release, metadata)
-      # TODO: [V2] save metadata
     end
 
     def self.start_workflow_run!(workflow_run)
@@ -169,7 +169,7 @@ module Coordinators
     def self.prepare_production_submission!(submission)
       Res.new do
         raise "production release is not editable" unless submission.editable?
-        submission.start_prepare!
+        submission.trigger!
         submission.notify!("Production submission started", :production_submission_started, submission.notification_params)
       end
     end

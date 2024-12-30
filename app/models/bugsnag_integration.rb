@@ -48,7 +48,7 @@ class BugsnagIntegration < ApplicationRecord
 
   encrypts :access_token, deterministic: true
   delegate :cache, to: Rails
-  delegate :app, to: :integration
+  delegate :integrable, to: :integration
   delegate :bugsnag_project, :bugsnag_release_stage, to: :app_config
   alias_method :project, :bugsnag_project
   alias_method :release_stage, :bugsnag_release_stage
@@ -121,7 +121,7 @@ class BugsnagIntegration < ApplicationRecord
   end
 
   def app_config
-    integration.app.config
+    integrable.config
   end
 
   def correct_key
@@ -131,6 +131,6 @@ class BugsnagIntegration < ApplicationRecord
   end
 
   def list_projects_cache_key
-    "app/#{app.id}/bugsnag_integration/#{id}/list_projects"
+    "app/#{integrable.id}/bugsnag_integration/#{id}/list_projects"
   end
 end

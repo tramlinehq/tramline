@@ -20,12 +20,12 @@
 #  release_platform_run_id :uuid             indexed
 #
 class Commit < ApplicationRecord
+  has_paper_trail
   include Passportable
   include Commitable
 
   self.implicit_order_column = :timestamp
 
-  has_many :step_runs, dependent: :nullify, inverse_of: :commit
   has_many :release_platform_runs, dependent: :nullify, inverse_of: :last_commit
   belongs_to :release, inverse_of: :all_commits
   belongs_to :build_queue, inverse_of: :commits, optional: true
@@ -39,7 +39,6 @@ class Commit < ApplicationRecord
   validates :commit_hash, uniqueness: {scope: :release_id}
 
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
-  after_create_commit -> { Releases::BackmergeCommitJob.perform_async(id) }, if: -> { release.release_changes? }
 
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
 
@@ -61,13 +60,6 @@ class Commit < ApplicationRecord
 
     org.team_names.each { |team_name| res[team_name] ||= 0 }
     res
-  end
-
-  def self.between(base_step_run, head_step_run)
-    return none if head_step_run.nil?
-    return none if base_step_run.nil? && head_step_run.nil?
-
-    between_commits(base_step_run&.commit, head_step_run.commit)
   end
 
   def self.between_commits(base_commit, head_commit)
@@ -99,53 +91,12 @@ class Commit < ApplicationRecord
     url
   end
 
-  def run_for(step, release_platform_run)
-    step_runs.where(step:, release_platform_run:).last
-  end
-
   def stale?
     release.applied_commits.last != self
   end
 
   def short_sha
     commit_hash[0, 7]
-  end
-
-  def step_runs_for(platform_run)
-    step_runs.where(release_platform_run: platform_run).includes(:step)
-  end
-
-  def applied_at
-    step_runs.map(&:created_at).min
-  end
-
-  def trigger_step_runs_for(platform_run, force: false)
-    return if release.hotfix? && !force
-    platform_run.bump_version!
-    platform_run.update!(last_commit: self)
-
-    platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|
-      next if release.hotfix? || step.manual_trigger_only?
-      Triggers::StepRun.call(step, self, platform_run)
-    end
-  end
-
-  def trigger_step_runs
-    return unless applicable?
-
-    release_platform_runs.have_not_submitted_production.each do |run|
-      trigger_step_runs_for(run)
-    end
-  end
-
-  def add_to_build_queue!(is_head_commit: true)
-    return unless release.queue_commit?
-    release.active_build_queue.add_commit!(self, can_apply: is_head_commit)
-  end
-
-  def trigger!
-    return add_to_build_queue! if release.queue_commit?
-    trigger_step_runs
   end
 
   def notification_params
