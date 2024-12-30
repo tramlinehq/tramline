@@ -9,9 +9,9 @@ describe ReleasePlatformRun do
   describe ".create" do
     it "creates the release metadata with default locale" do
       run = create(:release_platform_run)
-      expect(run.release_metadatum).to be_present
-      expect(run.release_metadatum.locale).to eq(ReleaseMetadata::DEFAULT_LOCALE)
-      expect(run.release_metadatum.release_notes).to eq(ReleaseMetadata::DEFAULT_RELEASE_NOTES)
+      expect(run.default_release_metadata).to be_present
+      expect(run.default_release_metadata.locale).to eq(ReleaseMetadata::DEFAULT_LOCALE)
+      expect(run.default_release_metadata.release_notes).to eq(ReleaseMetadata::DEFAULT_RELEASE_NOTES)
     end
 
     it "creates the release metadata with active_locales" do
@@ -22,8 +22,8 @@ describe ReleasePlatformRun do
       release_platform = create(:release_platform, train:)
       run = create(:release_platform_run, release:, release_platform:)
 
-      expect(run.release_metadatum.locale).to eq("en-US")
-      expect(run.release_metadatum.release_notes).to eq("This latest version includes bugfixes for the android platform.")
+      expect(run.default_release_metadata.locale).to eq("en-US")
+      expect(run.default_release_metadata.release_notes).to eq("This latest version includes bugfixes for the android platform.")
       expect(run.release_metadata.size).to eq(1)
       expect(run.release_metadata.pluck(:locale)).to contain_exactly("en-US")
     end

@@ -1,8 +1,6 @@
 class V2::TriggerSubmissionsJob < ApplicationJob
-  include Loggable
-
   MAX_RETRIES = 3
-
+  include Loggable
   queue_as :high
 
   def perform(workflow_run_id, retry_count = 0)

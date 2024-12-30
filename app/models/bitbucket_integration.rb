@@ -61,6 +61,8 @@ class BitbucketIntegration < ApplicationRecord
     false
   end
 
+  def enable_auto_merge? = false
+
   def public_icon_img
     PUBLIC_ICON
   end

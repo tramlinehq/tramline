@@ -126,7 +126,8 @@ class TrainsController < SignedInApplicationController
       :tag_suffix,
       :patch_version_bump_only,
       :approvals_enabled,
-      :copy_approvals
+      :copy_approvals,
+      :auto_apply_patch_changes
     )
   end
 
@@ -167,7 +168,8 @@ class TrainsController < SignedInApplicationController
       :tag_suffix,
       :patch_version_bump_only,
       :approvals_enabled,
-      :copy_approvals
+      :copy_approvals,
+      :auto_apply_patch_changes
     )
   end
 
