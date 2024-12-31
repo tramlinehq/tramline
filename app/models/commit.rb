@@ -10,6 +10,7 @@
 #  commit_hash             :string           not null, indexed => [release_id]
 #  message                 :string
 #  parents                 :jsonb
+#  tag_name                :string
 #  timestamp               :datetime         not null, indexed => [release_id]
 #  url                     :string
 #  created_at              :datetime         not null
@@ -23,6 +24,7 @@ class Commit < ApplicationRecord
   has_paper_trail
   include Passportable
   include Commitable
+  include Taggable
 
   self.implicit_order_column = :timestamp
 
@@ -34,13 +36,13 @@ class Commit < ApplicationRecord
 
   scope :sequential, -> { order(timestamp: :desc) }
 
-  STAMPABLE_REASONS = ["created"]
+  STAMPABLE_REASONS = %w[created tag_created]
 
   validates :commit_hash, uniqueness: {scope: :release_id}
 
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
 
-  delegate :release_platform_runs, :notify!, :train, :platform, to: :release
+  delegate :release_platform_runs, :notify!, :train, :platform, :base_tag_name, to: :release
 
   def self.commit_messages(first_parent_only = false)
     Commit.commit_log(reorder("timestamp DESC"), first_parent_only)&.map(&:message)
@@ -75,6 +77,17 @@ class Commit < ApplicationRecord
       base_condition
         .where(timestamp: ..head_commit.timestamp)
     end
+  end
+
+  # recursively attempt to create a release tag until a unique one gets created
+  # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
+  def create_tag!(input_tag_name = base_tag_name)
+    train.create_tag!(input_tag_name, commit_hash)
+    update!(tag_name: input_tag_name)
+    event_stamp!(reason: :tag_created, kind: :notice, data: {tag: tag_name, commit_sha: commit_sha, commit_url: url})
+  rescue Installations::Error => ex
+    raise unless ex.reason == :tag_reference_already_exists
+    create_tag!(unique_tag_name(input_tag_name, short_sha))
   end
 
   def team

@@ -261,12 +261,8 @@ class ReleasePlatformRun < ApplicationRecord
     update!(last_commit: commit)
   end
 
-  def should_bump_version?
-    train.trunk? || version_bump_required?
-  end
-
   def bump_version!
-    return unless should_bump_version?
+    return unless version_bump_required?
 
     self.in_store_resubmission = true
 
@@ -306,16 +302,12 @@ class ReleasePlatformRun < ApplicationRecord
     Flipper.enabled?(:temporary_unblock_upcoming, self)
   end
 
-  def tag_url
-    train.vcs_provider&.tag_url(tag_name)
-  end
-
   # recursively attempt to create a release tag until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_tag!(commit, input_tag_name = base_tag_name)
     train.create_tag!(input_tag_name, commit.commit_hash)
     update!(tag_name: input_tag_name)
-    event_stamp!(reason: :tag_created, kind: :notice, data: {tag: tag_name})
+    event_stamp!(reason: :tag_created, kind: :notice, data: {tag: tag_name, commit_sha: commit.commit_sha, commit_url: commit.url})
   rescue Installations::Error => ex
     raise unless ex.reason == :tag_reference_already_exists
     create_tag!(commit, unique_tag_name(input_tag_name, commit.short_sha))
@@ -334,6 +326,7 @@ class ReleasePlatformRun < ApplicationRecord
   # Patch fix commit: no bump required
   # --
   def version_bump_required?
+    return false if train.trunk?
     latest_production_release&.version_bump_required?
   end
 

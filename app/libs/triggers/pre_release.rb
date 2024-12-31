@@ -4,7 +4,8 @@ class Triggers::PreRelease
   RELEASE_HANDLERS = {
     "almost_trunk" => AlmostTrunk,
     "parallel_working" => ParallelBranches,
-    "release_backmerge" => ReleaseBackMerge
+    "release_backmerge" => ReleaseBackMerge,
+    "trunk" => Trunk
   }
 
   def self.call(release)
@@ -20,7 +21,6 @@ class Triggers::PreRelease
   attr_reader :release
 
   def call
-    return if train.trunk?
     RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
   rescue Triggers::PullRequest::CreateError
     release.event_stamp!(reason: :pre_release_pr_not_creatable, kind: :error, data: {release_branch:})

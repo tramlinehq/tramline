@@ -14,4 +14,9 @@ module Taggable
     return [base_tag_name, "-", sha].join if currently.end_with?(base_tag_name)
     [base_tag_name, "-", sha, "-", Time.now.to_i].join
   end
+
+  def tag_url
+    return if tag_name.blank?
+    train.vcs_provider&.tag_url(tag_name)
+  end
 end

@@ -11,14 +11,13 @@ class Coordinators::FinalizeRelease
   end
 
   HANDLERS = {
+    "trunk" => Trunk,
     "almost_trunk" => AlmostTrunk,
     "parallel_working" => ParallelBranches,
     "release_backmerge" => ReleaseBackMerge
   }
 
   def call
-    return on_finish! if train.trunk?
-
     release.with_lock do
       return unless release.post_release_started?
       open_pull_requests = release.pull_requests.automatic.open

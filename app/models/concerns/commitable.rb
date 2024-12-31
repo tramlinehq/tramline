@@ -63,6 +63,8 @@ module Commitable
 
     def backmerge_failure? = nil
 
+    def tag_name = nil
+
     def eql?(other)
       commit_hash == other.commit_hash
     end

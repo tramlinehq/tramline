@@ -201,6 +201,7 @@ class Train < ApplicationRecord
   end
 
   def tag_platform_at_release_end?
+    return false if trunk?
     return false unless app.cross_platform?
     tag_platform_releases? && !tag_all_store_releases?
   end
@@ -384,7 +385,11 @@ class Train < ApplicationRecord
     !almost_trunk?
   end
 
-  def create_vcs_release!(branch_name, tag_name, release_diff = nil)
+  def tag_applied_commits?
+    trunk?
+  end
+
+  def create_vcs_release!(tag_name, branch_name = nil, release_diff = nil)
     return false unless active?
     vcs_provider.create_release!(tag_name, branch_name, release_diff)
   end

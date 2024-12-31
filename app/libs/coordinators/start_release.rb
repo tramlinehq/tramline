@@ -52,7 +52,6 @@ class Coordinators::StartRelease
       train.activate! unless train.active?
       create_release
       train.create_webhook!
-      start_release
     end
   end
 
@@ -72,15 +71,8 @@ class Coordinators::StartRelease
     )
   end
 
-  def start_release
-    return unless train.trunk?
-    @release.with_lock do
-      return unless @release.committable?
-      initialize_release if @release.created?
-    end
-  end
-
   def release_branch
+    return train.working_branch if train.trunk?
     return new_branch_name(hotfix: true) if hotfix_from_new_branch? && create_branches?
     return existing_hotfix_branch if hotfix_from_previous_branch?
     return new_branch_name if create_branches?
@@ -152,73 +144,5 @@ class Coordinators::StartRelease
     false
   rescue ArgumentError
     true
-  end
-
-  private
-
-  def initialize_release
-    @release.start!
-    @release.create_vcs_release!
-    @release.release_platform_runs.each do |release_platform_run|
-      initialize_platform_run(release_platform_run)
-    end
-  end
-
-  def initialize_platform_run(release_platform_run)
-    commit = get_head_commit(@release.id, release_platform_run.id, release_platform_run.release_platform_id)
-    release_platform_run.update!(last_commit_id: commit.id, tag_name: @release.tag_name)
-    release_platform_run.start!
-
-    triggering_release = create_triggering_release(release_platform_run, commit)
-    trigger_workflow_run(release_platform_run, commit, triggering_release)
-  end
-
-  def create_triggering_release(release_platform_run, commit)
-    config = release_platform_run.conf
-    if config.internal_release?
-      release_platform_run.internal_releases.create!(
-        config: config.internal_release.as_json,
-        previous: release_platform_run.latest_internal_release,
-        commit: commit
-      )
-    else
-      release_platform_run.beta_releases.create!(
-        config: config.beta_release.as_json,
-        previous: release_platform_run.latest_beta_release,
-        commit: commit
-      )
-    end
-  end
-
-  def trigger_workflow_run(release_platform_run, commit, triggering_release)
-    config = release_platform_run.conf
-    WorkflowRun.create_and_trigger!(
-      config.release_candidate_workflow,
-      triggering_release,
-      commit,
-      release_platform_run
-    )
-  end
-
-  def get_head_commit(release_id, release_platform_run_id, release_platform_id)
-    branch_name = train.working_branch
-    commit = train.vcs_provider.branch_head_sha(branch_name, sha_only: false)
-
-    commit_attributes = commit.slice(
-      :commit_hash, :message, :timestamp, :author_name, :author_email, :author_login, :url, :parents
-    )
-
-    all_attributes = commit_attributes.merge(
-      release_id: release_id,
-      release_platform_run_id: release_platform_run_id,
-      release_platform_id: release_platform_id
-    )
-
-    begin
-      Commit.create!(all_attributes)
-    rescue ActiveRecord::RecordInvalid => e
-      Rails.logger.error("Failed to create commit: #{e.message}")
-      raise
-    end
   end
 end
