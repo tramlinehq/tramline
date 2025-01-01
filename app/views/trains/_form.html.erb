@@ -237,7 +237,7 @@
     <%= f.with_advanced_section(heading: "Tag Your Releases") do |section| %>
       <% section.with_description do %>
         By default, a tag is created at the end of the release with the final version of the release.
-        You can turn off creation of tag. Or, you can add an optional suffix to your tags.
+        You can turn off creation of tag. Or, you can add an optional prefix or suffix to your tags.
       <% end %>
 
       <%= render partial: "release_tag_form", locals: { form: section.F } %>

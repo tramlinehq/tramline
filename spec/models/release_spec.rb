@@ -487,6 +487,71 @@ describe Release do
       end
     end
 
+    context "when tag prefix" do
+      let(:prefix) { "foo" }
+      let(:train) { create(:train, :active, tag_prefix: prefix) }
+
+      it "saves a new tag with the prefix + base name" do
+        allow_any_instance_of(GithubIntegration).to receive(:create_release!)
+
+        release.create_vcs_release!
+        expect(release.tag_name).to eq("#{prefix}-v1.2.3")
+      end
+
+      it "saves prefix + base name + last commit sha" do
+        raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
+        commit = create(:commit, :without_trigger, release:)
+
+        release.create_vcs_release!
+        expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{commit.short_sha}")
+      end
+
+      it "saves base prefix + name + last commit sha + time" do
+        raise_times(GithubIntegration, release_exists_error, :create_release!, 2)
+
+        freeze_time do
+          now = Time.now.to_i
+          commit = create(:commit, :without_trigger, release:)
+
+          release.create_vcs_release!
+          expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{commit.short_sha}-#{now}")
+        end
+      end
+    end
+
+    context "when tag prefix and tag suffix" do
+      let(:prefix) { "foo" }
+      let(:suffix) { "nightly" }
+      let(:train) { create(:train, :active, tag_prefix: prefix, tag_suffix: suffix) }
+
+      it "saves a new tag with the prefix + base name + suffix" do
+        allow_any_instance_of(GithubIntegration).to receive(:create_release!)
+
+        release.create_vcs_release!
+        expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}")
+      end
+
+      it "saves prefix + base name + suffix + last commit sha" do
+        raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
+        commit = create(:commit, :without_trigger, release:)
+
+        release.create_vcs_release!
+        expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}-#{commit.short_sha}")
+      end
+
+      it "saves base prefix + name + suffix + last commit sha + time" do
+        raise_times(GithubIntegration, release_exists_error, :create_release!, 2)
+
+        freeze_time do
+          now = Time.now.to_i
+          commit = create(:commit, :without_trigger, release:)
+
+          release.create_vcs_release!
+          expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
+        end
+      end
+    end
+
     context "when release tag disabled" do
       let(:train) { create(:train, :active, tag_releases: false) }
 
