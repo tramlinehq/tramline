@@ -307,7 +307,7 @@ class ReleasePlatformRun < ApplicationRecord
   def create_tag!(commit, input_tag_name = base_tag_name)
     train.create_tag!(input_tag_name, commit.commit_hash)
     update!(tag_name: input_tag_name)
-    event_stamp!(reason: :tag_created, kind: :notice, data: {tag: tag_name, commit_sha: commit.commit_sha, commit_url: commit.url})
+    event_stamp!(reason: :tag_created, kind: :notice, data: {tag: tag_name, commit_sha: commit.short_sha, commit_url: commit.url})
   rescue Installations::Error => ex
     raise unless ex.reason == :tag_reference_already_exists
     create_tag!(commit, unique_tag_name(input_tag_name, commit.short_sha))

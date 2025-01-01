@@ -84,7 +84,7 @@ class Commit < ApplicationRecord
   def create_tag!(input_tag_name = base_tag_name)
     train.create_tag!(input_tag_name, commit_hash)
     update!(tag_name: input_tag_name)
-    event_stamp!(reason: :tag_created, kind: :notice, data: {tag: tag_name, commit_sha: commit_sha, commit_url: url})
+    event_stamp!(reason: :tag_created, kind: :notice, data: {tag: tag_name, commit_sha: short_sha, commit_url: url})
   rescue Installations::Error => ex
     raise unless ex.reason == :tag_reference_already_exists
     create_tag!(unique_tag_name(input_tag_name, short_sha))
