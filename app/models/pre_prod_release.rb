@@ -144,7 +144,7 @@ class PreProdRelease < ApplicationRecord
 
   def new_commit_available?
     return unless release_platform_run.on_track?
-    release.last_commit != commit
+    release.last_applicable_commit != commit
   end
 
   def stamp_data
