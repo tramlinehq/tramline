@@ -15,7 +15,6 @@ class V2::LiveRelease::FinalizeComponent < V2::BaseComponent
     :finished?,
     :post_release_started?,
     :post_release_failed?, to: :release
-  delegate :trunk?, to: :train
 
   def strikethrough
     "line-through" if strikethrough?
