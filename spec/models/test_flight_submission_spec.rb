@@ -83,12 +83,12 @@ describe TestFlightSubmission do
         allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { build_info })
         allow(provider_dbl).to receive(:public_icon_img)
         allow(provider_dbl).to receive(:project_link)
-        allow(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to receive(:perform_later)
+        allow(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to receive(:perform_async)
       end
 
       it "updates the build notes" do
         test_flight_submission.start_release!
-        expect(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to have_received(:perform_later).with(test_flight_submission.id).once
+        expect(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to have_received(:perform_async).with(test_flight_submission.id).once
       end
 
       it "finishes the release" do
@@ -110,13 +110,13 @@ describe TestFlightSubmission do
       before do
         allow(provider_dbl).to receive(:update_release_notes)
         allow(provider_dbl).to receive_messages(find_build: GitHub::Result.new { build_info }, release_to_testflight: GitHub::Result.new { build_info })
-        allow(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to receive(:perform_later)
+        allow(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to receive(:perform_async)
         allow(StoreSubmissions::TestFlight::UpdateExternalBuildJob).to receive(:perform_async)
       end
 
       it "updates the build notes" do
         test_flight_submission.start_release!
-        expect(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to have_received(:perform_later).with(test_flight_submission.id).once
+        expect(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to have_received(:perform_async).with(test_flight_submission.id).once
       end
 
       it "sends the build to configured test group" do

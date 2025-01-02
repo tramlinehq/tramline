@@ -18,18 +18,18 @@ describe Release do
 
   describe "after_commit callback#Releases::CopyPreviousApprovalsJob" do
     it "enqueues the CopyPreviousApprovalsJob after commit when copy_approvals_enabled? returns true" do
-      allow(Releases::CopyPreviousApprovalsJob).to receive(:perform_later)
+      allow(Releases::CopyPreviousApprovalsJob).to receive(:perform_async)
       release.train.update(copy_approvals: true)
       release.run_callbacks(:commit) { true }
-      expect(Releases::CopyPreviousApprovalsJob).to have_received(:perform_later).with(release.id)
+      expect(Releases::CopyPreviousApprovalsJob).to have_received(:perform_async).with(release.id)
     end
 
     it "does not enqueue the CopyPreviousApprovalsJob if copys_approvals_enabled? returns false" do
       release.train.update(copy_approvals: false)
-      allow(Releases::CopyPreviousApprovalsJob).to receive(:perform_later)
+      allow(Releases::CopyPreviousApprovalsJob).to receive(:perform_async)
 
       release.run_callbacks(:commit) { true }
-      expect(Releases::CopyPreviousApprovalsJob).not_to have_received(:perform_later)
+      expect(Releases::CopyPreviousApprovalsJob).not_to have_received(:perform_async)
     end
   end
 

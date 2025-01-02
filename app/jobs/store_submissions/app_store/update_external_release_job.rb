@@ -9,6 +9,6 @@ class StoreSubmissions::AppStore::UpdateExternalReleaseJob < ApplicationJob
     submission.update_external_release
   rescue AppStoreSubmission::SubmissionNotInTerminalState => e
     elog(e)
-    StoreSubmissions::AppStore::UpdateExternalReleaseJob.set(wait: 5.minutes).perform_later(submission_id, can_retry:) if can_retry
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.set(wait: 5.minutes).perform_async(submission_id, can_retry:) if can_retry
   end
 end

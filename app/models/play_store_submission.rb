@@ -138,7 +138,7 @@ class PlayStoreSubmission < StoreSubmission
     return unless actionable?
 
     preprocess!
-    StoreSubmissions::PlayStore::UploadJob.perform_later(id)
+    StoreSubmissions::PlayStore::UploadJob.perform_async(id)
   end
 
   def retry!
@@ -205,7 +205,7 @@ class PlayStoreSubmission < StoreSubmission
 
   def update_external_status
     # return if sandbox_mode?
-    StoreSubmissions::PlayStore::UpdateExternalReleaseJob.perform_later(id)
+    StoreSubmissions::PlayStore::UpdateExternalReleaseJob.perform_async(id)
   end
 
   def update_store_info!
@@ -260,7 +260,7 @@ class PlayStoreSubmission < StoreSubmission
 
   def on_start_prepare!
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
-    StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id)
+    StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_async(id)
   end
 
   def tester_notes

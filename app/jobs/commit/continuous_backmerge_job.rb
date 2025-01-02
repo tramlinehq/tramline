@@ -35,7 +35,7 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
       attempt = count + 1
       Commit::ContinuousBackmergeJob
         .set(wait: backoff_in(attempt:, period: :minutes, type: :linear, factor: 5))
-        .perform_later(commit.id, is_head_commit:, count: attempt)
+        .perform_async(commit.id, {"is_head_commit" => is_head_commit, "count" => attempt})
     end
   end
 

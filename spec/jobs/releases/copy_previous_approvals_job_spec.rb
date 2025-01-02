@@ -13,14 +13,14 @@ describe Releases::CopyPreviousApprovalsJob do
     it "adds approval items to the release if none exist" do
       expect(release.approval_items).to be_empty
 
-      described_class.perform_now(release.id)
+      described_class.new.perform(release.id)
       release.reload
 
       expect(release.approval_items.size).to eq(1)
     end
 
     it "performs the job successfully without errors" do
-      expect { described_class.perform_now(release.id) }.not_to raise_error
+      expect { described_class.new.perform(release.id) }.not_to raise_error
     end
 
     context "when release is not found" do
@@ -28,7 +28,7 @@ describe Releases::CopyPreviousApprovalsJob do
         erroneous_release_id = Faker::Number.number
         allow(Rails.logger).to receive(:error)
 
-        described_class.perform_now(erroneous_release_id)
+        described_class.new.perform(erroneous_release_id)
 
         expect(Rails.logger).to have_received(:error).with("Release with ID #{erroneous_release_id} not found")
       end
