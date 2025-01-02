@@ -13,17 +13,43 @@ class ProductionReleasePresenter < SimpleDelegator
     full_rollout_status
   end
 
-  memoize def last_rollout_percentage
-    store_rollout&.last_rollout_percentage
+  def last_activity_ts
+    (store_rollout || store_submission).updated_at
+  end
+
+  def last_activity_tooltip
+    "Last activity at #{h.time_format(last_activity_ts)}"
+  end
+
+  def store_icon
+    "integrations/logo_#{store_submission.provider}.png"
+  end
+
+  def h
+    @view_context
+  end
+
+  private
+
+  def store_submission_status
+    case store_submission.status.to_sym
+    when :created, :preprocessing, :preparing, :prepared, :submitting_for_review, :cancelling, :cancelled
+      {text: "Preparing for release", status: :ongoing}
+    when :submitted_for_review
+      {text: "Submitted for review", status: :inert}
+    when :review_failed
+      {text: "Review rejected", status: :failure}
+    when :failed, :failed_with_action_required, :failed_prepare
+      {text: "Failed to prepare release", status: :failure}
+    when :finished_manually
+      {text: "Finished manually", status: :inert}
+    else
+      {text: "Unknown", status: :neutral}
+    end
   end
 
   def full_rollout_status
-    percentage = ""
-
-    if last_rollout_percentage.present?
-      formatter = (last_rollout_percentage % 1 == 0) ? "%.0f" : "%.02f"
-      percentage = formatter % last_rollout_percentage
-    end
+    percentage = store_rollout.last_rollout_percentage_fmt
 
     case store_rollout.status.to_sym
     when :created
@@ -43,42 +69,5 @@ class ProductionReleasePresenter < SimpleDelegator
     else
       {text: "Unknown", status: :neutral}
     end
-  end
-
-  def store_submission_status
-    case store_submission.status.to_sym
-    when :created, :preprocessing, :preparing, :prepared, :submitting_for_review, :cancelling, :cancelled
-      {text: "Preparing for release", status: :ongoing}
-    when :submitted_for_review
-      {text: "Submitted for review", status: :inert}
-    when :review_failed
-      {text: "Review rejected", status: :failure}
-    when :failed, :failed_with_action_required, :failed_prepare
-      {text: "Failed to prepare release", status: :failure}
-    when :finished_manually
-      {text: "Finished manually", status: :inert}
-    else
-      {text: "Unknown", status: :neutral}
-    end
-  end
-
-  def last_activity_ts
-    (store_rollout || store_submission).updated_at
-  end
-
-  def last_activity_at
-    h.ago_in_words(last_activity_ts)
-  end
-
-  def last_activity_tooltip
-    "Last activity at #{h.time_format(last_activity_ts)}"
-  end
-
-  def store_icon
-    "integrations/logo_#{store_submission.provider}.png"
-  end
-
-  def h
-    @view_context
   end
 end

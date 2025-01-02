@@ -4,15 +4,10 @@
                                                                     actionable: false} %>
   <% if pre_prod_release.new_commit_available? %>
     <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "New changes on the release branch") do |ann| %>
-      <% ann.with_announcement_button(label: "Create Release Candidate",
-                                      scheme: :default,
-                                      type: :button,
-                                      options: pre_prod_beta_run_path(release_platform_run),
-                                      size: :xxs,
-                                      html_options: html_opts(:post, "Are you sure you want to create the RC?")) %>
+      <% ann.with_announcement_button(**new_pre_prod_release_options) %>
       <div class="flex flex-col gap-2">
         <%= render V2::CommitComponent.new(commit: latest_commit, detailed: false) %>
-        <span class="text-sm">You can continue with your existing Release Candidate, or replace it with this new change.</span>
+        <span class="text-sm">You can continue with your existing build, or replace it with this new change.</span>
       </div>
     <% end %>
   <% end %>
@@ -41,12 +36,23 @@
 
     <% if retriggerable? %>
       <% card.with_action do %>
-
         <%= render V2::ButtonComponent.new(label: "Retrigger build",
                                            scheme: :default,
                                            options: retry_workflow_run_path(workflow_run),
                                            size: :xxs,
                                            html_options: html_opts(:patch, "Are you sure you want to retrigger the build?")) %>
+
+      <% end %>
+    <% end %>
+
+    <% if workflow_run.failed? %>
+      <% card.with_action do %>
+        <%= render V2::ButtonComponent.new(label: "Re-fetch build status",
+                                           scheme: :light,
+                                           options: fetch_status_workflow_run_path(workflow_run),
+                                           size: :xxs,
+                                           html_options: html_opts(:patch, "Are you sure you want to re-fetch the build status?")) %>
+
       <% end %>
     <% end %>
 

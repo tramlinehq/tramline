@@ -7,7 +7,7 @@
                                          type: :link_external,
                                          size: :none,
                                          authz: false,
-                                         html_options: { class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline" })) %>
+                                         html_options: {class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline"})) %>
 
       <div class="flex flex-row gap-x-1.5 items-center">
         <%= render V2::IconComponent.new("integrations/logo_#{pr.source}.png", size: :md) %>
@@ -34,7 +34,10 @@
     </div>
 
     <div class="flex flex-row gap-x-2 items-center">
-      <%= render V2::BadgeComponent.new(text: "##{pr.number}", kind: :badge) %>
+      <%= render V2::BadgeComponent.new(kind: :badge) do |badge|
+        badge.with_link("##{pr.number}", pr.url)
+      end %>
+
       <%= render V2::BadgeComponent.new(text: state, status:) %>
     </div>
   </div>

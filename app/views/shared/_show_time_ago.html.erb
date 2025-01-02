@@ -1,8 +1,10 @@
-<%= render V2::TooltipComponent.new(tooltip_text, placement: local_assigns.fetch(:tooltip_placement, "top")) do |tooltip| %>
-  <% tooltip.with_body do %>
-    <div class="flex items-center gap-2 text-secondary">
-      <%= render V2::IconComponent.new("v2/dotted_line.svg", size: :base) %>
-      <span class="font-normal text-sm"><%= last_activity_at %></span>
-    </div>
+<% if tooltip_text %>
+  <%= render V2::TooltipComponent.new(tooltip_text, placement: local_assigns.fetch(:tooltip_placement, "top")) do |tooltip| %>
+    <% tooltip.with_body do %>
+      <%= render partial: "shared/show_time_ago_body", locals: {time:, tick:} %>
+    <% end %>
   <% end %>
+<% else %>
+  <%= render partial: "shared/show_time_ago_body", locals: {time:, tick:} %>
 <% end %>
+

@@ -82,7 +82,7 @@ class WorkflowRun < ApplicationRecord
     end
 
     event :found, after_commit: :on_found! do
-      transitions from: :triggered, to: :started
+      transitions from: [:failed, :triggered], to: :started
     end
 
     event :unavailable, after_commit: :on_unavailable! do
@@ -122,8 +122,16 @@ class WorkflowRun < ApplicationRecord
     workflow_run.initiate!
   end
 
+  def allow_error?
+    train.temporarily_allow_workflow_errors?
+  end
+
   def active?
     triggering_release.actionable? && FAILED_STATES.exclude?(status)
+  end
+
+  def failure?
+    FAILED_STATES.include?(status)
   end
 
   def find_and_update_external

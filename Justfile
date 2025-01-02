@@ -4,11 +4,18 @@ start:
 restart container="web":
   docker compose restart {{ container }}
 
-spec:
-  bundle exec rspec
+spec file="":
+  if [ -z {{ file }} ]; then \
+    docker compose run --rm spec; \
+  else \
+    docker compose run --rm spec bundle exec rspec {{ file }}; \
+  fi
 
 lint:
   bin/rubocop --autocorrect
+
+pre-setup:
+  docker compose run --rm pre-setup
 
 rails +command="console":
   docker exec -it tramline-web-1 bundle exec rails {{ command }}
@@ -26,7 +33,7 @@ bglog log_lines="100":
   tail -f -n {{ log_lines }} log/sidekiq.log
 
 attach container="web":
-  docker attach --detach-keys "ctrl-d" site-{{ container }}-1
+  docker attach --detach-keys "ctrl-d" tramline-{{ container }}-1
 
 shell container="web":
-  docker exec -it site-{{ container }}-1 /bin/bash
+  docker exec -it tramline-{{ container }}-1 /bin/bash

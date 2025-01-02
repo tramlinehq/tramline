@@ -39,6 +39,7 @@ class Computations::Release::StepStatuses
   def internal_builds_status
     return STATUS[:hidden] unless any_platforms? { |rp| rp.conf.internal_release? }
     return STATUS[:none] if all_platforms? { |rp| rp.latest_internal_release.blank? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_internal_release&.failure? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_internal_release&.actionable? }
     STATUS[:success]
   end
@@ -52,13 +53,14 @@ class Computations::Release::StepStatuses
   def release_candidate_status
     return STATUS[:success] if finished?
     return STATUS[:none] if all_platforms? { |rp| rp.latest_beta_release.blank? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release&.failure? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release&.actionable? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release&.commit != rp.last_commit }
     STATUS[:success]
   end
 
   def notes_status
-    return STATUS[:unblocked] if any_platforms? { |rp| rp.metadata_editable_v2? }
+    return STATUS[:unblocked] if any_platforms? { |rp| rp.metadata_editable? }
     STATUS[:success]
   end
 

@@ -19,8 +19,8 @@ class GithubIntegration < ApplicationRecord
   validates :installation_id, presence: true
 
   delegate :code_repository_name, :code_repo_namespace, :code_repo_name_only, to: :app_config
-  delegate :app, to: :integration
-  delegate :organization, to: :app
+  delegate :integrable, to: :integration
+  delegate :organization, to: :integrable
   delegate :cache, to: Rails
 
   BASE_INSTALLATION_URL =
@@ -109,10 +109,6 @@ class GithubIntegration < ApplicationRecord
   }
 
   def install_path
-    unless integration.version_control? || integration.ci_cd?
-      raise Integration::IntegrationNotImplemented, "We don't support that yet!"
-    end
-
     BASE_INSTALLATION_URL
       .expand(app_name: creds.integrations.github.app_name, params: {
         state: integration.installation_state
@@ -206,9 +202,10 @@ class GithubIntegration < ApplicationRecord
   end
 
   def further_setup?
-    return true if integration.version_control?
     false
   end
+
+  def enable_auto_merge? = true
 
   def connection_data
     return unless integration.metadata
@@ -234,7 +231,6 @@ class GithubIntegration < ApplicationRecord
   ## CI/CD
 
   def workflows(_ = nil)
-    return [] unless integration.ci_cd?
     cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
       installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
     end
@@ -302,8 +298,8 @@ class GithubIntegration < ApplicationRecord
     installation.create_pr!(code_repository_name, to_branch_ref, from, title, description, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
-  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
-    installation.cherry_pick_pr(code_repository_name, to_branch, commit_hash, patch_branch, pr_title_prefix, PR_TRANSFORMATIONS).merge_if_present(source: :github)
+  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title, pr_description)
+    installation.cherry_pick_pr(code_repository_name, to_branch, commit_hash, patch_branch, pr_title, pr_description, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
   def enable_auto_merge!(pr_number)
@@ -373,7 +369,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def app_config
-    app.config
+    integrable.config
   end
 
   def events_url(params)
@@ -385,6 +381,6 @@ class GithubIntegration < ApplicationRecord
   end
 
   def workflows_cache_key
-    "app/#{app.id}/github_integration/#{id}/workflows"
+    "app/#{integrable.id}/github_integration/#{id}/workflows"
   end
 end

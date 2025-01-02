@@ -49,8 +49,8 @@ class AppStoreSubmission < StoreSubmission
   }
   FINAL_STATES = %w[approved]
   IMMUTABLE_STATES = %w[preparing approved submitting_for_review submitted_for_review cancelling]
-  PRE_PREPARE_STATES = %w[created preprocessing cancelled review_failed failed]
-  CHANGEABLE_STATES = %w[created preprocessing prepared cancelled review_failed failed approved]
+  PRE_PREPARE_STATES = %w[created cancelled review_failed failed]
+  CHANGEABLE_STATES = %w[created prepared failed_prepare cancelled review_failed failed approved]
   CANCELABLE_STATES = %w[submitted_for_review]
   STAMPABLE_REASONS = %w[
     triggered
@@ -82,7 +82,7 @@ class AppStoreSubmission < StoreSubmission
     state(*STATES.keys)
 
     event :start_prepare, after_commit: :on_start_prepare! do
-      transitions to: :preparing
+      transitions from: CHANGEABLE_STATES, to: :preparing
     end
 
     event :finish_prepare, after_commit: :on_finish_prepare! do
@@ -134,7 +134,7 @@ class AppStoreSubmission < StoreSubmission
 
   def cancellable? = CANCELABLE_STATES.include?(status) && editable?
 
-  def finished? = FINAL_STATES.include?(status) && store_rollout.finished?
+  def finished? = FINAL_STATES.include?(status) && store_rollout&.finished?
 
   def post_review? = FINAL_STATES.include?(status)
 
@@ -153,7 +153,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def retrigger!
-    return unless created? || cancelled?
+    return if created?
 
     reset_store_info!
     trigger!
@@ -255,7 +255,7 @@ class AppStoreSubmission < StoreSubmission
   # app.ios_store_provider
   def provider = conf.integrable.ios_store_provider
 
-  def notification_params
+  def notification_params(failure_message: nil)
     super.merge(
       requires_review: true,
       submission_channel: submission_channel.name
@@ -330,19 +330,20 @@ class AppStoreSubmission < StoreSubmission
     )
   end
 
-  def on_fail_prepare!
-    event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data)
-    notify!("Submission failed", :submission_failed, notification_params)
+  def on_fail_prepare!(args = nil)
+    failure_error = args&.fetch(:error, nil)
+    event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
+    notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
   end
 
   def on_fail!(args = nil)
     failure_error = args&.fetch(:error, nil)
     event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
-    notify!("Submission failed", :submission_failed, notification_params)
+    notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
   end
 
   def update_store_version
-    # TODO: [V2] [post-alpha] update store version details when release metadata changes or build is updated
+    # TODO: update store version details when release metadata changes
     # update whats new, build
   end
 

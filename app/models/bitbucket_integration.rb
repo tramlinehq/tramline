@@ -25,15 +25,11 @@ class BitbucketIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
-  delegate :app, to: :integration
+  delegate :integrable, to: :integration
   delegate :code_repository_name, to: :app_config
   delegate :cache, to: Rails
 
   def install_path
-    unless integration.version_control? || integration.ci_cd?
-      raise Integration::IntegrationNotImplemented, "We don't support that yet!"
-    end
-
     BASE_INSTALLATION_URL
       .expand(params: {
         client_id: creds.integrations.bitbucket.client_id,
@@ -62,9 +58,10 @@ class BitbucketIntegration < ApplicationRecord
   def project_link = nil
 
   def further_setup?
-    return true if integration.version_control?
     false
   end
+
+  def enable_auto_merge? = false
 
   def public_icon_img
     PUBLIC_ICON
@@ -176,7 +173,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def commit_log(from_branch, to_branch)
-    installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
+    with_api_retries { installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS) }
   end
 
   def diff_between?(from_branch, to_branch, from_type: :branch)
@@ -249,12 +246,16 @@ class BitbucketIntegration < ApplicationRecord
     with_api_retries { installation.merge_pr!(code_repository_name, pr_number) }
   end
 
-  def create_patch_pr!(_to_branch, _patch_branch, _commit_hash, _pr_title_prefix)
-    raise NotImplementedError
+  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title, pr_description)
+    with_api_retries do
+      installation
+        .patch_pr(code_repository_name, to_branch, patch_branch, commit_hash, pr_title, pr_description, PR_TRANSFORMATIONS)
+        .merge_if_present(source: :bitbucket)
+    end
   end
 
   def enable_auto_merge!(_pr_number)
-    raise NotImplementedError
+    true
   end
 
   # CI/CD
@@ -278,7 +279,6 @@ class BitbucketIntegration < ApplicationRecord
   }
 
   def workflows(branch_name)
-    return [] unless integration.ci_cd?
     cache.fetch(workflows_cache_key(branch_name), expires_in: 120.minutes) do
       with_api_retries { installation.list_pipeline_selectors(code_repository_name, branch_name) }
     end
@@ -312,18 +312,18 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def get_artifact_v2(_, _, external_workflow_run_id:)
-    raise Integration::NoBuildArtifactAvailable if external_workflow_run_id.blank?
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if external_workflow_run_id.blank?
 
     # bitbucket expects uuids surrounded by curly braces, like {uuid} in all api requests
     # except for the file name, where it doesn't for some reason
     artifact_name = "build-#{external_workflow_run_id}".gsub(/{/, "").gsub(/}/, "")
 
     artifact = with_api_retries { installation.get_file(code_repository_name, artifact_name, ARTIFACTS_TRANSFORMATIONS) }
-    raise Integration::NoBuildArtifactAvailable if artifact.blank?
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank?
 
     Rails.logger.debug { "Downloading artifact #{artifact}" }
     artifact_file = with_api_retries { installation.download_artifact(artifact[:archive_download_url]) }
-    raise Integration::NoBuildArtifactAvailable if artifact_file.blank?
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_file.blank?
 
     {artifact:, stream: Artifacts::Stream.new(artifact_file)}
   end
@@ -369,7 +369,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def app_config
-    app.config
+    integrable.config
   end
 
   def redirect_uri
@@ -381,6 +381,6 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def workflows_cache_key(branch_name)
-    "app/#{app.id}/bitbucket_integration/#{id}/workflows/#{branch_name}"
+    "app/#{integrable.id}/bitbucket_integration/#{id}/workflows/#{branch_name}"
   end
 end

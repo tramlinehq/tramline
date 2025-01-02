@@ -10,20 +10,17 @@
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
-#  notification_channel    :json
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
 #  bitrise_project_id      :jsonb
-#  bugsnag_project_id      :jsonb
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
-  include Notifiable
   include AppConfigurable
 
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
-  # self.ignored_columns += ["bugsnag_project_id"]
+  self.ignored_columns += %w[bugsnag_project_id firebase_crashlytics_android_config firebase_crashlytics_ios_config notification_channel]
 
   belongs_to :app
   has_many :variants, class_name: "AppVariant", dependent: :destroy
@@ -71,16 +68,16 @@ class AppConfig < ApplicationRecord
     integrations = app.integrations
     categories = {}.with_indifferent_access
 
-    if integrations.vcs_provider.present?
+    if integrations.version_control.present?
       categories[:version_control] = {
-        further_setup: integrations.vcs_provider.further_setup?,
+        further_setup: integrations.version_control.any?(&:further_setup?),
         ready: code_repository.present?
       }
     end
 
-    if integrations.ci_cd_provider.present?
+    if integrations.ci_cd.present?
       categories[:ci_cd] = {
-        further_setup: integrations.ci_cd_provider.further_setup?,
+        further_setup: integrations.ci_cd.any?(&:further_setup?),
         ready: bitrise_ready?
       }
     end
@@ -92,9 +89,9 @@ class AppConfig < ApplicationRecord
       }
     end
 
-    if integrations.monitoring_provider.present?
+    if integrations.monitoring.present?
       categories[:monitoring] = {
-        further_setup: integrations.monitoring_provider.further_setup?,
+        further_setup: integrations.monitoring.any?(&:further_setup?),
         ready: bugsnag_ready?
       }
     end
@@ -103,11 +100,21 @@ class AppConfig < ApplicationRecord
   end
 
   def bugsnag_project(platform)
-    pick_bugsnag_project_id(platform)
+    case platform
+    when "android" then bugsnag_android_config["project_id"]
+    when "ios" then bugsnag_ios_config["project_id"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
   end
 
   def bugsnag_release_stage(platform)
-    pick_bugsnag_release_stage(platform)
+    case platform
+    when "android" then bugsnag_android_config["release_stage"]
+    when "ios" then bugsnag_ios_config["release_stage"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
   end
 
   def ci_cd_workflows

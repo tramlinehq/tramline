@@ -1,28 +1,12 @@
 class NotificationSettingsComponent < ViewComponent::Base
   include ApplicationHelper
-  include ButtonHelper
-  include AssetsHelper
 
   InvalidNotificationSettings = Class.new(StandardError)
 
   NOTIFICATIONS = {
     release_scheduled: {icon: "v2/clock.svg", description: "Your scheduled release will run in a few hours"},
     release_started: {icon: "v2/zap.svg", description: "A new release was started for the release train"},
-    step_started: {icon: "v2/play.svg", description: "A step was started for the release train"},
-    build_available: {icon: "v2/drill.svg", description: "A new build is available for a direct download"},
-    step_failed: {icon: "v2/alert_circle.svg", description: "A step failed to run fully for the release train"},
     backmerge_failed: {icon: "v2/alert_circle.svg", description: "Tramline failed to create a backmerge PR for the commit in the release"},
-    submit_for_review: {icon: "v2/clipboard_list.svg", description: "A build was submitted for review to store for the release"},
-    review_approved: {icon: "v2/clipboard_check.svg", description: "A production build review was approved by the store"},
-    review_failed: {icon: "v2/alert_circle.svg", description: "A production build review was rejected by the store"},
-    staged_rollout_updated: {icon: "v2/arrow_big_up_dash.svg", description: "The staged rollout was increased for the production build in the store"},
-    staged_rollout_paused: {icon: "v2/pause.svg", description: "The staged rollout was paused for the production build in the store"},
-    staged_rollout_resumed: {icon: "v2/play.svg", description: "The staged rollout was resumed for the production build in the store"},
-    staged_rollout_halted: {icon: "v2/stop_circle.svg", description: "The staged rollout was halted for the production build in the store"},
-    staged_rollout_completed: {icon: "v2/sparkles.svg", description: "The staged rollout was completed for the production build in the store"},
-    staged_rollout_fully_released: {icon: "v2/fast_forward.svg", description: "The staged rollout was fully released to 100% for the production build in the store"},
-    deployment_finished: {icon: "v2/truck.svg", description: "The distribution was successful to a channel"},
-    deployment_failed: {icon: "v2/alert_circle.svg", description: "The distribution to a channel failed"},
     release_ended: {icon: "v2/sparkles.svg", description: "The release finished successfully"},
     release_stopped: {icon: "v2/stop_circle.svg", description: "The release was stopped before it finished"},
     release_health_events: {icon: "v2/heart_pulse.svg", description: "A health event has occurred for the release"},
@@ -30,6 +14,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     internal_release_finished: {icon: "v2/sparkles.svg", description: "The release finished successfully"},
     internal_release_failed: {icon: "v2/alert_circle.svg", description: "The release failed"},
     beta_submission_finished: {icon: "v2/sparkles.svg", description: "The beta submission finished successfully"},
+    internal_submission_finished: {icon: "v2/sparkles.svg", description: "The internal submission finished successfully"},
     submission_failed: {icon: "v2/alert_circle.svg", description: "The beta submission failed"},
     production_submission_started: {icon: "v2/play.svg", description: "A production submission started"},
     production_submission_in_review: {icon: "v2/clipboard_list.svg", description: "A production submission is in review"},

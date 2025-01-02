@@ -29,12 +29,12 @@ class Coordinators::FinalizeRelease
         result = HANDLERS[train.branching_strategy].call(release)
         release.reload
 
-        if result.ok?
+        if result.ok? && release.pull_requests.open.none?
           release.finish!
           on_finish!
         else
+          elog(result.error) unless result.ok?
           release.fail_post_release_phase!
-          elog(result.error)
           on_failure!
         end
       end
@@ -46,8 +46,7 @@ class Coordinators::FinalizeRelease
   def on_finish!
     release.update_train_version!
     release.event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
-    notify_data = release.notification_params.merge(release.finalize_phase_metadata)
-    release.notify!("Release has finished!", :release_ended, notify_data)
+    release.notify!("Release has finished!", :release_ended, release.notification_params)
     RefreshReportsJob.perform_later(release.id)
   end
 

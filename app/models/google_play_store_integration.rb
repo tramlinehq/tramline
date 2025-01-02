@@ -16,8 +16,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
   include Displayable
   include Loggable
 
-  delegate :app, to: :integration, allow_nil: true
-  delegate :refresh_external_app, to: :app
+  delegate :integrable, to: :integration, allow_nil: true
+  delegate :refresh_external_app, :bundle_identifier, to: :integrable, allow_nil: true
 
   validate :correct_key, on: :create
 
@@ -26,15 +26,16 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create :draft_check
   after_create_commit :refresh_external_app
 
-  PROD_CHANNEL = {id: :production, name: "production", is_production: true}.freeze
-  BETA_CHANNEL = {id: :beta, name: "open testing", is_production: false}.freeze
+  PROD_CHANNEL = {id: :production, name: "Production", is_production: true}.freeze
+  BETA_CHANNEL = {id: :beta, name: "Open testing", is_production: false}.freeze
   CHANNELS = [
     PROD_CHANNEL,
     BETA_CHANNEL,
-    {id: :alpha, name: "closed testing", is_production: false},
-    {id: :internal, name: "internal testing", is_production: false}
+    {id: :alpha, name: "Closed testing - Alpha", is_production: false},
+    {id: :internal, name: "Internal testing", is_production: false}
   ]
   PUBLIC_CHANNELS = %w[production beta alpha]
+  IN_PROGRESS_STORE_STATUS = %w[inProgress].freeze
   ACTIVE_STORE_STATUSES = %w[completed inProgress].freeze
 
   DEVELOPER_URL_TEMPLATE =
@@ -49,7 +50,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def installation
-    Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier, access_key)
+    Installations::Google::PlayDeveloper::Api.new(bundle_identifier, access_key)
   end
 
   def create_draft_release(channel, build_number, version, release_notes, retry_on_review_fail: false)
@@ -103,7 +104,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def draft_check
-    app&.set_draft_status!
+    integrable&.set_draft_status!
   end
 
   def draft_check?
@@ -125,11 +126,16 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def connection_data
-    "Bundle Identifier: #{app.bundle_identifier}"
+    "Bundle Identifier: #{bundle_identifier}"
   end
 
   def channels
-    CHANNELS.map(&:with_indifferent_access)
+    default_channels = CHANNELS.map(&:with_indifferent_access)
+    channel_data.each do |chan|
+      next if default_channels.pluck(:id).map(&:to_s).include?(chan[:name])
+      default_channels << {id: chan[:name], name: "Closed testing - #{chan[:name]}", is_production: false}.with_indifferent_access
+    end
+    default_channels
   end
 
   def pick_default_beta_channel
@@ -206,6 +212,11 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def find_build_in_track(channel, build_number)
     installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS).dig(:releases)&.find { |r| r[:build_number] == build_number.to_s }
+  end
+
+  def build_in_progress?(channel, build_number)
+    response = find_build_in_track(channel, build_number)
+    response.present? && GooglePlayStoreIntegration::IN_PROGRESS_STORE_STATUS.include?(response[:status])
   end
 
   private

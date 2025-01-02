@@ -10,6 +10,179 @@ PERFECT_SCORE_COMPONENTS = {
 }
 
 describe Release do
+  let(:train) { create(:train) }
+  let(:release) { create(:release, train: train) }
+  let(:previous_release_one) { create(:release, train: train, status: "finished", created_at: 1.day.ago) }
+  let(:approval_item) { create(:approval_item, release: previous_release_one) }
+  let(:assignee) { create(:approval_assignee, approval_item:) }
+
+  describe "after_commit callback#Releases::CopyPreviousApprovalsJob" do
+    it "enqueues the CopyPreviousApprovalsJob after commit when copy_approvals_enabled? returns true" do
+      allow(Releases::CopyPreviousApprovalsJob).to receive(:perform_later)
+      release.train.update(copy_approvals: true)
+      release.run_callbacks(:commit) { true }
+      expect(Releases::CopyPreviousApprovalsJob).to have_received(:perform_later).with(release.id)
+    end
+
+    it "does not enqueue the CopyPreviousApprovalsJob if copys_approvals_enabled? returns false" do
+      release.train.update(copy_approvals: false)
+      allow(Releases::CopyPreviousApprovalsJob).to receive(:perform_later)
+
+      release.run_callbacks(:commit) { true }
+      expect(Releases::CopyPreviousApprovalsJob).not_to have_received(:perform_later)
+    end
+  end
+
+  describe "delegates" do
+    it "delegates app to train" do
+      expect(release.app).to eq(train.app)
+    end
+
+    it "delegates vcs_provider to train" do
+      expect(release.vcs_provider).to eq(train.vcs_provider)
+    end
+
+    it "delegates release_platforms to train" do
+      expect(release.release_platforms).to eq(train.release_platforms)
+    end
+
+    it "delegates continuous_backmerge? to train" do
+      expect(release.continuous_backmerge?).to eq(train.continuous_backmerge?)
+    end
+
+    it "delegates approvals_enabled? to train" do
+      expect(release.approvals_enabled?).to eq(train.approvals_enabled?)
+    end
+
+    it "delegates copy_approvals? to train" do
+      expect(release.copy_approvals?).to eq(train.copy_approvals?)
+    end
+  end
+
+  describe "#copy_previous_approvals" do
+    context "when a previous release exists" do
+      let(:included_fields) { %w[author_id content] }
+      let(:previous_release_two) { create(:release, train: train, status: "finished", created_at: 2.days.ago) }
+      let(:approval_item_two) { create(:approval_item, release: previous_release_one) }
+
+      before do
+        previous_release_two.approval_items << approval_item_two
+        previous_release_one.approval_items << approval_item
+
+        allow(train).to receive(:previously_finished_release).and_return(previous_release_one)
+        allow(release).to receive(:copy_approvals?).and_return(true)
+      end
+
+      it "copies approval items from the previous release" do
+        release.copy_previous_approvals
+
+        expect(release.approval_items.count).to eq(1)
+        expect(release.approval_items.first.attributes.slice(*included_fields))
+          .to eq(approval_item.attributes.slice(*included_fields))
+      end
+    end
+
+    context "when no previous release is found" do
+      let(:release) { build(:release) }
+
+      before do
+        allow(train).to receive(:previously_finished_release).and_return(nil)
+        allow(release).to receive(:copy_approvals?).and_return(true)
+      end
+
+      it "handles copying approvals when no previous approvals exist" do
+        release.copy_previous_approvals
+
+        expect(release.approval_items).to be_empty
+      end
+    end
+  end
+
+  describe "#copy_approvals_enabled?" do
+    context "when copy_approvals? is true and release is not nil" do
+      it "returns true if copy_approvals? is true and release is not nil" do
+        release.train.update(copy_approvals: true)
+        expect(release.copy_approvals_enabled?).to be(true)
+      end
+    end
+
+    context "when the train does not have copy_approvals enabled" do
+      it "returns false" do
+        release.train.update(copy_approvals: false)
+        expect(release.copy_approvals_enabled?).to be(false)
+      end
+    end
+
+    context "when release is hotfix" do
+      it "returns false" do
+        release.update(release_type: "hotfix")
+        expect(release&.copy_approvals_enabled?).to be(false)
+      end
+    end
+  end
+
+  describe "#copy_approvals_allowed?" do
+    context "when previously finished release is not available" do
+      before do
+        allow(train).to receive(:previously_finished_release).and_return(nil)
+      end
+
+      it "returns true regardless of other conditions" do
+        expect(release.copy_approvals_allowed?).to be(false)
+      end
+    end
+
+    context "when previously finished release is available" do
+      before do
+        allow(train).to receive(:previously_finished_release).and_return(instance_double(described_class))
+      end
+
+      it "returns false when it is a hotfix" do
+        allow(release).to receive(:hotfix?).and_return(true)
+        expect(release.copy_approvals_allowed?).to be(false)
+      end
+
+      it "returns true when it is not a hotfix" do
+        allow(release).to receive(:hotfix?).and_return(false)
+        expect(release.copy_approvals_allowed?).to be(true)
+      end
+    end
+  end
+
+  describe "#fetch_previous_finished_release" do
+    let(:release) { create(:release, train: train, release_type: :release, created_at: Time.current) }
+
+    context "when the previous release of type release exists" do
+      let!(:release_a) { create(:release, train: train, release_type: :release, status: :finished, created_at: 3.days.ago) }
+      let(:release_b) { create(:release, train: train, release_type: :hotfix, status: :finished, created_at: 2.days.ago) }
+
+      it "fetches the most recent finished release of type release" do
+        result = train.previously_finished_release
+        expect(result).to eq(release_a)
+      end
+    end
+
+    context "when the previous release of type hotfix exists" do
+      let(:release_a) { create(:release, train: train, release_type: :hotfix, status: :finished, created_at: 3.days.ago) }
+      let!(:release_b) { create(:release, train: train, release_type: :release, status: :finished, created_at: 2.days.ago) }
+
+      it "fetches the most recent finished release of type release" do
+        result = train.previously_finished_release
+        expect(result).to eq(release_b)
+      end
+    end
+
+    context "when the previous releases of type release exist but one is unfinished" do
+      let!(:release_a) { create(:release, train: train, release_type: :release, status: :finished, created_at: 3.days.ago) }
+      let(:release_b) { create(:release, train: train, release_type: :release, status: :stopped, created_at: 2.days.ago) }
+
+      it "fetches the most recent finished release of type release" do
+        result = train.previously_finished_release
+        expect(result).to eq(release_a)
+      end
+    end
+  end
+
   it "has a valid factory" do
     expect(create(:release)).to be_valid
   end
@@ -40,6 +213,24 @@ describe Release do
         expect(run.original_release_version).to be_nil
         run.save!
         expect(run.original_release_version).to eq(expect[:major])
+      end
+
+      it "fixed version: sets the original_release_version to train's current version" do
+        train = create(:train, version_seeded_with: ver, freeze_version: true)
+        run = build(:release, original_release_version: nil, train:)
+
+        expect(run.original_release_version).to be_nil
+        run.save!
+        expect(run.original_release_version).to eq(ver)
+      end
+
+      it "sets the original_release_version to the custom_version" do
+        train = create(:train, version_seeded_with: ver)
+        run = build(:release, original_release_version: nil, train:, custom_version: "2.0.0")
+
+        expect(run.original_release_version).to be_nil
+        run.save!
+        expect(run.original_release_version).to eq("2.0.0")
       end
     end
 
@@ -229,16 +420,16 @@ describe Release do
   describe "#create_vcs_release!" do
     let(:train) { create(:train, :active) }
     let(:release_platform) { create(:release_platform, train:) }
-    let(:step) { create(:step, release_platform:) }
     let(:release) { create(:release, train:) }
-    let(:release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform:) }
     let(:tag_exists_error) { Installations::Error.new("Should not create a tag", reason: :tag_reference_already_exists) }
     let(:release_exists_error) { Installations::Error.new("Should not create a release", reason: :tagged_release_already_exists) }
 
+    before do
+      create(:release_platform_run, :on_track, release:, release_platform:)
+    end
+
     it "saves a new tag with the base name" do
       allow_any_instance_of(GithubIntegration).to receive(:create_release!)
-      commit = create(:commit, :without_trigger, release:)
-      create(:step_run, release_platform_run:, commit:)
 
       release.create_vcs_release!
       expect(release.tag_name).to eq("v1.2.3")
@@ -246,8 +437,7 @@ describe Release do
 
     it "saves base name + last commit sha" do
       raise_times(GithubIntegration, tag_exists_error, :create_release!, 1)
-      commit = create(:commit, :without_trigger, release:)
-      create(:step_run, release_platform_run:, commit:)
+      commit = create(:commit, release:)
 
       release.create_vcs_release!
       expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}")
@@ -258,8 +448,7 @@ describe Release do
 
       freeze_time do
         now = Time.now.to_i
-        commit = create(:commit, :without_trigger, release:)
-        create(:step_run, release_platform_run:, commit:)
+        commit = create(:commit, release:)
 
         release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}-#{now}")
@@ -272,8 +461,6 @@ describe Release do
 
       it "saves a new tag with the base name + suffix" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
-        commit = create(:commit, :without_trigger, release:)
-        create(:step_run, release_platform_run:, commit:)
 
         release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{suffix}")
@@ -281,8 +468,7 @@ describe Release do
 
       it "saves base name + suffix + last commit sha" do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
-        commit = create(:commit, :without_trigger, release:)
-        create(:step_run, release_platform_run:, commit:)
+        commit = create(:commit, release:)
 
         release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}")
@@ -293,11 +479,75 @@ describe Release do
 
         freeze_time do
           now = Time.now.to_i
-          commit = create(:commit, :without_trigger, release:)
-          create(:step_run, release_platform_run:, commit:)
+          commit = create(:commit, release:)
 
           release.create_vcs_release!
           expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
+        end
+      end
+    end
+
+    context "when tag prefix" do
+      let(:prefix) { "foo" }
+      let(:train) { create(:train, :active, tag_prefix: prefix) }
+
+      it "saves a new tag with the prefix + base name" do
+        allow_any_instance_of(GithubIntegration).to receive(:create_release!)
+
+        release.create_vcs_release!
+        expect(release.tag_name).to eq("#{prefix}-v1.2.3")
+      end
+
+      it "saves prefix + base name + last commit sha" do
+        raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
+        commit = create(:commit, release:)
+
+        release.create_vcs_release!
+        expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{commit.short_sha}")
+      end
+
+      it "saves base prefix + name + last commit sha + time" do
+        raise_times(GithubIntegration, release_exists_error, :create_release!, 2)
+
+        freeze_time do
+          now = Time.now.to_i
+          commit = create(:commit, release:)
+
+          release.create_vcs_release!
+          expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{commit.short_sha}-#{now}")
+        end
+      end
+    end
+
+    context "when tag prefix and tag suffix" do
+      let(:prefix) { "foo" }
+      let(:suffix) { "nightly" }
+      let(:train) { create(:train, :active, tag_prefix: prefix, tag_suffix: suffix) }
+
+      it "saves a new tag with the prefix + base name + suffix" do
+        allow_any_instance_of(GithubIntegration).to receive(:create_release!)
+
+        release.create_vcs_release!
+        expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}")
+      end
+
+      it "saves prefix + base name + suffix + last commit sha" do
+        raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
+        commit = create(:commit, release:)
+
+        release.create_vcs_release!
+        expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}-#{commit.short_sha}")
+      end
+
+      it "saves base prefix + name + suffix + last commit sha + time" do
+        raise_times(GithubIntegration, release_exists_error, :create_release!, 2)
+
+        freeze_time do
+          now = Time.now.to_i
+          commit = create(:commit, release:)
+
+          release.create_vcs_release!
+          expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
         end
       end
     end
@@ -307,8 +557,6 @@ describe Release do
 
       it "does not create tag" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
-        commit = create(:commit, :without_trigger, release:)
-        create(:step_run, release_platform_run:, commit:)
 
         release.create_vcs_release!
         expect_any_instance_of(GithubIntegration).not_to receive(:create_release!)
@@ -399,7 +647,7 @@ describe Release do
 
     it "fetches the commits between ongoing release and release branch for upcoming release" do
       ongoing_release = create(:release, :on_track, train:, scheduled_at: 1.day.ago)
-      commits = create_list(:commit, 5, :without_trigger, release: ongoing_release, timestamp: Time.current - rand(1000))
+      commits = create_list(:commit, 5, release: ongoing_release, timestamp: Time.current - rand(1000))
       ongoing_head = commits.first
 
       release.fetch_commit_log
@@ -437,10 +685,10 @@ describe Release do
   end
 
   describe "#stability_commits" do
-    let(:factory_tree) { create_deployment_run_tree(:android, release_traits: [:on_track]) }
-    let(:release) { factory_tree[:release] }
+    let(:release) { create(:release, :on_track) }
 
     it "returns the subsequent commits made on the release branch after release starts" do
+      _initial_commit = create(:commit, release:)
       stability_commits = create_list(:commit, 4, release:)
       expect(release.stability_commits).to exist
       expect(release.stability_commits).to match_array(stability_commits)
@@ -448,6 +696,7 @@ describe Release do
     end
 
     it "returns nothing if no fixes are made" do
+      _initial_commit = create(:commit, release:)
       expect(release.all_commits).to exist
       expect(release.stability_commits).to be_none
     end
@@ -508,29 +757,28 @@ describe Release do
       ), 0.325]
     ].each do |components, final_score|
       it "returns the index score for a finished release" do
-        create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release]) => { step:, deployment:, train: }
+        train = create(:train, :with_no_platforms)
+        release_platform = create(:release_platform, train:)
 
         travel_to(components[:duration][:input].days.ago)
         release = create(:release, :on_track, :with_no_platform_runs, train:)
-        release_platform_run = create(:release_platform_run, release:)
+        release_platform_run = create(:release_platform_run, release:, release_platform:)
         create_list(:commit, components[:stability_changes][:input] + 1, release:)
         travel_back
 
-        travel_to((components[:rollout_duration][:input] - 2).days.ago)
-        submitted_step_run = create(:step_run, :deployment_started, release_platform_run:, step:)
-        create(:deployment_run, :rollout_started, step_run: submitted_step_run, deployment:)
-        travel_back
-
         travel_to(components[:rollout_duration][:input].days.ago)
-        step_runs = create_list(:step_run, components[:rollout_fixes][:input], :deployment_started, release_platform_run:, step:)
-        step_runs.each do |step_run|
-          create(:deployment_run, :rollout_started, step_run:, deployment:)
+        production_releases = create_list(:production_release, components[:rollout_fixes][:input], :stale, release_platform_run:, build: create(:build, release_platform_run:))
+        production_releases.each do |production_release|
+          store_submission = create(:play_store_submission, :prepared, parent_release: production_release)
+          create(:store_rollout, :started, release_platform_run:, store_submission:)
         end
-        step_run = create(:step_run, :deployment_started, release_platform_run:)
-        deployment_run = create(:deployment_run, :rollout_started, step_run:, deployment:)
+        production_release = create(:production_release, :active, release_platform_run:, build: create(:build, release_platform_run:))
+        store_submission = create(:play_store_submission, :prepared, parent_release: production_release)
+        store_rollout = create(:store_rollout, :started, release_platform_run:, store_submission:)
         travel_back
 
-        deployment_run.complete!
+        store_rollout.update!(status: :completed)
+        production_release.update!(status: :finished)
         release.update! completed_at: Time.current, status: :finished
         create_list(:release, components[:hotfixes][:input], :hotfix, hotfixed_from: release)
 
@@ -548,10 +796,10 @@ describe Release do
   end
 
   describe "#failure_anywhere?" do
-    it "returns true if post release has failed" do
+    it "returns false if post release has failed" do
       release = create(:release, :post_release_failed)
 
-      expect(release.failure_anywhere?).to be(true)
+      expect(release.failure_anywhere?).to be(false)
     end
 
     it "returns false if no failure" do
@@ -560,48 +808,63 @@ describe Release do
       expect(release.failure_anywhere?).to be(false)
     end
 
-    context "when failure in a release platform run" do
-      let(:factory_tree) { create_cross_platform_deployment_tree(nil) }
-      let(:release) { create(:release, :on_track, :with_no_platform_runs, train: factory_tree[:train]) }
-      let(:android_release_platform) { factory_tree.dig(:android, :release_platform) }
-      let(:ios_release_platform) { factory_tree.dig(:ios, :release_platform) }
-      let(:android_step) { factory_tree.dig(:android, :step) }
-      let(:ios_step) { factory_tree.dig(:ios, :step) }
-      let(:android_release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform: android_release_platform) }
-      let(:ios_release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform: ios_release_platform) }
+    context "when failure in a v2 release platform run" do
+      let(:release) { create(:release, :on_track, :with_no_platform_runs) }
+      let(:release_platform_run) { create(:release_platform_run, :on_track, release:) }
 
-      it "returns false if an old step run has failed" do
-        _old_step_run = create(:step_run, :deployment_failed, release_platform_run: android_release_platform_run, step: android_step)
-        _new_step_run = create(:step_run, :deployment_started, release_platform_run: android_release_platform_run, step: android_step)
+      it "returns false if the latest production release has failed" do
+        production_release = create(:production_release, :inflight, release_platform_run:)
+        _submission = create(:play_store_submission, :failed, release_platform_run:, parent_release: production_release)
 
         expect(release.failure_anywhere?).to be(false)
       end
 
-      it "returns true if the latest step run has failed" do
-        _old_step_run = create(:step_run, :deployment_failed, release_platform_run: android_release_platform_run, step: android_step)
-        _new_step_run = create(:step_run, :ci_workflow_failed, release_platform_run: android_release_platform_run, step: android_step)
+      it "returns false if a latest production release exists" do
+        _production_release = create(:production_release, :inflight, release_platform_run:)
+
+        expect(release.failure_anywhere?).to be(false)
+      end
+
+      it "returns true if the latest beta release has failed" do
+        _beta_release = create(:beta_release, :failed, release_platform_run:)
 
         expect(release.failure_anywhere?).to be(true)
       end
 
-      it "returns false if a penultimate deployment run for the last step has failed" do
-        step_run = create(:step_run, :deployment_started, release_platform_run: android_release_platform_run, step: android_step)
-        _old_deployment_run = create(:deployment_run, :failed, step_run: step_run)
-        _new_deployment_run = create(:deployment_run, :rollout_started, step_run: step_run)
+      it "returns true if the latest internal release has failed" do
+        _internal_release = create(:internal_release, :failed, release_platform_run:)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+
+      it "returns false if the latest beta release has not failed, but latest internal release has failed" do
+        _internal_release = create(:internal_release, :failed, release_platform_run:)
+        beta_release = create(:beta_release, :finished, release_platform_run:)
+        _workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release: beta_release)
+        _submission = create(:play_store_submission, :prepared, release_platform_run:, parent_release: beta_release)
 
         expect(release.failure_anywhere?).to be(false)
       end
 
-      it "returns true if the last deployment run for the last step has failed" do
-        step_run = create(:step_run, :deployment_started, release_platform_run: android_release_platform_run, step: android_step)
-        _old_deployment_run = create(:deployment_run, :released, step_run: step_run)
-        _new_deployment_run = create(:deployment_run, :failed, step_run: step_run)
+      it "returns true if the latest internal release has failed after a beta release is a success" do
+        _beta_release = create(:beta_release, :finished, release_platform_run:)
+        _internal_release = create(:internal_release, :failed, release_platform_run:)
 
         expect(release.failure_anywhere?).to be(true)
       end
 
       it "returns true if either of the release platform run have failures" do
-        _ios_step_run = create(:step_run, :ci_workflow_failed, release_platform_run: ios_release_platform_run, step: ios_step)
+        app = create(:app, :cross_platform)
+        train = create(:train, :with_no_platforms, app:)
+        ios_release_platform = create(:release_platform, train:, platform: "ios")
+        android_release_platform = create(:release_platform, train:, platform: "android")
+        release = create(:release, :on_track, :with_no_platform_runs, train:)
+        ios_release_platform_run = create(:release_platform_run, :on_track, release:, release_platform: ios_release_platform)
+        android_release_platform_run = create(:release_platform_run, :on_track, release:, release_platform: android_release_platform)
+        _beta_release = create(:beta_release, :failed, release_platform_run: android_release_platform_run)
+        ios_beta_release = create(:beta_release, :finished, release_platform_run: ios_release_platform_run)
+        _workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release: ios_beta_release)
+        _submission = create(:app_store_submission, :prepared, release_platform_run:, parent_release: ios_beta_release)
 
         expect(release.failure_anywhere?).to be(true)
       end
@@ -640,6 +903,9 @@ describe Release do
   end
 
   describe "#blocked_for_production_release?" do
+    let(:organization) { create(:organization, :with_owner_membership) }
+    let(:app) { create(:app, :android, organization:) }
+
     it "is true when release is upcoming" do
       train = create(:train)
       _ongoing = create(:release, :on_track, train:)
@@ -659,8 +925,8 @@ describe Release do
 
     context "when approvals are enabled" do
       it "is true when approvals are blocking" do
-        train = create(:train, approvals_enabled: true)
-        pilot = create(:user, :with_email_authentication, :as_developer)
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
         release = create(:release, release_pilot: pilot, train:)
         _approval_items = create_list(:approval_item, 5, release:, author: pilot)
         release.reload
@@ -669,8 +935,8 @@ describe Release do
       end
 
       it "is false when approvals are non-blocking" do
-        train = create(:train, approvals_enabled: true)
-        pilot = create(:user, :with_email_authentication, :as_developer)
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
         release = create(:release, release_pilot: pilot, train:)
         _approval_items = create_list(:approval_item, 5, :approved, release:, author: pilot)
         release.reload
@@ -679,8 +945,8 @@ describe Release do
       end
 
       it "is true when approvals are not overridden" do
-        train = create(:train, approvals_enabled: true)
-        pilot = create(:user, :with_email_authentication, :as_developer)
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
         release = create(:release, release_pilot: pilot, train:, approval_overridden_by: nil)
         _approval_items = create_list(:approval_item, 5, release:, author: pilot)
 
@@ -688,8 +954,8 @@ describe Release do
       end
 
       it "is false when approvals are overridden (regardless of actual approvals)" do
-        train = create(:train, approvals_enabled: true)
-        pilot = create(:user, :with_email_authentication, :as_developer)
+        train = create(:train, approvals_enabled: true, app:)
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
         release = create(:release, release_pilot: pilot, train:, approval_overridden_by: pilot)
 
         create_list(:approval_item, 5, release:, author: pilot)
@@ -697,6 +963,35 @@ describe Release do
 
         expect(release.blocked_for_production_release?).to be(false)
       end
+    end
+  end
+
+  describe "#last_applicable_commit" do
+    let(:release) { create(:release, :on_track) }
+
+    it "returns the last commit" do
+      _older_commits = create_list(:commit, 3, release:)
+      commit = create(:commit, release:)
+
+      expect(release.last_applicable_commit).to eq(commit)
+    end
+
+    it "returns the last commit not in the active build queue" do
+      build_queue = create(:build_queue, release:, is_active: true)
+      _older_commits = create_list(:commit, 3, release:)
+      commit_not_in_queue = create(:commit, release:)
+      _commit_in_queue = create(:commit, release:, build_queue:)
+
+      expect(release.last_applicable_commit).to eq(commit_not_in_queue)
+    end
+
+    it "returns the last commit when there is no active build queue" do
+      build_queue = create(:build_queue, release:, is_active: false)
+      _older_commits = create_list(:commit, 3, release:)
+      _commit_not_in_queue = create(:commit, release:)
+      commit_in_queue = create(:commit, release:, build_queue:)
+
+      expect(release.last_applicable_commit).to eq(commit_in_queue)
     end
   end
 end

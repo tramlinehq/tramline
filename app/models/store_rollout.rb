@@ -17,6 +17,7 @@
 class StoreRollout < ApplicationRecord
   has_paper_trail
   using RefinedString
+  using RefinedFloat
   include AASM
   include Loggable
   include Displayable
@@ -43,6 +44,7 @@ class StoreRollout < ApplicationRecord
   delegate :version_name, :build_number, to: :build
   delegate :train, :platform, to: :release_platform_run
   delegate :notify!, to: :train
+  delegate :stale?, :actionable?, to: :parent_release
 
   scope :production, -> { joins(store_submission: :production_release) }
 
@@ -56,7 +58,15 @@ class StoreRollout < ApplicationRecord
 
   def reached_last_stage? = next_rollout_percentage.nil?
 
-  delegate :stale?, :actionable?, to: :parent_release
+  def release_info
+    {
+      build_version: version_name,
+      build_number:,
+      updated_at:,
+      platform:,
+      rollout_percentage: last_rollout_percentage_fmt
+    }
+  end
 
   def stage
     (current_stage || 0).succ
@@ -73,6 +83,12 @@ class StoreRollout < ApplicationRecord
     return 0 if created? || current_stage.nil?
     return config.last if reached_last_stage?
     config[current_stage]
+  end
+
+  def last_rollout_percentage_fmt
+    perc = last_rollout_percentage
+    fmt = (perc % 1 == 0) ? "%.0f" : "%.02f"
+    fmt % perc
   end
 
   def latest_events(n = nil)
@@ -92,6 +108,11 @@ class StoreRollout < ApplicationRecord
     return 0.0 unless last_event
     return 100.0 if last_event.reason == "fully_released"
     last_event.metadata["rollout_percentage"].safe_float
+  end
+
+  def hundred_percent?
+    return false if current_stage.nil?
+    last_rollout_percentage.to_f.equal_to?(100.0)
   end
 
   protected
@@ -119,20 +140,12 @@ class StoreRollout < ApplicationRecord
   end
 
   def stamp_data
-    data = {
+    {
       current_stage: stage,
       version: version_name,
-      build_number: build_number
+      build_number: build_number,
+      rollout_percentage: last_rollout_percentage_fmt
     }
-
-    data[:rollout_percentage] =
-      if is_staged_rollout? && current_stage.present?
-        "%.2f" % config[current_stage]
-      else
-        "100"
-      end
-
-    data
   end
 
   def on_start!

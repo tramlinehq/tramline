@@ -104,10 +104,6 @@ class GitlabIntegration < ApplicationRecord
   }
 
   def install_path
-    unless integration.version_control? || integration.ci_cd?
-      raise Integration::IntegrationNotImplemented, "We don't support that yet!"
-    end
-
     BASE_INSTALLATION_URL
       .expand(params: {
         client_id: creds.integrations.gitlab.client_id,
@@ -133,9 +129,10 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def further_setup?
-    return true if integration.version_control?
     false
   end
+
+  def enable_auto_merge? = false
 
   def find_or_create_webhook!(id:, train_id:)
     GitHub::Result.new do
@@ -326,7 +323,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def app_config
-    integration.app.config
+    integration.integrable.config
   end
 
   def redirect_uri

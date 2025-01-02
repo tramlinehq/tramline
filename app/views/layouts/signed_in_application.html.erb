@@ -1,4 +1,40 @@
 <!DOCTYPE html>
 <html class="light">
-    <title><%= current_organization ? "#{current_organization.name} | Tramline" : "Tramline" %></title>
+<head>
+  <%= render partial: "shared/favicon" %>
+  <title><%= page_title(@page_name, current_organization, @app, @release) %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.bubble.css" rel="stylesheet"/>
+
+  <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+  <meta name="environment" content="<%= Rails.env %>"/>
+  <meta name="sentryDSNUrl" content="<%= ENV["FRONTEND_SENTRY_DSN"] %>"/>
+  <!-- current deploy: <%= Site.git_ref %> at <%= Site.git_ref_at %> -->
+</head>
+
+<body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white subpixel-antialiased dark:antialiased">
+<div class="flex h-screen overflow-hidden">
+  <div class="relative flex flex-col flex-1 overflow-y-scroll overflow-x-hidden h-full">
+    <%= render V2::HeaderComponent.new %>
+
+    <main class="mb-20 2xl:mb-10">
+      <%= yield :sticky_top_message %>
+      <div class="mx-auto">
+        <div id="flash_stream"><%= render V2::FlashComponent.new(flash) %></div>
+        <div id="error_stream"><%= yield :error_resource %></div>
+        <%= yield %>
+      </div>
+    </main>
+
+    <%= render partial: "shared/footer" %>
+  </div>
+</div>
+</body>
 </html>

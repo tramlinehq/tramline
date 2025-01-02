@@ -31,7 +31,7 @@ class ProductionRelease < ApplicationRecord
 
   delegate :app, :train, :release, :platform, :release_platform, to: :release_platform_run
   delegate :monitoring_provider, to: :app
-  delegate :store_rollout, to: :store_submission
+  delegate :store_rollout, :prepared_at, to: :store_submission
   delegate :notify!, to: :train
   delegate :commit, :version_name, :build_number, to: :build
   delegate :release_health_rules, to: :release_platform
@@ -47,6 +47,11 @@ class ProductionRelease < ApplicationRecord
   INITIAL_STATE = STATES[:inflight]
   ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
+  JOB_FREQUENCY = {
+    CrashlyticsIntegration => 30.minutes,
+    BugsnagIntegration => 5.minutes
+  }
+
   enum :status, STATES
 
   def tester_notes? = false
@@ -59,6 +64,10 @@ class ProductionRelease < ApplicationRecord
     return true if active?
     return true if store_submission.post_review?
     false
+  end
+
+  def failure?
+    store_submission.failed?
   end
 
   def rollout_active?
@@ -101,13 +110,18 @@ class ProductionRelease < ApplicationRecord
 
   def rollout_started!
     return unless inflight?
+
     previous&.mark_as_stale!
     update!(status: STATES[:active])
     notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
 
+    if train.tag_all_store_releases?
+      ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id, commit.id)
+    end
+
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
-    V2::FetchHealthMetricsJob.perform_later(id)
+    V2::FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[monitoring_provider.class])
   end
 
   def beyond_monitoring_period?
@@ -147,6 +161,11 @@ class ProductionRelease < ApplicationRecord
   def show_health?
     return true if latest_health_data&.fresh?
     false
+  end
+
+  def check_release_health
+    return unless latest_health_data&.fresh?
+    latest_health_data.check_release_health
   end
 
   def conf = Config::ReleaseStep.from_json(config)

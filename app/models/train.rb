@@ -4,15 +4,17 @@
 #
 #  id                                 :uuid             not null, primary key
 #  approvals_enabled                  :boolean          default(FALSE), not null
+#  auto_apply_patch_changes           :boolean          default(TRUE)
 #  backmerge_strategy                 :string           default("on_finalize"), not null
 #  branching_strategy                 :string           not null
 #  build_queue_enabled                :boolean          default(FALSE)
 #  build_queue_size                   :integer
 #  build_queue_wait_time              :interval
 #  compact_build_notes                :boolean          default(FALSE)
+#  copy_approvals                     :boolean          default(FALSE)
 #  description                        :string
+#  freeze_version                     :boolean          default(FALSE)
 #  kickoff_at                         :datetime
-#  manual_release                     :boolean          default(FALSE)
 #  name                               :string           not null
 #  notification_channel               :jsonb
 #  patch_version_bump_only            :boolean          default(FALSE), not null
@@ -24,6 +26,7 @@
 #  stop_automatic_releases_on_failure :boolean          default(FALSE), not null
 #  tag_all_store_releases             :boolean          default(FALSE)
 #  tag_platform_releases              :boolean          default(FALSE)
+#  tag_prefix                         :string
 #  tag_releases                       :boolean          default(TRUE)
 #  tag_suffix                         :string
 #  version_current                    :string
@@ -41,9 +44,10 @@ class Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
   include Rails.application.routes.url_helpers
-  include Notifiable
   include Versionable
   include Loggable
+
+  self.ignored_columns += ["manual_release"]
 
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
@@ -54,12 +58,9 @@ class Train < ApplicationRecord
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
   has_many :active_runs, -> { pending_release.includes(:all_commits) }, class_name: "Release", inverse_of: :train, dependent: :destroy
-  has_many :deployment_runs, through: :releases
-  has_many :external_releases, through: :deployment_runs
   has_many :release_platforms, -> { sequential }, dependent: :destroy, inverse_of: :train
+  has_many :release_platform_runs, -> { sequential }, through: :releases
   has_many :integrations, through: :app
-  has_many :steps, through: :release_platforms
-  has_many :deployments, through: :steps
   has_many :scheduled_releases, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
   has_one :release_index, dependent: :destroy
@@ -93,10 +94,10 @@ class Train < ApplicationRecord
   validate :build_queue_config
   validate :backmerge_config
   validate :tag_release_config
-  validate :valid_train_configuration, on: :activate_context
   validate :working_branch_presence, on: :create
   validate :ci_cd_workflows_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
+  validate :version_config_constraints
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -112,8 +113,13 @@ class Train < ApplicationRecord
   after_create :create_default_notification_settings
   after_create :create_release_index
   after_create -> { Flipper.enable_actor(:product_v2, self) }
+  before_update :disable_copy_approvals, unless: :approvals_enabled?
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
+
+  def disable_copy_approvals
+    self.copy_approvals = false
+  end
 
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
@@ -143,12 +149,17 @@ class Train < ApplicationRecord
     Flipper.enabled?(:one_percent_beta_release, self)
   end
 
+  # TODO: remove this after full removal of v2, it is used only for one-off rake tasks
   def product_v2?
     Flipper.enabled?(:product_v2, self)
   end
 
   def deploy_action_enabled?
     Flipper.enabled?(:deploy_action_enabled, self)
+  end
+
+  def temporarily_allow_workflow_errors?
+    Flipper.enabled?(:temporarily_allow_workflow_errors, self)
   end
 
   def workflows
@@ -177,6 +188,10 @@ class Train < ApplicationRecord
 
   def hotfix_from
     releases.finished.reorder(completed_at: :desc).first
+  end
+
+  def previously_finished_release
+    releases.release.finished.reorder(completed_at: :desc).first
   end
 
   def automatic?
@@ -316,37 +331,19 @@ class Train < ApplicationRecord
     scheduled_releases.pending&.delete_all
   end
 
-  def startable?
-    return false unless app.ready?
-    return true if product_v2?
-    release_platforms.all?(&:startable?)
-  end
-
   def activatable?
-    automatic? && startable? && !active?
+    automatic? && !active?
   end
 
   def deactivatable?
     automatic? && active? && active_runs.none?
   end
 
-  def manually_startable?
-    startable? && !inactive?
-  end
-
   def upcoming_release_startable?
-    if product_v2?
-      manually_startable? &&
-        ongoing_release.present? &&
-        ongoing_release.production_release_active? &&
-        upcoming_release.blank?
-    else
-      manually_startable? &&
-        release_platforms.any?(&:has_production_deployment?) &&
-        ongoing_release.present? &&
-        (release_platforms.all?(&:has_review_steps?) || ongoing_release.production_release_happened?) &&
-        upcoming_release.blank?
-    end
+    !inactive? &&
+      ongoing_release.present? &&
+      ongoing_release.production_release_started? &&
+      upcoming_release.blank?
   end
 
   def continuous_backmerge?
@@ -355,10 +352,6 @@ class Train < ApplicationRecord
 
   def branching_strategy_name
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
-  end
-
-  def build_channel_integrations
-    integrations.build_channel
   end
 
   def active_release_for?(branch_name)
@@ -382,7 +375,7 @@ class Train < ApplicationRecord
   end
 
   def backmerge_disabled?
-    vcs_provider&.integration&.bitbucket_integration? || !almost_trunk?
+    !almost_trunk?
   end
 
   def create_vcs_release!(branch_name, tag_name, release_diff = nil)
@@ -422,8 +415,7 @@ class Train < ApplicationRecord
         train_current_version: version_current,
         train_next_version: next_version,
         train_url: train_link,
-        working_branch:,
-        is_v2: product_v2?
+        working_branch:
       }
     )
   end
@@ -437,36 +429,26 @@ class Train < ApplicationRecord
   end
 
   def hotfixable?
-    return false unless startable?
+    return false unless app.ready?
     return false unless has_production_deployment?
     return false if hotfix_release.present?
     return false if hotfix_from.blank?
     return true if ongoing_release.blank?
 
-    if product_v2?
-      !ongoing_release.production_release_active?
-    else
-      !ongoing_release.production_release_happened?
-    end
+    !ongoing_release.production_release_active?
   end
 
   def devops_report
-    return Queries::DevopsReport.new(self) if product_v2?
-    Charts::DevopsReport.new(self)
+    Queries::DevopsReport.new(self)
   end
 
   def has_production_deployment?
-    if product_v2?
-      release_platforms.any? { |rp| rp.platform_config.production_release? }
-    else
-      release_platforms.any?(&:has_production_deployment?)
-    end
+    release_platforms.any? { |rp| rp.platform_config.production_release? }
   end
 
   def has_restricted_public_channels?
     return false if app.ios?
-
-    deployments.any? { |d| GooglePlayStoreIntegration::PUBLIC_CHANNELS.include?(d.deployment_channel) }
+    release_platforms.any(&:has_restricted_public_channels?)
   end
 
   def stop_failed_ongoing_release!
@@ -555,12 +537,6 @@ class Train < ApplicationRecord
     errors.add(:trains, "cannot delete a train if there are releases made from it!") if releases.present?
   end
 
-  def valid_train_configuration
-    unless release_platforms.all?(&:valid_steps?)
-      errors.add(:train, "there should be one release step for all platforms")
-    end
-  end
-
   def valid_schedule
     if kickoff_at.present? || repeat_duration.present?
       errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless kickoff_at.present? && repeat_duration.present?
@@ -571,7 +547,6 @@ class Train < ApplicationRecord
 
   def backmerge_config
     errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && continuous_backmerge?
-    errors.add(:backmerge_strategy, :disabled_for_bitbucket) if vcs_provider&.integration&.bitbucket_integration? && continuous_backmerge?
   end
 
   def tag_release_config
@@ -594,6 +569,12 @@ class Train < ApplicationRecord
     else
       errors.add(:build_queue_size, :config_not_allowed) if build_queue_size.present?
       errors.add(:build_queue_wait_time, :config_not_allowed) if build_queue_wait_time.present?
+    end
+  end
+
+  def version_config_constraints
+    if freeze_version && patch_version_bump_only
+      errors.add(:base, "both freeze_version and patch_version_bump_only cannot be true at the same time")
     end
   end
 end

@@ -40,7 +40,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
   end
 
   def release_options
-    return [] unless train.manually_startable?
+    return [] if train.inactive?
     upcoming_release_startable = train.upcoming_release_startable?
     return [] if train.ongoing_release && !upcoming_release_startable
 
@@ -48,33 +48,48 @@ class V2::ReleaseListComponent < V2::BaseComponent
     start_major_text = start_release_text(major: true)
     start_minor_text = start_upcoming_release_text if upcoming_release_startable
     start_major_text = start_upcoming_release_text(major: true) if upcoming_release_startable
+    reveal_hide_action = "reveal#hide"
 
-    [
-      {
-        title: "Minor",
-        subtitle: start_minor_text,
-        icon: "v2/play_fill.svg",
-        opt_name: "has_major_bump",
-        opt_value: "false",
-        options: {checked: true, data: {action: "reveal#hide"}}
-      },
-      {
-        title: "Major",
-        subtitle: start_major_text,
-        icon: "v2/forward_step_fill.svg",
-        opt_name: "has_major_bump",
-        opt_value: "true",
-        options: {checked: false, data: {action: "reveal#hide"}}
-      },
-      {
-        title: "Custom",
-        subtitle: "Specify a release version",
-        icon: "v2/user_cog_fill.svg",
-        opt_name: "has_major_bump",
-        opt_value: nil,
-        options: {checked: false, data: {action: "reveal#show"}}
-      }
-    ]
+    options = if train.freeze_version
+      [
+        {
+          title: "Fixed version",
+          subtitle: start_release_text,
+          icon: "v2/play_fill.svg",
+          opt_name: "has_major_bump",
+          opt_value: "false",
+          options: {checked: true, data: {action: reveal_hide_action}}
+        }
+      ]
+    else
+      [
+        {
+          title: "Minor",
+          subtitle: start_minor_text,
+          icon: "v2/play_fill.svg",
+          opt_name: "has_major_bump",
+          opt_value: "false",
+          options: {checked: true, data: {action: reveal_hide_action}}
+        },
+        {
+          title: "Major",
+          subtitle: start_major_text,
+          icon: "v2/forward_step_fill.svg",
+          opt_name: "has_major_bump",
+          opt_value: "true",
+          options: {checked: false, data: {action: reveal_hide_action}}
+        }
+      ]
+    end
+
+    options << {
+      title: "Custom",
+      subtitle: "Specify a release version",
+      icon: "v2/user_cog_fill.svg",
+      opt_name: "has_major_bump",
+      opt_value: nil,
+      options: {checked: false, data: {action: "reveal#show"}}
+    }
   end
 
   def branch_help
@@ -102,13 +117,8 @@ class V2::ReleaseListComponent < V2::BaseComponent
       end
     else
       platform = train.release_platforms.first.platform
-      text =
-        if train.product_v2?
-          "You can now start creating new releases. We have added some default submissions settings for you. This involves picking the right workflows and configuring the right channels for build distribution. Please review these before starting a release."
-        else
-          "You can now start creating new releases. Please review the release steps and submissions settings before starting a release."
-        end
-      button_link = train.product_v2? ? edit_app_train_platform_submission_config_path(app, train, platform) : steps_app_train_path(app, train)
+      text = "You can now start creating new releases. We have added some default submissions settings for you. This involves picking the right workflows and configuring the right channels for build distribution. Please review these before starting a release."
+      button_link = edit_app_train_platform_submission_config_path(app, train, platform)
       {
         title: "Create your very first release",
         text:,
@@ -132,8 +142,16 @@ class V2::ReleaseListComponent < V2::BaseComponent
   private
 
   def start_release_text(major: false)
-    text = train.automatic? ? "Manually release version " : "Release version "
-    text + train.next_version(major_only: major)
+    text = if train.freeze_version?
+      "Fixed version "
+    elsif train.automatic?
+      "Manually release version "
+    else
+      "Release version "
+    end
+
+    version = train.freeze_version? ? train.version_current : train.next_version(major_only: major)
+    text + version
   end
 
   def start_upcoming_release_text(major: false)

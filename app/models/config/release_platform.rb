@@ -68,6 +68,12 @@ class Config::ReleasePlatform < ApplicationRecord
     }
   end
 
+  def has_restricted_public_channels?
+    return false if ios?
+    return true if production_release.present?
+    internal_release&.submissions&.any?(&:restricted_public_channel?) || beta_release&.submissions&.any?(&:restricted_public_channel?)
+  end
+
   def pick_internal_workflow
     internal_workflow || release_candidate_workflow
   end
@@ -175,9 +181,8 @@ class Config::ReleasePlatform < ApplicationRecord
   # Ensure internal releases have workflows and submissions configured together
   def internal_releases
     workflow = internal_workflow.present? && !internal_workflow.marked_for_destruction?
-    release = internal_valid? && internal_release.submissions&.reject(&:marked_for_destruction?).present?
 
-    if workflow != release
+    if workflow != internal_valid?
       errors.add(:base, :internal_releases_are_incomplete)
     end
   end

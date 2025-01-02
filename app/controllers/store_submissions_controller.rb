@@ -25,6 +25,14 @@ class StoreSubmissionsController < SignedInApplicationController
     end
   end
 
+  def fully_release_previous_rollout
+    if (res = Action.fully_release_the_previous_rollout!(@submission)).ok?
+      redirect_back fallback_location: root_path, notice: t(".success")
+    else
+      redirect_back fallback_location: root_path, flash: {error: t(".failure", errors: res.error.message)}
+    end
+  end
+
   def submit_for_review
     # return mock_submit_for_review_for_app_store if sandbox_mode?
     if (result = Action.start_production_review!(@submission)).ok?

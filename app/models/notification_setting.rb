@@ -18,30 +18,18 @@ class NotificationSetting < ApplicationRecord
 
   belongs_to :train
 
-  # NOTE: These will be removed after Product v2 is released
-  DEPRECATED_KINDS = {
-    deployment_finished: "deployment_finished",
-    deployment_failed: "deployment_failed",
-    step_started: "step_started",
-    build_available: "build_available",
-    step_failed: "step_failed",
-    submit_for_review: "submit_for_review",
-    review_approved: "review_approved",
-    review_failed: "review_failed",
-    staged_rollout_updated: "staged_rollout_updated",
-    staged_rollout_paused: "staged_rollout_paused",
-    staged_rollout_resumed: "staged_rollout_resumed",
-    staged_rollout_halted: "staged_rollout_halted",
-    staged_rollout_completed: "staged_rollout_completed",
-    staged_rollout_fully_released: "staged_rollout_fully_released"
-  }
-
-  # Product v2 notifications
-  V2_KINDS = {
+  enum :kind, {
+    release_started: "release_started",
+    release_stopped: "release_stopped",
+    release_ended: "release_ended",
+    release_scheduled: "release_scheduled",
+    release_health_events: "release_health_events",
+    backmerge_failed: "backmerge_failed",
     build_available_v2: "build_available_v2",
     internal_release_finished: "internal_release_finished",
     internal_release_failed: "internal_release_failed",
     beta_submission_finished: "beta_submission_finished",
+    internal_submission_finished: "internal_submission_finished",
     submission_failed: "submission_failed",
     production_submission_started: "production_submission_started",
     production_submission_in_review: "production_submission_in_review",
@@ -58,15 +46,6 @@ class NotificationSetting < ApplicationRecord
     workflow_run_halted: "workflow_run_halted",
     workflow_run_unavailable: "workflow_run_unavailable"
   }
-
-  enum :kind, {
-    release_started: "release_started",
-    release_stopped: "release_stopped",
-    release_ended: "release_ended",
-    release_scheduled: "release_scheduled",
-    release_health_events: "release_health_events",
-    backmerge_failed: "backmerge_failed"
-  }.merge(DEPRECATED_KINDS).merge(V2_KINDS)
 
   scope :active, -> { where(active: true) }
   delegate :app, to: :train

@@ -53,6 +53,10 @@ class PreProdRelease < ApplicationRecord
 
   enum :status, STATES
 
+  def failure?
+    failed? || triggered_workflow_run.failure? || store_submissions.last&.failed?
+  end
+
   def mark_as_stale!
     with_lock do
       return if finished?
@@ -138,7 +142,10 @@ class PreProdRelease < ApplicationRecord
     previous.previous_successful
   end
 
-  def new_commit_available? = false
+  def new_commit_available?
+    return unless release_platform_run.on_track?
+    release.last_applicable_commit != commit
+  end
 
   def stamp_data
     {

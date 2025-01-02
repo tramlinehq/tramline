@@ -2,17 +2,18 @@
 #
 # Table name: submission_configs
 #
-#  id                     :bigint           not null, primary key
-#  auto_promote           :boolean          default(FALSE)
-#  integrable_type        :string
-#  number                 :integer          indexed, indexed => [release_step_config_id]
-#  rollout_enabled        :boolean          default(FALSE)
-#  rollout_stages         :decimal(8, 5)    default([]), is an Array
-#  submission_type        :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
-#  integrable_id          :uuid
-#  release_step_config_id :bigint           indexed, indexed => [number]
+#  id                             :bigint           not null, primary key
+#  auto_promote                   :boolean          default(FALSE)
+#  finish_rollout_in_next_release :boolean          default(FALSE), not null
+#  integrable_type                :string
+#  number                         :integer          indexed, indexed => [release_step_config_id]
+#  rollout_enabled                :boolean          default(FALSE)
+#  rollout_stages                 :decimal(8, 5)    default([]), is an Array
+#  submission_type                :string
+#  created_at                     :datetime         not null
+#  updated_at                     :datetime         not null
+#  integrable_id                  :uuid
+#  release_step_config_id         :bigint           indexed, indexed => [number]
 #
 class Config::Submission < ApplicationRecord
   self.table_name = "submission_configs"
@@ -30,6 +31,7 @@ class Config::Submission < ApplicationRecord
   validates :number, presence: true, uniqueness: {scope: :release_step_config_id}
   validate :correct_rollout_stages, if: :rollout_enabled?
   validate :production_release_submission
+  validate :cascading_rollout_applicability, if: :finish_rollout_in_next_release?
 
   accepts_nested_attributes_for :submission_external, allow_destroy: true
   attr_accessor :read_only
@@ -44,6 +46,7 @@ class Config::Submission < ApplicationRecord
       integrable_id: integrable.id,
       integrable_type: integrable.class.name,
       submission_config: submission_external.as_json,
+      finish_rollout_in_next_release: finish_rollout_in_next_release,
       rollout_config: {
         enabled: rollout_enabled,
         stages: rollout_stages
@@ -55,6 +58,11 @@ class Config::Submission < ApplicationRecord
 
   def submission_class
     submission_type.constantize
+  end
+
+  def restricted_public_channel?
+    return false unless submission_type == "GooglePlayStoreSubmission"
+    GooglePlayStoreIntegration::PUBLIC_CHANNELS.include?(submission_external.identifier)
   end
 
   def next
@@ -75,6 +83,10 @@ class Config::Submission < ApplicationRecord
 
   def display
     submission_type.classify.constantize.model_name.human
+  end
+
+  def submission_info
+    "#{display} • #{submission_external.name}"
   end
 
   def production_release_submission
@@ -98,6 +110,20 @@ class Config::Submission < ApplicationRecord
 
     if rollout_stages.any? { |value| value > FULL_ROLLOUT_VALUE }
       errors.add(:rollout_stages, :max_100)
+    end
+  end
+
+  def cascading_rollout_applicability
+    unless android?
+      errors.add(:base, "cascading rollouts are only available for android")
+    end
+
+    unless rollout_enabled?
+      errors.add(:base, "cascading rollouts are only available with staged rollouts")
+    end
+
+    unless rollout_stages.last.to_f < 100.0
+      errors.add(:base, "if you enable cascading rollouts, ensure your last rollout is less than 100%")
     end
   end
 

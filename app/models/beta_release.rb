@@ -19,7 +19,7 @@ class BetaRelease < PreProdRelease
 
   def tester_notes? = train.app.organization.tester_notes_in_beta_releases?
 
-  def release_notes? = true
+  def release_notes? = !tester_notes?
 
   def rollout_complete!(submission)
     notify_with_snippet!(
@@ -38,10 +38,5 @@ class BetaRelease < PreProdRelease
       event_stamp!(reason: :finished, kind: :success, data: stamp_data)
       Signal.beta_release_is_finished!(build)
     end
-  end
-
-  def new_commit_available?
-    return unless release_platform_run.on_track?
-    release_platform_run.last_commit != commit
   end
 end

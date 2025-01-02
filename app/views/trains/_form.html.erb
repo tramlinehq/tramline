@@ -7,8 +7,7 @@
   <% end %>
 <% end %>
 
-<div data-controller="branching-selector"
-     data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
+<div data-controller="domain--branching-selector dependent-disable domain--version-name-help">
   <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
     <% f.with_section(heading: "Basic") do |section| %>
       <% section.with_description do %>
@@ -44,8 +43,7 @@
           </span>
       <% end %>
 
-      <div data-controller="domain--version-name-help"
-           data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
+      <div data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
         <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>
         <div class="flex flex-row gap-x-2 items-center">
           <%= section.F.text_field_without_label :major_version_seed, "major",
@@ -125,8 +123,8 @@
           <%= section.F.labeled_select :branching_strategy, "Strategy",
                                        options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
                                        {},
-                                       { data: { action: 'branching-selector#change',
-                                                 branching_selector_target: "branchingStrategy" },
+                                       { data: { action: 'domain--branching-selector#change',
+                                                 domain__branching_selector_target: "branchingStrategy" },
                                          disabled: train.persisted? } %>
         </div>
 
@@ -137,10 +135,10 @@
                                            disabled: train.persisted? %>
         </div>
 
-        <div hidden data-branching-selector-target="almostTrunk"></div>
+        <div hidden data-domain--branching-selector-target="almostTrunk"></div>
         <div><!-- grid maintenance --></div>
 
-        <div hidden data-branching-selector-target="releaseBackMerge">
+        <div hidden data-domain--branching-selector-target="releaseBackMerge">
           <div class="mt-2">
             <%= section.F.labeled_text_field :release_backmerge_branch, "Release Backmerge Branch",
                                              placeholder: "eg., dev",
@@ -148,7 +146,7 @@
           </div>
         </div>
 
-        <div hidden data-branching-selector-target="parallelBranches">
+        <div hidden data-domain--branching-selector-target="parallelBranches">
           <div class="mt-2">
             <%= section.F.labeled_text_field :release_branch, "Release Branch",
                                              placeholder: "eg., production",
@@ -178,7 +176,15 @@
       <%= render V2::Form::SwitchComponent.new(form: section.F,
                                                field_name: :approvals_enabled,
                                                on_label: "Submission approvals enabled",
-                                               off_label: "Submission approvals disabled") %>
+                                               off_label: "Submission approvals disabled",
+                                               hide_child: !train.approvals_enabled?) do |component| %>
+        <% component.with_child do %>
+          <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                   field_name: :copy_approvals,
+                                                   on_label: "Always copy approvals from previous release",
+                                                   off_label: "Do not copy approvals from previous release") %>
+        <% end %>
+      <% end %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Build Queue") do |section| %>
@@ -192,11 +198,10 @@
 
     <%= f.with_advanced_section(heading: "Continuous Backmerge",
                                 html_options: { hidden: true,
-                                                data: { branching_selector_target: "backmerge" } }) do |section| %>
+                                                data: { domain__branching_selector_target: "backmerge" } }) do |section| %>
       <% section.with_description do %>
         Enable backmerging of release branch commits into the working branch as they arrive.
         By default, merge happens at the end of the release.
-        This feature is currently not available for Bitbucket VCS integration.
       <% end %>
 
       <%= render V2::Form::SwitchComponent.new(form: section.F,
@@ -206,18 +211,15 @@
                                                html_options: { disabled: train.backmerge_disabled? }) %>
     <% end %>
 
-    <% if @train.persisted? && !@train.product_v2? %>
-      <%= f.with_advanced_section(heading: "Manual Release Trigger") do |section| %>
-        <% section.with_description do %>
-          Always require a manual trigger for the release step of the train.
-          By default, the release step will be auto-triggered if it has run before in the release.
-        <% end %>
-
-        <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                                 field_name: :manual_release,
-                                                 on_label: "Manual Release enabled",
-                                                 off_label: "Manual Release disabled") %>
+    <%= f.with_advanced_section(heading: "Auto-apply patch changes") do |section| %>
+      <% section.with_description do %>
+        Disable this if you want to manually apply the commits after the initial rollout has started.
       <% end %>
+
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :auto_apply_patch_changes,
+                                               on_label: "Auto-apply patch changes",
+                                               off_label: "Manually apply patch changes") %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Compact Build Notes") do |section| %>
@@ -235,7 +237,7 @@
     <%= f.with_advanced_section(heading: "Tag Your Releases") do |section| %>
       <% section.with_description do %>
         By default, a tag is created at the end of the release with the final version of the release.
-        You can turn off creation of tag. Or, you can add an optional suffix to your tags.
+        You can turn off creation of tag. Or, you can add an optional prefix or suffix to your tags.
       <% end %>
 
       <%= render partial: "release_tag_form", locals: { form: section.F } %>
@@ -251,6 +253,20 @@
       <% end %>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Freeze release version") do |section| %>
+      <% section.with_description do %>
+        Versions are automatically managed and bumped by Tramline.
+        Turn this on if you want to keep a single static release version for all releases.
+      <% end %>
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :freeze_version,
+                                               on_label: "Freeze release version enabled",
+                                               off_label: "Freeze release version disabled",
+                                               switch_data: { action: "dependent-disable#change domain--version-name-help#updateVersion",
+                                                              dependent_disable_target: "primary", domain__version_name_help_target: "freezeReleaseVersion" }) %>
+
+    <% end %>
+
     <%= f.with_advanced_section(heading: "Patch Version Change Only") do |section| %>
       <% section.with_description do %>
         By default, minor version of the app is bumped up between each successful release of the train.
@@ -260,7 +276,8 @@
       <%= render V2::Form::SwitchComponent.new(form: section.F,
                                                field_name: :patch_version_bump_only,
                                                on_label: "Only patch version will change between releases",
-                                               off_label: "Minor version will change between releases (default)") %>
+                                               off_label: "Minor version will change between releases (default)",
+                                               switch_data: { dependent_disable_target: "secondary", action: "dependent-disable#change" }) %>
     <% end %>
 
     <% f.with_action do %>

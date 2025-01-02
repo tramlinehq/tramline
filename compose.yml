@@ -3,7 +3,7 @@ x-app: &app
     dockerfile: ./dev.Dockerfile
     context: .
     args:
-      RUBY_VERSION: '3.3.5'
+      RUBY_VERSION: '3.3.6'
       PG_MAJOR: '14'
   image: tramline-site-dev:1.0.0
   environment: &env
@@ -39,6 +39,18 @@ x-backend: &backend
       condition: service_healthy
 
 services:
+  pre-setup:
+    <<: *app
+    volumes:
+      - .:/rails:cached
+      - bundle:/usr/local/bundle
+      - rails_cache:/app/tmp/cache
+    command: [ "/bin/bash", "/rails/bin/setup.creds", "-e", "dev" ]
+    stdin_open: true
+    tty: true
+    profiles:
+      - pre-setup
+
   setup:
     <<: *backend
     command: [ "/bin/bash", "/rails/bin/setup.docker.dev" ]
@@ -82,7 +94,7 @@ services:
       web:
         condition: service_healthy
 
-  sidekiq:
+  worker:
     <<: *backend
     command: bundle exec sidekiq -C config/sidekiq.yml
 
@@ -114,6 +126,19 @@ services:
       timeout: 1s
       retries: 2
       start_period: 3s
+
+  spec:
+    <<: *backend
+    command: bash -c "RAILS_ENV=test bin/rails db:create && bundle exec rspec"
+    environment:
+      <<: *env
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/tramline_site_test
+    depends_on:
+      postgres:
+        condition: service_healthy
+      setup:
+        condition: service_completed_successfully
 
 volumes:
   bundle:
