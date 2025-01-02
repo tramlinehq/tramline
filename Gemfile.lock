@@ -95,7 +95,7 @@ GEM
     bindex (0.8.1)
     bootsnap (1.18.4)
       msgpack (~> 1.2)
-    brakeman (6.2.2)
+    brakeman (7.0.0)
       racc
     bugsnag-api (3.0.0)
       sawyer (~> 0.9.2)
