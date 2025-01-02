@@ -13,6 +13,8 @@ class TrainsController < SignedInApplicationController
 
   def new
     @train = @app.trains.new
+    @train.build_queue_wait_time_value = 0
+    @train.build_queue_size = 0
   end
 
   def edit

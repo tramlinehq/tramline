@@ -44,6 +44,13 @@
           <% end %>
         </div>
 
+        <% if tag_name.present? %>
+          <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
+            <% badge.with_icon("tag.svg") %>
+            <% badge.with_link(tag_name, tag_url) %>
+          <% end %>
+        <% end %>
+
         <% if pull_request.present? %>
           <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
             <% badge.with_icon("v2/git_pull_request.svg") %>

@@ -28,6 +28,7 @@ class BuildQueue < ApplicationRecord
   end
 
   def schedule_kickoff!
+    return if train.trunk?
     BuildQueueApplicationJob.set(wait_until: scheduled_at).perform_later(id)
   end
 

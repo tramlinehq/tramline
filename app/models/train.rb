@@ -50,6 +50,7 @@ class Train < ApplicationRecord
   self.ignored_columns += ["manual_release"]
 
   BRANCHING_STRATEGIES = {
+    trunk: "Trunk",
     almost_trunk: "Almost Trunk",
     release_backmerge: "Release with Backmerge",
     parallel_working: "Parallel Working and Release"
@@ -106,6 +107,8 @@ class Train < ApplicationRecord
   after_initialize :set_backmerge_config, if: :persisted?
   after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
+  before_create :set_release_branch, if: :trunk?
+  before_create :set_build_queue_values, if: :trunk?
   before_create :set_ci_cd_workflows
   before_create :set_current_version
   before_create :set_default_status
@@ -199,6 +202,7 @@ class Train < ApplicationRecord
   end
 
   def tag_platform_at_release_end?
+    return false if trunk?
     return false unless app.cross_platform?
     tag_platform_releases? && !tag_all_store_releases?
   end
@@ -374,11 +378,19 @@ class Train < ApplicationRecord
     branching_strategy == "almost_trunk"
   end
 
+  def trunk?
+    branching_strategy == "trunk"
+  end
+
   def backmerge_disabled?
     !almost_trunk?
   end
 
-  def create_vcs_release!(branch_name, tag_name, release_diff = nil)
+  def tag_applied_commits?
+    trunk?
+  end
+
+  def create_vcs_release!(tag_name, branch_name = nil, release_diff = nil)
     return false unless active?
     vcs_provider.create_release!(tag_name, branch_name, release_diff)
   end
@@ -494,6 +506,11 @@ class Train < ApplicationRecord
   end
 
   def set_build_queue_config
+    if trunk?
+      self.build_queue_wait_time_unit = "hours"
+      self.build_queue_wait_time_value = 0
+      return
+    end
     return if build_queue_wait_time.blank?
     parts = build_queue_wait_time.parts
     self.build_queue_wait_time_unit = parts.keys.first.to_s
@@ -502,6 +519,15 @@ class Train < ApplicationRecord
 
   def set_backmerge_config
     self.continuous_backmerge_enabled = continuous_backmerge?
+  end
+
+  def set_release_branch
+    self.release_branch = working_branch
+  end
+
+  def set_build_queue_values
+    self.build_queue_size = 0
+    self.build_queue_enabled = true
   end
 
   def set_notifications_config
@@ -522,7 +548,7 @@ class Train < ApplicationRecord
   end
 
   def set_branching_strategy
-    self.branching_strategy ||= "almost_trunk"
+    self.branching_strategy ||= "trunk"
   end
 
   def set_current_version
@@ -562,6 +588,7 @@ class Train < ApplicationRecord
   end
 
   def build_queue_config
+    return if trunk?
     if build_queue_enabled?
       errors.add(:build_queue_size, :config_required) unless build_queue_size.present? && build_queue_wait_time.present?
       errors.add(:build_queue_size, :invalid_size) if build_queue_size && build_queue_size < 1

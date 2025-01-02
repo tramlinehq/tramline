@@ -4,7 +4,8 @@ class Triggers::PreRelease
   RELEASE_HANDLERS = {
     "almost_trunk" => AlmostTrunk,
     "parallel_working" => ParallelBranches,
-    "release_backmerge" => ReleaseBackMerge
+    "release_backmerge" => ReleaseBackMerge,
+    "trunk" => Trunk
   }
 
   def self.call(release)
