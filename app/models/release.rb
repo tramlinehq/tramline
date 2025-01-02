@@ -296,7 +296,7 @@ class Release < ApplicationRecord
 
   def last_applicable_commit
     return unless committable?
-    applied_commits.last
+    applied_commits.reorder(timestamp: :desc).first
   end
 
   def committable?
