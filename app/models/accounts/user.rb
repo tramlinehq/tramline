@@ -23,7 +23,7 @@ class Accounts::User < ApplicationRecord
   validates :preferred_name, length: {maximum: 70, message: :too_long}
   validates :unique_authn_id, uniqueness: {message: :already_taken, case_sensitive: false}
 
-  has_many :memberships, dependent: :delete_all, inverse_of: :user
+  has_many :memberships, -> { kept }, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active).sequential }, through: :memberships
   has_many :all_organizations, through: :memberships, source: :organization
   has_many :sent_invites, class_name: "Invite", foreign_key: "sender_id", inverse_of: :sender, dependent: :destroy
@@ -163,7 +163,11 @@ class Accounts::User < ApplicationRecord
   end
 
   def role_for(organization)
-    access_for(organization).role
+    access_for(organization)&.role
+  end
+
+  def membership_for(organization)
+    access_for(organization)
   end
 
   def team_for(organization)
@@ -172,11 +176,11 @@ class Accounts::User < ApplicationRecord
 
   # TODO: [nplus1]
   def writer_for?(organization)
-    access_for(organization).writer?
+    access_for(organization)&.writer?
   end
 
   def owner_for?(organization)
-    access_for(organization).owner?
+    access_for(organization)&.owner?
   end
 
   def successful_invite_for(organization)
