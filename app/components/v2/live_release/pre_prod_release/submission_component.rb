@@ -7,7 +7,7 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
     created: {text: "Not started", status: :inert},
     preprocessing: {text: "Processing", status: :ongoing, kind: :spinner_pill},
     preparing: {text: "Processing", status: :ongoing, kind: :spinner_pill},
-    prepared: {text: "Submitted", status: :ongoing},
+    prepared: {text: "Prepared", status: :ongoing},
     failed_prepare: {text: "Failed to submit", status: :inert},
     submitted_for_review: {text: "Submitted for review", status: :inert},
     review_failed: {text: "Review rejected", status: :failure},
@@ -15,7 +15,7 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
     failed: {text: "Failed", status: :failure},
     failed_with_action_required: {text: "Needs manual submission", status: :failure},
     cancelled: {text: "Removed from review", status: :inert},
-    finished: {text: "Submitted", status: :success}
+    finished: {text: "Finished", status: :success}
   }
 
   def initialize(submission, inactive: false)
