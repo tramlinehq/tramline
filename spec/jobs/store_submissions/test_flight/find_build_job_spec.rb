@@ -47,8 +47,13 @@ describe StoreSubmissions::TestFlight::FindBuildJob do
       build_not_found_error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"code" => "not_found", "resource" => "build"}})
       allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise build_not_found_error })
 
-      expect { described_class.new.perform(test_flight_submission.id) }.to raise_error(build_not_found_error)
+      job = described_class.new
+      job_id = SecureRandom.hex # Simulate a unique job ID
+      job.current_jid = job_id  # Manually set the current_jid
 
+      Rails.cache.write("job_#{job_id}_retry_attempts", 801, expires_in: 7.days)
+
+      expect { job.perform(test_flight_submission.id, job_id) }.to raise_error(build_not_found_error)
       expect(test_flight_submission.reload.preprocessing?).to be true
     end
 
@@ -58,6 +63,29 @@ describe StoreSubmissions::TestFlight::FindBuildJob do
       described_class.new.perform(test_flight_submission.id)
 
       expect(test_flight_submission.reload.preprocessing?).to be true
+    end
+
+    it "schedules a retry with backoff when should_retry? is true and attempts are within the limit" do
+      build_not_found_error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"code" => "not_found", "resource" => "build"}})
+      allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise build_not_found_error })
+      allow_any_instance_of(described_class).to receive(:should_retry?).and_return(true)
+
+      job = described_class.new
+      job_id = SecureRandom.hex # Simulate a unique job ID
+      job.current_jid = job_id  # Manually set the current_jid
+
+      cache_key = "job_#{job_id}_retry_attempts"
+      Rails.cache.write(cache_key, 3, expires_in: 7.days)
+
+      expect {
+        job.perform(test_flight_submission.id, job_id)
+      }.to change { described_class.jobs.size }.by(1)
+
+      enqueued_job = described_class.jobs.last
+      expect(enqueued_job["args"]).to eq([test_flight_submission.id, job_id])
+      expect(enqueued_job["at"]).to be_within(1.second).of(1.minute.from_now.to_f)
+      expect(test_flight_submission.reload.preprocessing?).to be true
+      expect(Rails.cache.read(cache_key)).to eq(4)
     end
   end
 end
