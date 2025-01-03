@@ -2,6 +2,7 @@
 
 class AddIntegrablesToSubmissionConfigs < ActiveRecord::Migration[7.2]
   def up
+    return
     Config::Submission.find_each do |submission|
       app = submission.release_step_config.release_platform_config.release_platform.app
       submission.integrable = app

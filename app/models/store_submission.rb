@@ -108,12 +108,13 @@ class StoreSubmission < ApplicationRecord
     submission.trigger! if auto_promote
   end
 
-  def notification_params(failure_message: nil)
+  def notification_params(failure_message: nil, requires_manual_action: false)
     parent_release.notification_params.merge(
       submission_failure_reason: (get_failure_message(failure_message) if failure_reason.present?),
       submission_asset_link: provider&.public_icon_img,
       project_link: external_link,
-      deep_link: deep_link
+      deep_link: deep_link,
+      submission_requires_manual_action: requires_manual_action
     )
   end
 

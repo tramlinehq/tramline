@@ -82,6 +82,7 @@ class Computations::Release::StepStatuses
     return STATUS[:blocked] if all_platforms? { |rp| rp.production_store_rollouts.none? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.active_store_rollout&.present? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.inflight_store_rollout&.present? }
+    return STATUS[:ongoing] if Release::POST_RELEASE_STATES.include?(status)
     STATUS[:success]
   end
 

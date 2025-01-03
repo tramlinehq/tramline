@@ -52,6 +52,7 @@ class Coordinators::FinalizeRelease
 
   def on_failure!
     release.event_stamp!(reason: :finalize_failed, kind: :error, data: {version: release_version})
+    release.notify!("Release finalization failed!", :release_finalize_failed, release.notification_params)
   end
 
   attr_reader :release, :force_finalize

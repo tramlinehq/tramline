@@ -39,4 +39,8 @@ class BetaRelease < PreProdRelease
       Signal.beta_release_is_finished!(build)
     end
   end
+
+  def on_fail!
+    notify!("Beta release failed!", :beta_release_failed, notification_params)
+  end
 end

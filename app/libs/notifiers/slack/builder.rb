@@ -5,6 +5,7 @@ module Notifiers
       # think of them as view components
       RENDERERS = {
         release_ended: Renderers::ReleaseEnded,
+        release_finalize_failed: Renderers::ReleaseFinalizeFailed,
         release_stopped: Renderers::ReleaseStopped,
         release_started: Renderers::ReleaseStarted,
         release_scheduled: Renderers::ReleaseScheduled,
@@ -13,6 +14,7 @@ module Notifiers
         build_available_v2: Renderers::BuildAvailableV2,
         internal_release_finished: Renderers::InternalReleaseFinished,
         internal_release_failed: Renderers::InternalReleaseFailed,
+        beta_release_failed: Renderers::BetaReleaseFailed,
         beta_submission_finished: Renderers::BetaSubmissionFinished,
         internal_submission_finished: Renderers::InternalSubmissionFinished,
         submission_failed: Renderers::SubmissionFailed,

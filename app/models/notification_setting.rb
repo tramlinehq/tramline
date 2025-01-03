@@ -21,6 +21,7 @@ class NotificationSetting < ApplicationRecord
   enum :kind, {
     release_started: "release_started",
     release_stopped: "release_stopped",
+    release_finalize_failed: "release_finalize_failed",
     release_ended: "release_ended",
     release_scheduled: "release_scheduled",
     release_health_events: "release_health_events",
@@ -28,6 +29,7 @@ class NotificationSetting < ApplicationRecord
     build_available_v2: "build_available_v2",
     internal_release_finished: "internal_release_finished",
     internal_release_failed: "internal_release_failed",
+    beta_release_failed: "beta_release_failed",
     beta_submission_finished: "beta_submission_finished",
     internal_submission_finished: "internal_submission_finished",
     submission_failed: "submission_failed",

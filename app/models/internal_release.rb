@@ -40,4 +40,8 @@ class InternalRelease < PreProdRelease
   def tester_notes? = true
 
   def release_notes? = false
+
+  def on_fail!
+    notify!("Internal release failed!", :internal_release_failed, notification_params)
+  end
 end
