@@ -1,33 +1,24 @@
 class StoreSubmissions::TestFlight::UpdateExternalBuildJob
   include Sidekiq::Job
-  include RetryableJob
-  include Loggable
   extend Loggable
+  extend Backoffable
 
-  self.MAX_RETRIES = 2000
   queue_as :high
+  sidekiq_options retry: 2000
 
-  def perform(submission_id, retry_args = {})
-    retry_args = {} if retry_args.is_a?(Integer)
-    retry_count = retry_args[:retry_count] || 0
-
-    submission = TestFlightSubmission.find(submission_id)
-    return unless submission.may_finish?
-
-    begin
-      submission.update_external_release
-    rescue TestFlightSubmission::SubmissionNotInTerminalState => e
-      retry_with_backoff(e, {
-        submission_id: submission_id,
-        retry_count: retry_count
-      })
-    rescue => e
-      elog(e)
-      raise
+  sidekiq_retry_in do |count, ex|
+    if ex.is_a?(TestFlightSubmission::SubmissionNotInTerminalState)
+      backoff_in(attempt: count, period: :minutes, type: :static, factor: 5).to_i
+    else
+      elog(ex)
+      :kill
     end
   end
 
-  def backoff_multiplier
-    5.minutes
+  def perform(submission_id)
+    submission = TestFlightSubmission.find(submission_id)
+    return unless submission.may_finish?
+
+    submission.update_external_release
   end
 end

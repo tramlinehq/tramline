@@ -1,32 +1,22 @@
 class StoreRollouts::AppStore::FindLiveReleaseJob
   include Sidekiq::Job
-  include RetryableJob
+  extend Loggable
+  extend Backoffable
 
-  self.MAX_RETRIES = 6000
   queue_as :high
+  sidekiq_options retry: 6000
 
-  def compute_backoff(retry_count)
-    ex = @last_exception
+  sidekiq_retry_in do |_count, ex|
     if ex.is_a?(AppStoreRollout::ReleaseNotFullyLive)
       5.minutes.to_i
     else
+      elog(ex)
       :kill
     end
   end
 
-  def perform(rollout_id, force = false, retry_args = {})
-    @last_exception = retry_args.is_a?(Hash) ? retry_args[:last_exception] : nil
-
-    retry_args = {} if retry_args.is_a?(Integer)
-    retry_count = retry_args[:retry_count] || 0
-
+  def perform(rollout_id)
     rollout = AppStoreRollout.find(rollout_id)
-
-    begin
-      rollout.track_live_release_status
-    rescue AppStoreRollout::ReleaseNotFullyLive => e
-      retry_with_backoff(e, {rollout_id: rollout_id, retry_count: retry_count})
-      raise e
-    end
+    rollout.track_live_release_status
   end
 end

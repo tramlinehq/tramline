@@ -1,43 +1,31 @@
 class WorkflowRuns::FindJob
   include Sidekiq::Job
-  include RetryableJob
-  include Loggable
   extend Loggable
+  extend Backoffable
 
-  self.MAX_RETRIES = 25
   queue_as :high
+  sidekiq_options retry: 25
 
-  def perform(workflow_run_id, retry_args = {})
-    retry_args = {} if retry_args.is_a?(Integer)
-    retry_count = retry_args[:retry_count] || 0
-
-    workflow_run = WorkflowRun.find(workflow_run_id)
-    begin
-      workflow_run.find_and_update_external
-      workflow_run.found! if workflow_run.may_found?
-    rescue Installations::Error => e
-      if e.reason == :workflow_run_not_found
-        retry_with_backoff(e, {
-          workflow_run_id: workflow_run_id,
-          retry_count: retry_count
-        })
-      else
-        elog(e)
-        raise
-      end
+  sidekiq_retry_in do |count, exception|
+    if exception.is_a?(Installations::Error) && exception.reason == :workflow_run_not_found
+      backoff_in(attempt: count, period: :minutes).to_i
+    else
+      elog(exception)
+      :kill
     end
   end
 
-  def backoff_multiplier
-    1.minute
-  end
-
-  def handle_retries_exhausted(context)
-    if context[:last_exception].is_a?(Installations::Error) &&
-        context[:last_exception].reason == :workflow_run_not_found
-      run = WorkflowRun.find(context[:workflow_run_id])
+  sidekiq_retries_exhausted do |msg, ex|
+    if ex.is_a?(Installations::Error) && ex.reason == :workflow_run_not_found
+      run = WorkflowRun.find(msg["args"].first)
       run.unavailable! if run.may_unavailable?
-      elog(context[:last_exception])
+      elog(ex)
     end
+  end
+
+  def perform(workflow_run_id)
+    workflow_run = WorkflowRun.find(workflow_run_id)
+    workflow_run.find_and_update_external
+    workflow_run.found! if workflow_run.may_found?
   end
 end
