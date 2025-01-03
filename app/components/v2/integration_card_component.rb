@@ -23,6 +23,11 @@ class V2::IntegrationCardComponent < V2::BaseComponent
     Integration.existing_integration(@app, providable_type)
   end
 
+  # Retrieves repeated integrations across apps for the given app and providable type
+  def repeated_integrations_across_app
+    Integration.existing_integrations_across_app(@app, providable_type)
+  end
+
   def connect_path
     connect_app_integrations_path(@app, integration)
   end
@@ -52,6 +57,11 @@ class V2::IntegrationCardComponent < V2::BaseComponent
   def reusable_integration_form_partial(existing_integration)
     render(partial: "integrations/reusable",
       locals: {app: @app, integration: @integration, category: @category, url: reuse_existing_integration_path(existing_integration), type: providable_type, provider: provider})
+  end
+
+  def reusable_integrations_across_app_form_partial(existing_integration)
+    render(partial: "integrations/app_reuseable",
+      locals: {app: @app, existing_integration: existing_integration, category: @category, url: reuse_integration_across_app_app_integrations_path, type: providable_type, provider: provider})
   end
 
   def disconnectable?

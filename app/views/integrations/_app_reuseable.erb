@@ -1,0 +1,16 @@
+<%= form_with model: [app, existing_integration], builder: EnhancedFormHelper::AuthzForm, url: url, method: :post do |f| %>
+  <div class="bg-main-50 p-4 rounded-lg border border-main-300">
+    <% existing_integration.each do |integration| %>
+      <div class="flex items-center mb-2">
+        <%= image_tag("integrations/logo_#{provider}.png", alt: "Logo", style: "width: 24px; height: 24px; margin-right: 8px;") %>
+        <%= f.radio_button :id,integration.id, style: "margin-right: 8px;" %>
+        <%= f.label :id, integrations_across_app_options(integration), value: integration.id %>
+      </div>
+    <% end %>
+    <%= f.hidden_field :category, value: category %>
+    <%= f.hidden_field "providable[type]", value: type %>
+  </div>
+  <div class="mt-4">
+    <%= f.authz_submit "Save", "v2/archive.svg", size: :sm %>
+  </div>
+<% end %>
