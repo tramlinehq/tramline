@@ -17,7 +17,7 @@ RSpec.describe ProductionRelease do
       expect(production_release.version_bump_required?).to be false
     end
 
-    context "when release platform runhas the same release version" do
+    context "when release platform run has the same release version" do
       before do
         release_platform_run.update!(release_version: current_prod_release_version)
       end

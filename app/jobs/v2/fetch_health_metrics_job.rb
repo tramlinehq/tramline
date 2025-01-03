@@ -1,8 +1,7 @@
 class V2::FetchHealthMetricsJob < ApplicationJob
   queue_as :high
-  RE_ENQUEUE_INTERVAL = 5.minutes
 
-  def perform(production_release_id)
+  def perform(production_release_id, frequency)
     production_release = ProductionRelease.find(production_release_id)
     release = production_release.release
     return if release.stopped?
@@ -11,7 +10,7 @@ class V2::FetchHealthMetricsJob < ApplicationJob
     begin
       production_release.fetch_health_data!
     ensure
-      V2::FetchHealthMetricsJob.set(wait: RE_ENQUEUE_INTERVAL).perform_later(production_release_id)
+      V2::FetchHealthMetricsJob.set(wait: frequency).perform_later(production_release_id, frequency)
     end
   end
 end

@@ -68,6 +68,12 @@ class Config::ReleasePlatform < ApplicationRecord
     }
   end
 
+  def has_restricted_public_channels?
+    return false if ios?
+    return true if production_release.present?
+    internal_release&.submissions&.any?(&:restricted_public_channel?) || beta_release&.submissions&.any?(&:restricted_public_channel?)
+  end
+
   def pick_internal_workflow
     internal_workflow || release_candidate_workflow
   end

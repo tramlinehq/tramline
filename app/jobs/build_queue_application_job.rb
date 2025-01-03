@@ -8,14 +8,6 @@ class BuildQueueApplicationJob < ApplicationJob
     return unless build_queue.release.committable?
     return unless build_queue.is_active?
 
-    if build_queue.release.is_v2?
-      Signal.build_queue_can_be_applied!(build_queue)
-    else
-      build_queue.release.with_lock do
-        return unless build_queue.release.committable?
-        return unless build_queue.is_active?
-        build_queue.apply!
-      end
-    end
+    Signal.build_queue_can_be_applied!(build_queue)
   end
 end

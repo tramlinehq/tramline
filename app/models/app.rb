@@ -33,13 +33,10 @@ class App < ApplicationRecord
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
   has_many :releases, through: :trains
-  has_many :step_runs, through: :releases
-  has_many :deployment_runs, through: :releases
   has_many :production_store_rollouts, -> { production }, through: :releases
   has_many :builds, through: :releases
   has_many :release_platforms, dependent: :destroy
   has_many :release_platform_runs, through: :releases
-  has_many :steps, through: :release_platforms
 
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
@@ -104,6 +101,10 @@ class App < ApplicationRecord
     integrations.bugsnag_integrations.any?
   end
 
+  def crashlytics_connected?
+    integrations.crashlytics_integrations.any?
+  end
+
   def bitbucket_connected?
     integrations.bitbucket_integrations.any?
   end
@@ -113,19 +114,11 @@ class App < ApplicationRecord
   end
 
   def guided_train_setup?
-    trains.none? || train_in_creation&.product_v2?
+    trains.none? || train_in_creation.present?
   end
 
   def train_in_creation
     trains.first if trains.size == 1
-  end
-
-  def latest_store_step_runs
-    deployment_runs
-      .reached_production
-      .group_by(&:platform)
-      .to_h { |platform, runs| [platform, runs.max_by(&:updated_at)&.step_run] }
-      .values
   end
 
   # NOTE: fetches and uses latest build numbers from the stores, if added,

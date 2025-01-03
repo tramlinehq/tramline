@@ -56,7 +56,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
     latest_events.map do |event|
       {
         timestamp: time_format(event.event_timestamp, with_year: false),
-        title: I18n.t("passport.store_rollout.reasons.#{event.reason}"),
+        title: I18n.t("passport.store_rollout.reasons.#{event.reason}") + " – " + event.author_full_name,
         description: event.message,
         type: event.kind.to_sym
       }

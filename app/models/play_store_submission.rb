@@ -80,7 +80,7 @@ class PlayStoreSubmission < StoreSubmission
       transitions from: :preparing, to: :prepared
     end
 
-    # TODO: [V2] [post-alpha] This is currently not used, should be hooked up as an action from the user
+    # TODO: This is currently not used, should be hooked up as an action from the user
     event :reject do
       after { set_rejected_at! }
       transitions from: :prepared, to: :review_failed
@@ -110,7 +110,7 @@ class PlayStoreSubmission < StoreSubmission
 
   def finished?
     return true if finished_manually?
-    FINAL_STATES.include?(status) && store_rollout.finished?
+    FINAL_STATES.include?(status) && store_rollout&.finished?
   end
 
   def post_review? = false

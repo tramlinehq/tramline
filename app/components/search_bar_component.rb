@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class SearchBarComponent < ViewComponent::Base
-  include AssetsHelper
-
   def initialize(path:, placeholder:, value:, turbo_frame: nil)
     @path = path
     @placeholder = placeholder

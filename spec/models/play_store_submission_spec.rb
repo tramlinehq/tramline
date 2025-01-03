@@ -97,6 +97,10 @@ describe PlayStoreSubmission do
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
+      release_platform.platform_config.production_release.submissions.first.update!(
+        finish_rollout_in_next_release: true,
+        rollout_stages: [1, 2, 5, 10, 20, 50, 99.9]
+      )
       allow(providable_dbl).to receive(:find_build_in_track).and_return({status: "inProgress"})
       allow_any_instance_of(PlayStoreRollout).to receive(:provider).and_return(providable_dbl)
     end
@@ -106,7 +110,7 @@ describe PlayStoreSubmission do
       create_production_rollout_tree(
         train,
         release_platform,
-        release_status: :on_track,
+        release_traits: [:on_track],
         rollout_status: :created,
         skip_rollout: false
       ) => {store_submission:}
@@ -121,7 +125,7 @@ describe PlayStoreSubmission do
       create_production_rollout_tree(
         train,
         release_platform,
-        release_status: :on_track,
+        release_traits: [:on_track],
         rollout_status: :started,
         skip_rollout: true
       ) => {store_submission:}
@@ -137,7 +141,7 @@ describe PlayStoreSubmission do
       create_production_rollout_tree(
         train,
         release_platform,
-        release_status: :on_track,
+        release_traits: [:on_track],
         rollout_status: :started,
         submission_status: :preprocessing,
         skip_rollout: true
@@ -153,7 +157,7 @@ describe PlayStoreSubmission do
       create_production_rollout_tree(
         train,
         release_platform,
-        release_status: :on_track,
+        release_traits: [:on_track],
         rollout_status: :started,
         skip_rollout: true
       ) => {store_submission:}
@@ -169,7 +173,7 @@ describe PlayStoreSubmission do
       create_production_rollout_tree(
         train,
         release_platform,
-        release_status: :on_track,
+        release_traits: [:on_track],
         rollout_status: :started,
         skip_rollout: true
       ) => {store_submission:}

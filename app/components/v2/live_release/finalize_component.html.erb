@@ -72,6 +72,10 @@
               branches <%= link_to_external "here", release.compare_url, class: "underline" %>.</p>
             <p>Please ensure that these changes have been manually merged back on
               <code><%= release.train.working_branch %></code> before wrapping up this release.</p>
+            <div class="mt-2">
+              <%= render partial: "shared/divide_collection",
+                         locals: { collection: render(V2::CommitComponent.with_collection(unmerged_changes)) } %>
+            </div>
           </div>
 
           <% unless open_prs? %>

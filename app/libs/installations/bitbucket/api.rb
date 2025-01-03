@@ -102,8 +102,8 @@ module Installations
     end
 
     def list_repos(workspace, transforms)
-      execute(:get, REPOS_URL.expand(workspace:).to_s)
-        .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
+      paginated_execute(:get, REPOS_URL.expand(workspace:).to_s)
+        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
     def create_repo_webhook!(repo_slug, url, transforms)
@@ -251,17 +251,10 @@ module Installations
     def patch_pr(repo_slug, branch, patch_branch_name, sha, pr_title, pr_description, transforms)
       # create patch branch from the sha - 1 api call
       # create a PR - 1 api call
-      # merge the PR - 1 api call
-      # get the updated PR - 1 api call
 
-      # TOTAL - 3-4 api calls
+      # TOTAL - 2 api calls
       create_branch!(repo_slug, sha, patch_branch_name, source_type: :commit)
-      pr = create_pr!(repo_slug, branch, patch_branch_name, pr_title, pr_description, transforms, close_source_branch: true)
-      merge_pr!(repo_slug, pr[:number])
-      get_pr(repo_slug, pr[:number], transforms)
-    rescue Installations::Error => ex
-      raise ex unless ex.reason == :pull_request_not_mergeable
-      pr
+      create_pr!(repo_slug, branch, patch_branch_name, pr_title, pr_description, transforms, close_source_branch: true)
     end
 
     # CI/CD

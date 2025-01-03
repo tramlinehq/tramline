@@ -1,16 +1,12 @@
 class EventTimelineComponent < ViewComponent::Base
   include ApplicationHelper
-  include AssetsHelper
 
   def initialize(app:, events:)
     @app = app
     @events = events
   end
 
-  EXCLUSIONS = {
-    "DeploymentRun" => ["created"],
-    "StepRun" => %w[build_available finished]
-  }
+  EXCLUSIONS = {}
 
   def events_by_days
     @events

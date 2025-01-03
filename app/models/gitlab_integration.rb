@@ -132,6 +132,8 @@ class GitlabIntegration < ApplicationRecord
     false
   end
 
+  def enable_auto_merge? = false
+
   def find_or_create_webhook!(id:, train_id:)
     GitHub::Result.new do
       if id
@@ -321,7 +323,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def app_config
-    integration.app.config
+    integration.integrable.config
   end
 
   def redirect_uri

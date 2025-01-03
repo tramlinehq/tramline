@@ -1,4 +1,84 @@
 en:
+  page_titles:
+    default_suffix: "Tramline"
+    controllers:
+      apps:
+        name: "Apps"
+        actions:
+          index: "Apps" # "Apps | Ueno | Tramline"
+          show: "App Details" # "App Details | Ueno | Tramline"
+          new: "App New" # "App New | Ueno | Tramline" (instead of "New App")
+          edit: "App Edit" # "App Edit | Ueno | Tramline" (instead of "Edit App")
+      # Releases Controller
+      releases:
+        name: "Releases"
+        actions:
+          index: "Releases" # "Releases | Ueno | Tramline"
+          show: "Release Details" # "Release Details | Ueno | Tramline"
+          new: "Release New" # "Release New | Ueno | Tramline" (instead of "New Release")
+          edit: "Release Edit" # "Release Edit | Ueno | Tramline" (instead of "Edit Release")
+      # Trains Controller
+      trains:
+        name: "Trains"
+        actions:
+          index: "Trains" # "Trains | Ueno | Tramline"
+          show: "Train Details" # "Train Details | Ueno | Tramline"
+          new: "Train New" # "Train New | Ueno | Tramline" (instead of "New Train")
+          edit: "Train Edit" # "Train Edit | Ueno | Tramline" (instead of "Edit Train")
+      # Organizations Controller (Accounts::Organizations)
+      organizations:
+        name: "Organizations"
+        actions:
+          index: "Organizations"
+          show: "Organization Details"
+          new: "Organization New"
+          edit: "Organization Edit"
+      # Users Controller (Accounts::Users)
+      users:
+        name: "Users"
+        actions:
+          index: "Users"
+          show: "User Details"
+          new: "User New"
+          edit: "User Edit"
+      # Admin::SettingsController
+      settings:
+        name: "Settings"
+        actions:
+          index: "Settings"
+          show: "Setting Details"
+          new: "Setting New"
+          edit: "Setting Edit"
+      # Integrations Controller
+      integrations:
+        name: "Integrations"
+        actions:
+          index: "Integrations"
+          show: "Integration Details"
+          new: "Integration New"
+          edit: "Integration Edit"
+      # ReleaseHealthRules Controller
+      release_health_rules:
+        name: "Release Health Rules"
+        actions:
+          index: "Rules"
+          show: "Rule Details"
+          new: "Rule New"
+          edit: "Rule Edit"
+      release_indices:
+        name: "Reldex"
+        actions:
+          index: "Reldex"
+          show: "Reldex Details"
+          edit: "Reldex Edit"
+      store_submissions:
+        name: "Submissions"
+        actions:
+          index: "Submissions"
+          show: "Submission Details"
+          new: "Submission New"
+          edit: "Submission Edit"
+
   config:
     release_platforms:
       success: "Platform configuration was successfully updated."
@@ -147,11 +227,11 @@ en:
       github_integration: "GitHub"
       bitbucket_integration: "Bitbucket"
       google_firebase_integration: "Firebase App Distribution"
-      deployment: "Distribution"
       app_store_submission: "App Store"
       test_flight_submission: "TestFlight"
       google_firebase_submission: "Firebase App Distribution"
       play_store_submission: "Google Play Store"
+      crashlytics_integration: "Firebase Crashlytics"
     values:
       app:
         platform:
@@ -200,53 +280,6 @@ en:
           workflow_run_failed: "Workflow run failed"
           workflow_run_halted: "Workflow run halted"
           workflow_run_unavailable: "Workflow run unavailable"
-      deployment_run:
-        failure_reason:
-          unknown_failure: "an unknown error, contact support!"
-          developer_rejected: "the store version was rejected by you manually"
-          app_not_found: "the app not being available in store"
-          build_not_found: "the build not being available in store"
-          missing_export_compliance: "the release missing export compliance"
-          beta_group_not_found: "the beta group not existing in store"
-          release_not_found: "the release not being present in store"
-          build_not_submittable: "the build not being submittable"
-          build_mismatch: "the build not matching the release that exists in store"
-          review_in_progress: "a review already being in progress"
-          attachment_upload_in_progress: "store version is not in a valid state to submit for review, attachment uploads still in progress"
-          review_submission_exists: "a release already being added for review in the store"
-          phased_release_not_found: "the release not being phased release enabled"
-          release_already_exists: "a release already being present in the store"
-          version_already_exists: "the version already being released in the store"
-          build_exists_in_build_channel: "the build already being present in the deployment channel"
-          build_exists: "the build with version code already being present in the store"
-          build_not_upgradable: "the build number being lower than the current build in the deployment channel"
-          permission_denied: "permission denied by the store"
-          api_disabled: "api disabled in the store"
-          duplicate_build_upload: "build already being present in the store"
-          invalid_api_package: "the build artifact being invalid for the store"
-          apks_not_allowed: "the build artifact being an apk, which is not accepted by the store"
-          app_review_rejected: "the build needs to be uploaded manually on Google Play Console UI as a previous build was rejected by the store"
-          release_on_draft_app: "the app being in draft mode, please make a manual release to a public channel (alpha, beta, production) before releasing from Tramline"
-          wrong_package_name: "the app having a different package name than the one configured in Tramline"
-          release_does_not_have_country_set: "the channel not having a targeting country configured"
-          first_release_cannot_be_made_from_tramline: "this being the very first release to this track, which cannot be a staged rollout"
-          duplicate_call: "there is another request running against the store"
-          exact_alarm_permission_required: "the app needing the USE_EXACT_ALARM permission to continue"
-          unsigned_bundle: "the appbundle not being signed correctly"
-          timeout: "the request to the store timed out"
-          unauthorized: "the request to the store failed due to authorization error"
-          firebase_processing_error: "the build was uploaded to Firebase, but Firebase threw an error while processing it. This could be due to degradation or an invalid package"
-          foreground_service_permission_required: "the app has not declared the required Foreground Service permissions in the Play Console"
-          fully_released_can_not_be_staged: "the app was already fully released, marking the rollout completed"
-          advertising_app_permission: "the app has not declared the required Advertising ID permissions in the Play Console"
-      deployment:
-        integration_type:
-          app_store: "App Store (production)"
-          testflight: "TestFlight"
-          google_play_store: "Google Play Store"
-          slack: "Slack"
-          external: "External (outside Tramline)"
-          firebase: "Firebase App Distribution"
       release_platform_run:
         platform:
           ios: "iOS"
@@ -392,9 +425,6 @@ en:
         json_key: "Google Play Store JSON Key"
       train:
         version_seeded_with: "Version Seeded With"
-      step:
-        ci_cd_channel: "CI workflow"
-        release_suffix: "Release suffix"
     errors:
       models:
         app_variant:
@@ -453,22 +483,6 @@ en:
           attributes:
             notification_channels:
               at_least_one: "there should be at least one channel selected for an enabled notification"
-        releases/step:
-          attributes:
-            train:
-              not_in_draft: "can only create steps when train is in draft mode"
-        deployment:
-          attributes:
-            is_staged_rollout:
-              prod_only: "only allowed for production channel"
-            staged_rollout_config:
-              not_allowed: "staged rollout config is not allowed"
-              at_least_one: "should have at least one rollout percentage value"
-              zero_rollout: "cannot start with zero rollout"
-              increasing_order: "staged rollout should be in increasing order"
-              max_100: "staged rollout cannot be more than 100%"
-            build_artifact_channel:
-              prod_channel_in_review_not_allowed: "cannot add production deployment to review step"
         release_metadata:
           attributes:
             release_notes:
@@ -538,6 +552,15 @@ en:
               not_present: "the beta release must be configured"
             release_candidate_workflow:
               not_present: "the release candidate workflow must be configured"
+        crashlytics_integration:
+          attributes:
+            json_key:
+              key_format: "the supplied key format is incorrect, please check your key"
+              invalid_config: "configuration is invalid, please check"
+              no_bq_datasets: "the Google Analytics or Crashlytics dataset is not accessible in BigQuery for this project"
+              permission_denied: "permission denied to access the project using the key"
+              project_deleted: "the project has been deleted and is no longer accessible"
+              unknown_failure: "an unrecognized error occurred connecting to Firebase, please check your project number and key"
 
   invitation:
     flash:

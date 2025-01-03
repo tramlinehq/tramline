@@ -15,7 +15,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
     failed: {text: "Submission failed", status: :failure},
     failed_with_action_required: {text: "Needs manual submission", status: :failure},
     cancelled: {text: "Removed from review", status: :inert},
-    finished: {text: "Submitted", status: :success}
+    finished: {text: "Ready to be released", status: :success}
   }
 
   def initialize(submission, inactive: false, title: "Store Submission")
