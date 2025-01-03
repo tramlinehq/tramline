@@ -161,7 +161,11 @@ class ReleasesController < SignedInApplicationController
   end
 
   def set_release
-    @release = Release.friendly.find(params[:id])
+    @release =
+      Release
+        .joins(train: :app)
+        .where(apps: {organization: current_organization})
+        .friendly.find(params[:id])
   end
 
   def set_pull_requests
