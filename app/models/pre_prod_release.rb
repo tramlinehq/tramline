@@ -66,6 +66,7 @@ class PreProdRelease < ApplicationRecord
 
   def fail!
     update!(status: STATES[:failed])
+    on_fail!
   end
 
   def actionable?
