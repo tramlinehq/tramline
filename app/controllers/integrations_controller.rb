@@ -4,9 +4,10 @@ class IntegrationsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[connect create index build_artifact_channels destroy]
   before_action :set_app_config_tabs, only: %i[index]
-  before_action :set_integration, only: %i[connect create reuse]
+  before_action :set_integration, only: %i[connect create reuse reuse_integration_across_app]
   before_action :set_existing_integration, only: %i[reuse]
   before_action :set_providable, only: %i[connect create]
+  before_action :set_existing_integration_across_app, only: %i[reuse_integration_across_app]
 
   def connect
     redirect_to(@integration.install_path, allow_other_host: true)
@@ -15,6 +16,18 @@ class IntegrationsController < SignedInApplicationController
   def index
     @pre_open_category = Integration.categories[params[:integration_category]]
     set_integrations_by_categories
+  end
+
+  # This method handles the process of reusing an existing app integration to create a new one
+  # Attempts to create a new integration based on the existing one across app
+  def reuse_integration_across_app
+    return redirect_to app_integrations_path(@app), alert: "Integration not found or not connected." unless @existing_app_integration&.connected?
+    new_integration = initiate_integration(@existing_app_integration)
+    if new_integration.save
+      redirect_to app_integrations_path(@app), notice: "#{@existing_app_integration.providable_type} across app integration reused successfully."
+    else
+      redirect_to app_integrations_path(@app), flash: {error: new_integration.errors.full_messages.to_sentence}
+    end
   end
 
   def reuse
@@ -80,6 +93,11 @@ class IntegrationsController < SignedInApplicationController
 
   def set_existing_integration
     @existing_integration = Integration.find_by(id: params[:id])
+  end
+
+  # Sets the existing app integration based on the provided integration ID in the params
+  def set_existing_integration_across_app
+    @existing_app_integration = Integration.find_by(id: params[:integration][:id])
   end
 
   def set_providable

@@ -32,14 +32,13 @@
             <% end %>
           </div>
         <% end %>
+      <div class="flex gap-1">
         <% if disconnected? %>
           <% if connectable? %>
-            <div class="flex gap-1">
               <%= connectable_form_partial %>
               <% if repeated_integration.present? %>
                 <%= reusable_integration_form_partial(repeated_integration) %>
               <% end %>
-            </div>
           <% end %>
           <% if creatable? %>
             <%= render V2::ModalComponent.new(title: creatable_modal_title) do |modal| %>
@@ -47,6 +46,15 @@
                       .with_icon("plus.svg", size: :md) %>
               <% modal.with_body do %>
                 <%= creatable_form_partial %>
+              <% end %>
+            <% end %>
+          <% end %>
+          <% if repeated_integrations_across_app.present? %>
+            <%= render V2::ModalComponent.new(title: "Reuse Previous") do |modal| %>
+            <% modal.with_button(label: "reuse across apps", scheme: :supporting, type: :action, size: :xxs, arrow: :none)
+                    .with_icon("v2/repeat.svg", size: :md) %>
+              <% modal.with_body do %>
+                <%= reusable_integrations_across_app_form_partial(repeated_integrations_across_app) %>
               <% end %>
             <% end %>
           <% end %>

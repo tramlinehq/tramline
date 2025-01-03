@@ -201,6 +201,11 @@ class Integration < ApplicationRecord
       app.integrations.connected.find_by(providable_type: providable_type)
     end
 
+    # This method retrieves a list of existing integrations for apps within the same organization
+    def existing_integrations_across_app(app, providable_type)
+      Integration.connected.where(integrable_id: app.organization.apps.where.not(id: app.id), providable_type: providable_type).select("DISTINCT ON (providable_id, integrable_id) id, providable_id, integrable_id, providable_type, created_at, updated_at, metadata, integrable_type")
+    end
+
     private
 
     def providable_error_message(meta)

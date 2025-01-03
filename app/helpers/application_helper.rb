@@ -57,6 +57,11 @@ module ApplicationHelper
     )
   end
 
+  # Displays label which combines the app's bundle identifier, type, and ID
+  def integrations_across_app_options(integration)
+    "#{integration.app.bundle_identifier} - #{integration.providable_type} - #{integration.providable_id}"
+  end
+
   def version_in_progress(version)
     version.to_semverish.to_s(patch_glob: true)
   end

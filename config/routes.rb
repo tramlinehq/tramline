@@ -130,6 +130,7 @@ Rails.application.routes.draw do
         post :reuse
       end
       collection do
+        post :reuse_integration_across_app
         get :connect, to: "integrations#connect", as: :connect
 
         resource :google_play_store, only: [:create],
