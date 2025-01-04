@@ -42,6 +42,8 @@ module Tabbable
             release_platform: {app: [:integrations]}
           ]
         )
+        .joins(train: :app)
+        .where(apps: {organization: current_organization})
         .friendly
         .find(params[:release_id] || params[:id])
   end
