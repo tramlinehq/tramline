@@ -25,6 +25,52 @@
           <%= render partial: "build_name_pattern_info" %>
           <div><%= rc_fields.labeled_text_field :artifact_name_pattern, "Build artifact name (optional)", placeholder: "Eg., build-abc.apk" %></div>
         </div>
+
+        <div class="flex flex-col gap-0.5">
+          <div class="grid grid-cols-2 gap-4">
+            <div data-controller="nested-form-ext"
+                 data-nested-form-ext-list-position-outlet="#release_candidate_workflow_additional_parameters"
+                 class="grid gap-2 pt-3">
+              <div>
+                <%= render V2::ButtonComponent.new(
+                  scheme: :light,
+                  type: :action,
+                  size: :xs,
+                  label: "Add a new parameter",
+                  html_options: { data: { action: "nested-form-ext#add" } },
+                  arrow: :none) do |b|
+                  b.with_icon("plus.svg", rounded: false)
+                end %>
+              </div>
+              <ul data-controller="sortable-list-ext list-position"
+                  data-sortable-list-ext-handle-value=".handle"
+                  data-sortable-list-ext-list-position-outlet="#release_candidate_workflow_parameters"
+                  data-list-position-initial-value=1
+                  class="flex flex-col item-gap-default"
+                  id="release_candidate_workflow_parameters">
+                <% rc_fields.object.parameters.each_with_index do |parameter, _index| %>
+                  <% rc_fields.fields_for :parameters, parameter do |parameter_form| %>
+                    <li class="nested-form-wrapper" data-new-record="false">
+                      <%= parameter_form.labeled_text_field :name, "Parameter name", placeholder: "Parameter name" %>
+                      <%= parameter_form.labeled_text_field :value, "Parameter value", placeholder: "Parameter value" %>
+                    </li>
+                  <% end %>
+                <% end %>
+
+                <template data-nested-form-ext-target="template">
+                  <li class="nested-form-wrapper" data-new-record="true">
+                    <% rc_fields.fields_for :parameters, rc_fields.object.parameters.build, child_index: "NEW_RECORD" do |parameter_form| %>
+                      <%= parameter_form.labeled_text_field :name, "Parameter name", placeholder: "Parameter name" %>
+                      <%= parameter_form.labeled_text_field :value, "Parameter value", placeholder: "Parameter value" %>
+                    <% end %>
+                  </li>
+                </template>
+
+                <div data-nested-form-ext-target="target"></div>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     <% end %>
   <% end %>
