@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_24_064815) do
+ActiveRecord::Schema[7.2].define(version: 2025_01_05_122540) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -977,6 +977,15 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_24_064815) do
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
+  create_table "workflow_config_parameters", force: :cascade do |t|
+    t.string "name"
+    t.string "value"
+    t.bigint "workflow_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["workflow_id"], name: "index_workflow_config_parameters_on_workflow_id"
+  end
+
   create_table "workflow_configs", force: :cascade do |t|
     t.bigint "release_platform_config_id"
     t.string "kind"
@@ -1083,6 +1092,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_24_064815) do
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
   add_foreign_key "user_authentications", "users"
+  add_foreign_key "workflow_config_parameters", "workflow_configs", column: "workflow_id"
   add_foreign_key "workflow_configs", "release_platform_configs"
   add_foreign_key "workflow_runs", "commits"
   add_foreign_key "workflow_runs", "pre_prod_releases"
