@@ -2,6 +2,7 @@
 
 class AddIntegrablesToAllRuntimeModelConfigs < ActiveRecord::Migration[7.2]
   def up
+    return
     PreProdRelease.find_each do |release|
       app = release.release_platform_run.app
       config = release.config
