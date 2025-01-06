@@ -218,8 +218,9 @@ class WorkflowRun < ApplicationRecord
   def workflow_inputs
     data = {version_code: build.build_number, build_version: release_version}
     data[:build_notes] = triggering_release.tester_notes if organization.build_notes_in_workflow?
+    data[:parameters] = {}
     conf.parameters.each do |param|
-      data[param.name.to_sym] = param.value
+      data[:parameters][param.name] = param.value
     end
     data
   end
