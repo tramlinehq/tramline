@@ -3,8 +3,8 @@
 # Table name: workflow_config_parameters
 #
 #  id          :bigint           not null, primary key
-#  name        :string
-#  value       :string
+#  name        :string           not null
+#  value       :string           not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  workflow_id :bigint           not null, indexed

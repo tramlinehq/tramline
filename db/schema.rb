@@ -978,8 +978,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_05_122540) do
   end
 
   create_table "workflow_config_parameters", force: :cascade do |t|
-    t.string "name"
-    t.string "value"
+    t.string "name", null: false
+    t.string "value", null: false
     t.bigint "workflow_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
