@@ -34,7 +34,6 @@ class ApplicationController < ActionController::Base
       else
         current_user&.organizations&.first
       end
-    @current_organization if current_user&.organizations&.any?
   end
 
   def current_user

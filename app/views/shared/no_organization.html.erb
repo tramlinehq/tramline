@@ -1,8 +1,4 @@
-<div class="flex items-center justify-center mt-36">
-  <div class="text-center max-w-2xl px-8">
-    <h1 class="text-3xl font-semibold text-gray-700 mb-2">Oops! Looks like you don't have access to any organization.</h1>
-    <div class="bg-gray-50 rounded-lg">
-      <p class="text-gray-600 text-lg">Please contact your administrator to create a new organization to continue.</p>
-    </div>
-  </div>
-</div>
+<%= render V2::EmptyStateComponent.new(title: "Oops! Looks like you don't belong to any organization",
+                                       text: "Please contact your admin to add you to an organization.",
+                                       type: :subdued,
+                                       banner_image: "v2/building.svg") %>
