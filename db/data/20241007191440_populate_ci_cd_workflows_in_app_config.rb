@@ -2,6 +2,7 @@
 
 class PopulateCiCdWorkflowsInAppConfig < ActiveRecord::Migration[7.2]
   def up
+    return
     ActiveRecord::Base.transaction do
       Train.find_each do |train|
         next if train.ci_cd_provider.blank?

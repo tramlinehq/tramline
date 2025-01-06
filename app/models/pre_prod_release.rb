@@ -66,6 +66,7 @@ class PreProdRelease < ApplicationRecord
 
   def fail!
     update!(status: STATES[:failed])
+    on_fail!
   end
 
   def actionable?
@@ -144,6 +145,7 @@ class PreProdRelease < ApplicationRecord
 
   def new_commit_available?
     return unless release_platform_run.on_track?
+    return if release.last_applicable_commit.blank?
     release.last_applicable_commit != commit
   end
 
