@@ -13,6 +13,9 @@ class Config::WorkflowParameter < ApplicationRecord
   self.table_name = "workflow_config_parameters"
   belongs_to :workflow
 
+  validates :name, :value, presence: true
+  validates :name, uniqueness: true
+
   def as_json(_options = {})
     {
       name:,
