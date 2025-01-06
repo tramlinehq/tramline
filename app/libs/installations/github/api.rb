@@ -85,6 +85,7 @@ module Installations
         inputs
           .slice(:version_code, :build_notes)
           .merge(version_name: inputs[:build_version], commit_ref: commit_hash)
+          .merge(inputs[:parameters])
           .compact
           .to_json
           .then { {"tramline-input" => _1} }
@@ -93,7 +94,7 @@ module Installations
           versionCode: inputs[:version_code],
           versionName: inputs[:build_version],
           buildNotes: inputs[:build_notes]
-        }.compact
+        }.merge(inputs[:parameters]).compact
       end
 
       execute do
