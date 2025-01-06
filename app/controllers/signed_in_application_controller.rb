@@ -216,9 +216,9 @@ class SignedInApplicationController < ApplicationController
   end
 
   def require_organization!
-    unless current_organization.present?
-        flash.now[:error] = "You are not a member of any organization"
-      render template: 'shared/no_organization', status: :unauthorized and return
+    if current_organization.blank?
+      flash.now[:error] = "You are not a member of any organization"
+      render template: "shared/no_organization", status: :unauthorized and return
     end
   end
 end
