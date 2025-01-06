@@ -156,6 +156,6 @@ module ApplicationHelper
       page_name || middle_section
     end
 
-    [prefix.titleize, middle_section.titleize, suffix.titleize].compact.join(" | ")
+    [prefix&.titleize, middle_section&.titleize, suffix&.titleize].compact.join(" | ")
   end
 end
