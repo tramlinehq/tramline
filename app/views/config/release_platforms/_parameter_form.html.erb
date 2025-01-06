@@ -1,0 +1,16 @@
+<div class="flex flex-row item-gap-default">
+  <%= parameter_form.hidden_field :id %>
+  <%= parameter_form.hidden_field :_destroy %>
+  <%= parameter_form.text_field_without_label :name, "Parameter name" %>
+  <%= parameter_form.text_field_without_label :value, "Parameter value" %>
+
+  <div class="flex item-gap-default ml-auto">
+    <%= render V2::ButtonComponent.new(
+      scheme: :naked_icon,
+      type: :action,
+      size: :none,
+      html_options: {data: {action: "nested-form-ext#remove"}}) do |b|
+      b.with_icon("v2/trash.svg", size: :md)
+    end %>
+  </div>
+</div>
