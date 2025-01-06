@@ -8,8 +8,8 @@
 # |------------+-----------------------------------+-----------------------------------+--------------------------------------------|
 
 class Accounts::InvitationsController < SignedInApplicationController
-  before_action :require_write_access!, only: %i[create]
-  before_action :set_organization
+  before_action :require_write_access!, only: %i[create destroy]
+  before_action :set_organization, only: [:create]
 
   def create
     @invite = Accounts::Invite.new(invite_params)
@@ -22,6 +22,14 @@ class Accounts::InvitationsController < SignedInApplicationController
       redirect_to accounts_organization_teams_path(current_organization),
         flash: {error: @invite.errors.full_messages.to_sentence}
     end
+  end
+
+  def destroy
+    @invite = Accounts::Organization.find_by!(slug: params[:organization_id])
+      .pending_invites.find(params[:id])
+    @invite.destroy
+    redirect_to accounts_organization_teams_path(current_organization),
+      notice: "Invitation to #{@invite.email} has been cancelled"
   end
 
   protected

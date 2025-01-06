@@ -158,6 +158,18 @@
         <% row.with_cell do %>
           <%= invite.sender&.email || "–" %>
         <% end %>
+        <% row.with_cell(wrap: true) do %>
+          <div class="flex gap-x-2 justify-end">
+            <%= render V2::ButtonComponent.new(
+              scheme: :danger,
+              type: :button,
+              size: :xxs,
+              options: accounts_organization_invitation_path(current_organization, invite),
+              html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to cancel the invitation for #{invite.email}?" } }) do |b|
+              b.with_icon("v2/trash.svg")
+            end %>
+          </div>
+        <% end %>
       <% end %>
     <% end %>
   <% end %>
