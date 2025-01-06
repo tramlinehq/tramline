@@ -164,6 +164,16 @@ class PreProdRelease < ApplicationRecord
     )
   end
 
+  def latest_events(n = nil)
+    stampable_id = [
+      id,
+      triggered_workflow_run.id,
+      store_submissions.pluck(:id)
+    ].compact.flatten
+
+    Passport.where(stampable_id:).order(event_timestamp: :desc).limit(n)
+  end
+
   private
 
   def trigger_submission!(submission_config)
