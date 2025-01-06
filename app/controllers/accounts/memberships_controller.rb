@@ -4,6 +4,12 @@ class Accounts::MembershipsController < SignedInApplicationController
   def destroy
     @membership = current_organization.memberships.find_by(id: params[:id])
 
+    if @membership.blank?
+      redirect_to teams_accounts_organization_path(current_organization),
+        flash: {error: "Could not find the member to remove."}
+      return
+    end
+
     unless helpers.can_current_user_remove_member?(@membership.user)
       redirect_to teams_accounts_organization_path(current_organization),
         flash: {error: "You don't have permission to remove this member"}

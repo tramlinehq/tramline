@@ -25,11 +25,15 @@ class Accounts::InvitationsController < SignedInApplicationController
   end
 
   def destroy
-    @invite = Accounts::Organization.find_by!(slug: params[:organization_id])
-      .pending_invites.find(params[:id])
-    @invite.destroy
-    redirect_to accounts_organization_teams_path(current_organization),
-      notice: "Invitation to #{@invite.email} has been cancelled"
+    @invite = current_organization.pending_invites.find_by(id: params[:id])
+
+    if @invite&.destroy
+      redirect_to accounts_organization_teams_path(current_organization),
+        notice: "Invitation to #{@invite.email} has been cancelled"
+    else
+      redirect_to accounts_organization_teams_path(current_organization),
+        flash: {error: "Could not cancel the invitation."}
+    end
   end
 
   protected
