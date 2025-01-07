@@ -18,7 +18,7 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
     :store_submissions,
     :workflow_run,
     :conf,
-    :build, to: :pre_prod_release
+    :build, :release, to: :pre_prod_release
 
   def show_blocked_message?
     release_platform_run.play_store_blocked? && store_submissions.none?(&:failed_with_action_required?)
