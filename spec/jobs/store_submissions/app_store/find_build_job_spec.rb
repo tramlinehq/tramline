@@ -22,50 +22,31 @@ describe StoreSubmissions::AppStore::FindBuildJob do
       allow_any_instance_of(AppStoreSubmission).to receive(:provider).and_return(provider_dbl)
     end
 
-    context "when build is present in the store" do
-      it "starts preparing the release" do
-        allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { prepared_release_info })
-        described_class.new.perform(submission.id)
-        expect(provider_dbl).to have_received(:prepare_release).with(build.build_number, build.version_name, true, anything, true).once
-      end
+    it "when submission is not found" do
+      expect { described_class.new.perform("fake_id") }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
-    context "when build is not found" do
-      it "raises an exception" do
-        build_not_found_error = Installations::Apple::AppStoreConnect::Error.new("error" => {"code" => "not_found", "resource" => "build"})
-        allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise build_not_found_error })
+    it "when build is present in the store, starts preparing the release" do
+      allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { prepared_release_info })
 
-        job = described_class.new
-        job_id = SecureRandom.hex
-        job.current_jid = job_id
-        cache_key = "job_#{job_id}_retry_attempts"
-        Rails.cache.write(cache_key, 9, expires_in: 7.days)
+      described_class.new.perform(submission.id)
 
-        expect { job.perform(submission.id, job_id) }.to raise_error(build_not_found_error)
-        expect(submission.reload.preparing?).to be true
-      end
+      expect(provider_dbl).to have_received(:prepare_release).with(build.build_number, build.version_name, true, anything, true).once
     end
 
-    it "schedules a retry with backoff when should_retry? is true and attempts are within the limit" do
+    it "handles build_not_found error and schedules a retry if retries are available" do
       build_not_found_error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"code" => "not_found", "resource" => "build"}})
+
       allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise build_not_found_error })
-      allow_any_instance_of(described_class).to receive(:should_retry?).and_return(true)
+      allow(described_class).to receive(:perform_in)
 
-      job = described_class.new
-      job_id = SecureRandom.hex
-      job.current_jid = job_id
-      cache_key = "job_#{job_id}_retry_attempts"
-      Rails.cache.write(cache_key, 3, expires_in: 7.days)
+      described_class.new.perform(submission.id)
 
-      expect {
-        job.perform(submission.id, job_id)
-      }.to change { described_class.jobs.size }.by(1)
-
-      enqueued_job = described_class.jobs.last
-      expect(enqueued_job["args"]).to eq([submission.id, job_id])
-      expect(enqueued_job["at"]).to be_within(1.second).of(1.minute.from_now.to_f)
-      expect(submission.reload.preparing?).to be true
-      expect(Rails.cache.read(cache_key)).to eq(4)
+      expect(described_class).to have_received(:perform_in).with(
+        60.seconds,
+        submission.id,
+        1
+      ).once
     end
   end
 end
