@@ -75,7 +75,6 @@ class ProductionRelease < ApplicationRecord
   end
 
   def mark_as_stale!
-    return if finished?
     update!(status: STATES[:stale])
   end
 
