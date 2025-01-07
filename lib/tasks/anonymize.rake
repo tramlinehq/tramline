@@ -19,7 +19,6 @@ namespace :anonymize do
     abort "Train ID not found!" if train_id.blank?
     puts "Train with id #{train_id} will be copied to #{app.name}!" if train_id.present?
 
-    ci_cd_integration = app.integrations.ci_cd.first
     app_store_integration = app.integrations.build_channel.find(&:app_store_integration?)
     play_store_integration = app.integrations.build_channel.find(&:google_play_store_integration?)
     firebase_integration = app.integrations.build_channel.find(&:google_firebase_integration?)
@@ -48,12 +47,12 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "name", "slug", "description", "status", "branching_strategy", "version_seeded_with", "version_current",
-                  "repeat_duration", "build_queue_wait_time", "build_queue_size", "backmerge_strategy", "manual_release",
-                  "tag_platform_releases", "tag_all_store_releases", "compact_build_notes", "tag_releases", "build_queue_enabled",
-                  "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_enabled", "tag_suffix", "tag_prefix", "tag_platform_releases"
+          "repeat_duration", "build_queue_wait_time", "build_queue_size", "backmerge_strategy", "manual_release",
+          "tag_platform_releases", "tag_all_store_releases", "compact_build_notes", "tag_releases", "build_queue_enabled",
+          "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_enabled", "tag_suffix", "tag_prefix", "tag_platform_releases"
         whitelist_timestamps
         anonymize("app_id") { |field| app.id }
-        anonymize("notification_channel") { |field| { "id" => "dummy", "name" => "test", "is_private" => false } }
+        anonymize("notification_channel") { |field| {"id" => "dummy", "name" => "test", "is_private" => false} }
         anonymize("working_branch") { |field| Faker::Hacker.noun }
       end
 
@@ -80,7 +79,7 @@ namespace :anonymize do
         whitelist "train_id", "kind", "active", "user_groups"
         whitelist_timestamps
         anonymize("notification_channels") do |field|
-          [{ "id" => "dummy", "name" => "test", "is_private" => false }]
+          [{"id" => "dummy", "name" => "test", "is_private" => false}]
         end
       end
 
@@ -89,7 +88,7 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "status", "name", "version_seeded_with", "version_current", "slug", "working_branch", "branching_strategy",
-                  "release_branch", "release_backmerge_branch", "vcs_webhook_id", "train_id", "platform", "config"
+          "release_branch", "release_backmerge_branch", "vcs_webhook_id", "train_id", "platform", "config"
         whitelist_timestamps
         anonymize("app_id") { |field| app.id }
       end
@@ -166,7 +165,7 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "train_id", "branch_name", "status", "original_release_version", "release_version", "scheduled_at",
-                  "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch", "is_v2"
+          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch", "is_v2"
         whitelist_timestamps
 
         anonymize("release_pilot_id").using FieldStrategy::SelectFromList.new(user_ids)
@@ -192,14 +191,14 @@ namespace :anonymize do
             field.value
           else
             field.value.map do |commit|
-              { "sha" => SecureRandom.uuid.split("-").join,
-                "url" => "https://github.com/tramlinehq/ueno/commit/6149361ed3f70f5315b613e9e19ed699e3785700",
-                "message" => Faker::Lorem.paragraph_by_chars(number: commit["message"].size),
-                "parents" => [{ "sha" => "dummy" }],
-                "author_url" => "https://github.com/tramlinehq",
-                "author_name" => Faker::Name.name,
-                "author_login" => user_github_logins.sample,
-                "author_timestamp" => commit["author_timestamp"] }
+              {"sha" => SecureRandom.uuid.split("-").join,
+               "url" => "https://github.com/tramlinehq/ueno/commit/6149361ed3f70f5315b613e9e19ed699e3785700",
+               "message" => Faker::Lorem.paragraph_by_chars(number: commit["message"].size),
+               "parents" => [{"sha" => "dummy"}],
+               "author_url" => "https://github.com/tramlinehq",
+               "author_name" => Faker::Name.name,
+               "author_login" => user_github_logins.sample,
+               "author_timestamp" => commit["author_timestamp"]}
             end
           end
         end
@@ -224,7 +223,7 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "release_platform_run_id", "number", "state", "phase", "source", "head_ref", "base_ref", "opened_at",
-                  "closed_at", "release_id", "commit_id", "source_id", "labels"
+          "closed_at", "release_id", "commit_id", "source_id", "labels"
         whitelist_timestamps
         anonymize("title") { |field| Faker::Lorem.paragraph_by_chars(number: field.value.size) }
         anonymize("body") { |field| Faker::Lorem.paragraph_by_chars(number: field.value.size) }
@@ -236,8 +235,8 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "release_platform_id", "code_name", "scheduled_at", "commit_sha", "status", "branch_name",
-                  "release_version", "completed_at", "stopped_at", "original_release_version", "release_id",
-                  "tag_name", "in_store_resubmission", "last_commit_id", "play_store_blocked"
+          "release_version", "completed_at", "stopped_at", "original_release_version", "release_id",
+          "tag_name", "in_store_resubmission", "last_commit_id", "play_store_blocked"
         whitelist_timestamps
         anonymize("config") do |field|
           c = field.value
@@ -323,7 +322,7 @@ namespace :anonymize do
         continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !StoreSubmission.exists?(record["id"]) }
         primary_key "id"
         whitelist "approved_at", "failure_reason", "name", "parent_release_type", "prepared_at", "rejected_at", "sequence_number", "status",
-                  "store_release", "store_status", "submitted_at", "type", "build_id", "parent_release_id", "release_platform_run_id"
+          "store_release", "store_status", "submitted_at", "type", "build_id", "parent_release_id", "release_platform_run_id"
         whitelist_timestamps
         anonymize("config") do |field|
           c = field.value
@@ -348,7 +347,7 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "stampable_type", "stampable_id", "reason", "kind", "message", "metadata", "author_id",
-                  "event_timestamp", "automatic"
+          "event_timestamp", "automatic"
         whitelist_timestamps
         anonymize("author_id").using FieldStrategy::SelectFromList.new(user_ids)
         anonymize("author_metadata") do |field|
@@ -394,7 +393,7 @@ namespace :anonymize do
         continue { |index, record| ProductionRelease.exists?(record["production_release_id"]) && !ReleaseHealthMetric.exists?(record["id"]) }
         primary_key "id"
         whitelist "deployment_run_id", "production_release_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
-                  "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
+          "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
         whitelist_timestamps
       end
 
@@ -414,13 +413,13 @@ namespace :anonymize do
   end
 
   def source_db_config
-    { "adapter" => "postgresql",
-      "encoding" => "unicode",
-      "pool" => 5,
-      "host" => ENV["ANONYMIZE_SOURCE_DB_HOST"],
-      "database" => ENV["ANONYMIZE_SOURCE_DB_NAME"],
-      "user" => ENV["ANONYMIZE_SOURCE_DB_USER"],
-      "password" => ENV["ANONYMIZE_SOURCE_DB_PASSWORD"] }
+    {"adapter" => "postgresql",
+     "encoding" => "unicode",
+     "pool" => 5,
+     "host" => ENV["ANONYMIZE_SOURCE_DB_HOST"],
+     "database" => ENV["ANONYMIZE_SOURCE_DB_NAME"],
+     "user" => ENV["ANONYMIZE_SOURCE_DB_USER"],
+     "password" => ENV["ANONYMIZE_SOURCE_DB_PASSWORD"]}
   end
 
   def destination_db_config
