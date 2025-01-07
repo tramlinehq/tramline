@@ -1,16 +1,23 @@
-<%= render V2::SectionComponent.new(title: "Build insights", style: :titled, size: :compact) do %>
-  <%= render V2::AccordionComponent.new do |accordion| %>
-    <% accordion.with_title_section do %>
-      <h5 class="heading-5-sc">Metadata trend</h5>
-    <% end %>
-    <% if builds.size > 1 %>
-      <%= render V2::BuildHealthComponent.new(release_platform_run: run, builds:) %>
-    <% else %>
-      <%= render V2::EmptyStateComponent.new(
-        title: "No build metadata trend to show",
-        text: "As you add more builds to Tramline, the trend of their metadata will be displayed here.",
-        banner_image: "v2/drill.svg",
-        type: :subdued) %>
-    <% end %>
-  <% end %>
+<% if builds.size > 1 %>
+  <div class="text-secondary text-xs font-normal flex flex-col gap-2 whitespace-normal">
+    <p>
+      †
+      The following metadata trends are computed from the last <%= builds.size %> builds on this release step.
+    </p>
+    <p>
+      Graphs shown below are populated from a combination of data fetched by Tramline and data that is (optionally)
+      sent to Tramline
+      <%= link_to_external "through the API ↗",
+                           "https://docs.tramline.app/api#send-custom-metadata-for-a-build",
+                           class: "hover:underline", title: "API docs on sending build metadata" %>.
+    </p>
+  </div>
+
+  <%= render V2::BuildHealthComponent.new(builds) %>
+<% else %>
+  <%= render V2::EmptyStateComponent.new(
+    title: "No build metadata trend to show",
+    text: "As you add more builds to Tramline, the trend of their metadata will be displayed here.",
+    banner_image: "v2/drill.svg",
+    type: :subdued) %>
 <% end %>

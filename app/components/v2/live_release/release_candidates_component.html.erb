@@ -2,25 +2,21 @@
   <% container.with_back_button %>
   <% container.with_tab(title: "Release Candidate", icon: live_release_tab_configuration.dig(:stability, :release_candidate, :icon)) do %>
     <%= render V2::PlatformViewComponent.new(release) do |component| %>
-      <% component.runs do |release_platform_run| %>
-        <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), workflow_config(release_platform_run), release_platform_run:) %>
-      <% end %>
+      <% component.runs do |run| %>
+        <div class="flex flex-col gap-5">
+          <% beta_release = latest_beta_release(run) %>
+          <%= render V2::LiveRelease::PreProdRelease::RcHeaderComponent.new(run, beta_release) %>
 
-      <% component.runs do |release_platform_run| %>
-        <% beta_release = latest_beta_release(release_platform_run) %>
-        <% if beta_release.present? %>
-          <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
-        <% else %>
-          <%= render V2::LiveRelease::PreProdRelease::PrepareReleaseCandidateComponent.new(release_platform_run) %>
-        <% end %>
+          <% if beta_release.present? %>
+            <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
+          <% else %>
+            <%= render V2::LiveRelease::PreProdRelease::PrepareReleaseCandidateComponent.new(run) %>
+          <% end %>
+        </div>
       <% end %>
 
       <% component.runs do |run| %>
-        <%= render partial: "pre_prod_releases/build_insights", locals: {builds: builds(run), run:} %>
-      <% end %>
-
-      <% component.runs do |release_platform_run| %>
-        <% previous_betas = previous_beta_releases(release_platform_run) %>
+        <% previous_betas = previous_beta_releases(run) %>
         <% if previous_betas.present? %>
           <%= render V2::SectionComponent.new(title: "Other builds (#{previous_betas.size})", style: :titled, size: :compact) do %>
             <div class="flex flex-col item-gap-default">
