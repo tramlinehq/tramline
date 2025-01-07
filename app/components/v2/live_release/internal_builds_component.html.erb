@@ -4,7 +4,7 @@
   <% container.with_tab(title: "Internal Builds", icon:) do %>
     <%= render V2::PlatformViewComponent.new(release) do |component| %>
       <% component.runs do |run| %>
-        <div class="flex flex-col item-gap-default">
+        <div class="flex flex-col gap-5">
           <% if configured?(run) %>
             <% latest_release = latest_internal_release(run) %>
             <%= render V2::LiveRelease::PreProdRelease::InternalHeaderComponent.new(run, latest_release) %>

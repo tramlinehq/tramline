@@ -1,4 +1,4 @@
-<div class="grid grid-cols-2 item-gap-default">
+<div class="<%= grids %> item-gap-default">
   <div>
     <% if events.present? %>
       <%= render TimelineComponent.new(events:, truncate: true, view_all_link: timeline_release_path(pre_prod_release.release)) %>
