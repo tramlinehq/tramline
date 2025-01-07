@@ -56,6 +56,7 @@ module Installations
     end
 
     def crashlytics_query(dataset_name, bundle_identifier, platform, version_name, version_code)
+      table_name = dataset_name.sub("*", "") + bundle_identifier.tr(".", "_") + "_" + platform
       <<-SQL.squish
         WITH combined_events AS (
           SELECT
@@ -65,10 +66,8 @@ module Installations
             error_type,
             event_timestamp,
             bundle_identifier
-          FROM `#{dataset_name}`
+          FROM `#{table_name}`
           WHERE event_timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
-            AND bundle_identifier = "#{bundle_identifier}"
-            AND platform = "#{platform}"
         ),
         errors_with_version AS (
           SELECT
@@ -107,6 +106,8 @@ module Installations
     end
 
     def analytics_query(dataset_name, bundle_identifier, platform, version_name)
+      table_name = dataset_name.sub("*", "events_*")
+      events_table_suffix = (Date.current - 30.days).strftime("%Y%m%d")
       <<-SQL.squish
         WITH combined_events AS (
           SELECT
@@ -117,12 +118,12 @@ module Installations
             app_info.firebase_app_id,
             user_id,
             user_pseudo_id
-          FROM `#{dataset_name}` AS e,
+          FROM `#{table_name}` AS e,
           UNNEST(event_params) AS ep
           WHERE
-            app_info.id = "#{bundle_identifier}"
+            _TABLE_SUFFIX > '#{events_table_suffix}'
+            AND app_info.id = "#{bundle_identifier}"
             AND platform = "#{platform}"
-            AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY))
             AND ep.key = 'ga_session_id'
             AND ep.value.int_value IS NOT NULL
         ),
