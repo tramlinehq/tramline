@@ -217,7 +217,7 @@ class PlayStoreSubmission < StoreSubmission
     save!
   end
 
-  def notification_params(failure_message: nil)
+  def notification_params(failure_message: nil, requires_manual_action: false)
     super.merge(
       requires_review: false,
       submission_channel: "#{display} - #{submission_channel.name}"
@@ -235,6 +235,9 @@ class PlayStoreSubmission < StoreSubmission
   def fail_with_review_rejected!(error)
     if error.is_a?(Installations::Google::PlayDeveloper::Error) && error.reason == :app_review_rejected
       fail_with_sync_option!(reason: error.reason)
+      notify!("Submission failed and needs manual action!",
+        :submission_failed,
+        notification_params(failure_message: error.message, requires_manual_action: true))
       release_platform_run.block_play_store_submissions!
       return true
     end
