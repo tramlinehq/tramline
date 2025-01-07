@@ -2,6 +2,7 @@
 
 class AddInternalSubmissionNotificationSetting < ActiveRecord::Migration[7.2]
   def up
+    return
     ActiveRecord::Base.transaction do
       Train.all.where.not(notification_channel: nil).each do |train|
         next if train.notification_settings.empty?
