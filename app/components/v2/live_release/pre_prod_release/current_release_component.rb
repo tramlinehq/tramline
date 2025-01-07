@@ -45,7 +45,7 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
   end
 
   def latest_commit
-    release_platform_run.last_commit
+    release.last_applicable_commit
   end
 
   def new_pre_prod_release_options
