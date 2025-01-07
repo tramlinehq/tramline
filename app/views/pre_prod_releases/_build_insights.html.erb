@@ -1,4 +1,19 @@
 <% if builds.size > 1 %>
+  <div class="text-secondary text-xs font-normal flex flex-col gap-2 whitespace-normal">
+    <p>
+      †
+      The following metadata trends are computed from the last <%= builds.size %> internal builds in this
+      release.
+    </p>
+    <p>
+      Graphs shown below are populated from a combination of data fetched by Tramline and data that is (optionally)
+      sent to Tramline
+      <%= link_to_external "through the API ↗",
+                           "https://docs.tramline.app/api#send-custom-metadata-for-a-build",
+                           class: "hover:underline", title: "API docs on sending build metadata" %>.
+    </p>
+  </div>
+
   <%= render V2::BuildHealthComponent.new(builds) %>
 <% else %>
   <%= render V2::EmptyStateComponent.new(

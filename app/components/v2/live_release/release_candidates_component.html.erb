@@ -3,14 +3,16 @@
   <% container.with_tab(title: "Release Candidate", icon: live_release_tab_configuration.dig(:stability, :release_candidate, :icon)) do %>
     <%= render V2::PlatformViewComponent.new(release) do |component| %>
       <% component.runs do |run| %>
-        <% beta_release = latest_beta_release(run) %>
-        <%= render V2::LiveRelease::PreProdRelease::RcHeaderComponent.new(run, beta_release) %>
+        <div class="flex flex-col item-gap-default">
+          <% beta_release = latest_beta_release(run) %>
+          <%= render V2::LiveRelease::PreProdRelease::RcHeaderComponent.new(run, beta_release) %>
 
-        <% if beta_release.present? %>
-          <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
-        <% else %>
-          <%= render V2::LiveRelease::PreProdRelease::PrepareReleaseCandidateComponent.new(run) %>
-        <% end %>
+          <% if beta_release.present? %>
+            <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
+          <% else %>
+            <%= render V2::LiveRelease::PreProdRelease::PrepareReleaseCandidateComponent.new(run) %>
+          <% end %>
+        </div>
       <% end %>
 
       <% component.runs do |run| %>
