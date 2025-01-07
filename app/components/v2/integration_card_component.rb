@@ -61,7 +61,7 @@ class V2::IntegrationCardComponent < V2::BaseComponent
 
   def reusable_integrations_across_app_form_partial(existing_integration)
     render(partial: "integrations/app_reuseable",
-      locals: {app: @app, existing_integration: existing_integration, category: @category, url: reuse_integration_across_app_app_integrations_path, type: providable_type, provider: provider})
+      locals: {app: @app, existing_integration: existing_integration, category: @category, url: reuse_existing_integration_path(existing_integration), type: providable_type, provider: provider})
   end
 
   def disconnectable?
