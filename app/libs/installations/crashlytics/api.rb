@@ -56,7 +56,7 @@ module Installations
     end
 
     def crashlytics_query(dataset_name, bundle_identifier, platform, version_name, version_code)
-      table_name = dataset_name.sub("*", "") + bundle_identifier.tr(".", "_") + "_" + platform
+      table_name = dataset_name.sub("*", "") + bundle_identifier.tr(".", "_") + "_" + platform + "*"
       <<-SQL.squish
         WITH combined_events AS (
           SELECT
