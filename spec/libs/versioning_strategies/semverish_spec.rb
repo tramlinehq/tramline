@@ -149,24 +149,46 @@ describe VersioningStrategies::Semverish do
       end
     end
 
-    context "when calendar (year_and_next_week) version" do
-      let(:year_and_next_week) { described_class.new("0.2347.0") }
-      let(:the_time) { Time.new(2023, 12, 1, 0, 0, 0, "+12:00") }
+    # major / minor (do not change anything)
+    # 2015.12.1 => 2015.12.1
+    # --
+    # major / minor (only change based on calendar dates)
+    # 2015.12.1 => 2015.12.2
+    # 2015.12.1 => 2016.01.1
+    # 2015.12.1 => 2016.01.1
+    # --
+    # patch (only changes sequence number, not even the day)
+    # 2015.12.01 => 2016.01.0101
+    # 2015.12.0101 => 2016.01.0102
+    # 2015.12.0102 => 2016.01.0103
+    # --
+    # To be decided:
+    # Bump sequence number for major / minor
+    context "when calver" do
+      let(:calver) { described_class.new("2015.12.1") }
 
-      it "bumps up major and keeps minor intact" do
+      it "bumps up the day even if its major" do
+        the_time = Time.new(2015, 12, 2, 0, 0, 0, "+12:00")
+
         travel_to(the_time) do
-          expect(year_and_next_week.bump!(:major, strategy: :year_and_next_week).to_s).to eq("1.2349.0")
+          expect(calver.bump!(:major, strategy: :calver).to_s).to eq("2015.12.2")
         end
       end
 
-      it "bumps up minor" do
+      it "bumps up the day even if its minor" do
+        the_time = Time.new(2015, 12, 3, 0, 0, 0, "+12:00")
+
         travel_to(the_time) do
-          expect(year_and_next_week.bump!(:minor, strategy: :year_and_next_week).to_s).to eq("0.2349.0")
+          expect(calver.bump!(:minor, strategy: :calver).to_s).to eq("2015.12.3")
         end
       end
 
-      it "does not do anything if patch" do
-        expect(year_and_next_week.bump!(:patch, strategy: :year_and_next_week).to_s).to eq("0.2347.1")
+      it "adds a sequence number when it's a patch bump" do
+        the_time = Time.new(2015, 12, 3, 0, 0, 0, "+12:00")
+
+        travel_to(the_time) do
+          expect(calver.bump!(:patch, strategy: :calver).to_s).to eq("2015.12.301")
+        end
       end
     end
   end

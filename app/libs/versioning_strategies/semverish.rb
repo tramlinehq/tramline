@@ -3,14 +3,19 @@ class VersioningStrategies::Semverish
 
   TEMPLATES = {
     "Positive Number" => :pn,
-    "Calendar Year And Next Week" => :yy0w1
+    "Calendar Day" => :dpn,
+    "Calendar Month" => :m,
+    "Calendar Year" => :yyyy
   }
 
   INCREMENTS = {
     TEMPLATES["Positive Number"] => proc { |v| (!v.nil?) ? v.abs + 1 : nil },
-    TEMPLATES["Calendar Year And Next Week"] => proc { |_v|
-      now = Time.current
-      Integer("#{now.year.to_s[2..3]}#{now.strftime("%U").to_i + 1}")
+    TEMPLATES["Calendar Year"] => proc { |_v| Time.current.year.to_i },
+    TEMPLATES["Calendar Month"] => proc { |_v| Time.current.month.to_i },
+    TEMPLATES["Calendar Day"] => proc { |v|
+      inc = (!v.nil?) ? v.abs + 1 : nil
+      today = Time.current.day
+      (v&.zero? ? today : "#{today}#{format("%02d", inc)}").to_i
     }
   }
 
@@ -19,23 +24,21 @@ class VersioningStrategies::Semverish
       major: TEMPLATES["Positive Number"],
       minor: TEMPLATES["Positive Number"],
       patch: TEMPLATES["Positive Number"],
-      update_minor_on_major_bump: false
     },
 
-    year_and_next_week: {
-      major: TEMPLATES["Positive Number"],
-      minor: TEMPLATES["Calendar Year And Next Week"],
-      patch: TEMPLATES["Positive Number"],
-      update_minor_on_major_bump: true
+    calver: {
+      major: TEMPLATES["Calendar Year"],
+      minor: TEMPLATES["Calendar Month"],
+      patch: TEMPLATES["Calendar Day"],
     }
   }
 
   DEFAULT_STRATEGY = :semver
-
   # adapted from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-  # makes the patch version optional
-  # and removes support for the prerelease version and the build metadata
-  SEMVER_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?\Z/
+  # - makes the patch version optional
+  # - removes support for the prerelease version and the build metadata
+  # - allows zero-padded numbers for minor and patch
+  SEMVER_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*|0\d)(?:\.(0|[1-9]\d*|0\d))?\Z/
 
   attr_accessor :major, :minor, :patch
   attr_reader :version
@@ -61,10 +64,7 @@ class VersioningStrategies::Semverish
     strategy_config = STRATEGIES[strategy.to_sym]
     new_value = INCREMENTS[strategy_config[term]].call(public_send(term))
     new_version.public_send(:"#{term}=", new_value)
-    if term == :major
-      new_version.minor = 0 unless strategy_config[:update_minor_on_major_bump]
-      new_version.minor = INCREMENTS[strategy_config[:minor]].call(public_send(:minor)) if strategy_config[:update_minor_on_major_bump]
-    end
+    new_version.minor = 0 if term == :major
     new_version.patch = 0 if proper? && (term == :major || term == :minor)
     new_version
   end
