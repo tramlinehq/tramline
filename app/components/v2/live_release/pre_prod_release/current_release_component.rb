@@ -5,7 +5,7 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
 
   STATUS = {
     created: {text: "In progress", status: :routine},
-    failed: {text: "Failed", status: :failure},
+    failed: {text: "Build not found", status: :failure},
     finished: {text: "Success", status: :success}
   }
 
