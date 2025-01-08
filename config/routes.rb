@@ -268,6 +268,12 @@ Rails.application.routes.draw do
     get :callback, controller: "integration_listeners/slack", as: :slack_callback
   end
 
+  scope :jira do
+    get :callback, controller: "integration_listeners/jira", as: :jira_callback
+    get :select_organization, to: "integration_listeners/jira#select_organization", as: :jira_select_organization
+    post :set_organization, to: "integration_listeners/jira#set_organization", as: :jira_set_organization
+  end
+
   get "/rails/active_storage/blobs/redirect/:signed_id/*filename",
     to: "authorized_blob_redirect#show", as: "blob_redirect"
   match "/", via: %i[post put patch delete], to: "application#raise_not_found", format: false

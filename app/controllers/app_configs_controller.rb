@@ -40,6 +40,7 @@ class AppConfigsController < SignedInApplicationController
     when Integration.categories[:ci_cd] then configure_ci_cd
     when Integration.categories[:monitoring] then configure_monitoring
     when Integration.categories[:build_channel] then configure_build_channel
+    when Integration.categories[:project_management] then configure_project_management
     else raise "Invalid integration category."
     end
   end
@@ -64,6 +65,10 @@ class AppConfigsController < SignedInApplicationController
     set_monitoring_projects if further_setup_by_category?.dig(:monitoring, :further_setup)
   end
 
+  def configure_project_management
+    set_jira_projects if further_setup_by_category?.dig(:project_management, :further_setup)
+  end
+
   def set_app_config
     @config = AppConfig.find_or_initialize_by(app: @app)
   end
@@ -80,7 +85,13 @@ class AppConfigsController < SignedInApplicationController
         :bugsnag_ios_project_id,
         :bugsnag_android_release_stage,
         :bugsnag_android_project_id,
-        :bitbucket_workspace
+        :bitbucket_workspace,
+        jira_config: {
+          selected_projects: [],
+          project_configs: {},
+          release_tracking: [:track_tickets, :auto_transition],
+          release_filters: [[:type, :value]]
+        }
       )
   end
 
@@ -91,6 +102,7 @@ class AppConfigsController < SignedInApplicationController
       .merge(bugsnag_config(app_config_params.slice(*BUGSNAG_CONFIG_PARAMS)))
       .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
       .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)
+      .merge(jira_config: parse_jira_config(app_config_params[:jira_config]))
       .except(*BUGSNAG_CONFIG_PARAMS)
       .compact
   end
@@ -120,6 +132,62 @@ class AppConfigsController < SignedInApplicationController
     else
       redirect_to app_path(@app), flash: {notice: "Invalid integration category."}
     end
+  end
+
+  def set_jira_projects
+    provider = @app.integrations.project_management_provider
+    @jira_data = provider.setup
+
+    @config.jira_config = {} if @config.jira_config.nil?
+
+    @config.jira_config = {
+      "selected_projects" => @config.jira_config["selected_projects"] || [],
+      "project_configs" => @config.jira_config["project_configs"] || {},
+      "release_tracking" => @config.jira_config["release_tracking"] || {
+        "track_tickets" => false,
+        "auto_transition" => false
+      },
+      "release_filters" => @config.jira_config["release_filters"] || []
+    }
+
+    @jira_data[:projects]&.each do |project|
+      project_key = project["key"]
+      statuses = @jira_data[:project_statuses][project_key]
+
+      done_states = statuses&.select { |status| status["name"] == "Done" }&.pluck("name") || []
+
+      @config.jira_config["project_configs"][project_key] ||= {
+        "done_states" => done_states
+      }
+    end
+
+    @config.save! if @config.changed?
+    @current_jira_config = @config.jira_config.with_indifferent_access
+  end
+
+  def parse_jira_config(config)
+    return {} if config.blank?
+
+    {
+      selected_projects: Array(config[:selected_projects]),
+      project_configs: config[:project_configs]&.transform_values do |project_config|
+        {
+          done_states: Array(project_config[:done_states])&.reject(&:blank?),
+          custom_done_states: Array(project_config[:custom_done_states])&.reject(&:blank?)
+        }
+      end || {},
+      release_tracking: {
+        track_tickets: ActiveModel::Type::Boolean.new.cast(config.dig(:release_tracking, :track_tickets)),
+        auto_transition: ActiveModel::Type::Boolean.new.cast(config.dig(:release_tracking, :auto_transition))
+      },
+      release_filters: config[:release_filters]&.values&.filter_map do |filter|
+        next if filter[:type].blank? || filter[:value].blank?
+        {
+          "type" => filter[:type],
+          "value" => filter[:value]
+        }
+      end || []
+    }
   end
 
   def bugsnag_config(config_params)

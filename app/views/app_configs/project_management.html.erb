@@ -1,0 +1,7 @@
+<%= render V2::EnhancedTurboFrameComponent.new("#{@integration_category}_config") do %>
+    <%= render partial: "jira_form", locals: {
+            config: @config,
+            app: @app,
+            jira_data: @jira_data
+          } %>
+<% end %>

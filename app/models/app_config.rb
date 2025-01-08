@@ -10,6 +10,8 @@
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
+#  jira_config             :jsonb            not null
+#  notification_channel    :json
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
@@ -96,6 +98,13 @@ class AppConfig < ApplicationRecord
       }
     end
 
+    if integrations.project_management.present?
+      categories[:project_management] = {
+        further_setup: integrations.project_management.map(&:providable).any?(&:further_setup?),
+        ready: project_management_ready?
+      }
+    end
+
     categories
   end
 
@@ -127,6 +136,20 @@ class AppConfig < ApplicationRecord
     update(ci_cd_workflows: workflows)
   end
 
+  def add_jira_release_filter(type:, value:)
+    return unless JiraIntegration::VALID_FILTER_TYPES.include?(type)
+
+    new_filters = (jira_config&.dig("release_filters") || []).dup
+    new_filters << {"type" => type, "value" => value}
+    update!(jira_config: jira_config.merge("release_filters" => new_filters))
+  end
+
+  def remove_jira_release_filter(index)
+    new_filters = (jira_config&.dig("release_filters") || []).dup
+    new_filters.delete_at(index)
+    update!(jira_config: jira_config.merge("release_filters" => new_filters))
+  end
+
   private
 
   def set_bugsnag_config
@@ -155,5 +178,17 @@ class AppConfig < ApplicationRecord
     return ios.present? if app.ios?
     return android.present? if app.android?
     ios.present? && android.present? if app.cross_platform?
+  end
+
+  def project_management_ready?
+    return false if app.integrations.project_management.blank?
+
+    jira = app.integrations.project_management.find(&:jira_integration?)&.providable
+    return false unless jira
+
+    jira_config.present? &&
+      jira_config["selected_projects"].present? &&
+      jira_config["selected_projects"].any? &&
+      jira_config["project_configs"].present?
   end
 end

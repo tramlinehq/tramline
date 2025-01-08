@@ -36,5 +36,15 @@ FactoryBot.define do
       providable factory: %i[slack_integration without_callbacks_and_validations]
       category { "notification" }
     end
+
+    trait :jira do
+      category { "project_management" }
+      providable factory: :jira_integration
+    end
+
+    trait :with_jira do
+      category { "project_management" }
+      providable factory: %i[jira_integration with_app_config]
+    end
   end
 end

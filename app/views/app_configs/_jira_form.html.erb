@@ -1,0 +1,29 @@
+<div class="p-4 sm:p-6 lg:p-8">
+<div class="space-y-6">
+  <div>
+    <h2 class="text-base font-semibold leading-7 text-gray-900">Jira Configuration</h2>
+    <p class="mt-1 text-sm leading-6 text-gray-600">Select projects and their done states for tracking releases.</p>
+  </div>
+
+  <%= form_with model: config,
+                url: app_app_config_path(app),
+                method: :patch,
+                data: { turbo_frame: "_top" },
+                builder: EnhancedFormHelper::AuthzForm do |f| %>
+    <div class="mt-6 space-y-6 bg-white rounded-lg border" data-controller="project-selector">
+      <% if jira_data && jira_data[:projects].present? %>
+        <!-- Project Selection -->
+        <%= render 'jira_integration/project_selection' %>
+      <% else %>
+        <div class="p-4 text-sm text-gray-600">
+          No Jira projects found. Please ensure your Jira integration is properly configured.
+        </div>
+      <% end %>
+    </div>
+
+    <div class="mt-6 flex items-center justify-end gap-x-6">
+      <%= f.authz_submit "Update", "plus.svg", size: :xs %>
+    </div>
+  <% end %>
+</div>
+</div>

@@ -405,6 +405,7 @@ en:
           notification: "Notifications"
           build_channel: "Submissions"
           monitoring: "Monitoring and Analytics"
+          project_management: "Project Management"
       bitrise_integration:
         access_token: "Bitrise Personal Access Token"
       bugsnag_integration:
@@ -701,3 +702,30 @@ en:
         title: "Release stability fixes"
         scope: "Last 6 releases. Commits after release start per team."
         help_text: "These are the changes made to the release branch after the release has started by members in these respective teams.\n\nThis is a good indicator of how much the team is involved in the release stability."
+
+  integrations:
+    project_management:
+      jira:
+        connect:
+          success: "Successfully connected to Jira!"
+          failure: "Failed to connect to Jira: %{errors}"
+        configure:
+          success: "Jira configuration was successfully updated."
+          failure: "Failed to update Jira configuration: %{errors}"
+        projects:
+          select: "Select Jira Projects"
+          help_text: "Choose the projects you want to track in Tramline"
+        done_states:
+          select: "Select Done States"
+          help_text: "Choose which states represent completed work"
+        release_filters:
+          title: "Release Filters"
+          help_text: "Configure how tickets are associated with releases"
+          types:
+            label: "Label"
+            fix_version: "Fix Version"
+          add: "Add Filter"
+          placeholder:
+            label: "e.g., release-1.0.0"
+        no_organization: "No Jira organizations available. Please try again."
+        integration_created: "Integration was successfully created."
