@@ -8,6 +8,7 @@
         </h4>
       </header>
     </div>
+
     <footer>
       <div class="flex flex-col justify-start items-start space-y-5">
         <div class="text-xs text-slate-500">
@@ -15,6 +16,7 @@
             <%= connection_data -%>
           <% end %>
         </div>
+
         <% if connected? %>
           <div class="flex justify-between w-full items-baseline">
             <%= render V2::BadgeComponent.new(text: "Connected", status: :success) %>
@@ -32,32 +34,37 @@
             <% end %>
           </div>
         <% end %>
-      <div class="flex gap-1">
+
+
         <% if disconnected? %>
-          <% if connectable? %>
+          <div class="flex gap-1">
+
+            <% if connectable? %>
               <%= connectable_form_partial %>
-              <% if repeated_integration.present? %>
-                <%= reusable_integration_form_partial(repeated_integration) %>
-              <% end %>
-          <% end %>
-          <% if creatable? %>
-            <%= render V2::ModalComponent.new(title: creatable_modal_title) do |modal| %>
-              <% modal.with_button(label: "Connect", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                      .with_icon("plus.svg", size: :md) %>
-              <% modal.with_body do %>
-                <%= creatable_form_partial %>
+            <% end %>
+
+            <% if creatable? %>
+              <%= render V2::ModalComponent.new(title: creatable_modal_title) do |modal| %>
+                <% modal.with_button(label: "Connect", scheme: :light, type: :action, size: :xxs, arrow: :none)
+                        .with_icon("plus.svg", size: :md) %>
+                <% modal.with_body do %>
+                  <%= creatable_form_partial %>
+                <% end %>
               <% end %>
             <% end %>
-          <% end %>
-          <% if repeated_integrations_across_app.present? %>
-            <%= render V2::ModalComponent.new(title: "Reuse Previous") do |modal| %>
-            <% modal.with_button(label: "reuse across apps", scheme: :supporting, type: :action, size: :xxs, arrow: :none)
-                    .with_icon("v2/repeat.svg", size: :md) %>
-              <% modal.with_body do %>
-                <%= reusable_integrations_across_app_form_partial(repeated_integrations_across_app) %>
+
+            <% if repeated_integrations_across_app.present? %>
+              <%= render V2::ModalComponent.new(title: "Reconnect from an existing integration") do |modal| %>
+                <% modal.with_button(label: "Reuse existing integration", scheme: :supporting, type: :action, size: :xxs, arrow: :none)
+                        .with_icon("v2/repeat.svg", size: :md) %>
+                <% modal.with_body do %>
+                  <%= reusable_integrations_across_app_form_partial(repeated_integrations_across_app) %>
+                <% end %>
               <% end %>
+            <% elsif repeated_integration.present? %>
+              <%= reusable_integration_form_partial(repeated_integration) %>
             <% end %>
-          <% end %>
+          </div>
         <% end %>
       </div>
     </footer>
