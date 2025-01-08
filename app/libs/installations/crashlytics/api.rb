@@ -63,21 +63,19 @@ module Installations
             issue_id,
             application.display_version AS version_name,
             application.build_version AS version_code,
-            error_type,
             event_timestamp,
             bundle_identifier
           FROM `#{table_name}`
           WHERE event_timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
+          AND error_type = 'FATAL'
         ),
         errors_with_version AS (
           SELECT
             issue_id,
             version_name,
-            version_code,
-            error_type
+            version_code
           FROM combined_events
-          WHERE error_type IS NOT NULL
-          AND version_code = "#{version_code}"
+          WHERE version_code = "#{version_code}"
           AND version_name = "#{version_name}"
         ),
         previous_errors AS (
@@ -96,7 +94,7 @@ module Installations
         )
         SELECT
           e.version_name AS version_name,
-          COUNT(*) AS errors_count,
+          COUNT(DISTINCT e.issue_id) AS errors_count,
           COUNT(DISTINCT ne.issue_id) AS new_errors_count
         FROM errors_with_version e
         LEFT JOIN new_errors ne ON e.version_code = ne.version_code
