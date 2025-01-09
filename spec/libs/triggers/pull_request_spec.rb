@@ -103,7 +103,6 @@ describe Triggers::PullRequest do
       expect(repo_integration).to have_received(:merge_pr!).with(repo_name, created_pr.number)
       expect(repo_integration).to have_received(:enable_auto_merge).with(app.config.code_repo_namespace, app.config.code_repo_name_only, created_pr.number)
       expect(result.ok?).to be(true)
-      expect(created_pr).to be_present
       expect(created_pr.closed?).to be(false)
     end
 
