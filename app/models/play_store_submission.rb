@@ -138,6 +138,7 @@ class PlayStoreSubmission < StoreSubmission
     return unless actionable?
 
     preprocess!
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     StoreSubmissions::PlayStore::UploadJob.perform_later(id)
   end
 
@@ -262,7 +263,6 @@ class PlayStoreSubmission < StoreSubmission
   private
 
   def on_start_prepare!
-    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id)
   end
 

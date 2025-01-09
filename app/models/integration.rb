@@ -201,6 +201,10 @@ class Integration < ApplicationRecord
       app.integrations.connected.find_by(providable_type: providable_type)
     end
 
+    def build_channels_for_platform(platform)
+      kept.build_channel.filter { |b| ALLOWED_INTEGRATIONS_FOR_APP[platform.to_sym][:build_channel].include?(b.providable_type) }
+    end
+
     private
 
     def providable_error_message(meta)
