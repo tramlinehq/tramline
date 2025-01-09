@@ -1,3 +1,5 @@
+# Semverish represents a loose/broad range of what we allow in the x.y.z versioning system
+# It bumps and validates in a more tight/specific way depending on the strategy used
 class VersioningStrategies::Semverish
   include Comparable
 

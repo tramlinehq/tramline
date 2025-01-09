@@ -222,24 +222,32 @@ describe VersioningStrategies::Semverish do
     context "when calver" do
       let(:calver) { described_class.new("2015.12.1") }
 
-      it "bumps up the day even if its major" do
-        the_time = Time.new(2015, 12, 2, 0, 0, 0, "+00:00")
+      it "bumps up the day/month/year when bump is major" do
+        the_time = Time.new(2016, 11, 2, 0, 0, 0, "+00:00")
 
         travel_to(the_time) do
-          expect(calver.bump!(:major, strategy: :calver).to_s).to eq("2015.12.02")
+          expect(calver.bump!(:major, strategy: :calver).to_s).to eq("2016.11.02")
         end
       end
 
-      it "bumps up the day even if its minor" do
-        the_time = Time.new(2015, 12, 3, 0, 0, 0, "+00:00")
+      it "bumps up the day/month/year when bump is minor" do
+        the_time = Time.new(2017, 10, 3, 0, 0, 0, "+00:00")
 
         travel_to(the_time) do
-          expect(calver.bump!(:minor, strategy: :calver).to_s).to eq("2015.12.03")
+          expect(calver.bump!(:minor, strategy: :calver).to_s).to eq("2017.10.03")
         end
       end
 
-      it "adds a sequence number when it's a patch bump" do
-        the_time = Time.new(2015, 12, 3, 0, 0, 0, "+00:00")
+      it "adds a sequence number when bump is patch" do
+        the_time = Time.new(2015, 12, 1, 0, 0, 0, "+00:00")
+
+        travel_to(the_time) do
+          expect(calver.bump!(:patch, strategy: :calver).to_s).to eq("2015.12.0101")
+        end
+      end
+
+      it "does not update the day/month/year only sequence number when bump is patch" do
+        the_time = Time.new(2016, 11, 2, 0, 0, 0, "+00:00")
 
         travel_to(the_time) do
           expect(calver.bump!(:patch, strategy: :calver).to_s).to eq("2015.12.0101")

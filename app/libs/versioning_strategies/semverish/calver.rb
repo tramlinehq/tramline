@@ -29,8 +29,6 @@ class VersioningStrategies::Semverish::Calver
       new_version.minor = month
       new_version.patch = day
     when :patch
-      new_version.major = year
-      new_version.minor = month
       new_version.patch = inc(new_version.patch)
     else
       raise
