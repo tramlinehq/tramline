@@ -13,17 +13,19 @@
       </li>
     <% end %>
 
-    <li class="mt-6 last:mb-0 ms-4 text-secondary text-xs">
-      <%= render V2::ButtonComponent.new(label: "View all events",
-                                         scheme: :link,
-                                         type: :link_external,
-                                         options: view_all_link,
-                                         html_options: { class: "text-xs" },
-                                         authz: false,
-                                         size: :none,
-                                         arrow: :none) do |b|
-        b.with_icon("v2/activity.svg", size: :sm)
-      end %>
-    </li>
+    <% if view_all_link.present? && truncate %>
+      <li class="mt-6 last:mb-0 ms-4 text-secondary text-xs">
+        <%= render V2::ButtonComponent.new(label: "View all events",
+                                           scheme: :link,
+                                           type: :link_external,
+                                           options: view_all_link,
+                                           html_options: { class: "text-xs" },
+                                           authz: false,
+                                           size: :none,
+                                           arrow: :none) do |b|
+          b.with_icon("v2/activity.svg", size: :sm)
+        end %>
+      </li>
+    <% end %>
   </ol>
 <% end %>

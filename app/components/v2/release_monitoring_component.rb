@@ -75,7 +75,9 @@ class V2::ReleaseMonitoringComponent < V2::BaseComponent
     @chart_data ||= parent_release
       .release_health_metrics
       .group_by_day(:fetched_at, range: range_start..range_end)
-      .maximum("round(CAST(sessions_in_last_day::float * 100 / total_sessions_in_last_day::float as numeric), 2)")
+      .maximum("CASE WHEN total_sessions_in_last_day = 0 THEN 0
+                     ELSE round(CAST(sessions_in_last_day::float * 100 / total_sessions_in_last_day::float as numeric), 2)
+                END")
       .compact
       .map { |k, v| [k.strftime("%d %b"), {adoption_rate: v, rollout_percentage: store_rollout.rollout_percentage_at(k)}] }
       .last(10)
@@ -93,10 +95,6 @@ class V2::ReleaseMonitoringComponent < V2::BaseComponent
 
   def grid_cols
     "grid-cols-#{@cols}"
-  end
-
-  def full_span
-    "col-span-#{@cols}"
   end
 
   def show_release_health?

@@ -133,7 +133,7 @@
             size: :xxs,
             options: finish_release_release_path(release),
             label: "Mark release as finished",
-            html_options: html_opts(:delete, "You have finished release to only one of the platforms. Are you sure you want to finish the release?")) do |b|
+            html_options: html_opts(:post, "You have finished release to only one of the platforms. Are you sure you want to finish the release?")) do |b|
             b.with_icon("v2/list_checks.svg")
           end %>
         <% end %>
