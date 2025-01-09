@@ -97,10 +97,6 @@ class V2::ReleaseMonitoringComponent < V2::BaseComponent
     "grid-cols-#{@cols}"
   end
 
-  def full_span
-    "col-span-#{@cols}"
-  end
-
   def show_release_health?
     release_health_rules.present? && show_health?
   end
