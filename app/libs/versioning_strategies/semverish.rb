@@ -1,23 +1,23 @@
 class VersioningStrategies::Semverish
   include Comparable
 
-  Semver = VersioningStrategies::Semverish::Semver
-  Calver = VersioningStrategies::Semverish::Calver
+  SEMVER = VersioningStrategies::Semverish::Semver
+  CALVER = VersioningStrategies::Semverish::Calver
   DEFAULT_STRATEGY = :semver
   # adapted from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
   # - makes the patch version optional
   # - removes support for the prerelease version and the build metadata
   # - allows zero-padded numbers for minor and patch
-  SEMVER_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*|0\d)(?:\.(0|[1-9]\d*|0\d))?\Z/
+  SEMVERISH_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*|0\d)(?:\.(0|[1-9]\d*|0\d+))?\Z/
 
   def self.build(major, minor, patch)
-    raise ArgumentError.new("Cannot build a Semverish without a minor") if major.present? && patch.present? && minor.blank?
+    raise ArgumentError, "Cannot build a Semverish without a minor" if major.present? && patch.present? && minor.blank?
     new([major, minor, patch].compact_blank.join("."))
   end
 
   def initialize(version_str)
-    v = version_str&.match(SEMVER_REGEX)
-    raise ArgumentError.new("#{version_str} is not a valid Semverish") if v.nil?
+    v = version_str&.match(SEMVERISH_REGEX)
+    raise ArgumentError, "#{version_str} is not a valid Semverish" if v.nil?
 
     @version = version_str
     @major = v[1]
@@ -30,12 +30,20 @@ class VersioningStrategies::Semverish
   def bump!(term, strategy: DEFAULT_STRATEGY)
     bump_strategy =
       case strategy
-      when :semver then Semver.new(major, minor, patch).bump!(term)
-      when :calver then Calver.new(major, minor, patch).bump!(term)
+      when :semver then SEMVER.new(major, minor, patch).bump!(term)
+      when :calver then CALVER.new(major, minor, patch).bump!(term)
       else raise ArgumentError, "Unknown strategy: #{strategy}"
       end
 
     VersioningStrategies::Semverish.build(bump_strategy.major, bump_strategy.minor, bump_strategy.patch)
+  end
+
+  def valid?(strategy: DEFAULT_STRATEGY)
+    case strategy
+    when :semver then SEMVER.valid?(version)
+    when :calver then CALVER.valid?(version)
+    else raise ArgumentError, "Unknown strategy: #{strategy}"
+    end
   end
 
   def <=>(other)

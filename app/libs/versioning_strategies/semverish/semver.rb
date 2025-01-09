@@ -1,6 +1,12 @@
 class VersioningStrategies::Semverish::Semver
   include Comparable
 
+  SEMVER_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?\Z/
+
+  def self.valid?(v)
+    v.match?(SEMVER_REGEX)
+  end
+
   def initialize(major, minor, patch)
     @major = major.to_i
     @minor = minor.to_i
@@ -22,6 +28,8 @@ class VersioningStrategies::Semverish::Semver
   def inc(v)
     (!v.nil?) ? v.abs + 1 : nil
   end
+
+  private
 
   def proper? = !@patch.nil?
 end

@@ -2,19 +2,85 @@ require "rails_helper"
 
 describe VersioningStrategies::Semverish do
   describe "validity" do
-    it "follows the semver rules for every term" do
-      expect(described_class.new("1.2.1").to_s).to eq("1.2.1")
-      expect(described_class.new("1.2.0").to_s).to eq("1.2.0")
-      expect(described_class.new("0.2").to_s).to eq("0.2")
+    context "when semverish (during initialization)" do
+      [
+        "1.2.1",
+        "1.2.0",
+        "0.2",
+        "0.02",
+        "1.02.0101",
+        "1.02.0111",
+        "1.02.1299",
+        "1.2.0001",
+        "1.11.01"
+      ].each do |valid|
+        it "follows the semverish rules #{valid}" do
+          expect(described_class.new(valid).to_s).to eq(valid)
+        end
+      end
+
+      [
+        "01.02",
+        "01.2.1",
+        "01.002.1"
+      ].each do |invalid|
+        it "rejects invalidd #{invalid}" do
+          expect { described_class.new(invalid) }.to raise_error(ArgumentError)
+        end
+      end
     end
 
-    it "rejects invalids" do
-      expect { described_class.new("01.02") }.to raise_error(ArgumentError)
-      expect { described_class.new("01.2.1") }.to raise_error(ArgumentError)
-      expect { described_class.new("01.002.1") }.to raise_error(ArgumentError)
-      expect { described_class.new("01.002.1") }.to raise_error(ArgumentError)
-      expect { described_class.new("01.2.011") }.to raise_error(ArgumentError)
-      expect { described_class.new("01.02.1") }.to raise_error(ArgumentError)
+    context "when calver" do
+      [
+        "2015.12.1110",
+        "2015.12.01",
+        "2015.12.3199",
+        "2015.12.0101",
+        "2015.12.0111",
+        "2015.12.1299"
+      ].each do |valid|
+        it "follows the calver rules #{valid}" do
+          expect(described_class.new(valid).valid?(strategy: :calver)).to be(true)
+        end
+      end
+
+      [
+        "30000.12.0101",
+        "2015.12.0001",
+        "3000.2.01",
+        "3000.13.01",
+        "2015.12.101",
+        "2015.12.1100",
+        "2015.12.3200",
+        "2015.12.31100"
+      ].each do |invalid|
+        it "rejects invalid #{invalid}" do
+          expect(described_class.new(invalid).valid?(strategy: :calver)).to be(false)
+        end
+      end
+    end
+
+    context "when semver" do
+      [
+        "1.2.1",
+        "1.2.0",
+        "0.2",
+        "2.0",
+        "12.12.999"
+      ].each do |valid|
+        it "follows the semver rules #{valid}" do
+          expect(described_class.new(valid).valid?(strategy: :semver)).to be(true)
+        end
+      end
+
+      [
+        "1.02.1",
+        "1.2.01"
+      ].each do |invalid|
+        it "rejects invalid #{invalid}" do
+          expect(described_class.new(invalid).valid?(strategy: :semver)).to be(false)
+        end
+      end
     end
 
     it "rejects pre-release and build metadata" do
@@ -119,53 +185,40 @@ describe VersioningStrategies::Semverish do
   end
 
   describe "#bump!" do
-    context "when semverish based on positive numbers" do
-      let(:semverish) { described_class.new("1.2.1") }
+    context "when semver" do
+      context "with positive numbers" do
+        let(:semverish) { described_class.new("1.2.1") }
 
-      it "bumps up major" do
-        expect(semverish.bump!(:major, strategy: :semver).to_s).to eq("2.0.0")
+        it "bumps up major" do
+          expect(semverish.bump!(:major, strategy: :semver).to_s).to eq("2.0.0")
+        end
+
+        it "bumps up minor" do
+          expect(semverish.bump!(:minor, strategy: :semver).to_s).to eq("1.3.0")
+        end
+
+        it "bumps up patch" do
+          expect(semverish.bump!(:patch, strategy: :semver).to_s).to eq("1.2.2")
+        end
       end
 
-      it "bumps up minor" do
-        expect(semverish.bump!(:minor, strategy: :semver).to_s).to eq("1.3.0")
-      end
+      context "with partial semverish based on positive numbers" do
+        let(:partial_semverish) { described_class.new("1.2") }
 
-      it "bumps up patch" do
-        expect(semverish.bump!(:patch, strategy: :semver).to_s).to eq("1.2.2")
+        it "bumps up major" do
+          expect(partial_semverish.bump!(:major, strategy: :semver).to_s).to eq("2.0")
+        end
+
+        it "bumps up minor" do
+          expect(partial_semverish.bump!(:minor, strategy: :semver).to_s).to eq("1.3")
+        end
+
+        it "does not do anything if patch" do
+          expect(partial_semverish.bump!(:patch, strategy: :semver).to_s).to eq("1.2")
+        end
       end
     end
 
-    context "with partial semverish based on positive numbers" do
-      let(:partial_semverish) { described_class.new("1.2") }
-
-      it "bumps up major" do
-        expect(partial_semverish.bump!(:major, strategy: :semver).to_s).to eq("2.0")
-      end
-
-      it "bumps up minor" do
-        expect(partial_semverish.bump!(:minor, strategy: :semver).to_s).to eq("1.3")
-      end
-
-      it "does not do anything if patch" do
-        expect(partial_semverish.bump!(:patch, strategy: :semver).to_s).to eq("1.2")
-      end
-    end
-
-    # major / minor (do not change anything)
-    # 2015.12.1 => 2015.12.1
-    # --
-    # major / minor (only change based on calendar dates)
-    # 2015.12.1 => 2015.12.2
-    # 2015.12.1 => 2016.01.1
-    # 2015.12.1 => 2016.01.1
-    # --
-    # patch (only changes sequence number, not even the day)
-    # 2015.12.01 => 2016.01.0101
-    # 2015.12.0101 => 2016.01.0102
-    # 2015.12.0102 => 2016.01.0103
-    # --
-    # To be decided:
-    # Bump sequence number for major / minor
     context "when calver" do
       let(:calver) { described_class.new("2015.12.1") }
 
@@ -189,7 +242,7 @@ describe VersioningStrategies::Semverish do
         the_time = Time.new(2015, 12, 3, 0, 0, 0, "+00:00")
 
         travel_to(the_time) do
-          expect(calver.bump!(:patch, strategy: :calver).to_s).to eq("2015.12.0301")
+          expect(calver.bump!(:patch, strategy: :calver).to_s).to eq("2015.12.0101")
         end
       end
     end

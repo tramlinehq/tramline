@@ -1,6 +1,12 @@
 class VersioningStrategies::Semverish::Calver
   include Comparable
 
+  CALVER_REGEX = /\A([1-9]\d{3})\.(0[1-9]|1[0-2])\.(0[1-9]|[12]\d|3[01])(0[1-9]|[1-9]\d)?\Z/
+
+  def self.valid?(v)
+    v&.match?(CALVER_REGEX)
+  end
+
   def initialize(major, minor, patch)
     @major = major.to_s
     @minor = minor.to_s
@@ -40,6 +46,8 @@ class VersioningStrategies::Semverish::Calver
 
     "#{zero_pad(day)}#{zero_pad(inc)}"
   end
+
+  private
 
   def day
     zero_pad Time.current.day
