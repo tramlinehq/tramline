@@ -9,10 +9,12 @@ describe VersioningStrategies::Semverish do
     end
 
     it "rejects invalids" do
-      expect { described_class.new("1.02") }.to raise_error(ArgumentError)
       expect { described_class.new("01.02") }.to raise_error(ArgumentError)
-      expect { described_class.new("1.02.1") }.to raise_error(ArgumentError)
       expect { described_class.new("01.2.1") }.to raise_error(ArgumentError)
+      expect { described_class.new("01.002.1") }.to raise_error(ArgumentError)
+      expect { described_class.new("01.002.1") }.to raise_error(ArgumentError)
+      expect { described_class.new("01.2.011") }.to raise_error(ArgumentError)
+      expect { described_class.new("01.02.1") }.to raise_error(ArgumentError)
     end
 
     it "rejects pre-release and build metadata" do
@@ -168,26 +170,26 @@ describe VersioningStrategies::Semverish do
       let(:calver) { described_class.new("2015.12.1") }
 
       it "bumps up the day even if its major" do
-        the_time = Time.new(2015, 12, 2, 0, 0, 0, "+12:00")
+        the_time = Time.new(2015, 12, 2, 0, 0, 0, "+00:00")
 
         travel_to(the_time) do
-          expect(calver.bump!(:major, strategy: :calver).to_s).to eq("2015.12.2")
+          expect(calver.bump!(:major, strategy: :calver).to_s).to eq("2015.12.02")
         end
       end
 
       it "bumps up the day even if its minor" do
-        the_time = Time.new(2015, 12, 3, 0, 0, 0, "+12:00")
+        the_time = Time.new(2015, 12, 3, 0, 0, 0, "+00:00")
 
         travel_to(the_time) do
-          expect(calver.bump!(:minor, strategy: :calver).to_s).to eq("2015.12.3")
+          expect(calver.bump!(:minor, strategy: :calver).to_s).to eq("2015.12.03")
         end
       end
 
       it "adds a sequence number when it's a patch bump" do
-        the_time = Time.new(2015, 12, 3, 0, 0, 0, "+12:00")
+        the_time = Time.new(2015, 12, 3, 0, 0, 0, "+00:00")
 
         travel_to(the_time) do
-          expect(calver.bump!(:patch, strategy: :calver).to_s).to eq("2015.12.301")
+          expect(calver.bump!(:patch, strategy: :calver).to_s).to eq("2015.12.0301")
         end
       end
     end
