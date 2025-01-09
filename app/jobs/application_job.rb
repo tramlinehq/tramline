@@ -1,7 +1,6 @@
-class ApplicationJob < ActiveJob::Base
-  retry_on ActiveRecord::Deadlocked
-  discard_on ActiveJob::DeserializationError
-  sidekiq_options retry: 0
+class ApplicationJob
+  include Sidekiq::Job
+
   Signal = Coordinators::Signals
   Action = Coordinators::Actions
 

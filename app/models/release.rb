@@ -163,7 +163,7 @@ class Release < ApplicationRecord
   before_create :set_internal_notes
   after_create :create_platform_runs!
   after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
-  after_commit -> { Releases::CopyPreviousApprovalsJob.perform_later(id) }, on: :create, if: :copy_approvals_enabled?
+  after_commit -> { Releases::CopyPreviousApprovalsJob.perform_async(id) }, on: :create, if: :copy_approvals_enabled?
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
   attr_accessor :has_major_bump, :hotfix_platform, :custom_version

@@ -57,11 +57,13 @@ describe Coordinators::Actions do
     end
 
     it "initiates the workflow run" do
-      allow(WorkflowRuns::TriggerJob).to receive(:perform_later)
-      result = described_class.start_workflow_run!(workflow_run)
-      expect(result).to be_ok
-      expect(workflow_run.reload.triggering?).to be(true)
-      expect(WorkflowRuns::TriggerJob).to have_received(:perform_later).with(workflow_run.id).once
+      expect {
+        result = described_class.start_workflow_run!(workflow_run)
+        expect(result).to be_ok
+        expect(workflow_run.reload.triggering?).to be(true)
+      }.to change(WorkflowRuns::TriggerJob.jobs, :size).by(1)
+
+      expect(WorkflowRuns::TriggerJob.jobs.last["args"]).to eq([workflow_run.id])
     end
   end
 
@@ -78,11 +80,13 @@ describe Coordinators::Actions do
     end
 
     it "retries the workflow run" do
-      allow(WorkflowRuns::TriggerJob).to receive(:perform_later)
-      result = described_class.retry_workflow_run!(workflow_run)
-      expect(result).to be_ok
-      expect(workflow_run.reload.triggering?).to be(true)
-      expect(WorkflowRuns::TriggerJob).to have_received(:perform_later).with(workflow_run.id, retrigger: true).once
+      expect {
+        result = described_class.retry_workflow_run!(workflow_run)
+        expect(result).to be_ok
+        expect(workflow_run.reload.triggering?).to be(true)
+      }.to change(WorkflowRuns::TriggerJob.jobs, :size).by(1)
+
+      expect(WorkflowRuns::TriggerJob.jobs.last["args"]).to eq([workflow_run.id, {"retrigger" => true}])
     end
   end
 
@@ -143,11 +147,13 @@ describe Coordinators::Actions do
     end
 
     it "triggers the submission" do
-      allow(StoreSubmissions::PlayStore::UploadJob).to receive(:perform_later)
-      result = described_class.trigger_submission!(submission)
-      expect(result).to be_ok
-      expect(submission.reload.preprocessing?).to be(true)
-      expect(StoreSubmissions::PlayStore::UploadJob).to have_received(:perform_later).with(submission.id).once
+      expect {
+        result = described_class.trigger_submission!(submission)
+        expect(result).to be_ok
+        expect(submission.reload.preprocessing?).to be(true)
+      }.to change(StoreSubmissions::PlayStore::UploadJob.jobs, :size).by(1)
+
+      expect(StoreSubmissions::PlayStore::UploadJob.jobs.last["args"]).to eq([submission.id])
     end
   end
 

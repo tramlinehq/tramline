@@ -17,7 +17,7 @@ describe PlayStoreSubmission do
       allow_any_instance_of(PlayStoreRollout).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
       allow(providable_dbl).to receive(:project_link)
-      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_async)
     end
 
     it "creates draft release" do
@@ -60,7 +60,7 @@ describe PlayStoreSubmission do
     it "updates the external release status" do
       allow(providable_dbl).to receive_messages(create_draft_release: GitHub::Result.new, rollout_release: GitHub::Result.new)
       submission.prepare_for_release!
-      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(submission.id).at_least(:once)
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_async).with(submission.id).at_least(:once)
     end
   end
 
@@ -75,7 +75,7 @@ describe PlayStoreSubmission do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
       allow(providable_dbl).to receive(:project_link)
-      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_async)
     end
 
     it "marks the submission as manually finished if the issue is resolved" do
