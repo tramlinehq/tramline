@@ -111,41 +111,31 @@ module Installations
           SELECT
             event_name,
             event_timestamp,
-            ep.value.int_value AS ga_session_id,
+            (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'ga_session_id') AS ga_session_id,
             app_info.version AS version_name,
-            app_info.firebase_app_id,
             user_id,
             user_pseudo_id
-          FROM `#{table_name}` AS e,
-          UNNEST(event_params) AS ep
+          FROM `#{table_name}`
           WHERE
             _TABLE_SUFFIX > '#{events_table_suffix}'
             AND app_info.id = "#{bundle_identifier}"
             AND platform = "#{platform}"
-            AND ep.key = 'ga_session_id'
-            AND ep.value.int_value IS NOT NULL
         ),
         total_sessions AS (
             SELECT
-              COUNTIF(event_name = 'session_start'
-                      AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)))
-              AS total_sessions_in_last_day
+              COUNT(DISTINCT CONCAT(user_pseudo_id, ga_session_id)) AS total_sessions_in_last_day,
             FROM
               combined_events
             WHERE
-              event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY))
+              event_timestamp >= UNIX_MICROS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY))
         )
         SELECT
           version_name,
-          COUNT(CASE WHEN event_name = 'session_start' THEN 1 END) AS sessions,
-          COUNT(DISTINCT ga_session_id) AS daily_users,
-          COUNT(DISTINCT CASE
-                          WHEN event_name = 'session_start'
-                                AND event_timestamp >= UNIX_SECONDS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY))
-                          THEN ga_session_id
-                        END) AS sessions_in_last_day,
-          COUNT(DISTINCT CASE WHEN event_name = 'app_exception' THEN ga_session_id END) AS sessions_with_errors,
           ts.total_sessions_in_last_day AS total_sessions_in_last_day,
+          count(DISTINCT CONCAT(user_pseudo_id, ga_session_id)) as sessions,
+          COUNT(DISTINCT COALESCE(user_id, user_pseudo_id)) AS daily_users,
+          COUNT(DISTINCT CASE WHEN event_timestamp >= UNIX_MICROS(TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)) THEN CONCAT(user_pseudo_id, ga_session_id) END) AS sessions_in_last_day,
+          COUNT(DISTINCT CASE WHEN event_name = 'app_exception' THEN CONCAT(user_pseudo_id, ga_session_id) END) AS sessions_with_errors,
           COUNT(DISTINCT CASE WHEN event_name = 'app_exception' THEN COALESCE(user_id, user_pseudo_id) END) AS daily_users_with_errors
         FROM
           combined_events,
