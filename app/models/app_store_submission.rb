@@ -126,7 +126,7 @@ class AppStoreSubmission < StoreSubmission
     end
   end
 
-  after_create_commit :poll_external_status, unless: :in_data_migration_mode
+  after_create_commit :poll_external_status
 
   def pre_review? = PRE_PREPARE_STATES.include?(status)
 

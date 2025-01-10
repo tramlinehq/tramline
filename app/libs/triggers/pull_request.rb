@@ -54,16 +54,19 @@ class Triggers::PullRequest
     pr_in_work.reload
     return GitHub::Result.new { pr_in_work } if pr_in_work.closed?
 
-    # enable auto-merge if possible and avoid merging manually
-    if enable_auto_merge?
-      repo_integration.enable_auto_merge!(pr_in_work.number)
-      return GitHub::Result.new { pr_in_work }
-    end
-
     # try and merge, when:
     # - create PR is successful
     # - or PR already exists and is _not_ already closed
-    merge!(pr_in_work).then { GitHub::Result.new { pr_in_work.close! } }
+    merge_result = merge!(pr_in_work)
+    if merge_result.ok?
+      pr_in_work.close!
+    elsif enable_auto_merge? # enable auto-merge if possible
+      repo_integration.enable_auto_merge!(pr_in_work.number)
+    else
+      return merge_result
+    end
+
+    GitHub::Result.new { pr_in_work }
   end
 
   private

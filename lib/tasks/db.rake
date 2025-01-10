@@ -1,14 +1,8 @@
 namespace :db do
   desc "Nuke everything except users, organizations and apps"
   task nuke: [:destructive, :environment] do
-    CommitListener.delete_all
     BuildArtifact.delete_all
-    DeploymentRun.delete_all
-    Deployment.delete_all
-    StepRun.delete_all
     Commit.delete_all
-    StepRun.delete_all
-    Step.delete_all
     ReleasePlatformRun.delete_all
     ReleasePlatform.delete_all
     Release.delete_all
@@ -57,21 +51,6 @@ end
 def nuke_train(train)
   train.releases.each do |run|
     run.release_platform_runs.each do |prun|
-      prun.step_runs.each do |srun|
-        srun.deployment_runs.each do |drun|
-          drun.staged_rollout&.delete
-          drun.staged_rollout&.passports&.delete_all
-          drun.external_release&.delete
-          drun.release_health_events&.delete_all
-          drun.release_health_metrics&.delete_all
-          drun.passports&.delete_all
-        end
-        srun.deployment_runs&.delete_all
-        srun.build_artifact&.delete
-        srun.passports&.delete_all
-        srun.external_build&.delete
-      end
-      prun.step_runs&.delete_all
       prun.passports&.delete_all
       prun.release_metadata&.delete_all
       prun.store_rollouts&.delete_all
@@ -136,10 +115,6 @@ def nuke_train(train)
       rule.filter_rule_expressions&.delete_all
     end
     release_platform.all_release_health_rules&.delete_all
-    release_platform.all_steps.each do |step|
-      step.all_deployments.delete_all
-    end
-    release_platform.all_steps&.delete_all
     sql = "delete from commit_listeners where release_platform_id = '#{release_platform.id}'"
     ActiveRecord::Base.connection.execute(sql)
   end

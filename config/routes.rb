@@ -6,13 +6,13 @@ Rails.application.routes.draw do
 
   mount ActionCable.server => "/cable"
   mount Easymon::Engine => "/up"
+  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
   # get "up" => "rails/health#show", as: :rails_health_check
 
   root "authentication/sessions#root"
   get "/admin", to: "admin/settings#index", as: :authenticated_admin_root
 
   authenticate :email_authentication, ->(u) { u.admin? || Rails.env.development? } do
-    mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
     mount Flipper::UI.app(Flipper), at: "/flipper"
     mount Sidekiq::Web, at: "/sidekiq"
     mount PgHero::Engine, at: "/pghero"

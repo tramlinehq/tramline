@@ -3,50 +3,42 @@
   <% container.with_back_button %>
   <% container.with_tab(title: "Internal Builds", icon:) do %>
     <%= render V2::PlatformViewComponent.new(release) do |component| %>
-      <% component.runs do |release_platform_run| %>
-        <% if configured?(release_platform_run) %>
-          <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), internal_workflow_config(release_platform_run), release_platform_run:) %>
-        <% else %>
-          <%= render V2::EmptyStateComponent.new(
-            title: "No internal build step configured",
-            text: "Please configure an internal build step for the train to see the build status.",
-            banner_image: "v2/drill.svg",
-            type: :subdued) %>
-        <% end %>
-      <% end %>
-
       <% component.runs do |run| %>
-        <% latest_release = latest_internal_release(run) %>
-        <% if latest_release.present? %>
-          <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(latest_release) %>
-        <% elsif configured?(run) %>
-          <% if run.hotfix? && run.active? %>
-            <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "Changes were not automatically applied for the hotfix") do |ann| %>
-              <% ann.with_announcement_button(label: "Create internal build",
-                                              scheme: :default,
-                                              type: :button,
-                                              options: pre_prod_internal_run_path(run),
-                                              size: :xxs,
-                                              html_options: html_opts(:post, "Are you sure you want to create the internal build?")) %>
-              <div class="flex flex-col gap-2">
-                <%= render V2::CommitComponent.new(commit: applicable_commit(run), detailed: false) %>
-                <span class="text-sm">Internal builds are not automatically triggered for hotfixes. But you can manually apply the latest commit and kickoff the build.</span>
-              </div>
+        <div class="flex flex-col gap-5">
+          <% if configured?(run) %>
+            <% latest_release = latest_internal_release(run) %>
+            <%= render V2::LiveRelease::PreProdRelease::InternalHeaderComponent.new(run, latest_release) %>
+
+            <% if latest_release.present? %>
+              <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(latest_release) %>
+            <% elsif run.hotfix? && run.active? %>
+              <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "Changes were not automatically applied for the hotfix") do |ann| %>
+                <% ann.with_announcement_button(label: "Create internal build",
+                                                scheme: :default,
+                                                type: :button,
+                                                options: pre_prod_internal_run_path(run),
+                                                size: :xxs,
+                                                html_options: html_opts(:post, "Are you sure you want to create the internal build?")) %>
+                <div class="flex flex-col gap-2">
+                  <%= render V2::CommitComponent.new(commit: applicable_commit(run), detailed: false) %>
+                  <span class="text-sm">Internal builds are not automatically triggered for hotfixes. But you can manually apply the latest commit and kickoff the build.</span>
+                </div>
+              <% end %>
+            <% else %>
+              <%= render V2::EmptyStateComponent.new(
+                title: "Not ready yet",
+                text: "Please wait for changes to be applied before starting.",
+                banner_image: icon,
+                type: :subdued) %>
             <% end %>
           <% else %>
             <%= render V2::EmptyStateComponent.new(
-              title: "Not ready yet",
-              text: "Please wait for changes to be applied before starting.",
-              banner_image: icon,
+              title: "No internal build step configured",
+              text: "Please configure an internal build step for the train to see the build status.",
+              banner_image: "v2/drill.svg",
               type: :subdued) %>
           <% end %>
-        <% else %>
-          <div><!-- grid maintenance --></div>
-        <% end %>
-      <% end %>
-
-      <% component.runs do |run| %>
-        <%= render partial: "pre_prod_releases/build_insights", locals: {builds: builds(run), run:} %>
+        </div>
       <% end %>
 
       <% component.runs do |release_platform_run| %>

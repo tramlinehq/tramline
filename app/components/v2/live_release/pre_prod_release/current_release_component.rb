@@ -5,7 +5,7 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
 
   STATUS = {
     created: {text: "In progress", status: :routine},
-    failed: {text: "Failed", status: :failure},
+    failed: {text: "Build not found", status: :failure},
     finished: {text: "Success", status: :success}
   }
 
@@ -18,7 +18,7 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
     :store_submissions,
     :workflow_run,
     :conf,
-    :build, to: :pre_prod_release
+    :build, :release, to: :pre_prod_release
 
   def show_blocked_message?
     release_platform_run.play_store_blocked? && store_submissions.none?(&:failed_with_action_required?)
@@ -45,7 +45,7 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
   end
 
   def latest_commit
-    release_platform_run.last_commit
+    release.last_applicable_commit
   end
 
   def new_pre_prod_release_options

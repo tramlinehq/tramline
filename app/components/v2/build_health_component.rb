@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 class V2::BuildHealthComponent < ViewComponent::Base
-  def initialize(release_platform_run:, builds:)
-    @release_platform_run = release_platform_run
+  def initialize(builds)
     @builds = builds
   end
 

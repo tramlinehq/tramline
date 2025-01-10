@@ -58,7 +58,7 @@
   <% end %>
 
   <% if show_release_health? %>
-    <div class="<%= full_span %> flex flex-col gap-y-2 border-default box-padding">
+    <div class="col-span-full flex flex-col gap-y-2 border-default box-padding">
       <div class="flex justify-between items-center">
         <h5 class="heading-5 uppercase">
           <span>Overall Release Health: </span>
@@ -86,7 +86,7 @@
 
   <% if :adoption_chart.in? metrics %>
     <% if adoption_chart_data.present? %>
-      <div class="<%= full_span %>"><%= render ChartComponent.new(adoption_chart_data) %></div>
+      <div class="col-span-full"><%= render ChartComponent.new(adoption_chart_data) %></div>
     <% end %>
   <% end %>
 </div>
