@@ -1,0 +1,12 @@
+<%= render V2::FormComponent.new(model: [app, train, train.releases.new],
+                                 url: app_train_releases_path(app, train),
+                                 free_form: true) do |form| %>
+
+  <div data-controller="reveal">
+    <%= render V2::OptionCardsComponent.new(form: form.F, options: release_options) %>
+  </div>
+
+  <% form.with_action do %>
+    <%= form.F.authz_submit "Start", "v2/zap.svg" %>
+  <% end %>
+<% end %>
