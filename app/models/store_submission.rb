@@ -48,9 +48,6 @@ class StoreSubmission < ApplicationRecord
   scope :sequential, -> { reorder("store_submissions.sequence_number ASC") }
   scope :production, -> { where(parent_release_type: "ProductionRelease") }
 
-  # TODO: Remove this accessor, once the migration is complete
-  attr_accessor :in_data_migration_mode
-
   def submission_channel
     conf.submission_external
   end
