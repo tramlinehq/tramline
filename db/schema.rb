@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_24_064815) do
+ActiveRecord::Schema[7.2].define(version: 2025_01_10_154546) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -1052,11 +1052,9 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_24_064815) do
   add_foreign_key "production_releases", "release_platform_runs"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
-  add_foreign_key "release_health_events", "deployment_runs"
   add_foreign_key "release_health_events", "production_releases"
   add_foreign_key "release_health_events", "release_health_metrics"
   add_foreign_key "release_health_events", "release_health_rules"
-  add_foreign_key "release_health_metrics", "deployment_runs"
   add_foreign_key "release_health_metrics", "production_releases"
   add_foreign_key "release_health_rules", "release_platforms"
   add_foreign_key "release_index_components", "release_indices"
