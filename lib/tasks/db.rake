@@ -51,6 +51,8 @@ end
 def nuke_train(train)
   train.releases.each do |run|
     run.release_platform_runs.each do |prun|
+      sql = "delete from external_releases where deployment_run_id IN (SELECT id FROM deployment_runs WHERE step_run_id IN (SELECT id FROM step_runs WHERE release_platform_run_id = '#{prun.id}'))"
+      ActiveRecord::Base.connection.execute(sql)
       sql = "delete from staged_rollouts where deployment_run_id IN (SELECT id FROM deployment_runs WHERE step_run_id IN (SELECT id FROM step_runs WHERE release_platform_run_id = '#{prun.id}'))"
       ActiveRecord::Base.connection.execute(sql)
       sql = "delete from deployment_runs where step_run_id IN (SELECT id FROM step_runs WHERE release_platform_run_id = '#{prun.id}')"
