@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_01_10_154546) do
+ActiveRecord::Schema[7.2].define(version: 2025_01_10_160725) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -1021,7 +1021,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_10_154546) do
   add_foreign_key "approval_items", "users", column: "author_id"
   add_foreign_key "approval_items", "users", column: "status_changed_by_id"
   add_foreign_key "apps", "organizations"
-  add_foreign_key "build_artifacts", "step_runs"
   add_foreign_key "build_queues", "releases"
   add_foreign_key "builds", "commits"
   add_foreign_key "builds", "release_platform_runs"
@@ -1034,7 +1033,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_10_154546) do
   add_foreign_key "deployment_runs", "step_runs"
   add_foreign_key "deployments", "steps"
   add_foreign_key "external_apps", "apps"
-  add_foreign_key "external_builds", "step_runs"
   add_foreign_key "external_releases", "deployment_runs"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"
