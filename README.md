@@ -29,7 +29,7 @@
   <a href="https://twitter.com/tramlinehq/" target="_blank" rel="noopener noreferrer">
     <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/tramlinehq?style=social">
   </a>
-  <a href="https://discord.gg/ZVeQZsC7An" target="_blank" rel="noopener noreferrer">
+  <a href="https://go.tramline.app/discord" target="_blank" rel="noopener noreferrer">
     <img alt="Discord" src="https://img.shields.io/discord/974284993641725962?style=plastic">
   </a>
 
