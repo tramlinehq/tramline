@@ -1,7 +1,10 @@
 <div class="<%= grids %> item-gap-default">
   <div>
     <% if events.present? %>
-      <%= render TimelineComponent.new(events:, truncate: true, view_all_link: timeline_release_path(pre_prod_release.release)) %>
+      <div class="flex flex-col item-gap-default">
+        <h5 class="flex heading-5-sc">Recent Events</h5>
+        <%= render TimelineComponent.new(events:, truncate: true, view_all_link: timeline_release_path(pre_prod_release.release)) %>
+      </div>
     <% end %>
   </div>
 
