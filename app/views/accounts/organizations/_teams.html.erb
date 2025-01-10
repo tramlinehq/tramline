@@ -102,9 +102,9 @@
         <% end %>
         <% user_role = current_user_role %>
         <% member_role = member.role_for(current_organization) %>
-        <% if can_current_user_edit_role?(member) %>
-          <% row.with_cell(wrap: true) do %>
-            <div class="flex gap-x-2 justify-end">
+        <% row.with_cell(wrap: true) do %>
+          <div class="flex gap-x-2 justify-end">
+            <% if can_current_user_edit_role?(member) %>
               <%= render V2::ModalComponent.new(title: "Edit role") do |modal| %>
                 <% modal.with_button(scheme: :light,
                                     type: :action,
@@ -114,13 +114,22 @@
                 <% modal.with_body do %>
                   <%= render partial: "accounts/invitations/edit_form", locals: { email: member.email, member_role: member_role } %>
                 <% end %>
-              </div>
               <% end %>
-          <% end %>
+            <% end %>
+            <% if can_current_user_remove_member?(member) %>
+              <%= render V2::ButtonComponent.new(
+                scheme: :danger,
+                type: :button,
+                size: :xxs,
+                options: accounts_organization_membership_path(current_organization, member.membership_for(current_organization)),
+                html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to remove #{member.email} from the organization?" } }) do |b|
+                b.with_icon("v2/trash.svg")
+              end %>
+            <% end %>
+          </div>
         <% end %>
       <% end %>
     <% end %>
-
     <% @invited_users.each do |invite| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
@@ -148,6 +157,18 @@
         <% end %>
         <% row.with_cell do %>
           <%= invite.sender&.email || "–" %>
+        <% end %>
+        <% row.with_cell(wrap: true) do %>
+          <div class="flex gap-x-2 justify-end">
+            <%= render V2::ButtonComponent.new(
+              scheme: :danger,
+              type: :button,
+              size: :xxs,
+              options: accounts_organization_invitation_path(current_organization, invite),
+              html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to cancel the invitation for #{invite.email}?" } }) do |b|
+              b.with_icon("v2/trash.svg")
+            end %>
+          </div>
         <% end %>
       <% end %>
     <% end %>
