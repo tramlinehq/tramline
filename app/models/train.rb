@@ -112,7 +112,6 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
-  after_create -> { Flipper.enable_actor(:product_v2, self) }
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
@@ -147,11 +146,6 @@ class Train < ApplicationRecord
 
   def one_percent_beta_release?
     Flipper.enabled?(:one_percent_beta_release, self)
-  end
-
-  # TODO: remove this after full removal of v2, it is used only for one-off rake tasks
-  def product_v2?
-    Flipper.enabled?(:product_v2, self)
   end
 
   def deploy_action_enabled?

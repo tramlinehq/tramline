@@ -66,8 +66,7 @@ class Coordinators::StartRelease
       new_hotfix_branch: new_hotfix_branch,
       hotfix_platform: (hotfix_platform if hotfix?),
       custom_version: custom_version,
-      release_pilot_id: Current.user&.id,
-      is_v2: true # TODO: remove this after full removal of v2
+      release_pilot_id: Current.user&.id
     )
   end
 
