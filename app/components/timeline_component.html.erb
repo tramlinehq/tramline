@@ -13,7 +13,7 @@
       </li>
     <% end %>
 
-    <% if view_all_link.present? && truncate %>
+    <% if truncate %>
       <li class="mt-6 last:mb-0 ms-4 text-secondary text-xs">
         <%= render V2::ButtonComponent.new(label: "View all events",
                                            scheme: :link,
