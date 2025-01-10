@@ -3,8 +3,10 @@
 class VersioningStrategies::Semverish
   include Comparable
 
-  SEMVER = VersioningStrategies::Semverish::Semver
-  CALVER = VersioningStrategies::Semverish::Calver
+  STRATEGIES = {
+    semver: VersioningStrategies::Semverish::Semver,
+    calver: VersioningStrategies::Semverish::Calver
+  }
   DEFAULT_STRATEGY = :semver
   # adapted from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
   # - makes the patch version optional
@@ -30,22 +32,12 @@ class VersioningStrategies::Semverish
   attr_reader :major, :minor, :patch, :version
 
   def bump!(term, strategy: DEFAULT_STRATEGY)
-    bump_strategy =
-      case strategy
-      when :semver then SEMVER.new(major, minor, patch).bump!(term)
-      when :calver then CALVER.new(major, minor, patch).bump!(term)
-      else raise ArgumentError, "Unknown strategy: #{strategy}"
-      end
-
+    bump_strategy = STRATEGIES[strategy].new(major, minor, patch).bump!(term)
     VersioningStrategies::Semverish.build(bump_strategy.major, bump_strategy.minor, bump_strategy.patch)
   end
 
   def valid?(strategy: DEFAULT_STRATEGY)
-    case strategy
-    when :semver then SEMVER.valid?(version)
-    when :calver then CALVER.valid?(version)
-    else raise ArgumentError, "Unknown strategy: #{strategy}"
-    end
+    STRATEGIES[strategy].valid?(version)
   end
 
   def <=>(other)
