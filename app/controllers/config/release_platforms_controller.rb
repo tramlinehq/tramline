@@ -70,7 +70,8 @@ class Config::ReleasePlatformsController < SignedInApplicationController
         ]
       ],
       release_candidate_workflow_attributes: [
-        :id, :identifier, :artifact_name_pattern
+        :id, :identifier, :artifact_name_pattern,
+        parameters_attributes: [:id, :name, :value, :_destroy]
       ],
       production_release_attributes: [
         :id,

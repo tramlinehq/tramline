@@ -72,7 +72,8 @@ module Installations
             environments: [
               {mapped_to: "versionName", value: inputs[:build_version]},
               {mapped_to: "versionCode", value: inputs[:version_code]},
-              {mapped_to: "buildNotes", value: inputs[:build_notes] || ""}
+              {mapped_to: "buildNotes", value: inputs[:build_notes] || ""},
+              *inputs[:parameters].map { |mapped_to, value| {mapped_to:, value:} },
             ]
           },
 
