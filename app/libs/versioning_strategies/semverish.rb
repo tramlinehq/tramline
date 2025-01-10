@@ -32,12 +32,12 @@ class VersioningStrategies::Semverish
   attr_reader :major, :minor, :patch, :version
 
   def bump!(term, strategy: DEFAULT_STRATEGY)
-    bump_strategy = STRATEGIES[strategy].new(major, minor, patch).bump!(term)
+    bump_strategy = STRATEGIES[strategy.to_sym].new(major, minor, patch).bump!(term)
     VersioningStrategies::Semverish.build(bump_strategy.major, bump_strategy.minor, bump_strategy.patch)
   end
 
   def valid?(strategy: DEFAULT_STRATEGY)
-    STRATEGIES[strategy].valid?(version)
+    STRATEGIES[strategy.to_sym].valid?(version)
   end
 
   def <=>(other)
