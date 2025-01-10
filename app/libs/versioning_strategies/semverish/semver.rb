@@ -1,6 +1,9 @@
 class VersioningStrategies::Semverish::Semver
   include Comparable
 
+  # adapted from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+  # - makes the patch version optional
+  # - removes support for the prerelease version and the build metadata
   SEMVER_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?\Z/
 
   def self.valid?(v)
