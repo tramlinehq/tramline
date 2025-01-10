@@ -516,12 +516,6 @@ class Train < ApplicationRecord
     end
   end
 
-  def semver_compatibility
-    VersioningStrategies::Semverish.new(version_seeded_with)
-  rescue ArgumentError
-    errors.add(:version_seeded_with, "Please choose a valid semver-like format, eg. major.minor.patch or major.minor")
-  end
-
   def set_version_seeded_with
     self.version_seeded_with =
       VersioningStrategies::Semverish.build(major_version_seed, minor_version_seed, patch_version_seed)

@@ -45,9 +45,12 @@
 
       <div>
         <%= section.F.labeled_select :versioning_strategy, "Versioning Strategy",
-                                     options_for_select(Train.versioning_strategies, train.versioning_strategy),
+                                     options_for_select(TrainPresenter::VERSIONING_STRATEGIES, train.versioning_strategy),
                                      {},
-                                     { disabled: train.persisted? } %>
+                                     { disabled: train.persisted?,
+                                       data: { domain__version_name_help_strategy_value: train.versioning_strategy,
+                                               domain__version_name_help_target: "versioningStrategy",
+                                               action: "domain--version-name-help#updateStrategy" } } %>
       </div>
 
       <div data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
