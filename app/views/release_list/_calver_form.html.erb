@@ -4,6 +4,12 @@
 
   <div data-controller="reveal">
     <%= render V2::OptionCardsComponent.new(form: form.F, options: release_options) %>
+    <div class="mt-2" hidden data-reveal>
+      <%= form.F.labeled_text_field :custom_release_version,
+                                    "Version Name",
+                                    autocomplete: "off",
+                                    placeholder: "Eg. 1970.01.01" %>
+    </div>
   </div>
 
   <% form.with_action do %>

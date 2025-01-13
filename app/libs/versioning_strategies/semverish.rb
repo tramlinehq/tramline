@@ -40,6 +40,10 @@ class VersioningStrategies::Semverish
     STRATEGIES[strategy.to_sym].valid?(version)
   end
 
+  def invalid?(strategy: DEFAULT_STRATEGY)
+    !valid?(strategy:)
+  end
+
   def <=>(other)
     other = new(other) if other.is_a? String
 

@@ -121,7 +121,8 @@ class V2::ReleaseListComponent < V2::BaseComponent
         opt_name: "has_major_bump",
         opt_value: "true",
         options: {checked: true, data: {action: REVEAL_HIDE_ACTION}}
-      }
+      },
+      custom_version_option
     ]
   end
 
