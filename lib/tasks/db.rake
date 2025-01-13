@@ -51,13 +51,21 @@ end
 def nuke_train(train)
   train.releases.each do |run|
     run.release_platform_runs.each do |prun|
+      sql = "delete from external_releases where deployment_run_id IN (SELECT id FROM deployment_runs WHERE step_run_id IN (SELECT id FROM step_runs WHERE release_platform_run_id = '#{prun.id}'))"
+      ActiveRecord::Base.connection.execute(sql)
+      sql = "delete from staged_rollouts where deployment_run_id IN (SELECT id FROM deployment_runs WHERE step_run_id IN (SELECT id FROM step_runs WHERE release_platform_run_id = '#{prun.id}'))"
+      ActiveRecord::Base.connection.execute(sql)
+      sql = "delete from deployment_runs where step_run_id IN (SELECT id FROM step_runs WHERE release_platform_run_id = '#{prun.id}')"
+      ActiveRecord::Base.connection.execute(sql)
+      sql = "delete from step_runs where release_platform_run_id = '#{prun.id}'"
+      ActiveRecord::Base.connection.execute(sql)
       prun.passports&.delete_all
       prun.release_metadata&.delete_all
       prun.store_rollouts&.delete_all
       prun.store_submissions&.delete_all
       prun.production_releases.each do |pr|
-        pr.release_health_metrics&.delete_all
         pr.release_health_events&.delete_all
+        pr.release_health_metrics&.delete_all
       end
       prun.production_releases&.delete_all
       prun.builds.each do |build|
@@ -89,6 +97,10 @@ def nuke_train(train)
   train.release_index&.release_index_components&.delete_all
   train.release_index&.delete
   train.release_platforms.each do |release_platform|
+    sql = "delete from deployments where step_id IN (SELECT id FROM steps WHERE release_platform_id = '#{release_platform.id}')"
+    ActiveRecord::Base.connection.execute(sql)
+    sql = "delete from steps where release_platform_id = '#{release_platform.id}'"
+    ActiveRecord::Base.connection.execute(sql)
     config = release_platform.platform_config
     if config.present?
       config.internal_workflow&.delete
