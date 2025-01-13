@@ -6,6 +6,7 @@
 #  approved_at             :datetime
 #  config                  :jsonb
 #  failure_reason          :string
+#  last_stable_status      :string
 #  name                    :string
 #  parent_release_type     :string           indexed => [parent_release_id]
 #  prepared_at             :datetime

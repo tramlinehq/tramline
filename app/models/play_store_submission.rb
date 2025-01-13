@@ -6,6 +6,7 @@
 #  approved_at             :datetime
 #  config                  :jsonb
 #  failure_reason          :string
+#  last_stable_status      :string
 #  name                    :string
 #  parent_release_type     :string           indexed => [parent_release_id]
 #  prepared_at             :datetime
@@ -127,7 +128,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def retryable?
-    failed_with_action_required?
+    failed? || failed_with_action_required?
   end
 
   def internal_channel?
@@ -144,19 +145,16 @@ class PlayStoreSubmission < StoreSubmission
 
   def retry!
     return unless retryable?
+    return check_manual_upload if failed_with_action_required?
+    raise "Not retryable" if last_stable_status.blank?
 
-    if provider.build_present_in_channel?(submission_channel_id, build_number)
-      transaction do
-        finish_manually!
-        event_stamp!(reason: :finished_manually, kind: :notice, data: stamp_data)
-        release_platform_run.unblock_play_store_submissions!
-      end
-
-      if parent_release.production?
-        on_prepare!
-      else
-        parent_release.rollout_complete!(self)
-      end
+    case last_stable_status.to_sym
+    when :preprocessing
+      trigger!
+    when :preparing
+      start_prepare!
+    else
+      raise "Not retryable"
     end
   end
 
@@ -261,6 +259,22 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   private
+
+  def check_manual_upload
+    if provider.build_present_in_channel?(submission_channel_id, build_number)
+      transaction do
+        finish_manually!
+        event_stamp!(reason: :finished_manually, kind: :notice, data: stamp_data)
+        release_platform_run.unblock_play_store_submissions!
+      end
+
+      if parent_release.production?
+        on_prepare!
+      else
+        parent_release.rollout_complete!(self)
+      end
+    end
+  end
 
   def on_start_prepare!
     StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id)

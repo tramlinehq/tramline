@@ -145,6 +145,7 @@
     <% card.with_action do %>
       <% if submission.retryable? %>
         <%= render V2::ButtonComponent.new(label: "Retry sending to #{submission.provider.display}",
+                                           auto_label_case: false,
                                            scheme: :default,
                                            type: :button,
                                            options: retry_store_submission_path(submission),
@@ -186,6 +187,10 @@
         <%= render V2::IconComponent.new(store_icon, size: :xl) %>
         <%= render V2::BadgeComponent.new(**status) %>
       </div>
+
+      <% if submission.failed? && submission.last_failed_event.present? %>
+        <%= render V2::AlertComponent.new(type: :error, title: raw(submission.last_failed_event.message), full_screen: false) %>
+      <% end %>
 
       <%= render V2::LiveRelease::BuildComponent.new(current_build,
                                                      show_number: false,

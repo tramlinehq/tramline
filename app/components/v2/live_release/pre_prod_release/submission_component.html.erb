@@ -3,6 +3,7 @@
     <% card.with_action do %>
       <% if submission.triggerable? %>
         <%= render V2::ButtonComponent.new(label: "Send to #{submission.display}",
+                                           auto_label_case: false,
                                            scheme: :default,
                                            type: :button,
                                            options: trigger_store_submission_path(submission),
@@ -13,6 +14,7 @@
       <% end %>
       <% if submission.retryable? %>
         <%= render V2::ButtonComponent.new(label: "Retry sending to #{submission.display}",
+                                           auto_label_case: false,
                                            scheme: :default,
                                            type: :button,
                                            options: retry_store_submission_path(submission),
@@ -40,6 +42,10 @@
                              tick: last_activity_tick? } %>
       <% end %>
     </div>
+
+    <% if submission.failed? && submission.last_failed_event.present? %>
+      <%= render V2::AlertComponent.new(type: :error, title: raw(submission.last_failed_event.message), full_screen: false) %>
+    <% end %>
 
     <%= render partial: "shared/play_store_review_rejected", locals: { show: submission.failed_with_action_required?,
                                                                        build:,

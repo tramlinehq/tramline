@@ -6,6 +6,7 @@
 #  approved_at             :datetime
 #  config                  :jsonb
 #  failure_reason          :string
+#  last_stable_status      :string
 #  name                    :string
 #  parent_release_type     :string           indexed => [parent_release_id]
 #  prepared_at             :datetime
@@ -154,6 +155,10 @@ class StoreSubmission < ApplicationRecord
 
   def conf = Config::Submission.from_json(config, read_only: true)
 
+  def last_failed_event
+    passports.where(reason: "failed").last
+  end
+
   protected
 
   def reset_store_info!
@@ -165,6 +170,7 @@ class StoreSubmission < ApplicationRecord
 
   def set_failure_reason(args = nil)
     self.failure_reason = args&.fetch(:reason, :unknown_failure)
+    self.last_stable_status = status
   end
 
   def set_prepared_at!
