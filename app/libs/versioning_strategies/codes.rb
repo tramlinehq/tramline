@@ -12,7 +12,7 @@ class VersioningStrategies::Codes
       semver = v[:release_version].to_semverish
       raise ArgumentError.new("could not bump version code because release version is not a valid semver") if semver.nil?
       initial_digit = 9
-      major, minor, patch = semver.major, semver.minor, semver.patch || 0
+      major, minor, patch = semver.major.to_i, semver.minor.to_i, semver.patch.to_i || 0
       new_build_number = (initial_digit * 100_000_000) + (major * 1_000_000) + (minor * 10_000) + (patch * 100)
       new_build_number = new_build_number.succ while new_build_number <= value
       new_build_number || 0
