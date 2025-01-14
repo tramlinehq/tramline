@@ -8,7 +8,7 @@
           <%= render V2::IconComponent.new("v2/info.svg", size: :md) %>
           <span class="font-semibold"><%= type.to_s.humanize %>:</span>
         </div>
-        <%= title %>
+        <div class="overflow-hidden"><%= title %></div>
       </div>
 
       <% if dismissible %>

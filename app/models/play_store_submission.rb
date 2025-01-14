@@ -65,7 +65,7 @@ class PlayStoreSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :preprocess do
+    event :preprocess, after: :on_preprocess! do
       transitions from: CHANGEABLE_STATES, to: :preprocessing
     end
 
@@ -140,7 +140,6 @@ class PlayStoreSubmission < StoreSubmission
 
     preprocess!
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
-    StoreSubmissions::PlayStore::UploadJob.perform_later(id)
   end
 
   def retry!
@@ -264,6 +263,10 @@ class PlayStoreSubmission < StoreSubmission
         parent_release.rollout_complete!(self)
       end
     end
+  end
+
+  def on_preprocess!
+    StoreSubmissions::PlayStore::UploadJob.perform_later(id)
   end
 
   def on_start_prepare!
