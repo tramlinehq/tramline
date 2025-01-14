@@ -87,7 +87,7 @@ describe Coordinators::StartRelease do
       it "raises an error when the custom version is invalid" do
         expect {
           described_class.call(train, custom_version: "1.2.3-abc")
-        }.to raise_error("Invalid custom release version! Please use a SemVer like x.y.z format.")
+        }.to raise_error("Invalid custom release version! Please use a SemVer-like x.y.z format based on your configured versioning strategy.")
       end
 
       it "raises an error when the train is inactive" do

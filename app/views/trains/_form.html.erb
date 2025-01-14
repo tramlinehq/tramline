@@ -36,15 +36,26 @@
             Tramline increments the version name for every release build created, which guarantees that every build
             can be uniquely identified. We allow a
             <%= link_to_external "SemVer", "https://semver.org", class: "underline" %>-like scheme, for eg.
-            <code>MAJOR.MINOR.PATCH</code> and <code>MAJOR.MINOR</code>.
+            <code>X.Y.Z</code> and <code>X.Y</code>. Or a CalVer scheme, for eg. <code>YYYY.0M.0D</code>.
             Refer to the
             <%= link_to_external "docs", "https://docs.tramline.app/automations#version-name", class: "underline" %>
             to learn more about versioning.
           </span>
       <% end %>
 
+      <div>
+        <%= section.F.labeled_select :versioning_strategy, "Versioning Strategy",
+                                     options_for_select(TrainPresenter::VERSIONING_STRATEGIES, train.versioning_strategy),
+                                     {},
+                                     { disabled: train.persisted?,
+                                       data: { domain__version_name_help_strategy_value: train.versioning_strategy,
+                                               domain__version_name_help_target: "versioningStrategy",
+                                               action: "domain--version-name-help#updateStrategy" } } %>
+      </div>
+
       <div data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
         <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>
+
         <div class="flex flex-row gap-x-2 items-center">
           <%= section.F.text_field_without_label :major_version_seed, "major",
                                                  disabled: train.persisted?,
