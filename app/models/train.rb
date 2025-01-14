@@ -88,7 +88,7 @@ class Train < ApplicationRecord
   validates :versioning_strategy, presence: true, inclusion: {in: Train.versioning_strategies.values}
   validates :release_backmerge_branch, presence: true, if: -> { branching_strategy == "release_backmerge" }
   validates :release_branch, presence: true, if: -> { branching_strategy == "parallel_working" }
-  validate :semver_compatibility, on: :create
+  validate :version_compatibility, on: :create
   validate :ready?, on: :create
   validate :valid_schedule, if: -> { kickoff_at_changed? || repeat_duration_changed? }
   validate :build_queue_config
@@ -502,10 +502,12 @@ class Train < ApplicationRecord
     self.notifications_enabled = send_notifications?
   end
 
-  def semver_compatibility
-    VersioningStrategies::Semverish.new(version_seeded_with)
-  rescue ArgumentError
-    errors.add(:version_seeded_with, "Please choose a valid semver-like format, eg. major.minor.patch or major.minor")
+  def version_compatibility
+    semverish = VersioningStrategies::Semverish.new(version_seeded_with)
+
+    unless semverish.valid?(strategy: versioning_strategy)
+      errors.add(:version_seeded_with, :"improper_#{versioning_strategy}")
+    end
   end
 
   def set_version_seeded_with

@@ -1,13 +1,16 @@
 import {Controller} from "@hotwired/stimulus";
-import bumpVersion from "semver-increment";
+import {default as bumpSemVer} from "semver-increment";
 
-const compatibilityMessage = "Only MAJOR.MINOR.PATCH or MAJOR.MINOR supported. Each term should only be numbers."
+const semVerCompatibilityMessage = "Only MAJOR.MINOR.PATCH or MAJOR.MINOR supported. Each term should only be numbers."
+const calVerCompatibilityMessage = "Only YYYY.0M.0D supported. Month and Day terms should be zero-padded."
 const semVerRegex = new RegExp('^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:\\.(0|[1-9]\\d*))?$')
+const calVerRegex = new RegExp('^([1-9]\\d{3})\\.(0[1-9]|1[0-2])\\.(0[1-9]|[12]\\d|3[01])(0[1-9]|[1-9]\\d)?$')
 const emptyVersion = "X.X"
 
 export default class extends Controller {
   static values = {
     disabled: Boolean,
+    strategy: {type: String, default: "semver"}
   }
 
   static targets = [
@@ -17,14 +20,16 @@ export default class extends Controller {
     "nextVersion",
     "currentVersion",
     "helpTextVal",
-    "freezeReleaseVersion"
+    "freezeReleaseVersion",
+    "versioningStrategy"
   ]
 
   initialize() {
+    this.currentStrategy = this.strategyValue
     this.majorVersion = ""
     this.minorVersion = ""
     this.patchVersion = ""
-    if(this.hasHelpTextValTarget) {
+    if (this.hasHelpTextValTarget) {
       this.helpTextValTarget.hidden = true
     }
   }
@@ -38,11 +43,39 @@ export default class extends Controller {
     this.minorVersion = this.minorInputTarget.value
     this.patchVersion = this.patchInputTarget.value
 
-    this.__verChange();
+    this.__verChange()
+  }
+
+  updateStrategy() {
+    this.currentStrategy = this.versioningStrategyTarget.value
+    this.__verChange()
+  }
+
+  updateVersion() {
+    if (this.hasNextVersionTarget && this.__isValidSemVer(this.__versionString())) {
+      if (this.freezeReleaseVersionTarget.checked) {
+        this.nextVersionTarget.innerHTML = this.__versionString();
+      } else {
+        this.nextVersionTarget.innerHTML = this.__nextReleaseVersion();
+      }
+    }
   }
 
   __verChange() {
-    if (!this.__isSemVer(this.__versionString())) {
+    let validVersion = false
+    let compatibilityMessage = ""
+
+    if (this.__semVerStrategy()) {
+      validVersion = this.__isValidSemVer(this.__versionString())
+      compatibilityMessage = semVerCompatibilityMessage
+    }
+
+    if (this.__calVerStrategy()) {
+      validVersion = this.__isValidCalVer(this.__versionString())
+      compatibilityMessage = calVerCompatibilityMessage
+    }
+
+    if (!validVersion) {
       this.helpTextValTarget.hidden = false
       this.helpTextValTarget.innerHTML = compatibilityMessage
       this.nextVersionTarget.innerHTML = emptyVersion
@@ -54,19 +87,48 @@ export default class extends Controller {
     }
   }
 
-  __isSemVer(value) {
-    return semVerRegex.test(value)
-  }
-
   __nextReleaseVersion() {
     try {
       if (this.freezeReleaseVersionTarget.checked) {
         return this.__versionString();
       }
-      return bumpVersion([0, 1, 0], this.__versionString())
+      return this.__bumpVer()
     } catch (error) {
       return emptyVersion
     }
+  }
+
+  __bumpVer() {
+    if (this.__semVerStrategy()) {
+      return bumpSemVer([0, 1, 0], this.__versionString())
+    }
+
+    if (this.__calVerStrategy()) {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+
+      return `${year}.${month}.${day}`;
+    }
+  }
+
+  // Utils
+
+  __isValidSemVer(value) {
+    return semVerRegex.test(value)
+  }
+
+  __isValidCalVer(value) {
+    return calVerRegex.test(value)
+  }
+
+  __semVerStrategy() {
+    return this.currentStrategy === "semver"
+  }
+
+  __calVerStrategy() {
+    return this.currentStrategy === "calver"
   }
 
   __versionString() {
@@ -87,15 +149,5 @@ export default class extends Controller {
 
   __allButMinorMissing() {
     return this.__is_present(this.majorVersion) && this.__is_present(this.patchVersion) && !this.__is_present(this.minorVersion)
-  }
-
-  updateVersion() {
-    if (this.hasNextVersionTarget && this.__isSemVer(this.__versionString())) {
-      if (this.freezeReleaseVersionTarget.checked) {
-        this.nextVersionTarget.innerHTML = this.__versionString();
-      } else {
-        this.nextVersionTarget.innerHTML = this.__nextReleaseVersion();
-      }
-    }
   }
 }

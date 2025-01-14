@@ -23,7 +23,7 @@ class Coordinators::StartRelease
   end
 
   def call
-    raise "Invalid custom release version! Please use a SemVer like x.y.z format." if invalid_custom_version?
+    raise "Invalid custom release version! Please use a SemVer-like x.y.z format based on your configured versioning strategy." if invalid_custom_version?
     raise "Could not kickoff a hotfix because the source tag does not exist" if hotfix_from_new_branch? && !hotfix_tag_exists?
     raise "Could not kickoff a hotfix because the source release branch does not exist" if hotfix_from_previous_branch? && !hotfix_branch_exists?
     raise "Cannot start a train that is not active!" if train.inactive?
@@ -138,8 +138,7 @@ class Coordinators::StartRelease
 
   def invalid_custom_version?
     return false if custom_version.blank?
-    VersioningStrategies::Semverish.new(custom_version)
-    false
+    VersioningStrategies::Semverish.new(custom_version).invalid?(strategy: train.versioning_strategy)
   rescue ArgumentError
     true
   end
