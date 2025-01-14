@@ -183,7 +183,7 @@ class StoreSubmission < ApplicationRecord
     save!
   end
 
-  def set_failure_reason(args = nil)
+  def set_failure_context(args = nil)
     self.failure_reason = args&.fetch(:reason, :unknown_failure)
     self.last_stable_status = status
   end

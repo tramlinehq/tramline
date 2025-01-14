@@ -70,7 +70,7 @@ class GoogleFirebaseSubmission < StoreSubmission
       transitions to: :finished
     end
 
-    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
+    event :fail, before: :set_failure_context, after_commit: :on_fail! do
       transitions to: :failed
     end
   end

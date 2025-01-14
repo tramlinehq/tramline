@@ -87,11 +87,11 @@ class PlayStoreSubmission < StoreSubmission
       transitions from: :prepared, to: :review_failed
     end
 
-    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
+    event :fail, before: :set_failure_context, after_commit: :on_fail! do
       transitions to: :failed
     end
 
-    event :fail_with_sync_option, before: :set_failure_reason do
+    event :fail_with_sync_option, before: :set_failure_context do
       transitions from: [:preparing, :prepared, :failed_with_action_required, :finished_manually], to: :failed_with_action_required
     end
 

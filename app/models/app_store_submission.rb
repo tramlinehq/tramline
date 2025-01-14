@@ -91,7 +91,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: :preparing, to: :prepared
     end
 
-    event :fail_prepare, before: :set_failure_reason, after_commit: :on_fail_prepare! do
+    event :fail_prepare, before: :set_failure_context, after_commit: :on_fail_prepare! do
       transitions from: :preparing, to: :failed_prepare
     end
 
@@ -122,7 +122,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: [:submitted_for_review, :approved, :cancelling], to: :cancelled
     end
 
-    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
+    event :fail, before: :set_failure_context, after_commit: :on_fail! do
       transitions to: :failed
     end
   end
