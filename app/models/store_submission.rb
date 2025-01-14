@@ -37,7 +37,7 @@ class StoreSubmission < ApplicationRecord
   belongs_to :release_platform_run
   belongs_to :parent_release, polymorphic: true
   # rubocop:disable Rails/InverseOf
-  belongs_to :production_release, -> { where(store_submissions: { parent_release_type: "ProductionRelease" }) }, foreign_key: "parent_release_id", optional: true
+  belongs_to :production_release, -> { where(store_submissions: {parent_release_type: "ProductionRelease"}) }, foreign_key: "parent_release_id", optional: true
   # rubocop:enable Rails/InverseOf
   belongs_to :build
 
