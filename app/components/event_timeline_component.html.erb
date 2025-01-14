@@ -1,3 +1,5 @@
+<div class="text-xs text-secondary text-center my-4">† All timestamps are in the configured <code><%= tz %></code> timezone for the app</div>
+
 <% events_by_days.each_with_index do |(day, events), index| %>
   <div class="relative" data-controller="reveal" data-reveal-toggle-keys-value="e">
     <% if cross_platform_app? %>
