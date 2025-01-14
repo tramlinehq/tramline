@@ -1,8 +1,8 @@
 class BuildQueuesController < SignedInApplicationController
-  around_action :set_time_zone
   before_action :require_write_access!, only: %i[apply]
   before_action :set_release, only: %i[apply]
   before_action :set_build_queue, only: %i[apply]
+  around_action :set_time_zone
 
   def apply
     if (result = Action.apply_build_queue!(@build_queue)).ok?

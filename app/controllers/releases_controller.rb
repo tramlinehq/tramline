@@ -2,12 +2,13 @@ class ReleasesController < SignedInApplicationController
   using RefinedString
   include Filterable
   include Tabbable
-  around_action :set_time_zone
+
   before_action :require_write_access!, only: %i[create destroy update override_approvals copy_approvals post_release finish_release]
   before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals post_release finish_release]
   before_action :set_train_and_app, only: %i[destroy timeline]
   before_action :ensure_approval_items_exist, only: %i[copy_approvals]
   before_action :ensure_approval_items_copyable, only: %i[copy_approvals]
+  around_action :set_time_zone
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
