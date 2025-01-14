@@ -58,12 +58,12 @@ class TestFlightSubmission < StoreSubmission
     state(*STATES.keys)
 
     event :preprocess, after_commit: :on_preprocess! do
-      transitions from: :created, to: :preprocessing
+      transitions from: [:created, :failed], to: :preprocessing
     end
 
     event :submit_for_review, after_commit: :on_submit_for_review! do
       after { set_submitted_at! }
-      transitions from: [:created, :preprocessing], to: :submitted_for_review
+      transitions from: [:created, :preprocessing, :failed], to: :submitted_for_review
     end
 
     event :reject, after_commit: :on_reject! do

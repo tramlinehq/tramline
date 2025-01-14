@@ -58,7 +58,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     state(*STATES.keys)
 
     event :preprocess, after_commit: :on_preprocess! do
-      transitions from: :created, to: :preprocessing
+      transitions from: [:created, :failed], to: :preprocessing
     end
 
     event :prepare, after_commit: :on_prepare! do
