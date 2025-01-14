@@ -11,7 +11,6 @@ x-app: &app
   tmpfs:
     - /tmp
     - /app/tmp/pids
-    - /rails/tmp/pids
 
 x-backend: &backend
   <<: *app

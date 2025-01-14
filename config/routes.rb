@@ -49,8 +49,7 @@ Rails.application.routes.draw do
       end
 
       resources :teams, only: %i[create update destroy]
-      resources :invitations, only: %i[create destroy]
-      resources :memberships, only: [:destroy]
+      resources :invitations, only: [:create]
     end
 
     resource :user, only: [:edit, :update] do

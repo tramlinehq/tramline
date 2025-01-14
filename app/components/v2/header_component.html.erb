@@ -9,40 +9,38 @@
 
       <div class="flex flex-wrap justify-between items-center py-3 px-4 pb-5 sm:pb-3 lg:px-6">
         <div class="flex items-center mb-2 sm:mb-0 gap-x-2">
-          <% if current_organization %>
-            <%= render V2::ButtonComponent.new(scheme: :light,
-                                               options: edit_accounts_organization_path(current_organization),
-                                               type: :link,
-                                               size: :xxs) do |b| %>
-              <% b.with_tooltip("Organization Settings") %>
-              <% b.with_icon("v2/building.svg", size: :md) %>
+          <%= render V2::ButtonComponent.new(scheme: :light,
+                                             options: edit_accounts_organization_path(current_organization),
+                                             type: :link,
+                                             size: :xxs) do |b| %>
+            <% b.with_tooltip("Organization Settings") %>
+            <% b.with_icon("v2/building.svg", size: :md) %>
+          <% end %>
+
+          <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
+            <% button = dropdown.with_button(size: :xs) %>
+            <% button.with_icon("art/org_default.png", size: :xxl) %>
+            <% button.with_title_text do %>
+              <div class="text-left">
+                <div class="text-sm font-semibold leading-none text-main dark:text-white">
+                  <%= current_organization.name %>
+                </div>
+              </div>
             <% end %>
 
-            <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
-              <% button = dropdown.with_button(size: :xs) %>
-              <% button.with_icon("art/org_default.png", size: :xxl) %>
-              <% button.with_title_text do %>
-                <div class="text-left">
-                  <div class="text-sm font-semibold leading-none text-main dark:text-white">
-                    <%= current_organization.name %>
-                  </div>
-                </div>
-              <% end %>
-
-              <% dropdown.with_item_group do |group| %>
-                <% current_user.organizations.each do |organization| %>
-                  <% group.with_item(link: { path: switch_accounts_organization_path(organization), "data-turbo": false },
-                                     selected: organization.id == current_organization.id) do %>
-                    <div class="text-left">
-                      <div class="font-medium leading-none mb-0.5 text-sm">
-                        <%= organization.name %>
-                      </div>
-
-                      <div class="text-xs text-secondary dark:text-secondary-50">
-                        Created <%= time_format organization.created_at, with_year: true, with_time: false %>
-                      </div>
+            <% dropdown.with_item_group do |group| %>
+              <% current_user.organizations.each do |organization| %>
+                <% group.with_item(link: { path: switch_accounts_organization_path(organization), "data-turbo": false },
+                                   selected: organization.id == current_organization.id) do %>
+                  <div class="text-left">
+                    <div class="font-medium leading-none mb-0.5 text-sm">
+                      <%= organization.name %>
                     </div>
-                  <% end %>
+
+                    <div class="text-xs text-secondary dark:text-secondary-50">
+                      Created <%= time_format organization.created_at, with_year: true, with_time: false %>
+                    </div>
+                  </div>
                 <% end %>
               <% end %>
             <% end %>

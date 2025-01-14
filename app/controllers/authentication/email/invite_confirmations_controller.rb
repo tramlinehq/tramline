@@ -1,7 +1,6 @@
 class Authentication::Email::InviteConfirmationsController < ApplicationController
   before_action :set_invite_token, only: [:new, :create]
   before_action :set_invite, only: [:new, :create]
-  before_action :check_valid_invitation, only: [:new]
   before_action :check_accepted_invitation, only: [:new]
   helper_method :current_user
 
@@ -28,12 +27,6 @@ class Authentication::Email::InviteConfirmationsController < ApplicationControll
   end
 
   private
-
-  def check_valid_invitation
-    if @invite.nil?
-      redirect_to root_path, flash: {error: t("invitation.flash.invalid_or_expired")}
-    end
-  end
 
   def check_accepted_invitation
     redirect_to root_path, notice: t("invitation.flash.already_accepted") if @invite.accepted?

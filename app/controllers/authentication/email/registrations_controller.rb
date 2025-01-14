@@ -10,13 +10,6 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
 
   def new
     if @token.present?
-      # Check if invite exists and is valid
-      if @invite.nil?
-        flash.clear
-        flash[:alert] = t("invitation.flash.invalid_or_expired")
-        redirect_to new_email_authentication_session_path and return
-      end
-
       flash[:notice] = t("invitation.flash.signup_before", org: @invite.organization.name)
     end
 

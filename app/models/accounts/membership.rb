@@ -3,7 +3,6 @@
 # Table name: memberships
 #
 #  id              :uuid             not null, primary key
-#  discarded_at    :datetime         indexed
 #  role            :string           not null, indexed, indexed => [user_id, organization_id]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
@@ -12,7 +11,6 @@
 #  user_id         :uuid             indexed => [organization_id, role]
 #
 class Accounts::Membership < ApplicationRecord
-  include Discard::Model
   include Roleable
   has_paper_trail
 
@@ -23,17 +21,6 @@ class Accounts::Membership < ApplicationRecord
   validates :user_id, uniqueness: {scope: :organization_id}
   validate :team_can_only_be_set_once
   validate :valid_role_change, on: :update
-
-  before_discard :ensure_at_least_one_owner_remains
-
-  def ensure_at_least_one_owner_remains
-    return true unless role == Accounts::Membership.roles[:owner]
-
-    remaining_owners = organization.memberships.kept.where(role: Accounts::Membership.roles[:owner]).where.not(id: id)
-    if remaining_owners.empty?
-      errors.add(:base, "Organization must have at least one owner")
-    end
-  end
 
   def self.allowed_roles
     roles.except(:owner).transform_keys(&:titleize).to_a

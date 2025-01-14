@@ -22,7 +22,7 @@ class Accounts::Organization < ApplicationRecord
   extend FriendlyId
   has_paper_trail
 
-  has_many :memberships, -> { kept }, dependent: :delete_all, inverse_of: :organization
+  has_many :memberships, dependent: :delete_all, inverse_of: :organization
   has_many :teams, -> { sequential }, dependent: :delete_all, inverse_of: :organization
   has_many :users, through: :memberships, dependent: :delete_all
   has_many :apps, -> { sequential }, dependent: :destroy, inverse_of: :organization
