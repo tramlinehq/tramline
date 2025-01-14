@@ -406,6 +406,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_10_160725) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "team_id"
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["organization_id"], name: "index_memberships_on_organization_id"
     t.index ["role"], name: "index_memberships_on_role"
     t.index ["user_id", "organization_id", "role"], name: "index_memberships_on_user_id_and_organization_id_and_role", unique: true
