@@ -129,6 +129,8 @@ class AppStoreSubmission < StoreSubmission
 
   after_create_commit :poll_external_status
 
+  def retryable? = failed?
+
   def pre_review? = PRE_PREPARE_STATES.include?(status)
 
   def change_build? = CHANGEABLE_STATES.include?(status) && editable?

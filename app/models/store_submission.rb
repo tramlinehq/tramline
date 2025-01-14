@@ -37,7 +37,7 @@ class StoreSubmission < ApplicationRecord
   belongs_to :release_platform_run
   belongs_to :parent_release, polymorphic: true
   # rubocop:disable Rails/InverseOf
-  belongs_to :production_release, -> { where(store_submissions: {parent_release_type: "ProductionRelease"}) }, foreign_key: "parent_release_id", optional: true
+  belongs_to :production_release, -> { where(store_submissions: { parent_release_type: "ProductionRelease" }) }, foreign_key: "parent_release_id", optional: true
   # rubocop:enable Rails/InverseOf
   belongs_to :build
 
@@ -157,6 +157,21 @@ class StoreSubmission < ApplicationRecord
 
   def last_failed_event
     passports.where(reason: "failed").last
+  end
+
+  def retry!
+    return unless retryable?
+    target_state = last_stable_status&.to_sym
+    raise "Not retryable" if target_state.blank?
+
+    permitted_transitions = aasm.permitted_transitions
+    permitted_event = permitted_transitions.find { |t| t[:state] == target_state }&.dig(:event)
+
+    if permitted_event
+      public_send :"#{permitted_event}!"
+    else
+      raise "No retries available from the failed state - #{target_state}"
+    end
   end
 
   protected

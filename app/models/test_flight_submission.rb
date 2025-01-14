@@ -81,6 +81,8 @@ class TestFlightSubmission < StoreSubmission
     end
   end
 
+  def retryable? = failed?
+
   def internal_channel?
     submission_channel.internal?
   end

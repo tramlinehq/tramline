@@ -144,18 +144,8 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def retry!
-    return unless retryable?
     return check_manual_upload if failed_with_action_required?
-    raise "Not retryable" if last_stable_status.blank?
-
-    case last_stable_status.to_sym
-    when :preprocessing
-      trigger!
-    when :preparing
-      start_prepare!
-    else
-      raise "Not retryable"
-    end
+    super
   end
 
   def upload_build!

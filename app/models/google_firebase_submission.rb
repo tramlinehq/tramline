@@ -75,6 +75,8 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
+  def retryable? = failed?
+
   def trigger!
     return unless actionable?
     return unless may_prepare?
