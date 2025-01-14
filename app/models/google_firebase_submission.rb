@@ -57,7 +57,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :preprocess do
+    event :preprocess, after_commit: :on_preprocess! do
       transitions from: :created, to: :preprocessing
     end
 
@@ -85,7 +85,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     # return mock_upload_to_firebase if sandbox_mode?
 
     preprocess!
-    StoreSubmissions::GoogleFirebase::UploadJob.perform_later(id)
   end
 
   def upload_build!
@@ -158,6 +157,10 @@ class GoogleFirebaseSubmission < StoreSubmission
       prepare!
       update_store_info!(release_info, build_status)
     end
+  end
+
+  def on_preprocess!
+    StoreSubmissions::GoogleFirebase::UploadJob.perform_later(id)
   end
 
   def on_prepare!

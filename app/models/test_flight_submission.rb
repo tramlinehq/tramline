@@ -57,7 +57,7 @@ class TestFlightSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :preprocess do
+    event :preprocess, after_commit: :on_preprocess! do
       transitions from: :created, to: :preprocessing
     end
 
@@ -93,7 +93,6 @@ class TestFlightSubmission < StoreSubmission
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     # return mock_start_release_in_testflight if sandbox_mode?
     preprocess!
-    StoreSubmissions::TestFlight::FindBuildJob.perform_async(id)
   end
 
   def start_release!
@@ -172,6 +171,10 @@ class TestFlightSubmission < StoreSubmission
     self.store_status = release_info.attributes[:status]
     self.store_link = release_info.attributes[:external_link]
     save!
+  end
+
+  def on_preprocess!
+    StoreSubmissions::TestFlight::FindBuildJob.perform_async(id)
   end
 
   def on_reject!
