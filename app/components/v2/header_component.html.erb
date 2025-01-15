@@ -15,7 +15,7 @@
                                                type: :link,
                                                size: :xxs) do |b| %>
               <% b.with_tooltip("Organization Settings") %>
-              <% b.with_icon("v2/building.svg", size: :md) %>
+              <% b.with_icon("building.svg", size: :md) %>
             <% end %>
 
             <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
@@ -56,7 +56,7 @@
               <% button.with_icon("art/cross_platform_default.png", size: :xxl, rounded: false) %>
               <% button.with_title_text do %>
                 <div class="flex items-center justify-center gap-x-1 text-sm font-semibold leading-none text-main dark:text-white">
-                  <%= render V2::IconComponent.new("v2/#{default_app.platform}.svg", size: :md) %>
+                  <%= render V2::IconComponent.new("#{default_app.platform}.svg", size: :md) %>
                   <%= default_app.name %>
                   <span class="text-sm text-secondary dark:text-secondary-50">
                       <%= default_app.bundle_identifier %>
@@ -89,7 +89,7 @@
                                                type: :link,
                                                size: :xxs) do |b| %>
               <% b.with_tooltip("App Settings") %>
-              <% b.with_icon("v2/cog.svg", size: :md) %>
+              <% b.with_icon("cog.svg", size: :md) %>
             <% end %>
 
             <%= render V2::ButtonComponent.new(scheme: :light,
@@ -98,13 +98,13 @@
                                                size: :xxs,
                                                authz: false) do |b| %>
               <% b.with_tooltip("All Builds") %>
-              <% b.with_icon("v2/drill.svg", size: :md) %>
+              <% b.with_icon("drill.svg", size: :md) %>
             <% end %>
 
             <%= render V2::ModalComponent.new(title: "Store Status", size: :xs, authz: false) do |modal| %>
               <% button = modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none) %>
               <% button.with_tooltip("Store Status") %>
-              <% button.with_icon("v2/upload_cloud.svg", size: :md) %>
+              <% button.with_icon("upload_cloud.svg", size: :md) %>
               <% modal.with_body do %>
                 <%= render V2::ExternalAppComponent.new(app: default_app) %>
               <% end %>

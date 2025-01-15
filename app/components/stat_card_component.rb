@@ -27,7 +27,7 @@ class StatCardComponent < V2::BaseComponent
 
   def empty_stat_corner_icon
     if empty_stat? && @empty_stat_help_text.present?
-      icon = V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-secondary")
+      icon = V2::IconComponent.new("info.svg", size: :md, classes: "text-secondary")
 
       icon.with_tooltip(@empty_stat_help_text, placement: "top", type: :detailed) do |tooltip|
         tooltip.with_detailed_text do

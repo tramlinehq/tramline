@@ -70,7 +70,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
       {
         title: "Fixed version",
         subtitle:,
-        icon: "v2/play_fill.svg",
+        icon: "play_fill.svg",
         opt_name: "has_major_bump",
         opt_value: "false",
         options: {checked: true, data: {action: REVEAL_HIDE_ACTION}}
@@ -84,7 +84,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
       {
         title: "Minor",
         subtitle: major_subtitle,
-        icon: "v2/play_fill.svg",
+        icon: "play_fill.svg",
         opt_name: "has_major_bump",
         opt_value: "false",
         options: {checked: true, data: {action: REVEAL_HIDE_ACTION}}
@@ -92,7 +92,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
       {
         title: "Major",
         subtitle: minor_subtitle,
-        icon: "v2/forward_step_fill.svg",
+        icon: "forward_step_fill.svg",
         opt_name: "has_major_bump",
         opt_value: "true",
         options: {checked: false, data: {action: REVEAL_HIDE_ACTION}}
@@ -105,7 +105,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
     {
       title: "Custom",
       subtitle: "Specify a release version",
-      icon: "v2/user_cog_fill.svg",
+      icon: "user_cog_fill.svg",
       opt_name: "has_major_bump",
       opt_value: nil,
       options: {checked: false, data: {action: REVEAL_SHOW_ACTION}}
@@ -117,7 +117,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
       {
         title: "Calendar version",
         subtitle:,
-        icon: "v2/play_fill.svg",
+        icon: "play_fill.svg",
         opt_name: "has_major_bump",
         opt_value: "true",
         options: {checked: true, data: {action: REVEAL_HIDE_ACTION}}

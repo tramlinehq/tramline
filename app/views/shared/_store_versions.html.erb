@@ -9,7 +9,7 @@
       <% end %>
 
       <% if show_build %>
-        <%= render V2::IconComponent.new("v2/connect_line.svg", size: :xl) %>
+        <%= render V2::IconComponent.new("connect_line.svg", size: :xl) %>
         <%= render V2::LiveRelease::BuildComponent.new(
           release.build,
           show_number: false,

@@ -46,7 +46,7 @@
       <% card.with_action do %>
         <%= render V2::ModalComponent.new(title: "Edit Internal Notes", dismissable: false) do |modal| %>
           <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none)
-                  .with_icon("v2/pencil.svg", size: :sm) %>
+                  .with_icon("pencil.svg", size: :sm) %>
           <% modal.with_body do %>
             <%= form_with(model: [release], method: :put, builder: EnhancedFormHelper::AuthzForm) do |form| %>
               <div data-controller="text-editor" data-text-editor-view-mode-value="false" class="mb-4">
@@ -54,7 +54,7 @@
                 <%= form.textarea :internal_notes, { class: "hidden", data: { text_editor_target: "editorReplica" } } %>
               </div>
 
-              <%= form.authz_submit "Save", "v2/archive.svg" %>
+              <%= form.authz_submit "Save", "archive.svg" %>
             <% end %>
           <% end %>
         <% end %>

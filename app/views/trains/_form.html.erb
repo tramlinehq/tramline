@@ -62,14 +62,14 @@
                                                  data: { domain__version_name_help_target: "majorInput",
                                                          action: "domain--version-name-help#bump" } %>
           <span class="mx-1">
-            <%= render V2::IconComponent.new("v2/circle.svg", size: :xs) %>
+            <%= render V2::IconComponent.new("circle.svg", size: :xs) %>
           </span>
           <%= section.F.text_field_without_label :minor_version_seed, "minor",
                                                  disabled: train.persisted?,
                                                  data: { domain__version_name_help_target: "minorInput",
                                                          action: "domain--version-name-help#bump" } %>
           <span class="mx-1">
-            <%= render V2::IconComponent.new("v2/circle.svg", size: :xs) %>
+            <%= render V2::IconComponent.new("circle.svg", size: :xs) %>
           </span>
           <%= section.F.text_field_without_label :patch_version_seed, "patch (optional)",
                                                  disabled: train.persisted?,
@@ -292,7 +292,7 @@
     <% end %>
 
     <% f.with_action do %>
-      <%= f.F.authz_submit (train.persisted? ? "Update" : "Create"), (train.persisted? ? "v2/archive.svg" : "plus.svg"), disabled: @edit_not_allowed %>
+      <%= f.F.authz_submit (train.persisted? ? "Update" : "Create"), (train.persisted? ? "archive.svg" : "plus.svg"), disabled: @edit_not_allowed %>
     <% end %>
   <% end %>
 </div>

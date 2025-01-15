@@ -25,13 +25,13 @@
             }
           }
         ) do |b| %>
-          <%= b.with_icon("v2/square_stack.svg", size: :sm) %>
+          <%= b.with_icon("square_stack.svg", size: :sm) %>
         <% end %>
       <% end %>
       <% card.with_action do %>
         <%= render V2::ModalComponent.new(title: "Add approval item", dismissable: false) do |modal| %>
           <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                  .with_icon("v2/plus.svg", size: :md) %>
+                  .with_icon("plus.svg", size: :md) %>
           <% modal.with_body do %>
             <%= render partial: "form", locals: {
               model: [release, release.approval_items.new],
@@ -54,13 +54,13 @@
             {method: :patch,
              data: {turbo_method: :patch,
                     turbo_confirm: "This will override all the release approvals. Are you sure?"}}) do |b|
-          b.with_icon("v2/key_square.svg")
+          b.with_icon("key_square.svg")
         end %>
       <% end %>
     <% end %>
 
     <% if items.none? %>
-      <%= render V2::EmptyStateComponent.new(text: "There are no items to approve for this release. Add approvals to block submissions for this release.", banner_image: "v2/list_checks.svg", type: :tiny) %>
+      <%= render V2::EmptyStateComponent.new(text: "There are no items to approve for this release. Add approvals to block submissions for this release.", banner_image: "list_checks.svg", type: :tiny) %>
     <% else %>
       <%= render V2::TableComponent.new(columns: ["", ""]) do |table| %>
         <% items.each do |item| %>
@@ -82,4 +82,3 @@
     <% end %>
   <% end %>
 </div>
-

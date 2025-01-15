@@ -35,7 +35,7 @@
   <%= container.with_side_action do %>
     <%= render V2::ButtonComponent.new(scheme: :light, type: :link, size: :xxs, options: new_app_train_path(app)) do |b|
       b.with_tooltip("Add a new train")
-      b.with_icon("plus.svg")
+      b.with_icon("plus.svg", size: :md)
     end %>
   <% end %>
 
@@ -46,7 +46,7 @@
       <% modal.with_body do %>
         <% if train.almost_trunk? %>
           <div class="mb-6 flex flex-row items-center gap-x-1 text-secondary">
-            <%= render V2::IconComponent.new("v2/git_branch.svg", size: :md) %>
+            <%= render V2::IconComponent.new("git_branch.svg", size: :md) %>
             <div class="text-sm"><%= branch_help %></div>
           </div>
         <% end %>
@@ -62,7 +62,7 @@
       label: "Configure",
       options: edit_app_train_path(app, train),
       type: :link) do |b|
-      b.with_icon("v2/cog.svg")
+      b.with_icon("cog.svg")
     end %>
   <% end %>
 
@@ -91,7 +91,7 @@
         html_options: { method: :patch,
                         data: { turbo_method: :patch,
                                 turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } }) do |b|
-        b.with_icon("v2/pause.svg")
+        b.with_icon("pause.svg")
       end %>
     <% end %>
   <% end %>
@@ -104,7 +104,7 @@
         options: app_train_path(app, train),
         type: :link,
         html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to remove this train?" } }) do |b|
-        b.with_icon("v2/trash.svg")
+        b.with_icon("trash.svg")
       end %>
     <% end %>
   <% end %>
@@ -224,7 +224,7 @@
                   size: :sm,
                   authz: false,
                   type: :link) do |b|
-                  b.with_icon("v2/arrow_right.svg")
+                  b.with_icon("arrow_right.svg")
                 end %>
               <% end %>
             <% end %>
@@ -234,7 +234,7 @@
         <%= render V2::EmptyStateComponent.new(
           title: "No previous releases",
           text: "There are no other releases for this train yet.",
-          banner_image: "v2/archive_x.svg",
+          banner_image: "archive_x.svg",
           type: :subdued
         ) %>
       <% end %>

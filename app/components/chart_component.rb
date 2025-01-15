@@ -94,7 +94,7 @@ class ChartComponent < V2::BaseComponent
 
   def corner_icon
     if help_text.present?
-      icon = V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-secondary")
+      icon = V2::IconComponent.new("info.svg", size: :md, classes: "text-secondary")
       icon.with_tooltip(help_text, placement: "top", type: :detailed) do |tooltip|
         tooltip.with_detailed_text do
           content_tag(:div, nil, class: "flex flex-col gap-y-4 items-start") do
@@ -105,7 +105,7 @@ class ChartComponent < V2::BaseComponent
                 options: help_link,
                 type: :link_external,
                 size: :none,
-                authz: false) { |b| b.with_icon("v2/arrow_right.svg") })
+                authz: false) { |b| b.with_icon("arrow_right.svg") })
             end
           end
         end

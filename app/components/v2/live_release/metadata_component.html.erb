@@ -58,12 +58,12 @@
               size: :xxs,
               label: "Copy to all locales",
               html_options: { data: { turbo_confirm: "This will copy the release notes to all locales, are you sure?" } }) do |b|
-              b.with_icon("v2/square_stack.svg", size: :sm)
+              b.with_icon("square_stack.svg", size: :sm)
             end %>
           </div>
 
           <div>
-            <%= f.F.authz_submit "Save current locale", "v2/archive.svg", size: :xxs, disabled: !editable? %>
+            <%= f.F.authz_submit "Save current locale", "archive.svg", size: :xxs, disabled: !editable? %>
           </div>
         </div>
       </div>

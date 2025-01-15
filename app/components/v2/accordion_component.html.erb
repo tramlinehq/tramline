@@ -3,11 +3,11 @@
     <div class="group transform flex w-full <%= title_style %>" data-action="click->reveal#toggle">
       <div class="flex items-center w-full gap-2 text-secondary focus:ring-4 focus:ring-main-200 dark:focus:ring-main dark:text-secondary-50">
         <span data-accordion-reveal <%= "hidden" unless auto_hide %>>
-          <%= inline_svg("v2/plus.svg", classname: "w-4 h-4 fill-current") %>
+          <%= inline_svg("plus.svg", classname: "w-3 h-3 fill-current") %>
         </span>
 
         <span data-accordion-reveal <%= "hidden" if auto_hide %>>
-          <%= inline_svg("v2/plus.svg", classname: "w-4 h-4 fill-current rotate-45") %>
+          <%= inline_svg("plus.svg", classname: "w-3 h-3 fill-current rotate-45") %>
         </span>
 
         <span class="select-none flex-grow">

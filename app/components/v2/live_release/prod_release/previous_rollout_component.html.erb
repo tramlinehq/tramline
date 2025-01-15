@@ -14,7 +14,7 @@
       </div>
 
       <div class="flex items-center">
-        <%= render V2::IconComponent.new("v2/dotted_line.svg", size: :md, classes: "mx-2 text-secondary") %>
+        <%= render V2::IconComponent.new("dotted_line.svg", size: :md, classes: "mx-2 text-secondary") %>
         <span class="text-secondary font-normal"><%= ago_in_words(store_rollout.updated_at) %></span>
       </div>
     </div>
@@ -36,7 +36,7 @@
       <% button = modal.with_button(scheme: :naked_icon,
                                     size: :xxs,
                                     type: :action) %>
-      <% button.with_icon("v2/activity.svg", size: :base) %>
+      <% button.with_icon("activity.svg", size: :base) %>
       <% button.with_tooltip("See recent rollout activity", placement: "top") %>
       <% modal.with_body do %>
         <div class="pl-3"><%= render TimelineComponent.new(events:) %></div>

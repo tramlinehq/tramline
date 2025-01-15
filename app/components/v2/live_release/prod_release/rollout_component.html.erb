@@ -16,7 +16,7 @@
                                         size: :xxs,
                                         type: :action,
                                         label: "Timeline") %>
-          <% button.with_icon("v2/activity.svg", size: :base) %>
+          <% button.with_icon("activity.svg", size: :base) %>
           <% button.with_tooltip("See recent rollout activity", placement: "top") %>
           <% modal.with_body do %>
             <div class="pl-3"><%= render TimelineComponent.new(events:) %></div>
@@ -62,7 +62,7 @@
               <div class="flex flex-row justify-between gap-1 items-center flex-initial flex-wrap">
                 <%= render V2::ProgressBarComponent.new(percent: percent, label: true, status: st) %>
                 <% if st == :default %>
-                  <%= render V2::IconComponent.new("v2/check.svg", size: :sm, classes: "text-green-600") %>
+                  <%= render V2::IconComponent.new("check.svg", size: :sm, classes: "text-green-600") %>
                 <% end %>
               </div>
             <% end %>

@@ -6,7 +6,7 @@
       <% card.with_action do %>
         <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to test for regressions") do |modal| %>
           <% button = modal.with_button(label: "Switch build under test", scheme: :light, type: :action, size: :xxs) %>
-          <% button.with_icon("v2/pencil.svg") %>
+          <% button.with_icon("pencil.svg") %>
           <% modal.with_body do %>
             <%= render V2::FormComponent.new(model: [release, release_platform_run],
                                              scope: :store_submission,
@@ -16,7 +16,7 @@
               <%= form.F.labeled_select :build_id, "Select a build", options_for_select([], 1) %>
 
               <% form.with_action do %>
-                <%= form.F.authz_submit "Save", "v2/archive.svg" %>
+                <%= form.F.authz_submit "Save", "archive.svg" %>
               <% end %>
             <% end %>
           <% end %>

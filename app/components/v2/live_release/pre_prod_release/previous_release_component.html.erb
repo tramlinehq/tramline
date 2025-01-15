@@ -29,16 +29,16 @@
           show_activity: false,
           show_commit: false) %>
 
-        <%= render V2::IconComponent.new("v2/connect_line.svg", size: :xl) %>
+        <%= render V2::IconComponent.new("connect_line.svg", size: :xl) %>
 
         <% if store_submissions.none? %>
-          <%= render V2::IconComponent.new("v2/circle_slash.svg", size: :md) %>
+          <%= render V2::IconComponent.new("circle_slash.svg", size: :md) %>
         <% end %>
 
         <div class="flex items-center gap-1">
           <% store_submissions.each_with_index do |submission, idx| %>
             <% if idx > 0 %>
-              <%= render V2::IconComponent.new("v2/slash.svg", size: :md) %>
+              <%= render V2::IconComponent.new("slash.svg", size: :md) %>
             <% end %>
 
             <%= render V2::BadgeComponent.new(text: submission.submission_channel.name.truncate(20), kind: :badge) do |badge| %>

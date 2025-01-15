@@ -7,7 +7,7 @@
   <% if @app.variants.none? %>
     <% section.with_sidenote do %>
       <%= render V2::ModalComponent.new(title: "Add a new App Variant") do |modal| %>
-        <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("v2/plus.svg", size: :md) %>
+        <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("plus.svg", size: :sm) %>
         <% modal.with_body do %>
           <%= render partial: "create", locals: {app: @app, app_config: @app.config, app_variant: @new_app_variant, firebase_ios_apps: @firebase_ios_apps, firebase_android_apps: @firebase_android_apps} %>
         <% end %>
@@ -38,7 +38,7 @@
 
           <div class="flex gap-x-2 justify-end">
             <%= render V2::ModalComponent.new(title: "Edit variant") do |modal| %>
-              <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("v2/pencil.svg") %>
+              <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("pencil.svg") %>
               <% modal.with_body do %>
                 <%= tag.turbo_frame id: dom_id(variant, :edit_variant),
                                     src: edit_app_app_config_app_variant_path(@app, variant),
@@ -54,7 +54,7 @@
               options: app_app_config_app_variant_path(@app, variant),
               type: :link,
               html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the variant? This will also destroy the associated integrations."}}) do |b|
-              b.with_icon("v2/trash.svg")
+              b.with_icon("trash.svg")
             end %>
           </div>
         <% end %>

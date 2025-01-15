@@ -5,16 +5,16 @@
         <div class="flex items-center space-x-3 rtl:space-x-reverse">
           <% if release_version_drift? %>
             <div class="flex items-center space-x-1">
-              <%= render V2::IconComponent.new("v2/android.svg", size: :lg) %>
+              <%= render V2::IconComponent.new("android.svg", size: :lg) %>
               <%= display_release_version(android_release_version) %>
             </div>
 
             <div class="flex items-center">
-              <%= render V2::IconComponent.new("v2/plus_fat.svg", size: :lg) %>
+              <%= render V2::IconComponent.new("plus_fat.svg", size: :lg) %>
             </div>
 
             <div class="flex items-center space-x-1">
-              <%= render V2::IconComponent.new("v2/ios.svg", size: :lg) %>
+              <%= render V2::IconComponent.new("ios.svg", size: :lg) %>
               <%= display_release_version(ios_release_version) %>
             </div>
           <% else %>
@@ -38,7 +38,7 @@
             html_options: { class: "-mr-2" },
             authz: false,
             type: :link) do |b|
-            b.with_icon("v2/arrow_right.svg")
+            b.with_icon("arrow_right.svg")
           end %>
         </div>
       </div>

@@ -4,7 +4,7 @@
   <% section.with_sidenote do %>
     <%= render V2::ModalComponent.new(title: "Add a new rule", dismissable: false) do |modal| %>
       <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-              .with_icon("v2/plus.svg", size: :md) %>
+              .with_icon("plus.svg", size: :md) %>
       <% modal.with_body do %>
         <%= render partial: "trains/rule_form", locals: { app:, train:, release_platform:, rule: release_platform.release_health_rules.new } %>
       <% end %>
@@ -14,7 +14,7 @@
   <% if empty? %>
     <%= render V2::EmptyStateComponent.new(title: "No rules configured",
                                            text: "Add rules to monitor the health of releases on this platform",
-                                           banner_image: "v2/list_checks.svg",
+                                           banner_image: "list_checks.svg",
                                            type: :subdued) %>
   <% else %>
     <div class="flex flex-wrap flex-row gap-4 items-start">

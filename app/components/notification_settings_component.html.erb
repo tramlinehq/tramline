@@ -30,7 +30,7 @@
         <% row.with_cell(wrap: true) do %>
           <%= render V2::ModalComponent.new(title: setting.modal_title, subtitle: setting.description) do |modal| %>
             <% button = modal.with_button(scheme: :light, type: :action, size: :xxs) %>
-            <% button.with_icon("v2/pencil.svg") %>
+            <% button.with_icon("pencil.svg") %>
             <% modal.with_body do %>
               <%= tag.turbo_frame id: setting.edit_frame_id, src: setting.edit_path, loading: :lazy, class: "with-turbo-frame-loader", target: "_top" do %>
                 <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>

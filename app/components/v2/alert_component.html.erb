@@ -5,7 +5,7 @@
          role="alert">
       <div class="flex mr-6 gap-x-1 items-start">
         <div class="flex justify-start gap-x-1 items-center">
-          <%= render V2::IconComponent.new("v2/info.svg", size: :md) %>
+          <%= render V2::IconComponent.new("info.svg", size: :md) %>
           <span class="font-semibold"><%= type.to_s.humanize %>:</span>
         </div>
         <%= title %>
@@ -27,7 +27,7 @@
          class="w-full <%= padding %> <%= style %> <%= border_style %> mb-4"
          role="alert">
       <div class="flex items-center">
-        <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
+        <%= render V2::IconComponent.new("info.svg", size: :md, classes: "mr-2") %>
         <h3 class="heading-3 !text-inherit"><%= title %></h3>
       </div>
 
@@ -46,7 +46,7 @@
               size: :none,
               authz: false,
               html_options: { class: ACTION_BUTTON_STYLES }) do |b|
-              b.with_icon("v2/eye.svg", size: :md, rounded: false)
+              b.with_icon("eye.svg", size: :md, rounded: false)
             end %>
           <% end %>
 
@@ -66,7 +66,7 @@
   <% elsif announcement? %>
     <div class="w-full <%= padding %> <%= style %> <%= border_style %>">
       <div class="flex items-center mb-2">
-        <%= render V2::IconComponent.new("v2/megaphone.svg", size: :lg, classes: "mr-2") %>
+        <%= render V2::IconComponent.new("megaphone.svg", size: :lg, classes: "mr-2") %>
         <h3 class="heading-3 !text-inherit"><%= title %></h3>
       </div>
 

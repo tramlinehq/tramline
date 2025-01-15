@@ -70,10 +70,10 @@ class ReleasePresenter < SimpleDelegator
   def scheduled_badge
     if is_automatic?
       badge = V2::BadgeComponent.new(text: "Automatic", kind: :badge)
-      badge.with_icon("v2/robot.svg")
+      badge.with_icon("robot.svg")
     else
       badge = V2::BadgeComponent.new(text: "Manual", kind: :badge)
-      badge.with_icon("v2/person_standing.svg")
+      badge.with_icon("person_standing.svg")
     end
     badge
   end

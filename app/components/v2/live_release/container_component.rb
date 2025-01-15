@@ -14,11 +14,11 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
   }
   SELECTED_TAB_STYLE = "active text-main bg-main-100 border-l-2 border-main-400"
   TAB_STATUS_ICON = {
-    none: {icon: "v2/circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:neutral].join(" ") + " !bg-backgroundLight-50"},
-    blocked: {icon: "v2/circle_x.svg", classes: STATUS_COLOR_PALETTE[:inert].join(" ")},
-    ongoing: {icon: "v2/circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:ongoing].join(" ") + " animate-pulse"},
-    success: {icon: "v2/circle_check_big.svg", classes: STATUS_COLOR_PALETTE[:success].join(" ")},
-    unblocked: {icon: "v2/circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:ongoing].join(" ")}
+    none: {icon: "circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:neutral].join(" ") + " !bg-backgroundLight-50"},
+    blocked: {icon: "circle_x.svg", classes: STATUS_COLOR_PALETTE[:inert].join(" ")},
+    ongoing: {icon: "circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:ongoing].join(" ") + " animate-pulse"},
+    success: {icon: "circle_check_big.svg", classes: STATUS_COLOR_PALETTE[:success].join(" ")},
+    unblocked: {icon: "circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:ongoing].join(" ")}
   }
   RIGHT_GUTTER = "pr-4"
 
@@ -63,7 +63,7 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
   def coming_soon(config)
     return unless config[:unavailable]
 
-    render V2::IconComponent.new("v2/construction.svg", size: :md) do |icon|
+    render V2::IconComponent.new("construction.svg", size: :md) do |icon|
       icon.with_tooltip("This feature is coming soon!", placement: "top", cursor: false)
     end
   end

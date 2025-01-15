@@ -63,7 +63,7 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def submission_logo_bw
-    "v2/logo_#{submission.provider}_bw.svg"
+    "logo_#{submission.provider}_bw.svg"
   end
 
   def submission_logo

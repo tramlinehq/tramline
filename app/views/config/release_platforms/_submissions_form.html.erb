@@ -65,7 +65,7 @@
       type: :action,
       size: :none,
       html_options: {data: {action: "nested-form-ext#remove"}}) do |b|
-      b.with_icon("v2/trash.svg", size: :md)
+      b.with_icon("trash.svg", size: :md)
     end %>
 
     <%= render V2::Form::SwitchComponent.new(form: form, field_name: :auto_promote, on_label: "Auto-submit", off_label: "Auto-submit") do |auto_submit| %>

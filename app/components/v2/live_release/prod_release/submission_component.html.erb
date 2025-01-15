@@ -60,7 +60,7 @@
                                         free_form: true) do |form| %>
           <%= form.F.labeled_select :build_id, "Select a build", build_opts %>
           <% form.with_action do %>
-            <%= form.F.authz_submit "Create submission", "v2/mail.svg" %>
+            <%= form.F.authz_submit "Create submission", "mail.svg" %>
           <% end %>
         <% end %>
       <% end %>
@@ -115,7 +115,7 @@
           subtitle: "Choose a build to send for submission to the store") do |modal| %>
 
           <% button = modal.with_button(label: "Change build", scheme: :light, type: :action, size: :xxs) %>
-          <% button.with_icon("v2/pencil.svg") %>
+          <% button.with_icon("pencil.svg") %>
           <% modal.with_body do %>
             <%= render V2::FormComponent.new(model: [release, release_platform_run, submission],
                                              scope: :store_submission,
@@ -124,7 +124,7 @@
               <%= form.F.labeled_select :build_id, "Select a build", build_opts(default: current_build) %>
 
               <% form.with_action do %>
-                <%= form.F.authz_submit "Change", "v2/mail.svg" %>
+                <%= form.F.authz_submit "Change", "mail.svg" %>
               <% end %>
             <% end %>
           <% end %>
@@ -138,7 +138,7 @@
 
     <% card.with_action do %>
       <% if action.present? %>
-        <%= render V2::ButtonComponent.new(**action) { |b| b.with_icon("v2/clipboard_list.svg") } %>
+        <%= render V2::ButtonComponent.new(**action) { |b| b.with_icon("clipboard_list.svg") } %>
       <% end %>
     <% end %>
 
@@ -211,7 +211,7 @@
                                                    html_options: {class: "text-xs"},
                                                    authz: false,
                                                    size: :none) do |b| %>
-                  <% b.with_icon("v2/external_link.svg", size: :md) %>
+                  <% b.with_icon("external_link.svg", size: :md) %>
                 <% end %>
               <% else %>
                 <%= NOT_AVAILABLE %>

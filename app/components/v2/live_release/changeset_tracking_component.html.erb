@@ -17,7 +17,7 @@
                                    separator: true,
                                    emptiness: mid_release_prs.empty?) do |card| %>
     <% card.with_empty_state(text: "There are no more pull requests targeting your release branch.",
-                             banner_image: "v2/check.svg") %>
+                             banner_image: "check.svg") %>
 
     <%= render partial: "shared/divide_collection",
                locals: { collection: render(V2::PullRequestComponent.with_collection(mid_release_prs)) } %>
@@ -67,7 +67,7 @@
                                    size: :base,
                                    emptiness: open_backmerge_prs.empty?) do |card| %>
     <% card.with_empty_state(text: "All backmerge pull requests have been merged.",
-                             banner_image: "v2/check.svg") %>
+                             banner_image: "check.svg") %>
 
     <%= render partial: "shared/divide_collection",
                locals: { collection: render(V2::PullRequestComponent.with_collection(open_backmerge_prs)) } %>

@@ -20,15 +20,15 @@
               <% if cross_platform? %>
                 <% if release.platform_runs.size > 1 %>
                   <div class="flex items-center gap-1">
-                    <%= render V2::IconComponent.new("v2/android.svg", size: :lg) %>
-                    <%= render V2::IconComponent.new("v2/plus_fat.svg", size: :lg) %>
-                    <%= render V2::IconComponent.new("v2/ios.svg", size: :lg) %>
+                    <%= render V2::IconComponent.new("android.svg", size: :lg) %>
+                    <%= render V2::IconComponent.new("plus_fat.svg", size: :lg) %>
+                    <%= render V2::IconComponent.new("ios.svg", size: :lg) %>
                   </div>
                 <% else %>
-                  <%= render V2::IconComponent.new("v2/#{release.platform_runs.sole.platform}.svg", size: :lg) %>
+                  <%= render V2::IconComponent.new("#{release.platform_runs.sole.platform}.svg", size: :lg) %>
                 <% end %>
               <% else %>
-                <%= render V2::IconComponent.new("v2/#{platform}.svg", size: :lg) %>
+                <%= render V2::IconComponent.new("#{platform}.svg", size: :lg) %>
               <% end %>
 
               <span class="heading-1 text-main dark:text-white"><%= display_release_version %></span>
@@ -42,7 +42,7 @@
               authz: false,
               label: "Release activity",
               html_options: { class: "text-sm" }) do |b|
-              b.with_icon("v2/activity.svg")
+              b.with_icon("activity.svg")
             end %>
           </div>
         </div>
@@ -63,7 +63,7 @@
                      data-confetti-animation-value="stars"
                      data-confetti-follow-value=false
                      data-confetti-duration-value="2">
-                  <%= render V2::IconComponent.new("v2/party_popper.svg", size: :md) %>
+                  <%= render V2::IconComponent.new("party_popper.svg", size: :md) %>
                 </div>
               <% end %>
 
@@ -76,7 +76,7 @@
             <%# platform_runs.each do |platform_run| %>
               <%# if staged_rollout_status(platform_run) %>
                 <%#= render V2::BadgeComponent.new(**staged_rollout_status(platform_run)) do |status| %>
-                  <%#= status.with_icon("v2/#{platform_run.platform}.svg", size: :sm) %>
+                  <%#= status.with_icon("#{platform_run.platform}.svg", size: :sm) %>
                 <%# end %>
               <%# end %>
             <%# end %>
@@ -134,7 +134,7 @@
             options: finish_release_release_path(release),
             label: "Mark release as finished",
             html_options: html_opts(:post, "You have finished release to only one of the platforms. Are you sure you want to finish the release?")) do |b|
-            b.with_icon("v2/list_checks.svg")
+            b.with_icon("list_checks.svg")
           end %>
         <% end %>
         <% if active? %>
@@ -145,7 +145,7 @@
             label: "Stop release",
             options: release_path(release),
             html_options: html_opts(:delete, stop_release_warning)) do |b|
-            b.with_icon("v2/stop.svg")
+            b.with_icon("stop.svg")
           end %>
         <% end %>
       </div>

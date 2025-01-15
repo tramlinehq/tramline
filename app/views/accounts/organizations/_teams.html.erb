@@ -4,7 +4,7 @@
   <% sc.with_sidenote do %>
     <%= render V2::ModalComponent.new(title: "Add team") do |modal| %>
       <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-              .with_icon("v2/plus.svg", size: :md) %>
+              .with_icon("plus.svg", size: :sm) %>
       <% modal.with_body do %>
         <%= render partial: "accounts/teams/form", locals: { team: Accounts::Team.new(organization: current_organization),
                                                              url: accounts_organization_teams_path(current_organization),
@@ -37,7 +37,7 @@
                                    type: :action,
                                    size: :xxs,
                                    arrow: :none)
-                      .with_icon("v2/pencil.svg") %>
+                      .with_icon("pencil.svg") %>
               <% modal.with_body do %>
                 <%= render partial: "accounts/teams/form", locals: { team:,
                                                                      url: accounts_organization_team_path(current_organization, team),
@@ -49,7 +49,7 @@
               options: accounts_organization_team_path(current_organization, team),
               type: :link,
               html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the team? This will not remove the users that are part of the team." } }) do |b|
-              b.with_icon("v2/trash.svg")
+              b.with_icon("trash.svg")
             end %>
           </div>
         <% end %>
@@ -64,7 +64,7 @@
   <% sc.with_sidenote do %>
     <%= render V2::ModalComponent.new(title: "Add team member") do |modal| %>
       <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-              .with_icon("v2/plus.svg", size: :md) %>
+              .with_icon("plus.svg", size: :sm) %>
       <% modal.with_body do %>
         <%= render partial: "accounts/invitations/form", locals: { invite: Accounts::Invite.new(sender: current_user, organization: current_organization) } %>
       <% end %>
@@ -110,7 +110,7 @@
                                     type: :action,
                                     size: :xxs,
                                     arrow: :none)
-                        .with_icon("v2/pencil.svg") %>
+                        .with_icon("pencil.svg") %>
                 <% modal.with_body do %>
                   <%= render partial: "accounts/invitations/edit_form", locals: { email: member.email, member_role: member_role } %>
                 <% end %>
@@ -123,7 +123,7 @@
                 size: :xxs,
                 options: accounts_organization_membership_path(current_organization, member.membership_for(current_organization)),
                 html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to remove #{member.email} from the organization?" } }) do |b|
-                b.with_icon("v2/trash.svg")
+                b.with_icon("trash.svg")
               end %>
             <% end %>
           </div>
@@ -166,7 +166,7 @@
               size: :xxs,
               options: accounts_organization_invitation_path(current_organization, invite),
               html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to cancel the invitation for #{invite.email}?" } }) do |b|
-              b.with_icon("v2/trash.svg")
+              b.with_icon("trash.svg")
             end %>
           </div>
         <% end %>

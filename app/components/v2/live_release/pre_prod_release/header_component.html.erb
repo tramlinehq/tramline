@@ -11,7 +11,7 @@
   <div class="flex flex-col justify-start gap-1">
     <div class="flex flex-wrap flex-row justify-end gap-2">
       <div class="flex gap-1 items-center text-secondary text-sm">
-        <% icon = V2::IconComponent.new("v2/info_full.svg", size: :base) %>
+        <% icon = V2::IconComponent.new("info_full.svg", size: :base) %>
         <% icon.with_tooltip("", placement: "bottom", type: :detailed) do |tooltip| %>
           <% tooltip.with_detailed_text do %>
             The build will be created from this workflow. Once the workflow completes and Tramline is able to find

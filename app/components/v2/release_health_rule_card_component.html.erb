@@ -8,7 +8,7 @@
       size: :xxs,
       turbo: false,
       html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want remove the release health rule?" } }) do |b|
-      b.with_icon("v2/trash.svg", size: :sm)
+      b.with_icon("trash.svg", size: :sm)
     end %>
   </div>
   <%= render V2::Rule::LayoutComponent.new do |rule_layout| %>
