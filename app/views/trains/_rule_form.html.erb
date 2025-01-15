@@ -6,7 +6,7 @@
       <%= form.labeled_text_field :name, "Name", required: true %>
     </div>
 
-    <%= render V2::Rule::LayoutComponent.new do |rule_layout| %>
+    <%= render Rule::LayoutComponent.new do |rule_layout| %>
       <% rule_layout.with_if_statement do %>
         <%= render partial: "rule_expressions_form", locals: { form:,
                                                                id: "trigger_rules",

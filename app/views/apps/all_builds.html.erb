@@ -1,7 +1,7 @@
-<%= render V2::ContainerComponent.new(title: "All Builds") do |container| %>
+<%= render ContainerComponent.new(title: "All Builds") do |container| %>
   <% container.with_back_button %>
   <% container.with_body do %>
-    <%= render V2::SectionComponent.new(style: :titled, title: "Search by version") do %>
+    <%= render SectionComponent.new(style: :titled, title: "Search by version") do %>
       <div class="col-span-1">
         <%= render SearchBarComponent.new(
           path: all_builds_app_path(@app, *@all_builds_params),
@@ -30,7 +30,7 @@
             <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
           </footer>
         <% else %>
-          <%= render V2::EmptyStateComponent.new(
+          <%= render EmptyStateComponent.new(
             title: "No builds found",
             text: "Try a different search term or filter, or create a new release to generate builds.",
             banner_image: "drill.svg",

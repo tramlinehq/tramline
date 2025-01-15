@@ -60,7 +60,7 @@ class ReleasePresenter < SimpleDelegator
 
   def hotfix_badge
     if hotfix?
-      badge = V2::BadgeComponent.new(kind: :badge)
+      badge = BadgeComponent.new(kind: :badge)
       badge.with_icon("band_aid.svg")
       badge.with_link("Hotfixed from #{hotfixed_from.release_version}", hotfixed_from.live_release_link)
       badge
@@ -69,10 +69,10 @@ class ReleasePresenter < SimpleDelegator
 
   def scheduled_badge
     if is_automatic?
-      badge = V2::BadgeComponent.new(text: "Automatic", kind: :badge)
+      badge = BadgeComponent.new(text: "Automatic", kind: :badge)
       badge.with_icon("robot.svg")
     else
-      badge = V2::BadgeComponent.new(text: "Manual", kind: :badge)
+      badge = BadgeComponent.new(text: "Manual", kind: :badge)
       badge.with_icon("person_standing.svg")
     end
     badge

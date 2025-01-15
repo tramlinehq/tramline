@@ -1,4 +1,4 @@
-<%= render V2::FormComponent.new(model: [app, app_config, app_variant], url: app_app_config_app_variants_path(app), method: :post) do |f| %>
+<%= render FormComponent.new(model: [app, app_config, app_variant], url: app_app_config_app_variants_path(app), method: :post) do |f| %>
   <%= render partial: "form", locals: {form: f, bundle_id: app.bundle_identifier} %>
 
   <% f.with_section(heading: "Setup Firebase") do |section| %>

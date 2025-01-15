@@ -4,9 +4,9 @@
   data-countdown-direction-value="up"
   data-countdown-enabled-value="<%= tick %>"
   class="flex items-center gap-2 text-secondary">
-  <%= render V2::IconComponent.new("dotted_line.svg", size: :base) %>
+  <%= render IconComponent.new("dotted_line.svg", size: :base) %>
   <div class="flex items-center gap-1">
-    <%= render V2::IconComponent.new("alarm_clock.svg", size: :md) %>
+    <%= render IconComponent.new("alarm_clock.svg", size: :md) %>
     <span data-countdown-target="output" class="font-normal text-sm"><%= ago_in_words(time) %></span>
   </div>
 </div>

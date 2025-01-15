@@ -1,7 +1,7 @@
 <div class="flex item-gap-default">
   <% if item.approved? %>
     <div class="flex items-center gap-1">
-      <%= render V2::IconComponent.new("check.svg", size: :sm) %>
+      <%= render IconComponent.new("check.svg", size: :sm) %>
       <span class="line-through decoration-1 text-secondary-50"><%= item.content %></span>
     </div>
   <% else %>
@@ -10,7 +10,7 @@
 
   <div class="flex items-center gap-0.5">
     <% item.approval_assignees.collect do |assignee| %>
-      <%= render V2::TooltipComponent.new(item.assignee_tooltip(assignee), placement: "top") do |tooltip| %>
+      <%= render TooltipComponent.new(item.assignee_tooltip(assignee), placement: "top") do |tooltip| %>
         <% tooltip.with_body do %>
           <%= item.assignee_avatar(assignee) %>
         <% end %>

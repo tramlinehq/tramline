@@ -10,7 +10,7 @@
 
     <div class="flex items-center gap-2">
       <% if item.disabled? %>
-        <%= render V2::TooltipComponent.new(item.status_tooltip, placement: "top") do |tooltip| %>
+        <%= render TooltipComponent.new(item.status_tooltip, placement: "top") do |tooltip| %>
           <% tooltip.with_body do %>
             <%= select_tag :status,
                            options_for_select(ApprovalsPresenter.sanitized_statuses, item.status),
@@ -26,7 +26,7 @@
                        data: {action: "change->stream-effect#update", stream_effect_target: "dispatch"} %>
       <% end %>
 
-      <%= render V2::ButtonComponent.new(
+      <%= render ButtonComponent.new(
         scheme: :naked_icon,
         type: :action,
         size: :none,

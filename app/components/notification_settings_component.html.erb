@@ -1,11 +1,11 @@
 <% if enabled? %>
-  <%= render V2::TableComponent.new(columns: ["kind", "channels", "status", ""]) do |table| %>
+  <%= render TableComponent.new(columns: ["kind", "channels", "status", ""]) do |table| %>
     <% display_settings.each do |setting| %>
       <% setting = notification_setting_component(setting) %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
           <div class="inline-flex items-center">
-            <%= render V2::IconComponent.new(setting.icon, size: :md, classes: "mr-2") %>
+            <%= render IconComponent.new(setting.icon, size: :md, classes: "mr-2") %>
             <%= setting.display %>
           </div>
         <% end %>
@@ -15,7 +15,7 @@
             <div class="flex overflow-x-hidden hover:overflow-x-auto gap-x-3">
               <% setting.notification_channels&.each do |channel| %>
                 <div class="inline-flex items-center">
-                  <%= render V2::IconComponent.new("integrations/logo_#{setting.notification_provider}.png", size: :md, classes: "mr-1") %>
+                  <%= render IconComponent.new("integrations/logo_#{setting.notification_provider}.png", size: :md, classes: "mr-1") %>
                   <%= channel["name"] %>
                 </div>
               <% end %>
@@ -28,12 +28,12 @@
         <% end %>
 
         <% row.with_cell(wrap: true) do %>
-          <%= render V2::ModalComponent.new(title: setting.modal_title, subtitle: setting.description) do |modal| %>
+          <%= render ModalComponent.new(title: setting.modal_title, subtitle: setting.description) do |modal| %>
             <% button = modal.with_button(scheme: :light, type: :action, size: :xxs) %>
             <% button.with_icon("pencil.svg") %>
             <% modal.with_body do %>
               <%= tag.turbo_frame id: setting.edit_frame_id, src: setting.edit_path, loading: :lazy, class: "with-turbo-frame-loader", target: "_top" do %>
-                <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
+                <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
               <% end %>
             <% end %>
           <% end %>
@@ -50,7 +50,7 @@
     </div>
   </section>
 <% else %>
-  <%= render V2::EmptyStateComponent.new(title: "Notifications are disabled",
+  <%= render EmptyStateComponent.new(title: "Notifications are disabled",
                                          text: "Enable notifications for the app and the train to configure notification settings.",
                                          banner_image: "bell.svg",
                                          type: :subdued) %>

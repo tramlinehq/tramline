@@ -1,4 +1,4 @@
-<%= render V2::ModalComponent.new(title:, subtitle:, size: :xl_4, authz: false) do |modal| %>
+<%= render ModalComponent.new(title:, subtitle:, size: :xl_4, authz: false) do |modal| %>
   <% if button_scheme == :naked_icon %>
     <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
     <% button.with_tooltip(title, placement: "top") %>
@@ -10,7 +10,7 @@
 
   <% modal.with_body do %>
     <%= tag.turbo_frame id: dom_id(parent_release, :changes_since_previous), src: changes_path, loading: :lazy, class: "with-turbo-frame-loader" do %>
-      <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
+      <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
     <% end %>
   <% end %>
 <% end %>

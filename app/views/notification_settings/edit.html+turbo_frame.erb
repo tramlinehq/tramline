@@ -1,11 +1,11 @@
-<%= render V2::EnhancedTurboFrameComponent.new(@setting.edit_frame_id) do %>
-  <%= render V2::FormComponent.new(@setting.edit_form_params) do |f| %>
+<%= render EnhancedTurboFrameComponent.new(@setting.edit_frame_id) do %>
+  <%= render FormComponent.new(@setting.edit_form_params) do |f| %>
     <% f.with_section(heading: "Select") do |section| %>
       <% section.with_description do %>
         <div>One or more channel names for this type of notification.</div>
       <% end %>
 
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
+      <%= render Form::SwitchComponent.new(form: section.F,
                                                field_name: :active,
                                                switch_id: "active-switch-#{@setting.id}",
                                                on_label: "Notifications enabled",

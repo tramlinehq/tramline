@@ -1,0 +1,82 @@
+<div class="flex flex-col section-gap-default">
+  <% if hotfix_banner? %>
+    <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "No automatic actions were triggered") do %>
+      <div class="flex flex-col gap-2">
+        <span class="text-sm">Since this is a hotfix release with no new changes, please manually rebuild your RC or land new changes to the release branch.</span>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="flex">
+    <%= render HorizontalDataSetComponent.new(separator: :dashed, bg_color: true) do |component| %>
+      <% component.with_data_set(title: "Release Captain") do %>
+        <div class="flex items-center gap-x-2 justify-between">
+          <%= release_pilot_avatar %>
+          <span class="text-sm text-secondary"><%= release_pilot_name %></span>
+        </div>
+      <% end %>
+
+      <% if hotfix? %>
+        <% component.with_data_set(title: "Hotfix from") do %>
+          <%= render ButtonComponent.new(scheme: :link,
+                                             label: hotfixed_from.release_version,
+                                             options: hotfixed_from.live_release_link,
+                                             type: :link_external,
+                                             size: :none,
+                                             authz: false) %>
+        <% end %>
+      <% end %>
+      <% component.with_data_set(title: "Started").with_content(display_start_time) %>
+      <% component.with_data_set(title: "Released").with_content(display_end_time) %>
+      <% component.with_data_set(title: "Duration").with_content(duration) %>
+
+      <% unless active? %>
+        <% component.with_data_set(title: "Stability changes").with_content(commit_count) %>
+        <% if continuous_backmerge? %>
+          <% component.with_data_set(title: "Backmerges").with_content(backmerge_summary) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%= render PlatformOverviewV2Component.new(release, occupy: false, size: :compact, show_monitoring: false) %>
+
+  <div class="grid grid-cols-2 item-gap-default min-w-80">
+    <%= render CardComponent.new(title: "Captain's Log", fold: false, separator: true) do |card| %>
+      <% card.with_action do %>
+        <%= render ModalComponent.new(title: "Edit Internal Notes", dismissable: false) do |modal| %>
+          <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none)
+                  .with_icon("pencil.svg", size: :sm) %>
+          <% modal.with_body do %>
+            <%= form_with(model: [release], method: :put, builder: EnhancedFormHelper::AuthzForm) do |form| %>
+              <div data-controller="text-editor" data-text-editor-view-mode-value="false" class="mb-4">
+                <div data-text-editor-target="editor"></div>
+                <%= form.textarea :internal_notes, { class: "hidden", data: { text_editor_target: "editorReplica" } } %>
+              </div>
+
+              <%= form.authz_submit "Save", "archive.svg" %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <div data-controller="text-editor"
+           data-text-editor-view-mode-value="true"
+           data-text-editor-view-content-value="<%= internal_notes %>"
+           class="overflow-y-scroll overflow-x-hidden">
+        <div class="ql-editor p-0" data-text-editor-target="viewContents" contenteditable="false"></div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="grid grid-cols-3 item-gap-default">
+    <% if current_organization.teams.any? %>
+      <% if team_release_commits.present? %>
+        <%= render ChartComponent.new(team_release_chart) %>
+      <% end %>
+      <% if team_stability_commits.present? %>
+        <%= render ChartComponent.new(team_stability_chart) %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-<%= render V2::FormComponent.new(model: [current_organization, team], url: url, method: form_method) do |f| %>
+<%= render FormComponent.new(model: [current_organization, team], url: url, method: form_method) do |f| %>
   <% f.with_section(heading: "Basic details") do |section| %>
     <% section.with_description do %>
       <div>Choose a color for your team.</div>

@@ -1,8 +1,8 @@
-<%= render V2::SectionComponent.new(style: :titled,
+<%= render SectionComponent.new(style: :titled,
                                     title: "Teams (#{@teams.size})",
                                     subtitle: "Teams in your organization") do |sc| %>
   <% sc.with_sidenote do %>
-    <%= render V2::ModalComponent.new(title: "Add team") do |modal| %>
+    <%= render ModalComponent.new(title: "Add team") do |modal| %>
       <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
               .with_icon("plus.svg", size: :sm) %>
       <% modal.with_body do %>
@@ -13,7 +13,7 @@
     <% end %>
   <% end %>
 
-  <%= render V2::TableComponent.new(columns: ["Name", "Color", ""]) do |table| %>
+  <%= render TableComponent.new(columns: ["Name", "Color", ""]) do |table| %>
     <% @teams.each do |team| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
@@ -32,7 +32,7 @@
         <% end %>
         <% row.with_cell(wrap: true) do %>
           <div class="flex gap-x-2 justify-end">
-            <%= render V2::ModalComponent.new(title: "Edit team") do |modal| %>
+            <%= render ModalComponent.new(title: "Edit team") do |modal| %>
               <% modal.with_button(scheme: :light,
                                    type: :action,
                                    size: :xxs,
@@ -44,7 +44,7 @@
                                                                      form_method: :put } %>
               <% end %>
             <% end %>
-            <%= render V2::ButtonComponent.new(
+            <%= render ButtonComponent.new(
               scheme: :light,
               options: accounts_organization_team_path(current_organization, team),
               type: :link,
@@ -58,11 +58,11 @@
   <% end %>
 <% end %>
 
-<%= render V2::SectionComponent.new(style: :titled,
+<%= render SectionComponent.new(style: :titled,
                                     title: "Members (#{@users.size})",
                                     subtitle: "Users in your organization") do |sc| %>
   <% sc.with_sidenote do %>
-    <%= render V2::ModalComponent.new(title: "Add team member") do |modal| %>
+    <%= render ModalComponent.new(title: "Add team member") do |modal| %>
       <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
               .with_icon("plus.svg", size: :sm) %>
       <% modal.with_body do %>
@@ -71,14 +71,14 @@
     <% end %>
   <% end %>
 
-  <%= render V2::TableComponent.new(columns: ["Full Name", "Status", "Email", "Preferred Name", "Role", "VCS Username", "Team", "Invited By", ""]) do |table| %>
+  <%= render TableComponent.new(columns: ["Full Name", "Status", "Email", "Preferred Name", "Role", "VCS Username", "Team", "Invited By", ""]) do |table| %>
     <% @users.each do |member| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
           <%= member.full_name %>
         <% end %>
         <% row.with_cell do %>
-          <%= render V2::BadgeComponent.new(text: "Active", status: :success) %>
+          <%= render BadgeComponent.new(text: "Active", status: :success) %>
         <% end %>
         <% row.with_cell do %>
           <div class="font-medium text-slate-800">
@@ -95,7 +95,7 @@
           <%= member.github_login || "-" %>
         <% end %>
         <% row.with_cell do %>
-          <%= render V2::TeamPillComponent.new(member.team_for(current_organization)) %>
+          <%= render TeamPillComponent.new(member.team_for(current_organization)) %>
         <% end %>
         <% row.with_cell do %>
           <%= member.successful_invite_for(current_organization)&.sender&.email || "–" %>
@@ -105,7 +105,7 @@
         <% row.with_cell(wrap: true) do %>
           <div class="flex gap-x-2 justify-end">
             <% if can_current_user_edit_role?(member) %>
-              <%= render V2::ModalComponent.new(title: "Edit role") do |modal| %>
+              <%= render ModalComponent.new(title: "Edit role") do |modal| %>
                 <% modal.with_button(scheme: :light,
                                     type: :action,
                                     size: :xxs,
@@ -117,7 +117,7 @@
               <% end %>
             <% end %>
             <% if can_current_user_remove_member?(member) %>
-              <%= render V2::ButtonComponent.new(
+              <%= render ButtonComponent.new(
                 scheme: :danger,
                 type: :button,
                 size: :xxs,
@@ -136,7 +136,7 @@
           -
         <% end %>
         <% row.with_cell do %>
-          <%= render V2::BadgeComponent.new(text: "Invited", status: :neutral) %>
+          <%= render BadgeComponent.new(text: "Invited", status: :neutral) %>
         <% end %>
         <% row.with_cell do %>
           <div class="font-medium text-slate-800">
@@ -160,7 +160,7 @@
         <% end %>
         <% row.with_cell(wrap: true) do %>
           <div class="flex gap-x-2 justify-end">
-            <%= render V2::ButtonComponent.new(
+            <%= render ButtonComponent.new(
               scheme: :danger,
               type: :button,
               size: :xxs,

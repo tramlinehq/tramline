@@ -13,9 +13,9 @@
     </p>
   </div>
 
-  <%= render V2::BuildHealthComponent.new(builds) %>
+  <%= render BuildHealthComponent.new(builds) %>
 <% else %>
-  <%= render V2::EmptyStateComponent.new(
+  <%= render EmptyStateComponent.new(
     title: "No build metadata trend to show",
     text: "As you add more builds to Tramline, the trend of their metadata will be displayed here.",
     banner_image: "drill.svg",

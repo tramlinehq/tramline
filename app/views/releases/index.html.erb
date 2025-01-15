@@ -1,6 +1,6 @@
 <% if current_user.pending_profile?(current_organization) %>
   <% content_for :sticky_top_message do %>
-    <%= render V2::AlertComponent.new(kind: :banner,
+    <%= render AlertComponent.new(kind: :banner,
                                       type: :notice,
                                       title: "Incomplete user profile",
                                       dismissible: false,
@@ -10,4 +10,4 @@
   <% end %>
 <% end %>
 
-<%= render V2::ReleaseListComponent.new(train: @train) %>
+<%= render ReleaseListComponent.new(train: @train) %>
