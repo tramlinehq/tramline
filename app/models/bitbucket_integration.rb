@@ -332,10 +332,6 @@ class BitbucketIntegration < ApplicationRecord
     raise Integrations::UnsupportedAction
   end
 
-  def get_artifact(_, _)
-    raise Integrations::UnsupportedAction
-  end
-
   private
 
   MAX_RETRY_ATTEMPTS = 2

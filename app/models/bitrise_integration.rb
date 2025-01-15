@@ -136,12 +136,7 @@ class BitriseIntegration < ApplicationRecord
       .then { |chosen_package| API.artifact_url(project, workflow_run_id, chosen_package) }
   end
 
-  def get_artifact(artifact_url, _)
-    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_url.blank?
-    Artifacts::Stream.new(installation.artifact_io_stream(artifact_url))
-  end
-
-  def get_artifact_v2(artifact_url, _, _)
+  def get_artifact(artifact_url, _, _)
     raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_url.blank?
 
     artifact = installation.artifact(artifact_url, ARTIFACTS_TRANSFORMATIONS)
