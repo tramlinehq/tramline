@@ -39,7 +39,7 @@
     <% end %>
   </div>
 
-  <%= render PlatformOverviewV2Component.new(release, occupy: false, size: :compact, show_monitoring: false) %>
+  <%= render PlatformOverviewComponent.new(release, occupy: false, size: :compact, show_monitoring: false) %>
 
   <div class="grid grid-cols-2 item-gap-default min-w-80">
     <%= render CardComponent.new(title: "Captain's Log", fold: false, separator: true) do |card| %>

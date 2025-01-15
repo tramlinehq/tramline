@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class PlatformOverviewV2Component < BaseComponent
+class PlatformOverviewComponent < BaseComponent
   SIZES = %i[default compact].freeze
 
   def initialize(release, size: :default, occupy: true, show_monitoring: true)
