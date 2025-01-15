@@ -1,4 +1,4 @@
-class V2::FinalizeReleaseJob < ApplicationJob
+class FinalizeReleaseJob < ApplicationJob
   queue_as :high
 
   def perform(release_id, force_finalize = false)
