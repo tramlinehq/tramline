@@ -120,7 +120,7 @@ class ProductionRelease < ApplicationRecord
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
-    V2::FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[monitoring_provider.class])
+    FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[monitoring_provider.class])
   end
 
   def beyond_monitoring_period?

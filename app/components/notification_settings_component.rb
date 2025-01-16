@@ -4,34 +4,34 @@ class NotificationSettingsComponent < ViewComponent::Base
   InvalidNotificationSettings = Class.new(StandardError)
 
   NOTIFICATIONS = {
-    release_scheduled: {icon: "v2/clock.svg", description: "Your scheduled release will run in a few hours"},
-    release_started: {icon: "v2/zap.svg", description: "A new release was started for the release train"},
-    backmerge_failed: {icon: "v2/alert_circle.svg", description: "Tramline failed to create a backmerge PR for the commit in the release"},
-    release_ended: {icon: "v2/sparkles.svg", description: "The release finished successfully"},
-    release_finalize_failed: {icon: "v2/alert_circle.svg", description: "The release finalization failed"},
-    release_stopped: {icon: "v2/stop_circle.svg", description: "The release was stopped before it finished"},
-    release_health_events: {icon: "v2/heart_pulse.svg", description: "A health event has occurred for the release"},
-    build_available_v2: {icon: "v2/drill.svg", description: "A new build is available for a direct download"},
-    internal_release_finished: {icon: "v2/sparkles.svg", description: "The release finished successfully"},
-    internal_release_failed: {icon: "v2/alert_circle.svg", description: "The internal build step failed"},
-    beta_release_failed: {icon: "v2/alert_circle.svg", description: "The release candidate step failed"},
-    beta_submission_finished: {icon: "v2/sparkles.svg", description: "The beta submission finished successfully"},
-    internal_submission_finished: {icon: "v2/sparkles.svg", description: "The internal submission finished successfully"},
-    submission_failed: {icon: "v2/alert_circle.svg", description: "The submission failed"},
-    production_submission_started: {icon: "v2/play.svg", description: "A production submission started"},
-    production_submission_in_review: {icon: "v2/clipboard_list.svg", description: "A production submission is in review"},
-    production_submission_approved: {icon: "v2/clipboard_check.svg", description: "A production submission was approved by the store"},
-    production_submission_rejected: {icon: "v2/alert_circle.svg", description: "A production submission was rejected by the store"},
-    production_submission_cancelled: {icon: "v2/alert_circle.svg", description: "A production submission was cancelled"},
-    production_rollout_started: {icon: "v2/play.svg", description: "A production rollout started"},
-    production_rollout_paused: {icon: "v2/pause.svg", description: "A production rollout was paused"},
-    production_rollout_resumed: {icon: "v2/play.svg", description: "A production rollout was resumed"},
-    production_rollout_halted: {icon: "v2/stop_circle.svg", description: "A production rollout was halted"},
-    production_rollout_updated: {icon: "v2/arrow_big_up_dash.svg", description: "A production rollout was updated"},
-    production_release_finished: {icon: "v2/sparkles.svg", description: "A production release finished"},
-    workflow_run_failed: {icon: "v2/alert_circle.svg", description: "A workflow run failed"},
-    workflow_run_halted: {icon: "v2/stop_circle.svg", description: "A workflow run was halted"},
-    workflow_run_unavailable: {icon: "v2/alert_circle.svg", description: "A workflow run was not found"}
+    release_scheduled: {icon: "clock.svg", description: "Your scheduled release will run in a few hours"},
+    release_started: {icon: "zap.svg", description: "A new release was started for the release train"},
+    backmerge_failed: {icon: "alert_circle.svg", description: "Tramline failed to create a backmerge PR for the commit in the release"},
+    release_ended: {icon: "sparkles.svg", description: "The release finished successfully"},
+    release_finalize_failed: {icon: "alert_circle.svg", description: "The release finalization failed"},
+    release_stopped: {icon: "stop_circle.svg", description: "The release was stopped before it finished"},
+    release_health_events: {icon: "heart_pulse.svg", description: "A health event has occurred for the release"},
+    build_available_v2: {icon: "drill.svg", description: "A new build is available for a direct download"},
+    internal_release_finished: {icon: "sparkles.svg", description: "The release finished successfully"},
+    internal_release_failed: {icon: "alert_circle.svg", description: "The internal build step failed"},
+    beta_release_failed: {icon: "alert_circle.svg", description: "The release candidate step failed"},
+    beta_submission_finished: {icon: "sparkles.svg", description: "The beta submission finished successfully"},
+    internal_submission_finished: {icon: "sparkles.svg", description: "The internal submission finished successfully"},
+    submission_failed: {icon: "alert_circle.svg", description: "The submission failed"},
+    production_submission_started: {icon: "play.svg", description: "A production submission started"},
+    production_submission_in_review: {icon: "clipboard_list.svg", description: "A production submission is in review"},
+    production_submission_approved: {icon: "clipboard_check.svg", description: "A production submission was approved by the store"},
+    production_submission_rejected: {icon: "alert_circle.svg", description: "A production submission was rejected by the store"},
+    production_submission_cancelled: {icon: "alert_circle.svg", description: "A production submission was cancelled"},
+    production_rollout_started: {icon: "play.svg", description: "A production rollout started"},
+    production_rollout_paused: {icon: "pause.svg", description: "A production rollout was paused"},
+    production_rollout_resumed: {icon: "play.svg", description: "A production rollout was resumed"},
+    production_rollout_halted: {icon: "stop_circle.svg", description: "A production rollout was halted"},
+    production_rollout_updated: {icon: "arrow_big_up_dash.svg", description: "A production rollout was updated"},
+    production_release_finished: {icon: "sparkles.svg", description: "A production release finished"},
+    workflow_run_failed: {icon: "alert_circle.svg", description: "A workflow run failed"},
+    workflow_run_halted: {icon: "stop_circle.svg", description: "A workflow run was halted"},
+    workflow_run_unavailable: {icon: "alert_circle.svg", description: "A workflow run was not found"}
   }.map
     .with_index { |(key, value), index| [key, value.merge(number: index.succ)] }
     .to_h
@@ -124,7 +124,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     end
 
     def status_pill
-      V2::BadgeComponent.new(text: status_text, status: status_type)
+      BadgeComponent.new(text: status_text, status: status_type)
     end
 
     def default_channels

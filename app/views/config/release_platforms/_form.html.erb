@@ -1,6 +1,6 @@
 <%# locals: (app:, train:, platform:, platform_config:, platform_name:, platform_label:, ci_actions:, submission_types:) %>
 
-<%= render V2::FormComponent.new(model: [app, train, platform, platform_config],
+<%= render FormComponent.new(model: [app, train, platform, platform_config],
                                  url: app_train_platform_submission_config_path(app, train, platform_name)) do |f| %>
   <% f.with_section(heading: "Configure RC (Release Candidate) Workflow") do |section| %>
     <% section.with_description do %>
@@ -35,7 +35,7 @@
     <% end %>
 
     <% if platform.production_ready? %>
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
+      <%= render Form::SwitchComponent.new(form: section.F,
                                                field_name: :production_release_enabled,
                                                on_label: "Production release is enabled",
                                                off_label: "Disabled") do |component| %>
@@ -45,7 +45,7 @@
             <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || prod_fields.object.submissions.build(submission_type: platform.production_submission_type, auto_promote: false) do |sub_fields| %>
               <%= sub_fields.hidden_field :submission_type, value: sub_fields.object.submission_type %>
               <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
-              <%= render V2::Form::SwitchComponent.new(form: sub_fields,
+              <%= render Form::SwitchComponent.new(form: sub_fields,
                                                        field_name: :rollout_enabled,
                                                        on_label: t("store_rollouts.switcher.#{platform_name}.enable"),
                                                        off_label: t("store_rollouts.switcher.#{platform_name}.disable")) do |rollout| %>
@@ -77,7 +77,7 @@
                         </div>
                       </div>
 
-                      <%= render V2::Form::SwitchComponent.new(form: sub_fields,
+                      <%= render Form::SwitchComponent.new(form: sub_fields,
                                                                field_name: :finish_rollout_in_next_release,
                                                                on_label: "Cascading rollouts are enabled",
                                                                off_label: "Cascading rollouts are disabled") do |c| %>
@@ -102,7 +102,7 @@
   <% end %>
 
   <% f.with_section(heading: "Configure Beta Testing Tracks") do |section| %>
-    <%= render V2::Form::SwitchComponent.new(form: section.F,
+    <%= render Form::SwitchComponent.new(form: section.F,
                                              field_name: :beta_release_submissions_enabled,
                                              on_label: "Beta testing tracks are enabled",
                                              off_label: "Disabled") do |component| %>
@@ -126,7 +126,7 @@
       If you have an internal testing process that generates non-production builds and sends them to testing channels, you can configure it here.
     <% end %>
 
-    <%= render V2::Form::SwitchComponent.new(form: section.F,
+    <%= render Form::SwitchComponent.new(form: section.F,
                                              field_name: :internal_release_enabled,
                                              on_label: "Internal testing is enabled",
                                              off_label: "No internal testing setup") do |component| %>
@@ -164,6 +164,6 @@
   <% end %>
 
   <% f.with_action do %>
-    <%= f.F.authz_submit "Save", "v2/archive.svg" %>
+    <%= f.F.authz_submit "Save", "archive.svg" %>
   <% end %>
 <% end %>

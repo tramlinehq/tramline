@@ -1,19 +1,19 @@
 <% if @organization.sso? %>
-  <%= render V2::SectionComponent.new(style: :titled, title: "Authentication", subtitle: "Single Sign-On / SAML configuration") do %>
+  <%= render SectionComponent.new(style: :titled, title: "Authentication", subtitle: "Single Sign-On / SAML configuration") do %>
     <div class="flex flex-col gap-y-6 w-1/3">
       <div class="flex items-center gap-1">
-        <%= render V2::BadgeComponent.new(text: "SSO Enabled", status: :success) %>
+        <%= render BadgeComponent.new(text: "SSO Enabled", status: :success) %>
         <% @organization.sso_domains.each do |domain| %>
-          <%= render V2::BadgeComponent.new(text: domain, kind: :badge) %>
+          <%= render BadgeComponent.new(text: domain, kind: :badge) %>
         <% end %>
       </div>
 
-      <%= render V2::SmartTextBoxComponent.new(@organization.sso_tenant_id,
+      <%= render SmartTextBoxComponent.new(@organization.sso_tenant_id,
                                                label: "SSO Tenant ID",
                                                clipboard: true,
                                                clipboard_tooltip: "Copy ID") %>
 
-      <%= render V2::SmartTextBoxComponent.new(@organization.sso_configuration_link,
+      <%= render SmartTextBoxComponent.new(@organization.sso_configuration_link,
                                                label: "SSO Setup Link",
                                                clipboard: true,
                                                clipboard_tooltip: "Copy link") %>
@@ -21,14 +21,14 @@
   <% end %>
 <% end %>
 
-<%= render V2::SectionComponent.new(style: :titled, title: "API", subtitle: "Use these credentials to make API calls to Tramline") do %>
+<%= render SectionComponent.new(style: :titled, title: "API", subtitle: "Use these credentials to make API calls to Tramline") do %>
   <div class="flex flex-col gap-y-6 w-1/3">
-    <%= render V2::SmartTextBoxComponent.new(@organization.id,
+    <%= render SmartTextBoxComponent.new(@organization.id,
                                              label: "Account ID",
                                              clipboard: true,
                                              clipboard_tooltip: "Copy ID") %>
 
-    <%= render V2::SmartTextBoxComponent.new(@organization.api_key,
+    <%= render SmartTextBoxComponent.new(@organization.api_key,
                                              label: "API Key",
                                              clipboard: true,
                                              password: true,

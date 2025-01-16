@@ -1,6 +1,6 @@
 <% if events.blank? %>
   <div class="text-secondary">
-    <%= render V2::EmptyStateComponent.new(text: "Events will show up here as actions are performed", title: "No activity yet", type: :subdued, banner_image: "v2/activity.svg") %>
+    <%= render EmptyStateComponent.new(text: "Events will show up here as actions are performed", title: "No activity yet", type: :subdued, banner_image: "activity.svg") %>
   </div>
 <% else %>
   <ol class="relative border-s border-main-200 dark:border-main-700">
@@ -15,7 +15,7 @@
 
     <% if truncate %>
       <li class="mt-6 last:mb-0 ms-4 text-secondary text-xs">
-        <%= render V2::ButtonComponent.new(label: "View all events",
+        <%= render ButtonComponent.new(label: "View all events",
                                            scheme: :link,
                                            type: :link_external,
                                            options: view_all_link,
@@ -23,7 +23,7 @@
                                            authz: false,
                                            size: :none,
                                            arrow: :none) do |b|
-          b.with_icon("v2/activity.svg", size: :sm)
+          b.with_icon("activity.svg", size: :sm)
         end %>
       </li>
     <% end %>

@@ -2,14 +2,14 @@
 <% is_app_config_completed = setup_instructions[:app_config][:completed] %>
 
 <div class="flex flex-col gap-4">
-  <%= render V2::SectionComponent.new(title: "Complete your app setup 📲", style: :titled) do %>
+  <%= render SectionComponent.new(title: "Complete your app setup 📲", style: :titled) do %>
     <ol class="flex w-full gap-x-1">
       <% is_app_completed = setup_instructions[:app][:completed] %>
       <li class="relative w-8/12 sm:mb-0">
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_app_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_app_completed %>
-              <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
+              <%= render IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
             <% end %>
           </div>
         </div>
@@ -24,7 +24,7 @@
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_version_control_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_version_control_completed %>
-              <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
+              <%= render IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
             <% end %>
           </div>
         </div>
@@ -46,7 +46,7 @@
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_ci_cd_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_ci_cd_completed %>
-              <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
+              <%= render IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
             <% end %>
           </div>
         </div>
@@ -69,7 +69,7 @@
         <div class="flex items-center">
           <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_build_channel_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
             <% if is_build_channel_completed %>
-              <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
+              <%= render IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
             <% end %>
           </div>
         </div>
@@ -108,7 +108,7 @@
   <% end %>
 
   <% if is_app_config_visible %>
-    <%= render V2::SectionComponent.new(title: "Finish configuring integrations 🔌", style: :titled) do %>
+    <%= render SectionComponent.new(title: "Finish configuring integrations 🔌", style: :titled) do %>
       <ol class="flex w-full gap-x-1">
         <% setup_instructions[:app_config][:integrations].each do |category, statuses| %>
           <% completed = statuses[:completed] %>
@@ -116,7 +116,7 @@
             <div class="flex items-center">
               <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
                 <% if completed %>
-                  <%= render V2::IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
+                  <%= render IconComponent.new("progress_check.svg", size: :xl_3, classes: "fill-current text-white") %>
                 <% end %>
               </div>
             </div>
