@@ -5,13 +5,13 @@
       <% if title %>
         <div class="heading-2"><%= title %></div>
       <% else %>
-        <%= render V2::IconComponent.new(empty_icon, size: :lg, rounded: false, classes: "mt-1") %>
+        <%= render IconComponent.new(empty_icon, size: :lg, rounded: false, classes: "mt-1") %>
       <% end %>
     </div>
 
     <div class="flex justify-between">
       <% if status.present? %>
-        <%= render V2::BadgeComponent.new(**status) %>
+        <%= render BadgeComponent.new(**status) %>
       <% end %>
       <div class="flex ml-auto text-sm text-secondary tracking-tight"><%= footer %></div>
     </div>

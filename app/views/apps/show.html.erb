@@ -1,18 +1,18 @@
 <% content_for :sticky_top_message do %>
-  <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Need help?", info: { label: "Read docs", link: "https://docs.tramline.app" }) do %>
+  <%= render AlertComponent.new(kind: :banner, type: :notice, title: "Need help?", info: { label: "Read docs", link: "https://docs.tramline.app" }) do %>
     Contact us via the chat in the bottom right corner and we'll help you get setup with your release process.
   <% end %>
 <% end %>
 
 <% if @app.ready? && !@app.notifications_set_up? %>
   <% content_for :sticky_top_message do %>
-    <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Setup Notifications", info: { label: "Connect", link: app_integrations_path(@app, anchor: "notification")}) do %>
+    <%= render AlertComponent.new(kind: :banner, type: :notice, title: "Setup Notifications", info: { label: "Connect", link: app_integrations_path(@app, anchor: "notification")}) do %>
       You haven't yet added the integration for notifications. Set it up to receive timely updates about your release!
     <% end %>
   <% end %>
 <% end %>
 
-<%= render V2::ContainerComponent.new(title: "", error_resource: @app) do |container| %>
+<%= render ContainerComponent.new(title: "", error_resource: @app) do |container| %>
   <% container.with_body do %>
     <% if @app.ready? %>
       <%= render partial: "shared/draft_mode_notice", locals: { app: @app } %>

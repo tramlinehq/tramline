@@ -1,5 +1,5 @@
 <% if show %>
-  <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "Submissions on the Play Store are currently blocked") do |ann| %>
+  <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "Submissions on the Play Store are currently blocked") do |ann| %>
     <div class="text-sm flex flex-col paragraph-gap-default">
       <p>Due to a previous rejection, new changes cannot be submitted to the store from Tramline (store APIs disallow
         it).

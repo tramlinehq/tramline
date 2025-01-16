@@ -1,7 +1,7 @@
 <% if app.draft? %>
   <article class="mb-10">
     <div class="max-w-sm p-6 bg-white border border-main-200 rounded-lg dark:bg-main dark:border-main-700">
-      <%= render V2::IconComponent.new("clock.svg", size: :xl_3, classes: "handle cursor-grabbing") %>
+      <%= render IconComponent.new("clock.svg", size: :xl_3, classes: "handle cursor-grabbing") %>
       <h5 class="mb-2 heading-2">App in Draft mode</h5>
       <p class="mb-3 font-normal text-secondary dark:text-secondary-50">
         Your app on the <strong>Google Play Store</strong> is currently in a

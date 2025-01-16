@@ -1,0 +1,37 @@
+<% @integrations_by_categories.each do |category, integrations| %>
+  <%= render SectionComponent.new(style: :titled,
+                                      title: Integration.human_enum_name(:category, category),
+                                      subtitle: Integration::CATEGORY_DESCRIPTIONS[category.to_sym].downcase) do |sc| %>
+    <div id="<%= category %>">
+      <div class="grid grid-cols-10 gap-6 mt-4">
+        <% integrations.each do |integration| %>
+          <%= render IntegrationCardComponent.new(@app, integration, category) %>
+        <% end %>
+      </div>
+    </div>
+    <% if connected_integrations?(integrations) %>
+      <% sc.with_sidenote do %>
+        <%= render ModalComponent.new(title: title(category), open: pre_open?(category)) do |modal| %>
+          <% modal.with_button(label: "Configure", scheme: :light, type: :action, size: :xxs, arrow: :none)
+                  .with_icon("cog.svg", size: :md) %>
+          <% modal.with_body do %>
+            <%= tag.turbo_frame id: "#{category}_config",
+                                src: edit_app_app_config_path(@app, integration_category: category),
+                                loading: :lazy,
+                                class: "with-turbo-frame-loader" do %>
+              <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+<%= render SectionComponent.new(style: :titled, title: "Coming Soon") do %>
+  <div class="grid grid-cols-4 place-items-center justify-center text-slate-400 mt-12">
+    <div><%= image_tag "integrations/logo_gitlab.png", title: "GitLab", width: 70, class: "opacity-30" %></div>
+    <div><%= image_tag "integrations/logo_codemagic.png", title: "Codemagic", width: 80, class: "opacity-30" %></div>
+    <div><%= image_tag "integrations/logo_sentry.png", title: "Sentry", width: 90, class: "opacity-30" %></div>
+    <div><%= image_tag "integrations/logo_crashlytics.png", title: "Crashlytics", width: 85, class: "opacity-30" %></div>
+  </div>
+<% end %>

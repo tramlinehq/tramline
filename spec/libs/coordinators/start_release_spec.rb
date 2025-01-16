@@ -106,7 +106,6 @@ describe Coordinators::StartRelease do
       end
 
       it "raises an error when the upcoming release is not startable" do
-        Flipper.enable_actor(:product_v2, train)
         _ongoing_release = create(:release, :on_track, train:)
         expect {
           described_class.call(train)
