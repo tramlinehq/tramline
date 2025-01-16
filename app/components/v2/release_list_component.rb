@@ -83,7 +83,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
     [
       {
         title: "Minor",
-        subtitle: major_subtitle,
+        subtitle: minor_subtitle,
         icon: "v2/play_fill.svg",
         opt_name: "has_major_bump",
         opt_value: "false",
@@ -91,7 +91,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
       },
       {
         title: "Major",
-        subtitle: minor_subtitle,
+        subtitle: major_subtitle,
         icon: "v2/forward_step_fill.svg",
         opt_name: "has_major_bump",
         opt_value: "true",
