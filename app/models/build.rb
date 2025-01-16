@@ -34,8 +34,8 @@ class Build < ApplicationRecord
   has_many :store_submissions, dependent: :nullify, inverse_of: :build
   has_one :external_build, dependent: :destroy, inverse_of: :build
 
-  scope :internal, -> { joins(:workflow_run).where(workflow_run: { kind: WorkflowRun::KINDS[:internal] }) }
-  scope :release_candidate, -> { joins(:workflow_run).where(workflow_run: { kind: WorkflowRun::KINDS[:release_candidate] }) }
+  scope :internal, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:internal]}) }
+  scope :release_candidate, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:release_candidate]}) }
   scope :ready, -> { where.not(generated_at: nil) }
 
   delegate :android?, :ios?, :ci_cd_provider, :train, to: :release_platform_run
