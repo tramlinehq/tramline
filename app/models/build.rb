@@ -51,10 +51,6 @@ class Build < ApplicationRecord
 
   # the release version conditionally removes any suffixes that might be present
   def release_version
-    version_name_without_suffix
-  end
-
-  def version_name_without_suffix
     version_name&.split(Config::Workflow::BUILD_SUFFIX_SEPARATOR)&.first
   end
 

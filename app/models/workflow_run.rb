@@ -209,7 +209,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def update_build_number!
-    build.update!(build_number: app.bump_build_number!(release_version: build.version_name_without_suffix))
+    build.update!(build_number: app.bump_build_number!(release_version: build.release_version))
   end
 
   def workflow_inputs
