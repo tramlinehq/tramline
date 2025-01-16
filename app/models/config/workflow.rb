@@ -23,8 +23,6 @@ class Config::Workflow < ApplicationRecord
 
   delegate :ios?, to: :release_platform_config
 
-  BUILD_SUFFIX_SEPARATOR = "-"
-
   def as_json(options = {})
     {
       id: identifier,

@@ -24,6 +24,8 @@ class Build < ApplicationRecord
   include Passportable
   # include Sandboxable
 
+  BUILD_SUFFIX_SEPARATOR = "-"
+
   belongs_to :release_platform_run
   belongs_to :commit
   belongs_to :workflow_run
@@ -32,8 +34,8 @@ class Build < ApplicationRecord
   has_many :store_submissions, dependent: :nullify, inverse_of: :build
   has_one :external_build, dependent: :destroy, inverse_of: :build
 
-  scope :internal, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:internal]}) }
-  scope :release_candidate, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:release_candidate]}) }
+  scope :internal, -> { joins(:workflow_run).where(workflow_run: { kind: WorkflowRun::KINDS[:internal] }) }
+  scope :release_candidate, -> { joins(:workflow_run).where(workflow_run: { kind: WorkflowRun::KINDS[:release_candidate] }) }
   scope :ready, -> { where.not(generated_at: nil) }
 
   delegate :android?, :ios?, :ci_cd_provider, :train, to: :release_platform_run
@@ -49,9 +51,9 @@ class Build < ApplicationRecord
     "#{version_name} (#{build_number})"
   end
 
-  # the release version conditionally removes any suffixes that might be present
+  # the release version is the version without any suffix that could be present
   def release_version
-    version_name&.split(Config::Workflow::BUILD_SUFFIX_SEPARATOR)&.first
+    version_name&.split(BUILD_SUFFIX_SEPARATOR)&.first
   end
 
   def has_artifact?
@@ -105,9 +107,9 @@ class Build < ApplicationRecord
     self.sequence_number = release_platform_run.next_build_sequence_number
   end
 
-  # the build version name is the current release (platform run) version with an optional suffix
+  # the build's version name is the current release (platform run) version with an optional suffix
   def set_version_name
-    self.version_name = [release_platform_run.release_version, build_suffix].compact.join(Config::Workflow::BUILD_SUFFIX_SEPARATOR)
+    self.version_name = [release_platform_run.release_version, build_suffix].compact.join(BUILD_SUFFIX_SEPARATOR)
   end
 
   def get_build_artifact

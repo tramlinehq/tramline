@@ -32,7 +32,7 @@ class WorkflowRun < ApplicationRecord
   delegate :organization, :app, :ci_cd_provider, :train, :release_branch, :release, :platform, to: :release_platform_run
   delegate :notify!, to: :train
   delegate :commit_hash, to: :commit
-  delegate :build_suffix, :artifact_name_pattern, to: :conf, allow_nil: true
+  delegate :build_suffix, :artifact_name_pattern, to: :conf
 
   STAMPABLE_REASONS = %w[
     triggered
