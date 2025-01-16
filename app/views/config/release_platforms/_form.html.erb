@@ -13,8 +13,8 @@
           <%= rc_fields.hidden_field :id, value: rc_fields.object.id %>
           <%= rc_fields.labeled_select :identifier, "Release Candidate workflow",
                                        options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.release_candidate_workflow.identifier),
-                                       {required: true},
-                                       data: {controller: "input-select"} %>
+                                       { required: true },
+                                       data: { controller: "input-select" } %>
 
           <div class="text-xs text-secondary mt-1">
             Please select the workflow that generates builds for <%= platform_label %> release candidates.
@@ -23,7 +23,12 @@
 
         <div class="flex flex-col gap-0.5">
           <%= render partial: "build_name_pattern_info" %>
-          <div><%= rc_fields.labeled_text_field :artifact_name_pattern, "Build artifact name (optional)", placeholder: "Eg., build-abc.apk" %></div>
+          <div><%= rc_fields.labeled_text_field :artifact_name_pattern, "Workflow artifact (optional)", placeholder: "Eg., build-abc.apk" %></div>
+        </div>
+
+        <div class="flex flex-col gap-0.5">
+          <%= render partial: "build_name_pattern_info" %>
+          <div><%= rc_fields.labeled_text_field :build_suffix, "Build version suffix (optional)", placeholder: "Eg., 1.3.3-suffix" %></div>
         </div>
       </div>
     <% end %>
@@ -66,10 +71,10 @@
                       <div data-controller="domain--staged-rollout-help">
                         <%= sub_fields.labeled_text_field :rollout_stages,
                                                           "Rollout sequence",
-                                                          {value: sub_fields.object.rollout_stages.join(", "),
-                                                           placeholder: "1, 2, 5, 10, 20, 50, 100",
-                                                           data: {domain__staged_rollout_help_target: "input",
-                                                                  action: "domain--staged-rollout-help#validateString"}} %>
+                                                          { value: sub_fields.object.rollout_stages.join(", "),
+                                                            placeholder: "1, 2, 5, 10, 20, 50, 100",
+                                                            data: { domain__staged_rollout_help_target: "input",
+                                                                    action: "domain--staged-rollout-help#validateString" } } %>
 
                         <div class="text-xs text-secondary mt-2">
                           <span data-domain--staged-rollout-help-target="helpSuccessText"></span>
@@ -82,8 +87,10 @@
                                                                on_label: "Cascading rollouts are enabled",
                                                                off_label: "Cascading rollouts are disabled") do |c| %>
                         <% c.with_info_icon do %>
-                          Cascading rollouts allow you to ensure that your previous rollout is fully completed before you start the rollouts for the current release.
-                          This is useful when you want to keep the last rollout stage to be less than 100% (like 99.9%) so that you get an opportunity to halt it before the next one starts.
+                          Cascading rollouts allow you to ensure that your previous rollout is fully completed before
+                          you start the rollouts for the current release.
+                          This is useful when you want to keep the last rollout stage to be less than 100% (like 99.9%)
+                          so that you get an opportunity to halt it before the next one starts.
                         <% end %>
                       <% end %>
                     </div>
@@ -142,8 +149,8 @@
               <%= internal_fields.hidden_field :id, value: internal_fields.object.id %>
               <%= internal_fields.labeled_select :identifier, "Internal build workflow",
                                                  options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.internal_workflow&.identifier),
-                                                 {required: false},
-                                                 data: {controller: "input-select"} %>
+                                                 { required: false },
+                                                 data: { controller: "input-select" } %>
 
               <div class="text-xs text-secondary mt-1">Select a workflow that generates internal / non-production
                 builds.
@@ -152,13 +159,17 @@
 
             <div class="flex flex-col gap-0.5">
               <%= render partial: "build_name_pattern_info" %>
-              <div><%= internal_fields.labeled_text_field :artifact_name_pattern, "Build artifact name (optional)", placeholder: "Eg., build-abc.apk" %></div>
+              <div><%= internal_fields.labeled_text_field :artifact_name_pattern, "Workflow artifact (optional)", placeholder: "Eg., build-abc.apk" %></div>
+            </div>
+
+            <div class="flex flex-col gap-0.5">
+              <%= render partial: "build_name_pattern_info" %>
+              <div><%= internal_fields.labeled_text_field :build_suffix, "Build version suffix (optional)", placeholder: "Eg., 1.3.3-suffix" %></div>
             </div>
           <% end %>
 
           <%= render "pre_prod_release_form", section:, kind: :internal, submission_types:, platform: %>
         </div>
-
       <% end %>
     <% end %>
   <% end %>
