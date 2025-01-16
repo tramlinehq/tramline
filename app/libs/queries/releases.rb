@@ -1,9 +1,10 @@
 class Queries::Releases
   include Memery
 
-  DEFAULT_SORT_COLUMN = "created_at"
+  DEFAULT_SORT_COLUMN = "releases.created_at"
 
   BASE_ATTR_MAPPING = {
+    release_slug: Release.arel_table[:slug],
     release_status: Release.arel_table[:status],
   }
 
@@ -66,6 +67,7 @@ class Queries::Releases
     include ActiveModel::Attributes
 
     attribute :release_status, :string
+    attribute :release_slug, :string
     attribute :all_commits, array: true, default: []
     # attribute :pull_requests, :array
     # attribute :release_changelog, :array

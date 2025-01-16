@@ -67,6 +67,7 @@ Rails.application.routes.draw do
 
     member do
       get :all_builds
+      get :all_releases
       post :refresh_external
     end
 
