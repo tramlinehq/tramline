@@ -1,6 +1,6 @@
 <%= turbo_stream.replace @stream_id do %>
   <% content_tag(:div, id: @stream_id) do %>
-    <%= render V2::LiveRelease::MetadataComponent.new(@release,
+    <%= render LiveRelease::MetadataComponent.new(@release,
                                                       @active_languages,
                                                       @language,
                                                       android_metadata: @android_metadata,

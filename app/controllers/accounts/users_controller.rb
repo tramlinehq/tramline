@@ -1,6 +1,7 @@
 class Accounts::UsersController < SignedInApplicationController
   before_action :set_user, only: %i[edit update update_user_role]
   before_action :set_organization, only: %i[update_user_role]
+  skip_before_action :require_organization!, only: [:edit, :update]
 
   def edit
   end

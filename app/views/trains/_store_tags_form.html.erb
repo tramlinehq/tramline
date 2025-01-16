@@ -1,10 +1,10 @@
-<%= render V2::Form::SwitchComponent.new(form:,
+<%= render Form::SwitchComponent.new(form:,
                                          field_name: :tag_platform_releases,
                                          on_label: "Platform Specific Tags enabled",
                                          off_label: "Platform Specific Tags disabled",
                                          hide_child: !@train.tag_platform_releases?) do |component| %>
   <% component.with_child do %>
-    <%= render V2::Form::SwitchComponent.new(form:,
+    <%= render Form::SwitchComponent.new(form:,
                                              field_name: :tag_all_store_releases,
                                              on_label: "Tag All Store Releases enabled",
                                              off_label: "Tag All Store Releases disabled") do |sub_component| %>

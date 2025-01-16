@@ -10,4 +10,10 @@ module OrganizationsHelper
   def available_roles_for_member(member_role)
     (member_role == "viewer") ? Accounts::Membership.allowed_roles : Accounts::Membership.all_roles
   end
+
+  def can_current_user_remove_member?(member)
+    return false if current_user.id == member.id  # Users can't remove themselves
+    return false if current_user_role != Accounts::Membership.roles[:owner]
+    true
+  end
 end

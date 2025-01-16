@@ -203,8 +203,12 @@ class Integration < ApplicationRecord
 
     def existing_integrations_across_app(app, providable_type)
       Integration.connected
-                 .where(integrable_id: app.organization.apps, providable_type: providable_type)
-                 .select("DISTINCT ON (providable_id, integrable_id) *")
+        .where(integrable_id: app.organization.apps, providable_type: providable_type)
+        .select("DISTINCT ON (providable_id, integrable_id) *")
+    end
+
+    def build_channels_for_platform(platform)
+      kept.build_channel.filter { |b| ALLOWED_INTEGRATIONS_FOR_APP[platform.to_sym][:build_channel].include?(b.providable_type) }
     end
 
     private

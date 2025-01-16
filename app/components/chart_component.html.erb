@@ -1,5 +1,5 @@
 <% if chart.present? %>
-  <%= render V2::CardComponent.new(title: title,
+  <%= render CardComponent.new(title: title,
                                    subtitle: chart_scope,
                                    fold: false,
                                    separator: false,
@@ -12,7 +12,7 @@
     <% end %>
 
     <% card.with_empty_state(text: "Waiting for more data",
-                             banner_image: "v2/clock.svg",
+                             banner_image: "clock.svg",
                              type: :subdued) %>
 
     <% unless insufficient? %>

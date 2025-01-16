@@ -1,0 +1,61 @@
+<%= content_tag(:div, reveal_data_attrs) do %>
+  <%= button %>
+  <% if dialog? %>
+    <dialog data-dialog-target="dialog"
+            class="overflow-y-auto backdrop:bg-main-900/50 backdrop:dark:bg-main-900/80
+          box-padding rounded-lg shadow-lg shadow-main-500
+          dark:bg-main bg-white
+          open:animate-fade-in
+          w-full <%= max_width %>">
+      <div class="flex flex-col <%= content_gap %> gap-y-1">
+        <div class="flex justify-between items-center <%= default_separator %>">
+          <h1 class="heading-2"><%= title %></h1>
+          <%= render ButtonComponent.new(
+            scheme: :naked_icon,
+            type: :action,
+            size: :none,
+            authz: false,
+            html_options: { autofocus: false, tabindex: "-1", data: { action: "dialog#close" } }) do |b|
+            b.with_icon("close_icon.svg", size: :md)
+          end %>
+        </div>
+
+        <% if subtitle %>
+          <div class="flex gap-x-2 items-center">
+            <span class="text-sm text-neutral-500 dark:text-white"><%= subtitle %></span>
+            <div class="flex-1 h-full w-full">
+              <div class="h-px bg-main-200 dark:bg-main-600 w-full m-0"></div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%= body %>
+    </dialog>
+  <% else %>
+    <div data-drawer-reveal hidden>
+      <div id="drawer-right-example"
+           class="fixed top-0 right-0 z-50 h-screen p-4 overflow-y-auto bg-white w-full <%= max_width %> dark:bg-gray-800 shadow-lg shadow-main-500"
+           aria-labelledby="drawer-right-label">
+        <div class="flex flex-col mb-3 pb-2 gap-y-1">
+          <div class="flex justify-start items-center gap-x-2 <%= default_separator %>">
+            <%= render ButtonComponent.new(
+              scheme: :naked_icon,
+              type: :action,
+              size: :none,
+              authz: false,
+              html_options: { data: { action: "reveal#hide" } }) do |b|
+              b.with_icon("close_icon.svg", size: :lg)
+            end %>
+
+            <h4 class="heading-3"><%= title %></h4>
+          </div>
+        </div>
+
+        <%= body %>
+      </div>
+
+      <div class="bg-main-800/50 dark:bg-main-800/80 fixed inset-0 z-40"></div>
+    </div>
+  <% end %>
+<% end %>

@@ -464,6 +464,9 @@ en:
               config_not_allowed: "build queue wait time cannot be configured when queue is disabled"
             working_branch:
               not_available: "could not find the working branch in the configured git repo"
+            version_seeded_with:
+              improper_semver: "Please choose a valid semver format, eg. major.minor.patch or major.minor"
+              improper_calver: "Please choose a valid calver format, eg. yyyy.0m.0d"
             backmerge_strategy:
               continuous_not_allowed: "continuous backmerge only allowed for Almost Trunk branching strategy"
               disabled_for_bitbucket: "continuous backmerge is not allowed for Bitbucket at the moment"
@@ -563,6 +566,7 @@ en:
       accepted: "Invitation was accepted. Please sign in to continue."
       already_accepted: "Invitation was already accepted!"
       failed: "Failed to accept your invitation. Please contact support!"
+      invalid_or_expired: "This invitation link is no longer valid. Please contact the organization admin for a new invitation."
     invite_mailer:
       existing_user:
         subject: "%{sender} invited you to join the %{org} team on Tramline"

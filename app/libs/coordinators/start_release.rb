@@ -23,11 +23,10 @@ class Coordinators::StartRelease
   end
 
   def call
-    raise "Invalid custom release version! Please use a SemVer like x.y.z format." if invalid_custom_version?
+    raise "Invalid custom release version! Please use a SemVer-like x.y.z format based on your configured versioning strategy." if invalid_custom_version?
     raise "Could not kickoff a hotfix because the source tag does not exist" if hotfix_from_new_branch? && !hotfix_tag_exists?
     raise "Could not kickoff a hotfix because the source release branch does not exist" if hotfix_from_previous_branch? && !hotfix_branch_exists?
     raise "Cannot start a train that is not active!" if train.inactive?
-    raise "No more releases can be started until the ongoing release is finished!" if train.ongoing_release.present? && automatic
     raise "No more releases can be started until the ongoing release is finished!" if train.upcoming_release.present? && !hotfix?
     raise "Upcoming releases are not allowed for your train." if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?
     raise "App is in draft mode, cannot start a release to public channels!" if train.app.in_draft_mode? && train.has_restricted_public_channels?
@@ -44,7 +43,6 @@ class Coordinators::StartRelease
   def kickoff
     train.with_lock do
       raise AppInDraftMode.new("App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
-      raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.ongoing_release.present? && automatic
       raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix?
       raise UpcomingReleaseNotAllowed.new("Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?
       raise NothingToRelease.new("No diff since last release") if regular_release? && !train.diff_since_last_release?
@@ -66,8 +64,7 @@ class Coordinators::StartRelease
       new_hotfix_branch: new_hotfix_branch,
       hotfix_platform: (hotfix_platform if hotfix?),
       custom_version: custom_version,
-      release_pilot_id: Current.user&.id,
-      is_v2: true # TODO: remove this after full removal of v2
+      release_pilot_id: Current.user&.id
     )
   end
 
@@ -139,8 +136,7 @@ class Coordinators::StartRelease
 
   def invalid_custom_version?
     return false if custom_version.blank?
-    VersioningStrategies::Semverish.new(custom_version)
-    false
+    VersioningStrategies::Semverish.new(custom_version).invalid?(strategy: train.versioning_strategy)
   rescue ArgumentError
     true
   end

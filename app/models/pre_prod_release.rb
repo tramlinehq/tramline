@@ -32,11 +32,8 @@ class PreProdRelease < ApplicationRecord
 
   before_create :set_default_tester_notes
 
-  # TODO: Remove this accessor, once the migration is complete
-  attr_accessor :in_data_migration_mode
-
-  after_create_commit -> { previous&.mark_as_stale! }, unless: :in_data_migration_mode
-  after_create_commit -> { create_stamp!(data: stamp_data) }, unless: :in_data_migration_mode
+  after_create_commit -> { previous&.mark_as_stale! }
+  after_create_commit -> { create_stamp!(data: stamp_data) }
 
   delegate :release, :train, :platform, to: :release_platform_run
   delegate :notify!, :notify_with_snippet!, to: :train
@@ -164,6 +161,16 @@ class PreProdRelease < ApplicationRecord
       release_version: release.release_version,
       submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", ")
     )
+  end
+
+  def latest_events(n = nil)
+    stampable_id = [
+      id,
+      triggered_workflow_run.id,
+      store_submissions.pluck(:id)
+    ].compact.flatten
+
+    Passport.where(stampable_id:).order(event_timestamp: :desc).limit(n)
   end
 
   private

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_24_064815) do
+ActiveRecord::Schema[7.2].define(version: 2025_01_10_160725) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -406,6 +406,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_24_064815) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "team_id"
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
     t.index ["organization_id"], name: "index_memberships_on_organization_id"
     t.index ["role"], name: "index_memberships_on_role"
     t.index ["user_id", "organization_id", "role"], name: "index_memberships_on_user_id_and_organization_id_and_role", unique: true
@@ -1019,7 +1021,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_24_064815) do
   add_foreign_key "approval_items", "users", column: "author_id"
   add_foreign_key "approval_items", "users", column: "status_changed_by_id"
   add_foreign_key "apps", "organizations"
-  add_foreign_key "build_artifacts", "step_runs"
   add_foreign_key "build_queues", "releases"
   add_foreign_key "builds", "commits"
   add_foreign_key "builds", "release_platform_runs"
@@ -1032,7 +1033,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_24_064815) do
   add_foreign_key "deployment_runs", "step_runs"
   add_foreign_key "deployments", "steps"
   add_foreign_key "external_apps", "apps"
-  add_foreign_key "external_builds", "step_runs"
   add_foreign_key "external_releases", "deployment_runs"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"
@@ -1050,11 +1050,9 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_24_064815) do
   add_foreign_key "production_releases", "release_platform_runs"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
-  add_foreign_key "release_health_events", "deployment_runs"
   add_foreign_key "release_health_events", "production_releases"
   add_foreign_key "release_health_events", "release_health_metrics"
   add_foreign_key "release_health_events", "release_health_rules"
-  add_foreign_key "release_health_metrics", "deployment_runs"
   add_foreign_key "release_health_metrics", "production_releases"
   add_foreign_key "release_health_rules", "release_platforms"
   add_foreign_key "release_index_components", "release_indices"
