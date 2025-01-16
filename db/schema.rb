@@ -678,7 +678,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_16_070908) do
     t.boolean "auto_promote", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "build_suffix_for_release_version", default: false
     t.index ["release_platform_config_id"], name: "index_release_step_configs_on_release_platform_config_id"
   end
 

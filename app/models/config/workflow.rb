@@ -19,6 +19,9 @@ class Config::Workflow < ApplicationRecord
 
   enum :kind, {internal: "internal", release_candidate: "release_candidate"}
   validates :identifier, :name, presence: true
+  validates :build_suffix, absence: true, if: :ios?
+
+  delegate :ios?, to: :release_platform_config
 
   BUILD_SUFFIX_SEPARATOR = "-"
 
