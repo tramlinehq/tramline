@@ -56,7 +56,7 @@
             <% if repeated_integrations_across_app.present? %>
               <%= render ModalComponent.new(title: "Reconnect from an existing integration") do |modal| %>
                 <% modal.with_button(label: "Reuse existing integration", scheme: :supporting, type: :action, size: :xxs, arrow: :none)
-                        .with_icon("v2/repeat.svg", size: :md) %>
+                        .with_icon("repeat.svg", size: :md) %>
                 <% modal.with_body do %>
                   <%= reusable_integrations_across_app_form_partial(repeated_integrations_across_app) %>
                 <% end %>

@@ -32,10 +32,6 @@ class IntegrationCardComponent < BaseComponent
     connect_app_integrations_path(@app, integration)
   end
 
-  def reuse_existing_integration_path(existing_integration)
-    reuse_app_integration_path(@app, existing_integration)
-  end
-
   def logo
     image_tag("integrations/logo_#{provider}.png", width: 24, height: 24)
   end
@@ -56,12 +52,24 @@ class IntegrationCardComponent < BaseComponent
 
   def reusable_integration_form_partial(existing_integration)
     render(partial: "integrations/reusable",
-      locals: {app: @app, integration: @integration, category: @category, url: reuse_existing_integration_path(existing_integration), type: providable_type, provider: provider})
+      locals: {app: @app,
+               integration: @integration,
+               existing_integration: existing_integration,
+               category: @category,
+               url: reuse_app_integrations_path(@app),
+               type: providable_type,
+               provider: provider})
   end
 
-  def reusable_integrations_across_app_form_partial(existing_integration)
+  def reusable_integrations_across_app_form_partial(existing_integrations)
     render(partial: "integrations/app_reuseable",
-      locals: {app: @app, existing_integration: existing_integration, category: @category, url: reuse_existing_integration_path(existing_integration), type: providable_type, provider: provider})
+      locals: {app: @app,
+               existing_integrations: existing_integrations,
+               category: @category,
+               integration: @integration,
+               url: reuse_app_integrations_path(@app),
+               type: providable_type,
+               provider: provider})
   end
 
   def disconnectable?

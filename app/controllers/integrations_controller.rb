@@ -79,7 +79,7 @@ class IntegrationsController < SignedInApplicationController
   end
 
   def set_existing_integration
-    @existing_integration = Integration.find_by(id: params[:id] || params[:integration][:id])
+    @existing_integration = Integration.find_by(id: params[:integration][:existing_integration_id])
   end
 
   def set_providable
