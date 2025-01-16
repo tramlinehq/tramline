@@ -37,17 +37,21 @@ class Build < ApplicationRecord
   scope :ready, -> { where.not(generated_at: nil) }
 
   delegate :android?, :ios?, :ci_cd_provider, :train, to: :release_platform_run
-  delegate :artifacts_url, :build_artifact_name_pattern, :kind, to: :workflow_run
+  delegate :artifacts_url, :build_artifact_name_pattern, :build_suffix, :kind, to: :workflow_run
   delegate :notify!, to: :train
 
+  before_create :set_version_name
   before_create :set_sequence_number
-
-  def build_version = version_name
 
   def metadata = nil
 
   def display_name
     "#{version_name} (#{build_number})"
+  end
+
+  # the release version conditionally removes any suffixes that might be present
+  def release_version
+    version_name&.split(Config::Workflow::BUILD_SUFFIX_SEPARATOR)&.first
   end
 
   def has_artifact?
@@ -99,6 +103,11 @@ class Build < ApplicationRecord
 
   def set_sequence_number
     self.sequence_number = release_platform_run.next_build_sequence_number
+  end
+
+  # the build version name is the current release (platform run) version with an optional suffix
+  def set_version_name
+    self.version_name = [workflow_run.release_version, build_suffix].compact.join(Config::Workflow::BUILD_SUFFIX_SEPARATOR)
   end
 
   def get_build_artifact

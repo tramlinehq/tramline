@@ -2,12 +2,13 @@
 #
 # Table name: release_step_configs
 #
-#  id                         :bigint           not null, primary key
-#  auto_promote               :boolean          default(FALSE)
-#  kind                       :string
-#  created_at                 :datetime         not null
-#  updated_at                 :datetime         not null
-#  release_platform_config_id :bigint           indexed
+#  id                               :bigint           not null, primary key
+#  auto_promote                     :boolean          default(FALSE)
+#  build_suffix_for_release_version :boolean          default(FALSE)
+#  kind                             :string
+#  created_at                       :datetime         not null
+#  updated_at                       :datetime         not null
+#  release_platform_config_id       :bigint           indexed
 #
 class Config::ReleaseStep < ApplicationRecord
   self.table_name = "release_step_configs"

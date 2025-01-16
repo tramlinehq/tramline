@@ -42,7 +42,7 @@ class StoreSubmission < ApplicationRecord
 
   delegate :release_metadata, :train, :release, :app, :platform, to: :release_platform_run
   delegate :notify!, to: :train
-  delegate :version_name, :build_number, to: :build
+  delegate :release_version, :version_name, :build_number, to: :build
   delegate :actionable?, to: :parent_release
 
   scope :sequential, -> { reorder("store_submissions.sequence_number ASC") }
@@ -185,7 +185,7 @@ class StoreSubmission < ApplicationRecord
 
   def stamp_data(failure_message: nil)
     {
-      version: version_name,
+      version: release_version,
       build_number: build_number,
       failure_reason: (get_failure_message(failure_message) if failure_reason.present?)
     }
