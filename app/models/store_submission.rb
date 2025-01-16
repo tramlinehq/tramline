@@ -42,7 +42,7 @@ class StoreSubmission < ApplicationRecord
 
   delegate :release_metadata, :train, :release, :app, :platform, to: :release_platform_run
   delegate :notify!, to: :train
-  delegate :release_version, :version_name, :build_number, to: :build
+  delegate :release_version, :build_number, to: :build
   delegate :actionable?, to: :parent_release
 
   scope :sequential, -> { reorder("store_submissions.sequence_number ASC") }
