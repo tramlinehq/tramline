@@ -9,10 +9,12 @@ class Queries::Helpers::Parameters
     @offset = nil
     @sort_column = nil
     @sort_direction = DEFAULT_SORT_DIRECTION
+    # TODO: Maybe merge into search_pattern
+    @search_query = nil
   end
 
   attr_accessor :sort_column
-  attr_reader :limit, :offset
+  attr_reader :limit, :offset, :search_query
 
   def add_sorting(col, dir)
     @sort_column = col
@@ -21,6 +23,10 @@ class Queries::Helpers::Parameters
 
   def add_search_pattern(q)
     @search_pattern = q
+  end
+
+  def add_search_query(q)
+    @search_query = q
   end
 
   def add_pagination(limit, offset)
