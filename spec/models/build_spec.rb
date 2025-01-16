@@ -16,7 +16,7 @@ describe Build do
       build = described_class.create!(
         release_platform_run: release_platform_run,
         commit: commit,
-        workflow_run: workflow_run,
+        workflow_run: workflow_run
       )
 
       expect(build.release_version).to eq(release_platform_run.release_version)
@@ -34,8 +34,8 @@ describe Build do
       build = described_class.create!(
         release_platform_run: release_platform_run,
         commit: commit,
-        workflow_run: workflow_run,
-        )
+        workflow_run: workflow_run
+      )
 
       expect(build.version_name).to eq("1.3.0-staging")
     end
@@ -52,7 +52,7 @@ describe Build do
       build = described_class.create!(
         release_platform_run: release_platform_run,
         commit: commit,
-        workflow_run: workflow_run,
+        workflow_run: workflow_run
       )
 
       expect(build.sequence_number).to eq(42)
@@ -62,13 +62,13 @@ describe Build do
       first_build = described_class.create!(
         release_platform_run: release_platform_run,
         commit: commit,
-        workflow_run: workflow_run,
+        workflow_run: workflow_run
       )
 
       second_build = described_class.create!(
         release_platform_run: release_platform_run,
         commit: commit,
-        workflow_run: workflow_run,
+        workflow_run: workflow_run
       )
 
       expect(first_build.sequence_number).to be < second_build.sequence_number
