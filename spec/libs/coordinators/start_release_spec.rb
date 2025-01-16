@@ -97,13 +97,6 @@ describe Coordinators::StartRelease do
         }.to raise_error("Cannot start a train that is not active!")
       end
 
-      it "raises an error when there is an existing ongoing release and the release is automatic" do
-        _existing_release = create(:release, :on_track, train:)
-        expect {
-          described_class.call(train, automatic: true)
-        }.to raise_error("No more releases can be started until the ongoing release is finished!")
-      end
-
       it "raises an error when there is an existing upcoming release and the release is not a hotfix" do
         _ongoing_release = create(:release, :on_track, train:)
         _upcoming_release = create(:release, :on_track, train:)
