@@ -31,6 +31,7 @@ class Queries::Releases
         record
           .attributes
           .with_indifferent_access
+          .merge(all_commits: record.all_commits)
           .except(:id)
 
       Queries::Release.new(attributes)
@@ -53,6 +54,7 @@ class Queries::Releases
     Release
       .joins(train: :app)
       .joins(:all_commits)
+      .select(:id)
       .where(apps: {id: app.id})
       # TODO: Use pg_search instead of ILIKE
       .where("commits.message ILIKE ?", "%#{params.search_query}%")
