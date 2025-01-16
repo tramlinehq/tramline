@@ -5,6 +5,42 @@ describe Build do
     expect(create(:build)).to be_valid
   end
 
+  describe "#release_version" do
+    let(:release_platform_run) { create(:release_platform_run) }
+    let(:commit) { create(:commit) }
+    let(:workflow_run) { create(:workflow_run) }
+
+    it "returns versions without suffix if present" do
+      allow(workflow_run).to receive(:build_suffix).and_return("staging")
+
+      build = described_class.create!(
+        release_platform_run: release_platform_run,
+        commit: commit,
+        workflow_run: workflow_run,
+      )
+
+      expect(build.release_version).to eq(release_platform_run.release_version)
+    end
+  end
+
+  describe "#version_name" do
+    let(:release_platform_run) { create(:release_platform_run, release_version: "1.3.0") }
+    let(:commit) { create(:commit) }
+    let(:workflow_run) { create(:workflow_run) }
+
+    it "returns versions with suffix if present" do
+      allow(workflow_run).to receive(:build_suffix).and_return("staging")
+
+      build = described_class.create!(
+        release_platform_run: release_platform_run,
+        commit: commit,
+        workflow_run: workflow_run,
+        )
+
+      expect(build.version_name).to eq("1.3.0-staging")
+    end
+  end
+
   describe ".create" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:commit) { create(:commit) }
@@ -17,7 +53,6 @@ describe Build do
         release_platform_run: release_platform_run,
         commit: commit,
         workflow_run: workflow_run,
-        version_name: "1.0.0"
       )
 
       expect(build.sequence_number).to eq(42)
@@ -28,14 +63,12 @@ describe Build do
         release_platform_run: release_platform_run,
         commit: commit,
         workflow_run: workflow_run,
-        version_name: "1.0.0"
       )
 
       second_build = described_class.create!(
         release_platform_run: release_platform_run,
         commit: commit,
         workflow_run: workflow_run,
-        version_name: "1.0.1"
       )
 
       expect(first_build.sequence_number).to be < second_build.sequence_number
