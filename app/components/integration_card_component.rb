@@ -1,4 +1,6 @@
 class IntegrationCardComponent < BaseComponent
+  include Memery
+
   CONNECTABLE_PROVIDER_TO_TITLE = {
     app_store: "API details",
     bugsnag: "Auth Token",
@@ -19,13 +21,8 @@ class IntegrationCardComponent < BaseComponent
   alias_method :provider, :providable
   delegate :creatable?, :connectable?, to: :provider
 
-  def repeated_integration
-    Integration.existing_integration(@app, providable_type)
-  end
-
-  # Retrieves repeated integrations across apps for the given app and providable type
-  def repeated_integrations_across_app
-    Integration.existing_integrations_across_app(@app, providable_type)
+  memoize def repeated_integrations_across_apps
+    Integration.existing_integrations_across_apps(@app, providable_type)
   end
 
   def connect_path
@@ -61,12 +58,12 @@ class IntegrationCardComponent < BaseComponent
                provider: provider})
   end
 
-  def reusable_integrations_across_app_form_partial(existing_integrations)
+  def reusable_integrations_form_partial(existing_integrations)
     render(partial: "integrations/app_reuseable",
       locals: {app: @app,
+               integration: @integration,
                existing_integrations: existing_integrations,
                category: @category,
-               integration: @integration,
                url: reuse_app_integrations_path(@app),
                type: providable_type,
                provider: provider})

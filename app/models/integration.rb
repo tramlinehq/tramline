@@ -197,14 +197,10 @@ class Integration < ApplicationRecord
       kept.build_channel.find(&:google_firebase_integration?)&.providable
     end
 
-    def existing_integration(app, providable_type)
-      app.integrations.connected.find_by(providable_type: providable_type)
-    end
-
-    def existing_integrations_across_app(app, providable_type)
+    def existing_integrations_across_apps(app, providable_type)
       Integration.connected
         .where(integrable_id: app.organization.apps, providable_type: providable_type)
-        .select("DISTINCT ON (providable_id, integrable_id) *")
+        .select("DISTINCT ON (providable_id) *")
     end
 
     def build_channels_for_platform(platform)

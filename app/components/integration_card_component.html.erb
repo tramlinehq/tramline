@@ -53,16 +53,18 @@
               <% end %>
             <% end %>
 
-            <% if repeated_integrations_across_app.present? %>
-              <%= render ModalComponent.new(title: "Reconnect from an existing integration") do |modal| %>
-                <% modal.with_button(label: "Reuse existing integration", scheme: :supporting, type: :action, size: :xxs, arrow: :none)
-                        .with_icon("repeat.svg", size: :md) %>
-                <% modal.with_body do %>
-                  <%= reusable_integrations_across_app_form_partial(repeated_integrations_across_app) %>
+            <% if repeated_integrations_across_apps.present? %>
+              <% if repeated_integrations_across_apps.size > 1 %>
+                <%= render ModalComponent.new(title: "Choose the app to reuse the integration") do |modal| %>
+                  <% modal.with_button(label: "Reuse existing integration", scheme: :supporting, type: :action, size: :xxs)
+                          .with_icon("repeat.svg", size: :md) %>
+                  <% modal.with_body do %>
+                    <%= reusable_integrations_form_partial(repeated_integrations_across_apps) %>
+                  <% end %>
                 <% end %>
+              <% else %>
+                <%= reusable_integration_form_partial(repeated_integrations_across_apps.sole) %>
               <% end %>
-            <% elsif repeated_integration.present? %>
-              <%= reusable_integration_form_partial(repeated_integration) %>
             <% end %>
           </div>
         <% end %>
