@@ -1,16 +1,16 @@
 <% if release.approvals_finished? %>
-  <%= render V2::AlertComponent.new(type: :success, title: ApprovalsPresenter::APPROVED_NOTICE, full_screen: false) %>
+  <%= render AlertComponent.new(type: :success, title: ApprovalsPresenter::APPROVED_NOTICE, full_screen: false) %>
 <% end %>
 
 <% if release.approvals_overridden? %>
-  <%= render V2::AlertComponent.new(type: :notice, title: ApprovalsPresenter::FORCE_APPROVED_NOTICE, full_screen: false) %>
+  <%= render AlertComponent.new(type: :notice, title: ApprovalsPresenter::FORCE_APPROVED_NOTICE, full_screen: false) %>
 <% end %>
 
 <div class="flex flex-col section-gap-default mt-2">
-  <%= render V2::CardComponent.new(title: "Items", separator: false, size: :full) do |card| %>
+  <%= render CardComponent.new(title: "Items", separator: false, size: :full) do |card| %>
     <% if release.approvals_editable? %>
       <% card.with_action do %>
-        <%= render V2::ButtonComponent.new(
+        <%= render ButtonComponent.new(
           scheme: :light,
           options: copy_approvals_release_path(release),
           type: :button,
@@ -25,13 +25,13 @@
             }
           }
         ) do |b| %>
-          <%= b.with_icon("v2/square_stack.svg", size: :sm) %>
+          <%= b.with_icon("square_stack.svg", size: :sm) %>
         <% end %>
       <% end %>
       <% card.with_action do %>
-        <%= render V2::ModalComponent.new(title: "Add approval item", dismissable: false) do |modal| %>
+        <%= render ModalComponent.new(title: "Add approval item", dismissable: false) do |modal| %>
           <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                  .with_icon("v2/plus.svg", size: :md) %>
+                  .with_icon("plus.svg", size: :md) %>
           <% modal.with_body do %>
             <%= render partial: "form", locals: {
               model: [release, release.approval_items.new],
@@ -45,7 +45,7 @@
 
     <% if release.approvals_blocking? %>
       <% card.with_action do %>
-        <%= render V2::ButtonComponent.new(
+        <%= render ButtonComponent.new(
           scheme: :danger,
           label: "Override approvals",
           options: override_approvals_release_path(release),
@@ -54,15 +54,15 @@
             {method: :patch,
              data: {turbo_method: :patch,
                     turbo_confirm: "This will override all the release approvals. Are you sure?"}}) do |b|
-          b.with_icon("v2/key_square.svg")
+          b.with_icon("key_square.svg")
         end %>
       <% end %>
     <% end %>
 
     <% if items.none? %>
-      <%= render V2::EmptyStateComponent.new(text: "There are no items to approve for this release. Add approvals to block submissions for this release.", banner_image: "v2/list_checks.svg", type: :tiny) %>
+      <%= render EmptyStateComponent.new(text: "There are no items to approve for this release. Add approvals to block submissions for this release.", banner_image: "list_checks.svg", type: :tiny) %>
     <% else %>
-      <%= render V2::TableComponent.new(columns: ["", ""]) do |table| %>
+      <%= render TableComponent.new(columns: ["", ""]) do |table| %>
         <% items.each do |item| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
@@ -82,4 +82,3 @@
     <% end %>
   <% end %>
 </div>
-

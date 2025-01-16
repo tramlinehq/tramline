@@ -1,4 +1,4 @@
-class ChartComponent < V2::BaseComponent
+class ChartComponent < BaseComponent
   using RefinedHash
   CHART_TYPES = %w[area line stacked-bar polar-area]
   InvalidChartType = Class.new(StandardError)
@@ -94,18 +94,18 @@ class ChartComponent < V2::BaseComponent
 
   def corner_icon
     if help_text.present?
-      icon = V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-secondary")
+      icon = IconComponent.new("info.svg", size: :md, classes: "text-secondary")
       icon.with_tooltip(help_text, placement: "top", type: :detailed) do |tooltip|
         tooltip.with_detailed_text do
           content_tag(:div, nil, class: "flex flex-col gap-y-4 items-start") do
             concat simple_format(help_text)
             if help_link.present?
-              concat render(V2::ButtonComponent.new(scheme: :link,
+              concat render(ButtonComponent.new(scheme: :link,
                 label: "Learn more",
                 options: help_link,
                 type: :link_external,
                 size: :none,
-                authz: false) { |b| b.with_icon("v2/arrow_right.svg") })
+                authz: false) { |b| b.with_icon("arrow_right.svg") })
             end
           end
         end

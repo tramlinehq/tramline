@@ -3,14 +3,14 @@
 
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-1.5 text-center text-secondary">
-      <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
+      <%= render BadgeComponent.new(kind: :badge) do |badge| %>
         <% badge.with_icon(release.store_icon) %>
         <% badge.with_link(release.build.display_name, release.external_link) %>
       <% end %>
 
       <% if show_build %>
-        <%= render V2::IconComponent.new("v2/connect_line.svg", size: :xl) %>
-        <%= render V2::LiveRelease::BuildComponent.new(
+        <%= render IconComponent.new("connect_line.svg", size: :xl) %>
+        <%= render LiveRelease::BuildComponent.new(
           release.build,
           show_number: false,
           show_metadata: false,
@@ -19,7 +19,7 @@
           show_commit: false) %>
       <% end %>
 
-      <%= render V2::BadgeComponent.new(**release.overall_status) %>
+      <%= render BadgeComponent.new(**release.overall_status) %>
 
       <% if release.previous.present? %>
         <%= render partial: "shared/changes_since_last_modal",

@@ -262,14 +262,7 @@ class GithubIntegration < ApplicationRecord
 
   # we currently only select the largest artifact from github, since we have no information about the file types
   # in the future, this could be smarter and/or a user input
-  def get_artifact(artifacts_url, artifact_name_pattern)
-    select_artifact(artifacts_url, artifact_name_pattern)
-      .then { |artifact| installation.artifact_download_url(artifact) }
-      .then { |url| installation.artifact_io_stream(url) }
-      .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
-  end
-
-  def get_artifact_v2(artifacts_url, artifact_name_pattern, _)
+  def get_artifact(artifacts_url, artifact_name_pattern, _)
     artifact = select_artifact(artifacts_url, artifact_name_pattern)
 
     artifact_stream = installation.artifact_download_url(artifact)

@@ -4,7 +4,7 @@
      data-multi-level-select-options-value="<%= submission_types.to_json %>">
 
   <div class="flex justify-start">
-    <%= render V2::IconComponent.new("grip.svg", size: :lg, classes: "handle cursor-grabbing") %>
+    <%= render IconComponent.new("grip.svg", size: :lg, classes: "handle cursor-grabbing") %>
   </div>
 
   <div class="flex flex-1 justify-start">
@@ -60,15 +60,15 @@
   </div>
 
   <div class="flex item-gap-default ml-auto">
-    <%= render V2::ButtonComponent.new(
+    <%= render ButtonComponent.new(
       scheme: :naked_icon,
       type: :action,
       size: :none,
       html_options: {data: {action: "nested-form-ext#remove"}}) do |b|
-      b.with_icon("v2/trash.svg", size: :md)
+      b.with_icon("trash.svg", size: :md)
     end %>
 
-    <%= render V2::Form::SwitchComponent.new(form: form, field_name: :auto_promote, on_label: "Auto-submit", off_label: "Auto-submit") do |auto_submit| %>
+    <%= render Form::SwitchComponent.new(form: form, field_name: :auto_promote, on_label: "Auto-submit", off_label: "Auto-submit") do |auto_submit| %>
       <% auto_submit.with_info_icon do %>
         When enabled, Tramline will automatically deliver the build to this submission as soon as the previous one is
         delivered. If it's the first submission, the same will happen as soon as the build is ready.

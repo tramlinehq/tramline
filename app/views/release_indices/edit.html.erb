@@ -1,9 +1,9 @@
-<%= render V2::TabbedContainerComponent.new(title: @train.name,
+<%= render TabbedContainerComponent.new(title: @train.name,
                                             turbo_frame: dom_id(@train, :edit_train),
                                             tab_config: @tab_configuration,
                                             error_resource: @train) do |container| %>
   <% container.with_back_button(to: "the train", path: app_train_releases_path(@app, @train)) %>
   <% container.with_tab do %>
-    <%= render V2::Reldex::FormComponent.new(@release_index) %>
+    <%= render Reldex::FormComponent.new(@release_index) %>
   <% end %>
 <% end %>

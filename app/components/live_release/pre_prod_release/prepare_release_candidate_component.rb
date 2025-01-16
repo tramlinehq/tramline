@@ -1,0 +1,29 @@
+# frozen_string_literal: true
+
+class LiveRelease::PreProdRelease::PrepareReleaseCandidateComponent < BaseComponent
+  def initialize(release_platform_run)
+    @release_platform_run = release_platform_run
+    @latest_internal_release = release_platform_run.latest_internal_release(finished: true)
+  end
+
+  attr_reader :release_platform_run, :latest_internal_release
+  delegate :build, to: :latest_internal_release, allow_nil: true
+  delegate :ready_for_beta_release?, to: :release_platform_run
+
+  def applicable_commit
+    release_platform_run.release.last_applicable_commit
+  end
+
+  def create_new_rc?
+    return unless ready_for_beta_release?
+    applicable_commit.present?
+  end
+
+  def confirmation_opts
+    html_opts(:post, "Are you sure you want to start the beta release?")
+  end
+
+  def create_release_candidate_path
+    pre_prod_beta_run_path(release_platform_run)
+  end
+end

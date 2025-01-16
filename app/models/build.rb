@@ -115,7 +115,7 @@ class Build < ApplicationRecord
   end
 
   def get_build_artifact
-    ci_cd_provider.get_artifact_v2(artifacts_url, artifact_name_pattern, external_workflow_run_id: workflow_run.external_id)
+    ci_cd_provider.get_artifact(artifacts_url, artifact_name_pattern, external_workflow_run_id: workflow_run.external_id)
   rescue Installations::Error => ex
     raise ex unless ex.reason == :artifact_not_found
     elog(ex)
