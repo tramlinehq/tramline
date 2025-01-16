@@ -37,7 +37,7 @@ class Build < ApplicationRecord
   scope :ready, -> { where.not(generated_at: nil) }
 
   delegate :android?, :ios?, :ci_cd_provider, :train, to: :release_platform_run
-  delegate :artifacts_url, :build_artifact_name_pattern, :build_suffix, :kind, to: :workflow_run
+  delegate :artifacts_url, :artifact_name_pattern, :build_suffix, :kind, to: :workflow_run
   delegate :notify!, to: :train
 
   before_create :set_version_name
@@ -51,6 +51,10 @@ class Build < ApplicationRecord
 
   # the release version conditionally removes any suffixes that might be present
   def release_version
+    version_name_without_suffix
+  end
+
+  def version_name_without_suffix
     version_name&.split(Config::Workflow::BUILD_SUFFIX_SEPARATOR)&.first
   end
 
@@ -107,11 +111,11 @@ class Build < ApplicationRecord
 
   # the build version name is the current release (platform run) version with an optional suffix
   def set_version_name
-    self.version_name = [workflow_run.release_version, build_suffix].compact.join(Config::Workflow::BUILD_SUFFIX_SEPARATOR)
+    self.version_name = [release_platform_run.release_version, build_suffix].compact.join(Config::Workflow::BUILD_SUFFIX_SEPARATOR)
   end
 
   def get_build_artifact
-    ci_cd_provider.get_artifact_v2(artifacts_url, build_artifact_name_pattern, external_workflow_run_id: workflow_run.external_id)
+    ci_cd_provider.get_artifact_v2(artifacts_url, artifact_name_pattern, external_workflow_run_id: workflow_run.external_id)
   rescue Installations::Error => ex
     raise ex unless ex.reason == :artifact_not_found
     elog(ex)

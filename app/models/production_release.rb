@@ -59,7 +59,7 @@ class ProductionRelease < ApplicationRecord
   def release_notes? = true
 
   def version_bump_required?
-    return false if release_platform_run.release_version.to_semverish > build.version_name.to_semverish
+    return false if release_platform_run.release_version.to_semverish > build.version_name_without_suffix.to_semverish
     return true if finished?
     return true if active?
     return true if store_submission.post_review?
