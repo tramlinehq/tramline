@@ -1,4 +1,4 @@
-class MetricCardComponent < V2::BaseComponent
+class MetricCardComponent < BaseComponent
   def initialize(name:, values:, provider: nil, external_url: nil, size: nil)
     @name = name
     @values = values

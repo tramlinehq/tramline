@@ -437,7 +437,7 @@ describe Release do
 
     it "saves base name + last commit sha" do
       raise_times(GithubIntegration, tag_exists_error, :create_release!, 1)
-      commit = create(:commit, :without_trigger, release:)
+      commit = create(:commit, release:)
 
       release.create_vcs_release!
       expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}")
@@ -448,7 +448,7 @@ describe Release do
 
       freeze_time do
         now = Time.now.to_i
-        commit = create(:commit, :without_trigger, release:)
+        commit = create(:commit, release:)
 
         release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}-#{now}")
@@ -468,7 +468,7 @@ describe Release do
 
       it "saves base name + suffix + last commit sha" do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
-        commit = create(:commit, :without_trigger, release:)
+        commit = create(:commit, release:)
 
         release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}")
@@ -479,7 +479,7 @@ describe Release do
 
         freeze_time do
           now = Time.now.to_i
-          commit = create(:commit, :without_trigger, release:)
+          commit = create(:commit, release:)
 
           release.create_vcs_release!
           expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
@@ -500,7 +500,7 @@ describe Release do
 
       it "saves prefix + base name + last commit sha" do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
-        commit = create(:commit, :without_trigger, release:)
+        commit = create(:commit, release:)
 
         release.create_vcs_release!
         expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{commit.short_sha}")
@@ -511,7 +511,7 @@ describe Release do
 
         freeze_time do
           now = Time.now.to_i
-          commit = create(:commit, :without_trigger, release:)
+          commit = create(:commit, release:)
 
           release.create_vcs_release!
           expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{commit.short_sha}-#{now}")
@@ -533,7 +533,7 @@ describe Release do
 
       it "saves prefix + base name + suffix + last commit sha" do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
-        commit = create(:commit, :without_trigger, release:)
+        commit = create(:commit, release:)
 
         release.create_vcs_release!
         expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}-#{commit.short_sha}")
@@ -544,7 +544,7 @@ describe Release do
 
         freeze_time do
           now = Time.now.to_i
-          commit = create(:commit, :without_trigger, release:)
+          commit = create(:commit, release:)
 
           release.create_vcs_release!
           expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
@@ -647,7 +647,7 @@ describe Release do
 
     it "fetches the commits between ongoing release and release branch for upcoming release" do
       ongoing_release = create(:release, :on_track, train:, scheduled_at: 1.day.ago)
-      commits = create_list(:commit, 5, :without_trigger, release: ongoing_release, timestamp: Time.current - rand(1000))
+      commits = create_list(:commit, 5, release: ongoing_release, timestamp: Time.current - rand(1000))
       ongoing_head = commits.first
 
       release.fetch_commit_log
@@ -688,7 +688,7 @@ describe Release do
     let(:release) { create(:release, :on_track) }
 
     it "returns the subsequent commits made on the release branch after release starts" do
-      _initial_commit = create(:commit, :without_trigger, release:)
+      _initial_commit = create(:commit, release:)
       stability_commits = create_list(:commit, 4, release:)
       expect(release.stability_commits).to exist
       expect(release.stability_commits).to match_array(stability_commits)
@@ -696,7 +696,7 @@ describe Release do
     end
 
     it "returns nothing if no fixes are made" do
-      _initial_commit = create(:commit, :without_trigger, release:)
+      _initial_commit = create(:commit, release:)
       expect(release.all_commits).to exist
       expect(release.stability_commits).to be_none
     end
@@ -963,6 +963,35 @@ describe Release do
 
         expect(release.blocked_for_production_release?).to be(false)
       end
+    end
+  end
+
+  describe "#last_applicable_commit" do
+    let(:release) { create(:release, :on_track) }
+
+    it "returns the last commit" do
+      _older_commits = create_list(:commit, 3, release:)
+      commit = create(:commit, release:)
+
+      expect(release.last_applicable_commit).to eq(commit)
+    end
+
+    it "returns the last commit not in the active build queue" do
+      build_queue = create(:build_queue, release:, is_active: true)
+      _older_commits = create_list(:commit, 3, release:)
+      commit_not_in_queue = create(:commit, release:)
+      _commit_in_queue = create(:commit, release:, build_queue:)
+
+      expect(release.last_applicable_commit).to eq(commit_not_in_queue)
+    end
+
+    it "returns the last commit when there is no active build queue" do
+      build_queue = create(:build_queue, release:, is_active: false)
+      _older_commits = create_list(:commit, 3, release:)
+      _commit_not_in_queue = create(:commit, release:)
+      commit_in_queue = create(:commit, release:, build_queue:)
+
+      expect(release.last_applicable_commit).to eq(commit_in_queue)
     end
   end
 end

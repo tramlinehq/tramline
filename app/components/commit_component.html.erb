@@ -1,0 +1,71 @@
+<div class="<%= outer_classes %>">
+  <div class="flex text-sm items-center justify-between space-x-2">
+    <div class="flex flex-col gap-y-1">
+      <div class="flex flex-row gap-x-1 items-center">
+        <%= render IconComponent.new("git_commit_vertical.svg", size: :md) %>
+        <%= render(ButtonComponent.new(scheme: :link,
+                                           label: message.truncate(75),
+                                           options: url,
+                                           type: :link_external,
+                                           size: :none,
+                                           authz: false,
+                                           html_options: { class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline" })) %>
+      </div>
+      <div class="flex flex-row gap-x-1.5 items-center">
+        <% if show_avatar? %>
+          <%= render ButtonComponent.new(scheme: :link,
+                                             options: author_link,
+                                             type: :link_external,
+                                             size: :none,
+                                             authz: false) do |button| %>
+            <% button.with_icon(user_avatar(author_name, limit: 2, size: 24), raw_svg: true, size: :xl) %>
+          <% end %>
+        <% end %>
+
+        <span class="text-xs text-neutral-500 dark:text-white">
+        <span class="font-semibold">
+          <%= render(ButtonComponent.new(scheme: :link,
+                                             label: author_info,
+                                             options: author_link,
+                                             type: :link_external,
+                                             size: :none,
+                                             authz: false)) %>
+        </span>
+        committed on <%= time_format(timestamp, only_day: true) %></span>
+      </div>
+    </div>
+
+    <% if detailed? %>
+      <div class="flex flex-row gap-x-2 items-center">
+        <div>
+          <%= render BadgeComponent.new(kind: :badge) do |badge| %>
+            <% badge.with_icon(vcs_provider_logo) %>
+            <% badge.with_link(short_sha, url) %>
+          <% end %>
+        </div>
+
+        <% if tag_name.present? %>
+          <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
+            <% badge.with_icon("tag.svg") %>
+            <% badge.with_link(tag_name, tag_url) %>
+          <% end %>
+        <% end %>
+
+        <% if pull_request.present? %>
+          <%= render BadgeComponent.new(kind: :badge) do |badge| %>
+            <% badge.with_icon("git_pull_request.svg") %>
+            <% badge.with_link("##{pull_request.number}", pull_request.url) %>
+          <% end %>
+        <% end %>
+
+        <% if commit.backmerge_failure? %>
+          <%= status_badge("backmerge failed", :inert) %>
+        <% end %>
+
+        <% if teams_supported? && team.present? %>
+          <%= render TeamPillComponent.new(team)%>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

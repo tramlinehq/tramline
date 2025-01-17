@@ -69,4 +69,6 @@ class EventTimelineComponent < ViewComponent::Base
   def cross_platform?(passport) = passport.platform == "cross_platform"
 
   def cross_platform_app? = @app.cross_platform?
+
+  def tz = @app.timezone
 end

@@ -2,12 +2,13 @@ class ReleasesController < SignedInApplicationController
   using RefinedString
   include Filterable
   include Tabbable
-  around_action :set_time_zone
-  before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals]
-  before_action :set_train_and_app, only: %i[show destroy update timeline]
+
+  before_action :require_write_access!, only: %i[create destroy update override_approvals copy_approvals post_release finish_release]
+  before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals post_release finish_release]
+  before_action :set_train_and_app, only: %i[destroy timeline]
   before_action :ensure_approval_items_exist, only: %i[copy_approvals]
   before_action :ensure_approval_items_copyable, only: %i[copy_approvals]
+  around_action :set_time_zone
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
@@ -127,11 +128,7 @@ class ReleasesController < SignedInApplicationController
     end
   end
 
-  # TODO: This action can be deprecated once there are no more releases with pending manual finalize
-  # Since finalize as of https://github.com/tramlinehq/tramline/pull/440 is automatic
   def post_release
-    @release = Release.friendly.find(params[:id])
-
     if Action.complete_release!(@release).ok?
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
@@ -140,8 +137,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   def finish_release
-    @release = Release.friendly.find(params[:id])
-
     if Action.mark_release_as_finished!(@release).ok?
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
@@ -154,8 +149,6 @@ class ReleasesController < SignedInApplicationController
     gen_query_filters(:android_platform, "android")
     gen_query_filters(:ios_platform, "ios")
     set_query_helpers
-    @train = @release.train
-    @app = @train.app
     @events = Queries::Events.all(release: @release, params: @query_params)
   end
 
@@ -166,40 +159,11 @@ class ReleasesController < SignedInApplicationController
     @app = @train.app
   end
 
-  def post_release_params
-    params.require(:release).permit(:force_finalize)
-  end
-
   def set_release
     @release =
       Release
         .joins(train: :app)
         .where(apps: {organization: current_organization})
-        .includes(:all_commits, release_platform_runs: [:internal_builds, :beta_releases, :production_releases])
-        .friendly.find(params[:id])
-  end
-
-  def set_release_v2
-    @release =
-      Release
-        .includes(
-          :all_commits,
-          train: [:app],
-          release_platform_runs: [
-            :internal_builds,
-            :beta_releases,
-            :production_store_rollouts,
-            inflight_production_release: [store_submission: :store_rollout],
-            active_production_release: [store_submission: :store_rollout],
-            finished_production_release: [store_submission: :store_rollout],
-            production_releases: [store_submission: [:store_rollout]],
-            internal_releases: [
-              :store_submissions,
-              triggered_workflow_run: {build: [:artifact]}
-            ],
-            release_platform: {app: [:integrations]}
-          ]
-        )
         .friendly.find(params[:id])
   end
 

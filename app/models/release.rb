@@ -239,7 +239,8 @@ class Release < ApplicationRecord
   end
 
   def production_release_started?
-    release_platform_runs.all? { |rpr| rpr.active_production_release.present? }
+    # TODO: check if the submission has been sent for review and not just the presence of the latest production release
+    release_platform_runs.all? { |rpr| rpr.latest_production_release.present? }
   end
 
   def backmerge_failure_count
@@ -297,7 +298,7 @@ class Release < ApplicationRecord
 
   def last_applicable_commit
     return unless committable?
-    applied_commits.last
+    applied_commits.reorder(timestamp: :desc).first
   end
 
   def committable?

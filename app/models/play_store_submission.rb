@@ -6,6 +6,7 @@
 #  approved_at             :datetime
 #  config                  :jsonb
 #  failure_reason          :string
+#  last_stable_status      :string
 #  name                    :string
 #  parent_release_type     :string           indexed => [parent_release_id]
 #  prepared_at             :datetime
@@ -64,7 +65,7 @@ class PlayStoreSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :preprocess do
+    event :preprocess, after: :on_preprocess! do
       transitions from: CHANGEABLE_STATES, to: :preprocessing
     end
 
@@ -86,11 +87,11 @@ class PlayStoreSubmission < StoreSubmission
       transitions from: :prepared, to: :review_failed
     end
 
-    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
+    event :fail, before: :set_failure_context, after_commit: :on_fail! do
       transitions to: :failed
     end
 
-    event :fail_with_sync_option, before: :set_failure_reason do
+    event :fail_with_sync_option, before: :set_failure_context do
       transitions from: [:preparing, :prepared, :failed_with_action_required, :finished_manually], to: :failed_with_action_required
     end
 
@@ -127,7 +128,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def retryable?
-    failed_with_action_required?
+    failed? || failed_with_action_required?
   end
 
   def internal_channel?
@@ -138,25 +139,12 @@ class PlayStoreSubmission < StoreSubmission
     return unless actionable?
 
     preprocess!
-    StoreSubmissions::PlayStore::UploadJob.perform_later(id)
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
   end
 
   def retry!
-    return unless retryable?
-
-    if provider.build_present_in_channel?(submission_channel_id, build_number)
-      transaction do
-        finish_manually!
-        event_stamp!(reason: :finished_manually, kind: :notice, data: stamp_data)
-        release_platform_run.unblock_play_store_submissions!
-      end
-
-      if parent_release.production?
-        on_prepare!
-      else
-        parent_release.rollout_complete!(self)
-      end
-    end
+    return check_manual_upload if failed_with_action_required?
+    super
   end
 
   def upload_build!
@@ -191,7 +179,8 @@ class PlayStoreSubmission < StoreSubmission
 
   def prepare_for_release!
     # return mock_prepare_for_release_for_play_store! if sandbox_mode?
-    result = provider.create_draft_release(submission_channel_id, build_number, version_name, notes, retry_on_review_fail: internal_channel?)
+    result = provider.create_draft_release(submission_channel_id, build_number, release_version, notes, retry_on_review_fail: internal_channel?)
+
     if result.ok?
       finish_prepare!
       update_external_status
@@ -217,7 +206,7 @@ class PlayStoreSubmission < StoreSubmission
     save!
   end
 
-  def notification_params(failure_message: nil)
+  def notification_params(failure_message: nil, requires_manual_action: false)
     super.merge(
       requires_review: false,
       submission_channel: "#{display} - #{submission_channel.name}"
@@ -235,6 +224,9 @@ class PlayStoreSubmission < StoreSubmission
   def fail_with_review_rejected!(error)
     if error.is_a?(Installations::Google::PlayDeveloper::Error) && error.reason == :app_review_rejected
       fail_with_sync_option!(reason: error.reason)
+      notify!("Submission failed and needs manual action!",
+        :submission_failed,
+        notification_params(failure_message: error.message, requires_manual_action: true))
       release_platform_run.block_play_store_submissions!
       return true
     end
@@ -258,8 +250,27 @@ class PlayStoreSubmission < StoreSubmission
 
   private
 
+  def check_manual_upload
+    if provider.build_present_in_channel?(submission_channel_id, build_number)
+      transaction do
+        finish_manually!
+        event_stamp!(reason: :finished_manually, kind: :notice, data: stamp_data)
+        release_platform_run.unblock_play_store_submissions!
+      end
+
+      if parent_release.production?
+        on_prepare!
+      else
+        parent_release.rollout_complete!(self)
+      end
+    end
+  end
+
+  def on_preprocess!
+    StoreSubmissions::PlayStore::UploadJob.perform_later(id)
+  end
+
   def on_start_prepare!
-    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id)
   end
 

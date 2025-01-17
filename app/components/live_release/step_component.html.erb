@@ -1,0 +1,12 @@
+<div class="w-full !pt-10 h-full box-padding border-default-r border-default-b 2xl:rounded-br-lg">
+  <div class="flex gap-2 items-center">
+    <%= render IconComponent.new(icon, size: :lg) %>
+    <h2 class="heading-1"><%= title %></h2>
+  </div>
+
+  <% if subtitle.present? %>
+    <div class="text-sm text-secondary"><%= subtitle %></div>
+  <% end %>
+
+  <div class="top-separator-space-default"><%= content %></div>
+</div>

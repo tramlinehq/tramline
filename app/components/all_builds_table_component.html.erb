@@ -118,13 +118,13 @@
             <span>
               <% if build.ci_link.present? %>
                 <%= link_to_external build.ci_link, title: "link to CI" do %>
-                  <%= render V2::IconComponent.new("workflow.svg", size: :lg) %>
+                  <%= render IconComponent.new("workflow.svg", size: :lg) %>
                 <% end %>
               <% end %>
 
               <% if build.download_url.present? %>
                 <%= link_to_external build.download_url, title: "download build" do %>
-                  <%= render V2::IconComponent.new("download.svg", size: :lg) %>
+                  <%= render IconComponent.new("download.svg", size: :lg) %>
                 <% end %>
               <% end %>
             </span>

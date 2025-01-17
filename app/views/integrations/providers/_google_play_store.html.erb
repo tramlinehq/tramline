@@ -1,4 +1,4 @@
-<%= render V2::FormComponent.new(model: [app, integration], url: app_google_play_store_integration_path(app)) do |f| %>
+<%= render FormComponent.new(model: [app, integration], url: app_google_play_store_integration_path(app)) do |f| %>
   <% f.with_section(heading: "Add") do |section| %>
     <% section.with_description do %>
       <p>Your Service Account Key</p>

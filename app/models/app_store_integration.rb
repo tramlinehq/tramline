@@ -413,14 +413,5 @@ class AppStoreIntegration < ApplicationRecord
         ]
       )
     end
-
-    # TODO: deprecate this
-    def failed?
-      release_info[:status].in?(
-        [
-          DEVELOPER_REJECTED
-        ]
-      )
-    end
   end
 end

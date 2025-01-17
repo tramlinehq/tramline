@@ -52,7 +52,7 @@ class Coordinators::ProcessCommits
 
   def queue_commit!(commit, can_apply: true)
     return unless release.queue_commit?(commit)
-    release.active_build_queue.add_commit_v2!(commit, can_apply:)
+    release.active_build_queue.add_commit!(commit, can_apply:)
   end
 
   def commit_params(attributes)

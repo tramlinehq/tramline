@@ -7,13 +7,13 @@ class SignedInApplicationController < ApplicationController
   Action = Coordinators::Actions
 
   layout -> { ensure_supported_layout("signed_in_application") }
-
   before_action :authenticate_sso_request!, if: :sso_authentication_signed_in?
   before_action :turbo_frame_request_variant
   before_action :set_currents
   before_action :set_paper_trail_whodunnit
   before_action :set_sentry_context, if: -> { Rails.env.production? }
   before_action :require_login, unless: :authentication_controllers?
+  before_action :require_organization!
   before_action :track_behaviour
   before_action :set_app
   before_action :set_page_name
@@ -176,7 +176,7 @@ class SignedInApplicationController < ApplicationController
   end
 
   def new_app
-    current_organization.apps.new
+    current_organization&.apps&.new
   end
 
   def vcs_provider_logo
@@ -212,6 +212,13 @@ class SignedInApplicationController < ApplicationController
   end
 
   def stream_flash
-    turbo_stream.update("flash_stream", V2::FlashComponent.new(flash))
+    turbo_stream.update("flash_stream", FlashComponent.new(flash))
+  end
+
+  def require_organization!
+    if current_organization.blank?
+      flash.now[:error] = "You are not a member of any organization"
+      render template: "shared/no_organization", status: :unauthorized and return
+    end
   end
 end

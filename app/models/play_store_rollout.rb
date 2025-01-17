@@ -111,7 +111,7 @@ class PlayStoreRollout < StoreRollout
     with_lock do
       return unless may_halt?
 
-      result = provider.halt_release(submission_channel_id, build_number, version_name, last_rollout_percentage, retry_on_review_fail: true)
+      result = provider.halt_release(submission_channel_id, build_number, release_version, last_rollout_percentage, retry_on_review_fail: true)
       if result.ok?
         halt!
       else
@@ -158,7 +158,7 @@ class PlayStoreRollout < StoreRollout
   end
 
   def rollout(value, retry_on_review_fail: false)
-    provider.rollout_release(submission_channel_id, build_number, version_name, value, nil, retry_on_review_fail:)
+    provider.rollout_release(submission_channel_id, build_number, release_version, value, nil, retry_on_review_fail:)
   end
 
   def on_start!

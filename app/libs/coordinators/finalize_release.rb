@@ -30,7 +30,7 @@ class Coordinators::FinalizeRelease
         result = HANDLERS[train.branching_strategy].call(release)
         release.reload
 
-        if result.ok? && release.pull_requests.open.none?
+        if result.ok? && release.pull_requests.automatic.open.none?
           release.finish!
           on_finish!
         else
@@ -53,6 +53,7 @@ class Coordinators::FinalizeRelease
 
   def on_failure!
     release.event_stamp!(reason: :finalize_failed, kind: :error, data: {version: release_version})
+    release.notify!("Release finalization failed!", :release_finalize_failed, release.notification_params)
   end
 
   attr_reader :release, :force_finalize

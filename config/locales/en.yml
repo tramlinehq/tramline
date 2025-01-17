@@ -240,29 +240,17 @@ en:
           cross_platform: "Cross Platform"
       notification_setting:
         kind:
-          deployment_finished: "Distribution successful"
-          deployment_failed: "Distribution failed"
           release_ended: "Release finished"
+          release_finalize_failed: "Release finalization failed"
           release_stopped: "Release stopped before finish"
           release_started: "New release started"
-          step_started: "Step for a commit started"
-          step_failed: "Step failed"
-          submit_for_review: "Build submitted for review to App Store"
-          review_approved: "Build review approved by App Store"
-          review_failed: "Build review rejected by App Store"
-          staged_rollout_updated: "Staged rollout increased"
-          staged_rollout_completed: "Staged rollout finished"
           release_scheduled: "Release scheduled"
           backmerge_failed: "Auto backmerge PR creation failed"
-          staged_rollout_paused: "Staged rollout paused for App Store"
-          staged_rollout_resumed: "Staged rollout resumed for App Store"
-          staged_rollout_halted: "Staged rollout halted"
-          staged_rollout_fully_released: "Staged rollout bypassed to release to 100%"
-          build_available: "New build generated"
           release_health_events: "Release health events"
           build_available_v2: "New build generated"
-          internal_release_finished: "Internal release finished"
-          internal_release_failed: "Internal release failed"
+          internal_release_finished: "Internal build step finished"
+          internal_release_failed: "Internal build step failed"
+          beta_release_failed: "Release candidate step failed"
           beta_submission_finished: "Beta submission finished"
           internal_submission_finished: "Internal submission finished"
           submission_failed: "Submission failed"
@@ -476,6 +464,9 @@ en:
               config_not_allowed: "build queue wait time cannot be configured when queue is disabled"
             working_branch:
               not_available: "could not find the working branch in the configured git repo"
+            version_seeded_with:
+              improper_semver: "Please choose a valid semver format, eg. major.minor.patch or major.minor"
+              improper_calver: "Please choose a valid calver format, eg. yyyy.0m.0d"
             backmerge_strategy:
               continuous_not_allowed: "continuous backmerge only allowed for Almost Trunk branching strategy"
               disabled_for_bitbucket: "continuous backmerge is not allowed for Bitbucket at the moment"
@@ -575,6 +566,7 @@ en:
       accepted: "Invitation was accepted. Please sign in to continue."
       already_accepted: "Invitation was already accepted!"
       failed: "Failed to accept your invitation. Please contact support!"
+      invalid_or_expired: "This invitation link is no longer valid. Please contact the organization admin for a new invitation."
     invite_mailer:
       existing_user:
         subject: "%{sender} invited you to join the %{org} team on Tramline"

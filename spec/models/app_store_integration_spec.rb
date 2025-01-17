@@ -107,19 +107,19 @@ describe AppStoreIntegration do
       expect(result.review_failed?).to be(true)
     end
 
-    it "returns failed to be true when live release is developer rejected" do
+    it "returns review cancelled to be true when live release is developer rejected" do
       allow(api_double).to receive(:find_live_release).and_return(failed_release_response)
       result = app_store_integration.find_live_release.value!
 
-      expect(result.failed?).to be(true)
+      expect(result.review_cancelled?).to be(true)
     end
 
-    it "returns neither success nor failed to be true when live release is in review" do
+    it "returns neither success nor review cancelled to be true when live release is in review" do
       allow(api_double).to receive(:find_live_release).and_return(in_review_release_response)
       result = app_store_integration.find_live_release.value!
 
       expect(result.success?).to be(false)
-      expect(result.failed?).to be(false)
+      expect(result.review_cancelled?).to be(false)
     end
 
     it "returns failed result with release not found reason when live release not found" do

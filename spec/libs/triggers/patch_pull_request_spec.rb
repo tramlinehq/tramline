@@ -39,7 +39,8 @@ describe Triggers::PatchPullRequest do
       get_pr: created_pr,
       pr_closed?: false,
       enable_auto_merge!: true,
-      enable_auto_merge?: true
+      enable_auto_merge?: true,
+      merge_pr!: true
     )
   end
 
@@ -90,6 +91,7 @@ describe Triggers::PatchPullRequest do
   end
 
   it "enables auto merge for the created patch PR" do
+    allow(repo_integration).to receive(:merge_pr!).and_raise(Installations::Error.new("MergeError", reason: :pull_request_not_mergeable))
     described_class.call(release, commit)
 
     expect(repo_integration).to have_received(:enable_auto_merge!)
