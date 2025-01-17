@@ -163,7 +163,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def prepare_for_release!
-    result = provider.prepare_release(build_number, version_name, staged_rollout?, notes, true)
+    result = provider.prepare_release(build_number, release_version, staged_rollout?, notes, true)
 
     unless result.ok?
       case result.error.reason
@@ -175,7 +175,7 @@ class AppStoreSubmission < StoreSubmission
       return
     end
 
-    unless result.value!.valid?(build_number, version_name, staged_rollout?)
+    unless result.value!.valid?(build_number, release_version, staged_rollout?)
       fail!(reason: :invalid_release)
       return
     end
@@ -185,7 +185,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def submit!
-    result = provider.submit_release(build_number, version_name)
+    result = provider.submit_release(build_number, release_version)
 
     unless result.ok?
       return update(failure_reason: result.error.reason) if result.error.reason.in? RETRYABLE_FAILURE_REASONS
@@ -224,7 +224,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def remove_from_review!
-    result = provider.remove_from_review(build_number, version_name)
+    result = provider.remove_from_review(build_number, release_version)
 
     if result.ok?
       update_store_info!(result.value!)

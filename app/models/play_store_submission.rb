@@ -179,7 +179,8 @@ class PlayStoreSubmission < StoreSubmission
 
   def prepare_for_release!
     # return mock_prepare_for_release_for_play_store! if sandbox_mode?
-    result = provider.create_draft_release(submission_channel_id, build_number, version_name, notes, retry_on_review_fail: internal_channel?)
+    result = provider.create_draft_release(submission_channel_id, build_number, release_version, notes, retry_on_review_fail: internal_channel?)
+
     if result.ok?
       finish_prepare!
       update_external_status

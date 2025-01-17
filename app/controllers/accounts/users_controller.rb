@@ -16,7 +16,7 @@ class Accounts::UsersController < SignedInApplicationController
 
   def update_user_role
     email = params[:email]
-    member = Accounts::User.find_via_email(email)
+    member = Accounts::User.find_by unique_authn_id: email
 
     if member.nil?
       redirect_to accounts_organization_teams_path(@current_organization), alert: "User #{email} not found"

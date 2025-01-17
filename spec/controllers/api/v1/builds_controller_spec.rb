@@ -48,7 +48,7 @@ describe Api::V1::BuildsController do
     it "return unauthorized" do
       patch :external_metadata,
         format: :json,
-        params: {app_id: app.slug, version_name: build.build_version, version_code: build.build_number, external_metadata: metadata_params}
+        params: {app_id: app.slug, version_name: build.version_name, version_code: build.build_number, external_metadata: metadata_params}
       expect(response).to have_http_status(:unauthorized)
     end
   end
@@ -76,7 +76,7 @@ describe Api::V1::BuildsController do
     it "creates the external build metadata for the step run" do
       patch :external_metadata,
         format: :json,
-        params: {app_id: app.slug, version_name: build.build_version, version_code: build.build_number, external_metadata: metadata_params}
+        params: {app_id: app.slug, version_name: build.version_name, version_code: build.build_number, external_metadata: metadata_params}
       expect(response).to have_http_status(:success)
       expect(response.parsed_body["external_build"]["metadata"].values).to match_array(metadata_params.map(&:with_indifferent_access))
     end
@@ -95,7 +95,7 @@ describe Api::V1::BuildsController do
       old_metadata = create(:external_build, build: build)
       patch :external_metadata,
         format: :json,
-        params: {app_id: app.slug, version_name: build.build_version, version_code: build.build_number, external_metadata: single_metadata}
+        params: {app_id: app.slug, version_name: build.version_name, version_code: build.build_number, external_metadata: single_metadata}
       expect(response).to have_http_status(:success)
       new_metadata = response.parsed_body["external_build"]
       expect(new_metadata.dig("metadata", "app_launch_time")).to eq(single_metadata.find { |m| m[:identifier] == "app_launch_time" }.with_indifferent_access)
@@ -115,7 +115,7 @@ describe Api::V1::BuildsController do
       create(:external_build, build:)
       patch :external_metadata,
         format: :json,
-        params: {app_id: app.slug, version_name: build.build_version, version_code: build.build_number, external_metadata: invalid_metadata}
+        params: {app_id: app.slug, version_name: build.version_name, version_code: build.build_number, external_metadata: invalid_metadata}
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.parsed_body["error"]["metadata"]).to eq(["The property '#/0' did not contain a required property of 'identifier'"])
     end
