@@ -24,7 +24,7 @@ class Integration < ApplicationRecord
 
   belongs_to :app, optional: true
 
-  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration CrashlyticsIntegration]
+  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration CrashlyticsIntegration JiraIntegration]
   delegated_type :providable, types: PROVIDER_TYPES, autosave: true, validate: false
   delegated_type :integrable, types: INTEGRABLE_TYPES, autosave: true, validate: false
 
@@ -39,21 +39,24 @@ class Integration < ApplicationRecord
       "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
-      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration]
+      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
+      "project_management" => %w[JiraIntegration]
     },
     android: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
-      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration]
+      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
+      "project_management" => %w[JiraIntegration]
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
-      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration]
+      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
+      "project_management" => %w[JiraIntegration]
     }
   }.with_indifferent_access
 
@@ -76,7 +79,8 @@ class Integration < ApplicationRecord
     ci_cd: "Trigger workflows to create builds and stay up-to-date as they're made available.",
     notification: "Send release activity notifications at the right time, to the right people.",
     build_channel: "Send builds to the right deployment service for the right stakeholders.",
-    monitoring: "Monitor release metrics and stability to make the correct decisions about your release progress."
+    monitoring: "Monitor release metrics and stability to make the correct decisions about your release progress.",
+    project_management: "Track tickets and establish release readiness by associating tickets with your releases."
   }.freeze
   MULTI_INTEGRATION_CATEGORIES = ["build_channel"].freeze
   MINIMUM_REQUIRED_SET = [:version_control, :ci_cd, :build_channel].freeze
@@ -195,6 +199,10 @@ class Integration < ApplicationRecord
 
     def firebase_build_channel_provider
       kept.build_channel.find(&:google_firebase_integration?)&.providable
+    end
+
+    def project_management_provider
+      kept.project_management.first&.providable
     end
 
     def existing_integration(app, providable_type)

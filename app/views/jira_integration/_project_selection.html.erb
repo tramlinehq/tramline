@@ -1,0 +1,98 @@
+<div class="p-4">
+  <h3 class="text-sm font-medium text-gray-900">Select Projects</h3>
+  <p class="mt-1 text-sm text-gray-500">Choose one or more projects to track tickets from.</p>
+
+  <div class="mt-4 space-y-3">
+    <% @jira_data[:projects].each do |project| %>
+      <div class="flex items-start">
+        <div class="flex h-6 items-center">
+          <%= check_box_tag "app_config[jira_config][selected_projects][]",
+                          project['key'],
+                          @current_jira_config&.dig('selected_projects')&.include?(project['key']),
+                          class: "h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary",
+                          data: {
+                            action: "project-selector#toggle",
+                            project_key: project['key'],
+                            project_selector_target: "projectCheckbox"
+                          },
+                          id: "project_#{project['key']}" %>
+          <label for="project_<%= project['key'] %>" class="ml-2 text-sm font-medium text-gray-900">
+            <%= project['name'] %> (<%= project['key'] %>)
+          </label>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Release Filters Section -->
+<div class="p-4" data-controller="domain--release-filters" data-project-selector-target="filterDivider">
+  <h3 class="text-sm font-medium text-gray-900"><%= t('integrations.project_management.jira.release_filters.title') %></h3>
+  <p class="mt-1 text-sm text-gray-500"><%= t('integrations.project_management.jira.release_filters.help_text') %></p>
+
+  <div class="mt-4 space-y-4">
+    <template data-domain--release-filters-target="template">
+      <%= render 'jira_integration/release_filter_form', index: '__INDEX__' %>
+    </template>
+
+    <div data-domain--release-filters-target="container">
+      <% if (@current_jira_config&.dig('release_filters') || []).any? %>
+        <% @current_jira_config['release_filters'].each_with_index do |filter, index| %>
+          <%= render 'jira_integration/release_filter_form',
+                      filter: filter,
+                      index: index,
+                      local_assigns: true %>
+        <% end %>
+      <% else %>
+        <%= render 'jira_integration/release_filter_form',
+                    filter: {},
+                    index: 0,
+                    local_assigns: true %>
+      <% end %>
+    </div>
+
+    <button type="button"
+            class="mt-4 text-sm text-blue-600 hover:text-blue-500"
+            data-action="domain--release-filters#add">
+      <%= t('integrations.project_management.jira.release_filters.add') %>
+    </button>
+  </div>
+</div>
+
+<!-- Project Configurations -->
+<div id="project_configurations">
+  <% @jira_data[:projects].each do |project| %>
+    <% project_key = project['key'] %>
+    <% statuses = @jira_data[:project_statuses][project_key] %>
+
+    <div class="p-4 project-config" data-project="<%= project_key %>">
+      <h4 class="text-sm font-medium text-gray-900 mb-3"><%= project['name'] %> Configuration</h4>
+
+      <div class="space-y-4">
+        <!-- Status Selection -->
+        <div>
+          <p class="text-sm font-medium text-gray-700 mb-2">Done States</p>
+          <div class="space-y-2">
+            <% if statuses&.any? %>
+              <% statuses.each do |status| %>
+                <div class="flex items-center">
+                  <%= check_box_tag "app_config[jira_config][project_configs][#{project_key}][done_states][]",
+                                  status['name'],
+                                  @current_jira_config&.dig('project_configs', project_key, 'done_states')&.include?(status['name']),
+                                  class: "h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary",
+                                  id: "status_#{project_key}_#{status['name'].parameterize}" %>
+                  <label for="status_<%= project_key %>_<%= status['name'].parameterize %>"
+                          class="ml-2 text-sm text-gray-600">
+                    <%= status['name'] %>
+                  </label>
+                </div>
+              <% end %>
+            <% else %>
+              <p class="text-sm text-gray-500">No status configurations found for this project.</p>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
