@@ -23,7 +23,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   attr_accessor :json_key_file
 
-  after_create :draft_check
+  after_create_commit :draft_check
   after_create_commit :refresh_external_app
 
   PROD_CHANNEL = {id: :production, name: "Production", is_production: true}.freeze

@@ -1,4 +1,6 @@
 class IntegrationCardComponent < BaseComponent
+  include Memery
+
   CONNECTABLE_PROVIDER_TO_TITLE = {
     app_store: "API details",
     bugsnag: "Auth Token",
@@ -19,16 +21,12 @@ class IntegrationCardComponent < BaseComponent
   alias_method :provider, :providable
   delegate :creatable?, :connectable?, to: :provider
 
-  def repeated_integration
-    Integration.existing_integration(@app, providable_type)
+  memoize def repeated_integrations_across_apps
+    Integration.existing_integrations_across_apps(@app, providable_type)
   end
 
   def connect_path
     connect_app_integrations_path(@app, integration)
-  end
-
-  def reuse_existing_integration_path(existing_integration)
-    reuse_app_integration_path(@app, existing_integration)
   end
 
   def logo
@@ -51,7 +49,24 @@ class IntegrationCardComponent < BaseComponent
 
   def reusable_integration_form_partial(existing_integration)
     render(partial: "integrations/reusable",
-      locals: {app: @app, integration: @integration, category: @category, url: reuse_existing_integration_path(existing_integration), type: providable_type, provider: provider})
+      locals: {app: @app,
+               integration: @integration,
+               existing_integration: existing_integration,
+               category: @category,
+               url: reuse_app_integrations_path(@app),
+               type: providable_type,
+               provider: provider})
+  end
+
+  def reusable_integrations_form_partial(existing_integrations)
+    render(partial: "integrations/app_reuseable",
+      locals: {app: @app,
+               integration: @integration,
+               existing_integrations: existing_integrations,
+               category: @category,
+               url: reuse_app_integrations_path(@app),
+               type: providable_type,
+               provider: provider})
   end
 
   def disconnectable?

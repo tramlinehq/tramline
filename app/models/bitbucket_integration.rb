@@ -40,6 +40,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def complete_access
+    return if oauth_access_token.present? && oauth_refresh_token.present?
     set_tokens(Installations::Bitbucket::Api.oauth_access_token(code, redirect_uri))
   end
 
