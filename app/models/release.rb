@@ -287,7 +287,8 @@ class Release < ApplicationRecord
   end
 
   def create_build_queue!
-    build_queues.create!(scheduled_at: (Time.current + train.build_queue_wait_time), is_active: true)
+    wait_time = train.build_queue_wait_time || 0
+    build_queues.create!(scheduled_at: (Time.current + wait_time), is_active: true)
   end
 
   def applied_commits
@@ -361,12 +362,21 @@ class Release < ApplicationRecord
   def create_vcs_release!(input_tag_name = base_tag_name)
     return unless train.tag_releases?
     return if tag_name.present?
-    train.create_vcs_release!(release_branch, input_tag_name, release_diff)
-    update!(tag_name: input_tag_name)
-    event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
+
+    train.create_vcs_release!(input_tag_name, release_branch, release_diff)
+    on_tag_create!(input_tag_name)
   rescue Installations::Error => ex
     raise unless [:tag_reference_already_exists, :tagged_release_already_exists].include?(ex.reason)
     create_vcs_release!(unique_tag_name(input_tag_name, last_commit.short_sha))
+  end
+
+  def create_release_from_tag!(existing_tag)
+    return unless train.tag_releases?
+    return if tag_name.present?
+    return if existing_tag.blank?
+
+    train.create_vcs_release!(existing_tag, nil, release_diff)
+    on_tag_create!(existing_tag)
   end
 
   def release_diff
@@ -385,10 +395,6 @@ class Release < ApplicationRecord
 
   def branch_url
     train.vcs_provider&.branch_url(release_branch)
-  end
-
-  def tag_url
-    train.vcs_provider&.tag_url(tag_name)
   end
 
   def pull_requests_url(open = false)
@@ -555,14 +561,19 @@ class Release < ApplicationRecord
     train.previously_finished_release.present? && !hotfix?
   end
 
-  private
-
   def base_tag_name
     tag = "v#{release_version}"
     tag = train.tag_prefix + "-" + tag if train.tag_prefix.present?
     tag += "-hotfix" if hotfix?
     tag += "-" + train.tag_suffix if train.tag_suffix.present?
     tag
+  end
+
+  private
+
+  def on_tag_create!(tag)
+    update!(tag_name: tag)
+    event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
   end
 
   def create_platform_runs!
