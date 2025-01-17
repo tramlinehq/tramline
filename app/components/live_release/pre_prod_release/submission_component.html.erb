@@ -3,21 +3,23 @@
     <% card.with_action do %>
       <% if submission.triggerable? %>
         <%= render ButtonComponent.new(label: "Send to #{submission.display}",
-                                           scheme: :default,
-                                           type: :button,
-                                           options: trigger_store_submission_path(submission),
-                                           html_options: html_opts(:patch, "Are you sure you want to send this submission to #{submission.display}?"),
-                                           size: :xxs) do |b| %>
+                                       auto_label_case: false,
+                                       scheme: :default,
+                                       type: :button,
+                                       options: trigger_store_submission_path(submission),
+                                       html_options: html_opts(:patch, "Are you sure you want to send this submission to #{submission.display}?"),
+                                       size: :xxs) do |b| %>
           <% b.with_icon(submission_logo_bw, size: :md) %>
         <% end %>
       <% end %>
       <% if submission.retryable? %>
         <%= render ButtonComponent.new(label: "Retry sending to #{submission.display}",
-                                           scheme: :default,
-                                           type: :button,
-                                           options: retry_store_submission_path(submission),
-                                           html_options: html_opts(:patch, "Are you sure you want to retry the submission to #{submission.display}?"),
-                                           size: :xxs) do |b| %>
+                                       auto_label_case: false,
+                                       scheme: :default,
+                                       type: :button,
+                                       options: retry_store_submission_path(submission),
+                                       html_options: html_opts(:patch, "Are you sure you want to retry the submission to #{submission.display}?"),
+                                       size: :xxs) do |b| %>
           <% b.with_icon(submission_logo_bw, size: :md) %>
         <% end %>
       <% end %>
@@ -41,6 +43,10 @@
       <% end %>
     </div>
 
+    <% if submission.failed? && submission.last_failed_event.present? %>
+      <%= render V2::AlertComponent.new(type: :error, title: raw(submission.last_failed_event.message), full_screen: false) %>
+    <% end %>
+
     <%= render partial: "shared/play_store_review_rejected", locals: { show: submission.failed_with_action_required?,
                                                                        build:,
                                                                        actionable: true,
@@ -58,11 +64,11 @@
             <% component.with_data_set(title: "Dashboard") do %>
               <% if submission.store_link.present? %>
                 <%= render ButtonComponent.new(scheme: :naked_icon,
-                                                   type: :link_external,
-                                                   options: submission.store_link,
-                                                   html_options: { class: "text-xs" },
-                                                   authz: false,
-                                                   size: :none) do |b| %>
+                                               type: :link_external,
+                                               options: submission.store_link,
+                                               html_options: { class: "text-xs" },
+                                               authz: false,
+                                               size: :none) do |b| %>
                   <% b.with_icon("external_link.svg", size: :md) %>
                 <% end %>
               <% else %>
