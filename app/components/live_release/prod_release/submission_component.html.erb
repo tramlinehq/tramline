@@ -5,9 +5,9 @@
 <div class="flex flex-col item-gap-default">
   <% if cascading_rollout_actionable? %>
     <%= render AlertComponent.new(kind: :announcement,
-                                      type: :announce,
-                                      title: "There's a pending rollout to complete",
-                                      full_screen: false) do %>
+                                  type: :announce,
+                                  title: "There's a pending rollout to complete",
+                                  full_screen: false) do %>
 
       <div class="flex flex-col gap-2 mt-1 text-sm">
         <p>
@@ -27,13 +27,13 @@
           ) %>
 
           <%= render ButtonComponent.new(label: "Go to previous rollout ↗",
-                                             scheme: :link,
-                                             type: :link_external,
-                                             options: previously_completed_release_link,
-                                             html_options: {class: "text-sm"},
-                                             authz: false,
-                                             size: :none,
-                                             arrow: :none) %>
+                                         scheme: :link,
+                                         type: :link_external,
+                                         options: previously_completed_release_link,
+                                         html_options: { class: "text-sm" },
+                                         authz: false,
+                                         size: :none,
+                                         arrow: :none) %>
         </div>
       </div>
     <% end %>
@@ -45,9 +45,9 @@
     </div>
   <% end %>
 
-  <%= render partial: "shared/play_store_review_rejected", locals: {show: show_blocked_message?,
-                                                                    build: current_build,
-                                                                    actionable: false} %>
+  <%= render partial: "shared/play_store_review_rejected", locals: { show: show_blocked_message?,
+                                                                     build: current_build,
+                                                                     actionable: false } %>
 
   <% if @new_submission_prompt %>
     <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "New RC Build is available") do |ann| %>
@@ -55,9 +55,9 @@
       <% modal.with_button(label: "Start a new submission", scheme: :default, type: :action, size: :xxs) %>
       <% modal.with_body do %>
         <% render FormComponent.new(model: [release, release_platform_run, release_platform_run.production_releases.new],
-                                        scope: :production_release,
-                                        url: run_production_path(release_platform_run),
-                                        free_form: true) do |form| %>
+                                    scope: :production_release,
+                                    url: run_production_path(release_platform_run),
+                                    free_form: true) do |form| %>
           <%= form.F.labeled_select :build_id, "Select a build", build_opts %>
           <% form.with_action do %>
             <%= form.F.authz_submit "Create submission", "mail.svg" %>
@@ -99,10 +99,10 @@
 
   <% if @blocked_notice %>
     <%= render AlertComponent.new(kind: :banner,
-                                      type: :notice,
-                                      title: "Release to production is blocked",
-                                      full_screen: false,
-                                      info: blocked_release_info[:info]) do %>
+                                  type: :notice,
+                                  title: "Release to production is blocked",
+                                  full_screen: false,
+                                  info: blocked_release_info[:info]) do %>
       <%= blocked_release_info[:message] %>
     <% end %>
   <% end %>
@@ -118,9 +118,9 @@
           <% button.with_icon("pencil.svg") %>
           <% modal.with_body do %>
             <%= render FormComponent.new(model: [release, release_platform_run, submission],
-                                             scope: :store_submission,
-                                             url: store_submission_path(id),
-                                             free_form: true) do |form| %>
+                                         scope: :store_submission,
+                                         url: store_submission_path(id),
+                                         free_form: true) do |form| %>
               <%= form.F.labeled_select :build_id, "Select a build", build_opts(default: current_build) %>
 
               <% form.with_action do %>
@@ -145,11 +145,12 @@
     <% card.with_action do %>
       <% if submission.retryable? %>
         <%= render ButtonComponent.new(label: "Retry sending to #{submission.provider.display}",
-                                           scheme: :default,
-                                           type: :button,
-                                           options: retry_store_submission_path(submission),
-                                           html_options: html_opts(:patch, "Are you sure you want to retry the submission to #{submission.display}?"),
-                                           size: :xxs) do |b| %>
+                                       auto_label_case: false,
+                                       scheme: :default,
+                                       type: :button,
+                                       options: retry_store_submission_path(submission),
+                                       html_options: html_opts(:patch, "Are you sure you want to retry the submission to #{submission.display}?"),
+                                       size: :xxs) do |b| %>
           <% b.with_icon(submission_logo_bw, size: :md) %>
         <% end %>
       <% end %>
@@ -164,10 +165,10 @@
             <div class="flex flex-col gap-6">
               <%= render LiveRelease::PreviewSubmissionComponent.new(submission) %>
               <%= render ButtonComponent.new(scheme: :default,
-                                                 type: :button,
-                                                 label: "Submit for review",
-                                                 options: submit_for_review_store_submission_path(id),
-                                                 html_options: {method: :patch, data: {turbo_method: :patch}}) %>
+                                             type: :button,
+                                             label: "Submit for review",
+                                             options: submit_for_review_store_submission_path(id),
+                                             html_options: { method: :patch, data: { turbo_method: :patch } }) %>
             </div>
           <% end %>
         <% end %>
@@ -176,28 +177,32 @@
 
     <div class="flex flex-col item-gap-default text-secondary text-xs">
       <%= render LiveRelease::BuildComponent.new(current_build,
-                                                     show_metadata: false,
-                                                     show_ci: false,
-                                                     show_activity: false,
-                                                     show_commit: false,
-                                                     show_compact_metadata: true) %>
+                                                 show_metadata: false,
+                                                 show_ci: false,
+                                                 show_activity: false,
+                                                 show_commit: false,
+                                                 show_compact_metadata: true) %>
 
       <div class="flex flex-row gap-2 items-center">
         <%= render IconComponent.new(store_icon, size: :xl) %>
         <%= render BadgeComponent.new(**status) %>
       </div>
 
-      <%= render LiveRelease::BuildComponent.new(current_build,
-                                                     show_number: false,
-                                                     show_metadata: true,
-                                                     show_ci: false,
-                                                     show_activity: false,
-                                                     show_commit: true) %>
+      <% if submission.failed? && submission.last_failed_event.present? %>
+        <%= render V2::AlertComponent.new(type: :error, title: raw(submission.last_failed_event.message), full_screen: false) %>
+      <% end %>
 
-      <%= render partial: "shared/play_store_review_rejected", locals: {show: submission.failed_with_action_required?,
-                                                                        build: current_build,
-                                                                        actionable: true,
-                                                                        channel_name: submission.submission_channel.name} %>
+      <%= render LiveRelease::BuildComponent.new(current_build,
+                                                 show_number: false,
+                                                 show_metadata: true,
+                                                 show_ci: false,
+                                                 show_activity: false,
+                                                 show_commit: true) %>
+
+      <%= render partial: "shared/play_store_review_rejected", locals: { show: submission.failed_with_action_required?,
+                                                                         build: current_build,
+                                                                         actionable: true,
+                                                                         channel_name: submission.submission_channel.name } %>
 
       <%= render SectionComponent.new(style: :titled, title: "External info", size: :micro) do %>
         <div class="flex">
@@ -206,11 +211,11 @@
             <% component.with_data_set(title: "Dashboard") do %>
               <% if external_link.present? %>
                 <%= render ButtonComponent.new(scheme: :naked_icon,
-                                                   type: :link_external,
-                                                   options: external_link,
-                                                   html_options: {class: "text-xs"},
-                                                   authz: false,
-                                                   size: :none) do |b| %>
+                                               type: :link_external,
+                                               options: external_link,
+                                               html_options: { class: "text-xs" },
+                                               authz: false,
+                                               size: :none) do |b| %>
                   <% b.with_icon("external_link.svg", size: :md) %>
                 <% end %>
               <% else %>
