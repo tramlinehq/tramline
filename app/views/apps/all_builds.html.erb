@@ -1,11 +1,11 @@
 <%= render V2::ContainerComponent.new(title: "All Builds") do |container| %>
   <% container.with_back_button %>
   <% container.with_body do %>
-    <%= render V2::SectionComponent.new(style: :titled, title: "Search by version or commit message") do %>
+    <%= render V2::SectionComponent.new(style: :titled, title: "Search by version") do %>
       <div class="col-span-1">
         <%= render SearchBarComponent.new(
           path: all_builds_app_path(@app, *@all_builds_params),
-          placeholder: "version code, name, or commit message",
+          placeholder: "version code or name",
           value: params[:search_pattern],
           turbo_frame: "all_builds") %>
       </div>

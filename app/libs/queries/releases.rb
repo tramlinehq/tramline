@@ -86,10 +86,6 @@ class Queries::Releases
 
   private
 
-  def search_params
-    {Release.arel_table => %w[name status]}
-  end
-
   def select_attrs(attrs_mapping)
     attrs_mapping.map do |attr_name, column|
       column.as(attr_name.to_s)

@@ -12,7 +12,7 @@ class AllReleasesTableComponent < ViewComponent::Base
   private
 
   attr_reader :releases, :paginator, :query_params
-  
+
   def sort_link(column:, label:)
     if column == @sort_column
       link_to(path(column, next_direction), data: turbo_data) do
