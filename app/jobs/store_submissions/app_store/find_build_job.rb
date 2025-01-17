@@ -1,32 +1,37 @@
 class StoreSubmissions::AppStore::FindBuildJob
+  MAX_RETRIES = 8
   include Sidekiq::Job
-  extend Loggable
-  extend Backoffable
+  include Loggable
+  include Backoffable
 
   queue_as :high
-  sidekiq_options retry: 8
 
-  sidekiq_retry_in do |count, ex|
-    if ex.is_a?(Installations::Error) && ex.reason == :build_not_found
-      backoff_in(attempt: count, period: :minutes, type: :static, factor: 1).to_i
-    else
-      elog(ex)
-      :kill
-    end
-  end
-
-  sidekiq_retries_exhausted do |msg, ex|
-    if ex.is_a?(Installations::Error)
-      submission = AppStoreSubmission.find(msg["args"].first)
-      submission.fail_with_error!(ex)
-    end
-  end
-
-  def perform(submission_id)
+  def perform(submission_id, retry_count = 0)
     submission = AppStoreSubmission.find(submission_id)
+
     return unless submission.actionable?
 
-    submission.find_build.value!
-    submission.prepare_for_release!
+    begin
+      submission.find_build.value!
+      submission.prepare_for_release!
+    rescue Installations::Error => ex
+      raise unless ex.reason == :build_not_found
+      if retry_count >= MAX_RETRIES
+        log_and_fail(ex, submission)
+      else
+        wait_time = backoff_in(attempt: retry_count + 1, period: :minutes, type: :static, factor: 1).to_i
+        Rails.logger.debug { "Build not found for submission #{submission_id}, retrying in #{wait_time} seconds." }
+        self.class.perform_in(wait_time.seconds, submission_id, retry_count + 1)
+      end
+    rescue => ex
+      log_and_fail(ex, submission)
+    end
+  end
+
+  private
+
+  def log_and_fail(ex, submission)
+    elog(ex)
+    submission.fail_with_error!(ex)
   end
 end

@@ -43,13 +43,19 @@ describe StoreSubmissions::TestFlight::FindBuildJob do
         .with(test_flight_submission.submission_channel_id, test_flight_submission.build_number).once
     end
 
-    it "raises appropriate exception if build is not found" do
+    it "handles build_not_found error and schedules a retry if retries are available" do
       build_not_found_error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"code" => "not_found", "resource" => "build"}})
       allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise build_not_found_error })
 
-      expect { described_class.new.perform(test_flight_submission.id) }.to raise_error(build_not_found_error)
+      allow(described_class).to receive(:perform_in)
 
-      expect(test_flight_submission.reload.preprocessing?).to be true
+      described_class.new.perform(test_flight_submission.id)
+
+      expect(described_class).to have_received(:perform_in).with(
+        60.seconds,
+        test_flight_submission.id,
+        1
+      )
     end
 
     it "does nothing if release is not on track" do
