@@ -200,7 +200,7 @@ class Integration < ApplicationRecord
     def existing_integrations_across_apps(app, providable_type)
       Integration.connected
         .where(integrable_id: app.organization.apps, providable_type: providable_type)
-        .select("DISTINCT ON (providable_id) *")
+        .select("DISTINCT ON (metadata) *")
     end
 
     def build_channels_for_platform(platform)

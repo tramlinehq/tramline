@@ -75,6 +75,7 @@ class SlackIntegration < ApplicationRecord
   end
 
   def complete_access
+    return if oauth_access_token.present?
     self.oauth_access_token = Installations::Slack::Api.oauth_access_token(code)
   end
 

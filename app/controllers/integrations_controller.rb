@@ -62,11 +62,11 @@ class IntegrationsController < SignedInApplicationController
   private
 
   def initiate_integration(existing_integration)
-    @app.integrations.find_or_initialize_by(
+    @app.integrations.build(
       category: @integration.category,
       status: Integration.statuses[:connected],
       metadata: existing_integration.metadata,
-      providable: existing_integration.providable
+      providable: existing_integration.providable.dup
     )
   end
 

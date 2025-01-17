@@ -2,8 +2,8 @@
   <div class="grid grid-cols-1 gap-4 mt-4 p-4">
     <% integrations_options = existing_integrations.each_with_index.map { |integration, i|
       {
-        title: "From #{integration.app.name}",
-        subtitle: "#{integration.app.bundle_identifier}",
+        title: integration.app.name,
+        subtitle: integration.providable.connection_data,
         icon: "integrations/logo_#{provider}.png",
         opt_name: :existing_integration_id,
         opt_value: integration.id,
