@@ -8,9 +8,10 @@ RSpec.describe ProductionRelease do
   describe "#version_bump_required?" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:current_prod_release_version) { "1.2.0" }
-    let(:build) { create(:build, release_platform_run:, version_name: current_prod_release_version) }
+    let(:build) { create(:build, release_platform_run:) }
 
     it "is false when release platform run has a higher release version" do
+      build.update! version_name: current_prod_release_version
       production_release = create(:production_release, :active, build:, release_platform_run:)
       bumped = current_prod_release_version.to_semverish.bump!(:patch).to_s
       release_platform_run.update!(release_version: bumped)

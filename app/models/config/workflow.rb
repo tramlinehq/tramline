@@ -4,6 +4,7 @@
 #
 #  id                         :bigint           not null, primary key
 #  artifact_name_pattern      :string
+#  build_suffix               :string
 #  identifier                 :string
 #  kind                       :string
 #  name                       :string
@@ -18,13 +19,17 @@ class Config::Workflow < ApplicationRecord
 
   enum :kind, {internal: "internal", release_candidate: "release_candidate"}
   validates :identifier, :name, presence: true
+  validates :build_suffix, absence: true, if: :ios?
+
+  delegate :ios?, to: :release_platform_config
 
   def as_json(options = {})
     {
       id: identifier,
-      name: name,
-      artifact_name_pattern: artifact_name_pattern,
-      kind: kind
+      name:,
+      artifact_name_pattern:,
+      kind:,
+      build_suffix:
     }
   end
 

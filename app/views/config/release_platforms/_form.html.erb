@@ -1,7 +1,7 @@
 <%# locals: (app:, train:, platform:, platform_config:, platform_name:, platform_label:, ci_actions:, submission_types:) %>
 
 <%= render FormComponent.new(model: [app, train, platform, platform_config],
-                                 url: app_train_platform_submission_config_path(app, train, platform_name)) do |f| %>
+                             url: app_train_platform_submission_config_path(app, train, platform_name)) do |f| %>
   <% f.with_section(heading: "Configure RC (Release Candidate) Workflow") do |section| %>
     <% section.with_description do %>
       You must have at least an RC workflow defined. The CI workflows should generate a valid build artifact (aab/apk/ipa).
@@ -13,8 +13,8 @@
           <%= rc_fields.hidden_field :id, value: rc_fields.object.id %>
           <%= rc_fields.labeled_select :identifier, "Release Candidate workflow",
                                        options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.release_candidate_workflow.identifier),
-                                       {required: true},
-                                       data: {controller: "input-select"} %>
+                                       { required: true },
+                                       data: { controller: "input-select" } %>
 
           <div class="text-xs text-secondary mt-1">
             Please select the workflow that generates builds for <%= platform_label %> release candidates.
@@ -23,8 +23,15 @@
 
         <div class="flex flex-col gap-0.5">
           <%= render partial: "build_name_pattern_info" %>
-          <div><%= rc_fields.labeled_text_field :artifact_name_pattern, "Build artifact name (optional)", placeholder: "Eg., build-abc.apk" %></div>
+          <div><%= rc_fields.labeled_text_field :artifact_name_pattern, "Workflow artifact (optional)", placeholder: "Eg., build-abc.apk" %></div>
         </div>
+
+        <% if platform.android? %>
+          <div class="flex flex-col gap-0.5">
+            <%= render partial: "version_name_suffix_info" %>
+            <div><%= rc_fields.labeled_text_field :build_suffix, "Build version suffix (optional)", placeholder: "Eg., staging (for 1.3.3-staging)" %></div>
+          </div>
+        <% end %>
       </div>
     <% end %>
   <% end %>
@@ -36,9 +43,9 @@
 
     <% if platform.production_ready? %>
       <%= render Form::SwitchComponent.new(form: section.F,
-                                               field_name: :production_release_enabled,
-                                               on_label: "Production release is enabled",
-                                               off_label: "Disabled") do |component| %>
+                                           field_name: :production_release_enabled,
+                                           on_label: "Production release is enabled",
+                                           off_label: "Disabled") do |component| %>
         <% section.F.fields_for :production_release, section.F.object.production_release || section.F.object.build_production_release do |prod_fields| %>
           <% component.with_child do %>
             <%= prod_fields.hidden_field :id, value: prod_fields.object.id %>
@@ -46,9 +53,9 @@
               <%= sub_fields.hidden_field :submission_type, value: sub_fields.object.submission_type %>
               <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
               <%= render Form::SwitchComponent.new(form: sub_fields,
-                                                       field_name: :rollout_enabled,
-                                                       on_label: t("store_rollouts.switcher.#{platform_name}.enable"),
-                                                       off_label: t("store_rollouts.switcher.#{platform_name}.disable")) do |rollout| %>
+                                                   field_name: :rollout_enabled,
+                                                   on_label: t("store_rollouts.switcher.#{platform_name}.enable"),
+                                                   off_label: t("store_rollouts.switcher.#{platform_name}.disable")) do |rollout| %>
 
                 <% if platform.android? %>
                   <% rollout.with_info_icon do %>
@@ -66,10 +73,10 @@
                       <div data-controller="domain--staged-rollout-help">
                         <%= sub_fields.labeled_text_field :rollout_stages,
                                                           "Rollout sequence",
-                                                          {value: sub_fields.object.rollout_stages.join(", "),
-                                                           placeholder: "1, 2, 5, 10, 20, 50, 100",
-                                                           data: {domain__staged_rollout_help_target: "input",
-                                                                  action: "domain--staged-rollout-help#validateString"}} %>
+                                                          { value: sub_fields.object.rollout_stages.join(", "),
+                                                            placeholder: "1, 2, 5, 10, 20, 50, 100",
+                                                            data: { domain__staged_rollout_help_target: "input",
+                                                                    action: "domain--staged-rollout-help#validateString" } } %>
 
                         <div class="text-xs text-secondary mt-2">
                           <span data-domain--staged-rollout-help-target="helpSuccessText"></span>
@@ -78,12 +85,14 @@
                       </div>
 
                       <%= render Form::SwitchComponent.new(form: sub_fields,
-                                                               field_name: :finish_rollout_in_next_release,
-                                                               on_label: "Cascading rollouts are enabled",
-                                                               off_label: "Cascading rollouts are disabled") do |c| %>
+                                                           field_name: :finish_rollout_in_next_release,
+                                                           on_label: "Cascading rollouts are enabled",
+                                                           off_label: "Cascading rollouts are disabled") do |c| %>
                         <% c.with_info_icon do %>
-                          Cascading rollouts allow you to ensure that your previous rollout is fully completed before you start the rollouts for the current release.
-                          This is useful when you want to keep the last rollout stage to be less than 100% (like 99.9%) so that you get an opportunity to halt it before the next one starts.
+                          Cascading rollouts allow you to ensure that your previous rollout is fully completed before
+                          you start the rollouts for the current release.
+                          This is useful when you want to keep the last rollout stage to be less than 100% (like 99.9%)
+                          so that you get an opportunity to halt it before the next one starts.
                         <% end %>
                       <% end %>
                     </div>
@@ -103,9 +112,9 @@
 
   <% f.with_section(heading: "Configure Beta Testing Tracks") do |section| %>
     <%= render Form::SwitchComponent.new(form: section.F,
-                                             field_name: :beta_release_submissions_enabled,
-                                             on_label: "Beta testing tracks are enabled",
-                                             off_label: "Disabled") do |component| %>
+                                         field_name: :beta_release_submissions_enabled,
+                                         on_label: "Beta testing tracks are enabled",
+                                         off_label: "Disabled") do |component| %>
 
       <% component.with_info_icon do %>
         The submissions have an explicit order. You can drag them around to reorder them.
@@ -127,9 +136,9 @@
     <% end %>
 
     <%= render Form::SwitchComponent.new(form: section.F,
-                                             field_name: :internal_release_enabled,
-                                             on_label: "Internal testing is enabled",
-                                             off_label: "No internal testing setup") do |component| %>
+                                         field_name: :internal_release_enabled,
+                                         on_label: "Internal testing is enabled",
+                                         off_label: "No internal testing setup") do |component| %>
 
       <% component.with_info_icon do %>
         Tramline requires both an internal workflow and the relevant submissions to be configured together if you enable Internal Testing.
@@ -142,8 +151,8 @@
               <%= internal_fields.hidden_field :id, value: internal_fields.object.id %>
               <%= internal_fields.labeled_select :identifier, "Internal build workflow",
                                                  options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.internal_workflow&.identifier),
-                                                 {required: false},
-                                                 data: {controller: "input-select"} %>
+                                                 { required: false },
+                                                 data: { controller: "input-select" } %>
 
               <div class="text-xs text-secondary mt-1">Select a workflow that generates internal / non-production
                 builds.
@@ -152,13 +161,19 @@
 
             <div class="flex flex-col gap-0.5">
               <%= render partial: "build_name_pattern_info" %>
-              <div><%= internal_fields.labeled_text_field :artifact_name_pattern, "Build artifact name (optional)", placeholder: "Eg., build-abc.apk" %></div>
+              <div><%= internal_fields.labeled_text_field :artifact_name_pattern, "Workflow artifact (optional)", placeholder: "Eg., build-abc.apk" %></div>
             </div>
+
+            <% if platform.android? %>
+              <div class="flex flex-col gap-0.5">
+                <%= render partial: "version_name_suffix_info" %>
+                <div><%= internal_fields.labeled_text_field :build_suffix, "Build version suffix (optional)", placeholder: "Eg., staging (for 1.3.3-staging)" %></div>
+              </div>
+            <% end %>
           <% end %>
 
           <%= render "pre_prod_release_form", section:, kind: :internal, submission_types:, platform: %>
         </div>
-
       <% end %>
     <% end %>
   <% end %>
