@@ -109,7 +109,7 @@ class Build < ApplicationRecord
 
   # the build's version name is the current release (platform run) version with an optional suffix
   def set_version_name
-    self.version_name = [release_platform_run.release_version, build_suffix].compact.join(BUILD_SUFFIX_SEPARATOR)
+    self.version_name = [release_platform_run.release_version, build_suffix.presence].compact.join(BUILD_SUFFIX_SEPARATOR)
   end
 
   def get_build_artifact

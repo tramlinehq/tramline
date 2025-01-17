@@ -189,7 +189,7 @@
       </div>
 
       <% if submission.failed? && submission.last_failed_event.present? %>
-        <%= render V2::AlertComponent.new(type: :error, title: raw(submission.last_failed_event.message), full_screen: false) %>
+        <%= render AlertComponent.new(type: :error, title: raw(submission.last_failed_event.message), full_screen: false) %>
       <% end %>
 
       <%= render LiveRelease::BuildComponent.new(current_build,
