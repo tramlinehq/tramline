@@ -65,6 +65,20 @@ class AppsController < SignedInApplicationController
     @builds = Queries::Builds.all(app: @app, params: @query_params)
   end
 
+  def search
+    Rails.logger.debug("@@@PARAMS: #{params}")
+    all_releases
+
+    respond_to do |format|
+      format.html {}
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.update("all_releases",
+          partial: "apps/all_releases_search_results",
+          locals: { releases: @releases, pagy: @pagy, all_releases_params: @all_releases_params, app: @app, filters: @filters })
+      end
+    end
+  end
+
   def all_releases
     @all_releases_params = filterable_params.except(:id)
     gen_query_filters(:release_status, Release.statuses[:finished])

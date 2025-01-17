@@ -54,7 +54,7 @@ class AllReleasesTableComponent < ViewComponent::Base
   end
 
   def path(column, direction)
-    all_releases_app_path(@query_params.merge(sort_column: column, sort_direction: direction))
+    search_app_path(@query_params.merge(sort_column: column, sort_direction: direction))
   end
 
   def turbo_data
