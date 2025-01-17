@@ -1,72 +1,47 @@
+# Semverish represents a loose/broad range of what we allow in the x.y.z versioning system
+# It bumps and validates in a more tight/specific way depending on the strategy used
 class VersioningStrategies::Semverish
   include Comparable
 
-  TEMPLATES = {
-    "Positive Number" => :pn,
-    "Calendar Year And Next Week" => :yy0w1
-  }
-
-  INCREMENTS = {
-    TEMPLATES["Positive Number"] => proc { |v| (!v.nil?) ? v.abs + 1 : nil },
-    TEMPLATES["Calendar Year And Next Week"] => proc { |_v|
-      now = Time.current
-      Integer("#{now.year.to_s[2..3]}#{now.strftime("%U").to_i + 1}")
-    }
-  }
-
   STRATEGIES = {
-    semver: {
-      major: TEMPLATES["Positive Number"],
-      minor: TEMPLATES["Positive Number"],
-      patch: TEMPLATES["Positive Number"],
-      update_minor_on_major_bump: false
-    },
-
-    year_and_next_week: {
-      major: TEMPLATES["Positive Number"],
-      minor: TEMPLATES["Calendar Year And Next Week"],
-      patch: TEMPLATES["Positive Number"],
-      update_minor_on_major_bump: true
-    }
+    semver: VersioningStrategies::Semverish::Semver,
+    calver: VersioningStrategies::Semverish::Calver
   }
-
   DEFAULT_STRATEGY = :semver
-
   # adapted from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-  # makes the patch version optional
-  # and removes support for the prerelease version and the build metadata
-  SEMVER_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?\Z/
-
-  attr_accessor :major, :minor, :patch
-  attr_reader :version
+  # - makes the patch version optional
+  # - removes support for the prerelease version and the build metadata
+  # - allows zero-padded numbers for minor and patch
+  SEMVERISH_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*|0\d)(?:\.(0|[1-9]\d*|0\d+))?\Z/
 
   def self.build(major, minor, patch)
-    raise ArgumentError.new("Cannot build a Semverish without a minor") if major.present? && patch.present? && minor.blank?
+    raise ArgumentError, "Cannot build a Semverish without a minor" if major.present? && patch.present? && minor.blank?
     new([major, minor, patch].compact_blank.join("."))
   end
 
   def initialize(version_str)
-    v = version_str&.match(SEMVER_REGEX)
-    raise ArgumentError.new("#{version_str} is not a valid Semverish") if v.nil?
+    v = version_str&.match(SEMVERISH_REGEX)
+    raise ArgumentError, "#{version_str} is not a valid Semverish" if v.nil?
 
-    @major = v[1].to_i
-    @minor = v[2].to_i
-    @patch = v[3].presence && v[3].to_i
     @version = version_str
+    @major = v[1]
+    @minor = v[2]
+    @patch = v[3]
   end
 
+  attr_reader :major, :minor, :patch, :version
+
   def bump!(term, strategy: DEFAULT_STRATEGY)
-    term = term.to_sym
-    new_version = clone
-    strategy_config = STRATEGIES[strategy.to_sym]
-    new_value = INCREMENTS[strategy_config[term]].call(public_send(term))
-    new_version.public_send(:"#{term}=", new_value)
-    if term == :major
-      new_version.minor = 0 unless strategy_config[:update_minor_on_major_bump]
-      new_version.minor = INCREMENTS[strategy_config[:minor]].call(public_send(:minor)) if strategy_config[:update_minor_on_major_bump]
-    end
-    new_version.patch = 0 if proper? && (term == :major || term == :minor)
-    new_version
+    bump_strategy = STRATEGIES[strategy.to_sym].new(major, minor, patch).bump!(term)
+    VersioningStrategies::Semverish.build(bump_strategy.major, bump_strategy.minor, bump_strategy.patch)
+  end
+
+  def valid?(strategy: DEFAULT_STRATEGY)
+    STRATEGIES[strategy.to_sym].valid?(version)
+  end
+
+  def invalid?(strategy: DEFAULT_STRATEGY)
+    !valid?(strategy:)
   end
 
   def <=>(other)
@@ -77,7 +52,7 @@ class VersioningStrategies::Semverish
     end
 
     [:major, :minor, (proper? ? :patch : nil)].compact.each do |part|
-      c = (public_send(part) <=> other.public_send(part))
+      c = (public_send(part).to_i <=> other.public_send(part).to_i)
 
       if c != 0
         return c
@@ -87,34 +62,27 @@ class VersioningStrategies::Semverish
     0
   end
 
+  def to_s(patch_glob: false)
+    parts = to_a.take((partial? || patch_glob) ? 2 : 3)
+    parts << "*" if patch_glob && !partial?
+    parts.join(".")
+  end
+
   def to_a
     [@major, @minor, @patch].compact
   end
 
-  def to_s(patch_glob: false)
-    to_a
-      .take((partial? || patch_glob) ? 2 : 3)
-      .concat([(patch_glob && !partial?) ? "*" : nil])
-      .compact
-      .join(".")
-  end
+  delegate :hash, to: :to_a
 
   def to_h
-    keys = [:major, :minor, :patch]
-    keys.zip(to_a).to_h
+    [:major, :minor, :patch].zip(to_a).to_h
   end
-
-  delegate :hash, to: :to_a
 
   def eql?(other)
     hash == other.hash
   end
 
-  def partial?
-    !proper?
-  end
+  def partial? = !proper?
 
-  def proper?
-    !@patch.nil?
-  end
+  def proper? = !@patch.nil?
 end

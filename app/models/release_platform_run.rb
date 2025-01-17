@@ -268,8 +268,8 @@ class ReleasePlatformRun < ApplicationRecord
 
     semverish = newest_release_version.to_semverish
 
-    self.release_version = semverish.bump!(:patch).to_s if semverish.proper?
-    self.release_version = semverish.bump!(:minor).to_s if semverish.partial?
+    self.release_version = semverish.bump!(:patch, strategy: versioning_strategy).to_s if semverish.proper?
+    self.release_version = semverish.bump!(:minor, strategy: versioning_strategy).to_s if semverish.partial?
 
     save!
 

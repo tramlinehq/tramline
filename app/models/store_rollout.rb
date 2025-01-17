@@ -41,7 +41,7 @@ class StoreRollout < ApplicationRecord
   enum :status, STATES
 
   delegate :parent_release, :build, :external_link, to: :store_submission
-  delegate :version_name, :build_number, to: :build
+  delegate :release_version, :build_number, to: :build
   delegate :train, :platform, to: :release_platform_run
   delegate :notify!, to: :train
   delegate :stale?, :actionable?, to: :parent_release
@@ -60,7 +60,7 @@ class StoreRollout < ApplicationRecord
 
   def release_info
     {
-      build_version: version_name,
+      build_version: release_version,
       build_number:,
       updated_at:,
       platform:,
@@ -142,7 +142,7 @@ class StoreRollout < ApplicationRecord
   def stamp_data
     {
       current_stage: stage,
-      version: version_name,
+      version: release_version,
       build_number: build_number,
       rollout_percentage: last_rollout_percentage_fmt
     }

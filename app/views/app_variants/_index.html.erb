@@ -1,13 +1,13 @@
-<%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Only one variant allowed", full_screen: false) do %>
+<%= render AlertComponent.new(kind: :banner, type: :notice, title: "Only one variant allowed", full_screen: false) do %>
   Tramline currently only supports one variant with one integration per app. If you need to configure multiple variants, please contact us.
 <% end %>
 
 <% subtitle = "Akin to product flavors or build variants, with an explicit requirement of having a different bundle id and separate integrations." %>
-<%= render V2::SectionComponent.new(style: :titled, title: "App Variants", subtitle: subtitle) do |section| %>
+<%= render SectionComponent.new(style: :titled, title: "App Variants", subtitle: subtitle) do |section| %>
   <% if @app.variants.none? %>
     <% section.with_sidenote do %>
-      <%= render V2::ModalComponent.new(title: "Add a new App Variant") do |modal| %>
-        <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("v2/plus.svg", size: :md) %>
+      <%= render ModalComponent.new(title: "Add a new App Variant") do |modal| %>
+        <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("plus.svg", size: :sm) %>
         <% modal.with_body do %>
           <%= render partial: "create", locals: {app: @app, app_config: @app.config, app_variant: @new_app_variant, firebase_ios_apps: @firebase_ios_apps, firebase_android_apps: @firebase_android_apps} %>
         <% end %>
@@ -15,7 +15,7 @@
     <% end %>
   <% end %>
 
-  <%= render V2::TableComponent.new(columns: ["name", "bundle identifier", "Connections", ""]) do |table| %>
+  <%= render TableComponent.new(columns: ["name", "bundle identifier", "Connections", ""]) do |table| %>
     <% @app_variants.each do |variant| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
@@ -28,7 +28,7 @@
 
         <% row.with_cell do %>
           <% variant.integrations.each do |integration| %>
-            <%= render V2::BadgeComponent.new(text: integration.providable.display, kind: :badge) do |badge| %>
+            <%= render BadgeComponent.new(text: integration.providable.display, kind: :badge) do |badge| %>
               <% badge.with_icon("integrations/logo_#{integration.providable}.png") %>
             <% end %>
           <% end %>
@@ -37,24 +37,24 @@
         <% row.with_cell(wrap: true) do %>
 
           <div class="flex gap-x-2 justify-end">
-            <%= render V2::ModalComponent.new(title: "Edit variant") do |modal| %>
-              <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("v2/pencil.svg") %>
+            <%= render ModalComponent.new(title: "Edit variant") do |modal| %>
+              <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("pencil.svg") %>
               <% modal.with_body do %>
                 <%= tag.turbo_frame id: dom_id(variant, :edit_variant),
                                     src: edit_app_app_config_app_variant_path(@app, variant),
                                     loading: :lazy,
                                     class: "with-turbo-frame-loader" do %>
-                  <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
+                  <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
                 <% end %>
               <% end %>
             <% end %>
 
-            <%= render V2::ButtonComponent.new(
+            <%= render ButtonComponent.new(
               scheme: :light,
               options: app_app_config_app_variant_path(@app, variant),
               type: :link,
               html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the variant? This will also destroy the associated integrations."}}) do |b|
-              b.with_icon("v2/trash.svg")
+              b.with_icon("trash.svg")
             end %>
           </div>
         <% end %>
@@ -64,7 +64,7 @@
 
   <% if @none %>
     <div class="text-secondary text-sm">
-      <%= render V2::EmptyStateComponent.new(title: "Add new to begin",
+      <%= render EmptyStateComponent.new(title: "Add new to begin",
                                              text: "No app variants have been configured yet.",
                                              banner_image: "dna.svg",
                                              type: :subdued) %>

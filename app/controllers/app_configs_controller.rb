@@ -1,10 +1,10 @@
 class AppConfigsController < SignedInApplicationController
   using RefinedString
 
-  around_action :set_time_zone
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_integration_category, only: %i[edit]
   before_action :set_app_config, only: %i[edit update]
+  around_action :set_time_zone
 
   BUGSNAG_CONFIG_PARAMS = [:bugsnag_ios_project_id, :bugsnag_ios_release_stage, :bugsnag_android_project_id, :bugsnag_android_release_stage].freeze
 

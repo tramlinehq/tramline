@@ -70,7 +70,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
         ]
       ],
       release_candidate_workflow_attributes: [
-        :id, :identifier, :artifact_name_pattern
+        :id, :identifier, :artifact_name_pattern, :build_suffix
       ],
       production_release_attributes: [
         :id,
@@ -79,7 +79,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
         ]
       ],
       internal_workflow_attributes: [
-        :id, :identifier, :_destroy, :artifact_name_pattern
+        :id, :identifier, :_destroy, :artifact_name_pattern, :build_suffix
       ]
     )
   end

@@ -1,0 +1,21 @@
+<%= render FormComponent.new(model: [app, train, train.releases.new],
+                                 url: app_train_releases_path(app, train),
+                                 free_form: true) do |form| %>
+
+  <div data-controller="reveal">
+    <%= render OptionCardsComponent.new(form: form.F, options: release_options) %>
+    <div class="mt-2" hidden data-reveal>
+      <%= form.F.labeled_text_field :custom_release_version,
+                                    "Version Name",
+                                    autocomplete: "off",
+                                    placeholder: "Eg. 1970.01.01" %>
+      <p class="mt-1 text-secondary text-xs">
+        Be careful when using custom versions with CalVer, since Tramline's automatic versioning will always pick the calendar date when starting a new release.
+      </p>
+    </div>
+  </div>
+
+  <% form.with_action do %>
+    <%= form.F.authz_submit "Start", "zap.svg" %>
+  <% end %>
+<% end %>

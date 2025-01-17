@@ -1,0 +1,47 @@
+<div class="<%= grids %> item-gap-default">
+  <div>
+    <% if events.present? %>
+      <div class="flex flex-col item-gap-default">
+        <h5 class="flex heading-5-sc">Recent Events</h5>
+        <%= render TimelineComponent.new(events:, truncate: true, view_all_link: timeline_release_path(pre_prod_release.release)) %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="flex flex-col justify-start gap-1">
+    <div class="flex flex-wrap flex-row justify-end gap-2">
+      <div class="flex gap-1 items-center text-secondary text-sm">
+        <% icon = IconComponent.new("info_full.svg", size: :base) %>
+        <% icon.with_tooltip("", placement: "bottom", type: :detailed) do |tooltip| %>
+          <% tooltip.with_detailed_text do %>
+            The build will be created from this workflow. Once the workflow completes and Tramline is able to find
+            the build, Tramline will send the build to the configured submission channels automatically or otherwise
+            (based on your settings).
+          <% end %>
+        <% end %>
+
+        <%= render icon %>
+
+        Workflow
+      </div>
+
+      <div class="last:border-0 border-l border-solid border-main-300"></div>
+
+      <div>
+        <%= render BadgeComponent.new(text: workflow_config.name, kind: :badge) do |badge| %>
+          <% badge.with_icon(ci_cd_provider_logo) %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex justify-end">
+      <%= render ModalComponent.new(title: "Build Insights", size: :lg, type: :drawer, authz: false) do |modal| %>
+        <% button = modal.with_button(label: "Build Insights", scheme: :supporting, size: :xxs, type: :action) %>
+        <% button.with_icon("lightbulb.svg", size: :md) %>
+        <% modal.with_body do %>
+          <%= render partial: "pre_prod_releases/build_insights", locals: { builds: } %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

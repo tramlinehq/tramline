@@ -39,7 +39,7 @@ class BuildArtifact < ApplicationRecord
   end
 
   def gen_filename(ext)
-    "#{app.slug}-#{build.build_version}-build#{ext}"
+    "#{app.slug}-#{build.version_name}-build#{ext}"
   end
 
   def get_filename
