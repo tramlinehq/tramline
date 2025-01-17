@@ -27,19 +27,11 @@ class AllReleasesTableComponent < ViewComponent::Base
     end
   end
 
-  def headers
-    [
-      { name: "Status" },
-      { name: "Commit Messages" },
-      { name: "Created", sortable: true, sort_key: "created_at" },
-    ]
-  end
-
   def rows
     releases.map do |release|
       [
         status_cell(release.release_status),
-        commit_messages_cell(release.all_commits),
+        commit_messages_cell(release.all_commits, release.pull_requests),
         created_cell(release.created_at),
       ]
     end
@@ -49,8 +41,8 @@ class AllReleasesTableComponent < ViewComponent::Base
     render StatusBadgeComponent.new(status: status)
   end
 
-  def commit_messages_cell(commits)
-    commits.map { |commit| commit["message"] }.join(", ")
+  def commit_messages_cell(commits, pull_requests)
+    commits.map { |commit| commit["message"] }.join(", ") + pull_requests.map { |pr| pr["title"] }.join(", ")
   end
 
   def created_cell(timestamp)

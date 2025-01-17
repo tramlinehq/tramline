@@ -16,13 +16,13 @@
 
         <th class="px-2 py-3 whitespace-nowrap">
           <div class="font-semibold text-left">
-            Commit Messages
+            Commit/PR Messages
           </div>
         </th>
 
         <th class="px-2 py-3 whitespace-nowrap">
           <div class="font-semibold text-left">
-            <%# <%= sort_link(column: "created_at", label: "Created") %> %>
+            <%= sort_link(column: "created_at", label: "Created") %>
           </div>
         </th>
       </tr>
@@ -45,13 +45,20 @@
 
           <td class="px-2 py-3">
             <div class="text-left">
-              <%= release.all_commits.map { |commit| commit["message"] }.join(", ") %>
+              <ul class="list-disc list-inside">
+                <% release.all_commits.each do |commit| %>
+                  <li><%= commit["message"] %></li>
+                <% end %>
+                <% release.pull_requests.each do |pr| %>
+                  <li><%= pr["title"] %></li>
+                <% end %>
+              </ul>
             </div>
           </td>
 
           <td class="px-2 py-3 whitespace-nowrap">
             <div class="text-left">
-              <%# <%= time_format release.created_at, with_year: true %> %>
+              <%= time_format release.created_at, with_year: true %>
             </div>
           </td>
         </tr>

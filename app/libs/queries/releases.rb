@@ -32,7 +32,7 @@ class Queries::Releases
         record
           .attributes
           .with_indifferent_access
-          .merge(all_commits: record.all_commits)
+          .merge(all_commits: record.all_commits, pull_requests: record.pull_requests)
           .except(:id)
 
       Queries::Release.new(attributes)
@@ -46,6 +46,7 @@ class Queries::Releases
   memoize def selected_records
     records
       .select(select_attrs(BASE_ATTR_MAPPING))
+      .select(params.sort_column)
       .order(params.sort)
       .limit(params.limit)
       .offset(params.offset)
@@ -54,11 +55,13 @@ class Queries::Releases
   memoize def records
     Release
       .joins(train: :app)
-      .joins(:all_commits)
+      .left_joins(:all_commits)
+      .left_joins(:pull_requests)
       .select(:id)
+      .distinct
       .where(apps: {id: app.id})
       # TODO: Use pg_search instead of ILIKE
-      .where("commits.message ILIKE ?", "%#{params.search_query}%")
+      .where("commits.message ILIKE ? OR pull_requests.title ILIKE ?", "%#{params.search_query}%", "%#{params.search_query}%")
       .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(BASE_ATTR_MAPPING)))
   end
 
@@ -68,8 +71,9 @@ class Queries::Releases
 
     attribute :release_status, :string
     attribute :release_slug, :string
+    attribute :created_at, :datetime
     attribute :all_commits, array: true, default: []
-    # attribute :pull_requests, :array
+    attribute :pull_requests, array: true, default: []
     # attribute :release_changelog, :array
 
     def inspect
