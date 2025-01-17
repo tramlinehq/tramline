@@ -553,13 +553,6 @@ class Release < ApplicationRecord
     !(approvals_overridden? || approvals_finished?)
   end
 
-  def self.find_active_for_train(train_id)
-    where(train_id:)
-      .where.not(status: TERMINAL_STATES)
-      .order(created_at: :desc)
-      .first
-  end
-
   def copy_approvals_enabled?
     copy_approvals? && release?
   end
