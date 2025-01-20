@@ -46,12 +46,9 @@
           <td class="px-2 py-3">
             <div class="text-left">
               <ul class="list-disc list-inside">
-                <% release.all_commits.each do |commit| %>
-                  <li><%= commit["message"] %></li>
-                <% end %>
-                <% release.pull_requests.each do |pr| %>
-                  <li><%= pr["title"] %></li>
-                <% end %>
+                <li><%= release.commit_message %></li>
+                <li><%= release.pull_request_title %></li>
+                
               </ul>
             </div>
           </td>

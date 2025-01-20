@@ -31,7 +31,7 @@ class AllReleasesTableComponent < ViewComponent::Base
     releases.map do |release|
       [
         status_cell(release.release_status),
-        commit_messages_cell(release.all_commits, release.pull_requests),
+        commit_messages_cell(release.commit_message),
         created_cell(release.created_at),
       ]
     end
@@ -41,8 +41,8 @@ class AllReleasesTableComponent < ViewComponent::Base
     render StatusBadgeComponent.new(status: status)
   end
 
-  def commit_messages_cell(commits, pull_requests)
-    commits.map { |commit| commit["message"] }.join(", ") + pull_requests.map { |pr| pr["title"] }.join(", ")
+  def commit_messages_cell(message)
+    message.to_s
   end
 
   def created_cell(timestamp)

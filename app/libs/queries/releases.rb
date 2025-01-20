@@ -32,7 +32,10 @@ class Queries::Releases
         record
           .attributes
           .with_indifferent_access
-          .merge(all_commits: record.all_commits, pull_requests: record.pull_requests)
+          .merge(
+            # commits: Array(record.commits_data).map { |c| JSON.parse(c) },
+            # pull_requests: Array(record.pull_requests_data).map { |pr| JSON.parse(pr) }
+          )
           .except(:id)
 
       Queries::Release.new(attributes)
@@ -58,6 +61,9 @@ class Queries::Releases
       .left_joins(:all_commits)
       .left_joins(:pull_requests)
       .select(:id)
+      .select("commits.commit_hash as commit_hash")
+      .select("commits.message as commit_message")
+      .select("pull_requests.title as pull_request_title")
       .distinct
       .where(apps: {id: app.id})
       # TODO: Use pg_search instead of ILIKE
@@ -72,8 +78,9 @@ class Queries::Releases
     attribute :release_status, :string
     attribute :release_slug, :string
     attribute :created_at, :datetime
-    attribute :all_commits, array: true, default: []
-    attribute :pull_requests, array: true, default: []
+    attribute :commit_hash, :string
+    attribute :commit_message, :string
+    attribute :pull_request_title, :string
     # attribute :release_changelog, :array
 
     def inspect
