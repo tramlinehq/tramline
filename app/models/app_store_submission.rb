@@ -6,6 +6,7 @@
 #  approved_at             :datetime
 #  config                  :jsonb
 #  failure_reason          :string
+#  last_stable_status      :string
 #  name                    :string
 #  parent_release_type     :string           indexed => [parent_release_id]
 #  prepared_at             :datetime
@@ -90,7 +91,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: :preparing, to: :prepared
     end
 
-    event :fail_prepare, before: :set_failure_reason, after_commit: :on_fail_prepare! do
+    event :fail_prepare, before: :set_failure_context, after_commit: :on_fail_prepare! do
       transitions from: :preparing, to: :failed_prepare
     end
 
@@ -121,12 +122,14 @@ class AppStoreSubmission < StoreSubmission
       transitions from: [:submitted_for_review, :approved, :cancelling], to: :cancelled
     end
 
-    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
+    event :fail, before: :set_failure_context, after_commit: :on_fail! do
       transitions to: :failed
     end
   end
 
   after_create_commit :poll_external_status
+
+  def retryable? = failed?
 
   def pre_review? = PRE_PREPARE_STATES.include?(status)
 
@@ -160,7 +163,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def prepare_for_release!
-    result = provider.prepare_release(build_number, version_name, staged_rollout?, notes, true)
+    result = provider.prepare_release(build_number, release_version, staged_rollout?, notes, true)
 
     unless result.ok?
       case result.error.reason
@@ -172,7 +175,7 @@ class AppStoreSubmission < StoreSubmission
       return
     end
 
-    unless result.value!.valid?(build_number, version_name, staged_rollout?)
+    unless result.value!.valid?(build_number, release_version, staged_rollout?)
       fail!(reason: :invalid_release)
       return
     end
@@ -182,7 +185,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def submit!
-    result = provider.submit_release(build_number, version_name)
+    result = provider.submit_release(build_number, release_version)
 
     unless result.ok?
       return update(failure_reason: result.error.reason) if result.error.reason.in? RETRYABLE_FAILURE_REASONS
@@ -221,7 +224,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def remove_from_review!
-    result = provider.remove_from_review(build_number, version_name)
+    result = provider.remove_from_review(build_number, release_version)
 
     if result.ok?
       update_store_info!(result.value!)

@@ -1,4 +1,4 @@
-<%= render V2::ContainerComponent.new(title: "Release Activity", subtitle: "Audit log for all the release-related activities") do |container| %>
+<%= render ContainerComponent.new(title: "Release Activity", subtitle: "Audit log for all the release-related activities") do |container| %>
   <% container.with_back_button(to: "the release", path: release_path(@release)) %>
   <% container.with_body do %>
     <turbo-frame id="events" data-turbo-action="replace">

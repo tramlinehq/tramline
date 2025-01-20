@@ -212,7 +212,7 @@ class SignedInApplicationController < ApplicationController
   end
 
   def stream_flash
-    turbo_stream.update("flash_stream", V2::FlashComponent.new(flash))
+    turbo_stream.update("flash_stream", FlashComponent.new(flash))
   end
 
   def require_organization!

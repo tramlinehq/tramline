@@ -7,7 +7,6 @@ module.exports = {
     './app/helpers/**/*.rb',
     './app/javascript/**/*.js',
     './app/views/**/*',
-    './app/components/v2/**/*',
     './app/components/**/*',
   ],
   safelist: [

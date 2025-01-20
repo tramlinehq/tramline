@@ -1,0 +1,44 @@
+<div class="py-1.5 px-2 <%= style %>">
+  <div class="flex text-sm items-center justify-between space-x-4">
+    <div class="flex flex-col gap-y-1.5">
+      <%= render(ButtonComponent.new(scheme: :link,
+                                         label: pr.title.truncate(80),
+                                         options: pr.url,
+                                         type: :link_external,
+                                         size: :none,
+                                         authz: false,
+                                         html_options: {class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline"})) %>
+
+      <div class="flex flex-row gap-x-1.5 items-center">
+        <%= render IconComponent.new("integrations/logo_#{pr.source}.png", size: :md) %>
+
+        <div class="text-xs text-neutral-500 dark:text-white">
+          <% if pr.base_ref == pr.head_ref %>
+            <%= pr.head_ref %>
+          <% else %>
+            <%= pr.base_ref %> ← <%= pr.head_ref %>
+          <% end %>
+
+          <% if pr.commit.present? %>
+            <%= " • " %>
+            <%= pr.commit.author_name || pr.commit.author_login %>
+          <% end %>
+        </div>
+      </div>
+
+      <div>
+        <% pr.labels&.each do |label| %>
+          <%= render BadgeComponent.new(text: label["name"], kind: :badge) %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex flex-row gap-x-2 items-center">
+      <%= render BadgeComponent.new(kind: :badge) do |badge|
+        badge.with_link("##{pr.number}", pr.url)
+      end %>
+
+      <%= render BadgeComponent.new(text: state, status:) %>
+    </div>
+  </div>
+</div>

@@ -22,12 +22,12 @@
 <body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white subpixel-antialiased dark:antialiased">
 <div class="flex h-screen overflow-hidden">
   <div class="relative flex flex-col flex-1 overflow-y-scroll overflow-x-hidden h-full">
-    <%= render V2::HeaderComponent.new %>
+    <%= render HeaderComponent.new %>
 
     <main class="mb-20 2xl:mb-10">
       <%= yield :sticky_top_message %>
       <div class="mx-auto">
-        <div id="flash_stream"><%= render V2::FlashComponent.new(flash) %></div>
+        <div id="flash_stream"><%= render FlashComponent.new(flash) %></div>
         <div id="error_stream"><%= yield :error_resource %></div>
         <%= yield %>
       </div>

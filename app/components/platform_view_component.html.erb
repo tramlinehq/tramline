@@ -1,0 +1,19 @@
+<div class="grid <%= grid_size %> gap-4 items-start">
+  <% if cross_platform? %>
+    <% platform_runs.each do |run| %>
+      <div class="flex flex-col items-start item-gap-default">
+        <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
+          <%= run.display_attr(:platform) %>
+        </span>
+
+        <% if @detail && @release.active? && !run.active? %>
+          <div class="w-full">
+            <%= render AlertComponent.new(title: "The #{run.display_attr(:platform)} release is locked and will not accept new changes.", type: :info, full_screen: false, dismissible: false) %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= content %>
+</div>

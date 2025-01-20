@@ -7,7 +7,7 @@
     <% end %>
 
     <div class="flex flex-col items-center mb-2 bg-backgroundLight dark:bg-backgroundDark py-1">
-      <%= render V2::IconComponent.new("calendar_time.svg", size: :xl_3) %>
+      <%= render IconComponent.new("calendar_time.svg", size: :xl_3) %>
       <time class="text-xl font-semibold text-main-900"><%= day %></time>
       <%= toggle_for(hide_timeline?(index)) %>
     </div>

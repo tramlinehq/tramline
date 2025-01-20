@@ -28,7 +28,7 @@ module EnhancedFormHelper
 
     def authz_submit(label, icon, scheme: :default, size: :sm, disabled: false, html_options: {}, authz: true)
       button_component =
-        V2::ButtonComponent.new(scheme:, type: :action, size:, label:, html_options:, turbo: false, disabled:, authz:)
+        ButtonComponent.new(scheme:, type: :action, size:, label:, html_options:, turbo: false, disabled:, authz:)
       button_component.with_icon(icon)
       @template.render(button_component)
     end

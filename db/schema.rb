@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_01_10_160725) do
+ActiveRecord::Schema[7.2].define(version: 2025_01_16_070908) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -846,6 +846,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_10_160725) do
     t.uuid "parent_release_id"
     t.jsonb "config"
     t.integer "sequence_number", limit: 2, default: 0, null: false
+    t.string "last_stable_status"
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
     t.index ["parent_release_type", "parent_release_id"], name: "index_store_submissions_on_parent_release"
     t.index ["release_platform_run_id"], name: "index_store_submissions_on_release_platform_run_id"
@@ -921,9 +922,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_10_160725) do
     t.boolean "patch_version_bump_only", default: false, null: false
     t.boolean "approvals_enabled", default: false, null: false
     t.boolean "freeze_version", default: false
-    t.string "tag_prefix"
     t.boolean "copy_approvals", default: false
     t.boolean "auto_apply_patch_changes", default: true
+    t.string "tag_prefix"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
@@ -987,6 +988,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_10_160725) do
     t.string "artifact_name_pattern"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "build_suffix"
     t.index ["release_platform_config_id"], name: "index_workflow_configs_on_release_platform_config_id"
   end
 

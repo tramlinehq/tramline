@@ -1,4 +1,4 @@
-<%= render V2::FormComponent.new(model: [app, integration], url: app_bugsnag_integration_path(app)) do |f| %>
+<%= render FormComponent.new(model: [app, integration], url: app_bugsnag_integration_path(app)) do |f| %>
   <% f.with_section(heading: "Add") do |section| %>
     <% section.with_description do %>
       <p>Personal Auth Tokens for the Data Access API</p>
