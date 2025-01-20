@@ -13,7 +13,7 @@ export default class extends Controller {
   }
 
   update() {
-    let value = this.inputTarget.value.length
+    const value = this.inputTarget.value.length
 
     if (value > this.maxLengthValue) {
       this.counterTarget.classList.add(ERROR_CLASS)
