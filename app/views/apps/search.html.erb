@@ -1,21 +1,24 @@
-<%= turbo_stream_from "all_builds" %>
-
 <%= render V2::ContainerComponent.new(title: "All Releases") do |container| %>
   <% container.with_back_button %>
   <% container.with_body do %>
     <%= render V2::SectionComponent.new(style: :titled, title: "Search by commit/PR") do %>
       <div class="col-span-1">
         <%= render SearchBarComponent.new(
-          path: search_app_path(@app, *@all_releases_params),
+          path: search_app_url(@app, *@all_releases_params),
           placeholder: "Search commit messages",
           value: params[:search_pattern],
-          turbo_frame: "search_results") %>
+          turbo_frame: "all_releases") %>
       </div>
 
-      <%= tag.turbo_frame id: "search_results", target: "_top", data: { turbo_action: "advance" }, class: "col-span-full" do %>
-        <%= render partial: "builds", locals: { builds: @builds, pagy: @pagy, all_releases_params: @build_params, app: @app, filters: @filters } %>
-        <%= render partial: "releases", locals: { releases: @releases, pagy: @pagy, all_releases_params: @search_params, app: @app, filters: @filters } %>
-      <% end %>
+
+    <%= content_tag(:div, id: "all_releases", class: "col-span-full") do %>
+      <%= render partial: "apps/all_releases_search_results", locals: { releases: @releases, pagy: @pagy, all_releases_params: @all_releases_params, app: @app, filters: @filters } %>
+    <% end %>
+
+    <%= content_tag(:div, id: "all_builds", class: "col-span-full") do %>
+      <%= render partial: "apps/all_builds_search_results", locals: { builds: @builds, pagy: @pagy, all_builds_params: @all_builds_params, app: @app, filters: @filters } %>
+    <% end %>
+
     <% end %>
   <% end %>
-<% end %>
+<% end %> 

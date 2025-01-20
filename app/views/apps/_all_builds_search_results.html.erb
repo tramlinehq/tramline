@@ -1,0 +1,25 @@
+<div class="col-span-1 my-4">
+    <%= render FilterButtonComponent.new(
+    name: "Completed",
+    on: filters.dig(:release_status, :is_on),
+    path: all_builds_app_path(app),
+    method: :get,
+    filter_params: get_query_filter(:release_status),
+    query_params: all_builds_params) %>
+</div>
+
+<% if builds.present? %>
+    <%= render AllBuildsTableComponent.new(
+    builds: builds,
+    paginator: pagy,
+    query_params: all_builds_params) %>
+    <footer>
+    <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
+    </footer>
+<% else %>
+    <%= render V2::EmptyStateComponent.new(
+    title: "No builds found",
+    text: "Try a different search term or filter, or create a new release to generate builds.",
+    banner_image: "v2/drill.svg",
+    type: :subdued) %>
+<% end %>

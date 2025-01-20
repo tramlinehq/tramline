@@ -3,7 +3,7 @@ default: &default
 
 development:
   <<: *default
-  adapter: redis
+  adapter: async
 
 test:
   <<: *default
