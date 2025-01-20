@@ -1,0 +1,10 @@
+<div data-controller="character-counter" data-character-counter-max-length-value="<%= max_length %>">
+  <%= form.labeled_textarea obj_method, label_text, data: { character_counter_target: "input",
+                                                            action: "input->character-counter#update",
+                                                            controller: "textarea-autogrow" } %>
+  <p class="text-xs text-secondary">
+    Characters –
+    <strong data-character-counter-target="counter"><%= existing_value&.length || 0 %></strong>
+    / <%= max_length %>
+  </p>
+</div>

@@ -27,4 +27,16 @@ class LiveRelease::MetadataComponent < BaseComponent
   def editable?
     @release.release_platform_runs.any?(&:metadata_editable?)
   end
+
+  def android_max_length
+    ReleaseMetadata::ANDROID_NOTES_MAX_LENGTH
+  end
+
+  def ios_max_length
+    ReleaseMetadata::IOS_NOTES_MAX_LENGTH
+  end
+
+  def promo_text_max_length
+    ReleaseMetadata::PROMO_TEXT_MAX_LENGTH
+  end
 end
