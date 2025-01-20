@@ -1,7 +1,7 @@
-<%= render V2::ContainerComponent.new(title: "All Releases") do |container| %>
+<%= render ContainerComponent.new(title: "All Releases") do |container| %>
   <% container.with_back_button %>
   <% container.with_body do %>
-    <%= render V2::SectionComponent.new(style: :titled, title: "Search by commit/PR") do %>
+    <%= render SectionComponent.new(style: :titled, title: "Search by commit/PR") do %>
       <div class="col-span-1">
         <%= render SearchBarComponent.new(
           path: search_app_url(@app, *@all_releases_params),

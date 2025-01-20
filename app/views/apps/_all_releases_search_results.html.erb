@@ -17,9 +17,9 @@
       <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
     </footer>
   <% else %>
-    <%= render V2::EmptyStateComponent.new(
+    <%= render EmptyStateComponent.new(
       title: "No releases found",
       text: "Try a different search term or filter.",
-      banner_image: "v2/drill.svg",
+      banner_image: "drill.svg",
       type: :subdued) %>
   <% end %>
