@@ -477,10 +477,11 @@ en:
         release_metadata:
           attributes:
             release_notes:
-              no_special_characters: "only allows letters, numbers, emojis, and some special characters"
+              no_special_characters_ios: "for iOS can only contain letters, numbers, punctuation, basic math symbols, currency symbols, some emojis, and line breaks. The following characters are not allowed – %{denied_characters}"
+              no_special_characters_android: "for Android can only contain letters, numbers, punctuation, basic math symbols, currency symbols, emojis, and line breaks"
               too_long: "is too long for %{platform} (maximum is %{max_length} characters)"
             promo_text:
-              no_special_characters: "only allows letters, numbers, emojis, and some special characters"
+              no_special_characters: "can only contain letters, numbers, punctuation, basic math symbols, currency symbols, some emojis, and line breaks. The following characters are not allowed – %{denied_characters}"
         integration:
           format: "%{message}"
           attributes:

@@ -13,24 +13,24 @@
     <div class="flex flex-col gap-y-2 mb-6">
       <div class="flex gap-x-4">
         <%= render ButtonComponent.new(label: "Play Store metadata requirements",
-                                           scheme: :link,
-                                           type: :link_external,
-                                           options: "https://play.google.com/console/about/storelistings/#best-practices",
-                                           html_options: { class: "text-sm" },
-                                           authz: false,
-                                           size: :none,
-                                           arrow: :none) do |b|
+                                       scheme: :link,
+                                       type: :link_external,
+                                       options: "https://play.google.com/console/about/storelistings/#best-practices",
+                                       html_options: { class: "text-sm" },
+                                       authz: false,
+                                       size: :none,
+                                       arrow: :none) do |b|
           b.with_icon("integrations/logo_google_play_store.png", size: :md, classes: "text-main")
         end %>
 
         <%= render ButtonComponent.new(label: "App Store Connect metadata requirements",
-                                           scheme: :link,
-                                           type: :link_external,
-                                           options: "https://help.apple.com/asc/appsspec/en.lproj/static.html",
-                                           html_options: { class: "text-sm" },
-                                           authz: false,
-                                           size: :none,
-                                           arrow: :none) do |b|
+                                       scheme: :link,
+                                       type: :link_external,
+                                       options: "https://help.apple.com/asc/appsspec/en.lproj/static.html",
+                                       html_options: { class: "text-sm" },
+                                       authz: false,
+                                       size: :none,
+                                       arrow: :none) do |b|
           b.with_icon("integrations/logo_app_store.png", size: :md, classes: "text-main")
         end %>
       </div>
@@ -81,7 +81,11 @@
         <% f.F.fields_for :android, android_metadata do |aF| %>
           <div class="flex flex-col gap-y-4">
             <%= aF.hidden_field :id %>
-            <div><%= aF.labeled_textarea :release_notes, "Release Notes" %></div>
+            <%= render partial: "shared/size_limited_textarea", locals: { form: aF,
+                                                                          obj_method: :release_notes,
+                                                                          label_text: "Release Notes",
+                                                                          max_length: android_max_length,
+                                                                          existing_value: android_metadata.release_notes } %>
           </div>
         <% end %>
       <% elsif component.cross_platform? %>
@@ -94,8 +98,16 @@
         <% f.F.fields_for :ios, ios_metadata do |iosF| %>
           <div class="flex flex-col gap-y-4">
             <%= iosF.hidden_field :id %>
-            <div><%= iosF.labeled_textarea :release_notes, "What's New?" %></div>
-            <div><%= iosF.labeled_textarea :promo_text, "Promo Text" %></div>
+            <%= render partial: "shared/size_limited_textarea", locals: { form: iosF,
+                                                                          obj_method: :release_notes,
+                                                                          label_text: "Release Notes",
+                                                                          max_length: ios_max_length,
+                                                                          existing_value: ios_metadata.release_notes } %>
+            <%= render partial: "shared/size_limited_textarea", locals: { form: iosF,
+                                                                          obj_method: :promo_text,
+                                                                          label_text: "Promo Text",
+                                                                          max_length: promo_text_max_length,
+                                                                          existing_value: ios_metadata.promo_text } %>
             <div><%= iosF.labeled_textarea :keywords, "Keywords", readonly: true, disabled: true %></div>
             <div><%= iosF.labeled_textarea :description, "Description", readonly: true, disabled: true %></div>
           </div>
