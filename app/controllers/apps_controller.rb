@@ -37,7 +37,7 @@ class AppsController < SignedInApplicationController
       redirect_to app_path(@app), notice: "App was successfully created."
     else
       @apps = current_organization.apps
-      redirect_back fallback_location: apps_path, flash: {error: "#{@app.errors.full_messages.to_sentence}."}
+      redirect_back fallback_location: apps_path, flash: { error: "#{@app.errors.full_messages.to_sentence}." }
     end
   end
 
@@ -53,7 +53,7 @@ class AppsController < SignedInApplicationController
     if @app.destroy
       redirect_to apps_path, status: :see_other, notice: "App was deleted!"
     else
-      redirect_back fallback_location: apps_path, flash: {error: "Could not remove the app. #{@app.errors.full_messages.to_sentence}."}
+      redirect_back fallback_location: apps_path, flash: { error: "Could not remove the app. #{@app.errors.full_messages.to_sentence}." }
     end
   end
 
@@ -66,31 +66,18 @@ class AppsController < SignedInApplicationController
   end
 
   def search
-    all_releases
-    all_builds
+    set_search_params
+    set_query_pagination(Queries::Builds.count(app: @app, params: @query_params))
+    set_query_pagination(Queries::Releases.count(app: @app, params: @query_params))
 
-    respond_to do |format|
-      format.html {}
-      format.turbo_stream do
-        render turbo_stream: [
-          turbo_stream.update("all_releases",
-          partial: "apps/all_releases_search_results",
-          locals: { releases: @releases, pagy: @pagy, all_releases_params: @all_releases_params, app: @app, filters: @filters }),
-
-          turbo_stream.update("all_builds",
-          partial: "apps/all_builds_search_results",
-          locals: { builds: @builds, pagy: @pagy, all_builds_params: @all_builds_params, app: @app, filters: @filters })]
-      end
-    end
+    @builds = Queries::Builds.all(app: @app, params: @query_params)
+    @releases = Queries::Releases.all(app: @app, params: @query_params)
   end
 
-  def all_releases
-    @all_releases_params = filterable_params.except(:id)
-    gen_query_filters(:release_status, Release.statuses[:finished])
+  def set_search_params
+    @search_params = filterable_params.except(:id)
+    gen_query_filters(:release_status, ReleasePlatformRun.statuses[:finished])
     set_query_helpers
-    @query_params.add_search_query(params[:search_pattern]) if params[:search_pattern].present?
-    set_query_pagination(Queries::Releases.count(app: @app, params: @query_params))
-    @releases = Queries::Releases.all(app: @app, params: @query_params)
   end
 
   def refresh_external
