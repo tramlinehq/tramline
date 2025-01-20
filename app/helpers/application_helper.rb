@@ -61,14 +61,6 @@ module ApplicationHelper
     version.to_semverish.to_s(patch_glob: true)
   end
 
-  def text_field_classes(is_disabled:)
-    if is_disabled
-      "form-input w-full disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-600 disabled:cursor-not-allowed"
-    else
-      "form-input w-full"
-    end
-  end
-
   def ago_in_words(time, prefix: nil, suffix: "ago")
     return "N/A" unless time
     builder = ""
@@ -125,10 +117,6 @@ module ApplicationHelper
     return timestamp.strftime("#{timestamp.day.ordinalize} %b") if only_day
     return timestamp.strftime("%A #{timestamp.day.ordinalize} %B, %Y") if only_date
     timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year}#{" at %-l:%M %P" if with_time}")
-  end
-
-  def subtitle(text)
-    content_tag(:span, text, class: "text-sm text-slate-400")
   end
 
   def short_sha(sha)
