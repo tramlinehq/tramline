@@ -91,6 +91,10 @@ class PlayStoreSubmission < StoreSubmission
       transitions to: :failed
     end
 
+    event :retry_rollout, after_commit: :on_retry_rollout! do
+      transitions from: :failed, to: :prepared
+    end
+
     event :fail_with_sync_option, before: :set_failure_context do
       transitions from: [:preparing, :prepared, :failed_with_action_required, :finished_manually], to: :failed_with_action_required
     end
@@ -296,6 +300,10 @@ class PlayStoreSubmission < StoreSubmission
     event_stamp!(reason: :prepared, kind: :notice, data: stamp_data)
     config = conf.rollout_stages.presence || []
     create_play_store_rollout!(release_platform_run:, config:, is_staged_rollout: staged_rollout?)
+    play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_rollout?
+  end
+
+  def on_retry_rollout!
     play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_rollout?
   end
 
