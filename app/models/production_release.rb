@@ -48,7 +48,7 @@ class ProductionRelease < ApplicationRecord
   ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
   JOB_FREQUENCY = {
-    CrashlyticsIntegration => 60.minutes,
+    CrashlyticsIntegration => 120.minutes,
     BugsnagIntegration => 5.minutes
   }
 
