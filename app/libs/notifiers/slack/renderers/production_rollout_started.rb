@@ -5,7 +5,7 @@ module Notifiers
 
       def staged_rollout_started_text
         if @requires_review
-          "The rollout for release *#{@release_version} (#{@build_number})* has *started* with stage *#{@current_stage} (#{@rollout_percentage}%)*."
+          "The rollout for release *#{@release_version} (#{@build_number})* has *started*."
         else
           "The release *#{@release_version} (#{@build_number})* has been *sent for review*."
         end
