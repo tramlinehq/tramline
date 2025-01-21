@@ -6,6 +6,7 @@ class FetchHealthMetricsJob < ApplicationJob
     release = production_release.release
     return if release.stopped?
     return if release.finished? && production_release.beyond_monitoring_period?
+    return if production_release.stale?
 
     begin
       production_release.fetch_health_data!
