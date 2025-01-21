@@ -22,20 +22,28 @@ class ReleaseMetadata < ApplicationRecord
 
   IOS_NOTES_MAX_LENGTH = 4000
   ANDROID_NOTES_MAX_LENGTH = 500
+  PROMO_TEXT_MAX_LENGTH = 170
+  IOS_DENY_LIST = %w[<]
   # NOTE: Refer to https://www.regular-expressions.info/unicode.html for supporting more unicode characters
-  PLAINTEXT_REGEX = /\A[~₹!@#$%^&*()_+\-=\[\]{};':"\\|`,.\/?\s\p{Alnum}\p{P}\p{Zs}\p{Emoji_Presentation}\p{M}\p{N}]+\z/
-  DEFAULT_LOCALES = ["en-US", "en-GB", "hi-IN", "en-IN", "id"]
-  DEFAULT_LOCALE = DEFAULT_LOCALES.first
+  IOS_PLAINTEXT_REGEX = /\A(?!.*#{Regexp.union(IOS_DENY_LIST)})[\p{L}\p{N}\p{P}\p{Sm}\p{Sc}\p{Zs}\p{M}\n]+\z/
+  ANDROID_PLAINTEXT_REGEX = /\A[\p{L}\p{N}\p{P}\p{Sm}\p{Sc}\p{Zs}\p{M}\p{Emoji_Presentation}\p{Extended_Pictographic}\n]+\z/
+  DEFAULT_LOCALE = "en-US"
   DEFAULT_LANGUAGE = "English (United States)"
   DEFAULT_RELEASE_NOTES = "The latest version contains bug fixes and performance improvements."
 
   validates :release_notes,
-    format: {with: PLAINTEXT_REGEX, message: :no_special_characters, multiline: true}
+    format: {with: IOS_PLAINTEXT_REGEX, message: :no_special_characters_ios, denied_characters: IOS_DENY_LIST.join(", "), multiline: true},
+    if: :ios?
+  validates :release_notes,
+    format: {with: ANDROID_PLAINTEXT_REGEX, message: :no_special_characters_android, multiline: true},
+    if: :android?
   validates :promo_text,
-    format: {with: PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true, multiline: true},
-    length: {maximum: 170}
+    format: {with: IOS_PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true, multiline: true},
+    length: {maximum: PROMO_TEXT_MAX_LENGTH}
   validates :locale, uniqueness: {scope: :release_platform_run_id}
   validate :notes_length
+
+  delegate :ios?, :android?, to: :release_platform_run
 
   # NOTE: strip and normalize line endings across various OSes
   normalizes :release_notes, with: ->(notes) { notes.strip.gsub("\r\n", "\n") }
@@ -52,10 +60,8 @@ class ReleaseMetadata < ApplicationRecord
   end
 
   def notes_max_length
-    case release_platform_run.platform
-    when "android" then ANDROID_NOTES_MAX_LENGTH
-    when "ios" then IOS_NOTES_MAX_LENGTH
-    else raise ArgumentError, "Invalid platform"
-    end
+    return ANDROID_NOTES_MAX_LENGTH if android?
+    return IOS_NOTES_MAX_LENGTH if ios?
+    raise ArgumentError, "Invalid platform"
   end
 end

@@ -1,0 +1,21 @@
+<%= render FormComponent.new(model: [app, integration], url: url, method: :post, free_form: true) do |form| %>
+  <div class="grid grid-cols-1 gap-4 mt-4 p-4">
+    <% integrations_options = existing_integrations.each_with_index.map { |integration, i|
+      {
+        title: integration.app.name,
+        subtitle: integration.providable.connection_data,
+        icon: "integrations/logo_#{provider}.png",
+        opt_name: :existing_integration_id,
+        opt_value: integration.id,
+        options: {checked: i == 0}
+      }
+    } %>
+    <%= render OptionCardsComponent.new(form: form.F, options: integrations_options) %>
+    <%= form.F.hidden_field :category, value: category %>
+    <%= form.F.hidden_field "providable[type]", value: type %>
+  </div>
+
+  <% form.with_action do %>
+    <%= form.F.authz_submit "Save", "archive.svg", size: :sm %>
+  <% end %>
+<% end %>

@@ -6,6 +6,7 @@
 #  approved_at             :datetime
 #  config                  :jsonb
 #  failure_reason          :string
+#  last_stable_status      :string
 #  name                    :string
 #  parent_release_type     :string           indexed => [parent_release_id]
 #  prepared_at             :datetime
@@ -56,13 +57,13 @@ class TestFlightSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :preprocess do
-      transitions from: :created, to: :preprocessing
+    event :preprocess, after_commit: :on_preprocess! do
+      transitions from: [:created, :failed], to: :preprocessing
     end
 
     event :submit_for_review, after_commit: :on_submit_for_review! do
       after { set_submitted_at! }
-      transitions from: [:created, :preprocessing], to: :submitted_for_review
+      transitions from: [:created, :preprocessing, :failed], to: :submitted_for_review
     end
 
     event :reject, after_commit: :on_reject! do
@@ -70,7 +71,7 @@ class TestFlightSubmission < StoreSubmission
       transitions from: :submitted_for_review, to: :review_failed
     end
 
-    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
+    event :fail, before: :set_failure_context, after_commit: :on_fail! do
       transitions to: :failed
     end
 
@@ -79,6 +80,8 @@ class TestFlightSubmission < StoreSubmission
       transitions from: [:created, :preprocessing, :submitted_for_review], to: :finished
     end
   end
+
+  def retryable? = failed?
 
   def internal_channel?
     submission_channel.internal?
@@ -90,7 +93,6 @@ class TestFlightSubmission < StoreSubmission
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     # return mock_start_release_in_testflight if sandbox_mode?
     preprocess!
-    StoreSubmissions::TestFlight::FindBuildJob.perform_async(id)
   end
 
   def start_release!
@@ -169,6 +171,10 @@ class TestFlightSubmission < StoreSubmission
     self.store_status = release_info.attributes[:status]
     self.store_link = release_info.attributes[:external_link]
     save!
+  end
+
+  def on_preprocess!
+    StoreSubmissions::TestFlight::FindBuildJob.perform_async(id)
   end
 
   def on_reject!

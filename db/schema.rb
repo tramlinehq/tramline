@@ -856,6 +856,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_16_070908) do
     t.uuid "parent_release_id"
     t.jsonb "config"
     t.integer "sequence_number", limit: 2, default: 0, null: false
+    t.string "last_stable_status"
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
     t.index ["parent_release_type", "parent_release_id"], name: "index_store_submissions_on_parent_release"
     t.index ["release_platform_run_id"], name: "index_store_submissions_on_release_platform_run_id"

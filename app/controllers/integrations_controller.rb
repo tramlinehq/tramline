@@ -62,11 +62,11 @@ class IntegrationsController < SignedInApplicationController
   private
 
   def initiate_integration(existing_integration)
-    @app.integrations.find_or_initialize_by(
+    @app.integrations.build(
       category: @integration.category,
       status: Integration.statuses[:connected],
       metadata: existing_integration.metadata,
-      providable: existing_integration.providable
+      providable: existing_integration.providable.dup
     )
   end
 
@@ -79,7 +79,7 @@ class IntegrationsController < SignedInApplicationController
   end
 
   def set_existing_integration
-    @existing_integration = Integration.find_by(id: params[:id])
+    @existing_integration = Integration.find_by(id: params[:integration][:existing_integration_id])
   end
 
   def set_providable

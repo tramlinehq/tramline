@@ -6,6 +6,7 @@
 #  approved_at             :datetime
 #  config                  :jsonb
 #  failure_reason          :string
+#  last_stable_status      :string
 #  name                    :string
 #  parent_release_type     :string           indexed => [parent_release_id]
 #  prepared_at             :datetime
@@ -56,8 +57,8 @@ class GoogleFirebaseSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :preprocess do
-      transitions from: :created, to: :preprocessing
+    event :preprocess, after_commit: :on_preprocess! do
+      transitions from: [:created, :failed], to: :preprocessing
     end
 
     event :prepare, after_commit: :on_prepare! do
@@ -69,10 +70,12 @@ class GoogleFirebaseSubmission < StoreSubmission
       transitions to: :finished
     end
 
-    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
+    event :fail, before: :set_failure_context, after_commit: :on_fail! do
       transitions to: :failed
     end
   end
+
+  def retryable? = failed?
 
   def trigger!
     return unless actionable?
@@ -82,7 +85,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     # return mock_upload_to_firebase if sandbox_mode?
 
     preprocess!
-    StoreSubmissions::GoogleFirebase::UploadJob.perform_later(id)
   end
 
   def upload_build!
@@ -155,6 +157,10 @@ class GoogleFirebaseSubmission < StoreSubmission
       prepare!
       update_store_info!(release_info, build_status)
     end
+  end
+
+  def on_preprocess!
+    StoreSubmissions::GoogleFirebase::UploadJob.perform_later(id)
   end
 
   def on_prepare!
