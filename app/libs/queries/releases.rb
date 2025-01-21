@@ -43,7 +43,7 @@ class Queries::Releases
   end
 
   def count
-    selected_records.size
+    selected_records.length
   end
 
   memoize def selected_records
@@ -61,14 +61,15 @@ class Queries::Releases
       .left_joins(:all_commits)
       .left_joins(:pull_requests)
       .select(:id)
-      .select("commits.commit_hash as commit_hash")
-      .select("commits.message as commit_message")
-      .select("pull_requests.title as pull_request_title")
+      # FIXME: Avoid second ILIKE query for filtering commits and pull requests that match the search query
+      .select("array_agg(DISTINCT commits.message) FILTER (WHERE commits.message ILIKE '%#{params.search_query}%') as commit_messages")
+      .select("array_agg(DISTINCT pull_requests.title) FILTER (WHERE pull_requests.title ILIKE '%#{params.search_query}%') as pull_request_titles")
       .distinct
       .where(apps: {id: app.id})
       # TODO: Use pg_search instead of ILIKE
       .where("commits.message ILIKE ? OR pull_requests.title ILIKE ?", "%#{params.search_query}%", "%#{params.search_query}%")
       .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(BASE_ATTR_MAPPING)))
+      .group("releases.id")
   end
 
   class Queries::Release
@@ -78,10 +79,8 @@ class Queries::Releases
     attribute :release_status, :string
     attribute :release_slug, :string
     attribute :created_at, :datetime
-    attribute :commit_hash, :string
-    attribute :commit_message, :string
-    attribute :pull_request_title, :string
-    # attribute :release_changelog, :array
+    attribute :commit_messages, array: true
+    attribute :pull_request_titles, array: true
 
     def inspect
       format(
