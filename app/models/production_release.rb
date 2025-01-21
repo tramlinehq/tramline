@@ -131,6 +131,7 @@ class ProductionRelease < ApplicationRecord
     return if store_rollout.blank?
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
+    return if stale?
 
     release_data = monitoring_provider.find_release(platform, version_name, build_number)
 
