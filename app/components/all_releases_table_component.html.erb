@@ -46,8 +46,12 @@
           <td class="px-2 py-3">
             <div class="text-left">
               <ul class="list-disc list-inside">
-                <li><%= release.types %></li>
-                <li><%= release.matched_messages %></li>
+                <% release.pull_requests.each do |pr| %>
+                  <li><a href="<%= pr[:url] %>"><%= pr[:message] %></a></li>
+                <% end %>
+                <% release.commits.each do |commit| %>
+                  <li><a href="<%= commit[:url] %>"><%= commit[:message] %></a></li>
+                <% end %>
                 
               </ul>
             </div>

@@ -35,9 +35,18 @@ class Queries::Releases
         release_slug: record.slug,
         release_status: record.status,
         created_at: record.created_at,
-        types: record.types,
-        matched_messages: record.matched_messages
       }
+
+      # Zip the arrays together and separate by type
+      items = record.types.zip(record.matched_messages, record.urls)
+
+      attrs[:pull_requests] = items
+        .select { |type, _, _| type == "pull_request" }
+        .map { |_, message, url| { message: message, url: url } }
+
+      attrs[:commits] = items
+        .select { |type, _, _| type == "commit" }
+        .map { |_, message, url| { message: message, url: url } }
 
       Queries::Release.new(attrs)
     end
@@ -67,12 +76,16 @@ class Queries::Releases
       .where(trains: { app_id: app.id })
 
     filtered_commits = Commit
-      .select(:id, "'commit' AS type", :release_id, "message AS matched_message", "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
+      .select(:id, "'commit' AS type", :release_id, "message AS matched_message", 
+              :url,
+              "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON commits.release_id = relevant_releases.id")
       .where(commits[:message].matches("%#{params.search_query}%"))
 
     filtered_pull_requests = PullRequest
-      .select(:id, "'pull_request' AS type", :release_id, "title AS matched_message", "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
+      .select(:id, "'pull_request' AS type", :release_id, "title AS matched_message", 
+              :url,
+              "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON pull_requests.release_id = relevant_releases.id")
       .where(pull_requests[:title].matches("%#{params.search_query}%"))
 
@@ -85,9 +98,10 @@ class Queries::Releases
         filtered_commits_and_pull_requests: filtered_commits.union(filtered_pull_requests)
       )
       .from("filtered_commits_and_pull_requests")
-      .select(:release_id, 
+      .select(:release_id,
         "array_agg(type) as types",
         "array_agg(matched_message) as matched_messages",
+        "array_agg(url) as urls",
         :slug, 
         :status, 
         :created_at)
@@ -101,9 +115,8 @@ class Queries::Releases
     attribute :release_status, :string
     attribute :release_slug, :string
     attribute :created_at, :datetime
-    attribute :matched_messages, array: true
-    attribute :types, array: true
-    attribute :pull_requests, Queries::PullRequest
+    attribute :pull_requests, array: true, default: [] # Queries::PullRequest
+    attribute :commits, array: true, default: [] # Queries::Commit
 
     def inspect
       format(
@@ -118,6 +131,42 @@ class Queries::Releases
   def select_attrs(attrs_mapping)
     attrs_mapping.map do |attr_name, column|
       column.as(attr_name.to_s)
+    end
+  end
+
+  class Queries::PullRequest
+    include ActiveModel::Model
+    include ActiveModel::Attributes
+
+    attribute :title, :string
+    attribute :number, :integer
+    attribute :state, :string
+    attribute :url, :string
+    attribute :phase, :string
+
+    def inspect
+      format(
+        "#<Queries::PullRequest %{attributes} >",
+        attributes: attributes.map { |key, value| "#{key}=#{value}" }.join(" ")
+      )
+    end
+  end
+
+  class Queries::Commit
+    include ActiveModel::Model
+    include ActiveModel::Attributes
+
+    attribute :commit_hash, :string
+    attribute :message, :string
+    attribute :author_name, :string
+    attribute :url, :string
+    attribute :timestamp, :datetime
+
+    def inspect
+      format(
+        "#<Queries::Commit %{attributes} >",
+        attributes: attributes.map { |key, value| "#{key}=#{value}" }.join(" ")
+      )
     end
   end
 end 
