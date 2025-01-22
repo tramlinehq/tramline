@@ -115,3 +115,5 @@ group :test do
   gem "webdrivers"
   gem "selenium-webdriver"
 end
+
+gem "active_record_union", "~> 1.3"
