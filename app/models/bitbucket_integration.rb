@@ -40,6 +40,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def complete_access
+    return if oauth_access_token.present? && oauth_refresh_token.present?
     set_tokens(Installations::Bitbucket::Api.oauth_access_token(code, redirect_uri))
   end
 
@@ -311,7 +312,7 @@ class BitbucketIntegration < ApplicationRecord
     with_api_retries { installation.get_pipeline(code_repository_name, pipeline_id) }
   end
 
-  def get_artifact_v2(_, _, external_workflow_run_id:)
+  def get_artifact(_, _, external_workflow_run_id:)
     raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if external_workflow_run_id.blank?
 
     # bitbucket expects uuids surrounded by curly braces, like {uuid} in all api requests
@@ -329,10 +330,6 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def artifact_url
-    raise Integrations::UnsupportedAction
-  end
-
-  def get_artifact(_, _)
     raise Integrations::UnsupportedAction
   end
 

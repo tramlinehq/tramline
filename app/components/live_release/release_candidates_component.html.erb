@@ -1,0 +1,34 @@
+<%= render LiveRelease::ContainerComponent.new(release, title: release.train.name) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "Release Candidate", icon: live_release_tab_configuration.dig(:stability, :release_candidate, :icon)) do %>
+    <%= render PlatformViewComponent.new(release) do |component| %>
+      <% component.runs do |run| %>
+        <div class="flex flex-col gap-5">
+          <% beta_release = latest_beta_release(run) %>
+          <%= render LiveRelease::PreProdRelease::RcHeaderComponent.new(run, beta_release) %>
+
+          <% if beta_release.present? %>
+            <%= render LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
+          <% else %>
+            <%= render LiveRelease::PreProdRelease::PrepareReleaseCandidateComponent.new(run) %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% component.runs do |run| %>
+        <% previous_betas = previous_beta_releases(run) %>
+        <% if previous_betas.present? %>
+          <%= render SectionComponent.new(title: "Other builds (#{previous_betas.size})", style: :titled, size: :compact) do %>
+            <div class="flex flex-col item-gap-default">
+              <% previous_betas.each do |beta_release| %>
+                <%= render LiveRelease::PreProdRelease::PreviousReleaseComponent.new(beta_release) %>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <div><!-- grid maintenance --></div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

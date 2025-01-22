@@ -1,5 +1,5 @@
 <% if tooltip_text %>
-  <%= render V2::TooltipComponent.new(tooltip_text, placement: local_assigns.fetch(:tooltip_placement, "top")) do |tooltip| %>
+  <%= render TooltipComponent.new(tooltip_text, placement: local_assigns.fetch(:tooltip_placement, "top")) do |tooltip| %>
     <% tooltip.with_body do %>
       <%= render partial: "shared/show_time_ago_body", locals: {time:, tick:} %>
     <% end %>
@@ -7,4 +7,3 @@
 <% else %>
   <%= render partial: "shared/show_time_ago_body", locals: {time:, tick:} %>
 <% end %>
-

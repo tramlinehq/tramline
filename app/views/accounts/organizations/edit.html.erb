@@ -1,4 +1,4 @@
-<%= render V2::TabbedContainerComponent.new(title: @organization.name,
+<%= render TabbedContainerComponent.new(title: @organization.name,
                                             turbo_frame: dom_id(@organization, :edit_org),
                                             tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button %>

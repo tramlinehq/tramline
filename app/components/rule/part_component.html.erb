@@ -1,0 +1,16 @@
+<li class="mb-2 last:mb-0 ms-4">
+  <%= render IconComponent.new("circle_chevron_right.svg", size: :md, classes: "absolute bg-white mt-1 -start-2 ring-4 ring-white text-main-300") %>
+  <div class="flex flex-col gap-2 shrink items-start">
+    <div class="flex flex-row gap-2 items-center">
+      <div class="px-4 tracking-wide rounded-sm text-sm font-semibold uppercase bg-indigo-400 text-white">
+        <%= condition_text %>
+      </div>
+      <% if condition_subtitle %>
+        <span class="text-xs text-secondary">
+          <%= condition_subtitle %>
+        </span>
+      <% end %>
+    </div>
+    <%= content %>
+  </div>
+</li>

@@ -78,12 +78,12 @@ describe Coordinators::Signals do
     let(:workflow_run) { create(:workflow_run, :rc, :finished) }
 
     before do
-      allow(V2::TriggerSubmissionsJob).to receive(:perform_later)
+      allow(TriggerSubmissionsJob).to receive(:perform_later)
     end
 
     it "triggers the submissions for the triggering release of the workflow run" do
       described_class.workflow_run_finished!(workflow_run.id)
-      expect(V2::TriggerSubmissionsJob).to have_received(:perform_later).with(workflow_run.id).once
+      expect(TriggerSubmissionsJob).to have_received(:perform_later).with(workflow_run.id).once
     end
   end
 end

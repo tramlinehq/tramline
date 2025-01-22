@@ -4,9 +4,25 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*Release <%= @release_version %>* is complete! :confetti_ball:"
+        "text": "Release *<%= @release_version %>* is complete! :confetti_ball:"
       }
     },
+    <% if cross_platform? %>
+    {
+      "type": "context",
+      "elements": [{
+        "type": "mrkdwn",
+        "text": "<%= android_finished_text %>"
+      }]
+    },
+    {
+      "type": "context",
+      "elements": [{
+        "type": "mrkdwn",
+        "text": "<%= ios_finished_text %>"
+      }]
+    },
+    <% end %>
     {
       "type": "section",
       "text": {

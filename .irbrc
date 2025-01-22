@@ -12,3 +12,4 @@ def Wrun(id) = WorkflowRun.find(id)
 def B(id) = Build.find(id)
 def Prun(id) = ReleasePlatformRun(id)
 def Csha(sha) = Commit.all.find { |c| c.short_sha == sha }
+def U(email) = Accounts::User.find_by_unique_authn_id(email)

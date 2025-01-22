@@ -1,0 +1,10 @@
+<%= render ButtonComponent.new(scheme: :light,
+                                   options: path,
+                                   type: :link,
+                                   size: :xxs,
+                                   authz: false,
+                                   html_options: { class: "-ml-0.5",
+                                                   data: link_data }) do |b| %>
+  <% b.with_tooltip(tooltip_text, placement: "right") %>
+  <% b.with_icon("arrow_left.svg", size: :md) %>
+<% end %>

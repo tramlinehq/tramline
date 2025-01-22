@@ -3,7 +3,7 @@
 class TimelineComponent < ViewComponent::Base
   include ApplicationHelper
 
-  DEFAULT_TRUNCATE = 2
+  DEFAULT_TRUNCATE = 3
   EVENT_TYPE = {
     success: "bg-green-500 border-white dark:border-main-900 dark:bg-green-500",
     error: "bg-red-500 border-white dark:border-main-900 dark:bg-red-500",

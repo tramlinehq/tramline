@@ -29,7 +29,7 @@ class Coordinators::FinalizeRelease
         result = HANDLERS[train.branching_strategy].call(release)
         release.reload
 
-        if result.ok? && release.pull_requests.open.none?
+        if result.ok? && release.pull_requests.automatic.open.none?
           release.finish!
           on_finish!
         else

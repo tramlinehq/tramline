@@ -26,3 +26,6 @@ application.register("tabs", Tabs)
 
 import { Popover } from "tailwindcss-stimulus-components"
 application.register("popover", Popover)
+
+import TextareaAutogrow from "stimulus-textarea-autogrow"
+application.register("textarea-autogrow", TextareaAutogrow)

@@ -69,7 +69,7 @@ class PlayStoreRollout < StoreRollout
         complete!
         event_stamp!(reason: :completed, kind: :success, data: stamp_data)
       else
-        fail!(result.error, review_failure: !retry_on_review_fail)
+        fail!(result.error)
       end
     end
   end
@@ -86,7 +86,7 @@ class PlayStoreRollout < StoreRollout
           fully_release!
           return
         end
-        fail!(result.error, review_failure: !retry_on_review_fail)
+        fail!(result.error)
       end
     end
   end
@@ -111,7 +111,7 @@ class PlayStoreRollout < StoreRollout
     with_lock do
       return unless may_halt?
 
-      result = provider.halt_release(submission_channel_id, build_number, version_name, last_rollout_percentage, retry_on_review_fail: true)
+      result = provider.halt_release(submission_channel_id, build_number, release_version, last_rollout_percentage, retry_on_review_fail: true)
       if result.ok?
         halt!
       else
@@ -141,24 +141,17 @@ class PlayStoreRollout < StoreRollout
 
   private
 
-  def fail!(error, review_failure: false)
+  def fail!(error)
     elog(error)
     errors.add(:base, error)
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
 
-    if review_failure
-      event_stamp!(reason: :failed, kind: :error, data: stamp_data)
-      play_store_submission.fail_with_review_rejected!(error)
-      return
-    end
-
-    if play_store_submission.auto_rollout?
-      event_stamp!(reason: :failed, kind: :error, data: stamp_data)
-      play_store_submission.fail_with_error!(error)
-    end
+    return if play_store_submission.fail_with_review_rejected!(error)
+    play_store_submission.fail_with_error!(error) if play_store_submission.auto_rollout?
   end
 
   def rollout(value, retry_on_review_fail: false)
-    provider.rollout_release(submission_channel_id, build_number, version_name, value, nil, retry_on_review_fail:)
+    provider.rollout_release(submission_channel_id, build_number, release_version, value, nil, retry_on_review_fail:)
   end
 
   def on_start!
