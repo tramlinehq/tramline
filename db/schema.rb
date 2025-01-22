@@ -983,6 +983,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_05_122540) do
     t.bigint "workflow_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["workflow_id", "name"], name: "index_workflow_config_parameters_on_workflow_id_and_name", unique: true
     t.index ["workflow_id"], name: "index_workflow_config_parameters_on_workflow_id"
   end
 

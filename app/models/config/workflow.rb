@@ -28,7 +28,7 @@ class Config::Workflow < ApplicationRecord
       name: name,
       artifact_name_pattern: artifact_name_pattern,
       kind: kind,
-      parameters: parameters.map(&:as_json),
+      parameters: parameters.map(&:as_json)
     }
   end
 
