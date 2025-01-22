@@ -429,7 +429,9 @@ class Release < ApplicationRecord
         release_version: release_version,
         is_release_unhealthy: unhealthy?,
         release_completed_at: completed_at,
-        release_started_at: scheduled_at
+        release_started_at: scheduled_at,
+        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?),
+        final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?)
       }
     )
   end

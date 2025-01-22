@@ -44,3 +44,4 @@ pin "@sentry-internal/feedback", to: "https://ga.jspm.io/npm:@sentry-internal/fe
 pin "@sentry-internal/replay", to: "https://ga.jspm.io/npm:@sentry-internal/replay@8.33.1/build/npm/esm/index.js"
 pin "@sentry-internal/replay-canvas", to: "https://ga.jspm.io/npm:@sentry-internal/replay-canvas@8.33.1/build/npm/esm/index.js"
 pin "tom-select", to: "https://ga.jspm.io/npm:tom-select@2.3.1/dist/js/tom-select.complete.js"
+pin "stimulus-textarea-autogrow", to: "https://ga.jspm.io/npm:stimulus-textarea-autogrow@4.1.0/dist/stimulus-textarea-autogrow.mjs"

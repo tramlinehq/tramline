@@ -48,7 +48,7 @@ class ProductionRelease < ApplicationRecord
   ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
   JOB_FREQUENCY = {
-    CrashlyticsIntegration => 60.minutes,
+    CrashlyticsIntegration => 120.minutes,
     BugsnagIntegration => 5.minutes
   }
 
@@ -131,6 +131,7 @@ class ProductionRelease < ApplicationRecord
     return if store_rollout.blank?
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
+    return if stale?
 
     release_data = monitoring_provider.find_release(platform, version_name, build_number)
 

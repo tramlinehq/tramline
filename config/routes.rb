@@ -128,10 +128,8 @@ Rails.application.routes.draw do
     end
 
     resources :integrations, only: %i[index create destroy] do
-      member do
-        post :reuse
-      end
       collection do
+        post :reuse
         get :connect, to: "integrations#connect", as: :connect
 
         resource :google_play_store, only: [:create],
