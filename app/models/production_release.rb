@@ -120,6 +120,8 @@ class ProductionRelease < ApplicationRecord
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
+    # NOTE: Disable all Crashlytics query temporarily
+    return if monitoring_provider.is_a?(CrashlyticsIntegration)
     FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[monitoring_provider.class])
   end
 
