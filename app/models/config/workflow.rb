@@ -40,7 +40,9 @@ class Config::Workflow < ApplicationRecord
   def self.from_json(json)
     workflow = new(json.except("id", "parameters")) # Exclude 'id' to ensure we don't overwrite an existing object
     workflow.identifier = json["id"]
-    workflow.parameters = json["parameters"].map { |parameter| ::Config::WorkflowParameter.new(parameter) }
+    if json["parameters"].present?
+      workflow.parameters = json["parameters"].map { |parameter| ::Config::WorkflowParameter.new(parameter) }
+    end
     workflow
   end
 end
