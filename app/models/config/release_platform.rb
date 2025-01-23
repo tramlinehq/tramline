@@ -157,7 +157,7 @@ class Config::ReleasePlatform < ApplicationRecord
 
   # Ensure that multiple workflows have unique identifiers
   def workflow_identifiers
-    if internal_workflow&.identifier == release_candidate_workflow&.identifier
+    if release_candidate_workflow&.parameters.blank? && internal_workflow&.identifier == release_candidate_workflow&.identifier
       errors.add(:base, :unique_workflows)
     end
   end
