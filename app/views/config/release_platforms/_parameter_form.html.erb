@@ -5,12 +5,12 @@
   <%= parameter_form.text_field_without_label :value, "Parameter value" %>
 
   <div class="flex item-gap-default ml-auto">
-    <%= render V2::ButtonComponent.new(
+    <%= render ButtonComponent.new(
       scheme: :naked_icon,
       type: :action,
       size: :none,
       html_options: {data: {action: "nested-form-ext#remove"}}) do |b|
-      b.with_icon("v2/trash.svg", size: :md)
+      b.with_icon("trash.svg", size: :md)
     end %>
   </div>
 </div>
