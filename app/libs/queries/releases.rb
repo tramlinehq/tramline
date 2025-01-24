@@ -32,16 +32,37 @@ class Queries::Releases
         created_at: record.created_at,
       }
 
-      # Zip the arrays together and separate by type
-      items = record.types.zip(record.matched_messages, record.urls)
+      items = record.types.zip(record.matched_messages, record.additional_data)
 
       attrs[:pull_requests] = items
-        .select { |type, _, _| type == "pull_request" }
-        .map { |_, message, url| { message: message, url: url } }
+        .select { |type, _, _, _| type == "pull_request" }
+        .map do |_, message, data|
+          {
+            title: message,
+            url: data['url'],
+            state: data['state'],
+            number: data['number'],
+            source: data['source'],
+            base_ref: data['base_ref'],
+            head_ref: data['head_ref'],
+            commit: nil, # TODO: we get the id, so need to construct Commit
+            labels: data['labels']
+          }
+        end
 
       attrs[:commits] = items
-        .select { |type, _, _| type == "commit" }
-        .map { |_, message, url| { message: message, url: url } }
+        .select { |type, _, _, _| type == "commit" }
+        .map do |_, message, data|
+          {
+            message: message,
+            url: data['url'],
+            author_name: data['author_name'],
+            commit_hash: data['commit_hash'],
+            timestamp: data['timestamp'],
+            author_email: data['author_email'],
+            author_login: data['author_login']
+          }
+        end
 
       Queries::Release.new(attrs)
     end
@@ -67,17 +88,18 @@ class Queries::Releases
       .where(trains: { app_id: app.id })
 
     filtered_commits = Commit
-      .select(:id, "'commit' AS type", :release_id, "message AS matched_message", 
-              :url,
+      .select(:id, "'commit' AS type", :release_id, 
+              "message AS matched_message", 
+              "jsonb_build_object('url', url, 'author_name', author_name, 'commit_hash', commit_hash, 'timestamp', commits.created_at, 'author_email', author_email, 'author_login', author_login) AS additional_data",
               "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON commits.release_id = relevant_releases.id")
       .search_by_message(params.search_query)
       .with_pg_search_highlight
 
-
     filtered_pull_requests = PullRequest
-      .select(:id, "'pull_request' AS type", :release_id, "title AS matched_message", 
-              :url,
+      .select(:id, "'pull_request' AS type", :release_id, 
+              "title AS matched_message", 
+              "jsonb_build_object('url', url, 'state', state, 'number', number, 'source', source, 'base_ref', base_ref, 'head_ref', head_ref, 'commit', commit_id, 'labels', labels) AS additional_data",
               "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON pull_requests.release_id = relevant_releases.id")
       .search_by_title(params.search_query)
@@ -95,7 +117,7 @@ class Queries::Releases
       .select(:release_id,
         "array_agg(type) as types",
         "array_agg(pg_search_highlight) as matched_messages",
-        "array_agg(url) as urls",
+        "array_agg(additional_data) as additional_data",
         :slug, 
         :status, 
         :created_at)
@@ -137,6 +159,11 @@ class Queries::Releases
     attribute :state, :string
     attribute :url, :string
     attribute :phase, :string
+    attribute :source, :string
+    attribute :base_ref, :string
+    attribute :head_ref, :string
+    attribute :commit, :string
+    attribute :labels, array: true
 
     def inspect
       format(
@@ -153,8 +180,34 @@ class Queries::Releases
     attribute :commit_hash, :string
     attribute :message, :string
     attribute :author_name, :string
+    attribute :author_email, :string
+    attribute :author_login, :string
     attribute :url, :string
     attribute :timestamp, :datetime
+
+    def author_url
+      nil # Component will handle nil gracefully
+    end
+
+    def author_link
+      author_url
+    end
+
+    def author_info
+      author_name
+    end
+
+    def short_sha
+      commit_hash&.first(7)
+    end
+
+    def backmerge_failure?
+      false
+    end
+
+    def show_avatar?
+      false # Or true if you want to show avatars
+    end
 
     def inspect
       format(
