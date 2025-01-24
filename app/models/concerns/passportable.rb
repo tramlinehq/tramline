@@ -52,10 +52,10 @@ module Passportable
   def author_metadata
     unless automatic?
       {
-        name: Current.user.preferred_name || Current.user.full_name,
-        full_name: Current.user.full_name,
-        role: Current.user.role_for(Current.organization),
-        email: Current.user.email
+        "name" => Current.user.preferred_name || Current.user.full_name,
+        "full_name" => Current.user.full_name,
+        "role" => Current.user.role_for(Current.organization),
+        "email" => Current.user.email
       }
     end
   end

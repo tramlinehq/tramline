@@ -278,11 +278,11 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def poll_external_status
-    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, {"can_retry" => true})
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, true)
   end
 
   def update_external_status
-    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, {"can_retry" => false})
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, false)
   end
 
   def on_start_prepare!

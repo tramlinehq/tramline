@@ -57,6 +57,7 @@ class Coordinators::ProcessCommits
 
   def commit_params(attributes)
     attributes
+      .with_indifferent_access
       .slice(:commit_hash, :message, :timestamp, :author_name, :author_email, :author_login, :url)
       .merge(release:)
       .merge(parents: commit_log.find { _1[:commit_hash] == attributes[:commit_hash] }&.dig(:parents))
@@ -66,6 +67,7 @@ class Coordinators::ProcessCommits
   # We fudge it to add 100 ms after the original timestamp
   # This can happen in a rare scenario when all the commits are on the same second
   def fudge_timestamp(commit)
+    commit = commit.with_indifferent_access
     original_time = Time.zone.parse(commit[:timestamp].to_s)
     new_time = original_time + 0.1
     commit[:timestamp] = new_time.iso8601(5) # 5 digit ms precision
@@ -92,8 +94,8 @@ class Coordinators::ProcessCommits
 
   def attempt_backmerge!(created_head_commit, created_rest_commits)
     return unless created_head_commit
-    Commit::ContinuousBackmergeJob.perform_async(created_head_commit.id, {"is_head_commit" => true})
-    created_rest_commits.each { |c| Commit::ContinuousBackmergeJob.perform_async(c.id, {"is_head_commit" => false}) }
+    Commit::ContinuousBackmergeJob.perform_async(created_head_commit.id, true)
+    created_rest_commits.each { |c| Commit::ContinuousBackmergeJob.perform_async(c.id, false) }
   end
 
   delegate :train, to: :release

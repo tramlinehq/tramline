@@ -6,7 +6,7 @@ class Coordinators::Webhooks::Push < Coordinators::Webhooks::Base
     return Response.new(:accepted, "Skipping the commit") unless relevant_commit?
     return Response.new(:accepted, "Invalid repo/branch") unless valid_repo_and_branch?
 
-    Webhooks::PushJob.perform_async(release.id, head_commit, rest_commits)
+    Webhooks::PushJob.perform_async(release.id, head_commit.to_h, rest_commits.map(&:to_h))
     Response.new(:accepted)
   end
 
