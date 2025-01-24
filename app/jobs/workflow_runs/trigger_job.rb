@@ -1,6 +1,4 @@
 class WorkflowRuns::TriggerJob < ApplicationJob
-  include Loggable
-
   queue_as :high
 
   def perform(workflow_run_id, retrigger: false)

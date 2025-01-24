@@ -1,5 +1,7 @@
 class ApplicationJob
   include Sidekiq::Job
+  include Loggable
+  include Backoffable
 
   Signal = Coordinators::Signals
   Action = Coordinators::Actions

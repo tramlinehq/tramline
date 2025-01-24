@@ -1,7 +1,5 @@
 class Commit::ContinuousBackmergeJob < ApplicationJob
   MAX_RETRIES = 32
-  include Loggable
-  include Backoffable
   queue_as :high
 
   def perform(commit_id, is_head_commit = false, count = 0)

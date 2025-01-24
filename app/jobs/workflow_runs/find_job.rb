@@ -1,7 +1,4 @@
 class WorkflowRuns::FindJob < ApplicationJob
-  extend Loggable
-  extend Backoffable
-
   queue_as :high
   sidekiq_options retry: 25
 

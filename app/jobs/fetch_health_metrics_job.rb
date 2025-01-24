@@ -1,6 +1,4 @@
 class FetchHealthMetricsJob < ApplicationJob
-  queue_as :high
-
   def perform(production_release_id, frequency)
     production_release = ProductionRelease.find(production_release_id)
     release = production_release.release

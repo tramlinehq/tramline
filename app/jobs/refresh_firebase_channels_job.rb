@@ -1,5 +1,4 @@
 class RefreshFirebaseChannelsJob < ApplicationJob
-  include Loggable
   queue_as :high
 
   def perform(fad_integration_id)

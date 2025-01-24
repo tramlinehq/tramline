@@ -1,7 +1,4 @@
 class StoreSubmissions::AppStore::UpdateExternalReleaseJob < ApplicationJob
-  include Loggable
-
-  queue_as :high
   sidekiq_options retry: 2000
 
   def perform(submission_id, can_retry = true)

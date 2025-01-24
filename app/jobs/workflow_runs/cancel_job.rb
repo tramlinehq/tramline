@@ -1,6 +1,4 @@
 class WorkflowRuns::CancelJob < ApplicationJob
-  extend Backoffable
-
   WorkflowRunNotFound = Class.new(StandardError)
 
   sidekiq_options queue: :high, retry: 500

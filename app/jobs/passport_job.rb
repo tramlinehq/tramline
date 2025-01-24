@@ -1,7 +1,4 @@
 class PassportJob < ApplicationJob
-  include Loggable
-  queue_as :high
-
   def perform(stampable_id, stampable_type, params = {})
     stampable = begin
       stampable_type.constantize.find(stampable_id)

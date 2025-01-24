@@ -1,5 +1,5 @@
 class StoreSubmissions::AppStore::RemoveFromReviewJob < ApplicationJob
-  extend Backoffable
+  queue_as :high
 
   def perform(submission_id)
     submission = AppStoreSubmission.find(submission_id)
