@@ -210,6 +210,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_16_070908) do
     t.boolean "backmerge_failure", default: false
     t.string "author_login"
     t.jsonb "parents"
+    t.string "tag_name"
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
     t.index ["commit_hash", "release_id"], name: "index_commits_on_commit_hash_and_release_id", unique: true
     t.index ["release_id", "timestamp"], name: "index_commits_on_release_id_and_timestamp"

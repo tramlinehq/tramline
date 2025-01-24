@@ -10,6 +10,8 @@ class Coordinators::ApplyCommit
 
   def call
     return unless commit.applicable?
+    commit.create_tag! if train.tag_applied_commits?
+
     release.release_platform_runs.each do |run|
       next unless run.on_track?
 
@@ -44,4 +46,5 @@ class Coordinators::ApplyCommit
   end
 
   attr_reader :release, :commit
+  delegate :train, to: :release
 end

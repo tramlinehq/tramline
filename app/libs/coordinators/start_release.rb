@@ -69,6 +69,7 @@ class Coordinators::StartRelease
   end
 
   def release_branch
+    return train.working_branch if train.trunk?
     return new_branch_name(hotfix: true) if hotfix_from_new_branch? && create_branches?
     return existing_hotfix_branch if hotfix_from_previous_branch?
     return new_branch_name if create_branches?

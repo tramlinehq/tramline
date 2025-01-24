@@ -11,6 +11,7 @@ class Coordinators::FinalizeRelease
   end
 
   HANDLERS = {
+    "trunk" => Trunk,
     "almost_trunk" => AlmostTrunk,
     "parallel_working" => ParallelBranches,
     "release_backmerge" => ReleaseBackMerge
