@@ -1,0 +1,32 @@
+<% unless ready_for_beta_release? %>
+  <%= render EmptyStateComponent.new(
+    title: "Not ready yet",
+    text: "Please wait for internal builds to be available before starting.",
+    banner_image: "drill.svg",
+    type: :subdued) %>
+<% end %>
+
+<% if release_platform_run.hotfix? %>
+  <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "Changes were not automatically applied for the hotfix") do %>
+    <div class="flex flex-col gap-2">
+      <span class="text-sm">There have been no new changes in this hotfix release branch. To rebuild the latest change, create the RC manually.</span>
+    </div>
+  <% end %>
+<% end %>
+
+<% if create_new_rc? %>
+  <%= render CardComponent.new(title: "Latest Change") do |card| %>
+    <% card.with_action do %>
+      <%= render ButtonComponent.new(label: "Create Release Candidate",
+                                         scheme: :default,
+                                         type: :button,
+                                         options: create_release_candidate_path,
+                                         size: :xxs,
+                                         html_options: confirmation_opts) %>
+    <% end %>
+
+    <div class="flex flex-col section-gap-default">
+      <%= render CommitComponent.new(commit: applicable_commit, detailed: false) %>
+    </div>
+  <% end %>
+<% end %>

@@ -1,4 +1,4 @@
-<%= render V2::FormComponent.new(model: invite,
+<%= render FormComponent.new(model: invite,
                                  url: accounts_organization_invitations_path(invite.organization, invite),
                                  method: :post) do |f| %>
   <% f.with_section(heading: "Basic") do |section| %>

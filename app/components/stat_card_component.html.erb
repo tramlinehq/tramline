@@ -27,13 +27,13 @@
       </div>
 
       <% if external_url %>
-        <%= render V2::ButtonComponent.new(
+        <%= render ButtonComponent.new(
           scheme: :naked_icon,
           options: external_url,
           size: :none,
           authz: false,
           type: :link_external) do |b|
-          b.with_icon("v2/arrow_right.svg", size: :sm)
+          b.with_icon("arrow_right.svg", size: :sm)
           b.with_tooltip(external_url_title, placement: "top")
         end %>
       <% end %>

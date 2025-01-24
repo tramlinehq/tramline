@@ -94,7 +94,7 @@ class Queries::DevopsReport
       .filter(&:approved?)
       .sort_by(&:created_at)
       .last(last)
-      .group_by(&:version_name)
+      .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
       .transform_values { _1.flat_map(&:review_time) }
       .transform_values { {time: _1.sum(&:seconds) / _1.size.to_f} }

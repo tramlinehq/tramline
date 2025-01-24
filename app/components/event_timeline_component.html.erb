@@ -1,3 +1,5 @@
+<div class="text-xs text-secondary text-center my-4">† All timestamps are in the configured <code><%= tz %></code> timezone for the app</div>
+
 <% events_by_days.each_with_index do |(day, events), index| %>
   <div class="relative" data-controller="reveal" data-reveal-toggle-keys-value="e">
     <% if cross_platform_app? %>
@@ -5,7 +7,7 @@
     <% end %>
 
     <div class="flex flex-col items-center mb-2 bg-backgroundLight dark:bg-backgroundDark py-1">
-      <%= render V2::IconComponent.new("calendar_time.svg", size: :xl_3) %>
+      <%= render IconComponent.new("calendar_time.svg", size: :xl_3) %>
       <time class="text-xl font-semibold text-main-900"><%= day %></time>
       <%= toggle_for(hide_timeline?(index)) %>
     </div>

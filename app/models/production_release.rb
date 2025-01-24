@@ -48,7 +48,7 @@ class ProductionRelease < ApplicationRecord
   ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
   JOB_FREQUENCY = {
-    CrashlyticsIntegration => 30.minutes,
+    CrashlyticsIntegration => 120.minutes,
     BugsnagIntegration => 5.minutes
   }
 
@@ -59,7 +59,7 @@ class ProductionRelease < ApplicationRecord
   def release_notes? = true
 
   def version_bump_required?
-    return false if release_platform_run.release_version.to_semverish > build.version_name.to_semverish
+    return false if release_platform_run.release_version.to_semverish > build.release_version.to_semverish
     return true if finished?
     return true if active?
     return true if store_submission.post_review?
@@ -75,7 +75,6 @@ class ProductionRelease < ApplicationRecord
   end
 
   def mark_as_stale!
-    return if finished?
     update!(status: STATES[:stale])
   end
 
@@ -121,7 +120,9 @@ class ProductionRelease < ApplicationRecord
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
-    V2::FetchHealthMetricsJob.perform_async(id, JOB_FREQUENCY[monitoring_provider.class])
+    # NOTE: Disable all Crashlytics query temporarily
+    return if monitoring_provider.is_a?(CrashlyticsIntegration)
+    FetchHealthMetricsJob.perform_async(id, JOB_FREQUENCY[monitoring_provider.class])
   end
 
   def beyond_monitoring_period?
@@ -132,6 +133,9 @@ class ProductionRelease < ApplicationRecord
     return if store_rollout.blank?
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
+    # NOTE: Disable all Crashlytics query temporarily
+    return if monitoring_provider.is_a?(CrashlyticsIntegration)
+    return if stale?
 
     release_data = monitoring_provider.find_release(platform, version_name, build_number)
 

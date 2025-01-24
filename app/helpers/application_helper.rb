@@ -61,14 +61,6 @@ module ApplicationHelper
     version.to_semverish.to_s(patch_glob: true)
   end
 
-  def text_field_classes(is_disabled:)
-    if is_disabled
-      "form-input w-full disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-600 disabled:cursor-not-allowed"
-    else
-      "form-input w-full"
-    end
-  end
-
   def ago_in_words(time, prefix: nil, suffix: "ago")
     return "N/A" unless time
     builder = ""
@@ -127,10 +119,6 @@ module ApplicationHelper
     timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year}#{" at %-l:%M %P" if with_time}")
   end
 
-  def subtitle(text)
-    content_tag(:span, text, class: "text-sm text-slate-400")
-  end
-
   def short_sha(sha)
     sha[0, 7]
   end
@@ -150,12 +138,8 @@ module ApplicationHelper
   def page_title(page_name, current_organization, app, release)
     suffix = I18n.t("page_titles.default_suffix", default: "Tramline")
     middle_section = app&.name || current_organization&.name
-    prefix = if release&.original_release_version.present?
-      release.original_release_version
-    else
-      page_name || middle_section
-    end
+    prefix = release&.release_version.presence || page_name || middle_section
 
-    [prefix.titleize, middle_section.titleize, suffix.titleize].compact.join(" | ")
+    [prefix&.titleize, middle_section&.titleize, suffix&.titleize].compact.join(" | ")
   end
 end

@@ -1,14 +1,14 @@
 <% url = train.new_record? ? app_trains_path(app) : app_train_path(app, train) %>
 
 <% if @edit_not_allowed %>
-  <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Train not editable", full_screen: false) do %>
+  <%= render AlertComponent.new(kind: :banner, type: :notice, title: "Train not editable", full_screen: false) do %>
     The train settings can not be edited while there are active releases. Please stop or finish the releases to make
     changes.
   <% end %>
 <% end %>
 
 <div data-controller="domain--branching-selector dependent-disable domain--version-name-help">
-  <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
+  <%= render FormComponent.new(model: [app, train], url: url) do |f| %>
     <% f.with_section(heading: "Basic") do |section| %>
       <% section.with_description do %>
         Configure the release. You'll find the advanced configuration below, in the advanced settings section.
@@ -36,29 +36,40 @@
             Tramline increments the version name for every release build created, which guarantees that every build
             can be uniquely identified. We allow a
             <%= link_to_external "SemVer", "https://semver.org", class: "underline" %>-like scheme, for eg.
-            <code>MAJOR.MINOR.PATCH</code> and <code>MAJOR.MINOR</code>.
+            <code>X.Y.Z</code> and <code>X.Y</code>. Or a CalVer scheme, for eg. <code>YYYY.0M.0D</code>.
             Refer to the
             <%= link_to_external "docs", "https://docs.tramline.app/automations#version-name", class: "underline" %>
             to learn more about versioning.
           </span>
       <% end %>
 
+      <div>
+        <%= section.F.labeled_select :versioning_strategy, "Versioning Strategy",
+                                     options_for_select(TrainPresenter::VERSIONING_STRATEGIES, train.versioning_strategy),
+                                     {},
+                                     { disabled: train.persisted?,
+                                       data: { domain__version_name_help_strategy_value: train.versioning_strategy,
+                                               domain__version_name_help_target: "versioningStrategy",
+                                               action: "domain--version-name-help#updateStrategy" } } %>
+      </div>
+
       <div data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
         <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>
+
         <div class="flex flex-row gap-x-2 items-center">
           <%= section.F.text_field_without_label :major_version_seed, "major",
                                                  disabled: train.persisted?,
                                                  data: { domain__version_name_help_target: "majorInput",
                                                          action: "domain--version-name-help#bump" } %>
           <span class="mx-1">
-            <%= render V2::IconComponent.new("v2/circle.svg", size: :xs) %>
+            <%= render IconComponent.new("circle.svg", size: :xs) %>
           </span>
           <%= section.F.text_field_without_label :minor_version_seed, "minor",
                                                  disabled: train.persisted?,
                                                  data: { domain__version_name_help_target: "minorInput",
                                                          action: "domain--version-name-help#bump" } %>
           <span class="mx-1">
-            <%= render V2::IconComponent.new("v2/circle.svg", size: :xs) %>
+            <%= render IconComponent.new("circle.svg", size: :xs) %>
           </span>
           <%= section.F.text_field_without_label :patch_version_seed, "patch (optional)",
                                                  disabled: train.persisted?,
@@ -173,13 +184,13 @@
         are approved.
       <% end %>
 
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
+      <%= render Form::SwitchComponent.new(form: section.F,
                                                field_name: :approvals_enabled,
                                                on_label: "Submission approvals enabled",
                                                off_label: "Submission approvals disabled",
                                                hide_child: !train.approvals_enabled?) do |component| %>
         <% component.with_child do %>
-          <%= render V2::Form::SwitchComponent.new(form: section.F,
+          <%= render Form::SwitchComponent.new(form: section.F,
                                                    field_name: :copy_approvals,
                                                    on_label: "Always copy approvals from previous release",
                                                    off_label: "Do not copy approvals from previous release") %>
@@ -204,7 +215,7 @@
         By default, merge happens at the end of the release.
       <% end %>
 
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
+      <%= render Form::SwitchComponent.new(form: section.F,
                                                field_name: :continuous_backmerge_enabled,
                                                on_label: "Continuous Backmerge enabled",
                                                off_label: "Continuous Backmerge disabled",
@@ -216,7 +227,7 @@
         Disable this if you want to manually apply the commits after the initial rollout has started.
       <% end %>
 
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
+      <%= render Form::SwitchComponent.new(form: section.F,
                                                field_name: :auto_apply_patch_changes,
                                                on_label: "Auto-apply patch changes",
                                                off_label: "Manually apply patch changes") %>
@@ -228,7 +239,7 @@
         By default, the entire commit message is used.
       <% end %>
 
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
+      <%= render Form::SwitchComponent.new(form: section.F,
                                                field_name: :compact_build_notes,
                                                on_label: "Compact Build Notes enabled",
                                                off_label: "Compact Build Notes disabled") %>
@@ -237,7 +248,7 @@
     <%= f.with_advanced_section(heading: "Tag Your Releases") do |section| %>
       <% section.with_description do %>
         By default, a tag is created at the end of the release with the final version of the release.
-        You can turn off creation of tag. Or, you can add an optional suffix to your tags.
+        You can turn off creation of tag. Or, you can add an optional prefix or suffix to your tags.
       <% end %>
 
       <%= render partial: "release_tag_form", locals: { form: section.F } %>
@@ -258,7 +269,7 @@
         Versions are automatically managed and bumped by Tramline.
         Turn this on if you want to keep a single static release version for all releases.
       <% end %>
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
+      <%= render Form::SwitchComponent.new(form: section.F,
                                                field_name: :freeze_version,
                                                on_label: "Freeze release version enabled",
                                                off_label: "Freeze release version disabled",
@@ -273,7 +284,7 @@
         You can override this behavior to bump up the patch version only.
       <% end %>
 
-      <%= render V2::Form::SwitchComponent.new(form: section.F,
+      <%= render Form::SwitchComponent.new(form: section.F,
                                                field_name: :patch_version_bump_only,
                                                on_label: "Only patch version will change between releases",
                                                off_label: "Minor version will change between releases (default)",
@@ -281,7 +292,7 @@
     <% end %>
 
     <% f.with_action do %>
-      <%= f.F.authz_submit (train.persisted? ? "Update" : "Create"), (train.persisted? ? "v2/archive.svg" : "plus.svg"), disabled: @edit_not_allowed %>
+      <%= f.F.authz_submit (train.persisted? ? "Update" : "Create"), (train.persisted? ? "archive.svg" : "plus.svg"), disabled: @edit_not_allowed %>
     <% end %>
   <% end %>
 </div>

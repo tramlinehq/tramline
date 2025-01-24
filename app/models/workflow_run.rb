@@ -29,9 +29,10 @@ class WorkflowRun < ApplicationRecord
   belongs_to :commit
   has_one :build, dependent: :destroy
 
-  delegate :organization, :app, :ci_cd_provider, :train, :release_version, :release_branch, :release, :platform, to: :release_platform_run
+  delegate :organization, :app, :ci_cd_provider, :train, :release_branch, :release, :platform, to: :release_platform_run
   delegate :notify!, to: :train
   delegate :commit_hash, to: :commit
+  delegate :build_suffix, :artifact_name_pattern, to: :conf
 
   STAMPABLE_REASONS = %w[
     triggered
@@ -118,7 +119,7 @@ class WorkflowRun < ApplicationRecord
       release_platform_run:,
       commit:,
       kind: workflow_config.kind)
-    workflow_run.create_build!(version_name: workflow_run.release_version, release_platform_run:, commit:)
+    workflow_run.create_build!(release_platform_run:, commit:)
     workflow_run.initiate!
   end
 
@@ -157,10 +158,6 @@ class WorkflowRun < ApplicationRecord
   def cancel_external_workflow!
     return unless workflow_found?
     ci_cd_provider.cancel_workflow_run!(external_id)
-  end
-
-  def build_artifact_name_pattern
-    workflow_config["artifact_name_pattern"]
   end
 
   def find_build
@@ -212,11 +209,11 @@ class WorkflowRun < ApplicationRecord
   end
 
   def update_build_number!
-    build.update!(build_number: app.bump_build_number!(release_version:))
+    build.update!(build_number: app.bump_build_number!(release_version: build.release_version))
   end
 
   def workflow_inputs
-    data = {version_code: build.build_number, build_version: release_version}
+    data = {version_code: build.build_number, build_version: build.version_name}
     data[:build_notes] = triggering_release.tester_notes if organization.build_notes_in_workflow?
     data
   end
@@ -287,7 +284,7 @@ class WorkflowRun < ApplicationRecord
       commit_url: commit.url,
       ref: external_number,
       url: external_url,
-      version_name: release_version,
+      version_name: release_platform_run.release_version,
       build_number: build&.build_number
     }
   end

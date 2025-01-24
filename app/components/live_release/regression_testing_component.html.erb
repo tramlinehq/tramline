@@ -1,0 +1,57 @@
+<div class="flex flex-col section-gap-default">
+  <div class="flex flex-col item-gap-default">
+    <%= render AlertComponent.new(type: :info, title: "A new build #239 is available. Switch to a newer build under test.", full_screen: false) %>
+
+    <%= render CardComponent.new(title: "Status", size: :full, separator: false) do |card| %>
+      <% card.with_action do %>
+        <%= render ModalComponent.new(title: "Available builds", subtitle: "Choose a build to test for regressions") do |modal| %>
+          <% button = modal.with_button(label: "Switch build under test", scheme: :light, type: :action, size: :xxs) %>
+          <% button.with_icon("pencil.svg") %>
+          <% modal.with_body do %>
+            <%= render FormComponent.new(model: [release, release_platform_run],
+                                             scope: :store_submission,
+                                             url: root_path,
+                                             free_form: true) do |form| %>
+              <%= form.F.hidden_field :force, value: true %>
+              <%= form.F.labeled_select :build_id, "Select a build", options_for_select([], 1) %>
+
+              <% form.with_action do %>
+                <%= form.F.authz_submit "Save", "archive.svg" %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <div class="flex flex-col item-gap-default">
+        <div class="flex flex-col item-gap-default justify-start items-start">
+          <%= render BadgeComponent.new(**testing_status, kind: :status) %>
+        </div>
+
+        <%= render LiveRelease::BuildComponent.new(Build.first) %>
+
+        <div class="text-secondary text-xs">
+          Pick the current testing status of this build
+        </div>
+
+        <div class="flex justify-center items-center">
+          <%= select_tag :language,
+                         options_for_select(["#238 — Testing in progress", "#238 — Rejected", "#238 — Approved"], "16.81"),
+                         disabled: false,
+                         class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES %>
+        </div>
+
+        <div class="pl-3"><%= render TimelineComponent.new(events:) %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <% size = rand(1..5) %>
+  <%= render SectionComponent.new(title: "Past tests (#{size})", style: :titled, size: :compact) do %>
+    <div class="flex flex-col item-gap-default">
+      <% size.times.each do %>
+        <%= render LiveRelease::PreProdRelease::PreviousReleaseComponent.new(BetaRelease.first) %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -4,12 +4,12 @@ class TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate]
-  around_action :set_time_zone
+  before_action :require_write_access!, only: %i[new create update destroy activate deactivate]
   before_action :set_train, only: %i[edit update destroy activate deactivate rules]
   before_action :set_train_config_tabs, only: %i[edit update rules destroy activate deactivate]
   before_action :validate_integration_status, only: %i[new create]
   before_action :set_notification_channels, only: %i[new create edit update]
+  around_action :set_time_zone
 
   def new
     @train = @app.trains.new
@@ -122,6 +122,7 @@ class TrainsController < SignedInApplicationController
       :tag_platform_releases,
       :notifications_enabled,
       :tag_releases,
+      :tag_prefix,
       :tag_suffix,
       :patch_version_bump_only,
       :approvals_enabled,
@@ -163,6 +164,7 @@ class TrainsController < SignedInApplicationController
       :tag_platform_releases,
       :notifications_enabled,
       :tag_releases,
+      :tag_prefix,
       :tag_suffix,
       :patch_version_bump_only,
       :approvals_enabled,

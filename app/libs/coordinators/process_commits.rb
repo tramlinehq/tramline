@@ -52,7 +52,7 @@ class Coordinators::ProcessCommits
 
   def queue_commit!(commit, can_apply: true)
     return unless release.queue_commit?(commit)
-    release.active_build_queue.add_commit_v2!(commit, can_apply:)
+    release.active_build_queue.add_commit!(commit, can_apply:)
   end
 
   def commit_params(attributes)
@@ -66,7 +66,7 @@ class Coordinators::ProcessCommits
   # We fudge it to add 100 ms after the original timestamp
   # This can happen in a rare scenario when all the commits are on the same second
   def fudge_timestamp(commit)
-    original_time = Time.zone.parse(commit[:timestamp])
+    original_time = Time.zone.parse(commit[:timestamp].to_s)
     new_time = original_time + 0.1
     commit[:timestamp] = new_time.iso8601(5) # 5 digit ms precision
     commit

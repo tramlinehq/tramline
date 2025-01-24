@@ -239,7 +239,8 @@ class Release < ApplicationRecord
   end
 
   def production_release_started?
-    release_platform_runs.all? { |rpr| rpr.active_production_release.present? }
+    # TODO: check if the submission has been sent for review and not just the presence of the latest production release
+    release_platform_runs.all? { |rpr| rpr.latest_production_release.present? }
   end
 
   def backmerge_failure_count
@@ -296,7 +297,7 @@ class Release < ApplicationRecord
 
   def last_applicable_commit
     return unless committable?
-    applied_commits.last
+    applied_commits.reorder(timestamp: :desc).first
   end
 
   def committable?
@@ -428,7 +429,9 @@ class Release < ApplicationRecord
         release_version: release_version,
         is_release_unhealthy: unhealthy?,
         release_completed_at: completed_at,
-        release_started_at: scheduled_at
+        release_started_at: scheduled_at,
+        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?),
+        final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?)
       }
     )
   end
@@ -558,6 +561,7 @@ class Release < ApplicationRecord
 
   def base_tag_name
     tag = "v#{release_version}"
+    tag = train.tag_prefix + "-" + tag if train.tag_prefix.present?
     tag += "-hotfix" if hotfix?
     tag += "-" + train.tag_suffix if train.tag_suffix.present?
     tag

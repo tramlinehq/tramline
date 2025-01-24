@@ -1,4 +1,4 @@
-<%= render V2::TabbedContainerComponent.new(title: @train.name,
+<%= render TabbedContainerComponent.new(title: @train.name,
                                             turbo_frame: dom_id(@train, :edit_train),
                                             tab_config: @tab_configuration,
                                             error_resource: @train) do |container| %>

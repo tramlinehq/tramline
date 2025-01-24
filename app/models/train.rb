@@ -26,6 +26,7 @@
 #  stop_automatic_releases_on_failure :boolean          default(FALSE), not null
 #  tag_all_store_releases             :boolean          default(FALSE)
 #  tag_platform_releases              :boolean          default(FALSE)
+#  tag_prefix                         :string
 #  tag_releases                       :boolean          default(TRUE)
 #  tag_suffix                         :string
 #  version_current                    :string
@@ -87,7 +88,7 @@ class Train < ApplicationRecord
   validates :versioning_strategy, presence: true, inclusion: {in: Train.versioning_strategies.values}
   validates :release_backmerge_branch, presence: true, if: -> { branching_strategy == "release_backmerge" }
   validates :release_branch, presence: true, if: -> { branching_strategy == "parallel_working" }
-  validate :semver_compatibility, on: :create
+  validate :version_compatibility, on: :create
   validate :ready?, on: :create
   validate :valid_schedule, if: -> { kickoff_at_changed? || repeat_duration_changed? }
   validate :build_queue_config
@@ -111,7 +112,6 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
-  after_create -> { Flipper.enable_actor(:product_v2, self) }
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
@@ -146,11 +146,6 @@ class Train < ApplicationRecord
 
   def one_percent_beta_release?
     Flipper.enabled?(:one_percent_beta_release, self)
-  end
-
-  # TODO: remove this after full removal of v2, it is used only for one-off rake tasks
-  def product_v2?
-    Flipper.enabled?(:product_v2, self)
   end
 
   def deploy_action_enabled?
@@ -507,10 +502,12 @@ class Train < ApplicationRecord
     self.notifications_enabled = send_notifications?
   end
 
-  def semver_compatibility
-    VersioningStrategies::Semverish.new(version_seeded_with)
-  rescue ArgumentError
-    errors.add(:version_seeded_with, "Please choose a valid semver-like format, eg. major.minor.patch or major.minor")
+  def version_compatibility
+    semverish = VersioningStrategies::Semverish.new(version_seeded_with)
+
+    unless semverish.valid?(strategy: versioning_strategy)
+      errors.add(:version_seeded_with, :"improper_#{versioning_strategy}")
+    end
   end
 
   def set_version_seeded_with

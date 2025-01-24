@@ -1,14 +1,8 @@
 namespace :db do
   desc "Nuke everything except users, organizations and apps"
   task nuke: [:destructive, :environment] do
-    CommitListener.delete_all
     BuildArtifact.delete_all
-    DeploymentRun.delete_all
-    Deployment.delete_all
-    StepRun.delete_all
     Commit.delete_all
-    StepRun.delete_all
-    Step.delete_all
     ReleasePlatformRun.delete_all
     ReleasePlatform.delete_all
     Release.delete_all
@@ -57,28 +51,21 @@ end
 def nuke_train(train)
   train.releases.each do |run|
     run.release_platform_runs.each do |prun|
-      prun.step_runs.each do |srun|
-        srun.deployment_runs.each do |drun|
-          drun.staged_rollout&.delete
-          drun.staged_rollout&.passports&.delete_all
-          drun.external_release&.delete
-          drun.release_health_events&.delete_all
-          drun.release_health_metrics&.delete_all
-          drun.passports&.delete_all
-        end
-        srun.deployment_runs&.delete_all
-        srun.build_artifact&.delete
-        srun.passports&.delete_all
-        srun.external_build&.delete
-      end
-      prun.step_runs&.delete_all
+      sql = "delete from external_releases where deployment_run_id IN (SELECT id FROM deployment_runs WHERE step_run_id IN (SELECT id FROM step_runs WHERE release_platform_run_id = '#{prun.id}'))"
+      ActiveRecord::Base.connection.execute(sql)
+      sql = "delete from staged_rollouts where deployment_run_id IN (SELECT id FROM deployment_runs WHERE step_run_id IN (SELECT id FROM step_runs WHERE release_platform_run_id = '#{prun.id}'))"
+      ActiveRecord::Base.connection.execute(sql)
+      sql = "delete from deployment_runs where step_run_id IN (SELECT id FROM step_runs WHERE release_platform_run_id = '#{prun.id}')"
+      ActiveRecord::Base.connection.execute(sql)
+      sql = "delete from step_runs where release_platform_run_id = '#{prun.id}'"
+      ActiveRecord::Base.connection.execute(sql)
       prun.passports&.delete_all
       prun.release_metadata&.delete_all
       prun.store_rollouts&.delete_all
       prun.store_submissions&.delete_all
       prun.production_releases.each do |pr|
-        pr.release_health_metrics&.delete_all
         pr.release_health_events&.delete_all
+        pr.release_health_metrics&.delete_all
       end
       prun.production_releases&.delete_all
       prun.builds.each do |build|
@@ -110,6 +97,10 @@ def nuke_train(train)
   train.release_index&.release_index_components&.delete_all
   train.release_index&.delete
   train.release_platforms.each do |release_platform|
+    sql = "delete from deployments where step_id IN (SELECT id FROM steps WHERE release_platform_id = '#{release_platform.id}')"
+    ActiveRecord::Base.connection.execute(sql)
+    sql = "delete from steps where release_platform_id = '#{release_platform.id}'"
+    ActiveRecord::Base.connection.execute(sql)
     config = release_platform.platform_config
     if config.present?
       config.internal_workflow&.delete
@@ -136,10 +127,6 @@ def nuke_train(train)
       rule.filter_rule_expressions&.delete_all
     end
     release_platform.all_release_health_rules&.delete_all
-    release_platform.all_steps.each do |step|
-      step.all_deployments.delete_all
-    end
-    release_platform.all_steps&.delete_all
     sql = "delete from commit_listeners where release_platform_id = '#{release_platform.id}'"
     ActiveRecord::Base.connection.execute(sql)
   end

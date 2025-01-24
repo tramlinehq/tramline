@@ -4,7 +4,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "Your staged rollout has *started* with stage *<%= @current_stage %> (<%= @rollout_percentage %>%)*."
+        "text": "<%= staged_rollout_started_text %>"
       }
     }
     <% unless @requires_review %>,
@@ -12,15 +12,14 @@
       "type": "context",
       "elements": [
         {
+          "type": "mrkdwn",
+          "text": "<%= initial_rollout_percentage_text %>"
+        },
+        {
           "type": "plain_text",
           "text": "<%= google_managed_publishing_text %>",
           "emoji": false
-        }
-      ]
-    },
-    {
-      "type": "context",
-      "elements": [
+        },
         {
           "type": "plain_text",
           "text": "<%= google_unmanaged_publishing_text %>",

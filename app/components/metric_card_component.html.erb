@@ -7,7 +7,7 @@
         <div class="text-xs text-secondary-50 uppercase"><%= key %></div>
         <% if health_defined?(val) %>
           <div class="text-base <%= metric_color(val[:is_healthy]) %>">
-            <%= render V2::TooltipComponent.new(nil, placement: "top", type: :detailed) do |tooltip| %>
+            <%= render TooltipComponent.new(nil, placement: "top", type: :detailed) do |tooltip| %>
               <% tooltip.with_detailed_text do %>
                 <div class="flex flex-col gap-2 items-start">
                   <% rules_for(val).each do |rule| %>

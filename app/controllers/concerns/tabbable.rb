@@ -6,21 +6,21 @@ module Tabbable
 
   def set_app_config_tabs
     @tab_configuration = [
-      [1, "General", edit_app_path(@app), "v2/cog.svg"],
-      [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
+      [1, "General", edit_app_path(@app), "cog.svg"],
+      [2, "Integrations", app_integrations_path(@app), "blocks.svg"],
       [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
     ]
   end
 
   def set_train_config_tabs
     @tab_configuration = [
-      [1, "Release Settings", edit_app_train_path(@app, @train), "v2/cog.svg"],
-      ([2, "Android Flow Settings", edit_app_train_platform_submission_config_path(@app, @train, :android), "v2/logo_google_play_store_bw.svg"] if @app.cross_platform?),
-      ([3, "iOS Flow Settings", edit_app_train_platform_submission_config_path(@app, @train, :ios), "v2/logo_app_store_bw.svg"] if @app.cross_platform?),
-      ([2, "Submission Settings", edit_app_train_platform_submission_config_path(@app, @train, @app.platform), "v2/sliders.svg"] unless @app.cross_platform?),
+      [1, "Release Settings", edit_app_train_path(@app, @train), "cog.svg"],
+      ([2, "Android Flow Settings", edit_app_train_platform_submission_config_path(@app, @train, :android), "logo_google_play_store_bw.svg"] if @app.cross_platform?),
+      ([3, "iOS Flow Settings", edit_app_train_platform_submission_config_path(@app, @train, :ios), "logo_app_store_bw.svg"] if @app.cross_platform?),
+      ([2, "Submission Settings", edit_app_train_platform_submission_config_path(@app, @train, @app.platform), "sliders.svg"] unless @app.cross_platform?),
       [4, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
-      [5, "Release Health Rules", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
-      [6, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"]
+      [5, "Release Health Rules", rules_app_train_path(@app, @train), "heart_pulse.svg"],
+      [6, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "ruler.svg"]
     ].compact
   end
 
@@ -42,6 +42,8 @@ module Tabbable
             release_platform: {app: [:integrations]}
           ]
         )
+        .joins(train: :app)
+        .where(apps: {organization: current_organization})
         .friendly
         .find(params[:release_id] || params[:id])
   end
@@ -84,11 +86,11 @@ module Tabbable
       changeset_tracking: Release::SECTIONS[:changeset_tracking]
     }
     sections[:kickoff][:overview][:path] = live_release_paths[:overview]
-    sections[:kickoff][:overview][:icon] = "v2/gauge.svg"
+    sections[:kickoff][:overview][:icon] = "gauge.svg"
     sections[:kickoff][:overview][:position] = 1
     sections[:kickoff][:overview][:status] = live_release_step_statuses[:statuses][:overview]
     sections[:kickoff][:changeset_tracking][:path] = live_release_paths[:changeset_tracking]
-    sections[:kickoff][:changeset_tracking][:icon] = "v2/list_end.svg"
+    sections[:kickoff][:changeset_tracking][:icon] = "list_end.svg"
     sections[:kickoff][:changeset_tracking][:position] = 2
     sections[:kickoff][:changeset_tracking][:status] = live_release_step_statuses[:statuses][:changeset_tracking]
 
@@ -99,20 +101,20 @@ module Tabbable
       soak_period: Release::SECTIONS[:soak_period]
     }
     sections[:stability][:internal_builds][:path] = live_release_paths[:internal_builds]
-    sections[:stability][:internal_builds][:icon] = "v2/drill.svg"
+    sections[:stability][:internal_builds][:icon] = "drill.svg"
     sections[:stability][:internal_builds][:position] = 3
     sections[:stability][:internal_builds][:status] = live_release_step_statuses[:statuses][:internal_builds]
     sections[:stability][:regression_testing][:path] = live_release_paths[:regression_testing]
-    sections[:stability][:regression_testing][:icon] = "v2/tablet_smartphone.svg"
+    sections[:stability][:regression_testing][:icon] = "tablet_smartphone.svg"
     sections[:stability][:regression_testing][:position] = 4
     sections[:stability][:regression_testing][:status] = live_release_step_statuses[:statuses][:regression_testing]
     sections[:stability][:regression_testing][:unavailable] = !demo_org?
     sections[:stability][:release_candidate][:path] = live_release_paths[:release_candidate]
-    sections[:stability][:release_candidate][:icon] = "v2/gallery_horizontal_end.svg"
+    sections[:stability][:release_candidate][:icon] = "gallery_horizontal_end.svg"
     sections[:stability][:release_candidate][:position] = 5
     sections[:stability][:release_candidate][:status] = live_release_step_statuses[:statuses][:release_candidate]
     sections[:stability][:soak_period][:path] = live_release_paths[:soak_period]
-    sections[:stability][:soak_period][:icon] = "v2/alarm_clock.svg"
+    sections[:stability][:soak_period][:icon] = "alarm_clock.svg"
     sections[:stability][:soak_period][:position] = 6
     sections[:stability][:soak_period][:status] = live_release_step_statuses[:statuses][:soak_period]
     sections[:stability][:soak_period][:unavailable] = !demo_org?
@@ -122,11 +124,11 @@ module Tabbable
       screenshots: Release::SECTIONS[:screenshots]
     }
     sections[:metadata][:notes][:path] = live_release_paths[:notes]
-    sections[:metadata][:notes][:icon] = "v2/text.svg"
+    sections[:metadata][:notes][:icon] = "text.svg"
     sections[:metadata][:notes][:position] = 7
     sections[:metadata][:notes][:status] = live_release_step_statuses[:statuses][:notes]
     sections[:metadata][:screenshots][:path] = live_release_paths[:screenshots]
-    sections[:metadata][:screenshots][:icon] = "v2/wand.svg"
+    sections[:metadata][:screenshots][:icon] = "wand.svg"
     sections[:metadata][:screenshots][:position] = 8
     sections[:metadata][:screenshots][:status] = live_release_step_statuses[:statuses][:screenshots]
     sections[:metadata][:screenshots][:unavailable] = true
@@ -138,15 +140,15 @@ module Tabbable
         rollout_to_users: Release::SECTIONS[:rollout_to_users]
       }
       sections[:store_release][:approvals][:path] = live_release_paths[:approvals]
-      sections[:store_release][:approvals][:icon] = "v2/list_checks.svg"
+      sections[:store_release][:approvals][:icon] = "list_checks.svg"
       sections[:store_release][:approvals][:position] = 9
       sections[:store_release][:approvals][:status] = live_release_step_statuses[:statuses][:approvals]
       sections[:store_release][:app_submission][:path] = live_release_paths[:app_submission]
-      sections[:store_release][:app_submission][:icon] = "v2/mail.svg"
+      sections[:store_release][:app_submission][:icon] = "mail.svg"
       sections[:store_release][:app_submission][:position] = 10
       sections[:store_release][:app_submission][:status] = live_release_step_statuses[:statuses][:app_submission]
       sections[:store_release][:rollout_to_users][:path] = live_release_paths[:rollout_to_users]
-      sections[:store_release][:rollout_to_users][:icon] = "v2/rocket.svg"
+      sections[:store_release][:rollout_to_users][:icon] = "rocket.svg"
       sections[:store_release][:rollout_to_users][:position] = 11
       sections[:store_release][:rollout_to_users][:status] = live_release_step_statuses[:statuses][:rollout_to_users]
     else
@@ -154,7 +156,7 @@ module Tabbable
         wrap_up_automations: Release::SECTIONS[:wrap_up_automations]
       }
       sections[:wrap_up][:wrap_up_automations][:path] = live_release_paths[:wrap_up_automations]
-      sections[:wrap_up][:wrap_up_automations][:icon] = "v2/robot.svg"
+      sections[:wrap_up][:wrap_up_automations][:icon] = "robot.svg"
       sections[:wrap_up][:wrap_up_automations][:position] = 9
       sections[:wrap_up][:wrap_up_automations][:status] = live_release_step_statuses[:statuses][:wrap_up_automations]
     end

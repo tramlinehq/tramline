@@ -200,7 +200,7 @@ describe ReleasePlatformRun do
 
     it "saves a new tag with the base name" do
       allow_any_instance_of(GithubIntegration).to receive(:create_tag!)
-      commit = create(:commit, :without_trigger, release:)
+      commit = create(:commit, release:)
       release_platform_run.update!(last_commit: commit)
 
       release_platform_run.create_tag!(commit)
@@ -209,7 +209,7 @@ describe ReleasePlatformRun do
 
     it "saves base name + last commit sha" do
       raise_times(GithubIntegration, tag_exists_error, :create_tag!, 1)
-      commit = create(:commit, :without_trigger, release:)
+      commit = create(:commit, release:)
       release_platform_run.update!(last_commit: commit)
 
       release_platform_run.create_tag!(commit)
@@ -221,7 +221,7 @@ describe ReleasePlatformRun do
 
       freeze_time do
         now = Time.now.to_i
-        commit = create(:commit, :without_trigger, release:)
+        commit = create(:commit, release:)
         release_platform_run.update!(last_commit: commit)
 
         release_platform_run.create_tag!(commit)

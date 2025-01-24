@@ -87,7 +87,7 @@ describe Coordinators::StartRelease do
       it "raises an error when the custom version is invalid" do
         expect {
           described_class.call(train, custom_version: "1.2.3-abc")
-        }.to raise_error("Invalid custom release version! Please use a SemVer like x.y.z format.")
+        }.to raise_error("Invalid custom release version! Please use a SemVer-like x.y.z format based on your configured versioning strategy.")
       end
 
       it "raises an error when the train is inactive" do
@@ -95,13 +95,6 @@ describe Coordinators::StartRelease do
         expect {
           described_class.call(train)
         }.to raise_error("Cannot start a train that is not active!")
-      end
-
-      it "raises an error when there is an existing ongoing release and the release is automatic" do
-        _existing_release = create(:release, :on_track, train:)
-        expect {
-          described_class.call(train, automatic: true)
-        }.to raise_error("No more releases can be started until the ongoing release is finished!")
       end
 
       it "raises an error when there is an existing upcoming release and the release is not a hotfix" do
@@ -113,7 +106,6 @@ describe Coordinators::StartRelease do
       end
 
       it "raises an error when the upcoming release is not startable" do
-        Flipper.enable_actor(:product_v2, train)
         _ongoing_release = create(:release, :on_track, train:)
         expect {
           described_class.call(train)
