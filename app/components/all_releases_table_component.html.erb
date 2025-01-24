@@ -47,10 +47,10 @@
             <div class="text-left">
               <ul class="list-disc list-inside">
                 <% release.pull_requests.each do |pr| %>
-                  <li><a href="<%= pr[:url] %>"><%= pr[:message] %></a></li>
+                  <li><a href="<%= pr[:url] %>"><%= pr[:message].html_safe %></a></li>
                 <% end %>
                 <% release.commits.each do |commit| %>
-                  <li><a href="<%= commit[:url] %>"><%= commit[:message] %></a></li>
+                  <li><a href="<%= commit[:url] %>"><%= commit[:message].html_safe %></a></li>
                 <% end %>
                 
               </ul>

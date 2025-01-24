@@ -56,7 +56,7 @@ class PullRequest < ApplicationRecord
     using: {
       tsearch: {
         prefix: true,
-        any_word: true
+        any_word: true,
       }
     }
   # rubocop:disable Rails/SkipsModelValidations

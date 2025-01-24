@@ -72,6 +72,7 @@ class Queries::Releases
               "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON commits.release_id = relevant_releases.id")
       .search_by_message(params.search_query)
+      .with_pg_search_highlight
 
 
     filtered_pull_requests = PullRequest
@@ -80,6 +81,7 @@ class Queries::Releases
               "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON pull_requests.release_id = relevant_releases.id")
       .search_by_title(params.search_query)
+      .with_pg_search_highlight
 
     # Final query with CTEs
     Release
@@ -92,7 +94,7 @@ class Queries::Releases
       .from("filtered_commits_and_pull_requests")
       .select(:release_id,
         "array_agg(type) as types",
-        "array_agg(matched_message) as matched_messages",
+        "array_agg(pg_search_highlight) as matched_messages",
         "array_agg(url) as urls",
         :slug, 
         :status, 
