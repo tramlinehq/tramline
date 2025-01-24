@@ -117,3 +117,5 @@ group :test do
 end
 
 gem "active_record_union", "~> 1.3"
+
+gem "pg_search", "~> 2.3"

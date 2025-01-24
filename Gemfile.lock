@@ -443,6 +443,9 @@ GEM
     pg (1.5.8)
     pg_query (5.1.0)
       google-protobuf (>= 3.22.3)
+    pg_search (2.3.7)
+      activerecord (>= 6.1)
+      activesupport (>= 6.1)
     pghero (3.6.0)
       activerecord (>= 6.1)
     postmark (1.25.1)
@@ -807,6 +810,7 @@ DEPENDENCIES
   paper_trail (~> 15.1)
   pg (~> 1.1)
   pg_query
+  pg_search (~> 2.3)
   pghero (~> 3.1)
   postmark-rails (~> 0.21.0)
   prosopite

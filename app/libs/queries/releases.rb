@@ -60,9 +60,6 @@ class Queries::Releases
   end
 
   memoize def records
-    commits = Commit.arel_table
-    pull_requests = PullRequest.arel_table
-
     # Define CTEs
     relevant_releases = Release
       .select(:id, :slug, :status, :created_at)
@@ -74,14 +71,15 @@ class Queries::Releases
               :url,
               "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON commits.release_id = relevant_releases.id")
-      .where(commits[:message].matches("%#{params.search_query}%"))
+      .search_by_message(params.search_query)
+
 
     filtered_pull_requests = PullRequest
       .select(:id, "'pull_request' AS type", :release_id, "title AS matched_message", 
               :url,
               "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON pull_requests.release_id = relevant_releases.id")
-      .where(pull_requests[:title].matches("%#{params.search_query}%"))
+      .search_by_title(params.search_query)
 
     # Final query with CTEs
     Release

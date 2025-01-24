@@ -23,6 +23,7 @@ class Commit < ApplicationRecord
   has_paper_trail
   include Passportable
   include Commitable
+  include PgSearch::Model
 
   self.implicit_order_column = :timestamp
 
@@ -41,6 +42,15 @@ class Commit < ApplicationRecord
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
 
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
+
+  pg_search_scope :search_by_message,
+    against: :message,
+    using: {
+      tsearch: {
+        prefix: true,
+        any_word: true
+      }
+    }
 
   def self.commit_messages(first_parent_only = false)
     Commit.commit_log(reorder("timestamp DESC"), first_parent_only)&.map(&:message)

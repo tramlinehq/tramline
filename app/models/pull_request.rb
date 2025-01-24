@@ -24,6 +24,7 @@
 #
 class PullRequest < ApplicationRecord
   has_paper_trail
+  include PgSearch::Model
 
   class UnsupportedPullRequestSource < StandardError; end
 
@@ -50,6 +51,14 @@ class PullRequest < ApplicationRecord
 
   scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
 
+  pg_search_scope :search_by_title,
+    against: :title,
+    using: {
+      tsearch: {
+        prefix: true,
+        any_word: true
+      }
+    }
   # rubocop:disable Rails/SkipsModelValidations
   def update_or_insert!(attributes)
     PullRequest
