@@ -3,11 +3,6 @@ class Queries::Releases
 
   DEFAULT_SORT_COLUMN = "releases.created_at"
 
-  BASE_ATTR_MAPPING = {
-    release_slug: Release.arel_table[:slug],
-    release_status: Release.arel_table[:status],
-  }
-
   def self.all(**params)
     new(**params).all
   end
@@ -53,12 +48,11 @@ class Queries::Releases
   end
 
   def count
-    records.length
+    selected_records.length
   end
 
   def selected_records
     records
-      # .select(select_attrs(BASE_ATTR_MAPPING))
       # .select(params.sort_column)
       .order(:created_at)
       .limit(params.limit)

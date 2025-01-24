@@ -69,6 +69,8 @@ class AppsController < SignedInApplicationController
     all_releases
     all_builds
 
+    # FIXME: set_query_pagination separately for releases and builds
+
     respond_to do |format|
       format.html {}
       format.turbo_stream do
