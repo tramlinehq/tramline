@@ -35,6 +35,7 @@ class AppConfig < ApplicationRecord
   validates :firebase_android_config,
     allow_blank: true,
     json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
+  validate :jira_release_filters, if: -> { jira_config&.dig("release_filters").present? }
 
   after_initialize :set_bugsnag_config, if: :persisted?
 
@@ -139,13 +140,13 @@ class AppConfig < ApplicationRecord
   def add_jira_release_filter(type:, value:)
     return unless JiraIntegration::VALID_FILTER_TYPES.include?(type)
 
-    new_filters = (jira_config&.dig("release_filters") || []).dup
+    new_filters = (jira_config.dig("release_filters") || []).dup
     new_filters << {"type" => type, "value" => value}
     update!(jira_config: jira_config.merge("release_filters" => new_filters))
   end
 
   def remove_jira_release_filter(index)
-    new_filters = (jira_config&.dig("release_filters") || []).dup
+    new_filters = (jira_config.dig("release_filters") || []).dup
     new_filters.delete_at(index)
     update!(jira_config: jira_config.merge("release_filters" => new_filters))
   end
@@ -190,5 +191,13 @@ class AppConfig < ApplicationRecord
       jira_config["selected_projects"].present? &&
       jira_config["selected_projects"].any? &&
       jira_config["project_configs"].present?
+  end
+
+  def jira_release_filters
+    jira_config["release_filters"].each do |filter|
+      unless filter.is_a?(Hash) && JiraIntegration::VALID_FILTER_TYPES.include?(filter["type"]) && filter["value"].present?
+        errors.add(:jira_config, "release filters must contain valid type and value")
+      end
+    end
   end
 end

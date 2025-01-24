@@ -139,7 +139,6 @@ class AppConfigsController < SignedInApplicationController
     @jira_data = provider.setup
 
     @config.jira_config = {} if @config.jira_config.nil?
-
     @config.jira_config = {
       "selected_projects" => @config.jira_config["selected_projects"] || [],
       "project_configs" => @config.jira_config["project_configs"] || {},
@@ -153,7 +152,6 @@ class AppConfigsController < SignedInApplicationController
     @jira_data[:projects]&.each do |project|
       project_key = project["key"]
       statuses = @jira_data[:project_statuses][project_key]
-
       done_states = statuses&.select { |status| status["name"] == "Done" }&.pluck("name") || []
 
       @config.jira_config["project_configs"][project_key] ||= {

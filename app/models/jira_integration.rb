@@ -20,10 +20,10 @@ class JiraIntegration < ApplicationRecord
   encrypts :oauth_access_token, deterministic: true
   encrypts :oauth_refresh_token, deterministic: true
 
-  BASE_INSTALLATION_URL =
-    Addressable::Template.new("https://auth.atlassian.com/authorize{?params*}")
+  BASE_INSTALLATION_URL = Addressable::Template.new("https://auth.atlassian.com/authorize{?params*}")
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/jira_small.png".freeze
   VALID_FILTER_TYPES = %w[label fix_version].freeze
+  API = Installations::Jira::Api
 
   USER_INFO_TRANSFORMATIONS = {
     id: :accountId,
@@ -54,13 +54,10 @@ class JiraIntegration < ApplicationRecord
     fix_versions: [:fields, :fixVersions]
   }.freeze
 
-  attr_accessor :code, :callback_url, :available_resources
-  before_validation :complete_access, on: :create
+  attr_accessor :code, :available_resources
   delegate :app, to: :integration
   delegate :cache, to: Rails
-
   validates :cloud_id, presence: true
-  validate :validate_release_filters, if: -> { app.config.jira_config&.dig("release_filters").present? }
 
   def install_path
     BASE_INSTALLATION_URL
@@ -75,11 +72,16 @@ class JiraIntegration < ApplicationRecord
       }).to_s
   end
 
+  # if the user has access to only one organization, then set the cloud_id and assume the access is complete
+  # otherwise, set available_resources so that the user can select the right cloud_id and then eventually complete the access
   def complete_access
-    return false if code.blank? || (callback_url.blank? && redirect_uri.blank?)
+    return false if code.blank? || redirect_uri.blank?
 
-    resources, tokens = Installations::Jira::Api.get_accessible_resources(code, callback_url || redirect_uri)
+    resources, tokens = API.get_accessible_resources(code, redirect_uri)
     set_tokens(tokens)
+
+    # access is already complete if cloud_id is already set
+    return true if cloud_id.present?
 
     if resources.length == 1
       self.cloud_id = resources.first["id"]
@@ -91,7 +93,7 @@ class JiraIntegration < ApplicationRecord
   end
 
   def installation
-    Installations::Jira::Api.new(oauth_access_token, cloud_id)
+    API.new(oauth_access_token, cloud_id)
   end
 
   def to_s = "jira"
@@ -129,13 +131,10 @@ class JiraIntegration < ApplicationRecord
     {}
   end
 
-  def metadata
-    with_api_retries { installation.user_info(USER_INFO_TRANSFORMATIONS) }
-  end
+  def metadata = cloud_id
 
   def connection_data
-    return unless integration.metadata
-    "Added by user: #{integration.metadata["name"]} (#{integration.metadata["email"]})"
+    "Cloud ID: #{integration.metadata}" if integration.metadata
   end
 
   def fetch_tickets_for_release
@@ -188,7 +187,7 @@ class JiraIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    set_tokens(Installations::Jira::Api.oauth_refresh_token(oauth_refresh_token, redirect_uri))
+    set_tokens(API.oauth_refresh_token(oauth_refresh_token, redirect_uri))
     save!
   end
 
@@ -204,7 +203,7 @@ class JiraIntegration < ApplicationRecord
   end
 
   def api
-    @api ||= Installations::Jira::Api.new(oauth_access_token, cloud_id)
+    @api ||= API.new(oauth_access_token, cloud_id)
   end
 
   def fetch_projects
@@ -231,15 +230,5 @@ class JiraIntegration < ApplicationRecord
   rescue => e
     Rails.logger.error("Failed to fetch Jira project statuses for cloud_id #{cloud_id}: #{e.message}")
     {}
-  end
-
-  def validate_release_filters
-    return if app.config.jira_config&.dig("release_filters").blank?
-
-    app.config.jira_config["release_filters"].each do |filter|
-      unless filter.is_a?(Hash) && VALID_FILTER_TYPES.include?(filter["type"]) && filter["value"].present?
-        errors.add(:release_filters, "must contain valid type and value")
-      end
-    end
   end
 end
