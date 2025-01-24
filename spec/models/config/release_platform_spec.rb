@@ -43,6 +43,40 @@ describe Config::ReleasePlatform do
       expect(release_platform).not_to be_valid
       expect(release_platform.errors.messages[:beta_release]).to include("the beta release must be configured")
     end
+
+    describe "duplication of internal release and release candidate workflow" do
+      before do
+        base_config[:workflows][:internal] = base_config[:workflows][:release_candidate]
+        base_config[:internal_release] = base_config[:production_release]
+        base_config[:beta_release] = {
+          submissions: [
+            {number: 1,
+             integrable_id: app.id,
+             integrable_type: "App",
+             submission_type: "GooglePlayStoreSubmission",
+             submission_config: {id: "beta", name: "Open testing"},
+             rollout_config: {enabled: false},
+             auto_promote: false}
+          ]
+        }
+      end
+
+      it "is not valid" do
+        release_platform = described_class.from_json(base_config.merge(release_platform: create(:release_platform)))
+        expect(release_platform).not_to be_valid
+      end
+
+      context "when parameters are defined" do
+        before do
+          base_config[:workflows][:release_candidate][:parameters] = [{name: "p1", value: "v1"}, {name: "p2", value: "v2"}]
+        end
+
+        it "is valid" do
+          release_platform = described_class.from_json(base_config.merge(release_platform: create(:release_platform)))
+          expect(release_platform).to be_valid
+        end
+      end
+    end
   end
 
   describe "#has_restricted_public_channels?" do
