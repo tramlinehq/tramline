@@ -7,18 +7,18 @@
           path: search_app_url(@app, *@all_releases_params),
           placeholder: "Search commit messages",
           value: params[:search_pattern],
-          turbo_frame: "all_releases") %>
+          turbo_frame: "search_results") %>
       </div>
 
+      <%= turbo_frame_tag "search_results" do %>
+        <%= content_tag(:div, id: "all_releases", class: "col-span-full") do %>
+          <%= render partial: "apps/all_releases_search_results", locals: { releases: @releases, pagy: @pagy, all_releases_params: @all_releases_params, app: @app, filters: @filters } %>
+        <% end %>
 
-    <%= content_tag(:div, id: "all_releases", class: "col-span-full") do %>
-      <%= render partial: "apps/all_releases_search_results", locals: { releases: @releases, pagy: @pagy, all_releases_params: @all_releases_params, app: @app, filters: @filters } %>
-    <% end %>
-
-    <%= content_tag(:div, id: "all_builds", class: "col-span-full") do %>
-      <%= render partial: "apps/all_builds_search_results", locals: { builds: @builds, pagy: @pagy, all_builds_params: @all_builds_params, app: @app, filters: @filters } %>
-    <% end %>
-
+        <%= content_tag(:div, id: "all_builds", class: "col-span-full") do %>
+          <%= render partial: "apps/all_builds_search_results", locals: { builds: @builds, pagy: @pagy, all_builds_params: @all_builds_params, app: @app, filters: @filters } %>
+        <% end %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %> 

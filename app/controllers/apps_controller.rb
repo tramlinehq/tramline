@@ -70,20 +70,6 @@ class AppsController < SignedInApplicationController
     all_builds
 
     # FIXME: set_query_pagination separately for releases and builds
-
-    respond_to do |format|
-      format.html {}
-      format.turbo_stream do
-        render turbo_stream: [
-          turbo_stream.update("all_releases",
-          partial: "apps/all_releases_search_results",
-          locals: { releases: @releases, pagy: @pagy, all_releases_params: @all_releases_params, app: @app, filters: @filters }),
-
-          turbo_stream.update("all_builds",
-          partial: "apps/all_builds_search_results",
-          locals: { builds: @builds, pagy: @pagy, all_builds_params: @all_builds_params, app: @app, filters: @filters })]
-      end
-    end
   end
 
   def all_releases

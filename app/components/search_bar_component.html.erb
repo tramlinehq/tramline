@@ -1,4 +1,4 @@
-<%= form_with url: path, method: :get, data: { controller: "search-form", search_form_target: "form", turbo_stream: true, search_form_url_value: path } do |form| %>
+<%= form_with url: path, method: :get, data: { controller: "search-form", search_form_target: "form", turbo_frame: turbo_frame } do |form| %>
   <%= form.text_field :search_pattern,
                       placeholder: placeholder,
                       class: "form-input inline-flex",
