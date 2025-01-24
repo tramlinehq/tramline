@@ -2,7 +2,7 @@ class AppVariantsController < SignedInApplicationController
   using RefinedString
   include Tabbable
 
-  before_action :require_write_access!, only: %i[create update index]
+  before_action :require_write_access!, only: %i[create update]
   before_action :set_app_config_tabs, only: %i[index]
   before_action :set_app_variant, only: %i[edit update destroy]
   before_action :ensure_valid_providable_params, only: %i[create]
