@@ -10,7 +10,7 @@
           turbo_frame: "search_results") %>
       </div>
 
-      <%= turbo_frame_tag "search_results" do %>
+      <%= turbo_frame_tag "search_results", data: { turbo_action: "advance" } do %>
         <%= content_tag(:div, id: "all_releases", class: "col-span-full") do %>
           <%= render partial: "apps/all_releases_search_results", locals: { releases: @releases, pagy: @pagy, all_releases_params: @all_releases_params, app: @app, filters: @filters } %>
         <% end %>

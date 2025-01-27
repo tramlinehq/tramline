@@ -20,7 +20,6 @@ export default class extends ApplicationController {
 
         if (queryLength > MIN_CHARACTERS || queryLength === 0) {
             this.formTarget.requestSubmit();
-            this.updateURL();
         }
     }
 
@@ -33,21 +32,7 @@ export default class extends ApplicationController {
 
         if (queryLength > MIN_CHARACTERS) {
             this.formTarget.requestSubmit();
-            this.updateURL();
         }
-    }
-
-    updateURL() {
-        const searchValue = this.query.value
-        const url = new URL(window.location)
-        
-        if (searchValue) {
-            url.searchParams.set(URL_SEARCH_PATTERN, searchValue)
-        } else {
-            url.searchParams.delete(URL_SEARCH_PATTERN)
-        }
-
-        window.history.pushState({}, '', url)
     }
 
     get query() {
