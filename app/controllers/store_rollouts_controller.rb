@@ -69,6 +69,7 @@ class StoreRolloutsController < SignedInApplicationController
 
   def set_app
     @app = @release.app
+    set_current_app
   end
 
   def ensure_automatic_rollout

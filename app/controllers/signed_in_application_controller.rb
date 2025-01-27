@@ -11,12 +11,12 @@ class SignedInApplicationController < ApplicationController
   before_action :turbo_frame_request_variant
   before_action :set_currents
   before_action :set_paper_trail_whodunnit
-  before_action :set_sentry_context, if: -> { Rails.env.production? }
   before_action :require_login, unless: :authentication_controllers?
   before_action :require_organization!
   before_action :track_behaviour
   before_action :set_app
   before_action :set_page_name
+  before_action :set_sentry_context, if: -> { Rails.env.production? }
 
   helper_method :current_organization,
     :current_user,
@@ -140,6 +140,10 @@ class SignedInApplicationController < ApplicationController
     Current.organization = current_organization
   end
 
+  def set_current_app
+    Current.app_id = @app&.slug
+  end
+
   def track_behaviour
     SiteAnalytics.track(
       current_user,
@@ -163,6 +167,7 @@ class SignedInApplicationController < ApplicationController
     end
 
     @app = current_organization.apps.friendly.find(app_id)
+    set_current_app
   end
 
   def default_app

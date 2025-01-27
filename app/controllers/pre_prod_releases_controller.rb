@@ -12,5 +12,6 @@ class PreProdReleasesController < SignedInApplicationController
 
   def set_app
     @app = @pre_prod_release.release_platform_run.app
+    set_current_app
   end
 end
