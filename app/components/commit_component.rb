@@ -1,14 +1,20 @@
 class CommitComponent < BaseComponent
   OUTER_CLASSES = "py-1.5 px-2 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
 
-  def initialize(commit:, avatar: true, detailed: true)
+  def initialize(commit:, avatar: true, detailed: true, render_html: false)
     @commit = commit
     @avatar = avatar
     @detailed = detailed
+    @render_html = render_html
   end
 
-  attr_reader :commit
+  attr_reader :commit, :render_html
   delegate :message, :author_name, :author_email, :author_login, :author_url, :timestamp, :short_sha, :url, to: :commit
+
+  def truncated_message
+    msg = message.truncate(75)
+    render_html ? msg.html_safe : msg
+  end
 
   def author_link
     author_url || "mailto:#{author_email}"

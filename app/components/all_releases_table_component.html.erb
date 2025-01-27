@@ -47,10 +47,18 @@
             <div class="text-left">
               <div class="space-y-2">
                 <% release.pull_requests.each do |pr| %>
-                  <%= render PullRequestComponent.new(pull_request: Queries::PullRequest.new(pr), simple: true) %>
+                  <%= render PullRequestComponent.new(
+                    pull_request: Queries::PullRequest.new(pr), 
+                    simple: true,
+                    render_html: true
+                  ) %>
                 <% end %>
                 <% release.commits.each do |commit| %>
-                  <%= render CommitComponent.new(commit: Queries::Commit.new(commit), detailed: false) %>
+                  <%= render CommitComponent.new(
+                    commit: Queries::Commit.new(commit), 
+                    detailed: false,
+                    render_html: true
+                  ) %>
                 <% end %>
               </div>
             </div>

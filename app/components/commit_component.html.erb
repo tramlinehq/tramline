@@ -4,7 +4,7 @@
       <div class="flex flex-row gap-x-1 items-center">
         <%= render IconComponent.new("git_commit_vertical.svg", size: :md) %>
         <%= render(ButtonComponent.new(scheme: :link,
-                                           label: message.truncate(75),
+                                           label: truncated_message,
                                            options: url,
                                            type: :link_external,
                                            size: :none,
