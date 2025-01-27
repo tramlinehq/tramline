@@ -155,7 +155,7 @@ describe Coordinators::ProcessCommits do
       described_class.call(release, head_commit_attributes, rest_commit_attributes)
       commit = release.all_commits.last
 
-      expect(Commit::ContinuousBackmergeJob).to have_received(:perform_async).with(commit.id, {"is_head_commit" => true})
+      expect(Commit::ContinuousBackmergeJob).to have_received(:perform_async).with(commit.id, true)
     end
 
     context "when build queue" do
