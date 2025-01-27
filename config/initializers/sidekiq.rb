@@ -26,4 +26,8 @@ Sidekiq.configure_server do |config|
       Sidekiq::Cron::Job.load_from_hash YAML.load_file(schedule_file)
     end
   end
+
+  config.error_handlers << ->(ex, _ctx) do
+    Sentry.capture_exception(ex)
+  end
 end
