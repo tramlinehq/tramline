@@ -86,7 +86,7 @@ describe Coordinators::Actions do
         expect(workflow_run.reload.triggering?).to be(true)
       }.to change(WorkflowRuns::TriggerJob.jobs, :size).by(1)
 
-      expect(WorkflowRuns::TriggerJob.jobs.last["args"]).to eq([workflow_run.id, {"retrigger" => true}])
+      expect(WorkflowRuns::TriggerJob.jobs.last["args"]).to eq([workflow_run.id, true])
     end
   end
 
