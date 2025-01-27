@@ -13,7 +13,7 @@ module Passportable
         reason: reason.to_s,
         kind: kind.to_s,
         message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
-        metadata: data.deep_transform_keys(&:to_s),
+        metadata: data,
         event_timestamp: ts.iso8601,
         automatic: automatic?,
         author_id: Current.user&.id,

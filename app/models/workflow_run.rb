@@ -248,7 +248,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def on_retry!
-    WorkflowRuns::TriggerJob.perform_async(id, {"retrigger" => true})
+    WorkflowRuns::TriggerJob.perform_async(id, true)
     event_stamp!(reason: :retried, kind: :notice, data: stamp_data)
   end
 
