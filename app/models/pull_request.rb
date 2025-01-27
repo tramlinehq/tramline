@@ -57,6 +57,10 @@ class PullRequest < ApplicationRecord
       tsearch: {
         prefix: true,
         any_word: true,
+        highlight: {
+          StartSel: "<mark>",
+          StopSel: "</mark>"
+        }
       }
     }
   # rubocop:disable Rails/SkipsModelValidations

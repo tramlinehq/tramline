@@ -21,15 +21,18 @@ class Queries::Releases
 
   # TODO
   # - output structure
-  # - pagination
   # - pg_search
+  #   - extract `using` to concern
+  #   - indexes
+  #   - add more fields to PR search
   # - tests
+  # - pagination
   def all
     selected_records.map do |record|
       attrs = {
         release_slug: record.slug,
         release_status: record.status,
-        created_at: record.created_at,
+        created_at: record.created_at
       }
 
       items = record.types.zip(record.matched_messages, record.additional_data)
@@ -39,14 +42,14 @@ class Queries::Releases
         .map do |_, message, data|
           {
             title: message,
-            url: data['url'],
-            state: data['state'],
-            number: data['number'],
-            source: data['source'],
-            base_ref: data['base_ref'],
-            head_ref: data['head_ref'],
+            url: data["url"],
+            state: data["state"],
+            number: data["number"],
+            source: data["source"],
+            base_ref: data["base_ref"],
+            head_ref: data["head_ref"],
             commit: nil, # TODO: we get the id, so need to construct Commit
-            labels: data['labels']
+            labels: data["labels"]
           }
         end
 
@@ -55,12 +58,12 @@ class Queries::Releases
         .map do |_, message, data|
           {
             message: message,
-            url: data['url'],
-            author_name: data['author_name'],
-            commit_hash: data['commit_hash'],
-            timestamp: data['timestamp'],
-            author_email: data['author_email'],
-            author_login: data['author_login']
+            url: data["url"],
+            author_name: data["author_name"],
+            commit_hash: data["commit_hash"],
+            timestamp: data["timestamp"],
+            author_email: data["author_email"],
+            author_login: data["author_login"]
           }
         end
 
@@ -85,22 +88,22 @@ class Queries::Releases
     relevant_releases = Release
       .select(:id, :slug, :status, :created_at)
       .joins(:train)
-      .where(trains: { app_id: app.id })
+      .where(trains: {app_id: app.id})
 
     filtered_commits = Commit
-      .select(:id, "'commit' AS type", :release_id, 
-              "message AS matched_message", 
-              "jsonb_build_object('url', url, 'author_name', author_name, 'commit_hash', commit_hash, 'timestamp', commits.created_at, 'author_email', author_email, 'author_login', author_login) AS additional_data",
-              "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
+      .select(:id, "'commit' AS type", :release_id,
+        "message AS matched_message",
+        "jsonb_build_object('url', url, 'author_name', author_name, 'commit_hash', commit_hash, 'timestamp', commits.created_at, 'author_email', author_email, 'author_login', author_login) AS additional_data",
+        "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON commits.release_id = relevant_releases.id")
       .search_by_message(params.search_query)
       .with_pg_search_highlight
 
     filtered_pull_requests = PullRequest
-      .select(:id, "'pull_request' AS type", :release_id, 
-              "title AS matched_message", 
-              "jsonb_build_object('url', url, 'state', state, 'number', number, 'source', source, 'base_ref', base_ref, 'head_ref', head_ref, 'commit', commit_id, 'labels', labels) AS additional_data",
-              "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
+      .select(:id, "'pull_request' AS type", :release_id,
+        "title AS matched_message",
+        "jsonb_build_object('url', url, 'state', state, 'number', number, 'source', source, 'base_ref', base_ref, 'head_ref', head_ref, 'commit', commit_id, 'labels', labels) AS additional_data",
+        "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON pull_requests.release_id = relevant_releases.id")
       .search_by_title(params.search_query)
       .with_pg_search_highlight
@@ -118,8 +121,8 @@ class Queries::Releases
         "array_agg(type) as types",
         "array_agg(pg_search_highlight) as matched_messages",
         "array_agg(additional_data) as additional_data",
-        :slug, 
-        :status, 
+        :slug,
+        :status,
         :created_at)
       .group(:release_id, :slug, :status, :created_at)
   end
@@ -216,4 +219,4 @@ class Queries::Releases
       )
     end
   end
-end 
+end

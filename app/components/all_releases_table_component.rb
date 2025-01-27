@@ -32,7 +32,7 @@ class AllReleasesTableComponent < ViewComponent::Base
       [
         status_cell(release.release_status),
         commit_messages_cell(release.commit_message),
-        created_cell(release.created_at),
+        created_cell(release.created_at)
       ]
     end
   end
@@ -48,7 +48,7 @@ class AllReleasesTableComponent < ViewComponent::Base
   def created_cell(timestamp)
     format_timestamp(timestamp)
   end
-  
+
   def sort_indicator
     image_tag("sort_indicator.svg", class: "inline-flex mx-2 align-baseline", width: 8)
   end
@@ -60,4 +60,4 @@ class AllReleasesTableComponent < ViewComponent::Base
   def turbo_data
     {turbo_frame: "all_releases"}
   end
-end 
+end
