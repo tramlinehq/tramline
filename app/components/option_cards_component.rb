@@ -14,7 +14,7 @@ class OptionCardsComponent < BaseComponent
 
   def enhance_opts(opts)
     opts.map do |option|
-      base_id = "#{form.object_name}_#{option[:opt_name]}"
+      base_id = [form.object_name, option[:opt_name]].compact_blank.join("_")
       base_id += "_#{option[:opt_value]}" if option[:opt_value]
       option[:id] = base_id
       option[:icon] = IconComponent.new(option[:icon], size: :xl)
