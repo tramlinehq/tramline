@@ -315,7 +315,7 @@ class AppStoreSubmission < StoreSubmission
 
   def on_cancel!
     event_stamp!(reason: :cancelled, kind: :error, data: stamp_data)
-    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, {"can_retry" => false})
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, false)
   end
 
   def on_reject!

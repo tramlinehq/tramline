@@ -10,14 +10,14 @@ module Passportable
       id,
       self.class.name,
       {
-        "reason" => reason.to_s,
-        "kind" => kind.to_s,
-        "message" => I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
-        "metadata" => data.deep_transform_keys(&:to_s),
-        "event_timestamp" => ts.iso8601,
-        "automatic" => automatic?,
-        "author_id" => Current.user&.id,
-        "author_metadata" => author_metadata
+        reason: reason.to_s,
+        kind: kind.to_s,
+        message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
+        metadata: data.deep_transform_keys(&:to_s),
+        event_timestamp: ts.iso8601,
+        automatic: automatic?,
+        author_id: Current.user&.id,
+        author_metadata: author_metadata
       }
     )
   end
@@ -27,14 +27,14 @@ module Passportable
       id,
       self.class.name,
       {
-        "reason" => reason.to_s,
-        "kind" => kind.to_s,
-        "message" => I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
-        "metadata" => data,
-        "event_timestamp" => Time.current.iso8601,
-        "automatic" => automatic?,
-        "author_id" => Current.user&.id,
-        "author_metadata" => author_metadata
+        reason: reason.to_s,
+        kind: kind.to_s,
+        message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
+        metadata: data,
+        event_timestamp: Time.current.iso8601,
+        automatic: automatic?,
+        author_id: Current.user&.id,
+        author_metadata: author_metadata
       }
     )
   end
@@ -52,10 +52,10 @@ module Passportable
   def author_metadata
     unless automatic?
       {
-        "name" => Current.user.preferred_name || Current.user.full_name,
-        "full_name" => Current.user.full_name,
-        "role" => Current.user.role_for(Current.organization),
-        "email" => Current.user.email
+        name: Current.user.preferred_name || Current.user.full_name,
+        full_name: Current.user.full_name,
+        role: Current.user.role_for(Current.organization),
+        email: Current.user.email
       }
     end
   end

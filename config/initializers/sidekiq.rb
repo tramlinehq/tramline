@@ -9,6 +9,9 @@ Sidekiq.configure_client do |config|
   end
 end
 
+strict_args_mode = Rails.env.local? ? :warn : false
+Sidekiq.strict_args!(strict_args_mode)
+
 Sidekiq.configure_server do |config|
   config.redis = {url: ENV["SIDEKIQ_REDIS_URL"]}
 

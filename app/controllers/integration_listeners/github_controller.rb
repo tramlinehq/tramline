@@ -29,7 +29,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   def handle_push
     result = Action.process_push_webhook(train, push_params)
     response = result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing push")
-    Rails.logger.debug { response.body }
+    Rails.logger.error { result.error }
     head response.status
   end
 
