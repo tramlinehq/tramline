@@ -170,8 +170,8 @@ class AppConfigsController < SignedInApplicationController
       selected_projects: Array(config[:selected_projects]),
       project_configs: config[:project_configs]&.transform_values do |project_config|
         {
-          done_states: Array(project_config[:done_states]).reject(&:blank?),
-          custom_done_states: Array(project_config[:custom_done_states]).reject(&:blank?)
+          done_states: Array(project_config[:done_states]).compact_blank,
+          custom_done_states: Array(project_config[:custom_done_states]).compact_blank
         }
       end || {},
       release_tracking: {
