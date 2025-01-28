@@ -23,7 +23,6 @@ class Queries::Releases
   # - output structure
   # - pg_search
   #   - indexes
-  #   - add more fields to PR search
   # - tests
   # - pagination
   def all

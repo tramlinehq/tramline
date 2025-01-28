@@ -8,8 +8,9 @@
 #  author_name             :string           not null
 #  backmerge_failure       :boolean          default(FALSE)
 #  commit_hash             :string           not null, indexed => [release_id]
-#  message                 :string
+#  message                 :string           indexed
 #  parents                 :jsonb
+#  search_vector           :tsvector         indexed
 #  timestamp               :datetime         not null, indexed => [release_id]
 #  url                     :string
 #  created_at              :datetime         not null
@@ -39,6 +40,7 @@ class Commit < ApplicationRecord
 
   validates :commit_hash, uniqueness: {scope: :release_id}
 
+  before_save :generate_search_vector_data
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
 
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
@@ -117,5 +119,11 @@ class Commit < ApplicationRecord
         commit_timestamp: timestamp
       }
     )
+  end
+
+  private
+
+  def generate_search_vector_data
+    self.search_vector = self.class.generate_search_vector(message)
   end
 end
