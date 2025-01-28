@@ -1,15 +1,10 @@
 class StoreSubmissions::TestFlight::UpdateExternalBuildJob < ApplicationJob
+  prepend Reenqueuer
   queue_as :high
-  sidekiq_options retry: 2000
 
-  sidekiq_retry_in do |count, ex|
-    if ex.is_a?(TestFlightSubmission::SubmissionNotInTerminalState)
-      backoff_in(attempt: count, period: :minutes, type: :static, factor: 5).to_i
-    else
-      elog(ex)
-      :kill
-    end
-  end
+  enduring_retry_on TestFlightSubmission::SubmissionNotInTerminalState,
+    max_attempts: 2000,
+    backoff: {period: :minutes, type: :static, factor: 5}
 
   def perform(submission_id)
     submission = TestFlightSubmission.find(submission_id)
