@@ -8,7 +8,7 @@ describe IntegrationListeners::JiraController do
     {
       app_id: app.id,
       user_id: user.id,
-      organization_id: organization.id,
+      organization_id: organization.id
     }.to_json.encode
   }
   let(:code) { "test_code" }
@@ -75,7 +75,7 @@ describe IntegrationListeners::JiraController do
       end
     end
 
-    context "as a POST request" do
+    context "when it behaves as a POST request" do
       let(:valid_params) do
         {
           cloud_id: "cloud_123",

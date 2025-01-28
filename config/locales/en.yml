@@ -723,13 +723,5 @@ en:
         done_states:
           select: "Select Done States"
           help_text: "Choose which states represent completed work"
-        release_filters:
-          title: "Release Filters"
-          types:
-            label: "Label"
-            fix_version: "Fix Version"
-          add: "Add Filter"
-          placeholder:
-            label: "e.g., release-1.0.0"
         no_organization: "No Jira organizations available. Please try again."
         integration_created: "Integration was successfully created."
