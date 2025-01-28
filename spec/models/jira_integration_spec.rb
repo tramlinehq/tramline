@@ -79,11 +79,11 @@ RSpec.describe JiraIntegration do
     it "returns formatted tickets" do
       expect(integration.fetch_tickets_for_release).to eq([{"key" => "PROJ-1",
                                                             "fields" =>
-        {"summary" => "Test ticket",
-         "status" => {"name" => "Done"},
-         "assignee" => {"displayName" => "John Doe"},
-         "labels" => [sample_release_label],
-         "fixVersions" => [{"name" => sample_version}]}}])
+                                                               {"summary" => "Test ticket",
+                                                                "status" => {"name" => "Done"},
+                                                                "assignee" => {"displayName" => "John Doe"},
+                                                                "labels" => [sample_release_label],
+                                                                "fixVersions" => [{"name" => sample_version}]}}])
     end
 
     context "when missing required configuration" do

@@ -59,8 +59,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      ngrok:
-        condition: service_healthy
 
   ngrok:
     image: ngrok/ngrok:latest
@@ -137,8 +135,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      setup:
-        condition: service_completed_successfully
 
 volumes:
   bundle:
