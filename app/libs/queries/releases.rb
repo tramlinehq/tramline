@@ -22,7 +22,6 @@ class Queries::Releases
   # TODO
   # - output structure
   # - pg_search
-  #   - extract `using` to concern
   #   - indexes
   #   - add more fields to PR search
   # - tests
@@ -96,8 +95,12 @@ class Queries::Releases
         "jsonb_build_object('url', url, 'author_name', author_name, 'commit_hash', commit_hash, 'timestamp', commits.created_at, 'author_email', author_email, 'author_login', author_login) AS additional_data",
         "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON commits.release_id = relevant_releases.id")
-      .search_by_message(params.search_query)
-      .with_pg_search_highlight
+
+    filtered_commits = if params.search_query.present?
+      filtered_commits.search_by_message(params.search_query).with_pg_search_highlight
+    else
+      filtered_commits.select("message AS pg_search_highlight")
+    end
 
     filtered_pull_requests = PullRequest
       .select(:id, "'pull_request' AS type", :release_id,
@@ -105,8 +108,12 @@ class Queries::Releases
         "jsonb_build_object('url', url, 'state', state, 'number', number, 'source', source, 'base_ref', base_ref, 'head_ref', head_ref, 'commit', commit_id, 'labels', labels) AS additional_data",
         "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON pull_requests.release_id = relevant_releases.id")
-      .search_by_title(params.search_query)
-      .with_pg_search_highlight
+
+    filtered_pull_requests = if params.search_query.present?
+      filtered_pull_requests.search_by_title(params.search_query).with_pg_search_highlight
+    else
+      filtered_pull_requests.select("title AS pg_search_highlight")
+    end
 
     # Final query with CTEs
     Release
