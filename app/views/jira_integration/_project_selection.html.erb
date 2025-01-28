@@ -1,6 +1,6 @@
 <%# locals: (form:, jira_data:, current_jira_config:) %>
 
-<div class="flex flex-col gap-6" data-controller="targeted_toggle">
+<div class="flex flex-col gap-6" data-controller="targeted-toggle">
   <div class="flex flex-col">
     <h4 class="heading-4 mb-3 border-default-b pb-1">Projects</h4>
     <% jira_data[:projects].each do |project| %>
@@ -21,7 +21,7 @@
                             data: {
                               action: "targeted-toggle#toggle",
                               section_key: project_key,
-                              project_selector_target: "section",
+                              targeted_toggle_target: "section",
                             },
                           },
                           project["key"] %>
@@ -34,14 +34,14 @@
     <% end %>
   </div>
 
-  <div id="project_configurations">
+  <div>
     <h4 class="heading-4 mb-3 border-default-b pb-1">Done States</h4>
     <div class="flex flex-col item-gap-default">
       <% jira_data[:projects].each do |project| %>
         <% project_key = project["key"] %>
         <% statuses = jira_data[:project_statuses][project_key] %>
 
-        <div data-targeted_toggle-target="subsection" data-section-key="<%= project_key %>">
+        <div data-targeted-toggle-target="subsection" data-section-key="<%= project_key %>">
           <h3 class="heading-5">For <%= project["name"] %> (<%= project["key"] %>)</h3>
 
           <% if statuses&.any? %>
@@ -81,7 +81,7 @@
 
   <div>
     <h4 class="heading-4 mb-3 border-default-b pb-1">Release Filters</h4>
-    <div data-controller="nested-form-ext" class="grid">
+    <div data-controller="nested-form-ext" class="grid item-gap-default">
       <div>
         <%= render ButtonComponent.new(
           scheme: :light,
@@ -94,22 +94,18 @@
         end %>
       </div>
 
-      <ul class="flex flex-col gap-1">
+      <ul class="flex flex-col gap-2">
         <% release_filters = current_jira_config&.dig("release_filters") || [] %>
 
-        <% if release_filters.any? %>
-          <% release_filters.each_with_index do |filter, index| %>
-            <li class="nested-form-wrapper" data-new-record="false">
-              <%= render "jira_integration/release_filter_form", filter: filter, index: index, local_assigns: true %>
-            </li>
-          <% end %>
-        <% else %>
-          <%= render "jira_integration/release_filter_form", filter: {}, index: 0, local_assigns: true %>
+        <% release_filters.each_with_index do |filter, index| %>
+          <li class="nested-form-wrapper" data-new-record="false">
+            <%= render partial: "jira_integration/release_filter_form", locals: { form:, filter: filter, index: index } %>
+          </li>
         <% end %>
 
         <template data-nested-form-ext-target="template">
           <li class="nested-form-wrapper" data-new-record="true">
-            <%= render "jira_integration/release_filter_form", index: "NEW_RECORD" %>
+            <%= render partial: "jira_integration/release_filter_form", locals: { form:, index: "NEW_RECORD" } %>
           </li>
         </template>
 

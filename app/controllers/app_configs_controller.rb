@@ -90,7 +90,7 @@ class AppConfigsController < SignedInApplicationController
           selected_projects: [],
           project_configs: {},
           release_tracking: [:track_tickets, :auto_transition],
-          release_filters: [[:type, :value]]
+          release_filters: [[:type, :value, :_destroy]]
         }
       )
   end
@@ -170,8 +170,8 @@ class AppConfigsController < SignedInApplicationController
       selected_projects: Array(config[:selected_projects]),
       project_configs: config[:project_configs]&.transform_values do |project_config|
         {
-          done_states: Array(project_config[:done_states])&.reject(&:blank?),
-          custom_done_states: Array(project_config[:custom_done_states])&.reject(&:blank?)
+          done_states: Array(project_config[:done_states]).reject(&:blank?),
+          custom_done_states: Array(project_config[:custom_done_states]).reject(&:blank?)
         }
       end || {},
       release_tracking: {
@@ -179,7 +179,7 @@ class AppConfigsController < SignedInApplicationController
         auto_transition: ActiveModel::Type::Boolean.new.cast(config.dig(:release_tracking, :auto_transition))
       },
       release_filters: config[:release_filters]&.values&.filter_map do |filter|
-        next if filter[:type].blank? || filter[:value].blank?
+        next if filter[:type].blank? || filter[:value].blank? || filter[:_destroy] == "1"
         {
           "type" => filter[:type],
           "value" => filter[:value]
