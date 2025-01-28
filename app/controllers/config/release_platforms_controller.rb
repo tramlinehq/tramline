@@ -80,7 +80,8 @@ class Config::ReleasePlatformsController < SignedInApplicationController
         ]
       ],
       internal_workflow_attributes: [
-        :id, :identifier, :_destroy, :artifact_name_pattern, :build_suffix
+        :id, :identifier, :_destroy, :artifact_name_pattern, :build_suffix,
+        parameters_attributes: [:id, :name, :value, :_destroy]
       ]
     )
   end
