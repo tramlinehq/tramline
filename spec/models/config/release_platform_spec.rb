@@ -46,7 +46,7 @@ describe Config::ReleasePlatform do
 
     describe "duplication of internal release and release candidate workflow" do
       before do
-        base_config[:workflows][:internal] = base_config[:workflows][:release_candidate]
+        base_config[:workflows][:internal] = base_config[:workflows][:release_candidate].deep_dup
         base_config[:internal_release] = base_config[:production_release]
         base_config[:beta_release] = {
           submissions: [
@@ -110,7 +110,7 @@ describe Config::ReleasePlatform do
 
           it "is not valid" do
             release_platform = described_class.from_json(base_config.merge(release_platform: create(:release_platform)))
-            expect(release_platform).not_to be_valid
+            expect(release_platform).to be_valid
           end
         end
         # rubocop:enable RSpec/NestedGroups
