@@ -1,5 +1,5 @@
 class StoreSubmissions::TestFlight::FindBuildJob < ApplicationJob
-  include Reenqueuer
+  prepend Reenqueuer
   queue_as :high
 
   enduring_retry_on Installations::Error,

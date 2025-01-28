@@ -10,6 +10,7 @@ module Reenqueuer
   include Backoffable
 
   included do
+    # Disable Sidekiq retries since we'll handle them ourselves
     sidekiq_options retry: 0
   end
 
@@ -42,7 +43,7 @@ module Reenqueuer
     current_attempt = retry_meta&.dig("_retry_meta", "attempt") || 1
 
     begin
-      perform_work(*args)
+      super
     rescue => error
       handle_error(error, args, current_attempt)
     end

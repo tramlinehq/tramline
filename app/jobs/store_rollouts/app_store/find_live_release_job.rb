@@ -1,15 +1,10 @@
 class StoreRollouts::AppStore::FindLiveReleaseJob < ApplicationJob
+  prepend Reenqueuer
   queue_as :high
-  sidekiq_options retry: 6000
 
-  sidekiq_retry_in do |_count, ex|
-    if ex.is_a?(AppStoreRollout::ReleaseNotFullyLive)
-      5.minutes.to_i
-    else
-      elog(ex)
-      :kill
-    end
-  end
+  enduring_retry_on AppStoreRollout::ReleaseNotFullyLive,
+    max_attempts: 6000,
+    backoff: {period: :minutes, type: :static, factor: 5}
 
   def perform(rollout_id)
     rollout = AppStoreRollout.find(rollout_id)

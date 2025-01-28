@@ -6,7 +6,7 @@ TestError = Class.new(StandardError)
 MAX_RETRY_COUNT = 5
 
 class TestJob < ApplicationJob
-  include Reenqueuer
+  prepend Reenqueuer
 
   cattr_accessor :exhausted_called, default: false
   cattr_accessor :last_exhausted_error
@@ -14,7 +14,7 @@ class TestJob < ApplicationJob
 
   enduring_retry_on TestError, max_attempts: MAX_RETRY_COUNT, backoff: {period: :minutes, type: :static, factor: 1}
 
-  def perform_work(_)
+  def perform(_)
     raise TestError
   end
 
