@@ -4,7 +4,7 @@ module Chatwoot
     # It is recommended to call this function every time a user log out of your application
     # Do not use before a redirect_to because it will not clear the cookies on a redirection
     def self.chatwoot_shutdown_helper(cookies, domain = nil)
-      nil_session = { value: nil, expires: 1.day.ago }
+      nil_session = {value: nil, expires: 1.day.ago}
       nil_session = nil_session.merge(domain: domain) unless domain.nil? || domain == "localhost"
       chatwoot_token = ENV["CHATWOOT_WEBSITE_TOKEN"]
       session_cookie = "cw_user_#{chatwoot_token}"
