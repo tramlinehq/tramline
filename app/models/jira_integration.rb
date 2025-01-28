@@ -213,7 +213,7 @@ class JiraIntegration < ApplicationRecord
       {projects: response}
     end
   rescue => e
-    Rails.logger.error("Failed to fetch Jira projects for cloud_id #{cloud_id}: #{e.message}")
+    Rails.logger.error("Failed to fetch Jira projects for cloud_id #{cloud_id}: #{e}")
     {projects: []}
   end
 
@@ -228,7 +228,7 @@ class JiraIntegration < ApplicationRecord
       statuses
     end
   rescue => e
-    Rails.logger.error("Failed to fetch Jira project statuses for cloud_id #{cloud_id}: #{e.message}")
+    Rails.logger.error("Failed to fetch Jira project statuses for cloud_id #{cloud_id}: #{e}")
     {}
   end
 end

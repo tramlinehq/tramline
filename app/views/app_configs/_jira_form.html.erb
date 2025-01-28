@@ -7,13 +7,10 @@
                                free_form: true) do |f| %>
     <%= render CardComponent.new(title: "Select Jira Projects",
                                  subtitle: "Pick projects, add release filters and done states for tracking releases",
-                                 separator: true,
+                                 separator: false,
                                  size: :full) do %>
-      <div data-controller="project-selector">
-        <%= render partial: "jira_integration/project_selection",
-                   locals: { form: f.F, jira_data: @jira_data, current_jira_config: @current_jira_config } %>
-      </div>
-
+      <%= render partial: "jira_integration/project_selection",
+                 locals: { form: f.F, jira_data: @jira_data, current_jira_config: @current_jira_config } %>
       <% f.with_action do %>
         <%= f.F.authz_submit "Update", "plus.svg", size: :sm %>
       <% end %>

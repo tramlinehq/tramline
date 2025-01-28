@@ -2,7 +2,7 @@
 <% filter ||= {} %>
 <% index ||= 0 %>
 
-<div class="flex items-center gap-4" data-domain--release-filters-target="filter">
+<div class="flex items-center gap-4">
   <%= select_tag "app_config[jira_config][release_filters][#{index}][type]",
                  options_for_select([
                    [t("integrations.project_management.jira.release_filters.types.label"), "label"],
@@ -19,10 +19,7 @@
     scheme: :naked_icon,
     type: :action,
     size: :none,
-    html_options: {
-      class: "mt-2",
-      data: { action: "domain--release-filters#remove" }
-    }) do |b|
+    html_options: {data: {action: "nested-form-ext#remove"}}) do |b|
     b.with_icon("trash.svg", size: :md)
   end %>
 </div>

@@ -4,6 +4,7 @@ module Installations
     attr_reader :oauth_access_token, :cloud_id
 
     BASE_URL = "https://api.atlassian.com/ex/jira"
+    DATA = Installations::Response::Keys
 
     # API Endpoints
     PROJECTS_URL = Addressable::Template.new "#{BASE_URL}/{cloud_id}/rest/api/3/project/search"
@@ -57,9 +58,10 @@ module Installations
       end
 
       def get_oauth_token(params)
-        response = HTTP
-          .basic_auth(user: creds.integrations.jira.client_id, pass: creds.integrations.jira.client_secret)
-          .post(OAUTH_ACCESS_TOKEN_URL, params)
+        response =
+          HTTP
+            .basic_auth(user: creds.integrations.jira.client_id, pass: creds.integrations.jira.client_secret)
+            .post(OAUTH_ACCESS_TOKEN_URL, params)
 
         body = JSON.parse(response.body.to_s)
         tokens = {
@@ -79,7 +81,7 @@ module Installations
 
     def projects(transformations)
       response = execute(:get, PROJECTS_URL.expand(cloud_id:).to_s)
-      transform_data(response["values"], transformations)
+      DATA.transform(response["values"], transformations)
     end
 
     def project_statuses(project_key, transformations)
@@ -97,7 +99,7 @@ module Installations
       }
 
       response = execute(:get, SEARCH_URL.expand(cloud_id:).to_s, params)
-      transform_data(response["issues"], transformations)
+      DATA.transform(response["issues"], transformations)
     rescue HTTP::Error => e
       Rails.logger.error "Failed to search Jira tickets: #{e.message}"
       raise Installations::Error.new("Failed to search Jira tickets", reason: :api_error)
@@ -108,15 +110,15 @@ module Installations
     def extract_unique_statuses(statuses, transformations)
       statuses.flat_map { |issue_type| issue_type["statuses"] }
         .uniq { |status| status["id"] }
-        .then { |statuses| transform_data(statuses, transformations) }
-    end
-
-    def transform_data(data, transformations)
-      Installations::Response::Keys.transform(data, transformations)
+        .then { |statuses| DATA.transform(statuses, transformations) }
     end
 
     def execute(method, url, params = {}, parse_response = true)
-      response = HTTP.auth("Bearer #{oauth_access_token}").headers("Accept" => "application/json").public_send(method, url, params)
+      response =
+        HTTP
+          .auth("Bearer #{oauth_access_token}")
+          .headers("Accept" => "application/json")
+          .public_send(method, url, params)
 
       parsed_body = parse_response ? JSON.parse(response.body) : response.body
       Rails.logger.debug { "Jira API returned #{response.status} for #{url} with body - #{parsed_body}" }
