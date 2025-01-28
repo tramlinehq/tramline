@@ -137,19 +137,19 @@ class AppConfig < ApplicationRecord
     update(ci_cd_workflows: workflows)
   end
 
-  def add_jira_release_filter(type:, value:)
-    return unless JiraIntegration::VALID_FILTER_TYPES.include?(type)
-
-    new_filters = (jira_config.dig("release_filters") || []).dup
-    new_filters << {"type" => type, "value" => value}
-    update!(jira_config: jira_config.merge("release_filters" => new_filters))
-  end
-
-  def remove_jira_release_filter(index)
-    new_filters = (jira_config.dig("release_filters") || []).dup
-    new_filters.delete_at(index)
-    update!(jira_config: jira_config.merge("release_filters" => new_filters))
-  end
+  # def add_jira_release_filter(type:, value:)
+  #   return unless JiraIntegration::VALID_FILTER_TYPES.include?(type)
+  #
+  #   new_filters = (jira_config.dig("release_filters") || []).dup
+  #   new_filters << {"type" => type, "value" => value}
+  #   update!(jira_config: jira_config.merge("release_filters" => new_filters))
+  # end
+  #
+  # def remove_jira_release_filter(index)
+  #   new_filters = (jira_config.dig("release_filters") || []).dup
+  #   new_filters.delete_at(index)
+  #   update!(jira_config: jira_config.merge("release_filters" => new_filters))
+  # end
 
   private
 

@@ -725,7 +725,6 @@ en:
           help_text: "Choose which states represent completed work"
         release_filters:
           title: "Release Filters"
-          help_text: "Configure how tickets are associated with releases"
           types:
             label: "Label"
             fix_version: "Fix Version"
