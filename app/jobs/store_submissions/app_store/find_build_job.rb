@@ -1,5 +1,5 @@
 class StoreSubmissions::AppStore::FindBuildJob < ApplicationJob
-  include RetryableJob
+  include Reenqueuer
   queue_as :high
 
   enduring_retry_on Installations::Error,

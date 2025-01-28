@@ -6,7 +6,7 @@ TestError = Class.new(StandardError)
 MAX_RETRY_COUNT = 5
 
 class TestJob < ApplicationJob
-  include RetryableJob
+  include Reenqueuer
 
   cattr_accessor :exhausted_called, default: false
   cattr_accessor :last_exhausted_error
@@ -25,8 +25,8 @@ class TestJob < ApplicationJob
   end
 end
 
-RSpec.describe RetryableJob do
-  after do
+RSpec.describe Reenqueuer do
+  before do
     TestJob.jobs.clear
     TestJob.exhausted_called = false
     TestJob.last_exhausted_error = nil

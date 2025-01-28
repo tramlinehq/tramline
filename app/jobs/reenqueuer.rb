@@ -5,7 +5,7 @@
 # by re-enqueueing them with correct wait time SLO using custom retry metadata.
 # This still relies on default sidekiq retry exhausted flow to handle retry exhaustion.
 
-module RetryableJob
+module Reenqueuer
   extend ActiveSupport::Concern
   include Backoffable
 
