@@ -1,7 +1,6 @@
 module Chatwoot
   module ShutdownHelper
-    # This helper allows to erase cookies when a user log out of an application
-    # It is recommended to call this function every time a user log out of your application
+    # This helper allows to erase cookies when a user logs out of an application
     # Do not use before a redirect_to because it will not clear the cookies on a redirection
     def self.chatwoot_shutdown_helper(cookies, domain = nil)
       nil_session = {value: nil, expires: 1.day.ago}
@@ -19,7 +18,7 @@ module Chatwoot
         controller.response.delete_cookie(conversation_cookie, nil_session)
       end
 
-      Rails.logger.debug { "Chatwoot: sessions cleared" }
+      Rails.logger.debug { "Chatwoot: session cleared" }
     rescue
       Rails.logger.debug { "Chatwoot: shutdown failed" }
       nil
