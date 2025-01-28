@@ -4,7 +4,7 @@ class TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate]
+  before_action :require_write_access!, only: %i[new create update destroy activate deactivate]
   before_action :set_train, only: %i[edit update destroy activate deactivate rules]
   before_action :set_train_config_tabs, only: %i[edit update rules destroy activate deactivate]
   before_action :validate_integration_status, only: %i[new create]

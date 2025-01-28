@@ -2,7 +2,7 @@ class IntegrationsController < SignedInApplicationController
   using RefinedString
   include Tabbable
 
-  before_action :require_write_access!, only: %i[connect create index build_artifact_channels destroy]
+  before_action :require_write_access!, only: %i[connect create build_artifact_channels destroy]
   before_action :set_app_config_tabs, only: %i[index]
   before_action :set_integration, only: %i[connect create reuse]
   before_action :set_existing_integration, only: %i[reuse]
