@@ -34,6 +34,7 @@
         <% end %>
 
         <div class="flex flex-col gap-0.5">
+          <%= render partial: "parameters_info" %>
           <div data-controller="nested-form-ext" data-nested-form-ext-list-position-outlet="#release_candidate_workflow_additional_parameters" class="grid-cols-2 gap-2 pt-3">
             <div class="pb-3">
               <%= render ButtonComponent.new(
@@ -53,9 +54,9 @@
                 class="flex flex-col flex-1 item-gap-default"
                 id="release_candidate_workflow_parameters">
               <% if rc_fields.object.parameters.present? %>
-                <div class="flex flex-row grid grid-cols-2">
-                  <p class="text-sm">Parameter Name</p>
-                  <p class="text-sm">Parameter Value</p>
+                <div class="flex flex-row grid grid-cols-2 font-medium text-secondary text-xs">
+                  <p>Parameter Name</p>
+                  <p>Parameter Value</p>
                 </div>
               <% end %>
 
@@ -219,6 +220,7 @@
             <% end %>
 
             <div class="flex flex-col gap-0.5">
+              <%= render partial: "parameters_info" %>
               <div data-controller="nested-form-ext" data-nested-form-ext-list-position-outlet="#internal_workflow_additional_parameters" class="grid-cols-2 gap-2 pt-3">
                 <div class="pb-3">
                   <%= render ButtonComponent.new(
@@ -238,9 +240,9 @@
                     class="flex flex-col flex-1 item-gap-default"
                     id="internal_workflow_parameters">
                   <% if internal_fields.object.parameters.present? %>
-                    <div class="flex flex-row grid grid-cols-2">
-                      <p class="text-sm">Parameter Name</p>
-                      <p class="text-sm">Parameter Value</p>
+                    <div class="flex flex-row grid grid-cols-2 font-medium text-secondary text-xs">
+                      <p>Parameter Name</p>
+                      <p>Parameter Value</p>
                     </div>
                   <% end %>
 
