@@ -1,7 +1,7 @@
 class AppConfigsController < SignedInApplicationController
   using RefinedString
 
-  before_action :require_write_access!, only: %i[edit update]
+  before_action :require_write_access!, only: %i[update]
   before_action :set_integration_category, only: %i[edit]
   before_action :set_app_config, only: %i[edit update]
   around_action :set_time_zone

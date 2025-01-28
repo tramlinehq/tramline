@@ -3,7 +3,7 @@ class NotificationSettingsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :require_write_access!, only: %i[update edit]
+  before_action :require_write_access!, only: %i[update]
   before_action :set_train, only: %i[index update edit]
   before_action :set_notification_setting, only: %i[update edit]
   around_action :set_time_zone

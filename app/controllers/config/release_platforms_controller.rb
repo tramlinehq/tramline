@@ -2,7 +2,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   include Tabbable
   using RefinedString
 
-  before_action :require_write_access!, only: %i[edit update]
+  before_action :require_write_access!, only: %i[update]
   before_action :set_train, only: %i[edit update]
   before_action :set_app_from_train, only: %i[edit update]
   before_action :set_release_platform, only: %i[edit update]

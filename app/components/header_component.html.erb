@@ -11,9 +11,9 @@
         <div class="flex items-center mb-2 sm:mb-0 gap-x-2">
           <% if current_organization %>
             <%= render ButtonComponent.new(scheme: :light,
-                                               options: edit_accounts_organization_path(current_organization),
-                                               type: :link,
-                                               size: :xxs) do |b| %>
+                                           options: edit_accounts_organization_path(current_organization),
+                                           type: :link,
+                                           size: :xxs) do |b| %>
               <% b.with_tooltip("Organization Settings") %>
               <% b.with_icon("building.svg", size: :md) %>
             <% end %>
@@ -85,18 +85,19 @@
 
 
             <%= render ButtonComponent.new(scheme: :light,
-                                               options: edit_app_path(default_app),
-                                               type: :link,
-                                               size: :xxs) do |b| %>
+                                           options: edit_app_path(default_app),
+                                           type: :link,
+                                           authz: false,
+                                           size: :xxs) do |b| %>
               <% b.with_tooltip("App Settings") %>
               <% b.with_icon("cog.svg", size: :md) %>
             <% end %>
 
             <%= render ButtonComponent.new(scheme: :light,
-                                               options: all_builds_app_path(default_app),
-                                               type: :link,
-                                               size: :xxs,
-                                               authz: false) do |b| %>
+                                           options: all_builds_app_path(default_app),
+                                           type: :link,
+                                           size: :xxs,
+                                           authz: false) do |b| %>
               <% b.with_tooltip("All Builds") %>
               <% b.with_icon("drill.svg", size: :md) %>
             <% end %>

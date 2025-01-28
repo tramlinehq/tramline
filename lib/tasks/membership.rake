@@ -14,6 +14,7 @@ namespace :membership do
 
     email = "external.viewer+#{email_suffix}@tramline.app"
     name = "Demo for #{email_suffix}"
+    user = nil
 
     ActiveRecord::Base.transaction do
       email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email:)
@@ -37,6 +38,8 @@ namespace :membership do
       puts "Email: #{email}"
       puts "Password: #{password}"
     end
+
+    SiteAnalytics.identify_and_group(user, organization)
   end
 
   desc "Bulk invite members of an organization"
