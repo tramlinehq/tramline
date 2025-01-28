@@ -4,6 +4,9 @@
   <%= render partial: "shared/favicon" %>
   <title><%= page_title(@page_name, current_organization, @app, @release) %></title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="environment" content="<%= Rails.env %>"/>
+  <meta name="sentryDSNUrl" content="<%= ENV["FRONTEND_SENTRY_DSN"] %>"/>
+  <!-- current deploy: <%= Site.git_ref %> at <%= Site.git_ref_at %> -->
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
 
@@ -14,9 +17,32 @@
 
   <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
-  <meta name="environment" content="<%= Rails.env %>"/>
-  <meta name="sentryDSNUrl" content="<%= ENV["FRONTEND_SENTRY_DSN"] %>"/>
-  <!-- current deploy: <%= Site.git_ref %> at <%= Site.git_ref_at %> -->
+  <script nonce="<%= content_security_policy_nonce %>">
+    (function (d, t) {
+      let BASE_URL = "https://app.chatwoot.com";
+      let g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+
+      g.src = BASE_URL + "/packs/js/sdk.js";
+      g.defer = true;
+      g.async = true;
+      s.parentNode.insertBefore(g, s);
+      g.onload = function () {
+        window.chatwootSDK.run({
+          websiteToken: "<%= ENV["CHATWOOT_WEBSITE_TOKEN"] %>",
+          baseUrl: BASE_URL
+        })
+      }
+    })(document, "script");
+
+    window.addEventListener("chatwoot:ready", function () {
+      window.$chatwoot.setUser("<%= current_user&.id %>", {
+        email: "<%= current_user&.email %>",
+        name: "<%= current_user&.full_name %>",
+        company_name: "<%= current_organization&.name %>",
+        identifier_hash: "<%= current_user&.support_chat_identifier %>",
+      });
+    });
+  </script>
 </head>
 
 <body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white subpixel-antialiased dark:antialiased">

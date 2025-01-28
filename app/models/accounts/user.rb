@@ -202,6 +202,10 @@ class Accounts::User < ApplicationRecord
     github_login.blank? || team_for(organization).blank?
   end
 
+  def support_chat_identifier
+    OpenSSL::HMAC.hexdigest("sha256", ENV["CHATWOOT_IDENTITY_VERIFICATION_TOKEN"], id)
+  end
+
   protected
 
   def confirmation_required?

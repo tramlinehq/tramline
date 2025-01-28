@@ -3,8 +3,8 @@ class Authentication::Email::SessionsController < Devise::SessionsController
 
   before_action :skip_authentication, only: [:new, :create]
   before_action :set_confirmed_email, only: [:new]
-  after_action :prepare_intercom_shutdown, only: [:destroy]
-  after_action :intercom_shutdown, only: [:new]
+  after_action :prepare_support_chat_shutdown, only: [:destroy]
+  after_action :support_chat_shutdown, only: [:new]
   after_action :track_login, only: [:create]
 
   def new
@@ -21,12 +21,12 @@ class Authentication::Email::SessionsController < Devise::SessionsController
 
   protected
 
-  def prepare_intercom_shutdown
-    IntercomRails::ShutdownHelper.prepare_intercom_shutdown(session)
+  def prepare_support_chat_shutdown
+    Chatwoot::ShutdownHelper.prepare_chatwoot_shutdown(session)
   end
 
-  def intercom_shutdown
-    IntercomRails::ShutdownHelper.intercom_shutdown(session, cookies, request.domain)
+  def support_chat_shutdown
+    Chatwoot::ShutdownHelper.chatwoot_shutdown(session, cookies, request.domain)
   end
 
   def set_confirmed_email
