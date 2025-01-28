@@ -1,15 +1,11 @@
 class StoreSubmissions::AppStore::FindBuildJob < ApplicationJob
+  include RetryableJob
   queue_as :high
-  sidekiq_options retry: 8
 
-  sidekiq_retry_in do |count, ex|
-    if ex.is_a?(Installations::Error) && ex.reason == :build_not_found
-      backoff_in(attempt: count, period: :minutes, type: :static, factor: 1).to_i
-    else
-      elog(ex)
-      :kill
-    end
-  end
+  enduring_retry_on Installations::Error,
+    reason: :build_not_found,
+    max_attempts: 8,
+    backoff: {period: :minutes, type: :static, factor: 1}
 
   sidekiq_retries_exhausted do |msg, ex|
     if ex.is_a?(Installations::Error)
