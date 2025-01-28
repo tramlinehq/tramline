@@ -110,7 +110,7 @@ class Queries::Releases
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON pull_requests.release_id = relevant_releases.id")
 
     filtered_pull_requests = if params.search_query.present?
-      filtered_pull_requests.search_by_title(params.search_query).with_pg_search_highlight
+      filtered_pull_requests.search(params.search_query).with_pg_search_highlight
     else
       filtered_pull_requests.select("title AS pg_search_highlight")
     end

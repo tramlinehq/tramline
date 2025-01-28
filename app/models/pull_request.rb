@@ -51,8 +51,8 @@ class PullRequest < ApplicationRecord
 
   scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
 
-  pg_search_scope :search_by_title,
-    against: :title,
+  pg_search_scope :search,
+    against: [:title, :body, :number],
     **search_config
 
   # rubocop:disable Rails/SkipsModelValidations
