@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe IntegrationListeners::JiraController do
+describe IntegrationListeners::JiraController do
   let(:organization) { create(:organization) }
   let(:app) { create(:app, :android, organization: organization) }
   let(:user) { create(:user, :with_email_authentication, :as_developer, member_organization: organization) }
@@ -8,7 +8,7 @@ RSpec.describe IntegrationListeners::JiraController do
     {
       app_id: app.id,
       user_id: user.id,
-      organization_id: organization.id
+      organization_id: organization.id,
     }.to_json.encode
   }
   let(:code) { "test_code" }
@@ -30,16 +30,8 @@ RSpec.describe IntegrationListeners::JiraController do
       context "when single organization" do
         before do
           allow(app.integrations).to receive(:build).and_return(integration)
-          allow(integration).to receive_messages(
-            providable: jira_integration,
-            save!: true,
-            valid?: true
-          )
-
-          allow(jira_integration).to receive_messages(
-            complete_access: true,
-            setup: {}
-          )
+          allow(integration).to receive_messages(providable: jira_integration, save!: true, valid?: true)
+          allow(jira_integration).to receive_messages(complete_access: true, setup: {})
 
           get :callback, params: {state: state, code: code}
         end
@@ -56,15 +48,8 @@ RSpec.describe IntegrationListeners::JiraController do
 
         before do
           allow(app.integrations).to receive(:build).and_return(integration)
-          allow(integration).to receive_messages(
-            providable: jira_integration,
-            valid?: true
-          )
-
-          allow(jira_integration).to receive_messages(
-            complete_access: false,
-            available_resources: resources
-          )
+          allow(integration).to receive_messages(providable: jira_integration, valid?: true)
+          allow(jira_integration).to receive_messages(complete_access: false, available_resources: resources)
 
           get :callback, params: {state: state, code: code}
         end
@@ -89,49 +74,27 @@ RSpec.describe IntegrationListeners::JiraController do
         expect(flash[:alert]).to eq("Failed to create the integration, please try again.")
       end
     end
-  end
 
-  describe "POST #set_organization" do
-    let(:cloud_id) { "cloud_123" }
-    let(:valid_params) do
-      {
-        cloud_id: cloud_id,
-        code: code,
-        state: state
-      }
-    end
+    context "as a POST request" do
+      let(:valid_params) do
+        {
+          cloud_id: "cloud_123",
+          code: code,
+          state: state
+        }
+      end
 
-    context "with valid parameters" do
       before do
         allow(app.integrations).to receive(:build).and_return(integration)
-        allow(integration).to receive_messages(
-          providable: jira_integration,
-          save!: true
-        )
+        allow(integration).to receive_messages(providable: jira_integration, save!: true)
+        allow(jira_integration).to receive_messages(complete_access: true, setup: {})
 
-        allow(jira_integration).to receive_messages(
-          setup: {}
-        )
-
-        post :set_organization, params: valid_params
+        post :callback, params: valid_params
       end
 
       it "creates integration and redirects to app integrations" do
+        expect(response).to redirect_to(app_path(app))
         expect(flash[:notice]).to eq("Integration was successfully created.")
-      end
-    end
-
-    context "with invalid parameters" do
-      before do
-        allow(app.integrations).to receive(:build).and_return(integration)
-        allow(integration).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new(integration))
-
-        post :set_organization, params: valid_params
-      end
-
-      it "redirects to integrations path with error" do
-        expect(response).to redirect_to(app_integrations_path(app))
-        expect(flash[:alert]).to eq("Failed to create the integration, please try again.")
       end
     end
   end

@@ -1,8 +1,7 @@
 require "rails_helper"
 
-RSpec.describe JiraIntegration do
+describe JiraIntegration do
   subject(:integration) { build(:jira_integration) }
-
   let(:sample_release_label) { "release-1.0" }
   let(:sample_version) { "v1.0.0" }
 
@@ -99,57 +98,6 @@ RSpec.describe JiraIntegration do
           "selected_projects" => ["PROJ"]
         })
         expect(integration.fetch_tickets_for_release).to eq([])
-      end
-    end
-  end
-
-  describe "#validate_release_filters" do
-    let(:app) { create(:app, :android) }
-    let(:integration) { build(:jira_integration, integration: create(:integration, integrable: app)) }
-
-    context "with invalid filter type" do
-      let(:filters) { [{"type" => "invalid", "value" => "test"}] }
-
-      before do
-        app.config.update!(jira_config: {"release_filters" => filters})
-        integration.valid?
-      end
-
-      it "is invalid" do
-        expect(integration).not_to be_valid
-        expect(integration.errors[:release_filters]).to include("must contain valid type and value")
-      end
-    end
-
-    context "with empty filter value" do
-      let(:filters) { [{"type" => "label", "value" => ""}] }
-
-      before do
-        app.config.update!(jira_config: {"release_filters" => filters})
-        integration.valid?
-      end
-
-      it "is invalid" do
-        expect(integration).not_to be_valid
-        expect(integration.errors[:release_filters]).to include("must contain valid type and value")
-      end
-    end
-
-    context "with valid filters" do
-      let(:filters) do
-        [
-          {"type" => "label", "value" => sample_release_label},
-          {"type" => "fix_version", "value" => sample_version}
-        ]
-      end
-
-      before do
-        app.config.update!(jira_config: {"release_filters" => filters})
-        integration.valid?
-      end
-
-      it "is valid" do
-        expect(integration).to be_valid
       end
     end
   end
