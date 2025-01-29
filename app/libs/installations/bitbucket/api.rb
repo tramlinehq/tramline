@@ -307,7 +307,7 @@ module Installations
               key: "VERSION_CODE",
               value: inputs[:version_code]
             },
-            *inputs[:parameters].map { |key, value| {key:, value:} }
+            *inputs[:parameters].map { |key, value| {key: key.upcase, value:} }
           ]
         }
       }
