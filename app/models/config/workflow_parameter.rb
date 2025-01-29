@@ -11,7 +11,7 @@
 #
 class Config::WorkflowParameter < ApplicationRecord
   self.table_name = "workflow_config_parameters"
-  belongs_to :workflow
+  belongs_to :workflow, class_name: "Config::Workflow"
 
   validates :name, :value, presence: true
   validates :name, uniqueness: {scope: :workflow_id}

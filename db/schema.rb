@@ -224,6 +224,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_16_070908) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "data_migrations", primary_key: "version", id: :string, force: :cascade do |t|
+  end
+
   create_table "deployment_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "deployment_id", null: false
     t.uuid "step_run_id", null: false
