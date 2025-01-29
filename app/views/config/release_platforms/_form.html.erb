@@ -33,53 +33,7 @@
           </div>
         <% end %>
 
-        <div class="flex flex-col gap-0.5">
-          <%= render partial: "parameters_info" %>
-          <div data-controller="nested-form-ext" data-nested-form-ext-list-position-outlet="#release_candidate_workflow_additional_parameters" class="grid-cols-2 gap-2 pt-3">
-            <div class="pb-3">
-              <%= render ButtonComponent.new(
-                scheme: :light,
-                type: :action,
-                size: :xs,
-                label: "Add a new parameter",
-                html_options: { data: { action: "nested-form-ext#add" } },
-                arrow: :none) do |b|
-                b.with_icon("plus.svg", rounded: false)
-              end %>
-            </div>
-            <ul data-controller="sortable-list-ext list-position"
-                data-sortable-list-ext-handle-value=".handle"
-                data-sortable-list-ext-list-position-outlet="#release_candidate_workflow_parameters"
-                data-list-position-initial-value=1
-                class="flex flex-col flex-1 item-gap-default"
-                id="release_candidate_workflow_parameters">
-              <% if rc_fields.object.parameters.present? %>
-                <div class="flex flex-row grid grid-cols-2 font-medium text-secondary text-xs">
-                  <p>Parameter Name</p>
-                  <p>Parameter Value</p>
-                </div>
-              <% end %>
-
-              <% rc_fields.object.parameters.each do |parameter| %>
-                <% rc_fields.fields_for :parameters, parameter do |parameter_form| %>
-                  <li class="nested-form-wrapper" data-new-record="false">
-                    <%= render partial: "parameter_form", object: parameter_form %>
-                  </li>
-                <% end %>
-              <% end %>
-
-              <template data-nested-form-ext-target="template">
-                <li class="nested-form-wrapper" data-new-record="true">
-                  <% rc_fields.fields_for :parameters, rc_fields.object.parameters.build, child_index: "NEW_RECORD" do |parameter_form| %>
-                    <%= render partial: "parameter_form", object: parameter_form %>
-                  <% end %>
-                </li>
-              </template>
-
-              <div data-nested-form-ext-target="target"></div>
-            </ul>
-          </div>
-        </div>
+        <%= render partial: "workflow_parameters", locals: { sub_fields: rc_fields } %>
       </div>
     <% end %>
   <% end %>
@@ -219,53 +173,7 @@
               </div>
             <% end %>
 
-            <div class="flex flex-col gap-0.5">
-              <%= render partial: "parameters_info" %>
-              <div data-controller="nested-form-ext" data-nested-form-ext-list-position-outlet="#internal_workflow_additional_parameters" class="grid-cols-2 gap-2 pt-3">
-                <div class="pb-3">
-                  <%= render ButtonComponent.new(
-                    scheme: :light,
-                    type: :action,
-                    size: :xs,
-                    label: "Add a new parameter",
-                    html_options: { data: { action: "nested-form-ext#add" } },
-                    arrow: :none) do |b|
-                    b.with_icon("plus.svg", rounded: false)
-                  end %>
-                </div>
-                <ul data-controller="sortable-list-ext list-position"
-                    data-sortable-list-ext-handle-value=".handle"
-                    data-sortable-list-ext-list-position-outlet="#internal_workflow_parameters"
-                    data-list-position-initial-value=1
-                    class="flex flex-col flex-1 item-gap-default"
-                    id="internal_workflow_parameters">
-                  <% if internal_fields.object.parameters.present? %>
-                    <div class="flex flex-row grid grid-cols-2 font-medium text-secondary text-xs">
-                      <p>Parameter Name</p>
-                      <p>Parameter Value</p>
-                    </div>
-                  <% end %>
-
-                  <% internal_fields.object.parameters.each do |parameter| %>
-                    <% internal_fields.fields_for :parameters, parameter do |parameter_form| %>
-                      <li class="nested-form-wrapper" data-new-record="false">
-                        <%= render partial: "parameter_form", object: parameter_form %>
-                      </li>
-                    <% end %>
-                  <% end %>
-
-                  <template data-nested-form-ext-target="template">
-                    <li class="nested-form-wrapper" data-new-record="true">
-                      <% internal_fields.fields_for :parameters, internal_fields.object.parameters.build, child_index: "NEW_RECORD" do |parameter_form| %>
-                        <%= render partial: "parameter_form", object: parameter_form %>
-                      <% end %>
-                    </li>
-                  </template>
-
-                  <div data-nested-form-ext-target="target"></div>
-                </ul>
-              </div>
-            </div>
+            <%= render partial: "workflow_parameters", locals: { sub_fields: internal_fields } %>
           <% end %>
 
           <%= render "pre_prod_release_form", section:, kind: :internal, submission_types:, platform: %>
