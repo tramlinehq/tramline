@@ -21,6 +21,8 @@
           </div>
         </div>
 
+        <%= render partial: "workflow_parameters", locals: { sub_fields: rc_fields } %>
+
         <div class="flex flex-col gap-0.5">
           <%= render partial: "build_name_pattern_info" %>
           <div><%= rc_fields.labeled_text_field :artifact_name_pattern, "Workflow artifact (optional)", placeholder: "Eg., build-abc.apk" %></div>
@@ -32,8 +34,6 @@
             <div><%= rc_fields.labeled_text_field :build_suffix, "Build version suffix (optional)", placeholder: "Eg., staging (for 1.3.3-staging)" %></div>
           </div>
         <% end %>
-
-        <%= render partial: "workflow_parameters", locals: { sub_fields: rc_fields } %>
       </div>
     <% end %>
   <% end %>
@@ -161,6 +161,8 @@
               </div>
             </div>
 
+            <%= render partial: "workflow_parameters", locals: { sub_fields: internal_fields } %>
+
             <div class="flex flex-col gap-0.5">
               <%= render partial: "build_name_pattern_info" %>
               <div><%= internal_fields.labeled_text_field :artifact_name_pattern, "Workflow artifact (optional)", placeholder: "Eg., build-abc.apk" %></div>
@@ -172,8 +174,6 @@
                 <div><%= internal_fields.labeled_text_field :build_suffix, "Build version suffix (optional)", placeholder: "Eg., staging (for 1.3.3-staging)" %></div>
               </div>
             <% end %>
-
-            <%= render partial: "workflow_parameters", locals: { sub_fields: internal_fields } %>
           <% end %>
 
           <%= render "pre_prod_release_form", section:, kind: :internal, submission_types:, platform: %>
