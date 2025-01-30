@@ -931,10 +931,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_28_130924) do
     t.boolean "patch_version_bump_only", default: false, null: false
     t.boolean "approvals_enabled", default: false, null: false
     t.boolean "freeze_version", default: false
-    t.string "tag_prefix"
     t.boolean "copy_approvals", default: false
-    t.boolean "freeze_version", default: false
     t.boolean "auto_apply_patch_changes", default: true
+    t.string "tag_prefix"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
