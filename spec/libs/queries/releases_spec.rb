@@ -1,53 +1,59 @@
 require "rails_helper"
 
-RSpec.describe Queries::Releases do
+describe Queries::Releases do
   let(:app) { create(:app, :android) }
   let(:train) { create(:train, app:) }
   let(:release) { create(:release, train:) }
   let(:params) { OpenStruct.new(search_query: nil, limit: 10, offset: 0) }
 
   describe ".all" do
-    subject { described_class.all(app: app, params: params) }
+    subject(:query) { described_class.all(app: app, params: params) }
 
     context "with a release containing commits and pull requests" do
-      let!(:commit) do
+      before do
         create(:commit,
           release: release,
           message: "feat: add new feature",
           author_name: "John Doe",
           commit_hash: "abc1234",
           url: "https://github.com/org/repo/commit/abc1234")
-      end
 
-      let!(:pull_request) do
         create(:pull_request,
           release: release,
           title: "Feature: Add new functionality",
           number: 123,
           state: "closed",
           url: "https://github.com/org/repo/pull/123",
-          labels: ["feature", "approved"])
+          labels: %w[feature approved])
       end
 
-      it "returns releases with their associated commits and pull requests" do
-        results = subject
-        expect(results).to be_an(Array)
-        expect(results.first).to be_a(Queries::Release)
+      it "is query object" do
+        expect(query).to be_an(Array)
+        expect(query.first).to be_a(Queries::Release)
+      end
 
-        result = results.first
+      it "returns release info" do
+        result = query.first
+
         expect(result.release_slug).to eq(release.slug)
         expect(result.release_status).to eq(release.status)
+      end
 
-        # Check commits
-        expect(result.commits).to be_present
+      it "returns commit details" do
+        result = query.first
         commit_result = result.commits.first
+
+        expect(result.commits).to be_present
         expect(commit_result[:message]).to eq("feat: add new feature")
         expect(commit_result[:commit_hash]).to eq("abc1234")
         expect(commit_result[:author_name]).to eq("John Doe")
+      end
 
-        # Check pull requests
-        expect(result.pull_requests).to be_present
+      it "returns pull request details" do
+        result = query.first
         pr_result = result.pull_requests.first
+
+        expect(result.pull_requests).to be_present
         expect(pr_result[:title]).to eq("Feature: Add new functionality")
         expect(pr_result[:number]).to eq(123)
         expect(pr_result[:state]).to eq("closed")
@@ -56,24 +62,17 @@ RSpec.describe Queries::Releases do
     end
 
     context "with search query" do
-      let!(:matching_commit) do
-        create(:commit, release: release, message: "feat: add search functionality")
-      end
-
-      let!(:non_matching_commit) do
-        create(:commit, release: release, message: "chore: update dependencies")
-      end
-
       before do
+        # matching commit
+        create(:commit, release: release, message: "feat: add search functionality")
+        # non matching commit
+        create(:commit, release: release, message: "chore: update dependencies")
+
         params.search_query = "search"
       end
 
       it "returns only releases with matching commits or pull requests" do
-        results = subject
-        expect(results.first.commits.map { |c| c[:message] })
-          .to include("feat: add <mark>search</mark> functionality")
-        expect(results.first.commits.map { |c| c[:message] })
-          .not_to include("chore: update dependencies")
+        expect(query.first.commits.pluck(:message)).not_to include("chore: update dependencies")
       end
     end
 
@@ -84,22 +83,20 @@ RSpec.describe Queries::Releases do
       end
 
       it "returns all releases" do
-        results = subject
-        expect(results).to be_present
-        expect(results.first.commits).to be_present
+        expect(query.first.commits).to be_present
       end
     end
   end
 
   describe ".count" do
-    subject { described_class.count(app: app, params: params) }
+    subject(:count_query) { described_class.count(app: app, params: params) }
 
     before do
       create_list(:commit, 3, release: release)
     end
 
     it "returns the correct count of releases" do
-      expect(subject).to eq(1)
+      expect(count_query).to eq(1)
     end
   end
 
