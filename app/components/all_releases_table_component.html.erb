@@ -1,80 +1,80 @@
 <div class="overflow-x-auto">
   <table class="table-auto w-full">
     <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-      <tr>
-        <th class="px-3 px-2 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">
-            <%= sort_link(column: "release_slug", label: "Release") %>
-          </div>
-        </th>
-        
-        <th class="px-3 px-2 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">
-            <%= sort_link(column: "release_status", label: "Status") %>
-          </div>
-        </th>
+    <tr>
+      <th class="px-3 px-2 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "release_slug", label: "Release") %>
+        </div>
+      </th>
 
-        <th class="px-2 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">
-            Commit/PR Messages
-          </div>
-        </th>
+      <th class="px-3 px-2 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "release_status", label: "Status") %>
+        </div>
+      </th>
 
-        <th class="px-2 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">
-            <%= sort_link(column: "created_at", label: "Created") %>
-          </div>
-        </th>
-      </tr>
+      <th class="px-2 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">
+          Commit/PR Messages
+        </div>
+      </th>
+
+      <th class="px-2 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "created_at", label: "Created") %>
+        </div>
+      </th>
+    </tr>
     </thead>
 
     <tbody class="text-sm divide-default">
-      <% releases.each do |release| %>
-        <tr class="hover:bg-slate-50 font-normal text-black-800">
-          <td class="pl-3 px-2 py-3 whitespace-nowrap">
-            <div class="text-left">
-              <%= release.release_slug %>
-            </div>
-          </td>
+    <% releases.each do |release| %>
+      <tr class="hover:bg-slate-50 font-normal text-black-800">
+        <td class="pl-3 px-2 py-3 whitespace-nowrap">
+          <div class="text-left">
+            <%= release.release_slug %>
+          </div>
+        </td>
 
-          <td class="px-2 py-3">
-            <div class="text-left">
-                <%= release.release_status %>
-            </div>
-          </td>
+        <td class="px-2 py-3">
+          <div class="text-left">
+            <%= release.release_status %>
+          </div>
+        </td>
 
-          <td class="px-2 py-3">
-            <div class="text-left">
-              <div class="space-y-2">
-                <% release.pull_requests.each do |pr| %>
-                  <%= render PullRequestComponent.new(
-                    pull_request: Queries::PullRequest.new(pr), 
-                    simple: true,
-                    render_html: true
-                  ) %>
-                <% end %>
-                <% release.commits.each do |commit| %>
-                  <%= render CommitComponent.new(
-                    commit: Queries::Commit.new(commit), 
-                    detailed: false,
-                    render_html: true
-                  ) %>
-                <% end %>
-              </div>
+        <td class="px-2 py-3">
+          <div class="text-left">
+            <div class="space-y-2">
+              <% release.pull_requests.each do |pr| %>
+                <%= render PullRequestComponent.new(
+                  pull_request: Queries::PullRequest.new(pr),
+                  simple: true,
+                  render_html: true
+                ) %>
+              <% end %>
+              <% release.commits.each do |commit| %>
+                <%= render CommitComponent.new(
+                  commit: Queries::Commit.new(commit),
+                  detailed: false,
+                  render_html: true
+                ) %>
+              <% end %>
             </div>
-          </td>
+          </div>
+        </td>
 
-          <td class="px-2 py-3 whitespace-nowrap">
-            <div class="text-left">
-              <%= time_format release.created_at, with_year: true %>
-            </div>
-          </td>
-        </tr>
-      <% end %>
+        <td class="px-2 py-3 whitespace-nowrap">
+          <div class="text-left">
+            <%= time_format release.created_at, with_year: true %>
+          </div>
+        </td>
+      </tr>
+    <% end %>
     </tbody>
   </table>
 </div>
 
 <div class="pt-5">
   <%= render PaginationComponent.new(results: paginator, turbo_frame: "all_releases", info: true) %>
-</div> 
+</div>
