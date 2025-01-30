@@ -60,6 +60,7 @@
     <%= render ButtonComponent.new(
       scheme: :supporting,
       label: "Configure",
+      authz: false,
       options: edit_app_train_path(app, train),
       type: :link) do |b|
       b.with_icon("cog.svg")

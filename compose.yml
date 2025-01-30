@@ -140,6 +140,19 @@ services:
       setup:
         condition: service_completed_successfully
 
+  applelink:
+    build:
+      dockerfile: ../applelink/dev.Dockerfile
+      context: ../applelink
+      args:
+        RUBY_VERSION: '3.2.0'
+    image: applelink-dev:1.0.0
+    command: bundle exec guard --no-bundler-warning --no-interactions
+    ports:
+      - '4000:4000'
+    volumes:
+      - ../applelink:/applelink:cached
+
 volumes:
   bundle:
   rails_cache:

@@ -196,7 +196,8 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def update_external_release
-    return unless editable?
+    return unless release_platform_run.on_track?
+    return if parent_release.stale?
 
     result = provider.find_release(build_number)
 

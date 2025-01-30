@@ -340,6 +340,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_28_130924) do
     t.text "value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["feature_key", "key", "value"], name: "index_flipper_gates_on_feature_key_and_key_and_value", unique: true
   end
 
   create_table "github_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -932,6 +933,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_28_130924) do
     t.boolean "freeze_version", default: false
     t.string "tag_prefix"
     t.boolean "copy_approvals", default: false
+    t.boolean "freeze_version", default: false
     t.boolean "auto_apply_patch_changes", default: true
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
@@ -986,6 +988,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_28_130924) do
     t.datetime "created_at"
     t.text "object_changes"
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
+  end
+
+  create_table "workflow_config_parameters", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "value", null: false
+    t.bigint "workflow_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["workflow_id", "name"], name: "index_workflow_config_parameters_on_workflow_id_and_name", unique: true
+    t.index ["workflow_id"], name: "index_workflow_config_parameters_on_workflow_id"
   end
 
   create_table "workflow_configs", force: :cascade do |t|
@@ -1091,6 +1103,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_28_130924) do
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
   add_foreign_key "user_authentications", "users"
+  add_foreign_key "workflow_config_parameters", "workflow_configs", column: "workflow_id"
   add_foreign_key "workflow_configs", "release_platform_configs"
   add_foreign_key "workflow_runs", "commits"
   add_foreign_key "workflow_runs", "pre_prod_releases"

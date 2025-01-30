@@ -88,12 +88,13 @@ module Installations
           .compact
           .to_json
           .then { {"tramline-input" => _1} }
+          .merge(inputs[:parameters])
       else
         {
           versionCode: inputs[:version_code],
           versionName: inputs[:build_version],
           buildNotes: inputs[:build_notes]
-        }.compact
+        }.merge(inputs[:parameters]).compact
       end
 
       execute do
