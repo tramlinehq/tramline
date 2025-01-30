@@ -94,12 +94,12 @@
             <% end %>
 
             <%= render ButtonComponent.new(scheme: :light,
-                                           options: all_builds_app_path(default_app),
+                                           options: search_app_path(default_app),
                                            type: :link,
                                            size: :xxs,
                                            authz: false) do |b| %>
-              <% b.with_tooltip("All Builds") %>
-              <% b.with_icon("drill.svg", size: :md) %>
+              <% b.with_tooltip("Search") %>
+              <% b.with_icon("search.svg", size: :md) %>
             <% end %>
 
             <%= render ModalComponent.new(title: "Store Status", size: :xs, authz: false) do |modal| %>
