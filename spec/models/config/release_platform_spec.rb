@@ -88,32 +88,28 @@ describe Config::ReleasePlatform do
         end
       end
 
-      context "when parameters are defined in both internal and release_candidate" do
-        # rubocop:disable RSpec/NestedGroups
-        context "when parameters are having same values" do
-          before do
-            base_config[:workflows][:internal][:parameters] = [{name: "p1", value: "v1"}, {name: "p2", value: "v2"}]
-            base_config[:workflows][:release_candidate][:parameters] = [{name: "p1", value: "v1"}, {name: "p2", value: "v2"}]
-          end
-
-          it "is not valid" do
-            release_platform = described_class.from_json(base_config.merge(release_platform: create(:release_platform)))
-            expect(release_platform).not_to be_valid
-          end
+      context "when parameters are defined in both and are having same values" do
+        before do
+          base_config[:workflows][:internal][:parameters] = [{name: "p1", value: "v1"}, {name: "p2", value: "v2"}]
+          base_config[:workflows][:release_candidate][:parameters] = [{name: "p1", value: "v1"}, {name: "p2", value: "v2"}]
         end
 
-        context "when parameters are having different values" do
-          before do
-            base_config[:workflows][:internal][:parameters] = [{name: "p1", value: "v1"}, {name: "p2", value: "v2"}]
-            base_config[:workflows][:release_candidate][:parameters] = [{name: "rp1", value: "v1"}, {name: "rp2", value: "v2"}]
-          end
-
-          it "is not valid" do
-            release_platform = described_class.from_json(base_config.merge(release_platform: create(:release_platform)))
-            expect(release_platform).to be_valid
-          end
+        it "is not valid" do
+          release_platform = described_class.from_json(base_config.merge(release_platform: create(:release_platform)))
+          expect(release_platform).not_to be_valid
         end
-        # rubocop:enable RSpec/NestedGroups
+      end
+
+      context "when parameters are defined in both and are having different values" do
+        before do
+          base_config[:workflows][:internal][:parameters] = [{name: "p1", value: "v1"}, {name: "p2", value: "v2"}]
+          base_config[:workflows][:release_candidate][:parameters] = [{name: "rp1", value: "v1"}, {name: "rp2", value: "v2"}]
+        end
+
+        it "is valid" do
+          release_platform = described_class.from_json(base_config.merge(release_platform: create(:release_platform)))
+          expect(release_platform).to be_valid
+        end
       end
     end
   end
