@@ -1,0 +1,55 @@
+<%# locals: (sub_fields:) -%>
+
+<div class="flex flex-col gap-0.5">
+  <%= render InfoIconComponent.new do %>
+    <p>
+      You can add workflow parameters. Each parameter has a key and value.
+      These parameters will be passed on to the workflow verbatim.
+    </p>
+  <% end %>
+
+  <%= sub_fields.label_only :custom_workflow_parameters, "Custom workflow parameters (optional)" %>
+
+  <div data-controller="nested-form-ext" class="flex flex-col item-gap-default">
+    <div>
+      <%= render ButtonComponent.new(
+        scheme: :light,
+        type: :action,
+        size: :xs,
+        label: "Add a new parameter",
+        html_options: { data: { action: "nested-form-ext#add" } },
+        arrow: :none) do |b|
+        b.with_icon("plus.svg", rounded: false)
+      end %>
+    </div>
+
+    <div class="flex flex-col flex-1">
+      <% if sub_fields.object.parameters.present? %>
+        <div class="grid grid-cols-12 item-gap-default items-center font-medium text-secondary text-xs">
+          <div class="col-span-5"><%= sub_fields.label_only :parameter_name, "Parameter Name" %></div>
+          <div class="col-span-5"><%= sub_fields.label_only :parameter_value, "Parameter Value" %></div>
+        </div>
+      <% end %>
+
+      <div class="flex flex-col item-gap-default">
+        <% sub_fields.object.parameters.each do |parameter| %>
+          <% sub_fields.fields_for :parameters, parameter do |parameter_form| %>
+            <div class="nested-form-wrapper" data-new-record="false">
+              <%= render partial: "parameter_form", object: parameter_form %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <template data-nested-form-ext-target="template">
+        <div class="nested-form-wrapper" data-new-record="true">
+          <% sub_fields.fields_for :parameters, sub_fields.object.parameters.build, child_index: "NEW_RECORD" do |parameter_form| %>
+            <%= render partial: "parameter_form", object: parameter_form %>
+          <% end %>
+        </div>
+      </template>
+
+      <div data-nested-form-ext-target="target"></div>
+    </div>
+  </div>
+</div>
