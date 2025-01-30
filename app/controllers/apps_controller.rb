@@ -66,14 +66,44 @@ class AppsController < SignedInApplicationController
   end
 
   def search
-    all_releases
-    all_builds
+    @search_params = filterable_params.except(:id)
+    @tab_configuration = [
+      [1, "Releases", releases_search_app_path(@app, **@search_params), "cog.svg"],
+      [2, "Builds", builds_search_app_path(@app, **@search_params), "cog.svg"],
+    ]
+
+    @resource = params[:resource] || "releases"
+
+    if @resource == "releases"
+      all_releases
+    elsif @resource == "builds"
+      all_builds
+    end
 
     # FIXME: set_query_pagination separately for releases and builds
   end
 
+  def search_builds
+    @search_params = filterable_params.except(:id)
+    @tab_configuration = [
+      [1, "Releases", search_releases_app_path(@app, **@search_params), "cog.svg"],
+      [2, "Builds", search_builds_app_path(@app, **@search_params), "cog.svg"],
+    ]
+
+    all_builds
+  end
+
+  def search_releases
+    @search_params = filterable_params.except(:id)
+    @tab_configuration = [
+      [1, "Releases", search_releases_app_path(@app, **@search_params), "cog.svg"],
+      [2, "Builds", search_builds_app_path(@app, **@search_params), "cog.svg"],
+    ]
+    all_releases
+  end
+
+
   def all_releases
-    @all_releases_params = filterable_params.except(:id)
     gen_query_filters(:release_status, Release.statuses[:finished])
     set_query_helpers
     @query_params.add_search_query(params[:search_pattern]) if params[:search_pattern].present?

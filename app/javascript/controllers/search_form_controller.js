@@ -19,6 +19,9 @@ export default class extends ApplicationController {
         }
 
         if (queryLength > MIN_CHARACTERS || queryLength === 0) {
+            console.log("query", new URLSearchParams(window.location.search).get("resource"))
+            const resource = new URLSearchParams(window.location.search).get("resource")
+            this.formTarget.querySelector(`input[name="resource"]`).value = resource;
             this.formTarget.requestSubmit();
         }
     }
