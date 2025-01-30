@@ -1,23 +1,13 @@
-<%= turbo_frame_tag "search_bar_and_results" do %>
-  <%= render SearchBarComponent.new(
-    path: search_releases_app_path(@app, **@search_params),
-    placeholder: "Search commit messages",
-    value: params[:search_pattern],
-    turbo_frame: "search_bar_and_results",
-    default_params: { resource: @resource }) %>
+<%= render SearchBarComponent.new do |search| %>
+  <% search.with_text_field :search, params[:search_pattern], "Search through releases and builds" %>
+  <% search.with_clear_search %>
 
-  <%= render TabbedContainerComponent.new(title: "Search",
-                                        turbo_frame: "tab_content",
-                                        tab_config: @tab_configuration) do |container| %>
-    <% container.with_back_button(to: "the app", path: app_path(@app)) %>
-
+  <%= render VerticalTabComponent.new(turbo_frame: "tab_content", tab_config: @tab_configuration) do |container| %>
     <% container.with_tab do %>
-      <%= render partial: "apps/all_releases_search_results", 
-                 locals: { releases: @releases, 
-                          pagy: @pagy, 
-                          all_releases_params: @search_params, 
-                          app: @app, 
-                          filters: @filters } %>
+      <%= search.with_search_form url: search_releases_app_path(@app, **@search_params) %>
+      <%= render partial: "apps/search/all_releases_search_results",
+                 locals: { releases: @releases, pagy: @pagy, all_releases_params: @search_params, app: @app, filters: @filters } %>
     <% end %>
   <% end %>
 <% end %>
+

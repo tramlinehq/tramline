@@ -1,18 +1,20 @@
 class CommitComponent < BaseComponent
+  DEFAULT_TRUNCATE = 75
   OUTER_CLASSES = "py-1.5 px-2 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
 
-  def initialize(commit:, avatar: true, detailed: true, render_html: false)
+  def initialize(commit:, avatar: true, detailed: true, render_html: false, enable_truncate: true)
     @commit = commit
     @avatar = avatar
     @detailed = detailed
     @render_html = render_html
+    @enable_truncate = enable_truncate
   end
 
-  attr_reader :commit, :render_html
+  attr_reader :commit, :render_html, :enable_truncate
   delegate :message, :author_name, :author_email, :author_login, :author_url, :timestamp, :short_sha, :url, to: :commit
 
   def truncated_message
-    msg = message.truncate(75)
+    msg = enable_truncate ? message.truncate(DEFAULT_TRUNCATE) : message
     render_html ? msg.html_safe : msg
   end
 

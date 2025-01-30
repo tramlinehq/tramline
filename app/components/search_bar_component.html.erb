@@ -1,13 +1,8 @@
-<%= form_with url: path, method: :get, data: { controller: "search-form", search_form_target: "form", turbo_frame: turbo_frame, turbo_action: "advance" } do |form| %>
-  <%= form.text_field :search_pattern,
-                      placeholder: placeholder,
-                      class: "form-input inline-flex",
-                      autocomplete: "off",
-                      value: initial_value,
-                    data: { action: "input->search-form#search" } %>
-  <%= form.hidden_field :resource, value: default_params[:resource] %>
+<div data-controller="search-form" data-search-form-query-value="<%= QUERY_FIELD %>">
+  <%= text_field %>
+  <%= clear_search %>
 
-  <a title="clear search" class="inline-flex underline relative hover:cursor-pointer text-xs top-2 right-0 ml-1" data-action="search-form#clear">
-    clear search
-  </a>
-<% end %>
+  <%= tag.turbo_frame id: FRAME do %>
+    <%= content %>
+  <% end %>
+</div>

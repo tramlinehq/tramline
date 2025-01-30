@@ -1,46 +1,46 @@
 import {ApplicationController, useDebounce} from "stimulus-use"
 
 const MIN_CHARACTERS = 2;
-const URL_SEARCH_PATTERN = "search_pattern"
 
 export default class extends ApplicationController {
-    static targets = ["form"]
-    static debounces = ['search']
+  static targets = ["form", "searchInput"]
+  static debounces = ['search']
+  static values = {query: String}
 
-    connect() {
-        useDebounce(this, {wait: 200})
+  connect() {
+    useDebounce(this, {wait: 200})
+  }
+
+  search() {
+    let query = this.searchInputTarget
+    const queryLength = query.value.length
+
+    if (queryLength === 0) {
+      query.value = ""
     }
 
-    search() {
-        const queryLength = this.query.value.length
+    // only search if query is greater than MIN_CHARACTERS
+    if (queryLength > MIN_CHARACTERS || queryLength === 0) {
+      this.__shadowQuery().value = query.value
+      this.formTarget.requestSubmit();
+    }
+  }
 
-        if (queryLength === 0) {
-            this.query.value = ""
-        }
+  clear() {
+    let query = this.searchInputTarget
+    const queryLength = query.value.length
 
-        if (queryLength > MIN_CHARACTERS || queryLength === 0) {
-            console.log("query", new URLSearchParams(window.location.search).get("resource"))
-            const resource = new URLSearchParams(window.location.search).get("resource")
-            this.formTarget.querySelector(`input[name="resource"]`).value = resource;
-            this.formTarget.requestSubmit();
-        }
+    if (queryLength > 0) {
+      query.value = ""
     }
 
-    clear() {
-        const queryLength = this.query.value.length
-
-        if (queryLength > 0) {
-            this.query.value = ""
-        }
-
-        if (queryLength > MIN_CHARACTERS) {
-            this.formTarget.requestSubmit();
-        }
+    // don't bother running an empty search if it is less than MIN_CHARACTERS
+    if (queryLength > MIN_CHARACTERS) {
+      this.formTarget.requestSubmit();
     }
+  }
 
-    get query() {
-        return this.formTarget.querySelector(`input[name=${URL_SEARCH_PATTERN}]`)
-    }
-
-
+  __shadowQuery() {
+    return this.formTarget.querySelector(`input[name=${this.queryValue}]`)
+  }
 }

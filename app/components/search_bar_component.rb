@@ -1,13 +1,29 @@
 # frozen_string_literal: true
 
-class SearchBarComponent < ViewComponent::Base
-  def initialize(path:, placeholder:, value:, turbo_frame: nil, default_params: {})
-    @path = path
-    @placeholder = placeholder
-    @initial_value = value
-    @turbo_frame = turbo_frame
-    @default_params = default_params
-  end
+class SearchBarComponent < BaseComponent
+  FRAME = "search_bar_and_results"
+  QUERY_FIELD = "search_pattern"
 
-  attr_reader :path, :placeholder, :initial_value, :turbo_frame, :default_params
+  renders_one :text_field, ->(name, value, placeholder) {
+    text_field_tag name, value, {
+      placeholder: placeholder.presence || "Search",
+      class: "form-input inline-flex",
+      autocomplete: "off",
+      data: { search_form_target: "searchInput", action: "input->search-form#search" }
+    }
+  }
+
+  renders_one :clear_search, -> {
+    link_to "clear search",
+            "#",
+            title: "clear search",
+            class: "inline-flex underline relative hover:cursor-pointer text-xs top-2 right-0 ml-1",
+            data: { action: "search-form#clear" }
+  }
+
+  renders_one :search_form, ->(url) {
+    form_with url: url, method: :get, data: { search_form_target: "form", turbo_frame: FRAME, turbo_action: "advance" } do |form|
+      form.hidden_field QUERY_FIELD.to_sym
+    end
+  }
 end

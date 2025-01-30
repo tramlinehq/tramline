@@ -66,49 +66,28 @@ class AppsController < SignedInApplicationController
   end
 
   def search
-    @search_params = filterable_params.except(:id)
-    @tab_configuration = [
-      [1, "Releases", releases_search_app_path(@app, **@search_params), "cog.svg"],
-      [2, "Builds", builds_search_app_path(@app, **@search_params), "cog.svg"],
-    ]
-
-    @resource = params[:resource] || "releases"
-
-    if @resource == "releases"
-      all_releases
-    elsif @resource == "builds"
-      all_builds
-    end
-
-    # FIXME: set_query_pagination separately for releases and builds
-  end
-
-  def search_builds
-    @search_params = filterable_params.except(:id)
-    @tab_configuration = [
-      [1, "Releases", search_releases_app_path(@app, **@search_params), "cog.svg"],
-      [2, "Builds", search_builds_app_path(@app, **@search_params), "cog.svg"],
-    ]
-
-    all_builds
+    redirect_to search_releases_app_path(@app)
   end
 
   def search_releases
     @search_params = filterable_params.except(:id)
-    @tab_configuration = [
-      [1, "Releases", search_releases_app_path(@app, **@search_params), "cog.svg"],
-      [2, "Builds", search_builds_app_path(@app, **@search_params), "cog.svg"],
-    ]
-    all_releases
-  end
-
-
-  def all_releases
+    set_search_tab_config
     gen_query_filters(:release_status, Release.statuses[:finished])
     set_query_helpers
     @query_params.add_search_query(params[:search_pattern]) if params[:search_pattern].present?
     set_query_pagination(Queries::Releases.count(app: @app, params: @query_params))
     @releases = Queries::Releases.all(app: @app, params: @query_params)
+  end
+
+  def search_builds
+    @search_params = filterable_params.except(:id)
+    set_search_tab_config
+
+    @all_builds_params = filterable_params.except(:id)
+    gen_query_filters(:release_status, ReleasePlatformRun.statuses[:finished])
+    set_query_helpers
+    set_query_pagination(Queries::Builds.count(app: @app, params: @query_params))
+    @builds = Queries::Builds.all(app: @app, params: @query_params)
   end
 
   def refresh_external
@@ -117,6 +96,13 @@ class AppsController < SignedInApplicationController
   end
 
   private
+
+  def set_search_tab_config
+    @tab_configuration = [
+      [1, "Releases", search_releases_app_path(@app, **@search_params), "rocket.svg"],
+      [2, "Builds", search_builds_app_path(@app, **@search_params), "drill.svg"],
+    ]
+  end
 
   def set_integrations
     @integrations = @app.integrations

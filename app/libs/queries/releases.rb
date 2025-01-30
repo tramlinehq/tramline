@@ -47,7 +47,7 @@ class Queries::Releases
             base_ref: data["base_ref"],
             head_ref: data["head_ref"],
             commit: nil, # TODO: we get the id, so need to construct Commit
-            labels: data["labels"]
+            labels: data["labels"],
           }
         end
 

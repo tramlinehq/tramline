@@ -46,18 +46,23 @@
         <td class="px-2 py-3">
           <div class="text-left">
             <div class="space-y-2">
+              <p>Fetched <%= release.pull_requests.size %> PR(s)</p>
+              <p>Fetched <%= release.commits.size %> commits</p>
+
               <% release.pull_requests.each do |pr| %>
                 <%= render PullRequestComponent.new(
                   pull_request: Queries::PullRequest.new(pr),
                   simple: true,
-                  render_html: true
+                  render_html: true,
+                  enable_truncate: false
                 ) %>
               <% end %>
               <% release.commits.each do |commit| %>
                 <%= render CommitComponent.new(
                   commit: Queries::Commit.new(commit),
                   detailed: false,
-                  render_html: true
+                  render_html: true,
+                  enable_truncate: false
                 ) %>
               <% end %>
             </div>

@@ -1,11 +1,14 @@
 class PullRequestComponent < ViewComponent::Base
-  def initialize(pull_request:, simple: false, render_html: false)
+  DEFAULT_TRUNCATE = 80
+
+  def initialize(pull_request:, simple: false, render_html: false, enable_truncate: true)
     @pr = pull_request
     @simple = simple
     @render_html = render_html
+    @enable_truncate = enable_truncate
   end
 
-  attr_reader :pr, :simple, :render_html
+  attr_reader :pr, :simple, :render_html, :enable_truncate
 
   def status
     case @pr.state.to_sym
@@ -31,7 +34,7 @@ class PullRequestComponent < ViewComponent::Base
   end
 
   def truncated_title
-    title = pr.title.truncate(80)
+    title = enable_truncate ? pr.title.truncate(DEFAULT_TRUNCATE) : pr.title
     render_html ? title.html_safe : title
   end
 end
