@@ -157,9 +157,25 @@ class Config::ReleasePlatform < ApplicationRecord
 
   # Ensure that multiple workflows have unique identifiers
   def workflow_identifiers
-    if internal_workflow&.identifier == release_candidate_workflow&.identifier
-      errors.add(:base, :unique_workflows)
+    is_workflow_duplicate = false
+
+    if release_candidate_workflow.present? && internal_workflow.present?
+      new_rc_parameters = release_candidate_workflow.parameters.reject { |p| p._destroy == true }
+      new_internal_parameters = internal_workflow.parameters.reject { |p| p._destroy == true }
+
+      is_workflow_duplicate =
+        if new_rc_parameters.size != new_internal_parameters.size
+          false
+        elsif internal_workflow.identifier == release_candidate_workflow.identifier
+          new_rc_parameters.each do |parameter|
+            return false if new_internal_parameters.find { |parameter1| parameter.name == parameter1.name && parameter.value == parameter1.value }.nil?
+          end
+        else
+          true
+        end
     end
+
+    errors.add(:base, :unique_workflows) if is_workflow_duplicate
   end
 
   # Ensure submissions across release steps (internal, beta, production) are unique by type and submission_external identifier

@@ -224,6 +224,31 @@ describe AppStoreSubmission do
       allow(providable_dbl).to receive(:deliverable_store_link)
     end
 
+    it "doesn't do anything if the release platform run is stopped" do
+      allow(providable_dbl).to receive(:find_release)
+      submission.release_platform_run.update!(status: :stopped)
+
+      submission.update_external_release
+      expect(providable_dbl).not_to have_received(:find_release)
+    end
+
+    it "doesn't do anything if the release is stale" do
+      allow(providable_dbl).to receive(:find_release)
+      submission.parent_release.update!(status: :stale)
+
+      submission.update_external_release
+      expect(providable_dbl).not_to have_received(:find_release)
+    end
+
+    it "finds release even if action is blocked" do
+      allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { initial_release_info })
+      allow(submission.release).to receive(:blocked_for_production_release?).and_return(false)
+
+      expect { submission.update_external_release }
+        .to raise_error(AppStoreSubmission::SubmissionNotInTerminalState)
+      expect(providable_dbl).to have_received(:find_release)
+    end
+
     it "finds release" do
       allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { initial_release_info })
 
