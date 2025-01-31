@@ -1,5 +1,4 @@
 class OneOff::BackfillAuthorLogins < ApplicationJob
-  include Loggable
   queue_as :low
 
   def perform(release_id)

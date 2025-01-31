@@ -1,8 +1,4 @@
-class WorkflowRuns::FindJob
-  include Sidekiq::Job
-  extend Loggable
-  extend Backoffable
-
+class WorkflowRuns::FindJob < ApplicationJob
   queue_as :high
   sidekiq_options retry: 25
 

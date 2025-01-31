@@ -1,5 +1,5 @@
 class Releases::CopyPreviousApprovalsJob < ApplicationJob
-  queue_as :default
+  queue_as :high
 
   def perform(release_id)
     release = Release.find_by(id: release_id)

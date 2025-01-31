@@ -1,8 +1,4 @@
-class StoreSubmissions::AppStore::FindBuildJob
-  include Sidekiq::Job
-  extend Loggable
-  extend Backoffable
-
+class StoreSubmissions::AppStore::FindBuildJob < ApplicationJob
   queue_as :high
   sidekiq_options retry: 8
 

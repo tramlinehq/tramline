@@ -1,8 +1,4 @@
-class StoreRollouts::AppStore::FindLiveReleaseJob
-  include Sidekiq::Job
-  extend Loggable
-  extend Backoffable
-
+class StoreRollouts::AppStore::FindLiveReleaseJob < ApplicationJob
   queue_as :high
   sidekiq_options retry: 6000
 

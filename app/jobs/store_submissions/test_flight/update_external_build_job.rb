@@ -1,8 +1,4 @@
-class StoreSubmissions::TestFlight::UpdateExternalBuildJob
-  include Sidekiq::Job
-  extend Loggable
-  extend Backoffable
-
+class StoreSubmissions::TestFlight::UpdateExternalBuildJob < ApplicationJob
   queue_as :high
   sidekiq_options retry: 2000
 

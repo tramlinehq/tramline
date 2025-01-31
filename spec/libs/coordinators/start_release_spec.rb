@@ -75,11 +75,11 @@ describe Coordinators::StartRelease do
 
       it "refreshes the reports for the hotfixed release" do
         allow(github_api_double).to receive(:branch_exists?).and_return(true)
-        allow(RefreshReportsJob).to receive(:perform_later)
+        allow(RefreshReportsJob).to receive(:perform_async)
         last_finished_release = train.releases.finished.sole
         described_class.call(train, release_type: "hotfix")
 
-        expect(RefreshReportsJob).to have_received(:perform_later).with(last_finished_release.id)
+        expect(RefreshReportsJob).to have_received(:perform_async).with(last_finished_release.id)
       end
     end
 

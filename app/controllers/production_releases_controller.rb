@@ -33,5 +33,6 @@ class ProductionReleasesController < SignedInApplicationController
 
   def set_app
     @app = @prod_release.release_platform_run.app
+    set_current_app
   end
 end

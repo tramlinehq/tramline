@@ -49,12 +49,6 @@ describe Coordinators::CreateBetaRelease do
   let(:release_platform_run) { create(:release_platform_run, :on_track, release:, release_version: initial_version) }
   let(:commit) { create(:commit, release: release_platform_run.release) }
 
-  before do
-    release_platform_run.update!(config:)
-    allow(WorkflowRuns::TriggerJob).to receive(:perform_later)
-    allow(WorkflowRuns::CancelJob).to receive(:perform_later)
-  end
-
   it "does nothing if release platform run is not on track" do
     release_platform_run.update!(status: "finished")
     described_class.call(release_platform_run, commit)
@@ -84,27 +78,36 @@ describe Coordinators::CreateBetaRelease do
   end
 
   it "triggers the workflow run for the beta release" do
-    described_class.call(release_platform_run, commit)
+    expect {
+      described_class.call(release_platform_run, commit)
+    }.to change(WorkflowRuns::TriggerJob.jobs, :size).by(1)
+
     beta_release = release_platform_run.reload.latest_beta_release
     expect(beta_release.workflow_run).to be_present
     expect(beta_release.workflow_run.triggering?).to be(true)
-    expect(WorkflowRuns::TriggerJob).to have_received(:perform_later).with(beta_release.workflow_run.id).once
+    expect(WorkflowRuns::TriggerJob.jobs.last["args"]).to eq([beta_release.workflow_run.id])
   end
 
   it "cancels the previous beta release workflow run if still in progress" do
     previous_beta_release = create(:beta_release, :created, release_platform_run:)
     previous_workflow_run = create(:workflow_run, :started, release_platform_run:, triggering_release: previous_beta_release)
-    described_class.call(release_platform_run, commit)
+
+    expect {
+      described_class.call(release_platform_run, commit)
+    }.to change(WorkflowRuns::CancelJob.jobs, :size).by(1)
+
     beta_release = release_platform_run.reload.latest_beta_release
     expect(beta_release.previous).to eq(previous_beta_release)
     expect(previous_workflow_run.reload.cancelling?).to be(true)
-    expect(WorkflowRuns::CancelJob).to have_received(:perform_later).with(previous_workflow_run.id).once
+    expect(WorkflowRuns::CancelJob.jobs.last["args"]).to eq([previous_workflow_run.id])
   end
 
   it "does not cancel the previous beta release workflow run if not in progress" do
     previous_beta_release = create(:beta_release, :created, release_platform_run:)
     _previous_workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release: previous_beta_release)
-    described_class.call(release_platform_run, commit)
-    expect(WorkflowRuns::CancelJob).not_to have_received(:perform_later)
+
+    expect {
+      described_class.call(release_platform_run, commit)
+    }.not_to change(WorkflowRuns::CancelJob.jobs, :size)
   end
 end

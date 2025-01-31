@@ -1,8 +1,4 @@
-class StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob
-  include Sidekiq::Job
-  extend Loggable
-  extend Backoffable
-
+class StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob < ApplicationJob
   queue_as :high
   sidekiq_options retry: 5
 
