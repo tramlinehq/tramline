@@ -24,13 +24,9 @@ describe Releases::CopyPreviousApprovalsJob do
     end
 
     context "when release is not found" do
-      it "logs an error if release is not found" do
+      it "raises an error if release is not found" do
         erroneous_release_id = Faker::Number.number
-        allow(Rails.logger).to receive(:error)
-
-        described_class.new.perform(erroneous_release_id)
-
-        expect(Rails.logger).to have_received(:error).with("Release with ID #{erroneous_release_id} not found")
+        expect { described_class.new.perform(erroneous_release_id) }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
   end
