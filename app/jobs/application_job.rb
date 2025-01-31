@@ -1,7 +1,7 @@
 class ApplicationJob
   include Sidekiq::Job
-  include Loggable
-  include Backoffable
+  extend Loggable
+  extend Backoffable
 
   sidekiq_options retry: 0
 
