@@ -4,7 +4,7 @@ class WorkflowRuns::CancelJob < ApplicationJob
   sidekiq_options queue: :high, retry: 500
 
   sidekiq_retry_in do |count, exception|
-    backoff_in(attempt: count, period: :seconds, type: :linear) if exception.is_a?(WorkflowRunNotFound)
+    backoff_in(attempt: count + 1, period: :seconds, type: :linear) if exception.is_a?(WorkflowRunNotFound)
   end
 
   def perform(workflow_run_id)
