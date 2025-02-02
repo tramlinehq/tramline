@@ -7,7 +7,7 @@
 
 module Reenqueuer
   extend ActiveSupport::Concern
-  include Backoffable
+  extend Backoffable
 
   included do
     # Disable Sidekiq retries since we'll handle them ourselves
