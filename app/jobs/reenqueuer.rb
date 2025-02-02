@@ -7,7 +7,8 @@
 
 module Reenqueuer
   extend ActiveSupport::Concern
-  extend Backoffable
+  include Backoffable
+  include Loggable
 
   included do
     # Disable Sidekiq retries since we'll handle them ourselves
@@ -50,10 +51,6 @@ module Reenqueuer
   end
 
   private
-
-  def perform_work(*args)
-    raise NotImplementedError, "#{self.class} must implement #perform_work"
-  end
 
   def handle_error(error, args, current_attempt)
     matching_config = find_matching_retry_config(error)
