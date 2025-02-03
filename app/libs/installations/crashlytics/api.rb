@@ -69,7 +69,7 @@ module Installations
             event_timestamp,
             bundle_identifier
           FROM `#{table_name}`
-          WHERE event_timestamp >= #{start_timestamp}
+          WHERE event_timestamp >= '#{start_timestamp}'
           AND error_type = 'FATAL'
         ),
         errors_with_version AS (
