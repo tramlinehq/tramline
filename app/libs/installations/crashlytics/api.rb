@@ -12,9 +12,9 @@ module Installations
       @json_key = json_key
     end
 
-    def find_release(bundle_identifier, platform, app_version, app_version_code, transforms)
+    def find_release(bundle_identifier, platform, app_version, app_version_code, start_date, transforms)
       execute do
-        crash_data = fetch_crash_data(bundle_identifier, platform.upcase, app_version, app_version_code)
+        crash_data = fetch_crash_data(bundle_identifier, platform.upcase, app_version, app_version_code, start_date)
         return if crash_data.blank?
         Installations::Response::Keys.transform([crash_data], transforms).first
       end
@@ -37,9 +37,11 @@ module Installations
 
     private
 
-    def fetch_crash_data(bundle_identifier, platform, app_version, app_version_code)
-      analytics_data = get_data(analytics_query(datasets[:ga4], bundle_identifier, platform, app_version)).find { |a| a[:version_name] == app_version } || {}
-      crashlytics_data = get_data(crashlytics_query(datasets[:crashlytics], bundle_identifier, platform, app_version, app_version_code)).find { |a| a[:version_name] == app_version } || {}
+    def fetch_crash_data(bundle_identifier, platform, app_version, app_version_code, start_date)
+      aq = analytics_query(datasets[:ga4], bundle_identifier, platform, app_version, start_date)
+      analytics_data = get_data(aq).find { |a| a[:version_name] == app_version } || {}
+      cq = crashlytics_query(datasets[:crashlytics], bundle_identifier, platform, app_version, app_version_code, start_date)
+      crashlytics_data = get_data(cq).find { |a| a[:version_name] == app_version } || {}
       analytics_data.merge(crashlytics_data)
     end
 
@@ -55,8 +57,9 @@ module Installations
       execute { bigquery_client.query(query) }
     end
 
-    def crashlytics_query(dataset_name, bundle_identifier, platform, version_name, version_code)
+    def crashlytics_query(dataset_name, bundle_identifier, platform, version_name, version_code, start_date)
       table_name = dataset_name.sub("*", "") + bundle_identifier.tr(".", "_") + "_" + platform + "*"
+      start_timestamp = date_to_bq_date(start_date)
       <<-SQL.squish
         WITH combined_events AS (
           SELECT
@@ -66,7 +69,7 @@ module Installations
             event_timestamp,
             bundle_identifier
           FROM `#{table_name}`
-          WHERE event_timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)
+          WHERE event_timestamp >= #{start_timestamp}
           AND error_type = 'FATAL'
         ),
         errors_with_version AS (
@@ -103,9 +106,9 @@ module Installations
       SQL
     end
 
-    def analytics_query(dataset_name, bundle_identifier, platform, version_name)
+    def analytics_query(dataset_name, bundle_identifier, platform, version_name, start_date)
       table_name = dataset_name.sub("*", "events_*")
-      events_table_suffix = (Date.current - 30.days).strftime("%Y%m%d")
+      events_table_suffix = start_date.strftime("%Y%m%d")
       <<-SQL.squish
         WITH combined_events AS (
           SELECT
@@ -160,6 +163,10 @@ module Installations
       raise Installations::Google::Firebase::Error.new(e)
     rescue ::Google::Cloud::PermissionDeniedError => e
       raise Installations::Crashlytics::Error.new("Authentication failed: #{e.message}")
+    end
+
+    def date_to_bq_date(date)
+      date.iso8601
     end
   end
 end

@@ -17,7 +17,6 @@ class ProductionRelease < ApplicationRecord
   # include Sandboxable
   include Loggable
   include Passportable
-  RELEASE_MONITORING_PERIOD_IN_DAYS = 15
 
   belongs_to :release_platform_run
   belongs_to :build
@@ -48,8 +47,12 @@ class ProductionRelease < ApplicationRecord
   ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
   JOB_FREQUENCY = {
-    CrashlyticsIntegration => 120.minutes,
-    BugsnagIntegration => 5.minutes
+    BugsnagIntegration => 5.minutes,
+    CrashlyticsIntegration => 120.minutes
+  }
+  RELEASE_MONITORING_PERIOD = {
+    BugsnagIntegration => 15.days,
+    CrashlyticsIntegration => 5.days
   }
 
   enum :status, STATES
@@ -120,27 +123,24 @@ class ProductionRelease < ApplicationRecord
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
-    # NOTE: Disable all Crashlytics query temporarily
-    return if monitoring_provider.is_a?(CrashlyticsIntegration)
+    return if app.monitoring_disabled?
+
     FetchHealthMetricsJob.perform_async(id, JOB_FREQUENCY[monitoring_provider.class])
   end
 
   def beyond_monitoring_period?
-    finished? && completed_at < RELEASE_MONITORING_PERIOD_IN_DAYS.days.ago
+    finished? && completed_at < RELEASE_MONITORING_PERIOD[monitoring_provider.class].ago
   end
 
   def fetch_health_data!
     return if store_rollout.blank?
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
-    # NOTE: Disable all Crashlytics query temporarily
-    return if monitoring_provider.is_a?(CrashlyticsIntegration)
+    return if app.monitoring_disabled?
     return if stale?
 
-    release_data = monitoring_provider.find_release(platform, version_name, build_number)
-
+    release_data = monitoring_provider.find_release(platform, version_name, build_number, store_rollout.created_at)
     return if release_data.blank?
-
     release_health_metrics.create!(fetched_at: Time.current, **release_data)
   end
 
