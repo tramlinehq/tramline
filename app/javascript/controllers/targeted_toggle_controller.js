@@ -22,10 +22,12 @@ export default class extends Controller {
   }
 
   updateEmptiness() {
-    if (this.subsectionTargets.every(t => t.hidden)) {
-      this.revealOutlet.show()
-    } else {
-      this.revealOutlet.hide()
+    if (this.hasRevealOutlet) {
+      if (this.subsectionTargets.every(t => t.hidden)) {
+        this.revealOutlet.show()
+      } else {
+        this.revealOutlet.hide()
+      }
     }
   }
 }
