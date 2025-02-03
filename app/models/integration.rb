@@ -40,7 +40,6 @@ class Integration < ApplicationRecord
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
-      "project_management" => %w[JiraIntegration]
     },
     android: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
@@ -48,7 +47,6 @@ class Integration < ApplicationRecord
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
-      "project_management" => %w[JiraIntegration]
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
@@ -56,7 +54,6 @@ class Integration < ApplicationRecord
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
-      "project_management" => %w[JiraIntegration]
     }
   }.with_indifferent_access
 
