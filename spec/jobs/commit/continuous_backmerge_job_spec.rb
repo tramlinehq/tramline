@@ -25,7 +25,7 @@ describe Commit::ContinuousBackmergeJob do
       Flipper.disable_actor(:single_pr_backmerge_for_multi_commit_push, train.organization)
       commit = create(:commit, release:)
 
-      described_class.new.perform(commit.id, is_head_commit: [true, false].sample)
+      described_class.new.perform(commit.id, [true, false].sample)
 
       expect(Triggers::PatchPullRequest).to have_received(:call)
     end
@@ -34,7 +34,7 @@ describe Commit::ContinuousBackmergeJob do
       Flipper.enable_actor(:single_pr_backmerge_for_multi_commit_push, train.organization)
       commit = create(:commit, release:)
 
-      described_class.new.perform(commit.id, is_head_commit: false)
+      described_class.new.perform(commit.id, false)
 
       expect(Triggers::PatchPullRequest).not_to have_received(:call)
     end

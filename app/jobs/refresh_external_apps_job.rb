@@ -1,7 +1,4 @@
 class RefreshExternalAppsJob < ApplicationJob
-  include Loggable
-  queue_as :high
-
   def perform
     return if Rails.env.development? && !ENV["REFRESH_EXTERNAL_APPS"]
     App.find_each do |app|

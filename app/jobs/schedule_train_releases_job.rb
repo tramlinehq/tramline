@@ -1,5 +1,4 @@
 class ScheduleTrainReleasesJob < ApplicationJob
-  include Loggable
   queue_as :high
 
   def perform

@@ -110,31 +110,31 @@ describe Coordinators::UpdateBuildOnProduction do
     end
 
     it "retriggers the store submission if the submission was previously triggered" do
-      allow(StoreSubmissions::PlayStore::UploadJob).to receive(:perform_later)
+      allow(StoreSubmissions::PlayStore::UploadJob).to receive(:perform_async)
       new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
       new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
       described_class.call(store_submission, new_build.id)
       expect(store_submission.reload.preprocessing?).to be(true)
-      expect(StoreSubmissions::PlayStore::UploadJob).to have_received(:perform_later).with(store_submission.id).once
+      expect(StoreSubmissions::PlayStore::UploadJob).to have_received(:perform_async).with(store_submission.id).once
     end
 
     it "does not retrigger the store submission if attach build fails" do
-      allow(StoreSubmissions::PlayStore::UploadJob).to receive(:perform_later)
+      allow(StoreSubmissions::PlayStore::UploadJob).to receive(:perform_async)
       new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
       new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
       store_submission.update!(status: "preparing")
       described_class.call(store_submission, new_build.id)
-      expect(StoreSubmissions::PlayStore::UploadJob).not_to have_received(:perform_later).with(store_submission.id)
+      expect(StoreSubmissions::PlayStore::UploadJob).not_to have_received(:perform_async).with(store_submission.id)
     end
 
     it "does not retrigger the store submission if the submission was not previously triggered" do
       store_submission.update!(status: "created")
-      allow(StoreSubmissions::PlayStore::UploadJob).to receive(:perform_later)
+      allow(StoreSubmissions::PlayStore::UploadJob).to receive(:perform_async)
       new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
       new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
       described_class.call(store_submission, new_build.id)
       expect(store_submission.reload.created?).to be(true)
-      expect(StoreSubmissions::PlayStore::UploadJob).not_to have_received(:perform_later).with(store_submission.id)
+      expect(StoreSubmissions::PlayStore::UploadJob).not_to have_received(:perform_async).with(store_submission.id)
     end
   end
 

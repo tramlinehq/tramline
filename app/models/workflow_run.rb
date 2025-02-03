@@ -215,6 +215,10 @@ class WorkflowRun < ApplicationRecord
   def workflow_inputs
     data = {version_code: build.build_number, build_version: build.version_name}
     data[:build_notes] = triggering_release.tester_notes if organization.build_notes_in_workflow?
+    data[:parameters] = {}
+    conf.parameters.each do |param|
+      data[:parameters][param.name] = param.value
+    end
     data
   end
 
@@ -234,7 +238,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def on_initiate!
-    WorkflowRuns::TriggerJob.perform_later(id)
+    WorkflowRuns::TriggerJob.perform_async(id)
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
   end
 
@@ -244,11 +248,11 @@ class WorkflowRun < ApplicationRecord
   end
 
   def on_found!
-    WorkflowRuns::PollRunStatusJob.perform_later(id)
+    WorkflowRuns::PollRunStatusJob.perform_async(id)
   end
 
   def on_retry!
-    WorkflowRuns::TriggerJob.perform_later(id, retrigger: true)
+    WorkflowRuns::TriggerJob.perform_async(id, true)
     event_stamp!(reason: :retried, kind: :notice, data: stamp_data)
   end
 
@@ -274,7 +278,7 @@ class WorkflowRun < ApplicationRecord
 
   def on_cancel!
     return unless cancelling?
-    WorkflowRuns::CancelJob.perform_later(id)
+    WorkflowRuns::CancelJob.perform_async(id)
   end
 
   def stamp_data

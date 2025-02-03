@@ -157,6 +157,7 @@ class ReleasesController < SignedInApplicationController
   def set_train_and_app
     @train = @release.train
     @app = @train.app
+    set_current_app
   end
 
   def set_release

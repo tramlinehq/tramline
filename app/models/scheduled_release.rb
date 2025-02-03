@@ -27,8 +27,8 @@ class ScheduledRelease < ApplicationRecord
   NOTIFICATION_WINDOW = 3.hours
 
   def schedule_kickoff!
-    ReleaseKickoffJob.set(wait_until: scheduled_at).perform_later(id)
-    ScheduledReleaseNotificationJob.set(wait_until: scheduled_at - NOTIFICATION_WINDOW).perform_later(id)
+    ReleaseKickoffJob.set(wait_until: scheduled_at).perform_async(id)
+    ScheduledReleaseNotificationJob.set(wait_until: scheduled_at - NOTIFICATION_WINDOW).perform_async(id)
   end
 
   def notification_params

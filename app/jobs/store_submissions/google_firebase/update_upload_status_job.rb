@@ -1,14 +1,10 @@
-class StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob
-  include Sidekiq::Job
-  extend Loggable
-  extend Backoffable
-
+class StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob < ApplicationJob
   queue_as :high
   sidekiq_options retry: 5
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(GoogleFirebaseSubmission::UploadNotComplete)
-      backoff_in(attempt: count, period: :minutes, type: :static, factor: 2).to_i
+      backoff_in(attempt: count + 1, period: :minutes, type: :static, factor: 2).to_i
     else
       elog(ex)
       :kill

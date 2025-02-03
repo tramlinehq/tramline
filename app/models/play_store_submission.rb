@@ -198,7 +198,7 @@ class PlayStoreSubmission < StoreSubmission
 
   def update_external_status
     # return if sandbox_mode?
-    StoreSubmissions::PlayStore::UpdateExternalReleaseJob.perform_later(id)
+    StoreSubmissions::PlayStore::UpdateExternalReleaseJob.perform_async(id)
   end
 
   def update_store_info!
@@ -271,11 +271,11 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def on_preprocess!
-    StoreSubmissions::PlayStore::UploadJob.perform_later(id)
+    StoreSubmissions::PlayStore::UploadJob.perform_async(id)
   end
 
   def on_start_prepare!
-    StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id)
+    StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_async(id)
   end
 
   def tester_notes

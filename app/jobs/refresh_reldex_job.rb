@@ -1,7 +1,4 @@
 class RefreshReldexJob < ApplicationJob
-  include Loggable
-  queue_as :high
-
   def perform(train_id)
     train = Train.find(train_id)
 

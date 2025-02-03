@@ -6,7 +6,9 @@ module Backoffable
   ALLOWED_TYPES = [:exponential, :linear, :static]
   LINEAR_BACKOFF_FACTOR = 5
 
-  protected
+  def self.included(base)
+    base.extend(self)
+  end
 
   # goes roughly like: 10, 20, 40, 80, 160, 320, 640, 1280, 2560... for exponential
   # goes roughly like: 10, 15, 20, 25, 30, 35, 40, 45, 50, 55... for linear

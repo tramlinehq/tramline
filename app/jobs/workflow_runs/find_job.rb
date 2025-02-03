@@ -1,14 +1,10 @@
-class WorkflowRuns::FindJob
-  include Sidekiq::Job
-  extend Loggable
-  extend Backoffable
-
+class WorkflowRuns::FindJob < ApplicationJob
   queue_as :high
   sidekiq_options retry: 25
 
   sidekiq_retry_in do |count, exception|
     if exception.is_a?(Installations::Error) && exception.reason == :workflow_run_not_found
-      backoff_in(attempt: count, period: :minutes).to_i
+      backoff_in(attempt: count + 1, period: :minutes, type: :static, factor: 2).to_i
     else
       elog(exception)
       :kill
