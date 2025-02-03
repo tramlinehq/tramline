@@ -1,6 +1,6 @@
 <%# locals: (form:, jira_data:, current_jira_config:) %>
 
-<div class="flex flex-col gap-6" data-controller="targeted-toggle">
+<div class="flex flex-col gap-6" data-controller="targeted-toggle" data-targeted-toggle-reveal-outlet="#no-projects-selected">
   <div class="flex flex-col">
     <h4 class="heading-4 mb-3 border-default-b pb-1">Projects</h4>
     <% jira_data[:projects].each do |project| %>
@@ -76,6 +76,12 @@
           <% end %>
         </div>
       <% end %>
+    </div>
+
+    <div id="no-projects-selected" data-controller="reveal" hidden data-reveal>
+      <%= render EmptyStateComponent.new(text: "Select a project to see the done states.",
+                                         banner_image: "list_checks.svg",
+                                         type: :tiny) %>
     </div>
   </div>
 

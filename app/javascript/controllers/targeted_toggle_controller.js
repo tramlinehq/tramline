@@ -1,7 +1,8 @@
 import {Controller} from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["section", "subsection"]
+  static targets = ["section", "subsection", "emptyState"]
+  static outlets = ["reveal"]
 
   connect() {
     this.sectionTargets.forEach((section) => this.targetedToggle(section))
@@ -15,6 +16,16 @@ export default class extends Controller {
     let subsection = this.subsectionTargets.find(t => t.dataset.sectionKey === target.dataset.sectionKey)
     if (subsection) {
       subsection.hidden = !target.checked
+    }
+
+    this.updateEmptiness()
+  }
+
+  updateEmptiness() {
+    if (this.subsectionTargets.every(t => t.hidden)) {
+      this.revealOutlet.show()
+    } else {
+      this.revealOutlet.hide()
     }
   }
 }
