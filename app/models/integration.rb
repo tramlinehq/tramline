@@ -117,7 +117,7 @@ class Integration < ApplicationRecord
 
       integrations.each_with_object({}) do |(category, providers), combination|
         next if DISABLED_CATEGORIES.include?(category)
-        
+
         existing_integration = existing_integrations.select { |integration| integration.category.eql?(category) }
         combination[category] ||= []
 
