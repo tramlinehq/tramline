@@ -50,9 +50,9 @@ class ProductionRelease < ApplicationRecord
     BugsnagIntegration => 5.minutes,
     CrashlyticsIntegration => 120.minutes
   }
-  RELEASE_MONITORING_PERIOD = {
-    BugsnagIntegration => 15.days,
-    CrashlyticsIntegration => 5.days
+  RELEASE_MONITORING_PERIOD_IN_DAYS = {
+    BugsnagIntegration => 15,
+    CrashlyticsIntegration => 5
   }
 
   enum :status, STATES
@@ -129,7 +129,7 @@ class ProductionRelease < ApplicationRecord
   end
 
   def beyond_monitoring_period?
-    finished? && completed_at < RELEASE_MONITORING_PERIOD[monitoring_provider.class].ago
+    finished? && completed_at && completed_at < release_monitoring_period
   end
 
   def fetch_health_data!
@@ -201,5 +201,9 @@ class ProductionRelease < ApplicationRecord
     else
       changes_since_last_release
     end
+  end
+
+  def release_monitoring_period
+    RELEASE_MONITORING_PERIOD_IN_DAYS[monitoring_provider.class].days.ago
   end
 end

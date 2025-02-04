@@ -46,5 +46,10 @@ FactoryBot.define do
       category { "project_management" }
       providable factory: %i[jira_integration with_app_config]
     end
+
+    trait :with_crashlytics do
+      category { "monitoring" }
+      providable factory: %i[crashlytics_integration skip_validate_key]
+    end
   end
 end

@@ -79,4 +79,53 @@ RSpec.describe ProductionRelease do
       expect(ReleasePlatformRuns::CreateTagJob).to have_received(:perform_async).with(release_platform_run.id, production_release.commit.id)
     end
   end
+
+  describe "#fetch_health_data!" do
+    let(:train) { create(:train, tag_all_store_releases: true, tag_platform_releases: true) }
+    let(:release_platform) { create(:release_platform, train:) }
+    let(:monitoring_api_dbl) { instance_double(Installations::Crashlytics::Api) }
+
+    it "fetches health data from the monitoring provider" do
+      integration = create(:integration, :with_crashlytics)
+      monitoring_provider = integration.providable
+      create_production_rollout_tree(
+        train,
+        release_platform,
+        release_traits: [:on_track],
+        run_status: :on_track,
+        parent_release_status: :active,
+        rollout_status: :started,
+        skip_rollout: false
+      ) => {release_platform:, release:, production_release:, store_rollout:}
+      allow(production_release).to receive(:monitoring_provider).and_return(monitoring_provider)
+      allow(monitoring_provider).to receive(:installation).and_return(monitoring_api_dbl)
+      allow(monitoring_provider).to receive(:find_release)
+
+      production_release.fetch_health_data!
+
+      expect(monitoring_provider).to have_received(:find_release).with(release_platform.platform, release.release_version, production_release.build.build_number, store_rollout.created_at)
+    end
+
+    it "does not fetch health data if app has monitoring disabled" do
+      integration = create(:integration, :with_crashlytics)
+      monitoring_provider = integration.providable
+      create_production_rollout_tree(
+        train,
+        release_platform,
+        release_traits: [:on_track],
+        run_status: :on_track,
+        parent_release_status: :active,
+        rollout_status: :started,
+        skip_rollout: false
+      ) => {release_platform:, release:, production_release:, store_rollout:}
+      allow(production_release).to receive(:monitoring_provider).and_return(monitoring_provider)
+      allow(monitoring_provider).to receive(:installation).and_return(monitoring_api_dbl)
+      allow(monitoring_provider).to receive(:find_release)
+
+      Flipper.enable_actor(:monitoring_disabled, train.app)
+      production_release.fetch_health_data!
+
+      expect(monitoring_provider).not_to have_received(:find_release).with(release_platform.platform, release.release_version, production_release.build.build_number, store_rollout.created_at)
+    end
+  end
 end
