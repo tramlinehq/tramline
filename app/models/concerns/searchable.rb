@@ -26,13 +26,8 @@ module Searchable
               StartSel: "<mark>",
               StopSel: "</mark>"
             }
-          },
-          trigram: {
-            threshold: 0.3,
-            word_similarity: true
           }
-        },
-        ranked_by: ":trigram + :tsearch"
+        }
       }
     end
   end
