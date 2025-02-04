@@ -2,6 +2,7 @@ class Webhooks::OpenPullRequestJob < ApplicationJob
   queue_as :high
 
   def perform(train_id, pr_attributes)
+    pr_attributes = pr_attributes.with_indifferent_access
     base_ref = pr_attributes[:base_ref]
 
     train = Train.find(train_id)
