@@ -1,13 +1,16 @@
-<%= render SearchBarComponent.new do |search| %>
-  <% search.with_text_field :search, params[:search_pattern], "Search through releases and builds" %>
-  <% search.with_clear_search %>
+<section class="2xl:container 2xl:mx-auto">
+  <%= render SearchBarComponent.new do |search| %>
+    <div class="px-8 py-4 border-default-b">
+      <% search.with_text_field :search, params[:search_pattern], "Search through releases and builds" %>
+      <% search.with_clear_search %>
+    </div>
 
-  <%= render VerticalTabComponent.new(turbo_frame: "tab_content", tab_config: @tab_configuration) do |container| %>
-    <% container.with_tab do %>
-      <%= search.with_search_form url: search_releases_app_path(@app, **@search_params) %>
-      <%= render partial: "apps/search/all_releases_search_results",
-                 locals: { releases: @releases, pagy: @pagy, all_releases_params: @search_params, app: @app, filters: @filters } %>
+    <%= render VerticalTabComponent.new(turbo_frame: "tab_content", tab_config: @tab_configuration) do |container| %>
+      <% container.with_tab do %>
+        <%= search.with_search_form url: search_releases_app_path(@app, **@search_params) %>
+        <%= render partial: "apps/search/all_releases_search_results",
+                   locals: { releases: @releases, pagy: @pagy, all_releases_params: @search_params, app: @app, filters: @filters } %>
+      <% end %>
     <% end %>
   <% end %>
-<% end %>
-
+</section>

@@ -1,27 +1,28 @@
-<section>
+<section class="2xl:container 2xl:mx-auto">
   <% content_for :error_resource do %>
     <%= render ErrorComponent.new(error_resource) %>
   <% end %>
 
-  <div data-controller="reveal">
-    <div class="mt-5">
-      <div class="mb-4 border-default-b">
-        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center"
+  <div data-controller="reveal" class="grid grid-cols-10">
+    <div class="col-span-2 flex flex-col !pt-10 pl-8 py-3.5 border-default-b border-default-l 2xl:rounded-bl-lg border-default-r">
+      <div class="py-4">
+        <ul class="flex flex-col text-gray-500 dark:text-gray-400"
             data-controller="activation"
             data-activation-active-value="<%= SELECTED_TAB_STYLE %>"
             data-activation-inactive-value="<%= TAB_STYLE %>">
           <% sorted_configs.each do |(_position, name, path, icon)| %>
-            <li class="me-2">
-              <div data-turbo-prefetch="false">
+            <li class="flex items-center justify-center w-full">
+              <div data-turbo-prefetch="false" class="w-full">
                 <a href="<%= path %>"
                    data-activation-target="target"
                    data-action="click->activation#toggle"
                    data-turbo-action="replace"
                    data-turbo-frame="<%= frame %>"
-                   class="<%= style(path) %>"
-                   aria-selected="false">
-                  <%= render IconComponent.new(icon, size: :md, classes: "me-2") %>
-                  <%= name %>
+                   class="<%= style(path) %> flex flex-row items-center justify-between w-full rounded hover:text-main-900 hover:bg-main-100 px-2 py-1.5">
+                  <div class="flex gap-2 items-center">
+                    <%= render IconComponent.new(icon, size: :md, classes: "me-2") %>
+                    <span class="text-sm font-normal"><%= name %></span>
+                  </div>
                 </a>
               </div>
             </li>
@@ -30,7 +31,7 @@
       </div>
     </div>
 
-    <div id="tab-content" class="mt-8">
+    <article class="col-span-8 bg-white">
       <% tabs.each do |tab| %>
         <% component = EnhancedTurboFrameComponent.new(frame, classes: "with-turbo-frame-loader") %>
         <% component.with_loading_indicator %>
@@ -38,6 +39,6 @@
           <%= tab %>
         <% end %>
       <% end %>
-    </div>
+    </article>
   </div>
 </section>
