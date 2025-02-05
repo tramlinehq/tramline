@@ -1,13 +1,3 @@
-<div class="col-span-1 my-4">
-  <%= render FilterButtonComponent.new(
-    name: "Completed",
-    on: filters.dig(:release_status, :is_on),
-    path: search_releases_app_path(app),
-    method: :get,
-    filter_params: get_query_filter(:release_status),
-    query_params: all_releases_params) %>
-</div>
-
 <% if releases.present? %>
   <%= render AllReleasesTableComponent.new(
     releases: releases,
