@@ -11,10 +11,11 @@ class Queries::Releases
     new(**params).count
   end
 
-  def initialize(app:, params:)
+  def initialize(app:, params:, view_context: nil)
     @app = app
     @params = params
     params.sort_column ||= DEFAULT_SORT_COLUMN
+    @view_context = view_context
   end
 
   attr_reader :app, :sort_column, :sort_direction, :params
@@ -28,8 +29,11 @@ class Queries::Releases
   def all
     selected_records.map do |record|
       attrs = {
+        id: record.release_id,
         release_slug: record.slug,
         release_status: record.status,
+        release_version: record.release_version,
+        release_branch: record.branch_name,
         created_at: record.created_at
       }
 
@@ -47,7 +51,7 @@ class Queries::Releases
             base_ref: data["base_ref"],
             head_ref: data["head_ref"],
             commit: nil, # TODO: we get the id, so need to construct Commit
-            labels: data["labels"],
+            labels: data["labels"]
           }
         end
 
@@ -65,7 +69,8 @@ class Queries::Releases
           }
         end
 
-      Queries::Release.new(attrs)
+      release = Queries::Release.new(attrs)
+      ReleasePresenter.new(release, @view_context)
     end
   end
 
@@ -84,7 +89,7 @@ class Queries::Releases
   memoize def records
     # Define CTEs
     relevant_releases = Release
-      .select(:id, :slug, :status, :created_at)
+      .select(:id, :slug, :status, :created_at, :release_version, :branch_name)
       .joins(:train)
       .where(trains: {app_id: app.id})
 
@@ -92,7 +97,7 @@ class Queries::Releases
       .select(:id, "'commit' AS type", :release_id,
         "message AS matched_message",
         "jsonb_build_object('url', url, 'author_name', author_name, 'commit_hash', commit_hash, 'timestamp', commits.created_at, 'author_email', author_email, 'author_login', author_login) AS additional_data",
-        "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
+        "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at", "relevant_releases.release_version", "relevant_releases.branch_name")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON commits.release_id = relevant_releases.id")
 
     filtered_commits = if params.search_query.present?
@@ -105,7 +110,7 @@ class Queries::Releases
       .select(:id, "'pull_request' AS type", :release_id,
         "title AS matched_message",
         "jsonb_build_object('url', url, 'state', state, 'number', number, 'source', source, 'base_ref', base_ref, 'head_ref', head_ref, 'commit', commit_id, 'labels', labels) AS additional_data",
-        "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at")
+        "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at", "relevant_releases.release_version", "relevant_releases.branch_name")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON pull_requests.release_id = relevant_releases.id")
 
     filtered_pull_requests = if params.search_query.present?
@@ -129,19 +134,36 @@ class Queries::Releases
         "array_agg(additional_data) as additional_data",
         :slug,
         :status,
+        :release_version,
+        :branch_name,
         :created_at)
-      .group(:release_id, :slug, :status, :created_at)
+      .group(:release_id, :slug, :status, :release_version, :branch_name, :created_at)
   end
 
   class Queries::Release
     include ActiveModel::Model
     include ActiveModel::Attributes
 
+    attribute :id, :string
     attribute :release_status, :string
     attribute :release_slug, :string
+    attribute :release_version, :string
+    attribute :release_branch, :string
     attribute :created_at, :datetime
     attribute :pull_requests, array: true, default: [] # Queries::PullRequest
     attribute :commits, array: true, default: [] # Queries::Commit
+
+    def upcoming?
+      release_status == "upcoming"
+    end
+
+    def status
+      release_status
+    end
+
+    def branch_url
+      "TODO"
+    end
 
     def inspect
       format(

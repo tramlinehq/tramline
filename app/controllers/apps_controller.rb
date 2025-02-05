@@ -76,7 +76,7 @@ class AppsController < SignedInApplicationController
     set_query_helpers
     @query_params.add_search_query(params[:search_pattern]) if params[:search_pattern].present?
     set_query_pagination(Queries::Releases.count(app: @app, params: @query_params))
-    @releases = Queries::Releases.all(app: @app, params: @query_params)
+    @releases = Queries::Releases.all(app: @app, params: @query_params, view_context: view_context)
   end
 
   def search_builds
@@ -100,7 +100,7 @@ class AppsController < SignedInApplicationController
   def set_search_tab_config
     @tab_configuration = [
       [1, "Releases", search_releases_app_path(@app, **@search_params), "rocket.svg"],
-      [2, "Builds", search_builds_app_path(@app, **@search_params), "drill.svg"],
+      [2, "Builds", search_builds_app_path(@app, **@search_params), "drill.svg"]
     ]
   end
 
