@@ -1,4 +1,63 @@
+<div class="text-secondary text-sm">
+  <strong><%= releases.size %></strong> releases found.
+</div>
+
 <% if releases.present? %>
+  <%= render SectionComponent.new(style: :boxed, size: :micro) do %>
+    <% release = ReleasePresenter.new(Release.first) %>
+    <% release_branch = release.release_branch %>
+
+    <div class="flex flex-col gap-y-2">
+      <div class="flex items-center justify-between border-default-b px-1 py-1 mb-3">
+        <div class="flex justify-start gap-1">
+          <h2 class="heading-2 text-main dark:text-white font-normal">Release <%= release.display_release_version %></h2>
+          <% if release_branch.present? %>
+            <%= render ButtonComponent.new(label: release_branch,
+                                           scheme: :link,
+                                           type: :link_external,
+                                           options: release.branch_url,
+                                           authz: false,
+                                           size: :xxs,
+                                           arrow: :none) do |b|
+              b.with_icon(vcs_provider_logo, size: :sm)
+            end %>
+          <% end %>
+        </div>
+
+        <div class="flex justify-end">
+          <%= render ButtonComponent.new(
+            scheme: :supporting,
+            label: "Go to release",
+            options: release_path(Release.first),
+            size: :sm,
+            html_options: { class: "-mr-2" },
+            authz: false,
+            type: :link) do |b|
+            b.with_icon("arrow_right.svg")
+          end %>
+        </div>
+      </div>
+
+      <div class="flex flex-col item-gap-default">
+        <%= render CardComponent.new(title: "Commits", separator: false, size: :xs, fold: true) do |card| %>
+          <% card.with_action do %>
+            <span class="text-xs text-secondary items-center">Matched <strong>26</strong> commits</span>
+          <% end %>
+
+          <%= render partial: "shared/divide_collection", locals: { collection: render(CommitComponent.with_collection(Commit.last(2))) } %>
+        <% end %>
+
+        <%= render CardComponent.new(title: "pull requests", separator: false, size: :xs, fold: true) do |card| %>
+          <% card.with_action do %>
+            <span class="text-xs text-secondary items-center">Matched <strong>6</strong> pull requests</span>
+          <% end %>
+
+          <%= render partial: "shared/divide_collection", locals: { collection: render(PullRequestComponent.with_collection(PullRequest.last(2))) } %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <%= render AllReleasesTableComponent.new(
     releases: releases,
     paginator: pagy,
