@@ -11,11 +11,10 @@ class Queries::Releases
     new(**params).count
   end
 
-  def initialize(app:, params:, view_context: nil)
+  def initialize(app:, params:)
     @app = app
     @params = params
     params.sort_column ||= DEFAULT_SORT_COLUMN
-    @view_context = view_context
   end
 
   attr_reader :app, :sort_column, :sort_direction, :params
@@ -24,17 +23,11 @@ class Queries::Releases
   # - output structure
   # - pg_search
   #   - indexes
-  # - tests
   # - pagination
   def all
     selected_records.map do |record|
       attrs = {
-        id: record.release_id,
-        release_slug: record.slug,
-        release_status: record.status,
-        release_version: record.release_version,
-        release_branch: record.branch_name,
-        created_at: record.created_at
+        release: Release.find(record.release_id) # TODO: bulk load releases
       }
 
       items = record.types.zip(record.matched_messages, record.additional_data)
@@ -69,8 +62,7 @@ class Queries::Releases
           }
         end
 
-      release = Queries::Release.new(attrs)
-      ReleasePresenter.new(release, @view_context)
+      Queries::Release.new(attrs)
     end
   end
 
@@ -80,7 +72,6 @@ class Queries::Releases
 
   def selected_records
     records
-      # .select(params.sort_column)
       .order(:created_at)
       .limit(params.limit)
       .offset(params.offset)
@@ -89,7 +80,7 @@ class Queries::Releases
   memoize def records
     # Define CTEs
     relevant_releases = Release
-      .select(:id, :slug, :status, :created_at, :release_version, :branch_name)
+      .select(:id, :created_at)
       .joins(:train)
       .where(trains: {app_id: app.id})
 
@@ -97,7 +88,7 @@ class Queries::Releases
       .select(:id, "'commit' AS type", :release_id,
         "message AS matched_message",
         "jsonb_build_object('url', url, 'author_name', author_name, 'commit_hash', commit_hash, 'timestamp', commits.created_at, 'author_email', author_email, 'author_login', author_login) AS additional_data",
-        "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at", "relevant_releases.release_version", "relevant_releases.branch_name")
+        "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON commits.release_id = relevant_releases.id")
 
     filtered_commits = if params.search_query.present?
@@ -110,7 +101,7 @@ class Queries::Releases
       .select(:id, "'pull_request' AS type", :release_id,
         "title AS matched_message",
         "jsonb_build_object('url', url, 'state', state, 'number', number, 'source', source, 'base_ref', base_ref, 'head_ref', head_ref, 'commit', commit_id, 'labels', labels) AS additional_data",
-        "relevant_releases.slug", "relevant_releases.status", "relevant_releases.created_at", "relevant_releases.release_version", "relevant_releases.branch_name")
+        "relevant_releases.created_at")
       .joins("JOIN (#{relevant_releases.to_sql}) AS relevant_releases ON pull_requests.release_id = relevant_releases.id")
 
     filtered_pull_requests = if params.search_query.present?
@@ -132,38 +123,19 @@ class Queries::Releases
         "array_agg(type) as types",
         "array_agg(pg_search_highlight) as matched_messages",
         "array_agg(additional_data) as additional_data",
-        :slug,
-        :status,
-        :release_version,
-        :branch_name,
         :created_at)
-      .group(:release_id, :slug, :status, :release_version, :branch_name, :created_at)
+      .group(:release_id, :created_at)
   end
 
-  class Queries::Release
-    include ActiveModel::Model
-    include ActiveModel::Attributes
-
-    attribute :id, :string
-    attribute :release_status, :string
-    attribute :release_slug, :string
-    attribute :release_version, :string
-    attribute :release_branch, :string
-    attribute :created_at, :datetime
-    attribute :pull_requests, array: true, default: [] # Queries::PullRequest
-    attribute :commits, array: true, default: [] # Queries::Commit
-
-    def upcoming?
-      release_status == "upcoming"
+  class Queries::Release < SimpleDelegator
+    def initialize(attrs)
+      super(attrs[:release])   # set up delegation to the release object
+      @commits = attrs[:commits]
+      @pull_requests = attrs[:pull_requests]
     end
 
-    def status
-      release_status
-    end
-
-    def branch_url
-      "TODO"
-    end
+    attr_reader :commits
+    attr_reader :pull_requests
 
     def inspect
       format(

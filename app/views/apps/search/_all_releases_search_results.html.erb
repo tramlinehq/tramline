@@ -5,6 +5,7 @@
 <% if releases.present? %>
   <%= render SectionComponent.new(style: :boxed, size: :micro) do %>
     <% releases.each do |release| %>
+      <% release = ReleasePresenter.new(release) %>
       <div class="flex flex-col gap-y-2">
         <div class="flex items-center justify-between border-default-b px-1 py-1 mb-3">
           <div class="flex justify-start gap-1">
@@ -26,7 +27,7 @@
             <%= render ButtonComponent.new(
               scheme: :supporting,
               label: "Go to release",
-              options: release_path(release.release_slug),
+              options: release_path(release),
               size: :sm,
               html_options: { class: "-mr-2" },
               authz: false,
@@ -77,13 +78,14 @@
     <% end %>
   <% end %>
 
-  <%= render AllReleasesTableComponent.new(
-    releases: releases,
-    paginator: pagy,
-    query_params: all_releases_params) %>
   <footer>
     <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
   </footer>
+
+  <div class="pt-5">
+    <%= render PaginationComponent.new(results: pagy, turbo_frame: "all_releases", info: true) %>
+  </div>
+
 <% else %>
   <%= render EmptyStateComponent.new(
     title: "No releases found",

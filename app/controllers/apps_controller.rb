@@ -76,7 +76,7 @@ class AppsController < SignedInApplicationController
     set_query_helpers
     @query_params.add_search_query(params[:search_pattern]) if params[:search_pattern].present?
     set_query_pagination(Queries::Releases.count(app: @app, params: @query_params))
-    @releases = Queries::Releases.all(app: @app, params: @query_params, view_context: view_context)
+    @releases = Queries::Releases.all(app: @app, params: @query_params)
   end
 
   def search_builds
