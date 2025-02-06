@@ -5,11 +5,17 @@
 <% if releases.present? %>
   <%= render SectionComponent.new(style: :boxed, size: :micro) do %>
     <% releases.each do |release| %>
-      <% release = ReleasePresenter.new(release) %>
+      <% release = ReleasePresenter.new(release, self) %>
       <div class="flex flex-col gap-y-2">
         <div class="flex items-center justify-between border-default-b px-1 py-1 mb-3">
           <div class="flex justify-start gap-1">
             <h2 class="heading-2 text-main dark:text-white font-normal">Release <%= release.display_release_version %></h2>
+            <%= render BadgeComponent.new(**release.release_status) %>
+            <%= render BadgeComponent.new(
+              text: "Started #{release.display_start_time}",
+              kind: :status_pill,
+              status: :neutral
+            ) %>
             <% if release.release_branch.present? %>
               <%= render ButtonComponent.new(label: release.release_branch,
                                            scheme: :link,
@@ -47,12 +53,10 @@
               <%= render partial: "shared/divide_collection", locals: { 
                 collection: render(CommitComponent.with_collection(
                   release.commits.map do |commit_hash| 
-                    OpenStruct.new(
-                      commit_hash.merge(
-                        timestamp: Time.parse(commit_hash[:timestamp])
-                      )
-                    )
-                  end
+                    Queries::Commit.new(commit_hash)
+                  end,
+                  detailed: false,
+                  render_html: true
                 )) 
               } %>
             <% end %>
@@ -67,8 +71,11 @@
               <%= render partial: "shared/divide_collection", locals: { 
                 collection: render(PullRequestComponent.with_collection(
                   release.pull_requests.map do |pr_hash|
-                    OpenStruct.new(pr_hash)
-                  end
+                    Queries::PullRequest.new(pr_hash)
+                  end,
+                  render_html: true,
+                  simple: true,
+                  enable_truncate: false
                 )) 
               } %>
             <% end %>
