@@ -13,9 +13,6 @@
     builds: builds,
     paginator: pagy,
     query_params: all_builds_params) %>
-  <footer>
-    <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
-  </footer>
 <% else %>
   <%= render EmptyStateComponent.new(
     title: "No builds found",
