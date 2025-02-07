@@ -16,8 +16,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
   include Displayable
   include Loggable
 
+  LOCK_ACQUISITION_FAILURE_REASON = :lock_acquisition_failed
+  LOCK_NAME = "google_play_store_edit"
+  LockAcquisitionFailed = Installations::Error.new("Failed to acquire an internal lock to make Play Store calls", reason: LOCK_ACQUISITION_FAILURE_REASON)
+
   delegate :integrable, to: :integration, allow_nil: true
   delegate :refresh_external_app, :bundle_identifier, to: :integrable, allow_nil: true
+  delegate :distributed_lock, to: Rails.application.config
 
   validate :correct_key, on: :create
 
@@ -43,7 +48,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/play-console.png".freeze
   MAX_RETRY_ATTEMPTS = 3
   ALLOWED_ERRORS = [:build_exists_in_build_channel]
-  RETRYABLE_ERRORS = [:timeout, :duplicate_call, :unauthorized]
+  RETRYABLE_ERRORS = [:timeout, :duplicate_call, :unauthorized, LOCK_ACQUISITION_FAILURE_REASON]
 
   def access_key
     StringIO.new(json_key)
@@ -223,8 +228,9 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def execute_with_retry(attempt: 0, skip_review: false, retry_on_review_fail: false, &block)
     GitHub::Result.new do
-      yield(skip_review)
-    rescue Installations::Google::PlayDeveloper::Error => ex
+      result = distributed_lock(LOCK_NAME) { yield(skip_review) }
+      raise LockAcquisitionFailed unless result[:ok]
+    rescue Installations::Google::PlayDeveloper::Error, LockAcquisitionFailed => ex
       raise ex if attempt >= MAX_RETRY_ATTEMPTS
       next_attempt = attempt + 1
 
