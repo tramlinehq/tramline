@@ -16,10 +16,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
   include Displayable
   include Loggable
 
-  LOCK_ACQUISITION_FAILURE_REASON = :lock_acquisition_failed
-  LOCK_NAME = "google_play_store_edit"
-  LockAcquisitionFailed = Installations::Error.new("Failed to acquire an internal lock to make Play Store calls", reason: LOCK_ACQUISITION_FAILURE_REASON)
-
   delegate :integrable, to: :integration, allow_nil: true
   delegate :refresh_external_app, :bundle_identifier, to: :integrable, allow_nil: true
 
@@ -30,6 +26,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create_commit :draft_check
   after_create_commit :refresh_external_app
 
+  PLAY_STORE_ERROR = Installations::Google::PlayDeveloper::Error
+  LOCK_ACQUISITION_FAILURE_REASON = :lock_acquisition_failed
+  LOCK_ACQUISITION_FAILURE_MSG = "Failed to acquire an internal lock to make Play Store calls"
+  LOCK_NAME = "google_play_store_edit_"
   PROD_CHANNEL = {id: :production, name: "Production", is_production: true}.freeze
   BETA_CHANNEL = {id: :beta, name: "Open testing", is_production: false}.freeze
   CHANNELS = [
@@ -41,13 +41,30 @@ class GooglePlayStoreIntegration < ApplicationRecord
   PUBLIC_CHANNELS = %w[production beta alpha]
   IN_PROGRESS_STORE_STATUS = %w[inProgress].freeze
   ACTIVE_STORE_STATUSES = %w[completed inProgress].freeze
-
-  DEVELOPER_URL_TEMPLATE =
-    Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")
+  DEVELOPER_URL_TEMPLATE = Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/play-console.png".freeze
   MAX_RETRY_ATTEMPTS = 3
   ALLOWED_ERRORS = [:build_exists_in_build_channel]
   RETRYABLE_ERRORS = [:timeout, :duplicate_call, :unauthorized, LOCK_ACQUISITION_FAILURE_REASON]
+  CHANNEL_DATA_TRANSFORMATIONS = {
+    name: :track,
+    releases: {
+      releases: {
+        localizations: {release_notes: {language: :language, text: :text}},
+        version_string: :name,
+        status: :status,
+        user_fraction: :user_fraction,
+        build_number: [:version_codes, 0]
+      }
+    }
+  }
+
+  APP_TRANSFORMS = {
+    default_locale: :default_language,
+    contact_website: :contact_website,
+    contact_email: :contact_email,
+    contact_phone: :contact_phone
+  }
 
   def access_key
     StringIO.new(json_key)
@@ -78,7 +95,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   def upload(file)
     execute_with_retry(retry_on_review_fail: true) do |skip_review|
       installation.upload(file, skip_review:)
-    rescue Installations::Google::PlayDeveloper::Error => ex
+    rescue PLAY_STORE_ERROR => ex
       raise ex unless ALLOWED_ERRORS.include?(ex.reason)
     end
   end
@@ -152,35 +169,15 @@ class GooglePlayStoreIntegration < ApplicationRecord
     sliced.reject { |channel| channel[:is_production] }
   end
 
-  CHANNEL_DATA_TRANSFORMATIONS = {
-    name: :track,
-    releases: {
-      releases: {
-        localizations: {release_notes: {language: :language, text: :text}},
-        version_string: :name,
-        status: :status,
-        user_fraction: :user_fraction,
-        build_number: [:version_codes, 0]
-      }
-    }
-  }
-
-  APP_TRANSFORMS = {
-    default_locale: :default_language,
-    contact_website: :contact_website,
-    contact_email: :contact_email,
-    contact_phone: :contact_phone
-  }
-
   def find_app
     @find_app ||= installation.app_details(APP_TRANSFORMS)
-  rescue Installations::Google::PlayDeveloper::Error => ex
+  rescue PLAY_STORE_ERROR => ex
     elog(ex)
   end
 
   def channel_data
     @channel_data ||= installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
-  rescue Installations::Google::PlayDeveloper::Error => ex
+  rescue PLAY_STORE_ERROR => ex
     elog(ex)
   end
 
@@ -192,7 +189,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     errors.add(:json_key, :no_bundles) unless build_present_in_tracks?
   rescue RuntimeError
     errors.add(:json_key, :key_format)
-  rescue Installations::Google::PlayDeveloper::Error => ex
+  rescue PLAY_STORE_ERROR => ex
     errors.add(:json_key, ex.reason)
   end
 
@@ -227,9 +224,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def execute_with_retry(attempt: 0, skip_review: false, retry_on_review_fail: false, &block)
     GitHub::Result.new do
-      result = distributed_lock { yield(skip_review) }
-      raise LockAcquisitionFailed unless result[:ok]
-    rescue Installations::Google::PlayDeveloper::Error, LockAcquisitionFailed => ex
+      api_lock { yield(skip_review) }
+    rescue PLAY_STORE_ERROR => ex
       raise ex if attempt >= MAX_RETRY_ATTEMPTS
       next_attempt = attempt + 1
 
@@ -245,12 +241,17 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
-  def project_id
-    JSON.parse(json_key)["project_id"]&.split("-")&.third
+  def api_lock(&)
+    raise ArgumentError, "You must provide a block" unless block_given?
+    name = LOCK_NAME + integrable.id.to_s
+    result = Rails.application.config.distributed_lock.lock(name, &)
+
+    if result.is_a?(Hash) && !result[:ok]
+      raise PLAY_STORE_ERROR.new(LOCK_ACQUISITION_FAILURE_MSG, reason: LOCK_ACQUISITION_FAILURE_REASON)
+    end
   end
 
-  def distributed_lock(&)
-    name = "#{LOCK_NAME}_#{integrable.id}"
-    Rails.application.config.distributed_lock(name, &)
+  def project_id
+    JSON.parse(json_key)["project_id"]&.split("-")&.third
   end
 end

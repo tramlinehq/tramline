@@ -13,6 +13,7 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
+      google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
@@ -74,6 +75,7 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
+      google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
@@ -101,6 +103,7 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
+      google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
@@ -128,6 +131,7 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
+      google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
@@ -183,6 +187,7 @@ describe GooglePlayStoreIntegration do
     }
 
     before do
+      google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
