@@ -1,14 +1,14 @@
 <div class="text-secondary text-sm">
-  <strong><%= releases.size %></strong> releases found.
+  <strong><%= pagy.count %></strong> releases found.
 </div>
 
 <% if releases.present? %>
-  <%= render SectionComponent.new(style: :boxed, size: :micro) do %>
-    <% releases.each do |release| %>
+  <% releases.each do |release| %>
+    <%= render SectionComponent.new(style: :boxed, size: :micro) do %>
       <% release = ReleasePresenter.new(release, self) %>
       <div class="flex flex-col gap-y-2">
         <div class="flex items-center justify-between border-default-b px-1 py-1 mb-3">
-          <div class="flex justify-start gap-1">
+          <div class="flex justify-start gap-1 items-center">
             <h2 class="heading-2 text-main dark:text-white font-normal">Release <%= release.display_release_version %></h2>
             <%= render BadgeComponent.new(**release.release_status) %>
             <%= render BadgeComponent.new(
@@ -74,7 +74,6 @@
                     Queries::PullRequest.new(pr_hash)
                   end,
                   render_html: true,
-                  simple: true,
                   enable_truncate: false
                 )) 
               } %>
@@ -85,11 +84,11 @@
     <% end %>
   <% end %>
 
-  <footer>
-    <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
-  </footer>
-
   <div class="pt-5">
+    <footer>
+      <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
+    </footer>
+
     <%= render PaginationComponent.new(results: pagy, turbo_frame: "all_releases", info: true) %>
   </div>
 
