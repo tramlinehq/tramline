@@ -369,4 +369,22 @@ describe Train do
       expect(train.errors[:base]).to include("both freeze_version and patch_version_bump_only cannot be true at the same time")
     end
   end
+
+  describe "#last_finished_release" do
+    let(:train) { create(:train, :active) }
+    let!(:finished_releases) { create_list(:release, 2, :finished, train:) }
+
+    it "returns last finished release" do
+      expect(train.last_finished_release).to eq(finished_releases.second)
+    end
+  end
+
+  describe "#previous_releases" do
+    let(:train) { create(:train, :active) }
+    let!(:finished_releases) { create_list(:release, 5, :finished, train:) }
+
+    it "returns all but last finished release" do
+      expect(train.previous_releases).to match_array(finished_releases[0..3])
+    end
+  end
 end
