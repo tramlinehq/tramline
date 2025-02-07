@@ -10,4 +10,4 @@
   <% end %>
 <% end %>
 
-<%= render ReleaseListComponent.new(train: @train) %>
+<%= render ReleaseListComponent.new(train: @train, previous_releases: @previous_releases, last_completed_release: @last_completed_release) %>
