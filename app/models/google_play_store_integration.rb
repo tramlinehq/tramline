@@ -22,7 +22,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   delegate :integrable, to: :integration, allow_nil: true
   delegate :refresh_external_app, :bundle_identifier, to: :integrable, allow_nil: true
-  delegate :distributed_lock, to: Rails.application.config
 
   validate :correct_key, on: :create
 
@@ -228,7 +227,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def execute_with_retry(attempt: 0, skip_review: false, retry_on_review_fail: false, &block)
     GitHub::Result.new do
-      result = distributed_lock(LOCK_NAME) { yield(skip_review) }
+      result = distributed_lock { yield(skip_review) }
       raise LockAcquisitionFailed unless result[:ok]
     rescue Installations::Google::PlayDeveloper::Error, LockAcquisitionFailed => ex
       raise ex if attempt >= MAX_RETRY_ATTEMPTS
@@ -248,5 +247,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def project_id
     JSON.parse(json_key)["project_id"]&.split("-")&.third
+  end
+
+  def distributed_lock(&)
+    name = "#{LOCK_NAME}_#{integrable.id}"
+    Rails.application.config.distributed_lock(name, &)
   end
 end
