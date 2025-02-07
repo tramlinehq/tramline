@@ -13,12 +13,11 @@ class ReleasesController < SignedInApplicationController
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
-    @previous_releases = previous_releases_query
   end
 
   def previous_releases
     @train = @app.trains.friendly.find(params[:train_id])
-    @paginator, @previous_releases = pagy(previous_releases_query)
+    @paginator, @previous_releases = pagy(@train.previous_releases)
     render layout: false
   end
 
@@ -161,16 +160,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   private
-
-  def previous_releases_query
-    @last_completed_release = @train.releases.reorder("completed_at DESC").released.first
-    @train
-      .releases
-      .includes([:release_platform_runs, hotfixed_from: [:release_platform_runs]])
-      .completed
-      .where.not(id: @last_completed_release)
-      .order(completed_at: :desc, scheduled_at: :desc)
-  end
 
   def set_train_and_app
     @train = @release.train

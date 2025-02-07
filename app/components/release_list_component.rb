@@ -4,22 +4,20 @@ class ReleaseListComponent < BaseComponent
   REVEAL_HIDE_ACTION = "reveal#hide"
   REVEAL_SHOW_ACTION = "reveal#show"
 
-  def initialize(train:, previous_releases:, last_completed_release:)
+  def initialize(train:)
     @train = train
     @ongoing_release = train.ongoing_release
     @hotfix_release = train.hotfix_release
     @upcoming_release = train.upcoming_release
-    @previous_releases = previous_releases
-    @last_completed_release = last_completed_release
   end
 
-  attr_reader :train, :ongoing_release, :hotfix_release, :upcoming_release, :previous_releases, :last_completed_release
-  delegate :app, :hotfix_from, to: :train
+  attr_reader :train, :ongoing_release, :hotfix_release, :upcoming_release
+  delegate :app, :hotfix_from, :previous_releases, :last_finished_release, to: :train
 
   # we don't check for train.releases.none?
   # because the constituent releases that are loaded on the page are already memoized, so we avoid a query
   def no_releases?
-    previous_releases.empty? && ongoing_release.nil? && upcoming_release.nil? && hotfix_release.nil? && last_completed_release.nil?
+    previous_releases.empty? && ongoing_release.nil? && upcoming_release.nil? && hotfix_release.nil? && last_finished_release.nil?
   end
 
   memoize def devops_report

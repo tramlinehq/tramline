@@ -127,7 +127,7 @@
     <%= render ReleaseOverviewComponent.new(hotfix_release) %>
     <%= render ReleaseOverviewComponent.new(ongoing_release) %>
     <%= render ReleaseOverviewComponent.new(upcoming_release) %>
-    <%= render ReleaseOverviewComponent.new(last_completed_release) %>
+    <%= render ReleaseOverviewComponent.new(last_finished_release) %>
 
     <% if devops_report.present? %>
       <%= render SectionComponent.new(style: :titled, title: "Mobile DevOps") do %>
