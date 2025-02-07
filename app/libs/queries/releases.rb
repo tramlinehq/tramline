@@ -19,11 +19,6 @@ class Queries::Releases
 
   attr_reader :app, :sort_column, :sort_direction, :params
 
-  # TODO
-  # - output structure
-  # - pg_search
-  #   - indexes
-  # - pagination
   def all
     selected_records.map do |record|
       attrs = {

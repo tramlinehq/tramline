@@ -2,7 +2,7 @@
   <%= render FilterButtonComponent.new(
     name: "Completed",
     on: filters.dig(:release_status, :is_on),
-    path: all_builds_app_path(app),
+    path: search_builds_app_path(app),
     method: :get,
     filter_params: get_query_filter(:release_status),
     query_params: all_builds_params) %>
