@@ -139,7 +139,7 @@ GEM
       irb (~> 1.10)
       reline (>= 0.3.8)
     declarative (0.0.20)
-    descope (1.0.6)
+    descope (1.0.5)
       addressable (~> 2.8)
       jwt (~> 2.7)
       rest-client (~> 2.1)
@@ -190,15 +190,15 @@ GEM
     faraday-retry (2.2.1)
       faraday (~> 2.0)
     fast_blank (1.0.1)
-    ffi (1.17.0-aarch64-linux-gnu)
+    ffi (1.17.0-aarch64-linux)
     ffi (1.17.0-aarch64-linux-musl)
-    ffi (1.17.0-arm-linux-gnu)
+    ffi (1.17.0-arm-linux)
     ffi (1.17.0-arm-linux-musl)
     ffi (1.17.0-arm64-darwin)
-    ffi (1.17.0-x86-linux-gnu)
+    ffi (1.17.0-x86-linux)
     ffi (1.17.0-x86-linux-musl)
     ffi (1.17.0-x86_64-darwin)
-    ffi (1.17.0-x86_64-linux-gnu)
+    ffi (1.17.0-x86_64-linux)
     ffi (1.17.0-x86_64-linux-musl)
     ffi-compiler (1.3.2)
       ffi (>= 1.15.5)
@@ -298,6 +298,7 @@ GEM
     hana (1.3.7)
     hashdiff (1.1.1)
     hashie (5.0.0)
+    hiredis (0.6.3)
     http (5.2.0)
       addressable (~> 2.8)
       base64 (~> 0.1)
@@ -727,22 +728,22 @@ GEM
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
     zache (0.13.2)
-    zeitwerk (2.7.1)
+    zeitwerk (2.6.18)
 
 PLATFORMS
   aarch64-linux
-  aarch64-linux-gnu
+  aarch64-linux
   aarch64-linux-musl
   arm-linux
-  arm-linux-gnu
+  arm-linux
   arm-linux-musl
   arm64-darwin
   x86-linux
-  x86-linux-gnu
+  x86-linux
   x86-linux-musl
   x86_64-darwin
   x86_64-linux
-  x86_64-linux-gnu
+  x86_64-linux
   x86_64-linux-musl
 
 DEPENDENCIES
@@ -789,6 +790,7 @@ DEPENDENCIES
   googleauth (~> 1.1)
   groupdate (~> 6.1)
   haikunator (~> 1.1)
+  hiredis (~> 0.6.3)
   http (~> 5.0)
   importmap-rails (~> 1.0)
   initials (~> 0.4.3)
@@ -853,7 +855,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 3.3.6p108
+   ruby 3.1.0p0
 
 BUNDLED WITH
-   2.5.16
+   2.4.10

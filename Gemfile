@@ -81,6 +81,7 @@ gem "invisible_captcha", "~> 2.3"
 gem "csv", "~> 3.3"
 gem "google-cloud-bigquery", "~> 1.50.0"
 gem "redis_queued_locks", "~> 1.12"
+gem "hiredis", "~> 0.6.3"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

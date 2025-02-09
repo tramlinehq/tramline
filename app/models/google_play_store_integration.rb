@@ -244,9 +244,11 @@ class GooglePlayStoreIntegration < ApplicationRecord
   def api_lock(&)
     raise ArgumentError, "You must provide a block" unless block_given?
     name = LOCK_NAME + integrable.id.to_s
+    puts "locking #{name}"
     result = Rails.application.config.distributed_lock.lock(name, &)
 
     if result.is_a?(Hash) && !result[:ok]
+      puts "lock failed: #{result[:result]}"
       raise PLAY_STORE_ERROR.new(LOCK_ACQUISITION_FAILURE_MSG, reason: LOCK_ACQUISITION_FAILURE_REASON)
     end
   end

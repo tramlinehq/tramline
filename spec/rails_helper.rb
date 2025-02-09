@@ -74,4 +74,8 @@ RSpec.configure do |config|
 
   config.include ActiveSupport::Testing::TimeHelpers
   config.include Devise::Test::ControllerHelpers, type: :controller
+
+  config.after :each do
+    Redis.current.flushdb
+  end
 end
