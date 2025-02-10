@@ -128,16 +128,17 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def draft_check?
-    channel_data.find { |c| PUBLIC_CHANNELS.include?(c[:name]) && c[:releases].present? }.blank?
+    channel_data&.find { |c| PUBLIC_CHANNELS.include?(c[:name]) && c[:releases].present? }.blank?
   end
 
   def build_present_in_public_track?(build_number)
-    channel_data&.any? { |c| PUBLIC_CHANNELS.include?(c[:name]) && build_number.in?(c[:releases].pluck(:build_number)) }
+    channel_data&.any? { |c| PUBLIC_CHANNELS.include?(c[:name]) && build_number.to_s.in?(c[:releases].pluck(:build_number)) }
   end
 
-  # TODO: wrap in execute_with_retry
   def build_present_in_channel?(channel, build_number)
-    track_data = installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS)
+    result = execute_with_retry { installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS) }
+    return unless result.ok?
+    track_data = result.value!
     return unless track_data
     track_data[:releases].any? { |r| r[:build_number].eql?(build_number.to_s) && ACTIVE_STORE_STATUSES.include?(r[:status]) }
   end
@@ -169,18 +170,18 @@ class GooglePlayStoreIntegration < ApplicationRecord
     sliced.reject { |channel| channel[:is_production] }
   end
 
-  # TODO: wrap in execute_with_retry
   def find_app
-    @find_app ||= installation.app_details(APP_TRANSFORMS)
-  rescue Installations::Google::PlayDeveloper::Error => ex
-    elog(ex)
+    return @find_app if @find_app
+    result = execute_with_retry { installation.app_details(APP_TRANSFORMS) }
+    return elog(result.error) unless result.ok?
+    @find_app = result.value!
   end
 
-  # TODO: wrap in execute_with_retry
   def channel_data
-    @channel_data ||= installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
-  rescue Installations::Google::PlayDeveloper::Error => ex
-    elog(ex)
+    return @channel_data if @channel_data
+    result = execute_with_retry { installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS) }
+    return elog(result.error) unless result.ok?
+    @channel_data = result.value!
   end
 
   def build_present_in_tracks?
@@ -203,28 +204,31 @@ class GooglePlayStoreIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
-  # TODO: wrap in execute_with_retry
   def latest_build_number
-    installation.find_latest_build_number
+    result = execute_with_retry { installation.find_latest_build_number }
+    result.ok? ? result.value! : nil
   end
 
-  delegate :find_build, to: :installation
+  def find_build(build_number)
+    result = execute_with_retry { installation.find_build(build_number) }
+    result.ok? ? result.value! : nil
+  end
 
   def deep_link(_, _)
     nil
   end
 
-  # TODO: wrap in execute_with_retry
   def find_build_in_track(channel, build_number)
-    installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS).dig(:releases)&.find { |r| r[:build_number] == build_number.to_s }
+    result = execute_with_retry { installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS) }
+    value = result.value!
+    value.dig(:releases)&.find { |r| r[:build_number] == build_number.to_s }
   end
 
+  # TODO: handle this gracefully
   def build_in_progress?(channel, build_number)
     response = find_build_in_track(channel, build_number)
     response.present? && GooglePlayStoreIntegration::IN_PROGRESS_STORE_STATUS.include?(response[:status])
   end
-
-  private
 
   def project_id
     JSON.parse(json_key)["project_id"]&.split("-")&.third
@@ -254,10 +258,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
     name = LOCK_NAME + integrable.id.to_s
     result = Rails.application.config.distributed_lock.lock(name, **params, &)
 
-    # distributed lock returns a hash with :ok and :result keys
-    if result.is_a?(Hash) && !result[:ok]
+    # when acquisition fails, distributed lock returns a hash with :ok and :result keys
+    if result.is_a?(Hash) && Set.new(%i[ok result]) == Set.new(result.keys) && !result[:ok]
       raise Installations::Error.new(LOCK_ACQUISITION_FAILURE_MSG, reason: LOCK_ACQUISITION_FAILURE_REASON)
     end
+
+    # when acquisition succeeds, result is just whatever the block yields
+    result
   end
 
   def api_lock_params(retry_count: 25, retry_delay: 200, ttl: 120_000)
