@@ -26,7 +26,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create_commit :draft_check
   after_create_commit :refresh_external_app
 
-  PLAY_STORE_ERROR = Installations::Google::PlayDeveloper::Error
   LOCK_ACQUISITION_FAILURE_REASON = :lock_acquisition_failed
   LOCK_ACQUISITION_FAILURE_MSG = "Failed to acquire an internal lock to make Play Store calls"
   LOCK_NAME = "google_play_store_edit_"
@@ -222,10 +221,14 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   private
 
+  def project_id
+    JSON.parse(json_key)["project_id"]&.split("-")&.third
+  end
+
   def execute_with_retry(attempt: 0, skip_review: false, retry_on_review_fail: false, &block)
     GitHub::Result.new do
       api_lock { yield(skip_review) }
-    rescue PLAY_STORE_ERROR => ex
+    rescue Installations::Google::PlayDeveloper::Error, Installations::Error => ex
       raise ex if attempt >= MAX_RETRY_ATTEMPTS
       next_attempt = attempt + 1
 
@@ -241,19 +244,17 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
-  def api_lock(&)
+  def api_lock(params: api_lock_params, &)
     raise ArgumentError, "You must provide a block" unless block_given?
     name = LOCK_NAME + integrable.id.to_s
-    puts "locking #{name}"
-    result = Rails.application.config.distributed_lock.lock(name, &)
+    result = Rails.application.config.distributed_lock.lock(name, **params, &)
 
     if result.is_a?(Hash) && !result[:ok]
-      puts "lock failed: #{result[:result]}"
-      raise PLAY_STORE_ERROR.new(LOCK_ACQUISITION_FAILURE_MSG, reason: LOCK_ACQUISITION_FAILURE_REASON)
+      raise Installations::Error.new(LOCK_ACQUISITION_FAILURE_MSG, reason: LOCK_ACQUISITION_FAILURE_REASON)
     end
   end
 
-  def project_id
-    JSON.parse(json_key)["project_id"]&.split("-")&.third
+  def api_lock_params(retry_count: 25, retry_delay: 200, ttl: 120_000)
+    {retry_count:, retry_delay:, ttl:}
   end
 end

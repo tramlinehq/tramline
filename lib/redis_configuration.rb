@@ -5,11 +5,7 @@ class RedisConfiguration
     @base ||= {
       url: ENV["DEFAULT_REDIS_URL"],
       driver: driver,
-      connect_timeout: CONNECT_TIMEOUT,
-      pool: {
-        size: Integer(ENV["RAILS_MAX_THREADS"] || 5),
-        timeout: CONNECT_TIMEOUT,
-      },
+      connect_timeout: CONNECT_TIMEOUT
     }
   end
 
@@ -26,24 +22,26 @@ class RedisConfiguration
     @cache ||=
       if ENV["DEFAULT_REDIS_URL"].present?
         [:redis_cache_store,
-         {
-           url: ENV["DEFAULT_REDIS_URL"],
-           driver: driver,
-           connect_timeout: CONNECT_TIMEOUT,
-           pool: {
-             size: Integer(ENV["RAILS_MAX_THREADS"] || 5),
-             timeout: CONNECT_TIMEOUT,
-           },
-         }
-        ]
+          {
+            url: ENV["DEFAULT_REDIS_URL"],
+            driver: driver,
+            connect_timeout: CONNECT_TIMEOUT,
+            pool: base_pool
+          }]
       else
         :memory_store
       end
   end
 
+  def base_pool
+    {
+      size: Integer(ENV["RAILS_MAX_THREADS"] || 5),
+      timeout: CONNECT_TIMEOUT
+    }
+  end
+
   private
 
-  def driver
-    ENV["REDIS_DRIVER"] == "ruby" ? :ruby : :hiredis
-  end
+  # this can eventually be changed to hiredis if required
+  def driver = :ruby
 end
