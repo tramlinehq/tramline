@@ -1,6 +1,10 @@
 require "rails_helper"
 
 describe GooglePlayStoreIntegration do
+  before do
+    Redis.new(**REDIS_CONFIGURATION.base).flushdb
+  end
+
   it "has a valid factory" do
     expect(create(:google_play_store_integration, :without_callbacks_and_validations)).to be_valid
   end
@@ -209,7 +213,6 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
-      Redis.new(**REDIS_CONFIGURATION.base).flushdb
       google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
@@ -250,7 +253,7 @@ describe GooglePlayStoreIntegration do
 
       # queue new request that cannot acquire the lock
       r = google_integration.rollout_release(anything, anything, anything, anything, anything)
-      expect(r).not_to be_ok
+      expect(r.ok?).to be false
       expect(r.error.reason).to eq(GooglePlayStoreIntegration::LOCK_ACQUISITION_FAILURE_REASON)
     end
   end

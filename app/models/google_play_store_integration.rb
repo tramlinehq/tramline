@@ -94,7 +94,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   def upload(file)
     execute_with_retry(retry_on_review_fail: true) do |skip_review|
       installation.upload(file, skip_review:)
-    rescue PLAY_STORE_ERROR => ex
+    rescue Installations::Google::PlayDeveloper::Error => ex
       raise ex unless ALLOWED_ERRORS.include?(ex.reason)
     end
   end
@@ -170,13 +170,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def find_app
     @find_app ||= installation.app_details(APP_TRANSFORMS)
-  rescue PLAY_STORE_ERROR => ex
+  rescue Installations::Google::PlayDeveloper::Error => ex
     elog(ex)
   end
 
   def channel_data
     @channel_data ||= installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
-  rescue PLAY_STORE_ERROR => ex
+  rescue Installations::Google::PlayDeveloper::Error => ex
     elog(ex)
   end
 
@@ -188,7 +188,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     errors.add(:json_key, :no_bundles) unless build_present_in_tracks?
   rescue RuntimeError
     errors.add(:json_key, :key_format)
-  rescue PLAY_STORE_ERROR => ex
+  rescue Installations::Google::PlayDeveloper::Error => ex
     errors.add(:json_key, ex.reason)
   end
 
@@ -249,6 +249,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     name = LOCK_NAME + integrable.id.to_s
     result = Rails.application.config.distributed_lock.lock(name, **params, &)
 
+    # distributed lock returns a hash with :ok and :result keys
     if result.is_a?(Hash) && !result[:ok]
       raise Installations::Error.new(LOCK_ACQUISITION_FAILURE_MSG, reason: LOCK_ACQUISITION_FAILURE_REASON)
     end
