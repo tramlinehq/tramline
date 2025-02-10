@@ -176,7 +176,9 @@
         </div>
       <% end %>
     <% end %>
-    <%= helpers.turbo_frame_tag "previous_releases", src: previous_releases_app_train_releases_path(params[:app_id], params[:train_id]) %>
+    <%= helpers.turbo_frame_tag "previous_releases", src: previous_releases_app_train_releases_path(params[:app_id], params[:train_id]) do %>
+      <%= render LoadingIndicatorComponent.new(turbo_frame: true) %>
+    <% end %>
   <% end %>
 
   <% if no_releases? %>
