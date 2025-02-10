@@ -4,7 +4,7 @@ describe Queries::Releases do
   let(:app) { create(:app, :android) }
   let(:train) { create(:train, app:) }
   let(:release) { create(:release, train:) }
-  let(:params) { OpenStruct.new(search_query: nil, limit: 10, offset: 0) }
+  let(:params) { OpenStruct.new(search_query: "test", limit: 10, offset: 0) }
 
   describe ".all" do
     subject(:query) { described_class.all(app: app, params: params) }
@@ -13,14 +13,14 @@ describe Queries::Releases do
       before do
         create(:commit,
           release: release,
-          message: "feat: add new feature",
+          message: "feat: add new test feature",
           author_name: "John Doe",
           commit_hash: "abc1234",
           url: "https://github.com/org/repo/commit/abc1234")
 
         create(:pull_request,
           release: release,
-          title: "Feature: Add new functionality",
+          title: "Feature: Add new test functionality",
           number: 123,
           state: "closed",
           url: "https://github.com/org/repo/pull/123",
@@ -35,8 +35,8 @@ describe Queries::Releases do
       it "returns release info" do
         result = query.first
 
-        expect(result.release_slug).to eq(release.slug)
-        expect(result.release_status).to eq(release.status)
+        expect(result.slug).to eq(release.slug)
+        expect(result.status).to eq(release.status)
       end
 
       it "returns commit details" do
@@ -44,7 +44,7 @@ describe Queries::Releases do
         commit_result = result.commits.first
 
         expect(result.commits).to be_present
-        expect(commit_result[:message]).to eq("feat: add new feature")
+        expect(commit_result[:message]).to eq("feat: add new <mark>test</mark> feature")
         expect(commit_result[:commit_hash]).to eq("abc1234")
         expect(commit_result[:author_name]).to eq("John Doe")
       end
@@ -54,7 +54,7 @@ describe Queries::Releases do
         pr_result = result.pull_requests.first
 
         expect(result.pull_requests).to be_present
-        expect(pr_result[:title]).to eq("Feature: Add new functionality")
+        expect(pr_result[:title]).to include("Feature: Add new <mark>test</mark> functionality")
         expect(pr_result[:number]).to eq(123)
         expect(pr_result[:state]).to eq("closed")
         expect(pr_result[:labels]).to contain_exactly("feature", "approved")
@@ -82,8 +82,8 @@ describe Queries::Releases do
         params.search_query = ""
       end
 
-      it "returns all releases" do
-        expect(query.first.commits).to be_present
+      it "returns no results" do
+        expect(query).to be_empty
       end
     end
   end
@@ -92,7 +92,12 @@ describe Queries::Releases do
     subject(:count_query) { described_class.count(app: app, params: params) }
 
     before do
-      create_list(:commit, 3, release: release)
+      # matching commit
+      create(:commit, release: release, message: "feat: add search functionality")
+      # non matching commit
+      create(:commit, release: release, message: "chore: update dependencies")
+
+      params.search_query = "search"
     end
 
     it "returns the correct count of releases" do
@@ -103,7 +108,7 @@ describe Queries::Releases do
   describe "pagination" do
     before do
       create_list(:release, 3, train: train).each do |rel|
-        create(:commit, release: rel)
+        create(:commit, release: rel, message: "test commit")
       end
 
       params.limit = 2

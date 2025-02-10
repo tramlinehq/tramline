@@ -62,6 +62,8 @@ class Queries::Releases
   end
 
   def count
+    return 0 if params.search_query.blank?
+
     selected_records.length
   end
 
@@ -73,6 +75,8 @@ class Queries::Releases
   end
 
   memoize def records
+    return Release.none if params.search_query.blank?
+
     # Define CTEs
     relevant_releases = Release
       .select(:id, :created_at)
