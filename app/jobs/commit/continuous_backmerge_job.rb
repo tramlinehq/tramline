@@ -1,10 +1,8 @@
 class Commit::ContinuousBackmergeJob < ApplicationJob
   MAX_RETRIES = 32
-  include Loggable
-  include Backoffable
   queue_as :high
 
-  def perform(commit_id, is_head_commit: false, count: 0)
+  def perform(commit_id, is_head_commit = false, count = 0)
     @commit = Commit.find(commit_id)
 
     return if skip_backmerge?(is_head_commit)
@@ -35,7 +33,7 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
       attempt = count + 1
       Commit::ContinuousBackmergeJob
         .set(wait: backoff_in(attempt:, period: :minutes, type: :linear, factor: 5))
-        .perform_later(commit.id, is_head_commit:, count: attempt)
+        .perform_async(commit.id, is_head_commit, attempt)
     end
   end
 

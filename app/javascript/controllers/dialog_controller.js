@@ -21,9 +21,10 @@ export default class extends Controller {
       event.preventDefault();
     }
 
-    this.dialogTarget.showModal(); // Show the dialog
+    // Show the dialog
+    this.dialogTarget.showModal();
 
-    /* Remove focus from the dialog */
+    // Remove the focus from the dialog
     this.dialogTarget.focus();
     this.dialogTarget.blur();
 

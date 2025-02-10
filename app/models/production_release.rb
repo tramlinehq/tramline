@@ -17,7 +17,6 @@ class ProductionRelease < ApplicationRecord
   # include Sandboxable
   include Loggable
   include Passportable
-  RELEASE_MONITORING_PERIOD_IN_DAYS = 15
 
   belongs_to :release_platform_run
   belongs_to :build
@@ -48,8 +47,12 @@ class ProductionRelease < ApplicationRecord
   ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
   JOB_FREQUENCY = {
-    CrashlyticsIntegration => 120.minutes,
-    BugsnagIntegration => 5.minutes
+    BugsnagIntegration => 5.minutes,
+    CrashlyticsIntegration => 120.minutes
+  }
+  RELEASE_MONITORING_PERIOD_IN_DAYS = {
+    BugsnagIntegration => 15,
+    CrashlyticsIntegration => 5
   }
 
   enum :status, STATES
@@ -115,32 +118,29 @@ class ProductionRelease < ApplicationRecord
     notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
 
     if train.tag_all_store_releases?
-      ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id, commit.id)
+      ReleasePlatformRuns::CreateTagJob.perform_async(release_platform_run.id, commit.id)
     end
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
-    # NOTE: Disable all Crashlytics query temporarily
-    return if monitoring_provider.is_a?(CrashlyticsIntegration)
-    FetchHealthMetricsJob.perform_later(id, JOB_FREQUENCY[monitoring_provider.class])
+    return if app.monitoring_disabled?
+
+    FetchHealthMetricsJob.perform_async(id, JOB_FREQUENCY[monitoring_provider.class])
   end
 
   def beyond_monitoring_period?
-    finished? && completed_at < RELEASE_MONITORING_PERIOD_IN_DAYS.days.ago
+    finished? && completed_at && completed_at < release_monitoring_period
   end
 
   def fetch_health_data!
     return if store_rollout.blank?
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
-    # NOTE: Disable all Crashlytics query temporarily
-    return if monitoring_provider.is_a?(CrashlyticsIntegration)
+    return if app.monitoring_disabled?
     return if stale?
 
-    release_data = monitoring_provider.find_release(platform, version_name, build_number)
-
+    release_data = monitoring_provider.find_release(platform, version_name, build_number, store_rollout.created_at)
     return if release_data.blank?
-
     release_health_metrics.create!(fetched_at: Time.current, **release_data)
   end
 
@@ -201,5 +201,9 @@ class ProductionRelease < ApplicationRecord
     else
       changes_since_last_release
     end
+  end
+
+  def release_monitoring_period
+    RELEASE_MONITORING_PERIOD_IN_DAYS[monitoring_provider.class].days.ago
   end
 end

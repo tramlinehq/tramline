@@ -2,6 +2,7 @@ class Webhooks::ClosePullRequestJob < ApplicationJob
   queue_as :high
 
   def perform(train_id, pr_attributes)
+    pr_attributes = pr_attributes.with_indifferent_access
     head_ref = pr_attributes[:head_ref]
     number = pr_attributes[:number]
 

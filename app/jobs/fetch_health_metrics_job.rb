@@ -1,6 +1,4 @@
 class FetchHealthMetricsJob < ApplicationJob
-  queue_as :high
-
   def perform(production_release_id, frequency)
     production_release = ProductionRelease.find(production_release_id)
     release = production_release.release
@@ -11,7 +9,7 @@ class FetchHealthMetricsJob < ApplicationJob
     begin
       production_release.fetch_health_data!
     ensure
-      FetchHealthMetricsJob.set(wait: frequency).perform_later(production_release_id, frequency)
+      FetchHealthMetricsJob.set(wait: frequency).perform_async(production_release_id, frequency)
     end
   end
 end

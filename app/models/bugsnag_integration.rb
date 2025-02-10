@@ -100,7 +100,7 @@ class BugsnagIntegration < ApplicationRecord
     list_organizations
   end
 
-  def find_release(platform, version, build_number)
+  def find_release(platform, version, build_number, _start_date = nil)
     installation.find_release(project_id(platform), release_stage(platform), version, build_number, RELEASE_TRANSFORMATIONS)
   end
 

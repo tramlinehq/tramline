@@ -1,13 +1,8 @@
 class Releases::CopyPreviousApprovalsJob < ApplicationJob
-  queue_as :default
+  queue_as :high
 
   def perform(release_id)
-    release = Release.find_by(id: release_id)
-    unless release
-      Rails.logger.error("Release with ID #{release_id} not found")
-      return
-    end
-
+    release = Release.find(release_id)
     release.copy_previous_approvals if release.copy_approvals_allowed?
   end
 end

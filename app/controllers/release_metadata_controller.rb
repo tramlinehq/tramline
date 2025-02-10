@@ -72,5 +72,6 @@ class ReleaseMetadataController < SignedInApplicationController
 
   def set_app_from_train
     @app = @train.app
+    set_current_app
   end
 end

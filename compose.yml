@@ -59,8 +59,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      ngrok:
-        condition: service_healthy
 
   ngrok:
     image: ngrok/ngrok:latest

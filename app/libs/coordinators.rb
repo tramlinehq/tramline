@@ -42,9 +42,9 @@ module Coordinators
   module Signals
     def self.release_has_started!(release)
       release.notify!("New release has commenced!", :release_started, release.notification_params)
-      Releases::PreReleaseJob.perform_later(release.id)
-      Releases::FetchCommitLogJob.perform_later(release.id)
-      RefreshReportsJob.perform_later(release.hotfixed_from.id) if release.hotfix?
+      Releases::PreReleaseJob.perform_async(release.id)
+      Releases::FetchCommitLogJob.perform_async(release.id)
+      RefreshReportsJob.perform_async(release.hotfixed_from.id) if release.hotfix?
     end
 
     def self.commits_have_landed!(release, head_commit, rest_commits)
@@ -56,7 +56,7 @@ module Coordinators
     end
 
     def self.workflow_run_finished!(workflow_run_id)
-      TriggerSubmissionsJob.perform_later(workflow_run_id)
+      TriggerSubmissionsJob.perform_async(workflow_run_id)
     end
 
     def self.internal_release_finished!(build)
@@ -258,7 +258,7 @@ module Coordinators
           release.start_post_release_phase!
         end
 
-        FinalizeReleaseJob.perform_later(release.id, true)
+        FinalizeReleaseJob.perform_async(release.id, true)
       end
     end
 
@@ -270,7 +270,7 @@ module Coordinators
           release.start_post_release_phase!
         end
 
-        FinalizeReleaseJob.perform_later(release.id)
+        FinalizeReleaseJob.perform_async(release.id)
       end
     end
   end

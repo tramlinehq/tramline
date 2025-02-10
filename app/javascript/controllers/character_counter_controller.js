@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus"
-
 const ERROR_CLASS = "text-rose-700"
 
 export default class extends Controller {

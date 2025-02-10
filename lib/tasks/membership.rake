@@ -40,6 +40,8 @@ namespace :membership do
     end
 
     SiteAnalytics.identify_and_group(user, organization)
+    # Explicitly flush the analytics to ensure the user is tracked
+    SiteAnalytics::ANALYTICS.flush
   end
 
   desc "Bulk invite members of an organization"

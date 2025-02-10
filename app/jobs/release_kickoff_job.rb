@@ -1,6 +1,4 @@
 class ReleaseKickoffJob < ApplicationJob
-  include Loggable
-
   queue_as :high
 
   def perform(scheduled_release_id)

@@ -89,6 +89,7 @@ class StoreSubmissionsController < SignedInApplicationController
 
   def set_app
     @app = @release.app
+    set_current_app
   end
 
   def ensure_actionable

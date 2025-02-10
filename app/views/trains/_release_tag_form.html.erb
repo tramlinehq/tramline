@@ -1,8 +1,8 @@
 <%= render Form::SwitchComponent.new(form:,
-                                         field_name: :tag_releases,
-                                         on_label: "Release Tag enabled",
-                                         off_label: "Release Tag disabled",
-                                         hide_child: @train.tag_releases?) do |component| %>
+                                     field_name: :tag_releases,
+                                     on_label: "Release Tag enabled",
+                                     off_label: "Release Tag disabled",
+                                     hide_child: @train.tag_releases?) do |component| %>
   <% component.with_child do %>
     <section data-controller="help-text">
       <div data-controller="string-affix"
