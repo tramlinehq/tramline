@@ -85,10 +85,6 @@
   <% end %>
 
   <div class="pt-5">
-    <footer>
-      <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
-    </footer>
-
     <%= render PaginationComponent.new(results: pagy, turbo_frame: "all_releases", info: true) %>
   </div>
 
