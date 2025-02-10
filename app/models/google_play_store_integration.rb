@@ -135,6 +135,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     channel_data&.any? { |c| PUBLIC_CHANNELS.include?(c[:name]) && build_number.in?(c[:releases].pluck(:build_number)) }
   end
 
+  # TODO: wrap in execute_with_retry
   def build_present_in_channel?(channel, build_number)
     track_data = installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS)
     return unless track_data
@@ -168,12 +169,14 @@ class GooglePlayStoreIntegration < ApplicationRecord
     sliced.reject { |channel| channel[:is_production] }
   end
 
+  # TODO: wrap in execute_with_retry
   def find_app
     @find_app ||= installation.app_details(APP_TRANSFORMS)
   rescue Installations::Google::PlayDeveloper::Error => ex
     elog(ex)
   end
 
+  # TODO: wrap in execute_with_retry
   def channel_data
     @channel_data ||= installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
   rescue Installations::Google::PlayDeveloper::Error => ex
@@ -200,6 +203,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
+  # TODO: wrap in execute_with_retry
   def latest_build_number
     installation.find_latest_build_number
   end
@@ -210,6 +214,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     nil
   end
 
+  # TODO: wrap in execute_with_retry
   def find_build_in_track(channel, build_number)
     installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS).dig(:releases)&.find { |r| r[:build_number] == build_number.to_s }
   end
