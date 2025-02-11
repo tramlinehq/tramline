@@ -43,6 +43,7 @@ RSpec.describe ReleaseMetadata do
 
     it "disallows '<' in notes" do
       expect(build(:release_metadata, locale:, release_platform_run:, release_notes: "<a>")).not_to be_valid
+      expect(build(:release_metadata, locale:, release_platform_run:, release_notes: "hi2u \n <3")).not_to be_valid
     end
   end
 

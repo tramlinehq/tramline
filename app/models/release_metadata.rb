@@ -25,8 +25,8 @@ class ReleaseMetadata < ApplicationRecord
   PROMO_TEXT_MAX_LENGTH = 170
   IOS_DENY_LIST = %w[<]
   # NOTE: Refer to https://www.regular-expressions.info/unicode.html for supporting more unicode characters
-  IOS_PLAINTEXT_REGEX = /\A(?!.*#{Regexp.union(IOS_DENY_LIST)})[\p{L}\p{N}\p{P}\p{Sm}\p{Sc}\p{Zs}\p{M}\n]+\z/
-  ANDROID_PLAINTEXT_REGEX = /\A[\p{L}\p{N}\p{P}\p{Sm}\p{Sc}\p{Zs}\p{M}\p{Emoji_Presentation}\p{Extended_Pictographic}\n]+\z/
+  IOS_PLAINTEXT_REGEX = /\A(?!.*#{Regexp.union(IOS_DENY_LIST)})[\p{L}\p{N}\p{P}\p{Sm}\p{Sc}\p{Zs}\p{M}\n]+\z/m
+  ANDROID_PLAINTEXT_REGEX = /\A[\p{L}\p{N}\p{P}\p{Sm}\p{Sc}\p{Zs}\p{M}\p{Emoji_Presentation}\p{Extended_Pictographic}\n]+\z/m
   DEFAULT_LOCALE = "en-US"
   DEFAULT_LANGUAGE = "English (United States)"
   DEFAULT_RELEASE_NOTES = "The latest version contains bug fixes and performance improvements."
