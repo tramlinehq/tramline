@@ -86,6 +86,7 @@ class AppsController < SignedInApplicationController
     @all_builds_params = filterable_params.except(:id)
     gen_query_filters(:release_status, ReleasePlatformRun.statuses[:finished])
     set_query_helpers
+    @query_params.add_search_query(params[:search_pattern]) if params[:search_pattern].present?
     set_query_pagination(Queries::Builds.count(app: @app, params: @query_params))
     @builds = Queries::Builds.all(app: @app, params: @query_params)
   end

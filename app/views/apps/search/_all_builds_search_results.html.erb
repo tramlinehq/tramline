@@ -1,18 +1,18 @@
-<div class="col-span-1 my-4">
-  <%= render FilterButtonComponent.new(
-    name: "Completed",
-    on: filters.dig(:release_status, :is_on),
-    path: search_builds_app_path(app),
-    method: :get,
-    filter_params: get_query_filter(:release_status),
-    query_params: all_builds_params) %>
-</div>
-
 <% if builds.present? %>
   <%= render AllBuildsTableComponent.new(
     builds: builds,
     paginator: pagy,
-    query_params: all_builds_params) %>
+    query_params: all_builds_params) do |component|
+    component.with_filter do %>
+      <%= render FilterButtonComponent.new(
+        name: "Completed",
+        on: filters.dig(:release_status, :is_on),
+        path: search_builds_app_path(app),
+        method: :get,
+        filter_params: get_query_filter(:release_status),
+        query_params: all_builds_params) %>
+    <% end %>
+  <% end %>
 <% else %>
   <%= render EmptyStateComponent.new(
     title: "No builds found",

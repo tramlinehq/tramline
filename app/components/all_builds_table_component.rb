@@ -60,6 +60,8 @@ class AllBuildsTableComponent < ViewComponent::Base
     end
   end
 
+  renders_one :filter
+
   private
 
   def next_direction
