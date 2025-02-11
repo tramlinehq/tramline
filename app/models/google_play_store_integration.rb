@@ -57,7 +57,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
       }
     }
   }
-
   APP_TRANSFORMS = {
     default_locale: :default_language,
     contact_website: :contact_website,
