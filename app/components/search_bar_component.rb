@@ -7,7 +7,7 @@ class SearchBarComponent < BaseComponent
   renders_one :text_field, ->(name, value, placeholder) {
     text_field_tag name, value, {
       placeholder: placeholder.presence || "Search",
-      class: "form-input inline-flex",
+      class: "form-input inline-flex w-full",
       autocomplete: "off",
       data: {search_form_target: "searchInput", action: "input->search-form#search"}
     }

@@ -1,6 +1,12 @@
 <div data-controller="search-form" data-search-form-query-value="<%= QUERY_FIELD %>">
-  <%= text_field %>
-  <%= clear_search %>
+  <div class="grid grid-cols-10">
+    <div class="col-span-2">
+      <%= text_field %>
+    </div>
+    <div class="col-span-8">
+      <%= clear_search %>
+    </div>
+  </div>
 
   <%= tag.turbo_frame id: FRAME do %>
     <%= content %>
