@@ -11,6 +11,7 @@ Rails.application.configure do
       request_id: event.payload[:headers]["action_dispatch.request_id"]
     }
   end
+
   config.lograge.formatter = Class.new do |fmt|
     def fmt.call(data)
       message =
@@ -23,11 +24,11 @@ Rails.application.configure do
       {msg: message}.merge(data)
     end
   end
+
   config.lograge.custom_payload do |controller|
     {
       host: controller.request.host,
       user_id: controller.try(:current_user).try(:id)
     }
   end
-  # config.lograge.ignore_actions = ["IntegrationListeners::GithubController#events"]
 end

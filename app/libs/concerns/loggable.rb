@@ -1,7 +1,7 @@
 module Loggable
-  def elog(e)
+  def elog(e, level: :info)
     Rails.logger.error(e)
-    Sentry.capture_exception(e)
+    Sentry.capture_exception(e, level:)
     nil
   end
 
