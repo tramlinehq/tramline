@@ -127,7 +127,7 @@
     <%= render ReleaseOverviewComponent.new(hotfix_release) %>
     <%= render ReleaseOverviewComponent.new(ongoing_release) %>
     <%= render ReleaseOverviewComponent.new(upcoming_release) %>
-    <%= render ReleaseOverviewComponent.new(last_completed_release) %>
+    <%= render ReleaseOverviewComponent.new(last_finished_release) %>
 
     <% if devops_report.present? %>
       <%= render SectionComponent.new(style: :titled, title: "Mobile DevOps") do %>
@@ -176,70 +176,11 @@
         </div>
       <% end %>
     <% end %>
-
-    <%= render SectionComponent.new(style: :titled, title: "Previous Releases") do %>
-      <% if previous_releases.exists? %>
-        <%= render TableComponent.new(columns: release_table_columns, size: :default) do |table| %>
-          <% previous_releases.each do |release| %>
-            <% release = ReleasePresenter.new(release, view_context) %>
-            <% table.with_row do |row| %>
-              <% row.with_cell(style: "") do %>
-                <div class="flex space-x-2">
-                  <%= render BadgeComponent.new(**release.release_status) %>
-                  <%= render(release.hotfix_badge) unless release.hotfix_badge.nil? %>
-                  <%= render(release.scheduled_badge) if release.automatic? %>
-                </div>
-              <% end %>
-
-              <% row.with_cell(style: "font-medium") do %>
-                <% if release.completed_at %>
-                  <%= render BadgeComponent.new(text: release.release_version, kind: :badge) %>
-                <% else %>
-                  <%= render BadgeComponent.new(text: version_in_progress(release.release_version), kind: :badge) %>
-                <% end %>
-              <% end %>
-
-              <% row.with_cell do %>
-                <%= render BadgeComponent.new(text: release.release_branch, kind: :badge) %>
-              <% end %>
-
-              <% if reldex_defined? %>
-                <% row.with_cell do %>
-                  <% if (reldex = release.reldex) %>
-                    <%= render Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
-                  <% else %>
-                    <%= NOT_AVAILABLE %>
-                  <% end %>
-                <% end %>
-              <% end %>
-
-              <% row.with_cell do %>
-                <div><%= release.interval %></div>
-              <% end %>
-
-              <% row.with_cell(style: "text-right w-2") do %>
-                <%= render ButtonComponent.new(
-                  scheme: :supporting,
-                  label: "Go to release",
-                  options: release_path(release),
-                  size: :sm,
-                  authz: false,
-                  type: :link) do |b|
-                  b.with_icon("arrow_right.svg")
-                end %>
-              <% end %>
-            <% end %>
-          <% end %>
-        <% end %>
-      <% else %>
-        <%= render EmptyStateComponent.new(
-          title: "No previous releases",
-          text: "There are no other releases for this train yet.",
-          banner_image: "archive_x.svg",
-          type: :subdued
-        ) %>
-      <% end %>
-    <% end %>
+    <%
+      previous_releases_turbo_frame = EnhancedTurboFrameComponent.new("previous_releases", src: previous_releases_app_train_releases_path(params[:app_id], params[:train_id]))
+      previous_releases_turbo_frame.with_loading_indicator
+    %>
+    <%= render previous_releases_turbo_frame %>
   <% end %>
 
   <% if no_releases? %>

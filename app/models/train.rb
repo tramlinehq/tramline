@@ -458,6 +458,18 @@ class Train < ApplicationRecord
     config.set_ci_cd_workflows(workflows)
   end
 
+  def last_finished_release
+    releases.where(status: "finished").reorder(completed_at: :desc).first
+  end
+
+  def previous_releases
+    releases
+      .includes([:release_platform_runs, hotfixed_from: [:release_platform_runs]])
+      .completed
+      .where.not(id: last_finished_release)
+      .order(completed_at: :desc, scheduled_at: :desc)
+  end
+
   private
 
   def train_link
@@ -468,10 +480,6 @@ class Train < ApplicationRecord
     else
       app_train_url(app, self, host: ENV["HOST_NAME"], protocol: "https")
     end
-  end
-
-  def last_finished_release
-    releases.where(status: "finished").reorder(completed_at: :desc).first
   end
 
   def set_constituent_seed_versions
