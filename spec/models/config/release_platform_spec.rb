@@ -100,6 +100,19 @@ describe Config::ReleasePlatform do
         end
       end
 
+      context "when parameters are defined in both and are having same values and workflow identifiers are different" do
+        before do
+          base_config[:workflows][:internal][:id] = Faker::Number.number(digits: 8)
+          base_config[:workflows][:internal][:parameters] = [{name: "p1", value: "v1"}, {name: "p2", value: "v2"}]
+          base_config[:workflows][:release_candidate][:parameters] = [{name: "p1", value: "v1"}, {name: "p2", value: "v2"}]
+        end
+
+        it "is valid" do
+          release_platform = described_class.from_json(base_config.merge(release_platform: create(:release_platform)))
+          expect(release_platform).to be_valid
+        end
+      end
+
       context "when parameters are defined in both and are having different values" do
         before do
           base_config[:workflows][:internal][:parameters] = [{name: "p1", value: "v1"}, {name: "p2", value: "v2"}]
