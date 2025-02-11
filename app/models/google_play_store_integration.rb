@@ -74,25 +74,25 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def create_draft_release(channel, build_number, version, release_notes, retry_on_review_fail: false)
-    execute_with_retry(retry_on_review_fail:, lock_priority: :high) do |skip_review|
+    execute_with_retry(retry_on_review_fail:) do |skip_review|
       installation.create_draft_release(channel, build_number, version, release_notes, skip_review:)
     end
   end
 
   def rollout_release(channel, build_number, version, rollout_percentage, release_notes, retry_on_review_fail: false)
-    execute_with_retry(retry_on_review_fail:, lock_priority: :high) do |skip_review|
+    execute_with_retry(retry_on_review_fail:) do |skip_review|
       installation.create_release(channel, build_number, version, rollout_percentage, release_notes, skip_review:)
     end
   end
 
   def halt_release(channel, build_number, version, rollout_percentage, retry_on_review_fail: true)
-    execute_with_retry(retry_on_review_fail:, lock_priority: :high) do |skip_review|
+    execute_with_retry(retry_on_review_fail:) do |skip_review|
       installation.halt_release(channel, build_number, version, rollout_percentage, skip_review:)
     end
   end
 
   def upload(file)
-    execute_with_retry(retry_on_review_fail: true, lock_priority: :high) do |skip_review|
+    execute_with_retry(retry_on_review_fail: true) do |skip_review|
       installation.upload(file, skip_review:)
     rescue Installations::Google::PlayDeveloper::Error => ex
       raise ex unless ALLOWED_ERRORS.include?(ex.reason)
@@ -205,7 +205,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def latest_build_number
-    result = execute_with_retry(lock_priority: :high) { installation.find_latest_build_number }
+    result = execute_with_retry { installation.find_latest_build_number }
     result.ok? ? result.value! : nil
   end
 
