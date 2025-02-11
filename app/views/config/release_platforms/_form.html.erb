@@ -21,7 +21,7 @@
           </div>
         </div>
 
-        <%= render partial: "workflow_parameters", locals: { sub_fields: rc_fields } %>
+        <%= render WorkflowParametersComponent.new(rc_fields) %>
 
         <div class="flex flex-col gap-0.5">
           <%= render partial: "build_name_pattern_info" %>
@@ -161,7 +161,7 @@
               </div>
             </div>
 
-            <%= render partial: "workflow_parameters", locals: { sub_fields: internal_fields } %>
+            <%= render WorkflowParametersComponent.new(internal_fields) %>
 
             <div class="flex flex-col gap-0.5">
               <%= render partial: "build_name_pattern_info" %>
