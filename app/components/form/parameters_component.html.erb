@@ -1,0 +1,17 @@
+<div class="grid grid-cols-12 item-gap-default items-center">
+  <%= form.hidden_field :id %>
+  <%= form.hidden_field :_destroy %>
+  <div class="col-span-5"><%= form.text_field_without_label :name, parameter_name_label %></div>
+  <div class="col-span-5"><%= form.text_field_without_label :value, parameter_value_label %></div>
+  <% if trash_button? %>
+    <div class="col-span-2">
+      <%= render ButtonComponent.new(
+        scheme: :naked_icon,
+        type: :action,
+        size: :none,
+        html_options: { data: { action: "nested-form-ext#remove" } }) do |b|
+        b.with_icon("trash.svg", size: :md)
+      end %>
+    </div>
+  <% end %>
+</div>
