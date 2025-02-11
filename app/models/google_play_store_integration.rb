@@ -28,7 +28,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   LOCK_ACQUISITION_FAILURE_REASON = :lock_acquisition_failed
   LOCK_ACQUISITION_FAILURE_MSG = "Failed to acquire an internal lock to make Play Store calls"
-  LOCK_NAME = "google_play_store_edit_"
+  LOCK_NAME_PREFIX = "google_play_store_edit_"
   PROD_CHANNEL = {id: :production, name: "Production", is_production: true}.freeze
   BETA_CHANNEL = {id: :beta, name: "Open testing", is_production: false}.freeze
   CHANNELS = [
@@ -74,25 +74,25 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def create_draft_release(channel, build_number, version, release_notes, retry_on_review_fail: false)
-    execute_with_retry(retry_on_review_fail:) do |skip_review|
+    execute_with_retry(retry_on_review_fail:, lock_priority: :high) do |skip_review|
       installation.create_draft_release(channel, build_number, version, release_notes, skip_review:)
     end
   end
 
   def rollout_release(channel, build_number, version, rollout_percentage, release_notes, retry_on_review_fail: false)
-    execute_with_retry(retry_on_review_fail:) do |skip_review|
+    execute_with_retry(retry_on_review_fail:, lock_priority: :high) do |skip_review|
       installation.create_release(channel, build_number, version, rollout_percentage, release_notes, skip_review:)
     end
   end
 
   def halt_release(channel, build_number, version, rollout_percentage, retry_on_review_fail: true)
-    execute_with_retry(retry_on_review_fail:) do |skip_review|
+    execute_with_retry(retry_on_review_fail:, lock_priority: :high) do |skip_review|
       installation.halt_release(channel, build_number, version, rollout_percentage, skip_review:)
     end
   end
 
   def upload(file)
-    execute_with_retry(retry_on_review_fail: true) do |skip_review|
+    execute_with_retry(retry_on_review_fail: true, lock_priority: :high) do |skip_review|
       installation.upload(file, skip_review:)
     rescue Installations::Google::PlayDeveloper::Error => ex
       raise ex unless ALLOWED_ERRORS.include?(ex.reason)
@@ -136,7 +136,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def build_present_in_channel?(channel, build_number)
-    result = execute_with_retry { installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS) }
+    result = execute_with_retry(lock_priority: :low) { installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS) }
     return unless result.ok?
     track_data = result.value!
     return unless track_data
@@ -172,14 +172,14 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def find_app
     return @find_app if @find_app
-    result = execute_with_retry { installation.app_details(APP_TRANSFORMS) }
+    result = execute_with_retry(lock_priority: :low) { installation.app_details(APP_TRANSFORMS) }
     return elog(result.error) unless result.ok?
     @find_app = result.value!
   end
 
   def channel_data
     return @channel_data if @channel_data
-    result = execute_with_retry { installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS) }
+    result = execute_with_retry(lock_priority: :low) { installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS) }
     return elog(result.error) unless result.ok?
     @channel_data = result.value!
   end
@@ -205,7 +205,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def latest_build_number
-    result = execute_with_retry { installation.find_latest_build_number }
+    result = execute_with_retry(lock_priority: :high) { installation.find_latest_build_number }
     result.ok? ? result.value! : nil
   end
 
@@ -219,7 +219,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def find_build_in_track(channel, build_number)
-    result = execute_with_retry { installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS) }
+    result = execute_with_retry(lock_priority: :low) { installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS) }
     value = result.value!
     value.dig(:releases)&.find { |r| r[:build_number] == build_number.to_s }
   end
@@ -234,29 +234,29 @@ class GooglePlayStoreIntegration < ApplicationRecord
     JSON.parse(json_key)["project_id"]&.split("-")&.third
   end
 
-  def execute_with_retry(attempt: 0, skip_review: false, retry_on_review_fail: false, &block)
+  def execute_with_retry(attempt: 0, skip_review: false, retry_on_review_fail: false, lock_priority: :high, &block)
     GitHub::Result.new do
-      api_lock { yield(skip_review) }
+      api_lock(priority: lock_priority) { yield(skip_review) }
     rescue Installations::Google::PlayDeveloper::Error, Installations::Error => ex
       raise ex if attempt >= MAX_RETRY_ATTEMPTS
       next_attempt = attempt + 1
 
       if ex.reason == :app_review_rejected && retry_on_review_fail
-        return execute_with_retry(attempt: next_attempt, skip_review: true, retry_on_review_fail:, &block)
+        return execute_with_retry(attempt: next_attempt, skip_review: true, retry_on_review_fail:, lock_priority:, &block)
       end
 
       if RETRYABLE_ERRORS.include?(ex.reason)
-        return execute_with_retry(attempt: next_attempt, retry_on_review_fail:, &block)
+        return execute_with_retry(attempt: next_attempt, retry_on_review_fail:, lock_priority:, &block)
       end
 
       raise ex
     end
   end
 
-  def api_lock(params: api_lock_params, &)
+  def api_lock(priority: :high, &)
     raise ArgumentError, "You must provide a block" unless block_given?
-    name = LOCK_NAME + integrable.id.to_s
-    result = Rails.application.config.distributed_lock.lock(name, **params, &)
+    name = LOCK_NAME_PREFIX + integrable.id.to_s
+    result = Rails.application.config.distributed_lock.lock(name, **api_lock_params(priority:), &)
 
     # when acquisition fails, distributed lock returns a hash with :ok and :result keys
     if result.is_a?(Hash) && Set.new(%i[ok result]) == Set.new(result.keys) && !result[:ok]
@@ -267,7 +267,14 @@ class GooglePlayStoreIntegration < ApplicationRecord
     result
   end
 
-  def api_lock_params(retry_count: 25, retry_delay: 200, ttl: 120_000)
-    {retry_count:, retry_delay:, ttl:}
+  def api_lock_params(priority: :high)
+    case priority
+    when :high
+      {retry_count: 30, retry_delay: 200, ttl: 120_000}
+    when :low
+      {retry_count: 15, retry_delay: 200, ttl: 60_000}
+    else
+      raise ArgumentError, "Invalid priority: #{priority}"
+    end
   end
 end
