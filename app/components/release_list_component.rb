@@ -12,30 +12,16 @@ class ReleaseListComponent < BaseComponent
   end
 
   attr_reader :train, :ongoing_release, :hotfix_release, :upcoming_release
-  delegate :app, :hotfix_from, to: :train
+  delegate :app, :hotfix_from, :previous_releases, :last_finished_release, to: :train
 
   # we don't check for train.releases.none?
   # because the constituent releases that are loaded on the page are already memoized, so we avoid a query
   def no_releases?
-    previous_releases.empty? && ongoing_release.nil? && upcoming_release.nil? && hotfix_release.nil? && last_completed_release.nil?
+    previous_releases.empty? && ongoing_release.nil? && upcoming_release.nil? && hotfix_release.nil? && last_finished_release.nil?
   end
 
   memoize def devops_report
     DevopsReportPresenter.new(train.devops_report)
-  end
-
-  memoize def previous_releases
-    train
-      .releases
-      .includes([:release_platform_runs, hotfixed_from: [:release_platform_runs]])
-      .completed
-      .where.not(id: last_completed_release)
-      .order(completed_at: :desc, scheduled_at: :desc)
-      .limit(15)
-  end
-
-  memoize def last_completed_release
-    train.releases.reorder("completed_at DESC").released.first
   end
 
   def release_startable?
@@ -158,18 +144,6 @@ class ReleaseListComponent < BaseComponent
         text:,
         content: render(ButtonComponent.new(scheme: :light, type: :link, label: "Review submission settings", options: button_link, size: :xxs, authz: false))
       }
-    end
-  end
-
-  def reldex_defined?
-    train.release_index.present?
-  end
-
-  def release_table_columns
-    if reldex_defined?
-      ["", "release", "branch", "reldex", "dates", ""]
-    else
-      ["", "release", "branch", "dates", ""]
     end
   end
 
