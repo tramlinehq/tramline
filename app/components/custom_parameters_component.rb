@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class WorkflowParametersComponent < ViewComponent::Base
+class CustomParametersComponent < ViewComponent::Base
   attr_reader :form, :parameter_name_label, :parameter_value_label
 
   def initialize(form, parameter_name_label: "Parameter Name", parameter_value_label: "Parameter Value", add_button: true, trash_button: true)

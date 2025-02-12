@@ -1,0 +1,14 @@
+<%# locals: (form:) %>
+
+<div class="flex flex-col gap-0.5">
+  <%= render InfoIconComponent.new do %>
+  <p>
+    You can add workflow parameters. Each parameter has a key and value.
+    These parameters will be passed on to the workflow verbatim.
+  </p>
+  <% end %>
+
+  <%= form.label_only :custom_workflow_parameters, "Custom workflow parameters (optional)" %>
+
+  <%= render CustomParametersComponent.new(form) %>
+</div>
