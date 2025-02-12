@@ -1,4 +1,4 @@
-class JsonLogger < Ougai::Logger
+class StructuredLogger < Ougai::Logger
   include ActiveSupport::LoggerThreadSafeLevel
   include ActiveSupport::LoggerSilence
 
@@ -8,6 +8,10 @@ class JsonLogger < Ougai::Logger
   end
 
   def create_formatter
-    LoggingExtensions.default_log_formatter
+    if Rails.env.local?
+      Ougai::Formatters::Readable.new
+    else
+      Ougai::Formatters::Bunyan.new
+    end
   end
 end

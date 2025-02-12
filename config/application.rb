@@ -19,8 +19,6 @@ module Site
     #
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
-    #
-    # config.time_zone = "Central Time (US & Canada)"
     config.eager_load_paths << Rails.root.join("lib")
     config.active_job.queue_adapter = :sidekiq
     config.active_model.i18n_customize_full_message = true
@@ -30,10 +28,9 @@ module Site
     PaperTrail.config.version_limit = 10
     config.active_storage.draw_routes = false
 
-    require "logging_extensions"
-    require "json_logger"
-    config.log_formatter = LoggingExtensions.default_log_formatter
-    config.logger = ActiveSupport::TaggedLogging.new(JsonLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
+    require "logging_extension"
+    require "structured_logger"
+    config.logger = ActiveSupport::TaggedLogging.new(StructuredLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
 
     if ENV["RAILS_PIPELINE_ENV"].present?
       Rails.application.config.credentials.content_path =
