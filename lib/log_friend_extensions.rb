@@ -3,8 +3,8 @@
 # For example:
 #   arg = "42"
 #   @ivar = "Hello"
-#   dbg arg
-#   dbg @ivar
+#   d arg
+#   d @ivar
 # Outputs:
 #   ["arg", "42"]
 #   ["@ivar", "Hello"]
@@ -26,11 +26,11 @@ module LogFriendExtensions
         else
           "error finding arg name"
         end
-      Rails.logger.debug [arg_name, msg]
+
+      Rails.logger.debug {[arg_name, msg]}
     end
   else
     # Shim a noop method for non dev / test environments
-    def d(_msg)
-    end
+    def d(_msg) = nil
   end
 end
