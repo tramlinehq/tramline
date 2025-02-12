@@ -55,7 +55,7 @@
                   release.commits.map do |commit_hash| 
                     Queries::Commit.new(commit_hash)
                   end,
-                  detailed: false,
+                  detailed: true,
                   render_html: true
                 )) 
               } %>

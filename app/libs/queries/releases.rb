@@ -208,7 +208,11 @@ class Queries::Releases
     end
 
     def show_avatar?
-      false # Or true if you want to show avatars
+      false
+    end
+
+    def pull_request
+      nil
     end
 
     def inspect
