@@ -35,6 +35,6 @@ class PullRequestComponent < ViewComponent::Base
 
   def truncated_title
     title = enable_truncate ? pr.title.truncate(DEFAULT_TRUNCATE) : pr.title
-    render_html ? title.html_safe : title
+    render_html ? sanitize(title, tags: %w[span]) : title
   end
 end

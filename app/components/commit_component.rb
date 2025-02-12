@@ -15,7 +15,7 @@ class CommitComponent < BaseComponent
 
   def truncated_message
     msg = enable_truncate ? message.truncate(DEFAULT_TRUNCATE) : message
-    render_html ? msg.html_safe : msg
+    render_html ? sanitize(msg, tags: %w[mark]) : msg
   end
 
   def author_link
