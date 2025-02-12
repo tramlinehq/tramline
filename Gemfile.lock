@@ -814,13 +814,13 @@ DEPENDENCIES
   postmark-rails (~> 0.21.0)
   prosopite
   pry
-  pry-byebug (~> 3.10)
+  pry-byebug
   puma (~> 6.4)
   rack-attack (~> 6.7)
   rack-cors (~> 1.1)
   rack-mini-profiler
   rails (~> 7.1)
-  readline (~> 0.0.4)
+  readline
   redis (~> 4.8)
   redis-actionpack (~> 5.3)
   requestjs-rails (~> 0.0.9)
