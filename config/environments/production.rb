@@ -59,7 +59,6 @@ Rails.application.configure do
   config.log_tags = [:request_id]
 
   # Use tagged logging with lograge
-  require "logging_extension"
   require "structured_logger"
   config.lograge.enabled = true
   config.logger = ActiveSupport::TaggedLogging.new(StructuredLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
