@@ -90,7 +90,7 @@ class CrashlyticsIntegration < ApplicationRecord
     return false if datasets.blank?
     datasets.key?(:ga4) && datasets.key?(:crashlytics)
   rescue Installations::Crashlytics::Error => ex
-    elog(ex.reason)
+    elog(ex.reason, level: :warn)
     nil
   end
 
