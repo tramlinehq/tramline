@@ -27,7 +27,7 @@ module LogFriendExtensions
           "error finding arg name"
         end
 
-      Rails.logger.debug {[arg_name, msg]}
+      Rails.logger.debug { [arg_name, msg] }
     end
   else
     # Shim a noop method for non dev / test environments
