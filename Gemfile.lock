@@ -129,7 +129,7 @@ GEM
       railties (>= 6.1)
     datadog-ci (0.8.3)
       msgpack
-    date (3.3.4)
+    date (3.4.1)
     ddtrace (1.23.3)
       datadog-ci (~> 0.8.1)
       debase-ruby_core_source (= 3.3.1)
@@ -398,7 +398,7 @@ GEM
     mutex_m (0.2.0)
     net-http (0.4.1)
       uri
-    net-imap (0.5.0)
+    net-imap (0.5.6)
       date
       net-protocol
     net-pop (0.1.2)
@@ -803,6 +803,7 @@ DEPENDENCIES
   letter_opener_web
   lograge (~> 0.12.0)
   memery (~> 1.4)
+  net-imap (~> 0.5.6)
   octokit (~> 4.22)
   oj (~> 3.13)
   ougai (~> 2.0)
