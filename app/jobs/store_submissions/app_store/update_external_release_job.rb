@@ -4,7 +4,7 @@ class StoreSubmissions::AppStore::UpdateExternalReleaseJob < ApplicationJob
   def perform(submission_id, can_retry = true)
     submission = AppStoreSubmission.find(submission_id)
     submission.update_external_release
-  rescue AppStoreSubmission::SubmissionNotInTerminalState => e
+  rescue AppStoreSubmission::SubmissionNotInTerminalState
     StoreSubmissions::AppStore::UpdateExternalReleaseJob.set(wait: 5.minutes).perform_async(submission_id, can_retry) if can_retry
   end
 end
