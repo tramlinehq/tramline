@@ -28,10 +28,6 @@ module Site
     PaperTrail.config.version_limit = 10
     config.active_storage.draw_routes = false
 
-    require "logging_extension"
-    require "structured_logger"
-    config.logger = ActiveSupport::TaggedLogging.new(StructuredLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
-
     if ENV["RAILS_PIPELINE_ENV"].present?
       Rails.application.config.credentials.content_path =
         Rails.root.join("config/credentials/#{ENV["RAILS_PIPELINE_ENV"]}.yml.enc")

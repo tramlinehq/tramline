@@ -58,6 +58,12 @@ Rails.application.configure do
   # Prepend all log lines with the following tags.
   config.log_tags = [:request_id]
 
+  # Use tagged logging with lograge
+  require "logging_extension"
+  require "structured_logger"
+  config.lograge.enabled = true
+  config.logger = ActiveSupport::TaggedLogging.new(StructuredLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
+
   # Use a different cache store in production.
   config.cache_store = [:redis_cache_store, {url: ENV["DEFAULT_REDIS_URL"]}]
 
@@ -83,12 +89,6 @@ Rails.application.configure do
 
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
-
-  if ENV["RAILS_LOG_TO_STDOUT"].present?
-    logger = JsonLogger.new($stdout)
-    logger.formatter = config.log_formatter
-    config.logger = ActiveSupport::TaggedLogging.new(logger)
-  end
 
   # Avoid cache poisoning attack by users setting X-Forwarded-Host
   config.hosts << ENV["HOST_NAME"]

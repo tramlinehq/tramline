@@ -1,8 +1,8 @@
 Rails.application.configure do
-  config.lograge.enabled = true
   config.lograge.custom_options = lambda do |event|
     payload = event.payload
     param_exceptions = %w[controller action format id]
+
     {
       exception: payload[:exception],
       exception_object: payload[:exception_object],
@@ -32,16 +32,14 @@ Rails.application.configure do
     data
   end
 
-  config.lograge.formatter = Class.new do |fmt|
-    def fmt.call(data)
-      message =
-        if data[:controller].present? && data[:action].present?
-          "#{data[:controller]}##{data[:action]}"
-        else
-          "Request"
-        end
+  config.lograge.formatter = ->(data) do
+    message =
+      if data[:controller].present? && data[:action].present?
+        "#{data[:controller]}##{data[:action]}"
+      else
+        "Request"
+      end
 
-      { msg: message }.merge(data)
-    end
+    {msg: message}.merge(data)
   end
 end
