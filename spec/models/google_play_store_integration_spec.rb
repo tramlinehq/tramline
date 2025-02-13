@@ -254,6 +254,7 @@ describe GooglePlayStoreIntegration do
       # queue new request that cannot acquire the lock
       r = google_integration.rollout_release(anything, anything, anything, anything, anything)
       expect(r.ok?).to be false
+      puts r.value!
       expect(r.error.reason).to eq(GooglePlayStoreIntegration::LOCK_ACQUISITION_FAILURE_REASON)
     end
   end
