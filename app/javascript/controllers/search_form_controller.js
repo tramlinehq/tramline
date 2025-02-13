@@ -9,27 +9,6 @@ export default class extends ApplicationController {
 
   connect() {
     useDebounce(this, {wait: 200})
-
-    // Listen for the focus-search event
-    this.focusHandler = () => this.focusSearch()
-    document.addEventListener('focus-search', this.focusHandler)
-
-    // If we just navigated to the search page, focus the input
-    if (window.location.pathname.includes('/search')) {
-      this.focusSearch()
-    }
-  }
-
-  disconnect() {
-    document.removeEventListener('focus-search', this.focusHandler)
-  }
-
-  focusSearch() {
-    if (this.hasSearchInputTarget) {
-      this.searchInputTarget.focus()
-      // Optionally select all text in the input
-      this.searchInputTarget.select()
-    }
   }
 
   search() {

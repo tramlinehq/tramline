@@ -1,6 +1,6 @@
 <%= render ContainerComponent.new(title: "Search Tramline", subtitle: "Search through releases, commits, pull requests, and builds") do |container| %>
   <% container.with_body do %>
-    <%= render SearchBarComponent.new(search_name: :search, search_value: params[:search_pattern], search_placeholder: "eg. 1.0.0") do |search| %>
+    <%= render SearchBarComponent.new(search_name: :search, search_value: params[:search_pattern], search_placeholder: "commits, PRs, versions") do |search| %>
       <% search.with_notice do %>
         <div class="text-xs text-secondary">All timestamps are in the configured <code><%= @app.timezone %></code>
           timezone for the app
