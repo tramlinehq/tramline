@@ -1,0 +1,124 @@
+<%# locals: (form:, jira_data:, current_jira_config:) %>
+
+<div class="flex flex-col gap-6" data-controller="targeted-toggle" data-targeted-toggle-reveal-outlet="#no-projects-selected">
+  <div class="flex flex-col">
+    <h4 class="heading-4 mb-3 border-default-b pb-1">Projects</h4>
+    <% jira_data[:projects].each do |project| %>
+      <% project_key = project["key"] %>
+
+      <div class="flex items-center">
+        <%= form.fields_for :jira_config do |sf| %>
+          <% checked =
+               current_jira_config
+                 &.dig("selected_projects")
+                 &.include?(project["key"]) %>
+
+          <%= sf.checkbox :selected_projects,
+                          { multiple: true,
+                            include_hidden: false,
+                            id: "project_#{project["key"]}",
+                            checked:,
+                            data: {
+                              action: "targeted-toggle#toggle",
+                              section_key: project_key,
+                              targeted_toggle_target: "section",
+                            },
+                          },
+                          project["key"] %>
+        <% end %>
+
+        <label for="project_<%= project["key"] %>" class="ml-2 text-sm font-medium text-gray-900">
+          <%= project["name"] %> (<%= project["key"] %>)
+        </label>
+      </div>
+    <% end %>
+  </div>
+
+  <div>
+    <h4 class="heading-4 mb-3 border-default-b pb-1">Done States</h4>
+    <div class="flex flex-col item-gap-default">
+      <% jira_data[:projects].each do |project| %>
+        <% project_key = project["key"] %>
+        <% statuses = jira_data[:project_statuses][project_key] %>
+
+        <div data-targeted-toggle-target="subsection" data-section-key="<%= project_key %>">
+          <h3 class="heading-5">For <%= project["name"] %> (<%= project["key"] %>)</h3>
+
+          <% if statuses&.any? %>
+            <% statuses.each do |status| %>
+              <% status_name = "status_#{project_key}_#{status["name"].parameterize}" %>
+
+              <div class="flex items-center">
+                <%= form.fields_for :jira_config do |sf| %>
+                  <%= sf.fields_for :project_configs do |pf| %>
+                    <%= pf.fields_for project_key do |pk| %>
+                      <% checked =
+                           current_jira_config
+                             &.dig("project_configs", project_key, "done_states")
+                             &.include?(status["name"]) %>
+
+                      <%= pk.checkbox :done_states,
+                                      { multiple: true, include_hidden: false, id: status_name, checked: },
+                                      status["name"] %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+
+                <label for="<%= status_name %>" class="ml-2 text-sm text-gray-600">
+                  <%= status["name"] %>
+                </label>
+              </div>
+            <% end %>
+          <% else %>
+            <%= render EmptyStateComponent.new(text: "No status configurations found for this project.",
+                                               banner_image: "list_checks.svg",
+                                               type: :tiny) %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div id="no-projects-selected" data-controller="reveal" hidden data-reveal>
+      <%= render EmptyStateComponent.new(text: "Select a project to see the done states.",
+                                         banner_image: "list_checks.svg",
+                                         type: :tiny) %>
+    </div>
+  </div>
+
+  <div>
+    <h4 class="heading-4 mb-3 border-default-b pb-1">Release Filters</h4>
+    <div data-controller="nested-form-ext" class="grid item-gap-default">
+      <div>
+        <%= render ButtonComponent.new(
+          scheme: :light,
+          type: :action,
+          size: :xs,
+          label: "Add filter",
+          html_options: { data: { action: "nested-form-ext#add" } },
+          arrow: :none) do |b|
+          b.with_icon("plus.svg", rounded: false)
+        end %>
+      </div>
+
+      <ul class="flex flex-col gap-2">
+        <% release_filters = current_jira_config&.dig("release_filters") || [] %>
+
+        <% release_filters.each_with_index do |filter, index| %>
+          <li class="nested-form-wrapper" data-new-record="false">
+            <%= render partial: "jira_integration/release_filter_form", locals: { form:, filter: filter, index: index } %>
+          </li>
+        <% end %>
+
+        <template data-nested-form-ext-target="template">
+          <li class="nested-form-wrapper" data-new-record="true">
+            <%= render partial: "jira_integration/release_filter_form", locals: { form:, index: "NEW_RECORD" } %>
+          </li>
+        </template>
+
+        <div data-nested-form-ext-target="target"></div>
+      </ul>
+    </div>
+
+    <div class="text-sm text-secondary-50">† Release filters will be applied to all selected projects.</div>
+  </div>
+</div>

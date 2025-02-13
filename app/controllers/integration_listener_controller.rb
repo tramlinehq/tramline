@@ -1,10 +1,11 @@
 class IntegrationListenerController < SignedInApplicationController
   using RefinedString
   before_action :require_write_access!, only: %i[callback]
+  INTEGRATION_CREATE_ERROR = "Failed to create the integration, please try again."
 
   def callback
     unless valid_state?
-      redirect_to app_path(state_app), alert: "Failed to create the integration, please try again."
+      redirect_to app_path(state_app), alert: INTEGRATION_CREATE_ERROR
       return
     end
 
@@ -14,8 +15,11 @@ class IntegrationListenerController < SignedInApplicationController
     if @integration.save
       redirect_to app_path(state_app), notice: "Integration was successfully created."
     else
-      redirect_to app_integrations_path(state_app), alert: "Failed to create the integration, please try again."
+      redirect_to app_integrations_path(state_app), alert: INTEGRATION_CREATE_ERROR
     end
+  rescue => e
+    Rails.logger.error("Failed to create integration: #{e.message}")
+    redirect_to app_integrations_path(state_app), alert: INTEGRATION_CREATE_ERROR
   end
 
   protected
@@ -27,7 +31,13 @@ class IntegrationListenerController < SignedInApplicationController
   private
 
   def state
-    @state ||= JSON.parse(params[:state].decode).with_indifferent_access
+    @state ||=
+      begin
+        JSON.parse(params[:state].tr(" ", "+").decode).with_indifferent_access
+      rescue ActiveSupport::MessageEncryptor::InvalidMessage => e
+        Rails.logger.error(e)
+        {}
+      end
   end
 
   def installation_id
@@ -59,6 +69,7 @@ class IntegrationListenerController < SignedInApplicationController
 
   def state_app
     @state_app ||= @state_organization.apps.find(state[:app_id])
+    @app = @state_app
   end
 
   def state_integration_category

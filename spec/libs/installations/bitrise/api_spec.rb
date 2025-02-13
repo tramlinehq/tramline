@@ -71,7 +71,8 @@ describe Installations::Bitrise::Api, type: :integration do
       inputs = {
         version_code: Faker::Number.number(digits: 4),
         build_version: Faker::Lorem.characters(number: 8),
-        build_notes: Faker::Lorem.characters(number: 10)
+        build_notes: Faker::Lorem.characters(number: 10),
+        parameters: {}
       }
       commit_hash = Faker::Crypto.sha1
       params = {

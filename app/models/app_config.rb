@@ -10,6 +10,8 @@
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
+#  jira_config             :jsonb            not null
+#  notification_channel    :json
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
@@ -33,6 +35,7 @@ class AppConfig < ApplicationRecord
   validates :firebase_android_config,
     allow_blank: true,
     json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
+  validate :jira_release_filters, if: -> { jira_config&.dig("release_filters").present? }
 
   after_initialize :set_bugsnag_config, if: :persisted?
 
@@ -96,6 +99,13 @@ class AppConfig < ApplicationRecord
       }
     end
 
+    if integrations.project_management.present?
+      categories[:project_management] = {
+        further_setup: integrations.project_management.map(&:providable).any?(&:further_setup?),
+        ready: project_management_ready?
+      }
+    end
+
     categories
   end
 
@@ -155,5 +165,25 @@ class AppConfig < ApplicationRecord
     return ios.present? if app.ios?
     return android.present? if app.android?
     ios.present? && android.present? if app.cross_platform?
+  end
+
+  def project_management_ready?
+    return false if app.integrations.project_management.blank?
+
+    jira = app.integrations.project_management.find(&:jira_integration?)&.providable
+    return false unless jira
+
+    jira_config.present? &&
+      jira_config["selected_projects"].present? &&
+      jira_config["selected_projects"].any? &&
+      jira_config["project_configs"].present?
+  end
+
+  def jira_release_filters
+    jira_config["release_filters"].each do |filter|
+      unless filter.is_a?(Hash) && JiraIntegration::VALID_FILTER_TYPES.include?(filter["type"]) && filter["value"].present?
+        errors.add(:jira_config, "release filters must contain valid type and value")
+      end
+    end
   end
 end

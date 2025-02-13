@@ -1,0 +1,21 @@
+<%# locals: (form:, filter: {}, index: 0) %>
+
+<div class="flex items-center gap-4">
+  <%= form.fields_for :jira_config do |sf| %>
+    <%= sf.fields_for :release_filters do |pf| %>
+      <%= pf.fields_for index.to_s do |rf| %>
+        <%= rf.select_without_label :type, options_for_select([["Label", "label"], ["Fix Version", "fix_version"]], filter['type']) %>
+        <%= rf.text_field_without_label :value, "e.g., release-1.0.0", value: filter["value"] %>
+        <%= rf.hidden_field :_destroy %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render ButtonComponent.new(
+    scheme: :naked_icon,
+    type: :action,
+    size: :none,
+    html_options: { data: { action: "nested-form-ext#remove" } }) do |b|
+    b.with_icon("trash.svg", size: :md)
+  end %>
+</div>

@@ -60,6 +60,7 @@ class App < ApplicationRecord
     :ci_cd_provider,
     :monitoring_provider,
     :notification_provider,
+    :project_management_provider,
     :slack_notifications?, to: :integrations, allow_nil: true
 
   def self.allowed_platforms
@@ -82,6 +83,10 @@ class App < ApplicationRecord
 
   def deploy_action_enabled?
     Flipper.enabled?(:deploy_action_enabled, self)
+  end
+
+  def monitoring_disabled?
+    Flipper.enabled?(:monitoring_disabled, self)
   end
 
   def variant_options
@@ -107,6 +112,10 @@ class App < ApplicationRecord
 
   def bitbucket_connected?
     integrations.bitbucket_integrations.any?
+  end
+
+  def project_management_connected?
+    integrations.project_management.connected.any?
   end
 
   def ready?
@@ -248,7 +257,7 @@ class App < ApplicationRecord
   end
 
   def refresh_external_app
-    RefreshExternalAppJob.perform_later(id)
+    RefreshExternalAppJob.perform_async(id)
   end
 
   def notification_params

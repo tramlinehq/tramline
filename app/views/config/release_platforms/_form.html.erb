@@ -21,6 +21,8 @@
           </div>
         </div>
 
+        <%= render partial: "workflow_parameters", locals: { sub_fields: rc_fields } %>
+
         <div class="flex flex-col gap-0.5">
           <%= render partial: "build_name_pattern_info" %>
           <div><%= rc_fields.labeled_text_field :artifact_name_pattern, "Workflow artifact (optional)", placeholder: "Eg., build-abc.apk" %></div>
@@ -158,6 +160,8 @@
                 builds.
               </div>
             </div>
+
+            <%= render partial: "workflow_parameters", locals: { sub_fields: internal_fields } %>
 
             <div class="flex flex-col gap-0.5">
               <%= render partial: "build_name_pattern_info" %>

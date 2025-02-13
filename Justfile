@@ -1,5 +1,8 @@
 start:
-  docker compose up -d
+  docker compose up -d --remove-orphans
+
+stop:
+  docker compose down
 
 restart container="web":
   docker compose restart {{ container }}
@@ -12,7 +15,7 @@ spec file="":
   fi
 
 lint:
-  bin/rubocop --autocorrect
+  docker exec -it tramline-web-1 bin/rubocop --autocorrect
 
 pre-setup:
   docker compose run --rm pre-setup

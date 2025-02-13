@@ -1,6 +1,4 @@
 class BuildQueueApplicationJob < ApplicationJob
-  include Loggable
-
   queue_as :high
 
   def perform(build_queue_id)

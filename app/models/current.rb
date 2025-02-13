@@ -1,3 +1,3 @@
 class Current < ActiveSupport::CurrentAttributes
-  attribute :organization, :user
+  attribute :organization, :user, :app_id
 end

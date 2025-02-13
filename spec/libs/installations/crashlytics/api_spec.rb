@@ -1,6 +1,6 @@
 require "rails_helper"
 
-Dataset = Struct.new(:dataset_id, :project_id)
+Dataset = Data.define(:dataset_id, :project_id)
 APP_IDENTIFIER = "com.example.app"
 APP_ONE = "App One"
 APP_TWO = "App Two"
@@ -62,7 +62,7 @@ describe Installations::Crashlytics::Api, type: :integration do
       end
 
       it "returns the transformed release data" do
-        result = api_instance.find_release(bundle_identifier, platform, version, build_number, transforms)
+        result = api_instance.find_release(bundle_identifier, platform, version, build_number, Time.current, transforms)
         expected_data = {
           "daily_users" => 150,
           "daily_users_with_errors" => 30,
@@ -85,7 +85,7 @@ describe Installations::Crashlytics::Api, type: :integration do
       end
 
       it "returns nil" do
-        result = api_instance.find_release(bundle_identifier, platform, version, build_number, transforms)
+        result = api_instance.find_release(bundle_identifier, platform, version, build_number, Time.current, transforms)
         expect(result).to be_nil
       end
     end

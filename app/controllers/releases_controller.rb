@@ -2,6 +2,7 @@ class ReleasesController < SignedInApplicationController
   using RefinedString
   include Filterable
   include Tabbable
+  include Pagy::Backend
 
   before_action :require_write_access!, only: %i[create destroy update override_approvals copy_approvals post_release finish_release]
   before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals post_release finish_release]
@@ -12,6 +13,12 @@ class ReleasesController < SignedInApplicationController
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
+  end
+
+  def previous_releases
+    @train = @app.trains.friendly.find(params[:train_id])
+    @paginator, @previous_releases = pagy(@train.previous_releases)
+    render layout: false
   end
 
   def show
@@ -157,6 +164,7 @@ class ReleasesController < SignedInApplicationController
   def set_train_and_app
     @train = @release.train
     @app = @train.app
+    set_current_app
   end
 
   def set_release

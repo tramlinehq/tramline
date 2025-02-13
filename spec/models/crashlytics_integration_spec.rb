@@ -44,19 +44,21 @@ describe CrashlyticsIntegration do
     end
 
     it "calls the API find_release method with correct arguments" do
-      crashlytics_integration.find_release(platform, version, build_number)
+      start_date = Time.current
+      crashlytics_integration.find_release(platform, version, build_number, start_date)
 
       expect(api_instance).to have_received(:find_release).with(
         bundle_identifier,
         platform,
         version,
         build_number,
+        start_date,
         CrashlyticsIntegration::RELEASE_TRANSFORMATIONS
       )
     end
 
     it "returns nil if version is blank" do
-      expect(crashlytics_integration.find_release("android", nil, build_number)).to be_nil
+      expect(crashlytics_integration.find_release("android", nil, build_number, Time.current)).to be_nil
     end
   end
 

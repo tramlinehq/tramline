@@ -71,9 +71,11 @@ class CrashlyticsIntegration < ApplicationRecord
     {}
   end
 
-  def find_release(platform, version, build_number)
+  # Crashlytics specifically accepts a start_date param because the queries to fetch the release data
+  # are expensive (in $$), so we try to minimize the window of fetch to save on costs.
+  def find_release(platform, version, build_number, start_date)
     return nil if version.blank?
-    installation.find_release(integrable.bundle_identifier, platform, version, build_number, RELEASE_TRANSFORMATIONS)
+    installation.find_release(integrable.bundle_identifier, platform, version, build_number, start_date, RELEASE_TRANSFORMATIONS)
   end
 
   # FIXME: This is an incomplete URL. The full URL should contain the project id.

@@ -116,6 +116,7 @@ Rails.application.routes.draw do
           get :ongoing_release
           get :upcoming_release
           get :hotfix_release
+          get :previous_releases
         end
 
         member do
@@ -265,6 +266,12 @@ Rails.application.routes.draw do
 
   scope :slack do
     get :callback, controller: "integration_listeners/slack", as: :slack_callback
+  end
+
+  scope :jira do
+    get :callback, controller: "integration_listeners/jira", as: :jira_callback
+    post :callback, controller: "integration_listeners/jira", as: :resend_jira_callback
+    get :select_organization, to: "integration_listeners/jira#select_organization", as: :jira_select_organization
   end
 
   get "/rails/active_storage/blobs/redirect/:signed_id/*filename",

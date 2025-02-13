@@ -120,9 +120,14 @@ module EnhancedFormHelper
     def labeled_checkbox(method, label_text, options = {})
       hopts = {class: field_classes(is_disabled: options[:disabled], classes: CHECK_BOX_CLASSES)}.merge(options)
       @template.content_tag(:div, class: "flex items-center") do
-        @template.concat check_box(method, hopts)
+        @template.concat checkbox(method, hopts)
         @template.concat label_only(method, label_text, type: :side)
       end
+    end
+
+    def checkbox(method, options = {}, checked_value = "1", unchecked_value = "0")
+      hopts = {class: field_classes(is_disabled: options[:disabled], classes: CHECK_BOX_CLASSES)}.merge(options)
+      check_box(method, hopts, checked_value, unchecked_value)
     end
 
     def labeled_radio_option(method, value, label_text, options = {})

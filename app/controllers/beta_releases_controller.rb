@@ -29,7 +29,7 @@ class BetaReleasesController < SignedInApplicationController
   end
 
   def set_app
-    Rails.logger.debug { "Setting app from the release" }
     @app = @release.app
+    set_current_app
   end
 end

@@ -1,5 +1,4 @@
 class RefreshSlackChannelsJob < ApplicationJob
-  include Loggable
   queue_as :high
 
   def perform(slack_integration_id)
