@@ -1,14 +1,24 @@
 <div data-controller="search-form" data-search-form-query-value="<%= QUERY_FIELD %>">
-  <div class="grid grid-cols-10">
-    <div class="col-span-2">
-      <%= text_field %>
-    </div>
-    <div class="col-span-8">
-      <%= clear_search %>
-    </div>
-  </div>
+  <div class="flex flex-col item-gap-default">
+    <div class="flex flex-row justify-between">
+      <div class="flex flex-row items-end">
+        <%= text_field_tag search_name, search_value, {
+          placeholder: search_placeholder.presence || "Search",
+          class: "form-input inline-flex w-full",
+          autocomplete: "off",
+          data: { search_form_target: "searchInput", action: "input->search-form#search" }
+        } %>
 
-  <%= tag.turbo_frame id: FRAME do %>
-    <%= content %>
-  <% end %>
+        <%= link_to "clear", "#", class: "underline hover:cursor-pointer text-xs ml-2", data: { action: "search-form#clear" } %>
+      </div>
+
+      <div class="flex items-end">
+        <%= notice %>
+      </div>
+    </div>
+
+    <%= tag.turbo_frame id: FRAME do %>
+      <%= content %>
+    <% end %>
+  </div>
 </div>
