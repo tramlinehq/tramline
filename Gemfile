@@ -80,6 +80,7 @@ gem "descope", "~> 1.0"
 gem "invisible_captcha", "~> 2.3"
 gem "csv", "~> 3.3"
 gem "google-cloud-bigquery", "~> 1.50.0"
+gem "net-imap", "~> 0.5.6"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
