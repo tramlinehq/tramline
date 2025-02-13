@@ -2,14 +2,30 @@
   <% container.with_body do %>
     <%= render SearchBarComponent.new(search_name: :search, search_value: params[:search_pattern], search_placeholder: "eg. 1.0.0") do |search| %>
       <% search.with_notice do %>
-        <div class="text-xs text-secondary">All timestamps are in the configured <code><%= @app.timezone %></code> timezone for the app</div>
+        <div class="text-xs text-secondary">All timestamps are in the configured <code><%= @app.timezone %></code>
+          timezone for the app
+        </div>
       <% end %>
 
       <%= render VerticalTabComponent.new(turbo_frame: "tab_content", sidebar_header: "Filter by", tab_config: @tab_configuration) do |container| %>
         <% container.with_tab do %>
           <%= search.with_search_form url: search_builds_app_path(@app, **@search_params) %>
-          <%= render partial: "apps/search/all_builds_search_results",
-                     locals: { builds: @builds, pagy: @pagy, all_builds_params: @search_params, app: @app, filters: @filters } %>
+
+          <%= render AllBuildsTableComponent.new(
+            builds: @builds,
+            paginator: @pagy,
+            query_params: @search_params) do |component|
+            component.with_filter do %>
+              <%= render FilterButtonComponent.new(
+                name: "Completed",
+                on: @filters.dig(:release_status, :is_on),
+                path: search_builds_app_path(@app),
+                method: :get,
+                filter_params: get_query_filter(:release_status),
+                query_params: @search_params) %>
+            <% end %>
+          <% end %>
+
         <% end %>
       <% end %>
     <% end %>

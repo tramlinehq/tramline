@@ -1,45 +1,46 @@
-<div class="text-secondary text-sm">
-  <strong><%= builds.size %></strong> builds found.
-  <%= filter %>
+<div class="flex justify-between text-secondary text-sm">
+  <% if builds.present? %>
+    <span><strong><%= paginator.count %></strong> <%= "build".pluralize(paginator.count) %> found.</span>
+    <%= filter %>
+  <% else %>
+    <div class="text-secondary-50 text-xs">
+      Search by version or build number.
+    </div>
+  <% end %>
 </div>
 
 <% if builds.present? %>
-  <%= render SectionComponent.new(style: :boxed, size: :micro) do %>
-    <% builds.each do |build| %>
+  <% builds.each do |build| %>
+    <%= render SectionComponent.new(style: :boxed, size: :micro) do %>
       <div class="flex flex-col gap-y-2">
         <div class="flex items-center justify-between border-default-b px-1 py-1 mb-3">
-          <div class="flex justify-start gap-1 items-center">
-            <h2 class="heading-2 text-main dark:text-white font-normal">Build <%= build.version_code %></h2>
-            <%= render BadgeComponent.new(text: build.version_name, kind: :status_pill, status: :neutral) %>
-            <%= release_status(build) %>
-            <%= render BadgeComponent.new(
-              text: "Built #{time_format(build.built_at, with_year: true)}",
-              kind: :status_pill,
-              status: :neutral
-            ) %>
+          <div class="flex justify-start item-gap-default items-center">
+            <h2 class="heading-2 text-main dark:text-white font-normal">Build (<%= build.version_code %>)</h2>
+            <%= render IconComponent.new("#{build.platform}.svg", size: :lg) %>
+            <%= render BadgeComponent.new(text: "Built on #{time_format(build.built_at, with_year: true)}", kind: :badge) %>
           </div>
 
-          <div class="flex justify-end gap-2">
+          <div class="flex justify-end gap-1">
             <% if build.ci_link.present? %>
               <%= render ButtonComponent.new(
-                scheme: :supporting,
-                label: "CI",
+                scheme: :light,
                 options: build.ci_link,
-                size: :sm,
+                size: :xxs,
                 type: :link_external,
                 authz: false) do |b|
+                b.with_tooltip("CI workflow")
                 b.with_icon("workflow.svg")
               end %>
             <% end %>
 
             <% if build.download_url.present? %>
               <%= render ButtonComponent.new(
-                scheme: :supporting,
-                label: "Download",
+                scheme: :light,
                 options: build.download_url,
-                size: :sm,
+                size: :xxs,
                 type: :link_external,
                 authz: false) do |b|
+                b.with_tooltip("Download build")
                 b.with_icon("download.svg")
               end %>
             <% end %>
@@ -47,25 +48,14 @@
         </div>
 
         <div class="flex flex-col item-gap-default">
-          <%= render CardComponent.new(title: "Build Details", separator: false, size: :xs) do %>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <div class="text-sm font-medium text-slate-500">Train</div>
-                <div class="mt-1"><%= build.train_name %></div>
-              </div>
-              <div>
-                <div class="text-sm font-medium text-slate-500">Platform</div>
-                <div class="mt-1"><%= release_platform(build) %></div>
-              </div>
-              <div>
-                <div class="text-sm font-medium text-slate-500">Kind</div>
-                <div class="mt-1"><%= build.kind.humanize %></div>
-              </div>
-              <div>
-                <div class="text-sm font-medium text-slate-500">Submissions</div>
-                <div class="mt-1"><%= submissions(build) %></div>
-              </div>
-            </div>
+          <%= render HorizontalDataSetComponent.new do |component| %>
+            <% component.with_data_set(title: "Version").with_content(build.version_name) %>
+            <% component.with_data_set(title: "Release Status") do %>
+              <%= render BadgeComponent.new(**release_status(build)) %>
+            <% end %>
+            <% component.with_data_set(title: "Train").with_content(build.train_name) %>
+            <% component.with_data_set(title: "Phase").with_content(build.kind.humanize) %>
+            <% component.with_data_set(title: "Submissions").with_content(submissions(build)) %>
           <% end %>
         </div>
       </div>
