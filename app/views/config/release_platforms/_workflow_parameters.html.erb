@@ -2,13 +2,27 @@
 
 <div class="flex flex-col gap-0.5">
   <%= render InfoIconComponent.new do %>
-  <p>
-    You can add workflow parameters. Each parameter has a key and value.
-    These parameters will be passed on to the workflow verbatim.
-  </p>
+    <p>
+      You can add workflow parameters. Each parameter has a key and value.
+      These parameters will be passed on to the workflow verbatim.
+    </p>
   <% end %>
 
   <%= form.label_only :custom_workflow_parameters, "Custom workflow parameters (optional)" %>
 
-  <%= render CustomParametersComponent.new(form) %>
+  <%= render CustomParametersComponent.new(form) do |comp| %>
+    <% comp.with_add_button(
+         scheme: :light, type: :action, size: :xs, label: "Add a new parameter",
+         html_options: { data: { action: "nested-form-ext#add" } }, arrow: :none) { |b|
+      b.with_icon("plus.svg", rounded: false) }
+    %>
+    <% comp.with_heading do %>
+      <% if form.object.parameters.present? %>
+        <div class="grid grid-cols-12 item-gap-default items-center font-medium text-secondary text-xs">
+          <div class="col-span-5"><%= form.label_only :name, "Parameter Name" %></div>
+          <div class="col-span-5"><%= form.label_only :value, "Parameter Value" %></div>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
 </div>
