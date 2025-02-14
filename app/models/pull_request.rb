@@ -4,16 +4,17 @@
 #
 #  id                      :uuid             not null, primary key
 #  base_ref                :string           not null
-#  body                    :text
+#  body                    :text             indexed
 #  closed_at               :datetime
 #  head_ref                :string           not null, indexed => [release_id]
 #  labels                  :jsonb
 #  number                  :bigint           not null, indexed => [release_id, phase], indexed
 #  opened_at               :datetime         not null
 #  phase                   :string           not null, indexed => [release_id, number], indexed
+#  search_vector           :tsvector         indexed
 #  source                  :string           not null, indexed
 #  state                   :string           not null, indexed
-#  title                   :string           not null
+#  title                   :string           not null, indexed
 #  url                     :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
@@ -24,6 +25,7 @@
 #
 class PullRequest < ApplicationRecord
   has_paper_trail
+  include Searchable
 
   class UnsupportedPullRequestSource < StandardError; end
 
@@ -50,6 +52,10 @@ class PullRequest < ApplicationRecord
 
   scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
 
+  pg_search_scope :search,
+    against: [:title, :body, :number],
+    **search_config
+
   # rubocop:disable Rails/SkipsModelValidations
   def update_or_insert!(attributes)
     PullRequest
@@ -66,6 +72,8 @@ class PullRequest < ApplicationRecord
     self.state = PullRequest.states[:closed]
     save!
   end
+
+  before_save :generate_search_vector_data
 
   private
 
@@ -89,5 +97,10 @@ class PullRequest < ApplicationRecord
     else
       PullRequest.states[:closed]
     end
+  end
+
+  def generate_search_vector_data
+    search_text = [title, body, number.to_s].compact.join(" ")
+    self.search_vector = self.class.generate_search_vector(search_text)
   end
 end
