@@ -199,24 +199,8 @@ class Queries::Releases
       author_name
     end
 
-    def short_sha
-      commit_hash&.first(7)
-    end
-
-    def backmerge_failure?
-      false
-    end
-
     def show_avatar?
       false
-    end
-
-    def pull_request
-      nil
-    end
-
-    def team
-      nil
     end
 
     def inspect
