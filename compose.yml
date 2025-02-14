@@ -133,6 +133,8 @@ services:
       RAILS_ENV: test
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/tramline_site_test
     depends_on:
+      redis:
+        condition: service_healthy
       postgres:
         condition: service_healthy
 

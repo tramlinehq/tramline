@@ -65,12 +65,45 @@ class AppsController < SignedInApplicationController
     @builds = Queries::Builds.all(app: @app, params: @query_params)
   end
 
+  def search
+    redirect_to search_releases_app_path(@app)
+  end
+
+  def search_releases
+    @search_params = filterable_params.except(:id)
+    set_search_tab_config
+    gen_query_filters(:release_status, Release.statuses[:finished])
+    set_query_helpers
+    @query_params.add_search_query(params[:search_pattern]) if params[:search_pattern].present?
+    set_query_pagination(Queries::Releases.count(app: @app, params: @query_params))
+    @releases = Queries::Releases.all(app: @app, params: @query_params)
+  end
+
+  def search_builds
+    @search_params = filterable_params.except(:id)
+    set_search_tab_config
+
+    @all_builds_params = filterable_params.except(:id)
+    gen_query_filters(:release_status, ReleasePlatformRun.statuses[:finished])
+    set_query_helpers
+    @query_params.add_search_query(params[:search_pattern]) if params[:search_pattern].present?
+    set_query_pagination(Queries::Builds.count(app: @app, params: @query_params))
+    @builds = Queries::Builds.all(app: @app, params: @query_params)
+  end
+
   def refresh_external
     @app.create_external!
     redirect_to app_path(@app), notice: "Store status was successfully refreshed."
   end
 
   private
+
+  def set_search_tab_config
+    @tab_configuration = [
+      [1, "Releases", search_releases_app_path(@app, **@search_params), "rocket.svg"],
+      [2, "Builds", search_builds_app_path(@app, **@search_params), "drill.svg"]
+    ]
+  end
 
   def set_integrations
     @integrations = @app.integrations
