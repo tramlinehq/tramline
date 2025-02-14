@@ -215,6 +215,10 @@ class Queries::Releases
       nil
     end
 
+    def team
+      nil
+    end
+
     def inspect
       format(
         "#<Queries::Commit %{attributes} >",
