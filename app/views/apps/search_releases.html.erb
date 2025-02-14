@@ -2,7 +2,9 @@
   <% container.with_body do %>
     <%= render SearchBarComponent.new(search_name: :search, search_value: params[:search_pattern], search_placeholder: "commits, PRs, versions") do |search| %>
       <% search.with_notice do %>
-        <div class="text-xs text-secondary">All timestamps are in the configured <code><%= @app.timezone %></code> timezone for the app</div>
+        <div class="text-xs text-secondary">All timestamps are in the configured <code><%= @app.timezone %></code>
+          timezone for the app
+        </div>
       <% end %>
 
       <%= render VerticalTabComponent.new(turbo_frame: "tab_content", sidebar_header: "Filter by", tab_config: @tab_configuration) do |container| %>
