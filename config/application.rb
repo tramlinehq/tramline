@@ -13,7 +13,7 @@ module Site
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks])
+    config.autoload_lib(ignore: %w[assets tasks structured_logger.rb])
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -27,6 +27,7 @@ module Site
     config.action_dispatch.default_headers["X-XSS-Protection"] = "1; mode=block"
     PaperTrail.config.version_limit = 10
     config.active_storage.draw_routes = false
+    config.lograge.enabled = false
 
     if ENV["RAILS_PIPELINE_ENV"].present?
       Rails.application.config.credentials.content_path =
