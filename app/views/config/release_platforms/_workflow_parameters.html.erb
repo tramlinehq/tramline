@@ -16,12 +16,39 @@
          html_options: { data: { action: "nested-form-ext#add" } }, arrow: :none) { |b|
       b.with_icon("plus.svg", rounded: false) }
     %>
-    <% comp.with_heading do %>
-      <% if form.object.parameters.present? %>
+
+    <% comp.with_trash_button(
+         scheme: :naked_icon, type: :action, size: :none,
+         html_options: { data: { action: "nested-form-ext#remove" } }) { |b|
+      b.with_icon("trash.svg", size: :md) }
+    %>
+
+    <% if form.object.parameters.present? %>
+      <% comp.with_heading do %>
         <div class="grid grid-cols-12 item-gap-default items-center font-medium text-secondary text-xs">
           <div class="col-span-5"><%= form.label_only :name, "Parameter Name" %></div>
           <div class="col-span-5"><%= form.label_only :value, "Parameter Value" %></div>
         </div>
+      <% end %>
+
+      <% form.object.parameters.each do |parameter| %>
+        <% form.fields_for :parameters, parameter do |parameter_form| %>
+          <% comp.with_edit_field do %>
+            <%= parameter_form.hidden_field :id %>
+            <%= parameter_form.hidden_field :_destroy %>
+            <div class="col-span-5"><%= parameter_form.text_field_without_label :name, "Parameter Name" %></div>
+            <div class="col-span-5"><%= parameter_form.text_field_without_label :value, "Parameter Value" %></div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% form.fields_for :parameters, form.object.parameters.build, child_index: "NEW_RECORD" do |new_parameter_form| %>
+      <% comp.with_add_field do %>
+        <%= new_parameter_form.hidden_field :id %>
+        <%= new_parameter_form.hidden_field :_destroy %>
+        <div class="col-span-5"><%= new_parameter_form.text_field_without_label :name, "Parameter Name" %></div>
+        <div class="col-span-5"><%= new_parameter_form.text_field_without_label :value, "Parameter Value" %></div>
       <% end %>
     <% end %>
   <% end %>

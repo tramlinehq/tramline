@@ -11,23 +11,38 @@
     <% end %>
 
     <div class="flex flex-col item-gap-default">
-      <% form.object.parameters.each do |parameter| %>
-        <% form.fields_for :parameters, parameter do |parameter_form| %>
+      <% if edit_fields? %>
+        <% edit_fields.each do |edit_field| %>
           <div class="nested-form-wrapper" data-new-record="false">
-            <%= render Form::ParametersComponent.new(parameter_form, parameter_name_label:, parameter_value_label:)%>
+            <div class="grid grid-cols-12 item-gap-default items-center">
+              <%= edit_field %>
+              <% if trash_button? %>
+                <div class="col-span-2">
+                  <%= trash_button %>
+                </div>
+              <% end %>
+            </div>
           </div>
         <% end %>
       <% end %>
+
+      <% if add_fields? %>
+        <template data-nested-form-ext-target="template">
+          <% add_fields.each do |add_field| %>
+            <div class="nested-form-wrapper" data-new-record="true">
+              <div class="grid grid-cols-12 item-gap-default items-center">
+                <%= add_field %>
+                <% if trash_button? %>
+                  <div class="col-span-2">
+                    <%= trash_button %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </template>
+        <div data-nested-form-ext-target="target"></div>
+      <% end %>
     </div>
-
-    <template data-nested-form-ext-target="template">
-      <div class="nested-form-wrapper" data-new-record="true">
-        <% form.fields_for :parameters, form.object.parameters.build, child_index: "NEW_RECORD" do |parameter_form| %>
-          <%= render Form::ParametersComponent.new(parameter_form, parameter_name_label:, parameter_value_label:)%>
-        <% end %>
-      </div>
-    </template>
-
-    <div data-nested-form-ext-target="target"></div>
   </div>
 </div>

@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
 class CustomParametersComponent < ViewComponent::Base
-  attr_reader :form, :parameter_name_label, :parameter_value_label
+  attr_reader :form
 
   renders_one :add_button, ButtonComponent
+  renders_one :trash_button, ButtonComponent
   renders_one :heading
-  renders_many :fields
 
-  def initialize(form, parameter_name_label: "Parameter Name", parameter_value_label: "Parameter Value", trash_button: true)
+  renders_many :edit_fields
+  renders_many :add_fields
+
+  def initialize(form)
     @form = form
-    @parameter_name_label = parameter_name_label
-    @parameter_value_label = parameter_value_label
-    @trash_button = trash_button
   end
 end
