@@ -1,6 +1,5 @@
 class Authentication::Email::SessionsController < Devise::SessionsController
   include Authenticatable
-  include Supportable
 
   before_action :skip_authentication, only: [:new, :create]
   before_action :set_confirmed_email, only: [:new]
@@ -28,5 +27,13 @@ class Authentication::Email::SessionsController < Devise::SessionsController
 
   def track_login
     SiteAnalytics.track(current_user, current_organization, device, "Login", {email: true})
+  end
+
+  def prepare_support_chat_shutdown
+    Chatwoot::ShutdownHelper.prepare_chatwoot_shutdown(session)
+  end
+
+  def support_chat_shutdown
+    Chatwoot::ShutdownHelper.chatwoot_shutdown(session, cookies, request.domain)
   end
 end

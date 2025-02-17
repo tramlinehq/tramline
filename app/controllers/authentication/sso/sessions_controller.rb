@@ -1,6 +1,5 @@
 class Authentication::Sso::SessionsController < ApplicationController
   include Authenticatable
-  include Supportable
 
   before_action :skip_authentication, only: [:new, :create]
   after_action :prepare_support_chat_shutdown, only: [:destroy]
@@ -66,5 +65,13 @@ class Authentication::Sso::SessionsController < ApplicationController
 
   def track_login
     SiteAnalytics.track(current_user, current_organization, device, "Login", {sso: true})
+  end
+
+  def prepare_support_chat_shutdown
+    Chatwoot::ShutdownHelper.prepare_chatwoot_shutdown(session)
+  end
+
+  def support_chat_shutdown
+    Chatwoot::ShutdownHelper.chatwoot_shutdown(session, cookies, request.domain)
   end
 end
