@@ -38,15 +38,16 @@
 
       <% row.with_cell(style: "text-right w-2") do %>
         <%= render ButtonComponent.new(
-          scheme: :supporting,
-          label: "Go to release",
-          options: release_path(release),
-          size: :sm,
-          authz: false,
-          turbo: false,
-          type: :link) do |b|
-          b.with_icon("arrow_right.svg")
-        end %>
+              scheme: :supporting,
+              label: "Go to release",
+              options: release_path(release),
+              size: :sm,
+              authz: false,
+              turbo: false,
+              type: :link
+            ) do |b|
+              b.with_icon("arrow_right.svg")
+            end %>
       <% end %>
     <% end %>
   <% end %>

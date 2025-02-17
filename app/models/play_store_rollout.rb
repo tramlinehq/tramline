@@ -142,7 +142,7 @@ class PlayStoreRollout < StoreRollout
   private
 
   def fail!(error)
-    elog(error)
+    elog(error, level: :warn)
     errors.add(:base, error)
     event_stamp!(reason: :failed, kind: :error, data: stamp_data)
 

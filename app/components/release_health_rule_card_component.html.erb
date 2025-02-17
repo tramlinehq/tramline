@@ -2,14 +2,15 @@
   <div class="flex items-center gap-4 justify-between pb-2 border-default-b">
     <h3 class="heading-3"><%= rule.name %></h3>
     <%= render ButtonComponent.new(
-      scheme: :danger,
-      options: app_train_platform_release_health_rule_path(app, train, release_platform, rule),
-      type: :button,
-      size: :xxs,
-      turbo: false,
-      html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want remove the release health rule?" } }) do |b|
-      b.with_icon("trash.svg", size: :sm)
-    end %>
+          scheme: :danger,
+          options: app_train_platform_release_health_rule_path(app, train, release_platform, rule),
+          type: :button,
+          size: :xxs,
+          turbo: false,
+          html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want remove the release health rule?"}}
+        ) do |b|
+          b.with_icon("trash.svg", size: :sm)
+        end %>
   </div>
   <%= render Rule::LayoutComponent.new do |rule_layout| %>
     <% rule_layout.with_if_statement do %>

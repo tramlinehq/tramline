@@ -45,13 +45,13 @@
   <section class="my-4">
     <div class="px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
       <div class="text-slate-700 text-sm">To disable all notifications, go to
-        <%= link_to "Train Settings", edit_app_train_path(train.app, train), class: "underline", data: { turbo: false } %>
+        <%= link_to "Train Settings", edit_app_train_path(train.app, train), class: "underline", data: {turbo: false} %>
       </div>
     </div>
   </section>
 <% else %>
   <%= render EmptyStateComponent.new(title: "Notifications are disabled",
-                                         text: "Enable notifications for the app and the train to configure notification settings.",
-                                         banner_image: "bell.svg",
-                                         type: :subdued) %>
+                                     text: "Enable notifications for the app and the train to configure notification settings.",
+                                     banner_image: "bell.svg",
+                                     type: :subdued) %>
 <% end %>

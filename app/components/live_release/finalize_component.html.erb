@@ -2,26 +2,28 @@
   <% if wrap_up? %>
     <% card.with_action do %>
       <%= render ButtonComponent.new(
-        scheme: :default,
-        options: post_release_release_path(release),
-        type: :button,
-        size: :xxs,
-        label: "Retry") do |b|
-        b.with_icon("repeat.svg", size: :md)
-      end %>
+            scheme: :default,
+            options: post_release_release_path(release),
+            type: :button,
+            size: :xxs,
+            label: "Retry"
+          ) do |b|
+            b.with_icon("repeat.svg", size: :md)
+          end %>
     <% end %>
   <% end %>
 
   <% if post_release_started? %>
     <% card.with_action do %>
       <%= render ButtonComponent.new(
-        scheme: :default,
-        options: "javascript:window.location.reload();",
-        type: :link,
-        size: :xxs,
-        label: "Refresh") do |b|
-        b.with_icon("repeat.svg", size: :md)
-      end %>
+            scheme: :default,
+            options: "javascript:window.location.reload();",
+            type: :link,
+            size: :xxs,
+            label: "Refresh"
+          ) do |b|
+            b.with_icon("repeat.svg", size: :md)
+          end %>
     <% end %>
   <% end %>
 
@@ -74,17 +76,18 @@
               <code><%= release.train.working_branch %></code> before wrapping up this release.</p>
             <div class="mt-2">
               <%= render partial: "shared/divide_collection",
-                         locals: { collection: render(CommitComponent.with_collection(unmerged_changes)) } %>
+                         locals: {collection: render(CommitComponent.with_collection(unmerged_changes))} %>
             </div>
           </div>
 
           <% unless open_prs? %>
             <%= render ButtonComponent.new(
-              scheme: :danger,
-              options: post_release_release_path(release),
-              type: :button,
-              size: :xxs,
-              label: "I understand, complete the release") %>
+                  scheme: :danger,
+                  options: post_release_release_path(release),
+                  type: :button,
+                  size: :xxs,
+                  label: "I understand, complete the release"
+                ) %>
           <% end %>
         <% end %>
       </div>

@@ -16,6 +16,7 @@ spec file="":
 
 lint:
   docker exec -it tramline-web-1 bin/rubocop --autocorrect
+  docker exec -it tramline-web-1 bin/erb_lint --format compact --lint-all --autocorrect
 
 pre-setup:
   docker compose run --rm pre-setup

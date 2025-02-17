@@ -5,11 +5,12 @@
   <div class="col-span-5"><%= parameter_form.text_field_without_label :value, "Parameter value" %></div>
   <div class="col-span-2">
     <%= render ButtonComponent.new(
-      scheme: :naked_icon,
-      type: :action,
-      size: :none,
-      html_options: { data: { action: "nested-form-ext#remove" } }) do |b|
-      b.with_icon("trash.svg", size: :md)
-    end %>
+          scheme: :naked_icon,
+          type: :action,
+          size: :none,
+          html_options: {data: {action: "nested-form-ext#remove"}}
+        ) do |b|
+          b.with_icon("trash.svg", size: :md)
+        end %>
   </div>
 </div>

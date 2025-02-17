@@ -60,7 +60,7 @@ class Accounts::Invite < ApplicationRecord
     end
 
     unless result.ok?
-      elog(result.error)
+      elog(result.error, level: :error)
       errors.add(:email, :delivery_failed, email: email)
       return false
     end

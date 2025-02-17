@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -o errexit
+
+# Get the absolute path to the script's directory
+script_dir="$(dirname "$(realpath "$0")")"
+
+# Construct the path to the .erb_lint.yml file in the parent directory
+erb_lint_config="$script_dir/../.erb_lint.yml"
+
+# Run erb_lint with the specified config file
+bundle exec erb_lint --config "$erb_lint_config" "$@"

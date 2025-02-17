@@ -1,6 +1,7 @@
 require "irb/completion"
 require "rubygems"
 
+IRB.conf[:USE_READLINE] = true
 IRB.conf[:SAVE_HISTORY] = 1000
 IRB.conf[:HISTORY_FILE] = ".irb-save-history"
 IRB.conf[:USE_AUTOCOMPLETE] = false

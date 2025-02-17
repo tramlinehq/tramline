@@ -6,7 +6,7 @@
           <h2 class="text-3xl text-slate-800 font-bold mb-6"><%= @code %></h2>
 
           <div class="inline-flex mb-8">
-            <%= image_tag("tram_aesthetic.png", width: 300, alt: "#{@code}", class: "rounded-sm") %>
+            <%= image_tag("tram_aesthetic.png", width: 300, alt: @code.to_s, class: "rounded-sm") %>
           </div>
 
           <div class="mb-6"><%= @content %></div>

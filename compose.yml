@@ -28,6 +28,7 @@ x-backend: &backend
     BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
     XDG_DATA_HOME: /app/tmp/caches
     EDITOR: vim
+    TERM: xterm-256color
   depends_on:
     postgres:
       condition: service_healthy
@@ -127,7 +128,7 @@ services:
 
   spec:
     <<: *backend
-    command: bash -c "RAILS_ENV=test bin/rails db:create && bundle exec rspec"
+    command: bash -c "RAILS_ENV=test bin/rails db:create"
     environment:
       <<: *env
       RAILS_ENV: test

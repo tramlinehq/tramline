@@ -2,12 +2,12 @@
   <div class="flex text-sm items-center justify-between space-x-4">
     <div class="flex flex-col gap-y-1.5">
       <%= render(ButtonComponent.new(scheme: :link,
-                                         label: truncated_title,
-                                         options: pr.url,
-                                         type: :link_external,
-                                         size: :none,
-                                         authz: false,
-                                         html_options: {class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline"})) %>
+                                     label: truncated_title,
+                                     options: pr.url,
+                                     type: :link_external,
+                                     size: :none,
+                                     authz: false,
+                                     html_options: {class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline"})) %>
 
       <div class="flex flex-row gap-x-1.5 items-center">
         <%= render IconComponent.new("integrations/logo_#{pr.source}.png", size: :md) %>
@@ -35,8 +35,8 @@
 
     <div class="flex flex-row gap-x-2 items-center">
       <%= render BadgeComponent.new(kind: :badge) do |badge|
-        badge.with_link("##{pr.number}", pr.url)
-      end %>
+            badge.with_link("##{pr.number}", pr.url)
+          end %>
 
       <%= render BadgeComponent.new(text: state, status:) %>
     </div>

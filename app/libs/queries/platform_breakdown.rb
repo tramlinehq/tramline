@@ -18,7 +18,7 @@ class Queries::PlatformBreakdown
   def warm
     cache.write(cache_key, data)
   rescue => e
-    elog(e)
+    elog(e, level: :debug)
   end
 
   def call

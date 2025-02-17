@@ -22,7 +22,7 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
   private
 
   def handle_failure(err)
-    elog(err)
+    elog(err, level: :debug)
     commit.update!(backmerge_failure: true)
     release.event_stamp!(reason: :backmerge_failure, kind: :error, data: stamp_data)
     commit.notify!("Backmerge to the working branch failed", :backmerge_failed, commit.notification_params)

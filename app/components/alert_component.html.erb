@@ -13,13 +13,14 @@
 
       <% if dismissible %>
         <%= render ButtonComponent.new(
-          scheme: :naked_icon,
-          type: :action,
-          size: :none,
-          authz: false,
-          html_options: { class: "ms-auto inline-flex justify-center items-center", data: { action: "alert#close" } }) do |b|
-          b.with_icon("close_icon.svg")
-        end %>
+              scheme: :naked_icon,
+              type: :action,
+              size: :none,
+              authz: false,
+              html_options: {class: "ms-auto inline-flex justify-center items-center", data: {action: "alert#close"}}
+            ) do |b|
+              b.with_icon("close_icon.svg")
+            end %>
       <% end %>
     </div>
   <% elsif banner? %>
@@ -39,26 +40,28 @@
         <div class="flex mt-4 gap-x-2">
           <% if info? %>
             <%= render ButtonComponent.new(
-              scheme: :none,
-              options: info[:link],
-              type: :link_external,
-              label: info[:label],
-              size: :none,
-              authz: false,
-              html_options: { class: ACTION_BUTTON_STYLES }) do |b|
-              b.with_icon("eye.svg", size: :md, rounded: false)
-            end %>
+                  scheme: :none,
+                  options: info[:link],
+                  type: :link_external,
+                  label: info[:label],
+                  size: :none,
+                  authz: false,
+                  html_options: {class: ACTION_BUTTON_STYLES}
+                ) do |b|
+                  b.with_icon("eye.svg", size: :md, rounded: false)
+                end %>
           <% end %>
 
           <% if dismissible %>
             <%= render ButtonComponent.new(
-              scheme: :none,
-              type: :action,
-              size: :none,
-              authz: false,
-              label: "Dismiss",
-              html_options: { class: ACTION_BUTTON_STYLES,
-                              data: { action: "alert#close" } }) %>
+                  scheme: :none,
+                  type: :action,
+                  size: :none,
+                  authz: false,
+                  label: "Dismiss",
+                  html_options: {class: ACTION_BUTTON_STYLES,
+                                 data: {action: "alert#close"}}
+                ) %>
           <% end %>
         </div>
       <% end %>

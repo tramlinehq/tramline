@@ -1,19 +1,20 @@
 <% if chart.present? %>
-  <%= render CardComponent.new(title: title,
-                                   subtitle: chart_scope,
-                                   fold: false,
-                                   separator: false,
-                                   size: :full,
-                                   emptiness: insufficient?) do |card| %>
+  <%= render CardComponent.new(
+        title: title,
+        subtitle: chart_scope,
+        fold: false,
+        separator: false,
+        size: :full,
+        emptiness: insufficient?
+      ) do |card| %>
+
     <% card.with_action do %>
       <% if help_text.present? %>
         <div class="flex"><%= render corner_icon %></div>
       <% end %>
     <% end %>
 
-    <% card.with_empty_state(text: "Waiting for more data",
-                             banner_image: "clock.svg",
-                             type: :subdued) %>
+    <% card.with_empty_state(text: "Waiting for more data", banner_image: "clock.svg", type: :subdued) %>
 
     <% unless insufficient? %>
       <% if area? %>

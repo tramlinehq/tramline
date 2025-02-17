@@ -10,6 +10,6 @@
   <% end %>
 
   <%= render Rule::PartComponent.new(condition_text: "then") do %>
-    <%= render BadgeComponent.new(text: "Release is unhealthy", status: :failure)  %>
+    <%= render BadgeComponent.new(text: "Release is unhealthy", status: :failure) %>
   <% end %>
 </ol>

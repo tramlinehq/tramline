@@ -1,5 +1,5 @@
 <% component = EnhancedTurboFrameComponent.new(dom_id(@train, :edit_train)) %>
 <% component.with_loading_indicator %>
 <%= render component do %>
-  <%= render "trains/rules", app: @app, train:  @train %>
+  <%= render "trains/rules", app: @app, train: @train %>
 <% end %>

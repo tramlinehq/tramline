@@ -3,7 +3,7 @@ class PassportJob < ApplicationJob
     stampable = begin
       stampable_type.constantize.find(stampable_id)
     rescue NameError, ActiveRecord::RecordNotFound => e
-      elog(e)
+      elog(e, level: :error)
     end
 
     params = params.with_indifferent_access

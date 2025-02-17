@@ -6,7 +6,6 @@ class StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob < ApplicationJob
     if ex.is_a?(GoogleFirebaseSubmission::UploadNotComplete)
       backoff_in(attempt: count + 1, period: :minutes, type: :static, factor: 2).to_i
     else
-      elog(ex)
       :kill
     end
   end

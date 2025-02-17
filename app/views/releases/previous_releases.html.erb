@@ -4,11 +4,11 @@
       <%= render ReleaseHistoryComponent.new(train: @train, previous_releases: @previous_releases, paginator: @paginator) %>
     <% else %>
       <%= render EmptyStateComponent.new(
-        title: "No previous releases",
-        text: "There are no other releases for this train yet.",
-        banner_image: "archive_x.svg",
-        type: :subdued
-      ) %>
+            title: "No previous releases",
+            text: "There are no other releases for this train yet.",
+            banner_image: "archive_x.svg",
+            type: :subdued
+          ) %>
     <% end %>
   <% end %>
 <% end %>

@@ -69,7 +69,7 @@ module Installations
     def execute
       yield
     rescue => e
-      elog(e)
+      elog(e, level: :warn)
       nil
     end
   end

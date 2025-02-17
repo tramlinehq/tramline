@@ -79,7 +79,7 @@ class Coordinators::ProcessCommits
     @commit_log ||= train.vcs_provider.commit_log(rest_commits.first[:commit_hash], head_commit[:commit_hash])
     @commit_log << fetch_commit_parents(rest_commits.first)
   rescue => e
-    elog(e)
+    elog(e, level: :warn)
     @commit_log = []
   end
 

@@ -73,6 +73,9 @@ jobs:
       - name: Lint Ruby files
         run: bin/rubocop -f github
 
+      - name: Lint ERB files
+        run: bin/erb_lint --format compact --lint-all
+
       - name: Set up database schema integrity
         run: bin/rails db:schema:load
 

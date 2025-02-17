@@ -1,13 +1,13 @@
 <% if @unconfigured %>
   <%= render EmptyStateComponent.new(title: "Release health rules are unavailable",
-                                         text: "Release health can only be configured when you have a Monitoring Integration setup for your app.",
-                                         banner_image: "art/no_releases.png") do %>
+                                     text: "Release health can only be configured when you have a Monitoring Integration setup for your app.",
+                                     banner_image: "art/no_releases.png") do %>
     <div>
       <%= render ButtonComponent.new(scheme: :default,
-                                         type: :link,
-                                         label: "Configure Monitoring",
-                                         options: app_integrations_path(app),
-                                         size: :xxs) do |b| %>
+                                     type: :link,
+                                     label: "Configure Monitoring",
+                                     options: app_integrations_path(app),
+                                     size: :xxs) do |b| %>
         <% b.with_icon("cog.svg", size: :md) %>
       <% end %>
     </div>

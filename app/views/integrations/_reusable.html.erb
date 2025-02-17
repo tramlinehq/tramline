@@ -1,4 +1,4 @@
-<%= form_with(model: [app, integration], method: :post, builder: EnhancedFormHelper::AuthzForm, url:, data: { turbo: false }) do |form| %>
+<%= form_with(model: [app, integration], method: :post, builder: EnhancedFormHelper::AuthzForm, url:, data: {turbo: false}) do |form| %>
   <%= form.hidden_field :category, value: category %>
   <%= form.hidden_field :existing_integration_id, value: existing_integration.id %>
   <%= form.hidden_field "providable[type]", value: type %>

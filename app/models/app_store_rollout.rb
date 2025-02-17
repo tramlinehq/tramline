@@ -72,7 +72,7 @@ class AppStoreRollout < StoreRollout
     result = provider.start_release(build_number)
 
     unless result.ok?
-      elog(result.error)
+      elog(result.error, level: :warn)
       errors.add(:base, result.error)
     end
 
@@ -92,7 +92,7 @@ class AppStoreRollout < StoreRollout
 
     result = provider.find_live_release
     unless result.ok?
-      elog(result.error)
+      elog(result.error, level: :warn)
       raise ReleaseNotFullyLive, "Retrying in some time..."
     end
 
@@ -117,7 +117,7 @@ class AppStoreRollout < StoreRollout
         event_stamp!(reason: :halted, kind: :notice, data: stamp_data)
         notify!("Rollout has been halted", :production_rollout_halted, notification_params)
       else
-        elog(result.error)
+        elog(result.error, level: :warn)
         errors.add(:base, result.error)
       end
     end
@@ -134,7 +134,7 @@ class AppStoreRollout < StoreRollout
         event_stamp!(reason: :fully_released, kind: :success, data: stamp_data)
       else
         return complete! if result.error.reason == :phased_release_already_complete
-        elog(result.error)
+        elog(result.error, level: :warn)
         errors.add(:base, result.error)
       end
     end
@@ -151,7 +151,7 @@ class AppStoreRollout < StoreRollout
         event_stamp!(reason: :paused, kind: :error, data: stamp_data)
         notify!("Rollout has been paused", :production_rollout_paused, notification_params)
       else
-        elog(result.error)
+        elog(result.error, level: :warn)
         errors.add(:base, result.error)
       end
     end
@@ -168,7 +168,7 @@ class AppStoreRollout < StoreRollout
         event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
         notify!("Rollout has been resumed", :production_rollout_resumed, notification_params)
       else
-        elog(result.error)
+        elog(result.error, level: :warn)
         errors.add(:base, result.error)
       end
     end

@@ -17,12 +17,13 @@
             query_params: @search_params) do |component|
             component.with_filter do %>
               <%= render FilterButtonComponent.new(
-                name: "Completed",
-                on: @filters.dig(:release_status, :is_on),
-                path: search_builds_app_path(@app),
-                method: :get,
-                filter_params: get_query_filter(:release_status),
-                query_params: @search_params) %>
+                    name: "Completed",
+                    on: @filters.dig(:release_status, :is_on),
+                    path: search_builds_app_path(@app),
+                    method: :get,
+                    filter_params: get_query_filter(:release_status),
+                    query_params: @search_params
+                  ) %>
             <% end %>
           <% end %>
 

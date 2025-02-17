@@ -9,9 +9,9 @@
           <% button.with_icon("pencil.svg") %>
           <% modal.with_body do %>
             <%= render FormComponent.new(model: [release, release_platform_run],
-                                             scope: :store_submission,
-                                             url: root_path,
-                                             free_form: true) do |form| %>
+                                         scope: :store_submission,
+                                         url: root_path,
+                                         free_form: true) do |form| %>
               <%= form.F.hidden_field :force, value: true %>
               <%= form.F.labeled_select :build_id, "Select a build", options_for_select([], 1) %>
 
@@ -36,9 +36,9 @@
 
         <div class="flex justify-center items-center">
           <%= select_tag :language,
-                         options_for_select(["#238 — Testing in progress", "#238 — Rejected", "#238 — Approved"], "16.81"),
-                         disabled: false,
-                         class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES %>
+                options_for_select(["#238 — Testing in progress", "#238 — Rejected", "#238 — Approved"], "16.81"),
+                disabled: false,
+                class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES %>
         </div>
 
         <div class="pl-3"><%= render TimelineComponent.new(events:) %></div>

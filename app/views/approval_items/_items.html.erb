@@ -11,33 +11,33 @@
     <% if release.approvals_editable? %>
       <% card.with_action do %>
         <%= render ButtonComponent.new(
-          scheme: :light,
-          options: copy_approvals_release_path(release),
-          type: :button,
-          disabled: release.copy_approvals_disabled?,
-          size: :xxs,
-          label: "Copy from previous release",
-          html_options: {
-            method: :post,
-            data: {
-              turbo_method: :post,
-              turbo_confirm: "This will copy all the release approvals from the last release. Are you sure?"
-            }
-          }
-        ) do |b| %>
+              scheme: :light,
+              options: copy_approvals_release_path(release),
+              type: :button,
+              disabled: release.copy_approvals_disabled?,
+              size: :xxs,
+              label: "Copy from previous release",
+              html_options: {
+                method: :post,
+                data: {
+                  turbo_method: :post,
+                  turbo_confirm: "This will copy all the release approvals from the last release. Are you sure?"
+                }
+              }
+            ) do |b| %>
           <%= b.with_icon("square_stack.svg", size: :sm) %>
         <% end %>
       <% end %>
       <% card.with_action do %>
         <%= render ModalComponent.new(title: "Add approval item", dismissable: false) do |modal| %>
           <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                  .with_icon("plus.svg", size: :md) %>
+               .with_icon("plus.svg", size: :md) %>
           <% modal.with_body do %>
             <%= render partial: "form", locals: {
-              model: [release, release.approval_items.new],
-              url: release_approval_items_path(release),
-              select_options: ApprovalsPresenter.available_assignee_options(available_assignees)
-            } %>
+                  model: [release, release.approval_items.new],
+                  url: release_approval_items_path(release),
+                  select_options: ApprovalsPresenter.available_assignee_options(available_assignees)
+                } %>
           <% end %>
         <% end %>
       <% end %>
@@ -46,16 +46,17 @@
     <% if release.approvals_blocking? %>
       <% card.with_action do %>
         <%= render ButtonComponent.new(
-          scheme: :danger,
-          label: "Override approvals",
-          options: override_approvals_release_path(release),
-          type: :button,
-          html_options:
-            {method: :patch,
-             data: {turbo_method: :patch,
-                    turbo_confirm: "This will override all the release approvals. Are you sure?"}}) do |b|
-          b.with_icon("key_square.svg")
-        end %>
+              scheme: :danger,
+              label: "Override approvals",
+              options: override_approvals_release_path(release),
+              type: :button,
+              html_options:
+                {method: :patch,
+                 data: {turbo_method: :patch,
+                        turbo_confirm: "This will override all the release approvals. Are you sure?"}}
+            ) do |b|
+              b.with_icon("key_square.svg")
+            end %>
       <% end %>
     <% end %>
 

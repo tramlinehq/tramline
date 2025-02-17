@@ -3,12 +3,13 @@
     <div class="flex text-sm items-center justify-between">
       <div class="flex gap-2">
         <%= render LiveRelease::BuildComponent.new(
-          store_rollout.build,
-          show_metadata: false,
-          show_ci: false,
-          show_activity: false,
-          show_compact_metadata: true,
-          show_commit: false) %>
+              store_rollout.build,
+              show_metadata: false,
+              show_ci: false,
+              show_activity: false,
+              show_compact_metadata: true,
+              show_commit: false
+            ) %>
 
         <%= render BadgeComponent.new(text: "Superseded", status: :neutral) %>
       </div>
@@ -30,9 +31,9 @@
       </div>
     </div>
     <%= render ModalComponent.new(title: "Rollout timeline",
-                                      size: :xs,
-                                      type: :drawer,
-                                      authz: false) do |modal| %>
+                                  size: :xs,
+                                  type: :drawer,
+                                  authz: false) do |modal| %>
       <% button = modal.with_button(scheme: :naked_icon,
                                     size: :xxs,
                                     type: :action) %>

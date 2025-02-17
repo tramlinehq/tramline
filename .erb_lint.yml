@@ -1,0 +1,55 @@
+---
+glob: "**/app/**/*.{html,turbo_stream,js}{+*,}.erb"
+EnableDefaultLinters: true
+exclude:
+  - '**/vendor/**/*'
+linters:
+  AllowedScriptType:
+    enabled: true
+  ClosingErbTagIndent:
+    enabled: true
+  DeprecatedClasses: # See https://github.com/Shopify/erb-lint#deprecatedclasses
+    enabled: true
+  ExtraNewline:
+    enabled: true
+  FinalNewline:
+    enabled: true
+  HardCodedString:
+    enabled: false
+  NoJavascriptTagHelper:
+    enabled: true
+  ParserErrors:
+    enabled: true
+  RightTrim:
+    enabled: false
+  RequireInputAutocomplete:
+    enabled: false
+  RubocopText:
+    enabled: true
+  SelfClosingTag:
+    enabled: false
+  SpaceAroundErbTag:
+    enabled: true
+  SpaceInHtmlTag:
+    enabled: true
+  SpaceIndentation:
+    enabled: true
+  TrailingWhitespace:
+    enabled: true
+  Rubocop:
+    enabled: true
+    rubocop_config:
+      inherit_from:
+        - .rubocop.yml
+      AllCops:
+        DisabledByDefault: true
+      Layout/TrailingEmptyLines:
+        Enabled: false
+      Layout/InitialIndentation:
+        Enabled: false
+      Lint/UselessAssignment:
+        Enabled: false
+      Layout/ArgumentAlignment:
+        Enabled: false
+      Rails/OutputSafety:
+        Enabled: false

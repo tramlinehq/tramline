@@ -9,13 +9,13 @@
       <% if @ci_cd_apps.present? %>
         <div>
           <%= section.F.labeled_select :bitrise_project_id,
-                                       "App Name",
-                                       options_for_select(
-                                         display_channels(@ci_cd_apps) { |app| "#{app[:name]} (#{app[:id]})" },
-                                         @config.bitrise_project_id.to_json
-                                       ),
-                                       {},
-                                       data: { controller: "input-select" } %>
+                "App Name",
+                options_for_select(
+                  display_channels(@ci_cd_apps) { |app| "#{app[:name]} (#{app[:id]})" },
+                  @config.bitrise_project_id.to_json
+                ),
+                {},
+                data: {controller: "input-select"} %>
         </div>
       <% end %>
     <% end %>

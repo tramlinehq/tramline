@@ -63,7 +63,7 @@ module Reenqueuer
     end
 
     # Log the error but don't raise it since we're handling the retry
-    elog(error)
+    elog(error, level: :warn)
   end
 
   def find_matching_retry_config(error)

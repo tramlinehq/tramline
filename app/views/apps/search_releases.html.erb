@@ -11,7 +11,7 @@
         <% container.with_tab do %>
           <%= search.with_search_form url: search_releases_app_path(@app, **@search_params) %>
           <%= render partial: "apps/search/all_releases_search_results",
-                     locals: { releases: @releases, pagy: @pagy, all_releases_params: @search_params, app: @app, filters: @filters } %>
+                     locals: {releases: @releases, pagy: @pagy, all_releases_params: @search_params, app: @app, filters: @filters} %>
         <% end %>
       <% end %>
     <% end %>

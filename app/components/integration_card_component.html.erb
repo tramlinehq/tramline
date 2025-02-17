@@ -22,19 +22,19 @@
             <%= render BadgeComponent.new(text: "Connected", status: :success) %>
             <% if ci_cd? %>
               <%= render ButtonComponent.new(
-                scheme: :danger,
-                options: app_integration_path(@app, integration),
-                type: :button,
-                size: :xxs,
-                turbo: false,
-                disabled: !disconnectable?,
-                html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want disconnect the integration?" } }) do |b|
-                b.with_icon("trash.svg", size: :sm)
-              end %>
+                    scheme: :danger,
+                    options: app_integration_path(@app, integration),
+                    type: :button,
+                    size: :xxs,
+                    turbo: false,
+                    disabled: !disconnectable?,
+                    html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want disconnect the integration?"}}
+                  ) do |b|
+                    b.with_icon("trash.svg", size: :sm)
+                  end %>
             <% end %>
           </div>
         <% end %>
-
 
         <% if disconnected? %>
           <div class="flex gap-1">
@@ -46,7 +46,7 @@
             <% if creatable? %>
               <%= render ModalComponent.new(title: creatable_modal_title) do |modal| %>
                 <% modal.with_button(label: "Connect", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                        .with_icon("plus.svg", size: :md) %>
+                     .with_icon("plus.svg", size: :md) %>
                 <% modal.with_body do %>
                   <%= creatable_form_partial %>
                 <% end %>
@@ -57,7 +57,7 @@
               <% if repeated_integrations_across_apps.size > 1 %>
                 <%= render ModalComponent.new(title: "Choose the app to reuse the integration") do |modal| %>
                   <% modal.with_button(label: "Reuse existing integration", scheme: :supporting, type: :action, size: :xxs)
-                          .with_icon("repeat.svg", size: :md) %>
+                       .with_icon("repeat.svg", size: :md) %>
                   <% modal.with_body do %>
                     <%= reusable_integrations_form_partial(repeated_integrations_across_apps) %>
                   <% end %>

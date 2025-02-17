@@ -8,16 +8,17 @@
       Graphs shown below are populated from a combination of data fetched by Tramline and data that is (optionally)
       sent to Tramline
       <%= link_to_external "through the API ↗",
-                           "https://docs.tramline.app/api#send-custom-metadata-for-a-build",
-                           class: "hover:underline", title: "API docs on sending build metadata" %>.
+            "https://docs.tramline.app/api#send-custom-metadata-for-a-build",
+            class: "hover:underline", title: "API docs on sending build metadata" %>.
     </p>
   </div>
 
   <%= render BuildHealthComponent.new(builds) %>
 <% else %>
   <%= render EmptyStateComponent.new(
-    title: "No build metadata trend to show",
-    text: "As you add more builds to Tramline, the trend of their metadata will be displayed here.",
-    banner_image: "drill.svg",
-    type: :subdued) %>
+        title: "No build metadata trend to show",
+        text: "As you add more builds to Tramline, the trend of their metadata will be displayed here.",
+        banner_image: "drill.svg",
+        type: :subdued
+      ) %>
 <% end %>

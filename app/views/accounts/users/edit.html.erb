@@ -30,7 +30,7 @@
               <% if membership.team_set? %>
                 <%= render TooltipComponent.new("You cannot change your team once it is set.", placement: "bottom") do |tooltip| %>
                   <% tooltip.with_body do %>
-                    <div class="w-full"><%= membership_fields.labeled_select :team_id, "Team for #{org.name}", options_for_select(org.team_options, membership.team&.id || ""), {}, { disabled: true } %></div>
+                    <div class="w-full"><%= membership_fields.labeled_select :team_id, "Team for #{org.name}", options_for_select(org.team_options, membership.team&.id || ""), {}, {disabled: true} %></div>
                   <% end %>
                 <% end %>
               <% elsif org.teams.any? %>
@@ -38,7 +38,7 @@
               <% else %>
                 <%= render TooltipComponent.new("This organization has no teams.", placement: "bottom") do |tooltip| %>
                   <% tooltip.with_body do %>
-                    <div class="w-full"><%= membership_fields.labeled_select :team_id, "Team for #{org.name}", options_for_select({}, membership.team&.id || ""), {}, { disabled: true } %></div>
+                    <div class="w-full"><%= membership_fields.labeled_select :team_id, "Team for #{org.name}", options_for_select({}, membership.team&.id || ""), {}, {disabled: true} %></div>
                   <% end %>
                 <% end %>
               <% end %>

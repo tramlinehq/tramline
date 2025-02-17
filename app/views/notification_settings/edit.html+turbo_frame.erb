@@ -6,23 +6,23 @@
       <% end %>
 
       <%= render Form::SwitchComponent.new(form: section.F,
-                                               field_name: :active,
-                                               switch_id: "active-switch-#{@setting.id}",
-                                               on_label: "Notifications enabled",
-                                               off_label: "Notifications disabled") do |switch| %>
+                                           field_name: :active,
+                                           switch_id: "active-switch-#{@setting.id}",
+                                           on_label: "Notifications enabled",
+                                           off_label: "Notifications disabled") do |switch| %>
         <% switch.with_child do %>
           <%= section.F.labeled_select :notification_channels,
-                                       "Channels",
-                                       @setting.channel_select_options,
-                                       {},
-                                       { multiple: true, data: { controller: "input-select" } } %>
+                "Channels",
+                @setting.channel_select_options,
+                {},
+                {multiple: true, data: {controller: "input-select"}} %>
         <% end %>
       <% end %>
 
       <% if @setting.needs_invite? %>
         <span class="text-secondary">To allow file uploads in channels, invite <strong>@Tramline</strong> into your channels.</span>
       <% end %>
-      <%= render partial: "shared/notifications_refresh", locals: { app: @app } %>
+      <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
     <% end %>
 
     <% f.with_action do %>

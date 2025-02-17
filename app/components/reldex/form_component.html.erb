@@ -79,12 +79,12 @@
                 </div>
                 <div class="col-span-1">
                   <%= component_fields.number_field_without_label :weight_percentage,
-                                                                  compact: true,
-                                                                  step: 1,
-                                                                  in: 0..100,
-                                                                  data: { domain__reldex_target: "weight",
-                                                                          domain__reldex_component_target: "weight",
-                                                                          action: "domain--reldex#computeTotal domain--reldex-component#markActionable" } %>
+                        compact: true,
+                        step: 1,
+                        in: 0..100,
+                        data: {domain__reldex_target: "weight",
+                               domain__reldex_component_target: "weight",
+                               action: "domain--reldex#computeTotal domain--reldex-component#markActionable"} %>
                 </div>
                 <div class="col-span-3">
                   <div class="mt-3">

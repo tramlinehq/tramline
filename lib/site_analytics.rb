@@ -61,8 +61,9 @@ module SiteAnalytics
     private
 
     def elog(e)
-      Rails.logger.error(e)
-      Sentry.capture_exception(e)
+      Rails.logger.debug { e }
+      Sentry.capture_exception(e, level: :debug)
+      nil
     end
   end
 end

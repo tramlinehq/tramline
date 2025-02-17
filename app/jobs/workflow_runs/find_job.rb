@@ -6,7 +6,6 @@ class WorkflowRuns::FindJob < ApplicationJob
     if exception.is_a?(Installations::Error) && exception.reason == :workflow_run_not_found
       backoff_in(attempt: count + 1, period: :minutes, type: :static, factor: 2).to_i
     else
-      elog(exception)
       :kill
     end
   end
@@ -15,7 +14,6 @@ class WorkflowRuns::FindJob < ApplicationJob
     if ex.is_a?(Installations::Error) && ex.reason == :workflow_run_not_found
       run = WorkflowRun.find(msg["args"].first)
       run.unavailable! if run.may_unavailable?
-      elog(ex)
     end
   end
 

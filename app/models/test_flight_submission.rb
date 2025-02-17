@@ -125,7 +125,7 @@ class TestFlightSubmission < StoreSubmission
     result = find_build
 
     unless result.ok?
-      elog(result.error)
+      elog(result.error, level: :warn)
       raise SubmissionNotInTerminalState, "Retrying in some time..."
     end
 
