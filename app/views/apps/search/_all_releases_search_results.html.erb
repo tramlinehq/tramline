@@ -27,23 +27,24 @@
                                                authz: false,
                                                size: :xxs,
                                                arrow: :none) do |b|
-                  b.with_icon(vcs_provider_logo, size: :sm)
-                end %>
+                      b.with_icon(vcs_provider_logo, size: :sm)
+                    end %>
               <% end %>
             </div>
           </div>
 
           <div class="flex justify-end">
             <%= render ButtonComponent.new(
-              scheme: :supporting,
-              label: "Go to release",
-              options: release_path(release),
-              size: :sm,
-              html_options: { class: "-mr-2" },
-              authz: false,
-              type: :link) do |b|
-              b.with_icon("arrow_right.svg")
-            end %>
+                  scheme: :supporting,
+                  label: "Go to release",
+                  options: release_path(release),
+                  size: :sm,
+                  html_options: {class: "-mr-2"},
+                  authz: false,
+                  type: :link
+                ) do |b|
+                  b.with_icon("arrow_right.svg")
+                end %>
           </div>
         </div>
 
@@ -55,14 +56,14 @@
               <% end %>
 
               <%= render partial: "shared/divide_collection", locals: {
-                collection: render(CommitComponent.with_collection(
-                  release.commits.map do |commit_hash|
-                    Queries::Commit.new(commit_hash)
-                  end,
-                  detailed: true,
-                  render_html: true
-                ))
-              } %>
+                    collection: render(CommitComponent.with_collection(
+                      release.commits.map do |commit_hash|
+                        Queries::Commit.new(commit_hash)
+                      end,
+                      detailed: true,
+                      render_html: true
+                    ))
+                  } %>
             <% end %>
           <% end %>
 
@@ -73,14 +74,14 @@
               <% end %>
 
               <%= render partial: "shared/divide_collection", locals: {
-                collection: render(PullRequestComponent.with_collection(
-                  release.pull_requests.map do |pr_hash|
-                    Queries::PullRequest.new(pr_hash)
-                  end,
-                  render_html: true,
-                  enable_truncate: false
-                ))
-              } %>
+                    collection: render(PullRequestComponent.with_collection(
+                      release.pull_requests.map do |pr_hash|
+                        Queries::PullRequest.new(pr_hash)
+                      end,
+                      render_html: true,
+                      enable_truncate: false
+                    ))
+                  } %>
             <% end %>
           <% end %>
         </div>
@@ -94,8 +95,10 @@
 
 <% else %>
   <%= render EmptyStateComponent.new(
-    title: "No releases found",
-    text: "Try a different search term, or create a new releases to search through.",
-    banner_image: "rocket.svg",
-    type: :subdued) %>
+        title: "No releases found",
+        text: "Try a different search term, or create a new releases to search through.",
+        banner_image: "rocket.svg",
+        type: :subdued
+      ) %>
 <% end %>
+

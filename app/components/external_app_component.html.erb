@@ -44,8 +44,9 @@
   </p>
 <% else %>
   <%= render EmptyStateComponent.new(
-    title: "No store channel connected",
-    text: "Add a store deployment integration to fetch this information",
-    banner_image: "upload_cloud.svg",
-    type: :subdued) %>
+        title: "No store channel connected",
+        text: "Add a store deployment integration to fetch this information",
+        banner_image: "upload_cloud.svg",
+        type: :subdued
+      ) %>
 <% end %>

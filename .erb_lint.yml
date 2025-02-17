@@ -1,42 +1,55 @@
 ---
-glob: "**/*.{html,text,js}{+*,}.erb"
+glob: "**/app/**/*.{html,turbo_stream,js}{+*,}.erb"
+EnableDefaultLinters: true
 exclude:
   - '**/vendor/**/*'
-  - '**/app/components/**/*'
-  - '**/app/views/accounts/**/*'
-  - '**/app/views/app_configs/**/*'
-  - '**/app/views/app_variants/**/*'
-  - '**/app/views/approval_assignment_mailer/**/*'
-  - '**/app/views/approval_items/**/*'
-  - '**/app/views/apps/**/*'
-  - '**/app/views/authentication/**/*'
-  - '**/app/views/beta_releases/**/*'
-  - '**/app/views/config/**/*'
-  - '**/app/views/devise/**/*'
-  - '**/app/views/errors/**/*'
-  - '**/app/views/integrations/**/*'
-  - '**/app/views/internal_releases/**/*'
-  - '**/app/views/invitation_mailer/**/*'
-  - '**/app/views/jira_integration/**/*'
-  - '**/app/views/layouts/**/*'
-  - '**/app/views/notification_settings/**/*'
-  - '**/app/views/notifiers/**/*'
-  - '**/app/views/pre_prod_releases/**/*'
-  - '**/app/views/production_releases/**/*'
-  - '**/app/views/release_indices/**/*'
-  - '**/app/views/release_list/**/*'
-  - '**/app/views/release_metadata/**/*'
-  - '**/app/views/releases/**/*'
-  - '**/app/views/scheduled_release/**/*'
-  - '**/app/views/shared/**/*'
-  - '**/app/views/store_rollouts/**/*'
-  - '**/app/views/store_submissions/**/*'
-  - '**/app/views/test_mailer/**/*'
-  - '**/app/views/trains/**/*'
-EnableDefaultLinters: true
 linters:
+  AllowedScriptType:
+    enabled: true
+  ClosingErbTagIndent:
+    enabled: true
+  DeprecatedClasses: # See https://github.com/Shopify/erb-lint#deprecatedclasses
+    enabled: true
+  ExtraNewline:
+    enabled: true
+  FinalNewline:
+    enabled: true
+  HardCodedString:
+    enabled: false
+  NoJavascriptTagHelper:
+    enabled: true
+  ParserErrors:
+    enabled: true
+  RightTrim:
+    enabled: false
+  RequireInputAutocomplete:
+    enabled: false
+  RubocopText:
+    enabled: true
+  SelfClosingTag:
+    enabled: false
+  SpaceAroundErbTag:
+    enabled: true
+  SpaceInHtmlTag:
+    enabled: true
+  SpaceIndentation:
+    enabled: true
+  TrailingWhitespace:
+    enabled: true
   Rubocop:
     enabled: true
     rubocop_config:
       inherit_from:
         - .rubocop.yml
+      AllCops:
+        DisabledByDefault: true
+      Layout/TrailingEmptyLines:
+        Enabled: false
+      Layout/InitialIndentation:
+        Enabled: false
+      Lint/UselessAssignment:
+        Enabled: false
+      Layout/ArgumentAlignment:
+        Enabled: false
+      Rails/OutputSafety:
+        Enabled: false

@@ -50,12 +50,13 @@
             <% end %>
 
             <%= render ButtonComponent.new(
-              scheme: :light,
-              options: app_app_config_app_variant_path(@app, variant),
-              type: :link,
-              html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the variant? This will also destroy the associated integrations."}}) do |b|
-              b.with_icon("trash.svg")
-            end %>
+                  scheme: :light,
+                  options: app_app_config_app_variant_path(@app, variant),
+                  type: :link,
+                  html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the variant? This will also destroy the associated integrations."}}
+                ) do |b|
+                  b.with_icon("trash.svg")
+                end %>
           </div>
         <% end %>
       <% end %>
@@ -65,9 +66,9 @@
   <% if @none %>
     <div class="text-secondary text-sm">
       <%= render EmptyStateComponent.new(title: "Add new to begin",
-                                             text: "No app variants have been configured yet.",
-                                             banner_image: "dna.svg",
-                                             type: :subdued) %>
+                                         text: "No app variants have been configured yet.",
+                                         banner_image: "dna.svg",
+                                         type: :subdued) %>
     </div>
   <% end %>
 <% end %>

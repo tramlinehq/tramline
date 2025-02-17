@@ -19,18 +19,18 @@
 
         <div class="flex flex-row items-end gap-2">
           <%= render ButtonComponent.new(
-            label: "Fully release previous rollout",
-            scheme: :default,
-            options: fully_release_previous_rollout_store_submission_path(id),
-            size: :xxs,
-            html_options: html_opts(:patch, "Are you sure you want to fully rollout #{previously_completed_release.release_version}?")
-          ) %>
+                label: "Fully release previous rollout",
+                scheme: :default,
+                options: fully_release_previous_rollout_store_submission_path(id),
+                size: :xxs,
+                html_options: html_opts(:patch, "Are you sure you want to fully rollout #{previously_completed_release.release_version}?")
+              ) %>
 
           <%= render ButtonComponent.new(label: "Go to previous rollout ↗",
                                          scheme: :link,
                                          type: :link_external,
                                          options: previously_completed_release_link,
-                                         html_options: { class: "text-sm" },
+                                         html_options: {class: "text-sm"},
                                          authz: false,
                                          size: :none,
                                          arrow: :none) %>
@@ -45,9 +45,9 @@
     </div>
   <% end %>
 
-  <%= render partial: "shared/play_store_review_rejected", locals: { show: show_blocked_message?,
-                                                                     build: current_build,
-                                                                     actionable: false } %>
+  <%= render partial: "shared/play_store_review_rejected", locals: {show: show_blocked_message?,
+                                                                    build: current_build,
+                                                                    actionable: false} %>
 
   <% if @new_submission_prompt %>
     <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "New RC Build is available") do |ann| %>
@@ -67,12 +67,13 @@
 
       <div class="flex flex-col gap-2">
         <%= render LiveRelease::BuildComponent.new(
-          newer_builds.first,
-          show_metadata: false,
-          show_compact_metadata: true,
-          show_ci: false,
-          show_activity: false,
-          show_commit: false) %>
+              newer_builds.first,
+              show_metadata: false,
+              show_compact_metadata: true,
+              show_ci: false,
+              show_activity: false,
+              show_commit: false
+            ) %>
 
         <span class="text-sm">
           You can start a fresh submission from the newly prepared release candidate.
@@ -83,18 +84,20 @@
 
   <% if @cancel_prompt %>
     <%= render AlertComponent.new(
-      type: :info,
-      title: "A new build #{newer_builds.first.display_name} is available. Cancel submission and change the build.",
-      full_screen: false,
-      dismissible: true) %>
+          type: :info,
+          title: "A new build #{newer_builds.first.display_name} is available. Cancel submission and change the build.",
+          full_screen: false,
+          dismissible: true
+        ) %>
   <% end %>
 
   <% if @change_build_prompt %>
     <%= render AlertComponent.new(
-      type: :info,
-      title: "A new build #{newer_builds.first.display_name} is available. Change build to update the submission.",
-      full_screen: false,
-      dismissible: true) %>
+          type: :info,
+          title: "A new build #{newer_builds.first.display_name} is available. Change build to update the submission.",
+          full_screen: false,
+          dismissible: true
+        ) %>
   <% end %>
 
   <% if @blocked_notice %>
@@ -111,8 +114,9 @@
     <% card.with_action do %>
       <% if changeable? %>
         <%= render ModalComponent.new(
-          title: "Available builds",
-          subtitle: "Choose a build to send for submission to the store") do |modal| %>
+              title: "Available builds",
+              subtitle: "Choose a build to send for submission to the store"
+            ) do |modal| %>
 
           <% button = modal.with_button(label: "Change build", scheme: :light, type: :action, size: :xxs) %>
           <% button.with_icon("pencil.svg") %>
@@ -156,9 +160,10 @@
       <% end %>
       <% if submission.reviewable? %>
         <%= render ModalComponent.new(
-          title: "Submission Preview",
-          subtitle: "Review all the details before submitting for review",
-          dismissable: false, size: :xxl) do |modal| %>
+              title: "Submission Preview",
+              subtitle: "Review all the details before submitting for review",
+              dismissable: false, size: :xxl
+            ) do |modal| %>
 
           <% modal.with_button(label: "Preview & submit for review", scheme: :default, type: :action, size: :xxs) %>
           <% modal.with_body do %>
@@ -168,7 +173,7 @@
                                              type: :button,
                                              label: "Submit for review",
                                              options: submit_for_review_store_submission_path(id),
-                                             html_options: { method: :patch, data: { turbo_method: :patch } }) %>
+                                             html_options: {method: :patch, data: {turbo_method: :patch}}) %>
             </div>
           <% end %>
         <% end %>
@@ -177,11 +182,11 @@
 
     <div class="flex flex-col item-gap-default text-secondary text-xs">
       <%= render LiveRelease::BuildComponent.new(current_build,
-                                                 show_metadata: false,
-                                                 show_ci: false,
-                                                 show_activity: false,
-                                                 show_commit: false,
-                                                 show_compact_metadata: true) %>
+            show_metadata: false,
+            show_ci: false,
+            show_activity: false,
+            show_commit: false,
+            show_compact_metadata: true) %>
 
       <div class="flex flex-row gap-2 items-center">
         <%= render IconComponent.new(store_icon, size: :xl) %>
@@ -193,16 +198,16 @@
       <% end %>
 
       <%= render LiveRelease::BuildComponent.new(current_build,
-                                                 show_number: false,
-                                                 show_metadata: true,
-                                                 show_ci: false,
-                                                 show_activity: false,
-                                                 show_commit: true) %>
+            show_number: false,
+            show_metadata: true,
+            show_ci: false,
+            show_activity: false,
+            show_commit: true) %>
 
-      <%= render partial: "shared/play_store_review_rejected", locals: { show: submission.failed_with_action_required?,
-                                                                         build: current_build,
-                                                                         actionable: true,
-                                                                         channel_name: submission.submission_channel.name } %>
+      <%= render partial: "shared/play_store_review_rejected", locals: {show: submission.failed_with_action_required?,
+                                                                        build: current_build,
+                                                                        actionable: true,
+                                                                        channel_name: submission.submission_channel.name} %>
 
       <%= render SectionComponent.new(style: :titled, title: "External info", size: :micro) do %>
         <div class="flex">
@@ -213,7 +218,7 @@
                 <%= render ButtonComponent.new(scheme: :naked_icon,
                                                type: :link_external,
                                                options: external_link,
-                                               html_options: { class: "text-xs" },
+                                               html_options: {class: "text-xs"},
                                                authz: false,
                                                size: :none) do |b| %>
                   <% b.with_icon("external_link.svg", size: :md) %>
