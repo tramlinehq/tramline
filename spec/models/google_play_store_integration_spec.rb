@@ -1,6 +1,10 @@
 require "rails_helper"
 
 describe GooglePlayStoreIntegration do
+  before do
+    Redis.new(**REDIS_CONFIGURATION.base).flushdb
+  end
+
   it "has a valid factory" do
     expect(create(:google_play_store_integration, :without_callbacks_and_validations)).to be_valid
   end
@@ -13,6 +17,7 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
+      google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
@@ -74,6 +79,7 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
+      google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
@@ -101,6 +107,7 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
+      google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
@@ -128,6 +135,7 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
+      google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
@@ -183,6 +191,7 @@ describe GooglePlayStoreIntegration do
     }
 
     before do
+      google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
@@ -194,6 +203,58 @@ describe GooglePlayStoreIntegration do
     it "returns false when the release is not in progress" do
       allow(api_double).to receive(:get_track).and_return(completed_track_data)
       expect(google_integration.build_in_progress?("track", 1)).to be false
+    end
+  end
+
+  describe "#api_lock" do
+    let(:app) { create(:app, platform: :android) }
+    let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
+    let(:google_integration) { integration.providable }
+    let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
+
+    before do
+      google_integration.reload
+      allow(google_integration).to receive(:installation).and_return(api_double)
+    end
+
+    it "ensures all requests take an api lock" do
+      allow(google_integration).to receive(:api_lock)
+
+      # request that should take a lock
+      allow(api_double).to receive(:halt_release)
+      google_integration.halt_release(anything, anything, anything, anything)
+
+      expect(google_integration).to have_received(:api_lock).once
+    end
+
+    it "ensures that subsequent requests wait if there's already a lock" do
+      expect(Rails.application.config.distributed_lock.locks_info.size).to eq(0)
+
+      # first long-running api call
+      allow(api_double).to receive(:halt_release) { sleep 10 }
+      Thread.new { google_integration.halt_release(anything, anything, anything, anything) }
+      sleep 1
+      expect(Rails.application.config.distributed_lock.locks_info.size).to eq(1)
+
+      # second blocked call
+      allow(api_double).to receive(:create_release) { sleep 1 }
+      Thread.new { google_integration.rollout_release(anything, anything, anything, anything, anything) }
+      sleep 1
+      expect(Rails.application.config.distributed_lock.queues_info.size).to eq(1)
+    end
+
+    it "allows the retries to drain out if the lock could not be acquired on time" do
+      # pre-acquire lock
+      lock_name = GooglePlayStoreIntegration::LOCK_NAME_PREFIX + app.id
+      Rails.application.config.distributed_lock.lock(lock_name, ttl: 3600 * 1000)
+
+      allow(google_integration).to receive(:api_lock_params).and_return(retry_count: 1, retry_delay: 1)
+      allow(api_double).to receive(:create_release)
+
+      # queue new request that cannot acquire the lock
+      r = google_integration.rollout_release(anything, anything, anything, anything, anything)
+      expect(r.ok?).to be false
+      expect(r.error.reason).to eq(GooglePlayStoreIntegration::LOCK_ACQUISITION_FAILURE_REASON)
     end
   end
 end

@@ -59,6 +59,8 @@ class Queries::Builds
   end
 
   memoize def records
+    return Build.none if params.search_query.blank?
+
     Build
       .ready
       .joins(:workflow_run, release_platform_run: [{release_platform: [train: :app]}])

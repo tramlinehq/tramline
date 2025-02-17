@@ -1,0 +1,53 @@
+<section class="2xl:container 2xl:mx-auto">
+  <% content_for :error_resource do %>
+    <%= render ErrorComponent.new(error_resource) %>
+  <% end %>
+
+  <div data-controller="reveal" class="grid grid-cols-10">
+    <div class="col-span-2 flex flex-col border-default-b border-default-l rounded-bl-lg rounded-tl-lg border-default-r border-default-t pt-4">
+      <div>
+        <div class="flex flex-row justify-end heading-5-sc pr-4">
+          <%= sidebar_header %>
+        </div>
+
+        <ul class="flex flex-col text-gray-500 dark:text-gray-400 gap-1 mt-2 pl-4"
+            data-controller="activation"
+            data-activation-active-value="<%= SELECTED_TAB_STYLE %>"
+            data-activation-inactive-value="<%= TAB_STYLE %>">
+
+          <% sorted_configs.each do |(_position, name, path, icon)| %>
+            <li class="flex items-center justify-center w-full gap-2">
+              <div data-turbo-prefetch="false" class="w-full mr-2">
+                <a href="<%= path %>"
+                   data-activation-target="target"
+                   data-action="click->activation#toggle"
+                   data-turbo-action="replace"
+                   data-turbo-frame="<%= frame %>"
+                   class="<%= style(path) %>">
+
+                  <div class="flex gap-2 items-center">
+                    <span class="text-sm font-normal py-1.5 dark:bg-gray-200"><%= name %></span>
+                  </div>
+
+                  <%= render IconComponent.new(icon, size: :md) %>
+                </a>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+
+    <article class="col-span-8 bg-white">
+      <% tabs.each do |tab| %>
+        <% component = EnhancedTurboFrameComponent.new(frame, classes: "with-turbo-frame-loader") %>
+        <% component.with_loading_indicator %>
+        <%= render component do %>
+          <div class="w-full h-full box-padding border-default-r border-default-b rounded-br-lg rounded-tr-lg border-default-t">
+            <%= tab %>
+          </div>
+        <% end %>
+      <% end %>
+    </article>
+  </div>
+</section>

@@ -2,7 +2,7 @@ require "jobs_middleware/client/logging_context"
 require "jobs_middleware/server/logging_context"
 
 Sidekiq.configure_client do |config|
-  config.redis = {url: ENV["SIDEKIQ_REDIS_URL"]}
+  config.redis = REDIS_CONFIGURATION.sidekiq
 
   config.client_middleware do |chain|
     chain.add JobsMiddleware::Client::LoggingContext
@@ -13,7 +13,7 @@ strict_args_mode = Rails.env.development? ? :warn : false
 Sidekiq.strict_args!(strict_args_mode)
 
 Sidekiq.configure_server do |config|
-  config.redis = {url: ENV["SIDEKIQ_REDIS_URL"]}
+  config.redis = REDIS_CONFIGURATION.sidekiq
 
   config.server_middleware do |chain|
     chain.add JobsMiddleware::Server::LoggingContext

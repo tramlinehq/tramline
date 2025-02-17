@@ -43,9 +43,13 @@
       });
     });
   </script>
+  <meta name="environment" content="<%= Rails.env %>"/>
+  <meta name="sentryDSNUrl" content="<%= ENV["FRONTEND_SENTRY_DSN"] %>"/>
+  <meta name="currentAppId" content="<%= @app&.slug if @app.present? %>"/>
+  <!-- current deploy: <%= Site.git_ref %> at <%= Site.git_ref_at %> -->
 </head>
 
-<body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white subpixel-antialiased dark:antialiased">
+<body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white subpixel-antialiased dark:antialiased" data-controller="domain--keyboard-shortcuts">
 <div class="flex h-screen overflow-hidden">
   <div class="relative flex flex-col flex-1 overflow-y-scroll overflow-x-hidden h-full">
     <%= render HeaderComponent.new %>
