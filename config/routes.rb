@@ -67,6 +67,9 @@ Rails.application.routes.draw do
 
     member do
       get :all_builds
+      get :search
+      get "search/builds", to: "apps#search_builds"
+      get "search/releases", to: "apps#search_releases"
       post :refresh_external
     end
 

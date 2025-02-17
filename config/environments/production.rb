@@ -64,7 +64,7 @@ Rails.application.configure do
   config.logger = ActiveSupport::TaggedLogging.new(StructuredLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
 
   # Use a different cache store in production.
-  config.cache_store = [:redis_cache_store, {url: ENV["DEFAULT_REDIS_URL"]}]
+  config.cache_store = REDIS_CONFIGURATION.cache
 
   # Use a real queuing backend for Active Job (and separate queues per environment).
   # config.active_job.queue_adapter     = :resque

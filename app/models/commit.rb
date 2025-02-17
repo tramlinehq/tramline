@@ -8,8 +8,9 @@
 #  author_name             :string           not null
 #  backmerge_failure       :boolean          default(FALSE)
 #  commit_hash             :string           not null, indexed => [release_id]
-#  message                 :string
+#  message                 :string           indexed
 #  parents                 :jsonb
+#  search_vector           :tsvector         indexed
 #  timestamp               :datetime         not null, indexed => [release_id]
 #  url                     :string
 #  created_at              :datetime         not null
@@ -23,6 +24,7 @@ class Commit < ApplicationRecord
   has_paper_trail
   include Passportable
   include Commitable
+  include Searchable
 
   self.implicit_order_column = :timestamp
 
@@ -38,9 +40,14 @@ class Commit < ApplicationRecord
 
   validates :commit_hash, uniqueness: {scope: :release_id}
 
+  before_save :generate_search_vector_data
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
 
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
+
+  pg_search_scope :search_by_message,
+    against: :message,
+    **search_config
 
   def self.commit_messages(first_parent_only = false)
     Commit.commit_log(reorder("timestamp DESC"), first_parent_only)&.map(&:message)
@@ -112,5 +119,11 @@ class Commit < ApplicationRecord
         commit_timestamp: timestamp
       }
     )
+  end
+
+  private
+
+  def generate_search_vector_data
+    self.search_vector = self.class.generate_search_vector(message)
   end
 end

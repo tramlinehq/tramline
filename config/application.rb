@@ -35,5 +35,10 @@ module Site
     end
 
     config.x.app_redirect = ENV["APP_REDIRECT_MAPPING_JSON"] ? JSON.parse(ENV["APP_REDIRECT_MAPPING_JSON"]) : {}
+
+    config.before_configuration do
+      require "redis_configuration"
+      ::REDIS_CONFIGURATION = RedisConfiguration.new
+    end
   end
 end
