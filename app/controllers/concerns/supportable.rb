@@ -1,13 +1,4 @@
 module Supportable
-  extend ActiveSupport::Concern
-
-  included do
-    if Rails.production?
-      after_action :prepare_support_chat_shutdown, only: [:destroy]
-      after_action :support_chat_shutdown, only: [:new]
-    end
-  end
-
   protected
 
   def prepare_support_chat_shutdown

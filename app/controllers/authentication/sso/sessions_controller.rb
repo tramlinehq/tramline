@@ -3,6 +3,8 @@ class Authentication::Sso::SessionsController < ApplicationController
   include Supportable
 
   before_action :skip_authentication, only: [:new, :create]
+  after_action :prepare_support_chat_shutdown, only: [:destroy]
+  after_action :support_chat_shutdown, only: [:new]
 
   def new
     set_invite

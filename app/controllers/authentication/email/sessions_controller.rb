@@ -4,6 +4,8 @@ class Authentication::Email::SessionsController < Devise::SessionsController
 
   before_action :skip_authentication, only: [:new, :create]
   before_action :set_confirmed_email, only: [:new]
+  after_action :prepare_support_chat_shutdown, only: [:destroy]
+  after_action :support_chat_shutdown, only: [:new]
   after_action :track_login, only: [:create]
 
   def new
