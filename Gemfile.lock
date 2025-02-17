@@ -799,7 +799,7 @@ DEPENDENCIES
   down (~> 5.3)
   easymon (~> 1.6)
   erb_lint
-  error_highlight (= 0.7.0)
+  error_highlight
   factory_bot_rails
   faker
   faraday-retry (~> 2.0)
