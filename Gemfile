@@ -101,7 +101,7 @@ group :development, :test do
   gem "rubocop-factory_bot", require: false
   gem "rubocop-rspec_rails", require: false
   gem "stateoscope"
-  gem "error_highlight", "~> 0.7.0"
+  gem "error_highlight"
   gem "erb_lint", require: false
 end
 
