@@ -55,14 +55,14 @@
                 <span class="text-xs text-secondary items-center">Matched <strong><%= release.commits.size %></strong> commits</span>
               <% end %>
               <%= render partial: "shared/divide_collection", locals: {
-                collection: render(CommitComponent.with_collection(
-                  release.commits.map do |commit_hash|
-                    Queries::Commit.new(commit_hash)
-                  end,
-                  detailed: false,
-                  render_html: true
-                ))
-              } %>
+                    collection: render(CommitComponent.with_collection(
+                      release.commits.map do |commit_hash|
+                        Queries::Commit.new(commit_hash)
+                      end,
+                      detailed: false,
+                      render_html: true
+                    ))
+                  } %>
             <% end %>
           <% end %>
 
@@ -100,4 +100,3 @@
         type: :subdued
       ) %>
 <% end %>
-
