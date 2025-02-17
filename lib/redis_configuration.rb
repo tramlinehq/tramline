@@ -1,5 +1,5 @@
 class RedisConfiguration
-  CONNECT_TIMEOUT = 5
+  CONNECT_TIMEOUT = 10
 
   def base
     @base ||= {
