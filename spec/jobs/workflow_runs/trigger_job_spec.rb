@@ -15,8 +15,8 @@ RSpec.describe WorkflowRuns::TriggerJob do
     end
 
     it "triggers successfully" do
-      expect(workflow_run).to receive(:trigger!)
       described_class.new.perform(workflow_run.id)
+      expect(workflow_run).to have_received(:trigger!)
     end
   end
 
