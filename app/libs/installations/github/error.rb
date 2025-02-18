@@ -58,6 +58,10 @@ module Installations
       {
         message_matcher: /Merge conflict/i,
         decorated_reason: :merge_conflict
+      },
+      {
+        message_matcher: /Required input\s+.?\w+.?\s+not provided/,
+        decorated_reason: :missing_required_input
       }
     ]
 
