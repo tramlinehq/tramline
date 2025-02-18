@@ -91,7 +91,7 @@ class WorkflowRun < ApplicationRecord
     end
 
     event :fail, after_commit: :on_fail! do
-      transitions from: :started, to: :failed
+      transitions from: [:started, :triggering], to: :failed
     end
 
     event :halt, after_commit: :on_halt! do
