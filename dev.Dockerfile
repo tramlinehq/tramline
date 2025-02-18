@@ -16,6 +16,9 @@ WORKDIR /rails
 # Install the correct version of bundler
 RUN gem install bundler:2.5.16
 
+# Disable frozen mode in bundler
+RUN bundle config --global frozen 0
+
 # Install base packages
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 less build-essential git pkg-config jq vim mkcert libnss3-tools && \

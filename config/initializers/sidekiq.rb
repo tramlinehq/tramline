@@ -30,4 +30,17 @@ Sidekiq.configure_server do |config|
   config.error_handlers << ->(ex, _ctx) do
     Sentry.capture_exception(ex)
   end
+
+  # from https://gitlab.com/gitlab-org/gitlab/-/tree/master/vendor/gems/sidekiq-reliable-fetch
+  # semi-reliable fetch uses regular `brpop` and `lpush` to pick the job and put it to working queue.
+  # The main benefit of "Reliable" strategy is that rpoplpush is atomic, eliminating a race condition in which jobs can be lost.
+  # However, it comes at a cost because `rpoplpush` can't watch multiple lists at the same time so we need to iterate over the entire queue list
+  # which significantly increases pressure on Redis when there are more than a few queues.
+  # The "semi-reliable" strategy is much more reliable than the default Sidekiq fetcher, though.
+  # Compared to the reliable fetch strategy, it does not increase pressure on Redis significantly.
+  #
+  # Additionally, the reliable strategy relies on `rpoplpush` which will throw up a lot of redis warnings
+  # since that command is going to be deprecated in favor of `LMOVE`.
+  config[:semi_reliable_fetch] = true
+  Sidekiq::ReliableFetch.setup_reliable_fetch!(config)
 end
