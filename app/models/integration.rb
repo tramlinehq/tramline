@@ -229,6 +229,10 @@ class Integration < ApplicationRecord
     app.active_runs.none?
   end
 
+  def disconnectable_categories?
+    ci_cd? || version_control?
+  end
+
   def disconnect
     return unless disconnectable?
     update(status: :disconnected, discarded_at: Time.current)
