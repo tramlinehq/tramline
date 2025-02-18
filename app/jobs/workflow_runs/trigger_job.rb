@@ -7,5 +7,7 @@ class WorkflowRuns::TriggerJob < ApplicationJob
     return unless workflow_run.may_initiated?
 
     workflow_run.trigger!(retrigger:)
+  rescue Installations::Error
+    workflow_run.fail!
   end
 end
