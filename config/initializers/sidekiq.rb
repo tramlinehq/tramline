@@ -40,7 +40,7 @@ Sidekiq.configure_server do |config|
   # Compared to the reliable fetch strategy, it does not increase pressure on Redis significantly.
   #
   # Additionally, the reliable strategy relies on `rpoplpush` which will throw up a lot of redis warnings
-  # since that command is going to be deprecated in favor of `LMOVE`.
+  # since that command is going to be deprecated in favor of `LMOVE` in future version (>6).
   config[:semi_reliable_fetch] = true
   Sidekiq::ReliableFetch.setup_reliable_fetch!(config)
 end
