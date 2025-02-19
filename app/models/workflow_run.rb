@@ -55,6 +55,7 @@ class WorkflowRun < ApplicationRecord
     unavailable: "unavailable",
     started: "started",
     failed: "failed",
+    hard_failed: "hard_failed",
     halted: "halted",
     finished: "finished",
     cancelled: "cancelled",
@@ -91,7 +92,7 @@ class WorkflowRun < ApplicationRecord
     end
 
     event :fail, after_commit: :on_fail! do
-      transitions from: [:started, :triggering], to: :failed
+      transitions from: :started, to: :failed
     end
 
     event :halt, after_commit: :on_halt! do
@@ -110,6 +111,10 @@ class WorkflowRun < ApplicationRecord
       transitions from: IN_PROGRESS, to: :cancelling
       transitions from: NOT_STARTED, to: :cancelled_before_start
       transitions from: :cancelling, to: :cancelled
+    end
+
+    event :hard_fail, after_commit: :on_hard_fail! do
+      transitions from: :triggering, to: :hard_failed
     end
   end
 
@@ -264,6 +269,11 @@ class WorkflowRun < ApplicationRecord
   def on_fail!
     event_stamp!(reason: :failed, kind: :error, data: stamp_data)
     notify!("The workflow run has failed!", :workflow_run_failed, notification_params)
+  end
+
+  def on_hard_fail!
+    event_stamp!(reason: :hard_fail, kind: :error, data: stamp_data)
+    notify!("Could not find the workflow run!", :workflow_run_hard_fail, notification_params)
   end
 
   def on_halt!

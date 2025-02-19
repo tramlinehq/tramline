@@ -29,7 +29,7 @@ RSpec.describe WorkflowRuns::TriggerJob do
 
     it "changes state of workflow_run to failed" do
       described_class.new.perform(workflow_run.id)
-      expect(workflow_run.reload.status).to eq("failed")
+      expect(workflow_run.reload.status).to eq("hard_failed")
     end
   end
 end

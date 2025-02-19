@@ -8,6 +8,6 @@ class WorkflowRuns::TriggerJob < ApplicationJob
 
     workflow_run.trigger!(retrigger:)
   rescue Installations::Error
-    workflow_run.fail!
+    workflow_run.hard_fail!
   end
 end
