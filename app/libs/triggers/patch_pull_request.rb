@@ -22,7 +22,7 @@ class Triggers::PatchPullRequest
   def call
     @pull_request.create_and_merge!
 
-    if train.upcoming_release
+    if train.upcoming_release && !bot_commit?
       upcoming_release_pr = Triggers::PullRequest.new(
         release: release,
         new_pull_request: commit.pull_requests.build(release:, phase: :ongoing),
@@ -60,5 +60,9 @@ class Triggers::PatchPullRequest
 
   def patch_branch(target_branch = working_branch)
     "patch-#{target_branch}-#{commit.short_sha}"
+  end
+
+  def bot_commit?
+    commit.author_login == "tramline-github-dev[bot]"
   end
 end
