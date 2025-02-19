@@ -41,6 +41,7 @@ class WorkflowRun < ApplicationRecord
     failed
     halted
     finished
+    trigger_failed
   ]
 
   KINDS = {
@@ -65,8 +66,8 @@ class WorkflowRun < ApplicationRecord
 
   NOT_STARTED = [:created]
   IN_PROGRESS = [:triggering, :triggered, :started]
-  WORKFLOW_IMMUTABLE = %w[unavailable failed halted finished cancelled cancelling cancelled_before_start]
-  FAILED_STATES = %w[failed halted unavailable cancelled cancelled_before_start cancelling]
+  WORKFLOW_IMMUTABLE = %w[unavailable failed halted finished cancelled cancelling cancelled_before_start trigger_failed]
+  FAILED_STATES = %w[failed halted unavailable cancelled cancelled_before_start cancelling trigger_failed]
 
   enum :status, STATES
   enum :kind, KINDS
