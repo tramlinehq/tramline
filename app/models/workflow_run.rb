@@ -273,7 +273,7 @@ class WorkflowRun < ApplicationRecord
 
   def on_hard_fail!
     event_stamp!(reason: :hard_fail, kind: :error, data: stamp_data)
-    notify!("Could not find the workflow run!", :workflow_run_hard_fail, notification_params)
+    notify!("Workflow cannot be triggered due to unrecoverable error", :workflow_run_hard_fail, notification_params)
   end
 
   def on_halt!
