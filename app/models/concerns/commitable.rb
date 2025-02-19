@@ -42,6 +42,7 @@ module Commitable
 
     def timestamp
       time = commit["author_timestamp"] || commit["timestamp"]
+      return time if time.is_a?(ActiveSupport::TimeWithZone)
       Time.zone.parse(time) if time
     end
 
