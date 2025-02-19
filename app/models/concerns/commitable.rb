@@ -59,7 +59,7 @@ module Commitable
 
     def team = nil # TODO: stub
 
-    def pull_request = nil
+    def pull_requests = nil
 
     def backmerge_failure? = nil
 

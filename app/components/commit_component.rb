@@ -30,10 +30,8 @@ class CommitComponent < BaseComponent
 
   def show_avatar? = @avatar
 
-  def pull_request
-    # @commit.pull_request
-    # FIXME: Commit now has a has_many :pull_requests association
-    nil
+  def pull_requests
+    @commit.pull_requests
   end
 
   def outer_classes

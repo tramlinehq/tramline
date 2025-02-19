@@ -44,10 +44,12 @@
           <% end %>
         </div>
 
-        <% if pull_request.present? %>
-          <%= render BadgeComponent.new(kind: :badge) do |badge| %>
-            <% badge.with_icon("git_pull_request.svg") %>
-            <% badge.with_link("##{pull_request.number}", pull_request.url) %>
+        <% if pull_requests&.any? %>
+          <% pull_requests.each do |pull_request| %>
+            <%= render BadgeComponent.new(kind: :badge) do |badge| %>
+              <% badge.with_icon("git_pull_request.svg") %>
+              <% badge.with_link("##{pull_request.number}", pull_request.url) %>
+            <% end %>
           <% end %>
         <% end %>
 
