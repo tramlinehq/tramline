@@ -52,10 +52,10 @@ class WorkflowRun < ApplicationRecord
     created: "created",
     triggering: "triggering",
     triggered: "triggered",
+    trigger_failed: "trigger_failed",
     unavailable: "unavailable",
     started: "started",
     failed: "failed",
-    hard_failed: "hard_failed",
     halted: "halted",
     finished: "finished",
     cancelled: "cancelled",
@@ -113,8 +113,8 @@ class WorkflowRun < ApplicationRecord
       transitions from: :cancelling, to: :cancelled
     end
 
-    event :hard_fail, after_commit: :on_hard_fail! do
-      transitions from: :triggering, to: :hard_failed
+    event :trigger_failed, after_commit: :on_trigger_fail! do
+      transitions from: :triggering, to: :trigger_failed
     end
   end
 
@@ -271,9 +271,9 @@ class WorkflowRun < ApplicationRecord
     notify!("The workflow run has failed!", :workflow_run_failed, notification_params)
   end
 
-  def on_hard_fail!
-    event_stamp!(reason: :hard_fail, kind: :error, data: stamp_data)
-    notify!("Workflow cannot be triggered due to unrecoverable error", :workflow_run_hard_fail, notification_params)
+  def on_trigger_fail!(failure_reason)
+    event_stamp!(reason: :trigger_failed, kind: :error, data: stamp_data.merge(failure_reason:))
+    notify!("Failed to trigger the workflow run!", :workflow_trigger_failed, notification_params)
   end
 
   def on_halt!
