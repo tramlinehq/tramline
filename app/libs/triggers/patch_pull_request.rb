@@ -8,12 +8,12 @@ class Triggers::PatchPullRequest
     @commit = commit
     @pull_request = Triggers::PullRequest.new(
       release: release,
-      new_pull_request: (commit.build_pull_request(release:, phase: :ongoing) if commit.pull_request.blank?),
+      new_pull_request: (commit.pull_requests.build(release:, phase: :ongoing) if commit.pull_requests.none?),
       to_branch_ref: working_branch,
       from_branch_ref: patch_branch,
       title: pr_title,
       description: pr_description,
-      existing_pr: commit.pull_request,
+      existing_pr: commit.pull_requests.find_by(base_ref: working_branch),
       patch_pr: true,
       patch_commit: commit
     )
@@ -21,6 +21,21 @@ class Triggers::PatchPullRequest
 
   def call
     @pull_request.create_and_merge!
+
+    if train.upcoming_release
+      upcoming_release_pr = Triggers::PullRequest.new(
+        release: release,
+        new_pull_request: commit.pull_requests.build(release:, phase: :ongoing),
+        to_branch_ref: train.upcoming_release.branch_name,
+        from_branch_ref: patch_branch(train.upcoming_release.branch_name),
+        title: pr_title,
+        description: pr_description,
+        existing_pr: commit.pull_requests.find_by(base_ref: train.upcoming_release.branch_name),
+        patch_pr: true,
+        patch_commit: commit
+      )
+      upcoming_release_pr.create_and_merge!
+    end
   end
 
   private
@@ -43,7 +58,7 @@ class Triggers::PatchPullRequest
     TEXT
   end
 
-  def patch_branch
-    "patch-#{working_branch}-#{commit.short_sha}"
+  def patch_branch(target_branch = working_branch)
+    "patch-#{target_branch}-#{commit.short_sha}"
   end
 end
