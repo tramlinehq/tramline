@@ -8,7 +8,7 @@ class Triggers::PatchPullRequest
     @commit = commit
     @pull_request = Triggers::PullRequest.new(
       release: release,
-      new_pull_request: (commit.pull_requests.build(release:, phase: :ongoing) if commit.pull_requests.none?),
+      new_pull_request: (commit.pull_requests.build(release:, phase: :ongoing) if commit.pull_requests.find_by(base_ref: working_branch).blank?),
       to_branch_ref: working_branch,
       from_branch_ref: patch_branch,
       title: pr_title,
@@ -25,7 +25,7 @@ class Triggers::PatchPullRequest
     if train.upcoming_release && !bot_commit?
       upcoming_release_pr = Triggers::PullRequest.new(
         release: release,
-        new_pull_request: commit.pull_requests.build(release:, phase: :ongoing),
+        new_pull_request: (commit.pull_requests.build(release:, phase: :ongoing) if commit.pull_requests.find_by(base_ref: train.upcoming_release.branch_name).blank?),
         to_branch_ref: train.upcoming_release.branch_name,
         from_branch_ref: patch_branch(train.upcoming_release.branch_name),
         title: pr_title,

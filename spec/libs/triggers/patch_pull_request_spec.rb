@@ -54,11 +54,11 @@ describe Triggers::PatchPullRequest do
       expected_title,
       expected_description
     )
-    expect(commit.reload.pull_request).to be_present
+    expect(commit.reload.pull_requests.size).to eq(1)
   end
 
   it "updates the existing PR if it already exists" do
-    existing_pr = create(:pull_request, release:, commit:, phase: :ongoing)
+    existing_pr = create(:pull_request, release:, commit:, phase: :ongoing, base_ref: train.working_branch)
 
     described_class.call(release, commit)
 
@@ -69,7 +69,8 @@ describe Triggers::PatchPullRequest do
       expected_title,
       expected_description
     )
-    expect(commit.reload.pull_request).to eq(existing_pr)
+    expect(commit.reload.pull_requests.size).to eq(1)
+    expect(commit.reload.pull_requests.first).to eq(existing_pr)
   end
 
   it "finds the PR if it already exists" do
