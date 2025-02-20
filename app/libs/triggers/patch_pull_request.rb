@@ -22,7 +22,7 @@ class Triggers::PatchPullRequest
   def call
     @pull_request.create_and_merge!
 
-    if train.upcoming_release && !bot_commit?
+    if train.upcoming_release && train.backmerge_to_upcoming_release? && !bot_commit?
       upcoming_release_pr = Triggers::PullRequest.new(
         release: release,
         new_pull_request: (commit.pull_requests.build(release:, phase: :ongoing) if commit.pull_requests.find_by(base_ref: train.upcoming_release.branch_name).blank?),
