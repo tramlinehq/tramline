@@ -204,6 +204,10 @@ class WorkflowRun < ApplicationRecord
     )
   end
 
+  def trigger_failed_reason
+    passports.where(reason: :trigger_failed).last.metadata['failure_reason']
+  end
+
   private
 
   def trigger_external_run!
