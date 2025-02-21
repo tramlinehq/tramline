@@ -13,6 +13,8 @@ class ReleaseChangelog < ApplicationRecord
   has_paper_trail
   include Commitable
 
+  self.ignored_columns += ["commits"]
+
   belongs_to :release
   has_many :commits, through: :release, source: :all_commits
 

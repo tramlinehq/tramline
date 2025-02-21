@@ -26,9 +26,6 @@ class ConvertChangelogCommitsToCommitObjects < ActiveRecord::Migration[7.0]
           commit.save!
         end
       end
-
-      # Drop the commits column after data migration
-      # remove_column :release_changelogs, :commits
     end
   end
 
