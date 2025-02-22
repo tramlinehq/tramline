@@ -2,8 +2,8 @@ class Authentication::Sso::SessionsController < ApplicationController
   include Authenticatable
 
   before_action :skip_authentication, only: [:new, :create]
-  after_action :prepare_intercom_shutdown, only: [:destroy]
-  after_action :intercom_shutdown, only: [:new]
+  after_action :prepare_support_chat_shutdown, only: [:destroy]
+  after_action :support_chat_shutdown, only: [:new]
 
   def new
     set_invite
@@ -63,15 +63,15 @@ class Authentication::Sso::SessionsController < ApplicationController
     @invite = Accounts::Invite.find_by(token: invite_token) if invite_token.present?
   end
 
-  def prepare_intercom_shutdown
-    IntercomRails::ShutdownHelper.prepare_intercom_shutdown(session)
-  end
-
-  def intercom_shutdown
-    IntercomRails::ShutdownHelper.intercom_shutdown(session, cookies, request.domain)
-  end
-
   def track_login
     SiteAnalytics.track(current_user, current_organization, device, "Login", {sso: true})
+  end
+
+  def prepare_support_chat_shutdown
+    Chatwoot::ShutdownHelper.prepare_chatwoot_shutdown(session)
+  end
+
+  def support_chat_shutdown
+    Chatwoot::ShutdownHelper.chatwoot_shutdown(session, cookies, request.domain)
   end
 end
