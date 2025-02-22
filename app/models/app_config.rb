@@ -68,7 +68,7 @@ class AppConfig < ApplicationRecord
   end
 
   def further_setup_by_category?
-    integrations = app.integrations
+    integrations = app.integrations.connected
     categories = {}.with_indifferent_access
 
     if integrations.version_control.present?
@@ -135,6 +135,17 @@ class AppConfig < ApplicationRecord
     return if code_repository.nil?
     return if app.ci_cd_provider.blank?
     update(ci_cd_workflows: workflows)
+  end
+
+  def disconnect!(integration)
+    if integration.version_control?
+      self.code_repository = nil
+    elsif integration.ci_cd?
+      self.ci_cd_workflows = nil
+      self.bitrise_project_id = nil
+    end
+
+    save!
   end
 
   private

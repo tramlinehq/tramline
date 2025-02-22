@@ -20,7 +20,7 @@
         <% if connected? %>
           <div class="flex justify-between w-full items-baseline">
             <%= render BadgeComponent.new(text: "Connected", status: :success) %>
-            <% if ci_cd? %>
+            <% if disconnectable_categories? %>
               <%= render ButtonComponent.new(
                 scheme: :danger,
                 options: app_integration_path(@app, integration),
