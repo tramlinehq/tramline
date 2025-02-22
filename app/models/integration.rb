@@ -235,7 +235,14 @@ class Integration < ApplicationRecord
 
   def disconnect
     return unless disconnectable?
-    update(status: :disconnected, discarded_at: Time.current)
+    transaction do
+      integrable.app_config.disconnect!(self)
+      update!(status: :disconnected, discarded_at: Time.current)
+      true
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    errors.add(:base, e.message)
+    false
   end
 
   def set_metadata!
