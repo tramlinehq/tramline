@@ -39,6 +39,7 @@ en:
       halted_html: 'The %{kind} workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> was halted for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
       unavailable_html: 'The %{kind} workflow run could not be found for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
       finished_html: 'The %{kind} workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> completed for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
+      trigger_failed_html: 'The %{kind} workflow run could not be triggered for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>. Error - <span class="emphasize">%{failure_reason}.</span>'
     google_firebase_submission:
       triggered_html: 'Sending <span class="emphasize">%{version} (%{build_number})</span> to Google Firebase groups <span class="emphasize">%{channels}</span>'
       finished_html: 'Sent <span class="emphasize">%{version} (%{build_number})</span> to Google Firebase groups <span class="emphasize">%{channels}</span>'

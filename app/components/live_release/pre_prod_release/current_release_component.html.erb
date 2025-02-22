@@ -62,6 +62,12 @@
           <%= render BadgeComponent.new(**status) %>
         </div>
 
+        <div class="self-start">
+          <% if workflow_run.trigger_failed? %>
+            <%= render AlertComponent.new(type: :error, title: raw(workflow_run.trigger_failed_reason), full_screen: false) %>
+          <% end %>
+        </div>
+
         <% if build.present? %>
           <%= render LiveRelease::BuildComponent.new(build) %>
         <% end %>

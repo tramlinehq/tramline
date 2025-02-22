@@ -10,6 +10,7 @@ class LiveRelease::BuildComponent < BaseComponent
     unavailable: {text: "Build unavailable", status: :failure},
     started: {text: "Workflow running", status: :ongoing, kind: :spinner_pill},
     failed: {text: "Workflow failed", status: :failure},
+    trigger_failed: {text: "Failed to trigger workflow", status: :failure},
     halted: {text: "Workflow halted", status: :failure},
     finished: {text: "Workflow finished", status: :ongoing},
     cancelled: {text: "Workflow cancelled", status: :inert},
