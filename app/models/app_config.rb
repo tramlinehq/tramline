@@ -20,7 +20,7 @@ class AppConfig < ApplicationRecord
   include AppConfigurable
 
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
-  self.ignored_columns += %w[bugsnag_project_id firebase_crashlytics_android_config firebase_crashlytics_ios_config notification_channel]
+  self.ignored_columns += %w[bugsnag_project_id firebase_crashlytics_android_config firebase_crashlytics_ios_config notification_channel ci_cd_workflows]
 
   belongs_to :app
   has_many :variants, class_name: "AppVariant", dependent: :destroy

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_02_24_063402) do
+ActiveRecord::Schema[7.2].define(version: 2025_01_28_130924) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -61,6 +61,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_02_24_063402) do
     t.jsonb "firebase_crashlytics_ios_config"
     t.jsonb "firebase_crashlytics_android_config"
     t.jsonb "jira_config", default: {}, null: false
+    t.jsonb "ci_cd_workflows"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
