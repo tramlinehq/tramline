@@ -61,7 +61,7 @@ module Installations
       },
       {
         message_matcher: /Required input\s+.?\w+.?\s+not provided/,
-        decorated_reason: :missing_required_input
+        decorated_reason: :workflow_parameter_not_provided
       }
     ]
 

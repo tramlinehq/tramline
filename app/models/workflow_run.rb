@@ -205,7 +205,13 @@ class WorkflowRun < ApplicationRecord
   end
 
   def trigger_failed_reason
-    passports.where(reason: :trigger_failed).last.metadata["failure_reason"]
+    last_error = passports.where(reason: :trigger_failed, kind: :error).last
+    return if last_error.nil?
+    if last_error.metadata["error_reason"] == "workflow_parameter_not_provided"
+      "Missing workflow parameter: #{last_error.metadata["error_message"]}"
+    else
+      last_error.metadata["error_message"]
+    end
   end
 
   private
@@ -276,9 +282,9 @@ class WorkflowRun < ApplicationRecord
     notify!("The workflow run has failed!", :workflow_run_failed, notification_params)
   end
 
-  def on_trigger_fail!(failure_reason)
+  def on_trigger_fail!(error)
     triggering_release.fail!
-    event_stamp!(reason: :trigger_failed, kind: :error, data: stamp_data.merge(failure_reason:))
+    event_stamp!(reason: :trigger_failed, kind: :error, data: stamp_data.merge(error_message: error.message, error_reason: error.reason))
     notify!("Failed to trigger the workflow run!", :workflow_trigger_failed, notification_params)
   end
 
