@@ -39,6 +39,12 @@ class SignedInApplicationController < ApplicationController
 
   private
 
+  def ensure_app_ready
+    unless @app.ready?
+      redirect_to app_path(@app), flash: {error: "App is not ready (not fully configured)."}
+    end
+  end
+
   def set_page_name
     user_facing_actions = %w[new index show edit]
 

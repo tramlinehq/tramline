@@ -62,6 +62,7 @@
       label: "Configure",
       authz: false,
       options: edit_app_train_path(app, train),
+      disabled: !app.ready?,
       type: :link) do |b|
       b.with_icon("cog.svg")
     end %>
