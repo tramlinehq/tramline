@@ -15,8 +15,7 @@ FactoryBot.define do
           author_name: Faker::Name.name,
           commit_hash: SecureRandom.hex,
           author_email: Faker::Internet.email,
-          author_login: Faker::Internet.user_name
-        )
+          author_login: Faker::Internet.user_name)
       end
     end
   end

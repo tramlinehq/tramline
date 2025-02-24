@@ -21,7 +21,7 @@ class LiveRelease::ChangesetTrackingComponent < BaseComponent
   end
 
   memoize def commits_since_last
-    @release.release_changelog&.normalized_commits
+    @release.release_changelog&.commits
   end
 
   def changelog_from

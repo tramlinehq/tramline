@@ -16,14 +16,10 @@ class ReleaseChangelog < ApplicationRecord
   self.ignored_columns += ["commits"]
 
   belongs_to :release
-  has_many :commits, through: :release, source: :all_commits
-
-  def normalized_commits
-    commits.map { NormalizedCommit.new(_1, train: release.train) }.sort_by(&:timestamp).reverse
-  end
+  has_many :commits, -> { order(timestamp: :desc) }, through: :release, source: :all_commits
 
   def commit_messages(first_parent_only = false)
-    ReleaseChangelog.commit_log(normalized_commits.sort_by(&:timestamp).reverse, first_parent_only)&.map(&:message)
+    ReleaseChangelog.commit_log(commits, first_parent_only)&.map(&:message)
   end
 
   def unique_authors
@@ -33,7 +29,7 @@ class ReleaseChangelog < ApplicationRecord
   def commits_by_team
     return unless release.organization.teams.exists?
 
-    relevant_commits = normalized_commits.reject { |c| c.author_login.nil? }
+    relevant_commits = commits.reject { |c| c.author_login.nil? }
     user_logins = relevant_commits.map(&:author_login).uniq
     users = Accounts::User
       .joins(memberships: [:team, :organization])
