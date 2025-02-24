@@ -207,8 +207,12 @@ class WorkflowRun < ApplicationRecord
   def trigger_failed_reason
     last_error = passports.where(reason: :trigger_failed, kind: :error).last
     return if last_error.nil?
-    if last_error.metadata["error_reason"] == "workflow_parameter_not_provided"
+
+    case last_error.metadata["error_reason"]
+    when "workflow_parameter_not_provided"
       "Missing workflow parameter: #{last_error.metadata["error_message"]}"
+    when "workflow_dispatch_missing"
+      "Wrongly configured workflow: #{last_error.metadata["error_message"]}"
     else
       last_error.metadata["error_message"]
     end

@@ -62,6 +62,10 @@ module Installations
       {
         message_matcher: /Required input\s+.?\w+.?\s+not provided/,
         decorated_reason: :workflow_parameter_not_provided
+      },
+      {
+        message_matcher: /Workflow does not have 'workflow_dispatch' trigger/,
+        decorated_reason: :workflow_dispatch_missing
       }
     ]
 
