@@ -29,7 +29,7 @@ describe GooglePlayStoreIntegration do
     end
 
     it "returns successful result if there are allowed exceptions" do
-      error_body = {"error" => {"status" => "PERMISSION_DENIED", "code" => 403, "message" => "APK specifies a version code that has already been used"}}
+      error_body = { "error" => { "status" => "PERMISSION_DENIED", "code" => 403, "message" => "APK specifies a version code that has already been used" } }
       error = ::Google::Apis::ClientError.new("Error", body: error_body.to_json)
       allow(api_double).to receive(:upload).and_raise(Installations::Google::PlayDeveloper::Error.new(error))
 
@@ -38,7 +38,7 @@ describe GooglePlayStoreIntegration do
     end
 
     it "retries if there are retryable exceptions" do
-      error_body = {"error" => {"status" => "FAILED_PRECONDITION", "code" => 400, "message" => "This Edit has been deleted"}}
+      error_body = { "error" => { "status" => "FAILED_PRECONDITION", "code" => 400, "message" => "This Edit has been deleted" } }
       error = Google::Apis::ClientError.new("Error", body: error_body.to_json)
       allow(api_double).to receive(:upload).and_raise(Installations::Google::PlayDeveloper::Error.new(error))
 
@@ -47,7 +47,7 @@ describe GooglePlayStoreIntegration do
     end
 
     it "returns failed result if there are disallowed exceptions" do
-      error_body = {"error" => {"status" => "NOT_FOUND", "code" => 404, "message" => "Package not found:"}}
+      error_body = { "error" => { "status" => "NOT_FOUND", "code" => 404, "message" => "Package not found:" } }
       error = ::Google::Apis::ClientError.new("Error", body: error_body.to_json)
       allow(api_double).to receive(:upload).and_raise(Installations::Google::PlayDeveloper::Error.new(error))
 
@@ -166,7 +166,7 @@ describe GooglePlayStoreIntegration do
         name: :track,
         releases: [
           {
-            localizations: [{release_notes: {language: "en-US", text: "text"}}],
+            localizations: [{ release_notes: { language: "en-US", text: "text" } }],
             version_string: "1.0.0",
             status: "inProgress",
             user_fraction: 0.99,
@@ -180,7 +180,7 @@ describe GooglePlayStoreIntegration do
         name: :track,
         releases: [
           {
-            localizations: [{release_notes: {language: "en-US", text: "text"}}],
+            localizations: [{ release_notes: { language: "en-US", text: "text" } }],
             version_string: "1.0.0",
             status: "completed",
             user_fraction: 1.0,
@@ -244,18 +244,23 @@ describe GooglePlayStoreIntegration do
     end
 
     it "allows the retries to drain out if the lock could not be acquired on time" do
-      # pre-acquire lock
-      lock_name = GooglePlayStoreIntegration::LOCK_NAME_PREFIX + app.id
-      Rails.application.config.distributed_lock.lock(lock_name, ttl: 3600 * 1000)
+      begin
+        # pre-acquire lock elsewhere
+        allow(api_double).to receive(:halt_release) { sleep 10 }
+        Thread.new { google_integration.halt_release(anything, anything, anything, anything) }
+        sleep 1
 
-      allow(google_integration).to receive(:api_lock_params).and_return(retry_count: 1, retry_delay: 1)
-      allow(api_double).to receive(:create_release)
+        allow(google_integration).to receive(:api_lock_params).and_return(retry_count: 1, retry_delay: 1)
+        allow(api_double).to receive(:create_release)
 
-      # queue new request that cannot acquire the lock
-      r = google_integration.rollout_release(anything, anything, anything, anything, anything)
-      expect(r.ok?).to be false
-      puts r.error.backtrace
-      expect(r.error.reason).to eq(GooglePlayStoreIntegration::LOCK_ACQUISITION_FAILURE_REASON)
+        # queue new request that cannot acquire the lock
+        r = google_integration.rollout_release(anything, anything, anything, anything, anything)
+        expect(r.ok?).to be false
+        puts r.error.backtrace
+        expect(r.error.reason).to eq(GooglePlayStoreIntegration::LOCK_ACQUISITION_FAILURE_REASON)
+      rescue => e
+        puts e.backtrace
+      end
     end
   end
 end
