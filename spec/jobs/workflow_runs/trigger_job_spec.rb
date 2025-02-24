@@ -23,13 +23,39 @@ RSpec.describe WorkflowRuns::TriggerJob do
   context "when trigger results in error" do
     let(:workflow_run) { create(:workflow_run, :triggering) }
 
-    before do
-      allow(workflow_run).to receive(:trigger!).and_raise(Installations::Error, "Some error")
+    shared_examples "with known error" do |error|
+      before do
+        allow(workflow_run).to receive(:trigger!).and_raise(error)
+      end
+
+      context "when error is #{error.message}" do
+        it "changes state of workflow_run to trigger_failed" do
+          described_class.new.perform(workflow_run.id)
+          expect(workflow_run.reload.status).to eq("trigger_failed")
+        end
+      end
     end
 
-    it "changes state of workflow_run to failed" do
-      described_class.new.perform(workflow_run.id)
-      expect(workflow_run.reload.status).to eq("trigger_failed")
+    it_behaves_like "with known error", Installations::Github::Error.new(
+      OpenStruct.new(
+        response_body: {message: "Workflow does not have 'workflow_dispatch' trigger"}.to_json
+      )
+    )
+    it_behaves_like "with known error", Installations::Github::Error.new(
+      OpenStruct.new(
+        response_body: {message: "Required input 'parameter_X' not provided"}.to_json
+      )
+    )
+
+    context "when error is unknown" do
+      before do
+        allow(workflow_run).to receive(:trigger!).and_raise(Installations::Error, "Some error")
+      end
+
+      it "does not change state of workflow_run to trigger_failed" do
+        described_class.new.perform(workflow_run.id)
+        expect(workflow_run.reload.status).not_to eq("trigger_failed")
+      end
     end
   end
 end
