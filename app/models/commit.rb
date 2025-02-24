@@ -32,7 +32,7 @@ class Commit < ApplicationRecord
   belongs_to :release, inverse_of: :all_commits
   belongs_to :build_queue, inverse_of: :commits, optional: true
   belongs_to :user, foreign_key: "author_login", primary_key: "github_login", optional: true, inverse_of: :commits, class_name: "Accounts::User"
-  has_one :pull_request, inverse_of: :commit, dependent: :nullify
+  has_many :pull_requests, inverse_of: :commit, dependent: :nullify
 
   scope :sequential, -> { order(timestamp: :desc) }
 

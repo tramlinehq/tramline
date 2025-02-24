@@ -50,7 +50,7 @@ describe Triggers::PullRequest do
 
       result = described_class.create_and_merge!(
         release: release,
-        new_pull_request: commit.build_pull_request(release:, phase: :ongoing),
+        new_pull_request: commit.pull_requests.build(release:, phase: :ongoing),
         to_branch_ref: working_branch,
         from_branch_ref: patch_branch,
         title: pr_title,
@@ -61,7 +61,7 @@ describe Triggers::PullRequest do
 
       expect(repo_integration).to have_received(:cherry_pick_pr).with(repo_name, working_branch, commit.commit_hash, patch_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
       expect(result.ok?).to be(true)
-      expect(commit.reload.pull_request).to be_present
+      expect(commit.reload.pull_requests.size).to eq(1)
     end
 
     it "merges the PR" do
@@ -88,7 +88,7 @@ describe Triggers::PullRequest do
 
       result = described_class.create_and_merge!(
         release: release,
-        new_pull_request: commit.build_pull_request(release:, phase: :ongoing),
+        new_pull_request: commit.pull_requests.build(release:, phase: :ongoing),
         to_branch_ref: working_branch,
         from_branch_ref: patch_branch,
         title: pr_title,
@@ -97,7 +97,7 @@ describe Triggers::PullRequest do
         patch_commit: commit
       )
 
-      created_pr = commit.reload.pull_request
+      created_pr = commit.reload.pull_requests.first
 
       expect(repo_integration).to have_received(:cherry_pick_pr).with(repo_name, working_branch, commit.commit_hash, patch_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
       expect(repo_integration).to have_received(:merge_pr!).with(repo_name, created_pr.number)
