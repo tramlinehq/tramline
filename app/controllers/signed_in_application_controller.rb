@@ -191,11 +191,11 @@ class SignedInApplicationController < ApplicationController
   end
 
   def vcs_provider_logo
-    @vcs_provider_logo ||= "integrations/logo_#{@app.vcs_provider}.png"
+    @vcs_provider_logo ||= "integrations/logo_#{@app.vcs_provider.presence || "deprecated"}.png"
   end
 
   def ci_cd_provider_logo
-    @ci_cd_provider_logo ||= "integrations/logo_#{@app.ci_cd_provider}.png"
+    @ci_cd_provider_logo ||= "integrations/logo_#{@app.ci_cd_provider || "deprecated"}.png"
   end
 
   def teams_supported?

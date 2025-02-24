@@ -45,20 +45,19 @@ class AppConfig < ApplicationRecord
   end
 
   def code_repository_name
-    return if code_repository.blank?
-    code_repository["full_name"]
+    code_repository&.fetch("full_name", nil)
   end
 
   def code_repo_url
-    code_repository["repo_url"]
+    code_repository&.fetch("repo_url", nil)
   end
 
   def code_repo_namespace
-    code_repository["namespace"]
+    code_repository&.fetch("namespace", nil)
   end
 
   def code_repo_name_only
-    code_repository["name"]
+    code_repository&.fetch("name", nil)
   end
 
   def bitrise_project
