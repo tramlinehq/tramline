@@ -63,8 +63,6 @@ class App < ApplicationRecord
     :project_management_provider,
     :slack_notifications?, to: :integrations, allow_nil: true
 
-  alias_method :app_config, :config
-
   def self.allowed_platforms
     {
       android: "Android",
