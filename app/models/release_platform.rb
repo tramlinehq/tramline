@@ -109,7 +109,7 @@ class ReleasePlatform < ApplicationRecord
     return if Rails.env.test?
     return if platform_config.present?
 
-    rc_ci_cd_channel = app.config.ci_cd_workflows.first
+    rc_ci_cd_channel = train.workflows.first || {}
     base_config_map = {
       release_platform: self,
       workflows: {

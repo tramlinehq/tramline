@@ -7,6 +7,9 @@
   <% end %>
 <% end %>
 
+<%= render partial: "shared/app_not_ready",
+           locals: { app: @app, body: "To edit train settings meaningfully, please configure the required integrations." } %>
+
 <div data-controller="domain--branching-selector dependent-disable domain--version-name-help">
   <%= render FormComponent.new(model: [app, train], url: url) do |f| %>
     <% f.with_section(heading: "Basic") do |section| %>

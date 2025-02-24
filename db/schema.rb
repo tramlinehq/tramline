@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_01_28_130924) do
+ActiveRecord::Schema[7.2].define(version: 2025_02_24_063402) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -58,7 +58,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_28_130924) do
     t.jsonb "bugsnag_ios_config"
     t.jsonb "bugsnag_android_config"
     t.string "bitbucket_workspace"
-    t.jsonb "ci_cd_workflows"
     t.jsonb "firebase_crashlytics_ios_config"
     t.jsonb "firebase_crashlytics_android_config"
     t.jsonb "jira_config", default: {}, null: false
@@ -940,9 +939,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_01_28_130924) do
     t.boolean "patch_version_bump_only", default: false, null: false
     t.boolean "approvals_enabled", default: false, null: false
     t.boolean "freeze_version", default: false
-    t.string "tag_prefix"
     t.boolean "copy_approvals", default: false
     t.boolean "auto_apply_patch_changes", default: true
+    t.string "tag_prefix"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

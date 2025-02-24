@@ -123,6 +123,14 @@ class ReleaseListComponent < BaseComponent
   end
 
   def no_release_empty_state
+    unless app.ready?
+      return {
+        title: "App is not ready",
+        text: "There are required integrations that need to be configured before you can start creating releases.",
+        content: render(ButtonComponent.new(scheme: :light, type: :link, label: "Configure Integration", options: app_integrations_path(app), size: :xxs, authz: false))
+      }
+    end
+
     if train.automatic?
       if train.activatable?
         {

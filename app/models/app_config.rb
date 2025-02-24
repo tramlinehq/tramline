@@ -6,12 +6,10 @@
 #  bitbucket_workspace     :string
 #  bugsnag_android_config  :jsonb
 #  bugsnag_ios_config      :jsonb
-#  ci_cd_workflows         :jsonb
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
 #  jira_config             :jsonb            not null
-#  notification_channel    :json
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
@@ -131,17 +129,10 @@ class AppConfig < ApplicationRecord
     super&.map(&:with_indifferent_access)
   end
 
-  def set_ci_cd_workflows(workflows)
-    return if code_repository.nil?
-    return if app.ci_cd_provider.blank?
-    update(ci_cd_workflows: workflows)
-  end
-
   def disconnect!(integration)
     if integration.version_control?
       self.code_repository = nil
     elsif integration.ci_cd?
-      self.ci_cd_workflows = nil
       self.bitrise_project_id = nil
     end
 
