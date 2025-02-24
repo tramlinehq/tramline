@@ -36,12 +36,12 @@ RSpec.describe WorkflowRuns::TriggerJob do
       end
     end
 
-    it_behaves_like "with known error", Installations::Github::Error.new(
+    include_examples "with known error", Installations::Github::Error.new(
       OpenStruct.new(
         response_body: {message: "Workflow does not have 'workflow_dispatch' trigger"}.to_json
       )
     )
-    it_behaves_like "with known error", Installations::Github::Error.new(
+    include_examples "with known error", Installations::Github::Error.new(
       OpenStruct.new(
         response_body: {message: "Required input 'parameter_X' not provided"}.to_json
       )
