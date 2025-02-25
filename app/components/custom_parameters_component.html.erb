@@ -1,0 +1,48 @@
+<div data-controller="nested-form-ext" class="flex flex-col item-gap-default">
+  <% if add_button? %>
+    <div>
+      <%= add_button %>
+    </div>
+  <% end %>
+
+  <div class="flex flex-col flex-1">
+    <% if heading? %>
+      <%= heading %>
+    <% end %>
+
+    <div class="flex flex-col item-gap-default">
+      <% if edit_fields? %>
+        <% edit_fields.each do |edit_field| %>
+          <div class="nested-form-wrapper" data-new-record="false">
+            <div class="grid grid-cols-12 item-gap-default items-center">
+              <%= edit_field %>
+              <% if trash_button? %>
+                <div class="col-span-2">
+                  <%= trash_button %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+
+      <% if add_fields? %>
+        <template data-nested-form-ext-target="template">
+          <% add_fields.each do |add_field| %>
+            <div class="nested-form-wrapper" data-new-record="true">
+              <div class="grid grid-cols-12 item-gap-default items-center">
+                <%= add_field %>
+                <% if trash_button? %>
+                  <div class="col-span-2">
+                    <%= trash_button %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </template>
+        <div data-nested-form-ext-target="target"></div>
+      <% end %>
+    </div>
+  </div>
+</div>
