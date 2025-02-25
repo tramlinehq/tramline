@@ -33,6 +33,10 @@ class AppVariant < ApplicationRecord
 
   def config = self
 
+  def disconnect!(_)
+    raise NotImplementedError
+  end
+
   private
 
   def duplicate_bundle_identifier

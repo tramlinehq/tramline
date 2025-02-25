@@ -5,6 +5,7 @@ class NotificationSettingsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[update]
   before_action :set_train, only: %i[index update edit]
+  before_action :ensure_app_ready, only: %i[index edit update]
   before_action :set_notification_setting, only: %i[update edit]
   around_action :set_time_zone
 

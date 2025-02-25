@@ -8,6 +8,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   before_action :set_release_platform, only: %i[edit update]
   before_action :set_config, only: %i[edit update]
   before_action :set_train_config_tabs, only: %i[edit update]
+  before_action :ensure_app_ready, only: %i[edit update]
   before_action :set_ci_actions, only: %i[edit update]
   before_action :set_submission_types, only: %i[edit update]
   around_action :set_time_zone
@@ -43,7 +44,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   end
 
   def set_ci_actions
-    @ci_actions = @app.config.ci_cd_workflows
+    @ci_actions = @train.workflows || []
   end
 
   def set_submission_types

@@ -58,14 +58,14 @@
 
   <% container.with_sub_action do %>
     <%= render ButtonComponent.new(
-          scheme: :supporting,
-          label: "Configure",
-          authz: false,
-          options: edit_app_train_path(app, train),
-          type: :link
-        ) do |b|
-          b.with_icon("cog.svg")
-        end %>
+      scheme: :supporting,
+      label: "Configure",
+      authz: false,
+      options: edit_app_train_path(app, train),
+      disabled: !app.ready?,
+      type: :link) do |b|
+      b.with_icon("cog.svg")
+    end %>
   <% end %>
 
   <% if train.activatable? %>
@@ -115,15 +115,8 @@
   <% end %>
 
   <% container.with_body do %>
-    <% unless app.ready? %>
-      <%= render AlertComponent.new(kind: :banner,
-                                    type: :notice,
-                                    title: "App is not ready",
-                                    info: {label: "Configure", link: app_integrations_path(app)},
-                                    full_screen: false) do %>
-        Please finish configuring the required integrations before you can start creating releases.
-      <% end %>
-    <% end %>
+    <%= render partial: "shared/app_not_ready", locals: { app: } %>
+
     <% if train.automatic? %>
       <%= render ScheduledTrainComponent.new(train) %>
     <% end %>

@@ -298,10 +298,6 @@ class ReleasePlatformRun < ApplicationRecord
 
   alias_method :metadata_editable?, :production_release_in_pre_review?
 
-  def temporary_unblock_upcoming?
-    Flipper.enabled?(:temporary_unblock_upcoming, self)
-  end
-
   def tag_url
     train.vcs_provider&.tag_url(tag_name)
   end

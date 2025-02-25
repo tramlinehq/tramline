@@ -19,6 +19,7 @@
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
+!/tmp/caching-dev.txt
 !/log/.keep
 !/tmp/.keep
 

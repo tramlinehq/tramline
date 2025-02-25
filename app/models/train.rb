@@ -106,7 +106,7 @@ class Train < ApplicationRecord
   after_initialize :set_backmerge_config, if: :persisted?
   after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
-  before_create :set_ci_cd_workflows
+  before_create :fetch_ci_cd_workflows
   before_create :set_current_version
   before_create :set_default_status
   after_create :create_release_platforms
@@ -157,7 +157,7 @@ class Train < ApplicationRecord
   end
 
   def workflows
-    @workflows ||= ci_cd_provider.workflows(working_branch)
+    @workflows ||= ci_cd_provider&.workflows(working_branch)
   end
 
   def version_ahead?(release)
@@ -429,9 +429,8 @@ class Train < ApplicationRecord
     ongoing_release.stop!
   end
 
-  def set_ci_cd_workflows
-    config.set_ci_cd_workflows(workflows)
-  end
+  # call workflows to memoize and cache the result
+  def fetch_ci_cd_workflows = workflows
 
   def last_finished_release
     releases.where(status: "finished").reorder(completed_at: :desc).first
