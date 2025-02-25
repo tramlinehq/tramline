@@ -457,7 +457,7 @@ class Release < ApplicationRecord
   end
 
   def blocked_for_production_release?
-    return true if upcoming?
+    return true if upcoming? && !Flipper.enabled?(:temporary_unblock_upcoming, self)
     return true if ongoing? && train.hotfix_release.present?
     approvals_blocking?
   end

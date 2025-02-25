@@ -2,7 +2,7 @@
   <% if train.hotfixable? %>
     <% container.with_action do %>
       <%= render ModalComponent.new(title: "Start a hotfix release",
-                                        subtitle: "This will be against your last successful release #{hotfix_from.release_version}") do |modal| %>
+                                    subtitle: "This will be against your last successful release #{hotfix_from.release_version}") do |modal| %>
         <% button = modal.with_button(scheme: :light,
                                       type: :action,
                                       size: :xxs,
@@ -62,6 +62,7 @@
       label: "Configure",
       authz: false,
       options: edit_app_train_path(app, train),
+      disabled: !app.ready?,
       type: :link) do |b|
       b.with_icon("cog.svg")
     end %>
@@ -111,15 +112,8 @@
   <% end %>
 
   <% container.with_body do %>
-    <% unless app.ready? %>
-      <%= render AlertComponent.new(kind: :banner,
-                                        type: :notice,
-                                        title: "App is not ready",
-                                        info: { label: "Configure", link: app_integrations_path(app) },
-                                        full_screen: false) do %>
-        Please finish configuring the required integrations before you can start creating releases.
-      <% end %>
-    <% end %>
+    <%= render partial: "shared/app_not_ready", locals: { app: } %>
+
     <% if train.automatic? %>
       <%= render ScheduledTrainComponent.new(train) %>
     <% end %>

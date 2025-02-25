@@ -352,7 +352,7 @@ module Installations
       end
     end
 
-    MAX_PAGES = 10
+    MAX_PAGES = 100
 
     def find_file(url, files, file_name, page = 0)
       return if page == MAX_PAGES

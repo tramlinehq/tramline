@@ -1,6 +1,6 @@
 class CommitComponent < BaseComponent
   DEFAULT_TRUNCATE = 75
-  OUTER_CLASSES = "py-1.5 px-2 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
+  OUTER_CLASSES = "px-2 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
 
   def initialize(commit:, avatar: true, detailed: true, render_html: false, enable_truncate: true)
     @commit = commit

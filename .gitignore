@@ -36,6 +36,7 @@ bundle/
 /config/master.key
 /config/credentials/staging.key
 .env.development
+.env.test.local
 
 # Ignore IntelliJ things
 .idea

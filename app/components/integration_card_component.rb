@@ -17,7 +17,7 @@ class IntegrationCardComponent < BaseComponent
   end
 
   attr_reader :integration
-  delegate :connected?, :disconnected?, :providable, :connection_data, :providable_type, :ci_cd?, to: :integration, allow_nil: true
+  delegate :connected?, :disconnected?, :providable, :connection_data, :providable_type, :disconnectable_categories?, to: :integration, allow_nil: true
   alias_method :provider, :providable
   delegate :creatable?, :connectable?, to: :provider
 
@@ -70,6 +70,6 @@ class IntegrationCardComponent < BaseComponent
   end
 
   def disconnectable?
-    integration.disconnectable? && ci_cd?
+    integration.disconnectable? && disconnectable_categories?
   end
 end
