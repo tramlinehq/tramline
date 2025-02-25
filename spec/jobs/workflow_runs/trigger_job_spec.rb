@@ -49,11 +49,17 @@ RSpec.describe WorkflowRuns::TriggerJob do
 
     context "when error is unknown" do
       before do
-        allow(workflow_run).to receive(:trigger!).and_raise(Installations::Error, "Some error")
+        err = Installations::Error.new("Some Error", reason: :unknown_failure)
+        allow(workflow_run).to receive(:trigger!).and_raise(err)
       end
 
       it "does not change state of workflow_run to trigger_failed" do
-        described_class.new.perform(workflow_run.id)
+        begin
+          described_class.new.perform(workflow_run.id)
+        rescue Installations::Error
+          nil
+        end
+
         expect(workflow_run.reload.status).not_to eq("trigger_failed")
       end
     end

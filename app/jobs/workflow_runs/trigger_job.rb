@@ -13,8 +13,10 @@ class WorkflowRuns::TriggerJob < ApplicationJob
 
     workflow_run.trigger!(retrigger:)
   rescue Installations::Error => err
-    if TRIGGER_FAILED_REASONS.include?(err.reason)
+    if err.reason.in?(TRIGGER_FAILED_REASONS)
       workflow_run.trigger_failed!(err)
+    else
+      raise
     end
   end
 end
