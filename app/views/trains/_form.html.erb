@@ -174,7 +174,7 @@
         Set a schedule for automatic kickoff of your release train. Leave blank for only manual control.
       <% end %>
 
-      <%= render partial: "release_schedule_form", locals: { form: section.F } %>
+      <%= render partial: "release_schedule_form", locals: {form: section.F} %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Approvals before submissions") do |section| %>

@@ -58,14 +58,15 @@
 
   <% container.with_sub_action do %>
     <%= render ButtonComponent.new(
-      scheme: :supporting,
-      label: "Configure",
-      authz: false,
-      options: edit_app_train_path(app, train),
-      disabled: !app.ready?,
-      type: :link) do |b|
-      b.with_icon("cog.svg")
-    end %>
+          scheme: :supporting,
+          label: "Configure",
+          authz: false,
+          options: edit_app_train_path(app, train),
+          disabled: !app.ready?,
+          type: :link
+        ) do |b|
+          b.with_icon("cog.svg")
+        end %>
   <% end %>
 
   <% if train.activatable? %>
@@ -115,7 +116,7 @@
   <% end %>
 
   <% container.with_body do %>
-    <%= render partial: "shared/app_not_ready", locals: { app: } %>
+    <%= render partial: "shared/app_not_ready", locals: {app:} %>
 
     <% if train.automatic? %>
       <%= render ScheduledTrainComponent.new(train) %>
