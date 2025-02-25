@@ -1,0 +1,11 @@
+<%# locals: (app:, body: "Please finish configuring the required integrations before you can start creating releases.") %>
+
+<% unless app.ready? %>
+  <%= render AlertComponent.new(kind: :banner,
+                                type: :notice,
+                                title: "App is not ready",
+                                info: { label: "Configure", link: app_integrations_path(app) },
+                                full_screen: false) do %>
+    <%= body %>
+  <% end %>
+<% end %>
