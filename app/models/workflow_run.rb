@@ -206,8 +206,7 @@ class WorkflowRun < ApplicationRecord
 
   def trigger_failed_reason
     last_error = passports.where(reason: :trigger_failed, kind: :error).last
-    return if last_error.nil?
-    last_error.metadata["error_message"]
+    last_error&.message
   end
 
   private
