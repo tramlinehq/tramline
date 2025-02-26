@@ -81,7 +81,7 @@ module Coordinators
       Coordinators::FinishPlatformRun.call(release_platform_run)
     end
 
-    def self.workflow_trigger_failed!(workflow_run)
+    def self.workflow_run_trigger_failed!(workflow_run)
       workflow_run.triggering_release.fail!
     end
   end

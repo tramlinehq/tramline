@@ -280,7 +280,7 @@ class WorkflowRun < ApplicationRecord
   def on_trigger_fail!(error)
     event_stamp!(reason: :trigger_failed, kind: :error, data: stamp_data.merge(error_message: error.message, error_reason: error.reason))
     notify!("Failed to trigger the workflow run!", :workflow_trigger_failed, notification_params)
-    Signal.workflow_trigger_failed!(self)
+    Signal.workflow_run_trigger_failed!(self)
   end
 
   def on_halt!
