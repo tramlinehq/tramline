@@ -80,6 +80,10 @@ module Coordinators
     def self.production_release_is_complete!(release_platform_run)
       Coordinators::FinishPlatformRun.call(release_platform_run)
     end
+
+    def self.workflow_trigger_failed!(workflow_run)
+      workflow_run.triggering_release.fail!
+    end
   end
 
   module Actions
