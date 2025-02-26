@@ -16,6 +16,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   include Displayable
   include Loggable
 
+  delegate :cache, to: Rails
   delegate :integrable, to: :integration, allow_nil: true
   delegate :refresh_external_app, :bundle_identifier, to: :integrable, allow_nil: true
 
@@ -26,6 +27,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create_commit :draft_check
   after_create_commit :refresh_external_app
 
+  CACHE_EXPIRY = 1.month
   LOCK_ACQUISITION_FAILURE_REASON = :lock_acquisition_failed
   LOCK_ACQUISITION_FAILURE_MSG = "Failed to acquire an internal lock to make Play Store calls"
   LOCK_NAME_PREFIX = "google_play_store_edit_"
@@ -150,15 +152,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
     "Bundle Identifier: #{bundle_identifier}"
   end
 
-  def channels
-    default_channels = CHANNELS.map(&:with_indifferent_access)
-    channel_data.each do |chan|
-      next if default_channels.pluck(:id).map(&:to_s).include?(chan[:name])
-      default_channels << {id: chan[:name], name: "Closed testing - #{chan[:name]}", is_production: false}.with_indifferent_access
-    end
-    default_channels
-  end
-
   def pick_default_beta_channel
     BETA_CHANNEL
   end
@@ -229,6 +222,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
     response.present? && GooglePlayStoreIntegration::IN_PROGRESS_STORE_STATUS.include?(response[:status])
   end
 
+  private
+
   def project_id
     JSON.parse(json_key)["project_id"]&.split("-")&.third
   end
@@ -275,5 +270,20 @@ class GooglePlayStoreIntegration < ApplicationRecord
     else
       raise ArgumentError, "Invalid priority: #{priority}"
     end
+  end
+
+  def channels
+    default_channels = CHANNELS.map(&:with_indifferent_access)
+    cache.fetch(tracks_cache_key, expires_in: CACHE_EXPIRY) do
+      channel_data&.each do |chan|
+        next if default_channels.pluck(:id).map(&:to_s).include?(chan[:name])
+        default_channels << {id: chan[:name], name: "Closed testing - #{chan[:name]}", is_production: false}.with_indifferent_access
+      end
+    end
+    default_channels
+  end
+
+  def tracks_cache_key
+    "google_play_store_integration/#{id}/tracks"
   end
 end

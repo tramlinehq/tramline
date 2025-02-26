@@ -39,6 +39,12 @@ class SignedInApplicationController < ApplicationController
 
   private
 
+  def ensure_app_ready
+    unless @app.ready?
+      redirect_to app_path(@app), flash: {error: "App is not ready (not fully configured)."}
+    end
+  end
+
   def set_page_name
     user_facing_actions = %w[new index show edit]
 
@@ -185,11 +191,11 @@ class SignedInApplicationController < ApplicationController
   end
 
   def vcs_provider_logo
-    @vcs_provider_logo ||= "integrations/logo_#{@app.vcs_provider}.png"
+    @vcs_provider_logo ||= "integrations/logo_#{@app.vcs_provider.presence || "deprecated"}.png"
   end
 
   def ci_cd_provider_logo
-    @ci_cd_provider_logo ||= "integrations/logo_#{@app.ci_cd_provider}.png"
+    @ci_cd_provider_logo ||= "integrations/logo_#{@app.ci_cd_provider || "deprecated"}.png"
   end
 
   def teams_supported?

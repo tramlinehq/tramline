@@ -6,12 +6,10 @@
 #  bitbucket_workspace     :string
 #  bugsnag_android_config  :jsonb
 #  bugsnag_ios_config      :jsonb
-#  ci_cd_workflows         :jsonb
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
 #  jira_config             :jsonb            not null
-#  notification_channel    :json
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
@@ -22,7 +20,7 @@ class AppConfig < ApplicationRecord
   include AppConfigurable
 
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
-  self.ignored_columns += %w[bugsnag_project_id firebase_crashlytics_android_config firebase_crashlytics_ios_config notification_channel]
+  self.ignored_columns += %w[bugsnag_project_id firebase_crashlytics_android_config firebase_crashlytics_ios_config notification_channel ci_cd_workflows]
 
   belongs_to :app
   has_many :variants, class_name: "AppVariant", dependent: :destroy
@@ -47,20 +45,19 @@ class AppConfig < ApplicationRecord
   end
 
   def code_repository_name
-    return if code_repository.blank?
-    code_repository["full_name"]
+    code_repository&.fetch("full_name", nil)
   end
 
   def code_repo_url
-    code_repository["repo_url"]
+    code_repository&.fetch("repo_url", nil)
   end
 
   def code_repo_namespace
-    code_repository["namespace"]
+    code_repository&.fetch("namespace", nil)
   end
 
   def code_repo_name_only
-    code_repository["name"]
+    code_repository&.fetch("name", nil)
   end
 
   def bitrise_project
@@ -68,7 +65,7 @@ class AppConfig < ApplicationRecord
   end
 
   def further_setup_by_category?
-    integrations = app.integrations
+    integrations = app.integrations.connected
     categories = {}.with_indifferent_access
 
     if integrations.version_control.present?
@@ -131,10 +128,14 @@ class AppConfig < ApplicationRecord
     super&.map(&:with_indifferent_access)
   end
 
-  def set_ci_cd_workflows(workflows)
-    return if code_repository.nil?
-    return if app.ci_cd_provider.blank?
-    update(ci_cd_workflows: workflows)
+  def disconnect!(integration)
+    if integration.version_control?
+      self.code_repository = nil
+    elsif integration.ci_cd?
+      self.bitrise_project_id = nil
+    end
+
+    save!
   end
 
   private
