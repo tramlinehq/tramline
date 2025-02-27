@@ -24,6 +24,10 @@ module Installations
       {
         message_matcher: /failed merge check/i,
         decorated_reason: :pull_request_failed_merge_check
+      },
+      {
+        message_matcher: /This pull request is already closed/i,
+        decorated_reason: :pull_request_closed
       }
     ]
 
