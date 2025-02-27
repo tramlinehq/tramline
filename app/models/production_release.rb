@@ -193,7 +193,7 @@ class ProductionRelease < ApplicationRecord
   end
 
   def commits_since_previous
-    changes_since_last_release = release.release_changelog&.normalized_commits || []
+    changes_since_last_release = release.release_changelog&.commits || []
     changes_since_last_run = release.all_commits.between_commits(previous&.commit, commit) || []
 
     if previous

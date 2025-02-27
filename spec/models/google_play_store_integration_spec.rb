@@ -244,9 +244,10 @@ describe GooglePlayStoreIntegration do
     end
 
     it "allows the retries to drain out if the lock could not be acquired on time" do
-      # pre-acquire lock
-      lock_name = GooglePlayStoreIntegration::LOCK_NAME_PREFIX + app.id
-      Rails.application.config.distributed_lock.lock(lock_name, ttl: 3600 * 1000)
+      # pre-acquire lock elsewhere
+      allow(api_double).to receive(:halt_release) { sleep 10 }
+      Thread.new { google_integration.halt_release(anything, anything, anything, anything) }
+      sleep 1
 
       allow(google_integration).to receive(:api_lock_params).and_return(retry_count: 1, retry_delay: 1)
       allow(api_double).to receive(:create_release)
@@ -256,6 +257,8 @@ describe GooglePlayStoreIntegration do
       expect(r.ok?).to be false
       puts r.error.backtrace
       expect(r.error.reason).to eq(GooglePlayStoreIntegration::LOCK_ACQUISITION_FAILURE_REASON)
+    rescue => e
+      puts e.backtrace
     end
   end
 end

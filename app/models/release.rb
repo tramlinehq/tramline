@@ -336,10 +336,23 @@ class Release < ApplicationRecord
 
     return if source_commitish.blank?
 
-    create_release_changelog(
-      commits: vcs_provider.commit_log(source_commitish, target_branch),
-      from_ref:
-    )
+    ActiveRecord::Base.transaction do
+      create_release_changelog(from_ref:)
+      vcs_provider.commit_log(source_commitish, target_branch).each do |commit_attrs|
+        next if all_commits.exists?(commit_hash: commit_attrs["commit_hash"])
+
+        all_commits.create!(
+          author_email: commit_attrs["author_email"],
+          author_login: commit_attrs["author_login"],
+          author_name: commit_attrs["author_name"],
+          commit_hash: commit_attrs["commit_hash"],
+          message: commit_attrs["message"],
+          parents: commit_attrs["parents"] || [],
+          timestamp: commit_attrs["timestamp"],
+          url: commit_attrs["url"]
+        )
+      end
+    end
   end
 
   def end_ref
