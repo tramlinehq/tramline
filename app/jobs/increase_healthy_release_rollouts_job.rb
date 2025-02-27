@@ -2,8 +2,8 @@ class IncreaseHealthyReleaseRolloutsJob < ApplicationJob
   queue_as :high
 
   def perform
-    # Increase rollout for active rollouts with healthy releases
-    StoreRollout.active.each do |store_rollout|
+    # Increase rollout for active Play Store rollouts with healthy releases
+    StoreRollout.active.where(type: "PlayStoreRollout").each do |store_rollout|
       release = store_rollout.parent_release
 
       # Skip if the release is unhealthy
@@ -17,7 +17,6 @@ class IncreaseHealthyReleaseRolloutsJob < ApplicationJob
     PlayStoreSubmission.where(status: "prepared").each do |submission|
       release = submission.parent_release
 
-      binding.pry
       # Skip if the release is unhealthy
       next if release.unhealthy?
 
