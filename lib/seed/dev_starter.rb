@@ -13,6 +13,7 @@ module Seed
 
       puts "Completed seeding database"
     end
+
     def self.create_admin_user
       email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: ADMIN_EMAIL)
       admin = true
