@@ -42,7 +42,7 @@ describe PlayStoreSubmission do
         allow(providable_dbl).to receive_messages(create_draft_release: GitHub::Result.new, rollout_release: GitHub::Result.new)
 
         expect { internal_submission.prepare_for_release! }.to change(internal_submission, :prepared?)
-        expect(providable_dbl).to have_received(:create_draft_release).with(anything, anything, anything, anything, retry_on_review_fail: true)
+        expect(providable_dbl).to have_received(:create_draft_release).with(anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: true)
       end
 
       it "marks the submission as failed with manual action required" do
