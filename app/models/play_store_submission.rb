@@ -321,11 +321,6 @@ class PlayStoreSubmission < StoreSubmission
     notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
   end
 
-  def build_present_in_store?
-    # return mock_build_present_in_play_store? if sandbox_mode?
-    provider.find_build(build_number).present?
-  end
-
   def stamp_data(failure_message: nil)
     super.merge(track: submission_channel.name.humanize)
   end
