@@ -11,6 +11,32 @@ describe GooglePlayStoreIntegration do
     expect(create(:google_play_store_integration, :without_callbacks_and_validations)).to be_valid
   end
 
+  shared_examples "when raise on lock error is true" do |api_op, operation, operation_args|
+    let(:error) { GooglePlayStoreIntegration::LockAcquisitionError.new }
+
+    it "bubbles up lock-acquisition error" do
+      allow(api_double).to receive(api_op)
+      allow(google_integration).to receive(:api_lock).and_raise(error)
+
+      expect {
+        google_integration.public_send(operation, *operation_args, raise_on_lock_error: true)
+      }.to raise_error(error)
+    end
+  end
+
+  shared_examples "when raise on lock error is false" do |api_op, operation, operation_args|
+    let(:error) { GooglePlayStoreIntegration::LockAcquisitionError.new }
+
+    it "returns a result object for the lock-acquisition error" do
+      allow(api_double).to receive(api_op)
+      allow(google_integration).to receive(:api_lock).and_raise(error)
+
+      res = google_integration.public_send(operation, *operation_args, raise_on_lock_error: false)
+      expect(res.ok?).to be false
+      expect(res.error).to be_a(GooglePlayStoreIntegration::LockAcquisitionError)
+    end
+  end
+
   describe "#upload" do
     let(:app) { create(:app, platform: :android) }
     let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
@@ -72,6 +98,15 @@ describe GooglePlayStoreIntegration do
       expect(api_double).to have_received(:upload).with(file, skip_review: false).once
       expect(api_double).to have_received(:upload).with(file, skip_review: true).exactly(3).times
     end
+
+    it_behaves_like "when raise on lock error is true",
+      :upload,
+      :upload,
+      [Tempfile.new("test_artifact.aab")]
+    it_behaves_like "when raise on lock error is false",
+      :upload,
+      :upload,
+      [Tempfile.new("test_artifact.aab")]
   end
 
   describe "#create_draft_release" do
@@ -101,6 +136,15 @@ describe GooglePlayStoreIntegration do
       expect(google_integration.create_draft_release("track", 1, "1.0.0", "notes", retry_on_review_fail: false, raise_on_lock_error:).ok?).to be false
       expect(api_double).to have_received(:create_draft_release).with("track", 1, "1.0.0", "notes", skip_review: false).once
     end
+
+    it_behaves_like "when raise on lock error is true",
+      :create_draft_release,
+      :create_draft_release,
+      ["track", 1, "1.0.0", "notes"]
+    it_behaves_like "when raise on lock error is false",
+      :create_draft_release,
+      :create_draft_release,
+      ["track", 1, "1.0.0", "notes"]
   end
 
   describe "#rollout_release" do
@@ -130,6 +174,15 @@ describe GooglePlayStoreIntegration do
       expect(google_integration.rollout_release("track", 1, "1.0.0", 0.01, "notes", retry_on_review_fail: false, raise_on_lock_error:).ok?).to be false
       expect(api_double).to have_received(:create_release).with("track", 1, "1.0.0", 0.01, "notes", skip_review: false).once
     end
+
+    it_behaves_like "when raise on lock error is true",
+      :create_release,
+      :rollout_release,
+      ["track", 1, "1.0.0", 0.01, "notes"]
+    it_behaves_like "when raise on lock error is false",
+      :create_release,
+      :rollout_release,
+      ["track", 1, "1.0.0", 0.01, "notes"]
   end
 
   describe "#halt_release" do
@@ -159,6 +212,15 @@ describe GooglePlayStoreIntegration do
       expect(google_integration.halt_release("track", 1, "1.0.0", 0.01, retry_on_review_fail: false, raise_on_lock_error:).ok?).to be false
       expect(api_double).to have_received(:halt_release).with("track", 1, "1.0.0", 0.01, skip_review: false).once
     end
+
+    it_behaves_like "when raise on lock error is true",
+      :halt_release,
+      :halt_release,
+      ["track", 1, "1.0.0", 0.01]
+    it_behaves_like "when raise on lock error is false",
+      :halt_release,
+      :halt_release,
+      ["track", 1, "1.0.0", 0.01]
   end
 
   describe "#build_in_progress?" do
@@ -211,6 +273,11 @@ describe GooglePlayStoreIntegration do
       allow(api_double).to receive(:get_track).and_return(completed_track_data)
       expect(google_integration.build_in_progress?("track", 1, raise_on_lock_error:)).to be false
     end
+
+    it_behaves_like "when raise on lock error is true",
+      :get_track,
+      :build_in_progress?,
+      ["track", 1]
   end
 
   describe "#api_lock" do
