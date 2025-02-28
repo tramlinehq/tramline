@@ -1,5 +1,5 @@
 class StoreSubmissions::PlayStore::UpdateExternalReleaseJob < ApplicationJob
-  sidekiq_options retry: 25
+  sidekiq_options retry: 30
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(GooglePlayStoreIntegration::LockAcquisitionError)
