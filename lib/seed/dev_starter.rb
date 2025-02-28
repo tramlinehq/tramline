@@ -2,6 +2,8 @@
 
 module Seed
   class DevStarter
+    include Seed::Constants
+
     def call
       puts "Seeding database..."
 
