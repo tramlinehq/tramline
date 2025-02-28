@@ -1,8 +1,10 @@
 require "rails_helper"
 
 describe GooglePlayStoreIntegration do
+  let(:redis_connection) { Redis.new(**REDIS_CONFIGURATION.base) }
+
   before do
-    Redis.new(**REDIS_CONFIGURATION.base).flushdb
+    redis_connection.flushdb
   end
 
   it "has a valid factory" do
@@ -207,10 +209,13 @@ describe GooglePlayStoreIntegration do
   end
 
   describe "#api_lock" do
+    include Lockable
+
     let(:app) { create(:app, platform: :android) }
     let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
     let(:google_integration) { integration.providable }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
+    let(:lock_name) { GooglePlayStoreIntegration::LOCK_NAME_PREFIX + app.id.to_s }
 
     before do
       google_integration.reload
@@ -228,33 +233,31 @@ describe GooglePlayStoreIntegration do
     end
 
     it "ensures that subsequent requests wait if there's already a lock" do
-      expect(Rails.application.config.distributed_lock.locks_info.size).to eq(0)
+      expect(redis_connection.get(lock_name)).to be_nil
 
       # first long-running api call
       allow(api_double).to receive(:halt_release) { sleep 10 }
       Thread.new { google_integration.halt_release(anything, anything, anything, anything) }
       sleep 1
-      expect(Rails.application.config.distributed_lock.locks_info.size).to eq(1)
+      expect(redis_connection.get(lock_name)).to_not be_nil
 
       # second blocked call
       allow(api_double).to receive(:create_release) { sleep 1 }
       Thread.new { google_integration.rollout_release(anything, anything, anything, anything, anything) }
       sleep 1
-      expect(Rails.application.config.distributed_lock.queues_info.size).to eq(1)
+      expect(redis_connection.get(lock_name)).to_not be_nil
     end
 
     it "allows the retries to drain out if the lock could not be acquired on time" do
       # pre-acquire lock
-      lock_name = GooglePlayStoreIntegration::LOCK_NAME_PREFIX + app.id
-      Rails.application.config.distributed_lock.lock(lock_name, ttl: 3600 * 1000)
+      Rails.application.config.distributed_lock_client.lock(lock_name, 3600 * 1000)
 
-      allow(google_integration).to receive(:api_lock_params).and_return(retry_count: 1, retry_delay: 1)
+      allow(google_integration).to receive(:api_lock_params).and_return(ttl: 100, retry_count: 1, retry_delay: 1)
       allow(api_double).to receive(:create_release)
 
       # queue new request that cannot acquire the lock
       r = google_integration.rollout_release(anything, anything, anything, anything, anything)
       expect(r.ok?).to be false
-      puts r.error.backtrace
       expect(r.error.reason).to eq(GooglePlayStoreIntegration::LOCK_ACQUISITION_FAILURE_REASON)
     end
   end

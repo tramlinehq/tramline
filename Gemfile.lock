@@ -541,6 +541,8 @@ GEM
     redis_queued_locks (1.12.1)
       qonfig (~> 0.28)
       redis-client (~> 0.20)
+    redlock (2.0.6)
+      redis-client (>= 0.14.1, < 1.0.0)
     regexp_parser (2.9.2)
     reline (0.5.10)
       io-console (~> 0.5)
@@ -837,6 +839,7 @@ DEPENDENCIES
   redis (~> 4.8)
   redis-actionpack (~> 5.3)
   redis_queued_locks (~> 1.12)
+  redlock (~> 2.0)
   requestjs-rails (~> 0.0.9)
   retryable (~> 3.0)
   rspec-rails

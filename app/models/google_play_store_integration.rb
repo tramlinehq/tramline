@@ -15,6 +15,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   include Providable
   include Displayable
   include Loggable
+  include Lockable
 
   delegate :cache, to: Rails
   delegate :integrable, to: :integration, allow_nil: true
@@ -74,24 +75,28 @@ class GooglePlayStoreIntegration < ApplicationRecord
     Installations::Google::PlayDeveloper::Api.new(bundle_identifier, access_key)
   end
 
+  # async
   def create_draft_release(channel, build_number, version, release_notes, retry_on_review_fail: false)
     execute_with_retry(retry_on_review_fail:) do |skip_review|
       installation.create_draft_release(channel, build_number, version, release_notes, skip_review:)
     end
   end
 
+  # sync
   def rollout_release(channel, build_number, version, rollout_percentage, release_notes, retry_on_review_fail: false)
     execute_with_retry(retry_on_review_fail:) do |skip_review|
       installation.create_release(channel, build_number, version, rollout_percentage, release_notes, skip_review:)
     end
   end
 
+  # sync
   def halt_release(channel, build_number, version, rollout_percentage, retry_on_review_fail: true)
     execute_with_retry(retry_on_review_fail:) do |skip_review|
       installation.halt_release(channel, build_number, version, rollout_percentage, skip_review:)
     end
   end
 
+  # async
   def upload(file)
     execute_with_retry(retry_on_review_fail: true) do |skip_review|
       installation.upload(file, skip_review:)
@@ -156,12 +161,14 @@ class GooglePlayStoreIntegration < ApplicationRecord
     BETA_CHANNEL
   end
 
+  # sync
   def build_channels(with_production: false)
     sliced = channels.map { |chan| chan.slice(:id, :name, :is_production) }
     return sliced if with_production
     sliced.reject { |channel| channel[:is_production] }
   end
 
+  # async
   def find_app
     return @find_app if @find_app
     result = execute_with_retry(lock_priority: :low) { installation.app_details(APP_TRANSFORMS) }
@@ -196,11 +203,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
+  # async
   def latest_build_number
     result = execute_with_retry { installation.find_latest_build_number }
     result.ok? ? result.value! : nil
   end
 
+  # async
   def find_build(build_number)
     result = execute_with_retry { installation.find_build(build_number) }
     result.ok? ? result.value! : nil
@@ -249,16 +258,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def api_lock(priority: :high, &)
     raise ArgumentError, "You must provide a block" unless block_given?
+
     name = LOCK_NAME_PREFIX + integrable.id.to_s
-    result = Rails.application.config.distributed_lock.lock(name, **api_lock_params(priority:), &)
-
-    # when acquisition fails, distributed lock returns a hash with :ok and :result keys
-    if result.is_a?(Hash) && Set.new(%i[ok result]) == Set.new(result.keys) && !result[:ok]
-      raise Installations::Error.new(LOCK_ACQUISITION_FAILURE_MSG, reason: LOCK_ACQUISITION_FAILURE_REASON)
-    end
-
-    # when acquisition succeeds, result is just whatever the block yields
-    result
+    exception = Installations::Error.new(LOCK_ACQUISITION_FAILURE_MSG, reason: LOCK_ACQUISITION_FAILURE_REASON)
+    with_lock(name, api_lock_params(priority:), exception:) { yield }
   end
 
   def api_lock_params(priority: :high)
