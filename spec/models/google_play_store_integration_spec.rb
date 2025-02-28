@@ -239,13 +239,13 @@ describe GooglePlayStoreIntegration do
       allow(api_double).to receive(:halt_release) { sleep 10 }
       Thread.new { google_integration.halt_release(anything, anything, anything, anything) }
       sleep 1
-      expect(redis_connection.get(lock_name)).to_not be_nil
+      expect(redis_connection.get(lock_name)).not_to be_nil
 
       # second blocked call
       allow(api_double).to receive(:create_release) { sleep 1 }
       Thread.new { google_integration.rollout_release(anything, anything, anything, anything, anything) }
       sleep 1
-      expect(redis_connection.get(lock_name)).to_not be_nil
+      expect(redis_connection.get(lock_name)).not_to be_nil
     end
 
     it "allows the retries to drain out if the lock could not be acquired on time" do
