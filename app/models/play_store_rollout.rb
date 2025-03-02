@@ -145,6 +145,9 @@ class PlayStoreRollout < StoreRollout
 
   def rollout_in_progress?
     provider.build_in_progress?(submission_channel_id, build_number, raise_on_lock_error: true)
+  rescue GooglePlayStoreIntegration::LockAcquisitionError => e
+    errors.add(:base, e.message)
+    false
   end
 
   private

@@ -29,7 +29,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create_commit :refresh_external_app
 
   class LockAcquisitionError < StandardError
-    def initialize(msg = "We could not complete this request, as there is another Play Store request in progress. Please retry after a few seconds.")
+    def initialize(msg = "We could not complete this request, as there is another Play Store request in progress. Please retry after a few minutes.")
       super
     end
 
@@ -186,7 +186,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
-  # TODO: handle this gracefully in cascading rollout
   def build_in_progress?(channel, build_number, raise_on_lock_error:)
     response = find_build_in_track(channel, build_number, raise_on_lock_error:)
     response.present? && GooglePlayStoreIntegration::IN_PROGRESS_STORE_STATUS.include?(response[:status])
@@ -292,7 +291,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
       {retry_count: 40, retry_delay: 500, ttl: 120_000}
     when :low
       # delay for longer, so high priority locks don't get stuck
-      {retry_count: 10, retry_delay: 1000, ttl: 160_000}
+      {retry_count: 10, retry_delay: 1000, ttl: 60_000}
     else
       raise ArgumentError, "Invalid priority: #{priority}"
     end
