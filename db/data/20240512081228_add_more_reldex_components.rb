@@ -2,6 +2,7 @@
 
 class AddMoreReldexComponents < ActiveRecord::Migration[7.0]
   def up
+    return
     new_components = [:days_since_last_release, :rollout_changes]
     ReleaseIndex.all.each do |reldex|
       ReleaseIndexComponent::DEFAULT_COMPONENTS.slice(*new_components).each do |component, details|
