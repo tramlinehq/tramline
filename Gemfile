@@ -82,9 +82,9 @@ gem "csv", "~> 3.3"
 gem "google-cloud-bigquery", "~> 1.50.0"
 gem "active_record_union", "~> 1.3"
 gem "pg_search", "~> 2.3"
-gem "redis_queued_locks", "~> 1.12"
 gem "net-imap", "~> 0.5.6"
 gem "gitlab-sidekiq-fetcher", git: "https://gitlab.com/gitlab-org/gitlab", glob: "vendor/gems/sidekiq-reliable-fetch/*.gemspec", require: "sidekiq-reliable-fetch"
+gem "redlock", "~> 2.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

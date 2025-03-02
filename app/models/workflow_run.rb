@@ -41,6 +41,7 @@ class WorkflowRun < ApplicationRecord
     failed
     halted
     finished
+    trigger_failed
   ]
 
   KINDS = {
@@ -52,6 +53,7 @@ class WorkflowRun < ApplicationRecord
     created: "created",
     triggering: "triggering",
     triggered: "triggered",
+    trigger_failed: "trigger_failed",
     unavailable: "unavailable",
     started: "started",
     failed: "failed",
@@ -64,8 +66,8 @@ class WorkflowRun < ApplicationRecord
 
   NOT_STARTED = [:created]
   IN_PROGRESS = [:triggering, :triggered, :started]
-  WORKFLOW_IMMUTABLE = %w[unavailable failed halted finished cancelled cancelling cancelled_before_start]
-  FAILED_STATES = %w[failed halted unavailable cancelled cancelled_before_start cancelling]
+  WORKFLOW_IMMUTABLE = %w[unavailable failed halted finished cancelled cancelling cancelled_before_start trigger_failed]
+  FAILED_STATES = %w[failed halted unavailable cancelled cancelled_before_start cancelling trigger_failed]
 
   enum :status, STATES
   enum :kind, KINDS
@@ -110,6 +112,10 @@ class WorkflowRun < ApplicationRecord
       transitions from: IN_PROGRESS, to: :cancelling
       transitions from: NOT_STARTED, to: :cancelled_before_start
       transitions from: :cancelling, to: :cancelled
+    end
+
+    event :trigger_failed, after_commit: :on_trigger_fail! do
+      transitions from: :triggering, to: :trigger_failed
     end
   end
 
@@ -198,6 +204,11 @@ class WorkflowRun < ApplicationRecord
     )
   end
 
+  def trigger_failed_reason
+    last_error = passports.where(reason: :trigger_failed, kind: :error).last
+    last_error&.message
+  end
+
   private
 
   def trigger_external_run!
@@ -264,6 +275,12 @@ class WorkflowRun < ApplicationRecord
   def on_fail!
     event_stamp!(reason: :failed, kind: :error, data: stamp_data)
     notify!("The workflow run has failed!", :workflow_run_failed, notification_params)
+  end
+
+  def on_trigger_fail!(error)
+    event_stamp!(reason: :trigger_failed, kind: :error, data: stamp_data.merge(error_message: error.message, error_reason: error.reason))
+    notify!("Failed to trigger the workflow run!", :workflow_trigger_failed, notification_params)
+    Signal.workflow_run_trigger_failed!(self)
   end
 
   def on_halt!

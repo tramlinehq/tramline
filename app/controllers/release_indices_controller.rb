@@ -5,6 +5,7 @@ class ReleaseIndicesController < SignedInApplicationController
   before_action :set_train, only: %i[edit update]
   before_action :set_app_from_train, only: %i[edit update]
   before_action :set_train_config_tabs, only: %i[edit update]
+  before_action :ensure_app_ready, only: %i[edit update]
 
   def edit
     @release_index = @train.release_index

@@ -2,6 +2,7 @@
 
 class BackfillReleaseIndex < ActiveRecord::Migration[7.0]
   def up
+    return
     Train.all.each do |train|
       next if train.release_index.present?
 

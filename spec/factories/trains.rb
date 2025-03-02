@@ -62,7 +62,7 @@ FactoryBot.define do
     after(:build) do |train|
       def train.working_branch_presence = true
 
-      def train.set_ci_cd_workflows = true
+      def train.fetch_ci_cd_workflows = true
 
       def train.ci_cd_workflows_presence = true
     end
