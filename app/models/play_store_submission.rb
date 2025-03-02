@@ -152,14 +152,15 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def upload_build!
-    return start_prepare! if build_present_in_store?
+    raise_on_lock_error = true
+    return start_prepare! if provider.find_build(build_number, raise_on_lock_error:).present?
 
     with_lock do
       return unless may_start_prepare?
       return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
       build.artifact.with_open do |file|
-        result = provider.upload(file)
+        result = provider.upload(file, raise_on_lock_error:)
         if result.ok?
           start_prepare!
         else
@@ -183,7 +184,14 @@ class PlayStoreSubmission < StoreSubmission
 
   def prepare_for_release!
     # return mock_prepare_for_release_for_play_store! if sandbox_mode?
-    result = provider.create_draft_release(submission_channel_id, build_number, release_version, notes, retry_on_review_fail: internal_channel?)
+    result = provider.create_draft_release(
+      submission_channel_id,
+      build_number,
+      release_version,
+      notes,
+      retry_on_review_fail: internal_channel?,
+      raise_on_lock_error: true
+    )
 
     if result.ok?
       finish_prepare!
@@ -202,7 +210,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def update_store_info!
-    store_data = provider.find_build_in_track(submission_channel_id, build_number)
+    store_data = provider.find_build_in_track(submission_channel_id, build_number, raise_on_lock_error: true)
     return unless store_data
     self.store_release = store_data
     self.store_status = store_data[:status]
@@ -222,7 +230,7 @@ class PlayStoreSubmission < StoreSubmission
 
     return if fail_with_review_rejected!(error)
     return fail!(reason: error.reason, error: error) if error.is_a?(Installations::Google::PlayDeveloper::Error)
-    fail!
+    fail!(error: error)
   end
 
   def fail_with_review_rejected!(error)
@@ -255,7 +263,7 @@ class PlayStoreSubmission < StoreSubmission
   private
 
   def check_manual_upload
-    if provider.build_present_in_channel?(submission_channel_id, build_number)
+    if provider.build_present_in_channel?(submission_channel_id, build_number, raise_on_lock_error: true)
       transaction do
         finish_manually!
         event_stamp!(reason: :finished_manually, kind: :notice, data: stamp_data)
@@ -311,11 +319,6 @@ class PlayStoreSubmission < StoreSubmission
     failure_error = args&.fetch(:error, nil)
     event_stamp!(reason: :failed, kind: :error, data: stamp_data(failure_message: failure_error&.message))
     notify!("Submission failed", :submission_failed, notification_params(failure_message: failure_error&.message))
-  end
-
-  def build_present_in_store?
-    # return mock_build_present_in_play_store? if sandbox_mode?
-    provider.find_build(build_number).present?
   end
 
   def stamp_data(failure_message: nil)

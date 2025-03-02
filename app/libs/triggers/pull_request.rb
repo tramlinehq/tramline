@@ -91,6 +91,8 @@ class Triggers::PullRequest
         raise MergeError, "Failed to merge the Pull Request"
       elsif ex.reason == :pull_request_failed_merge_check
         raise RetryableMergeError, "Failed to merge the Pull Request because of merge checks."
+      elsif ex.reason == :pull_request_closed
+        true
       else
         raise ex
       end

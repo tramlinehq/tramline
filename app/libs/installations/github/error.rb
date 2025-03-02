@@ -58,6 +58,14 @@ module Installations
       {
         message_matcher: /Merge conflict/i,
         decorated_reason: :merge_conflict
+      },
+      {
+        message_matcher: /Required input\s+.?\w+.?\s+not provided/i,
+        decorated_reason: :workflow_parameter_not_provided
+      },
+      {
+        message_matcher: /Workflow does not have 'workflow_dispatch' trigger/i,
+        decorated_reason: :workflow_dispatch_missing
       }
     ]
 

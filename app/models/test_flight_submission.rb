@@ -162,10 +162,6 @@ class TestFlightSubmission < StoreSubmission
     release_platform_run.default_release_metadata&.release_notes&.truncate(NOTES_MAX_LENGTH)
   end
 
-  def build_present_in_store?
-    find_build.ok?
-  end
-
   def update_store_info!(release_info)
     self.store_release = release_info.build_info
     self.store_status = release_info.attributes[:status]
