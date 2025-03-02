@@ -29,11 +29,11 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create_commit :refresh_external_app
 
   class LockAcquisitionError < StandardError
-    def initialize(msg = "Failed to acquire an internal lock to make Play Store calls. Please retry.")
+    def initialize(msg = "We could not complete this request, as there is another Play Store request in progress. Please retry after a few seconds.")
       super
     end
 
-    def reason = nil
+    def reason = :lock_acquisition_error
   end
 
   CACHE_EXPIRY = 1.month
@@ -281,7 +281,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def api_lock(priority: :high, &)
     raise ArgumentError, "You must provide a block" unless block_given?
-
     name = LOCK_NAME_PREFIX + integrable.id.to_s
     with_lock(name, api_lock_params(priority:), exception: LockAcquisitionError.new) { yield }
   end
@@ -289,9 +288,11 @@ class GooglePlayStoreIntegration < ApplicationRecord
   def api_lock_params(priority: :high)
     case priority
     when :high
-      {retry_count: 30, retry_delay: 200, ttl: 120_000}
+      # roughly match the sidekiq default timeout (which is 25s)
+      {retry_count: 40, retry_delay: 500, ttl: 120_000}
     when :low
-      {retry_count: 15, retry_delay: 200, ttl: 60_000}
+      # delay for longer, so high priority locks don't get stuck
+      {retry_count: 10, retry_delay: 1000, ttl: 160_000}
     else
       raise ArgumentError, "Invalid priority: #{priority}"
     end

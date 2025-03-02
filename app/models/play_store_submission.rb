@@ -230,7 +230,7 @@ class PlayStoreSubmission < StoreSubmission
 
     return if fail_with_review_rejected!(error)
     return fail!(reason: error.reason, error: error) if error.is_a?(Installations::Google::PlayDeveloper::Error)
-    fail!
+    fail!(error: error)
   end
 
   def fail_with_review_rejected!(error)
