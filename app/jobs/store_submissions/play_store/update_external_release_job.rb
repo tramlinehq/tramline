@@ -3,7 +3,7 @@ class StoreSubmissions::PlayStore::UpdateExternalReleaseJob < ApplicationJob
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(GooglePlayStoreIntegration::LockAcquisitionError)
-      backoff_in(attempt: count + 1, period: :minutes, type: :static, factor: 2).to_i
+      backoff_in(attempt: count + 1, period: :minutes, type: :static, factor: 1).to_i
     else
       :kill
     end
