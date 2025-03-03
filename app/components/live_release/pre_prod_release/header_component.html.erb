@@ -39,7 +39,7 @@
         <% button = modal.with_button(label: "Build Insights", scheme: :supporting, size: :xxs, type: :action) %>
         <% button.with_icon("lightbulb.svg", size: :md) %>
         <% modal.with_body do %>
-          <%= render partial: "pre_prod_releases/build_insights", locals: { builds: } %>
+          <%= render partial: "pre_prod_releases/build_insights", locals: {builds:} %>
         <% end %>
       <% end %>
     </div>

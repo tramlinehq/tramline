@@ -3,12 +3,13 @@
     <div class="flex text-sm items-center justify-between">
       <div class="flex gap-2">
         <%= render LiveRelease::BuildComponent.new(
-          submission.build,
-          show_metadata: false,
-          show_ci: false,
-          show_activity: false,
-          show_commit: false,
-          show_compact_metadata: true) %>
+              submission.build,
+              show_metadata: false,
+              show_ci: false,
+              show_activity: false,
+              show_commit: false,
+              show_compact_metadata: true
+            ) %>
 
         <%= render BadgeComponent.new(text: "Superseded", status: :neutral) %>
       </div>
@@ -29,14 +30,14 @@
     <div class="flex items-center gap-1.5 text-center">
       <%= render BadgeComponent.new(text: store_status, status: :neutral) %>
       <%= render ButtonComponent.new(label: "Store dashboard ↗",
-                                         scheme: :link,
-                                         type: :link_external,
-                                         options: external_link,
-                                         html_options: { class: "text-sm" },
-                                         authz: false,
-                                         size: :none) do |b|
-        b.with_icon(store_icon, size: :md)
-      end %>
+                                     scheme: :link,
+                                     type: :link_external,
+                                     options: external_link,
+                                     html_options: {class: "text-sm"},
+                                     authz: false,
+                                     size: :none) do |b|
+            b.with_icon(store_icon, size: :md)
+          end %>
     </div>
   </div>
 <% end %>

@@ -13,14 +13,12 @@ module Site
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks])
+    config.autoload_lib(ignore: %w[assets tasks structured_logger.rb])
 
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
-    #
-    # config.time_zone = "Central Time (US & Canada)"
     config.eager_load_paths << Rails.root.join("lib")
     config.active_job.queue_adapter = :sidekiq
     config.active_model.i18n_customize_full_message = true
@@ -29,11 +27,7 @@ module Site
     config.action_dispatch.default_headers["X-XSS-Protection"] = "1; mode=block"
     PaperTrail.config.version_limit = 10
     config.active_storage.draw_routes = false
-
-    require "logging_extensions"
-    require "json_logger"
-    config.log_formatter = LoggingExtensions.default_log_formatter
-    config.logger = ActiveSupport::TaggedLogging.new(JsonLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
+    config.lograge.enabled = false
 
     if ENV["RAILS_PIPELINE_ENV"].present?
       Rails.application.config.credentials.content_path =

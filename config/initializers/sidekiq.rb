@@ -28,7 +28,11 @@ Sidekiq.configure_server do |config|
   end
 
   config.error_handlers << ->(ex, _ctx) do
-    Sentry.capture_exception(ex)
+    Sentry.capture_exception(ex, level: :warn)
+  end
+
+  config.death_handlers << ->(_job, ex) do
+    Sentry.capture_exception(ex, level: :error)
   end
 
   # from https://gitlab.com/gitlab-org/gitlab/-/tree/master/vendor/gems/sidekiq-reliable-fetch
