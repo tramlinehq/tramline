@@ -1,5 +1,5 @@
 module Loggable
-  def elog(e, level: :error)
+  def elog(e, level:)
     Rails.logger.public_send(level, e)
     sentry_level = (level == :warn) ? :warning : level
     Sentry.capture_exception(e, level: sentry_level)
