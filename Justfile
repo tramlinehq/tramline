@@ -33,8 +33,9 @@ bundle +command:
 devlog log_lines="1000":
   tail -f -n {{ log_lines }} log/development.log
 
-bglog log_lines="100":
-  tail -f -n {{ log_lines }} log/sidekiq.log
+bglog log_lines="20":
+  @ echo "=====\nNOTE:\n=====\nWorker logs are STDOUT only.\nThis command tails and pull logs from the worker container.\nThis is in-line with how daemons should log: https://github.com/sidekiq/sidekiq/wiki/Logging#logger.\n↓"
+  docker-compose logs -f --no-log-prefix --tail={{ log_lines }} worker
 
 attach container="web":
   docker attach --detach-keys "ctrl-d" tramline-{{ container }}-1
