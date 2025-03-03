@@ -4,9 +4,9 @@
     <div class="border-l border-main-300 dark:border-main-600 pl-1.5"><%= grade %></div>
   </div>
   <%= render ModalComponent.new(title: "Reldex for #{release_version}",
-                                    size: :sm,
-                                    type: :drawer,
-                                    authz: false) do |modal| %>
+                                size: :sm,
+                                type: :drawer,
+                                authz: false) do |modal| %>
     <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
     <% button.with_icon("info_full.svg", size: :base) %>
     <% button.with_tooltip("Open release score details", placement: "top") %>

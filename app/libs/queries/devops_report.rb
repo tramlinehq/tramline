@@ -17,7 +17,7 @@ class Queries::DevopsReport
   def warm
     cache.write(cache_key, report)
   rescue => e
-    elog(e)
+    elog(e, level: :debug)
   end
 
   def all

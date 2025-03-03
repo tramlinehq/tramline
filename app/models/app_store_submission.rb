@@ -202,7 +202,7 @@ class AppStoreSubmission < StoreSubmission
     result = provider.find_release(build_number)
 
     unless result.ok?
-      elog(result.error)
+      elog(result.error, level: :warn)
       raise SubmissionNotInTerminalState, "Retrying in some time..."
     end
 

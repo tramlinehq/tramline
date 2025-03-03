@@ -102,6 +102,7 @@ group :development, :test do
   gem "rubocop-rspec_rails", require: false
   gem "stateoscope"
   gem "error_highlight"
+  gem "erb_lint", require: false
 end
 
 group :development do
@@ -111,6 +112,8 @@ group :development do
   gem "rack-mini-profiler"
   gem "letter_opener"
   gem "letter_opener_web"
+  gem "pry-byebug"
+  gem "readline"
 end
 
 group :test do

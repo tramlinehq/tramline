@@ -14,17 +14,16 @@
                  &.include?(project["key"]) %>
 
           <%= sf.checkbox :selected_projects,
-                          { multiple: true,
-                            include_hidden: false,
-                            id: "project_#{project["key"]}",
-                            checked:,
-                            data: {
-                              action: "targeted-toggle#toggle",
-                              section_key: project_key,
-                              targeted_toggle_target: "section",
-                            },
-                          },
-                          project["key"] %>
+                {multiple: true,
+                 include_hidden: false,
+                 id: "project_#{project["key"]}",
+                 checked:,
+                 data: {
+                   action: "targeted-toggle#toggle",
+                   section_key: project_key,
+                   targeted_toggle_target: "section"
+                 }},
+                project["key"] %>
         <% end %>
 
         <label for="project_<%= project["key"] %>" class="ml-2 text-sm font-medium text-gray-900">
@@ -58,8 +57,8 @@
                              &.include?(status["name"]) %>
 
                       <%= pk.checkbox :done_states,
-                                      { multiple: true, include_hidden: false, id: status_name, checked: },
-                                      status["name"] %>
+                            {multiple: true, include_hidden: false, id: status_name, checked:},
+                            status["name"] %>
                     <% end %>
                   <% end %>
                 <% end %>
@@ -90,14 +89,15 @@
     <div data-controller="nested-form-ext" class="grid item-gap-default">
       <div>
         <%= render ButtonComponent.new(
-          scheme: :light,
-          type: :action,
-          size: :xs,
-          label: "Add filter",
-          html_options: { data: { action: "nested-form-ext#add" } },
-          arrow: :none) do |b|
-          b.with_icon("plus.svg", rounded: false)
-        end %>
+              scheme: :light,
+              type: :action,
+              size: :xs,
+              label: "Add filter",
+              html_options: {data: {action: "nested-form-ext#add"}},
+              arrow: :none
+            ) do |b|
+              b.with_icon("plus.svg", rounded: false)
+            end %>
       </div>
 
       <ul class="flex flex-col gap-2">
@@ -105,13 +105,13 @@
 
         <% release_filters.each_with_index do |filter, index| %>
           <li class="nested-form-wrapper" data-new-record="false">
-            <%= render partial: "jira_integration/release_filter_form", locals: { form:, filter: filter, index: index } %>
+            <%= render partial: "jira_integration/release_filter_form", locals: {form:, filter: filter, index: index} %>
           </li>
         <% end %>
 
         <template data-nested-form-ext-target="template">
           <li class="nested-form-wrapper" data-new-record="true">
-            <%= render partial: "jira_integration/release_filter_form", locals: { form:, index: "NEW_RECORD" } %>
+            <%= render partial: "jira_integration/release_filter_form", locals: {form:, index: "NEW_RECORD"} %>
           </li>
         </template>
 

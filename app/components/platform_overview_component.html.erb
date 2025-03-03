@@ -3,7 +3,7 @@
     <% platform.runs do |run| %>
       <div class="grid gap-2">
         <%= render partial: "shared/store_versions",
-                   locals: { production_releases: run.production_releases, show_build:, view_context: } %>
+                   locals: {production_releases: run.production_releases, show_build:, view_context:} %>
       </div>
     <% end %>
   <% end %>
@@ -24,10 +24,11 @@
       <div>
         <% if run.production_store_rollouts.exists? %>
           <%= render ReleaseMonitoringComponent.new(
-            store_rollout: run.production_store_rollouts.last,
-            metrics: [:stability, :adoption_rate, :staged_rollout],
-            size: monitoring_size,
-            num_events: 1) %>
+                store_rollout: run.production_store_rollouts.last,
+                metrics: [:stability, :adoption_rate, :staged_rollout],
+                size: monitoring_size,
+                num_events: 1
+              ) %>
         <% end %>
       </div>
     <% end %>

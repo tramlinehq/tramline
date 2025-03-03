@@ -11,107 +11,107 @@
     <!-- past -->
     <% if past_releases.size == 2 %>
       <%= render partial: "scheduled_release/show", locals: {
-        header: past_text(past_releases[0]),
-        title: past_title(past_releases[0]),
-        status: scheduled_release_status(past_releases[0]),
-        box_classes: nil,
-        empty_icon: "fast_forward.svg",
-        footer: time_format(past_releases[0].scheduled_at, only_day: true)
-      } %>
+            header: past_text(past_releases[0]),
+            title: past_title(past_releases[0]),
+            status: scheduled_release_status(past_releases[0]),
+            box_classes: nil,
+            empty_icon: "fast_forward.svg",
+            footer: time_format(past_releases[0].scheduled_at, only_day: true)
+          } %>
       <%= render partial: "scheduled_release/show", locals: {
-        header: past_text(past_releases[1]),
-        title: past_title(past_releases[1]),
-        status: scheduled_release_status(past_releases[1]),
-        box_classes: nil,
-        empty_icon: "fast_forward.svg",
-        footer: time_format(past_releases[1].scheduled_at, only_day: true)
-      } %>
+            header: past_text(past_releases[1]),
+            title: past_title(past_releases[1]),
+            status: scheduled_release_status(past_releases[1]),
+            box_classes: nil,
+            empty_icon: "fast_forward.svg",
+            footer: time_format(past_releases[1].scheduled_at, only_day: true)
+          } %>
     <% elsif past_releases.size == 1 %>
       <%= render partial: "scheduled_release/show", locals: {
-        title: nil,
-        header: "There are no past releases",
-        empty_icon: "fast_forward.svg",
-        box_classes: nil,
-        status: inactive_status,
-        footer: nil,
-      } %>
+            title: nil,
+            header: "There are no past releases",
+            empty_icon: "fast_forward.svg",
+            box_classes: nil,
+            status: inactive_status,
+            footer: nil
+          } %>
       <%= render partial: "scheduled_release/show", locals: {
-        header: past_text(past_releases[0]),
-        title: past_title(past_releases[0]),
-        status: scheduled_release_status(past_releases[0]),
-        box_classes: nil,
-        empty_icon: "fast_forward.svg",
-        footer: time_format(past_releases[0].scheduled_at, only_day: true)
-      } %>
+            header: past_text(past_releases[0]),
+            title: past_title(past_releases[0]),
+            status: scheduled_release_status(past_releases[0]),
+            box_classes: nil,
+            empty_icon: "fast_forward.svg",
+            footer: time_format(past_releases[0].scheduled_at, only_day: true)
+          } %>
     <% else %>
       <% 2.times do %>
         <%= render partial: "scheduled_release/show", locals: {
-          title: nil,
-          header: "There are no past releases",
-          empty_icon: "fast_forward.svg",
-          box_classes: nil,
-          status: inactive_status,
-          footer: nil,
-        } %>
+              title: nil,
+              header: "There are no past releases",
+              empty_icon: "fast_forward.svg",
+              box_classes: nil,
+              status: inactive_status,
+              footer: nil
+            } %>
       <% end %>
     <% end %>
 
     <!-- ongoing -->
     <% if ongoing_release.present? %>
       <%= render partial: "scheduled_release/show", locals: {
-        header: ongoing_text,
-        title: ongoing_release.release_version,
-        status: release_status(ongoing_release),
-        box_classes: "bg-diagonal-stripes-soft-blue",
-        empty_icon: "coffee.svg",
-        footer: time_format(ongoing_release.scheduled_at, only_day: true)
-      } %>
+            header: ongoing_text,
+            title: ongoing_release.release_version,
+            status: release_status(ongoing_release),
+            box_classes: "bg-diagonal-stripes-soft-blue",
+            empty_icon: "coffee.svg",
+            footer: time_format(ongoing_release.scheduled_at, only_day: true)
+          } %>
     <% else %>
       <%= render partial: "scheduled_release/show", locals: {
-        header: ongoing_text,
-        title: nil,
-        status: nil,
-        box_classes: nil,
-        empty_icon: "coffee.svg",
-        footer: nil
-      } %>
+            header: ongoing_text,
+            title: nil,
+            status: nil,
+            box_classes: nil,
+            empty_icon: "coffee.svg",
+            footer: nil
+          } %>
     <% end %>
 
     <!-- future -->
     <% if future_release.present? %>
       <%= render partial: "scheduled_release/show", locals: {
-        header: time_text(future_release),
-        title: next_version,
-        empty_icon: "calendar.svg",
-        status: scheduled_release_status(future_release),
-        box_classes: nil,
-        footer: time_format(future_release.scheduled_at, only_day: true)
-      } %>
+            header: time_text(future_release),
+            title: next_version,
+            empty_icon: "calendar.svg",
+            status: scheduled_release_status(future_release),
+            box_classes: nil,
+            footer: time_format(future_release.scheduled_at, only_day: true)
+          } %>
       <%= render partial: "scheduled_release/show", locals: {
-        header: time_text(future_release),
-        title: next_next_version,
-        empty_icon: "calendar.svg",
-        status: scheduled_release_status(future_release),
-        box_classes: "opacity-50",
-        footer: time_format(next_to_next_run_at, only_day: true)
-      } %>
+            header: time_text(future_release),
+            title: next_next_version,
+            empty_icon: "calendar.svg",
+            status: scheduled_release_status(future_release),
+            box_classes: "opacity-50",
+            footer: time_format(next_to_next_run_at, only_day: true)
+          } %>
     <% else %>
       <%= render partial: "scheduled_release/show", locals: {
-        title: nil,
-        header: "There are no scheduled releases",
-        empty_icon: "calendar.svg",
-        box_classes: nil,
-        status: inactive_status,
-        footer: nil,
-      } %>
+            title: nil,
+            header: "There are no scheduled releases",
+            empty_icon: "calendar.svg",
+            box_classes: nil,
+            status: inactive_status,
+            footer: nil
+          } %>
       <%= render partial: "scheduled_release/show", locals: {
-        title: nil,
-        header: "There are no scheduled releases",
-        empty_icon: "calendar.svg",
-        box_classes: nil,
-        status: inactive_status,
-        footer: nil,
-      } %>
+            title: nil,
+            header: "There are no scheduled releases",
+            empty_icon: "calendar.svg",
+            box_classes: nil,
+            status: inactive_status,
+            footer: nil
+          } %>
     <% end %>
   </div>
 <% end %>

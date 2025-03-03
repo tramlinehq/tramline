@@ -31,15 +31,16 @@
 
         <div>
           <%= render ButtonComponent.new(
-            scheme: :supporting,
-            label: "Go to release",
-            options: release_path(release),
-            size: :sm,
-            html_options: { class: "-mr-2" },
-            authz: false,
-            type: :link) do |b|
-            b.with_icon("arrow_right.svg")
-          end %>
+                scheme: :supporting,
+                label: "Go to release",
+                options: release_path(release),
+                size: :sm,
+                html_options: {class: "-mr-2"},
+                authz: false,
+                type: :link
+              ) do |b|
+                b.with_icon("arrow_right.svg")
+              end %>
         </div>
       </div>
     </div>
@@ -64,25 +65,25 @@
       <div class="flex flex-row justify-end space-x-1">
         <% if release_branch.present? %>
           <%= render ButtonComponent.new(label: release_branch,
-                                             scheme: :link,
-                                             type: :link_external,
-                                             options: release.branch_url,
-                                             authz: false,
-                                             size: :xxs,
-                                             arrow: :none) do |b|
-            b.with_icon(vcs_provider_logo, size: :sm)
-          end %>
+                                         scheme: :link,
+                                         type: :link_external,
+                                         options: release.branch_url,
+                                         authz: false,
+                                         size: :xxs,
+                                         arrow: :none) do |b|
+                b.with_icon(vcs_provider_logo, size: :sm)
+              end %>
         <% end %>
         <% if tag_name.present? %>
           <%= render ButtonComponent.new(label: tag_name,
-                                             scheme: :link,
-                                             type: :link_external,
-                                             options: release.tag_url,
-                                             authz: false,
-                                             size: :xxs,
-                                             arrow: :none) do |b|
-            b.with_icon(vcs_provider_logo, size: :sm)
-          end %>
+                                         scheme: :link,
+                                         type: :link_external,
+                                         options: release.tag_url,
+                                         authz: false,
+                                         size: :xxs,
+                                         arrow: :none) do |b|
+                b.with_icon(vcs_provider_logo, size: :sm)
+              end %>
         <% end %>
       </div>
     </div>

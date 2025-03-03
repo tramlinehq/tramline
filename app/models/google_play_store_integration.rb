@@ -194,19 +194,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
   def find_app
     return @find_app if @find_app
     result = execute_with_retry(lock_priority: :low, raise_on_lock_error: false) { installation.app_details(APP_TRANSFORMS) }
-    return elog(result.error) unless result.ok?
-    @find_app = result.value!
+    result.ok? ? @find_app = result.value! : nil
   end
 
   def channel_data
     return @channel_data if @channel_data
-    result = execute_with_retry(lock_priority: :low, raise_on_lock_error: false) do
-      installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
-    end
-
-    # TODO: move elog to execute_with_retry and warn on sentry etc.
-    return elog(result.error) unless result.ok?
-    @channel_data = result.value!
+    result = execute_with_retry(lock_priority: :low, raise_on_lock_error: false) { installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS) }
+    result.ok? ? @channel_data = result.value! : nil
   end
 
   def draft_check?
@@ -255,6 +249,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     result = GitHub::Result.new do
       api_lock(priority: lock_priority) { yield(skip_review) }
     rescue Installations::Google::PlayDeveloper::Error, LockAcquisitionError => ex
+      elog(ex, level: :warn)
       raise ex if attempt >= MAX_RETRY_ATTEMPTS
       next_attempt = attempt + 1
 
