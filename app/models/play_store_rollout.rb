@@ -111,7 +111,15 @@ class PlayStoreRollout < StoreRollout
     with_lock do
       return unless may_halt?
 
-      result = provider.halt_release(submission_channel_id, build_number, release_version, last_rollout_percentage, retry_on_review_fail: true)
+      result = provider.halt_release(
+        submission_channel_id,
+        build_number,
+        release_version,
+        last_rollout_percentage,
+        retry_on_review_fail: true,
+        raise_on_lock_error: false
+      )
+
       if result.ok?
         halt!
       else
@@ -136,7 +144,10 @@ class PlayStoreRollout < StoreRollout
   end
 
   def rollout_in_progress?
-    provider.build_in_progress?(submission_channel_id, build_number)
+    provider.build_in_progress?(submission_channel_id, build_number, raise_on_lock_error: true)
+  rescue GooglePlayStoreIntegration::LockAcquisitionError => e
+    errors.add(:base, e.message)
+    false
   end
 
   private
@@ -151,7 +162,15 @@ class PlayStoreRollout < StoreRollout
   end
 
   def rollout(value, retry_on_review_fail: false)
-    provider.rollout_release(submission_channel_id, build_number, release_version, value, nil, retry_on_review_fail:)
+    provider.rollout_release(
+      submission_channel_id,
+      build_number,
+      release_version,
+      value,
+      nil,
+      retry_on_review_fail:,
+      raise_on_lock_error: false
+    )
   end
 
   def on_start!

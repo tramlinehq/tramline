@@ -350,8 +350,4 @@ class AppStoreSubmission < StoreSubmission
     # TODO: update store version details when release metadata changes
     # update whats new, build
   end
-
-  def build_present_in_store?
-    find_build.ok?
-  end
 end
