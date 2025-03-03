@@ -7,7 +7,6 @@ class TriggerSubmissionsJob < ApplicationJob
     workflow_run = WorkflowRun.find(workflow_run_id)
     Coordinators::TriggerSubmissions.call(workflow_run)
   rescue Installations::Error => ex
-    raise unless ex.reason == :artifact_not_found
     if retry_count >= MAX_RETRIES
       workflow_run&.triggering_release&.fail!
     else

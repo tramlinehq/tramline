@@ -112,12 +112,10 @@ class Build < ApplicationRecord
     self.version_name = [release_platform_run.release_version, build_suffix.presence].compact.join(BUILD_SUFFIX_SEPARATOR)
   end
 
-  # TODO: not just return nil but actually handle and raise it so it can be retried
   def get_build_artifact
     ci_cd_provider.get_artifact(artifacts_url, artifact_name_pattern, external_workflow_run_id: workflow_run.external_id)
   rescue Installations::Error => ex
-    raise ex unless ex.reason == :artifact_not_found
     elog(ex, level: :error)
-    nil
+    raise
   end
 end
