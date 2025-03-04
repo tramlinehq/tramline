@@ -1,3 +1,3 @@
 # rubocop:disable Rails/Output
-Seed::DevStarter.call
+Seed::DevStarter.new.call
 # rubocop:enable Rails/Output

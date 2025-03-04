@@ -4,8 +4,7 @@ module Seed
   class DevStarter
     include Seed::Constants
 
-    def self.call
-      new.call
+    def initialize
     end
 
     def call
@@ -19,6 +18,8 @@ module Seed
 
       puts "Completed seeding database"
     end
+
+    private
 
     def create_admin_user
       email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: ADMIN_EMAIL)
@@ -83,10 +84,6 @@ module Seed
 
       puts "Added/updated developer user."
     end
-
-    private_class_method :create_admin_user
-    private_class_method :create_owner_user
-    private_class_method :create_developer_user
   end
 end
 
