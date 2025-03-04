@@ -84,6 +84,7 @@ gem "active_record_union", "~> 1.3"
 gem "pg_search", "~> 2.3"
 gem "net-imap", "~> 0.5.6"
 gem "redlock", "~> 2.0"
+gem 'uri', '~> 0.13.2'
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
