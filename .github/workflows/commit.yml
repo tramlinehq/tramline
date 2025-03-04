@@ -1,0 +1,16 @@
+name: Lint Commit Messages in Merge Queue
+
+on:
+  merge_group:
+    types:
+      - checks_requested
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - uses: wagoid/commitlint-github-action@v6
