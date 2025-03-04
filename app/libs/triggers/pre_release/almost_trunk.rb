@@ -10,8 +10,8 @@ class Triggers::PreRelease
     end
 
     def call
-      create_branch
       bump_version if should_bump_version?
+      create_branch
     end
 
     private
@@ -54,14 +54,18 @@ class Triggers::PreRelease
     end
 
     def should_bump_version?
-      # TODO: Check if config is enabled
-      true
+      train.version_bump_enabled?
     end
 
     def bump_version
       GitHub::Result.new do
-        # Find build files in the repository
-        build_files = ["pubspec.yaml"] # find_build_files
+        # Use configured build files or fall back to finding them
+        build_files = if train.version_bump_file_paths.present?
+          train.version_bump_file_paths.split(",").map(&:strip)
+        else
+          find_build_files
+        end
+
         return if build_files.empty?
 
         # Create a version bump branch
@@ -120,7 +124,6 @@ class Triggers::PreRelease
     end
 
     def find_build_files
-      # This would need to be implemented based on your repository structure
       files = []
 
       # Check for Flutter pubspec.yaml
