@@ -280,8 +280,8 @@ class Integration < ApplicationRecord
   end
 
   def validate_providable
-    unless providable&.valid?
-      errors.add(:base, providable.errors.full_messages[0])
+    if providable && !providable.valid?
+      errors.add(:base, providable&.errors&.full_messages&.[](0))
     end
   end
 
