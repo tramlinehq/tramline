@@ -19,11 +19,11 @@
       <% if hotfix? %>
         <% component.with_data_set(title: "Hotfix from") do %>
           <%= render ButtonComponent.new(scheme: :link,
-                                             label: hotfixed_from.release_version,
-                                             options: hotfixed_from.live_release_link,
-                                             type: :link_external,
-                                             size: :none,
-                                             authz: false) %>
+                                         label: hotfixed_from.release_version,
+                                         options: hotfixed_from.live_release_link,
+                                         type: :link_external,
+                                         size: :none,
+                                         authz: false) %>
         <% end %>
       <% end %>
       <% component.with_data_set(title: "Started").with_content(display_start_time) %>
@@ -46,12 +46,12 @@
       <% card.with_action do %>
         <%= render ModalComponent.new(title: "Edit Internal Notes", dismissable: false) do |modal| %>
           <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none)
-                  .with_icon("pencil.svg", size: :sm) %>
+               .with_icon("pencil.svg", size: :sm) %>
           <% modal.with_body do %>
             <%= form_with(model: [release], method: :put, builder: EnhancedFormHelper::AuthzForm) do |form| %>
               <div data-controller="text-editor" data-text-editor-view-mode-value="false" class="mb-4">
                 <div data-text-editor-target="editor"></div>
-                <%= form.textarea :internal_notes, { class: "hidden", data: { text_editor_target: "editorReplica" } } %>
+                <%= form.textarea :internal_notes, {class: "hidden", data: {text_editor_target: "editorReplica"}} %>
               </div>
 
               <%= form.authz_submit "Save", "archive.svg" %>

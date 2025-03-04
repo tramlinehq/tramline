@@ -6,16 +6,14 @@
         <%= form.F.hidden_field :state, value: params[:state] %>
 
         <% options = @resources.map do |org| %>
-          <%
-            {
-              title: org["name"],
-              subtitle: org["url"],
-              icon: "integrations/logo_jira.png",
-              opt_name: :cloud_id,
-              opt_value: org["id"],
-              options: { checked: true }
-            }
-          %>
+          <% {
+               title: org["name"],
+               subtitle: org["url"],
+               icon: "integrations/logo_jira.png",
+               opt_name: :cloud_id,
+               opt_value: org["id"],
+               options: {checked: true}
+             } %>
         <% end %>
 
         <%= render OptionCardsComponent.new(form: form.F, options:) %>

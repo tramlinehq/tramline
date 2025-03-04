@@ -150,16 +150,6 @@ class App < ApplicationRecord
     end
   end
 
-  def store_link
-    if android?
-      GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
-    elsif ios?
-      APP_STORE_URL_TEMPLATE.expand(id: external_id).to_s
-    else
-      "google.com" # FIXME
-    end
-  end
-
   def notifications_set_up?
     notification_provider.present?
   end

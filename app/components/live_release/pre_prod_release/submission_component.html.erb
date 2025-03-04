@@ -36,10 +36,10 @@
 
       <% if active? %>
         <%= render partial: "shared/show_time_ago",
-                   locals: { tooltip_text: last_activity_tooltip,
-                             tooltip_placement: "bottom",
-                             time: last_activity_ts,
-                             tick: last_activity_tick? } %>
+                   locals: {tooltip_text: last_activity_tooltip,
+                            tooltip_placement: "bottom",
+                            time: last_activity_ts,
+                            tick: last_activity_tick?} %>
       <% end %>
     </div>
 
@@ -47,10 +47,10 @@
       <%= render AlertComponent.new(type: :error, title: raw(submission.last_failed_event.message), full_screen: false) %>
     <% end %>
 
-    <%= render partial: "shared/play_store_review_rejected", locals: { show: submission.failed_with_action_required?,
-                                                                       build:,
-                                                                       actionable: true,
-                                                                       channel_name: submission.submission_channel.name } %>
+    <%= render partial: "shared/play_store_review_rejected", locals: {show: submission.failed_with_action_required?,
+                                                                      build:,
+                                                                      actionable: true,
+                                                                      channel_name: submission.submission_channel.name} %>
 
     <%= render SectionComponent.new(title: "External info", style: :titled, size: :micro) do %>
       <div class="flex flex-col gap-2">
@@ -66,7 +66,7 @@
                 <%= render ButtonComponent.new(scheme: :naked_icon,
                                                type: :link_external,
                                                options: submission.store_link,
-                                               html_options: { class: "text-xs" },
+                                               html_options: {class: "text-xs"},
                                                authz: false,
                                                size: :none) do |b| %>
                   <% b.with_icon("external_link.svg", size: :md) %>

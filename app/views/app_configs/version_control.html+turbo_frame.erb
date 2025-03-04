@@ -10,22 +10,22 @@
              data-stream-effect-url-value="<%= edit_app_app_config_url(@app, integration_category: "version_control") %>"
              data-stream-effect-param-value="workspace">
           <%= section.F.labeled_select :bitbucket_workspace,
-                                       "Workspace",
-                                       options_for_select(@workspaces, selected: @config.bitbucket_workspace),
-                                       {},
-                                       disabled: @workspaces.blank?,
-                                       class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES,
-                                       data: { action: "change->stream-effect#fetch", stream_effect_target: "dispatch" } %>
+                "Workspace",
+                options_for_select(@workspaces, selected: @config.bitbucket_workspace),
+                {},
+                disabled: @workspaces.blank?,
+                class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES,
+                data: {action: "change->stream-effect#fetch", stream_effect_target: "dispatch"} %>
         </div>
       <% end %>
 
       <div>
         <%= section.F.labeled_select :code_repository,
-                                     "Code Repository",
-                                     options_for_select(
-                                       display_channels(@code_repositories) { |repo| repo[:full_name] },
-                                       @config.code_repository.to_json
-                                     ) %>
+              "Code Repository",
+              options_for_select(
+                display_channels(@code_repositories) { |repo| repo[:full_name] },
+                @config.code_repository.to_json
+              ) %>
       </div>
 
     <% end %>
