@@ -20,7 +20,7 @@ module Seed
       puts "Completed seeding database"
     end
 
-    def self.create_admin_user
+    def create_admin_user
       email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: ADMIN_EMAIL)
       admin = true
 
@@ -32,7 +32,7 @@ module Seed
       puts "Added/updated admin user."
     end
 
-    def self.create_owner_user
+    def create_owner_user
       email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: OWNER_EMAIL)
 
       if email_authentication.persisted?
@@ -58,7 +58,7 @@ module Seed
       puts "Added/updated owner user."
     end
 
-    def self.create_developer_user
+    def create_developer_user
       email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: DEVELOPER_EMAIL)
 
       if email_authentication.persisted?
