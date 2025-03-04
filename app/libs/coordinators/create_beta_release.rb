@@ -16,7 +16,7 @@ class Coordinators::CreateBetaRelease
 
     transaction do
       release_platform_run.update_last_commit!(commit)
-      release_platform_run.bump_version!
+      release_platform_run.bump_version! # <-- 
       release_platform_run.correct_version!
       beta_release = release_platform_run.beta_releases.create!(config:, previous:, commit:)
       WorkflowRun.create_and_trigger!(rc_workflow_config, beta_release, commit, release_platform_run)

@@ -163,7 +163,7 @@ class Release < ApplicationRecord
   before_create :set_version
   before_create :set_internal_notes
   after_create :create_platform_runs!
-  after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
+  after_create :create_build_queue! # , if: -> { train.build_queue_enabled? } TODO: add separate flag for version bump
   after_commit -> { Releases::CopyPreviousApprovalsJob.perform_async(id) }, on: :create, if: :copy_approvals_enabled?
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 

@@ -364,6 +364,39 @@ class ReleasePlatformRun < ApplicationRecord
 
   def conf = Config::ReleasePlatform.from_json(config)
 
+  def has_pending_version_bump_pr?
+    version_bump_prs.open.exists?
+  end
+
+  def version_bump_prs
+    release.pull_requests.where(
+      phase: PullRequest.phases[:ongoing],
+      head_ref: /\Aversion-bump-#{Regexp.escape(release_version)}/
+    )
+  end
+
+  def mark_version_bump_pr_merged!(pr_number)
+    # Find the PR
+    pr = version_bump_prs.find_by(number: pr_number)
+    return unless pr.present?
+    
+    # Update PR state
+    pr.close!
+    
+    # Apply queued commits if any
+    release.active_build_queue.apply_if_ready!
+    
+    # Log the event
+    # event_stamp!(
+    #   reason: :version_bump_pr_merged,
+    #   kind: :notice,
+    #   data: {
+    #     pr_number: pr_number,
+    #     version: release_version
+    #   }
+    # )
+  end
+
   private
 
   def base_tag_name
