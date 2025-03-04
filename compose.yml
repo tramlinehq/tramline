@@ -157,4 +157,3 @@ volumes:
   rails_cache:
   postgres:
   redis:
-  applelink_data:
