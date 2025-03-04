@@ -836,7 +836,6 @@ DEPENDENCIES
   letter_opener_web
   lograge (~> 0.12.0)
   memery (~> 1.4)
-  net-imap (~> 0.5.6)
   octokit (~> 4.22)
   oj (~> 3.13)
   ougai (~> 2.0)
@@ -885,7 +884,6 @@ DEPENDENCIES
   tailwindcss-rails (~> 2.0)
   turbo-rails (~> 2.0)
   tzinfo-data
-  uri (~> 0.13.2)
   view_component (~> 3.0)
   web-console
   webdrivers
