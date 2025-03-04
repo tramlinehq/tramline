@@ -68,14 +68,7 @@ class Build < ApplicationRecord
   def attach_artifact!
     # return mock_attach_artifact if sandbox_mode?
     return if artifacts_url.blank?
-
     artifact_data = get_build_artifact
-
-    if artifact_data.blank?
-      update!(generated_at: workflow_run.finished_at)
-      notify!("A new build is available!", :build_available_v2, notification_params)
-      return
-    end
 
     stream = artifact_data[:stream]
     artifact_metadata = artifact_data[:artifact]
@@ -93,6 +86,11 @@ class Build < ApplicationRecord
 
     save!
     notify!("A new build is available!", :build_available_v2, notification_params, slack_file_id, display_name)
+  end
+
+  def mark_available_without_artifact
+    update!(generated_at: workflow_run.finished_at)
+    notify!("A new build is available!", :build_available_v2, notification_params)
   end
 
   def notification_params
