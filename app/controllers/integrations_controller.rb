@@ -21,10 +21,11 @@ class IntegrationsController < SignedInApplicationController
     return redirect_to app_integrations_path(@app), alert: "Integration not found or not connected." unless @existing_integration&.connected?
 
     update_new_integration!
+
     if @integration.save
       redirect_to app_integrations_path(@app), notice: "#{@existing_integration.providable_type} integration reused successfully."
     else
-      redirect_to app_integrations_path(@app), flash: {error: new_integration.errors.full_messages.to_sentence}
+      redirect_to app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
     end
   end
 
