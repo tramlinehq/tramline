@@ -4,13 +4,17 @@ module Seed
   class DevStarter
     include Seed::Constants
 
+    def self.call
+      new.call
+    end
+
     def call
       puts "Seeding database..."
 
       ActiveRecord::Base.transaction do
-        self.class.send(:create_admin_user)
-        self.class.send(:create_owner_user)
-        self.class.send(:create_developer_user)
+        create_admin_user
+        create_owner_user
+        create_developer_user
       end
 
       puts "Completed seeding database"
