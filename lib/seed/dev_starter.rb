@@ -4,19 +4,25 @@ module Seed
   class DevStarter
     include Seed::Constants
 
+    def self.call
+      new.call
+    end
+
     def call
       puts "Seeding database..."
 
       ActiveRecord::Base.transaction do
-        self.class.send(:create_admin_user)
-        self.class.send(:create_owner_user)
-        self.class.send(:create_developer_user)
+        create_admin_user
+        create_owner_user
+        create_developer_user
       end
 
       puts "Completed seeding database"
     end
 
-    def self.create_admin_user
+    private
+
+    def create_admin_user
       email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: ADMIN_EMAIL)
       admin = true
 
@@ -28,7 +34,7 @@ module Seed
       puts "Added/updated admin user."
     end
 
-    def self.create_owner_user
+    def create_owner_user
       email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: OWNER_EMAIL)
 
       if email_authentication.persisted?
@@ -54,7 +60,7 @@ module Seed
       puts "Added/updated owner user."
     end
 
-    def self.create_developer_user
+    def create_developer_user
       email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: DEVELOPER_EMAIL)
 
       if email_authentication.persisted?
@@ -79,10 +85,6 @@ module Seed
 
       puts "Added/updated developer user."
     end
-
-    private_class_method :create_admin_user
-    private_class_method :create_owner_user
-    private_class_method :create_developer_user
   end
 end
 
