@@ -128,7 +128,9 @@ class TrainsController < SignedInApplicationController
       :patch_version_bump_only,
       :approvals_enabled,
       :copy_approvals,
-      :auto_apply_patch_changes
+      :auto_apply_patch_changes,
+      :version_bump_enabled,
+      :version_bump_file_paths
     )
   end
 
@@ -170,7 +172,9 @@ class TrainsController < SignedInApplicationController
       :patch_version_bump_only,
       :approvals_enabled,
       :copy_approvals,
-      :auto_apply_patch_changes
+      :auto_apply_patch_changes,
+      :version_bump_enabled,
+      :version_bump_file_paths
     )
   end
 

@@ -431,5 +431,122 @@ module Installations
       installation_token = client.create_app_installation_access_token(installation_id)[:token]
       @client ||= Octokit::Client.new(access_token: installation_token)
     end
+
+    def get_file_content(repo, branch, path)
+      GitHub::Result.new do
+        response = client.contents(repo, path: path, ref: branch)
+        if response.content && response.encoding == "base64"
+          Base64.decode64(response.content)
+        else
+          raise Installations::Error.new("Could not get file content", reason: :file_not_found)
+        end
+      rescue Octokit::NotFound
+        raise Installations::Error.new("File not found", reason: :file_not_found)
+      rescue => ex
+        raise Installations::Error.new("Failed to get file content: #{ex.message}", reason: :github_api_error)
+      end
+    end
+
+    def update_file(repo, branch, path, content, message, author_name: nil, author_email: nil)
+      GitHub::Result.new do
+        # First get the current file to get its SHA
+        current_file = client.contents(repo, path: path, ref: branch)
+
+        # Prepare commit info
+        commit_info = {
+          message: message,
+          content: Base64.strict_encode64(content),
+          sha: current_file.sha,
+          branch: branch
+        }
+
+        # Add author info if provided
+        if author_name && author_email
+          commit_info[:committer] = {
+            name: author_name,
+            email: author_email
+          }
+          commit_info[:author] = {
+            name: author_name,
+            email: author_email
+          }
+        end
+
+        # Update the file
+        client.update_contents(repo, path, message, current_file.sha, content, branch: branch)
+      rescue Octokit::NotFound
+        # If file doesn't exist, create it
+        create_file(repo, branch, path, content, message, author_name: author_name, author_email: author_email)
+      rescue => ex
+        raise Installations::Error.new("Failed to update file: #{ex.message}", reason: :github_api_error)
+      end
+    end
+
+    def create_file(repo, branch, path, content, message, author_name: nil, author_email: nil)
+      GitHub::Result.new do
+        # Prepare commit info
+        commit_info = {
+          message: message,
+          content: Base64.strict_encode64(content),
+          branch: branch
+        }
+
+        # Add author info if provided
+        if author_name && author_email
+          commit_info[:committer] = {
+            name: author_name,
+            email: author_email
+          }
+          commit_info[:author] = {
+            name: author_name,
+            email: author_email
+          }
+        end
+
+        # Create the file
+        client.create_contents(repo, path, message, content, branch: branch)
+      rescue => ex
+        raise Installations::Error.new("Failed to create file: #{ex.message}", reason: :github_api_error)
+      end
+    end
+
+    def create_commit(repo, branch, message, author_name: nil, author_email: nil)
+      GitHub::Result.new do
+        # Get the latest commit on the branch to get its tree
+        latest_commit = client.ref(repo, "heads/#{branch}")
+        base_commit = client.commit(repo, latest_commit.object.sha)
+
+        # Create a new commit with the same tree
+        commit_data = {
+          message: message,
+          tree: base_commit.commit.tree.sha,
+          parents: [latest_commit.object.sha]
+        }
+
+        # Add author info if provided
+        if author_name && author_email
+          commit_data[:author] = {
+            name: author_name,
+            email: author_email,
+            date: Time.now.iso8601
+          }
+          commit_data[:committer] = {
+            name: author_name,
+            email: author_email,
+            date: Time.now.iso8601
+          }
+        end
+
+        # Create the commit
+        new_commit = client.create_commit(repo, commit_data)
+
+        # Update the reference to point to the new commit
+        client.update_ref(repo, "heads/#{branch}", new_commit.sha)
+
+        new_commit
+      rescue => ex
+        raise Installations::Error.new("Failed to create commit: #{ex.message}", reason: :github_api_error)
+      end
+    end
   end
 end
