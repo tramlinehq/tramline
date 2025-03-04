@@ -4,7 +4,8 @@ module Seed
   class DevStarter
     include Seed::Constants
 
-    def initialize
+    def self.call
+      new.call
     end
 
     def call
