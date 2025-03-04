@@ -141,8 +141,8 @@ services:
 
   applelink:
     build:
-      dockerfile: dev.Dockerfile
-      context: https://github.com/tramlinehq/applelink.git
+      dockerfile: ../applelink/dev.Dockerfile
+      context: ../applelink
       args:
         RUBY_VERSION: '3.2.0'
     image: applelink-dev:1.0.0
@@ -150,7 +150,7 @@ services:
     ports:
       - '4000:4000'
     volumes:
-      - applelink_data:/applelink:cached
+      - ../applelink:/applelink:cached
 
 volumes:
   bundle:
