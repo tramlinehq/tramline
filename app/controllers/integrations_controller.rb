@@ -19,8 +19,9 @@ class IntegrationsController < SignedInApplicationController
 
   def reuse
     return redirect_to app_integrations_path(@app), alert: "Integration not found or not connected." unless @existing_integration&.connected?
-    new_integration = initiate_integration(@existing_integration)
-    if new_integration.save
+
+    update_new_integration!
+    if @integration.save
       redirect_to app_integrations_path(@app), notice: "#{@existing_integration.providable_type} integration reused successfully."
     else
       redirect_to app_integrations_path(@app), flash: {error: new_integration.errors.full_messages.to_sentence}
@@ -61,13 +62,12 @@ class IntegrationsController < SignedInApplicationController
 
   private
 
-  def initiate_integration(existing_integration)
-    @app.integrations.build(
-      category: @integration.category,
-      status: Integration.statuses[:connected],
-      metadata: existing_integration.metadata,
-      providable: existing_integration.providable.dup
-    )
+  def update_new_integration!
+    @integration.status = Integration.statuses[:connected]
+    @integration.metadata = @existing_integration.metadata
+    new_providable = @existing_integration.providable.dup
+    new_providable.integration = @integration
+    @integration.providable = new_providable
   end
 
   def set_integrations_by_categories
