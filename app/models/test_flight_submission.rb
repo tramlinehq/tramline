@@ -125,7 +125,7 @@ class TestFlightSubmission < StoreSubmission
     result = find_build
 
     unless result.ok?
-      elog(result.error)
+      elog(result.error, level: :warn)
       raise SubmissionNotInTerminalState, "Retrying in some time..."
     end
 
@@ -160,10 +160,6 @@ class TestFlightSubmission < StoreSubmission
 
   def release_notes
     release_platform_run.default_release_metadata&.release_notes&.truncate(NOTES_MAX_LENGTH)
-  end
-
-  def build_present_in_store?
-    find_build.ok?
   end
 
   def update_store_info!(release_info)

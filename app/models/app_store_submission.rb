@@ -202,7 +202,7 @@ class AppStoreSubmission < StoreSubmission
     result = provider.find_release(build_number)
 
     unless result.ok?
-      elog(result.error)
+      elog(result.error, level: :warn)
       raise SubmissionNotInTerminalState, "Retrying in some time..."
     end
 
@@ -349,9 +349,5 @@ class AppStoreSubmission < StoreSubmission
   def update_store_version
     # TODO: update store version details when release metadata changes
     # update whats new, build
-  end
-
-  def build_present_in_store?
-    find_build.ok?
   end
 end

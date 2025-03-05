@@ -18,9 +18,9 @@
         <div data-controller="domain--branch-name-help"
              data-domain--branch-name-help-current-value="<%= train.display_name %>">
           <%= section.F.labeled_text_field :name, "Name",
-                                           required: true,
-                                           data: { domain__branch_name_help_target: "input",
-                                                   action: "domain--branch-name-help#set" } %>
+                required: true,
+                data: {domain__branch_name_help_target: "input",
+                       action: "domain--branch-name-help#set"} %>
           <div class="text-sm mt-1">
             <span data-domain--branch-name-help-target="helpTextTitle"></span>
             <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
@@ -45,12 +45,12 @@
 
       <div>
         <%= section.F.labeled_select :versioning_strategy, "Versioning Strategy",
-                                     options_for_select(TrainPresenter::VERSIONING_STRATEGIES, train.versioning_strategy),
-                                     {},
-                                     { disabled: train.persisted?,
-                                       data: { domain__version_name_help_strategy_value: train.versioning_strategy,
-                                               domain__version_name_help_target: "versioningStrategy",
-                                               action: "domain--version-name-help#updateStrategy" } } %>
+              options_for_select(TrainPresenter::VERSIONING_STRATEGIES, train.versioning_strategy),
+              {},
+              {disabled: train.persisted?,
+               data: {domain__version_name_help_strategy_value: train.versioning_strategy,
+                      domain__version_name_help_target: "versioningStrategy",
+                      action: "domain--version-name-help#updateStrategy"}} %>
       </div>
 
       <div data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
@@ -58,23 +58,23 @@
 
         <div class="flex flex-row gap-x-2 items-center">
           <%= section.F.text_field_without_label :major_version_seed, "major",
-                                                 disabled: train.persisted?,
-                                                 data: { domain__version_name_help_target: "majorInput",
-                                                         action: "domain--version-name-help#bump" } %>
+                disabled: train.persisted?,
+                data: {domain__version_name_help_target: "majorInput",
+                       action: "domain--version-name-help#bump"} %>
           <span class="mx-1">
             <%= render IconComponent.new("circle.svg", size: :xs) %>
           </span>
           <%= section.F.text_field_without_label :minor_version_seed, "minor",
-                                                 disabled: train.persisted?,
-                                                 data: { domain__version_name_help_target: "minorInput",
-                                                         action: "domain--version-name-help#bump" } %>
+                disabled: train.persisted?,
+                data: {domain__version_name_help_target: "minorInput",
+                       action: "domain--version-name-help#bump"} %>
           <span class="mx-1">
             <%= render IconComponent.new("circle.svg", size: :xs) %>
           </span>
           <%= section.F.text_field_without_label :patch_version_seed, "patch (optional)",
-                                                 disabled: train.persisted?,
-                                                 data: { domain__version_name_help_target: "patchInput",
-                                                         action: "domain--version-name-help#bump" } %>
+                disabled: train.persisted?,
+                data: {domain__version_name_help_target: "patchInput",
+                       action: "domain--version-name-help#bump"} %>
         </div>
 
         <% unless train.persisted? %>
@@ -114,12 +114,12 @@
         <% section.with_description do %>
           Enable notifications to be sent during the release. Advanced notifications can be configured in the
           <% if @train.persisted? %>
-            <%= link_to "Notification Settings", app_train_notification_settings_path(@app, @train), class: "underline", data: { turbo: false } %>
+            <%= link_to "Notification Settings", app_train_notification_settings_path(@app, @train), class: "underline", data: {turbo: false} %>
           <% else %>
             Notification Settings
           <% end %>for the train.
         <% end %>
-        <%= render partial: "notifications_config_form", locals: { form: section.F } %>
+        <%= render partial: "notifications_config_form", locals: {form: section.F} %>
       <% end %>
     <% end %>
 
@@ -132,18 +132,18 @@
       <div class="grid gap-x-5 md:grid-cols-2">
         <div>
           <%= section.F.labeled_select :branching_strategy, "Strategy",
-                                       options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
-                                       {},
-                                       { data: { action: 'domain--branching-selector#change',
-                                                 domain__branching_selector_target: "branchingStrategy" },
-                                         disabled: train.persisted? } %>
+                options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
+                {},
+                {data: {action: "domain--branching-selector#change",
+                        domain__branching_selector_target: "branchingStrategy"},
+                 disabled: train.persisted?} %>
         </div>
 
         <div>
           <%= section.F.labeled_text_field :working_branch, "Working Branch",
-                                           required: true,
-                                           placeholder: "eg., master, main",
-                                           disabled: train.persisted? %>
+                required: true,
+                placeholder: "eg., master, main",
+                disabled: train.persisted? %>
         </div>
 
         <div hidden data-domain--branching-selector-target="almostTrunk"></div>
@@ -152,29 +152,29 @@
         <div hidden data-domain--branching-selector-target="releaseBackMerge">
           <div class="mt-2">
             <%= section.F.labeled_text_field :release_backmerge_branch, "Release Backmerge Branch",
-                                             placeholder: "eg., dev",
-                                             disabled: train.persisted? %>
+                  placeholder: "eg., dev",
+                  disabled: train.persisted? %>
           </div>
         </div>
 
         <div hidden data-domain--branching-selector-target="parallelBranches">
           <div class="mt-2">
             <%= section.F.labeled_text_field :release_branch, "Release Branch",
-                                             placeholder: "eg., production",
-                                             disabled: train.persisted? %>
+                  placeholder: "eg., production",
+                  disabled: train.persisted? %>
           </div>
         </div>
       </div>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Release Schedule",
-                                html_options: { hidden: true,
-                                                data: { branching_selector_target: "schedule" } }) do |section| %>
+                                html_options: {hidden: true,
+                                               data: {branching_selector_target: "schedule"}}) do |section| %>
       <% section.with_description do %>
         Set a schedule for automatic kickoff of your release train. Leave blank for only manual control.
       <% end %>
 
-      <%= render partial: "release_schedule_form", locals: { form: section.F } %>
+      <%= render partial: "release_schedule_form", locals: {form: section.F} %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Approvals before submissions") do |section| %>
@@ -205,12 +205,12 @@
         By default, commits on the release branch are auto-applied.
       <% end %>
 
-      <%= render partial: "build_queue_form", locals: { form: section.F } %>
+      <%= render partial: "build_queue_form", locals: {form: section.F} %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Continuous Backmerge",
-                                html_options: { hidden: true,
-                                                data: { domain__branching_selector_target: "backmerge" } }) do |section| %>
+                                html_options: {hidden: true,
+                                               data: {domain__branching_selector_target: "backmerge"}}) do |section| %>
       <% section.with_description do %>
         Enable backmerging of release branch commits into the working branch as they arrive.
         By default, merge happens at the end of the release.
@@ -220,7 +220,7 @@
                                            field_name: :continuous_backmerge_enabled,
                                            on_label: "Continuous Backmerge enabled",
                                            off_label: "Continuous Backmerge disabled",
-                                           html_options: { disabled: train.backmerge_disabled? }) %>
+                                           html_options: {disabled: train.backmerge_disabled?}) %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Auto-apply patch changes") do |section| %>
@@ -252,16 +252,16 @@
         You can turn off creation of tag. Or, you can add an optional prefix or suffix to your tags.
       <% end %>
 
-      <%= render partial: "release_tag_form", locals: { form: section.F } %>
+      <%= render partial: "release_tag_form", locals: {form: section.F} %>
     <% end %>
 
     <% if @app.cross_platform? %>
-      <%= f.with_advanced_section(heading: "Platform Specific Tags", html_options: { data: { controller: "reveal" } }) do |section| %>
+      <%= f.with_advanced_section(heading: "Platform Specific Tags", html_options: {data: {controller: "reveal"}}) do |section| %>
         <% section.with_description do %>
           Tag each platform release separately. By default, only one tag is created at the end of the release.
         <% end %>
 
-        <%= render partial: "store_tags_form", locals: { form: section.F } %>
+        <%= render partial: "store_tags_form", locals: {form: section.F} %>
       <% end %>
     <% end %>
 
@@ -274,9 +274,8 @@
                                            field_name: :freeze_version,
                                            on_label: "Freeze release version enabled",
                                            off_label: "Freeze release version disabled",
-                                           switch_data: { action: "dependent-disable#change domain--version-name-help#updateVersion",
-                                                          dependent_disable_target: "primary", domain__version_name_help_target: "freezeReleaseVersion" }) %>
-
+                                           switch_data: {action: "dependent-disable#change domain--version-name-help#updateVersion",
+                                                         dependent_disable_target: "primary", domain__version_name_help_target: "freezeReleaseVersion"}) %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Patch Version Change Only") do |section| %>
@@ -289,7 +288,7 @@
                                            field_name: :patch_version_bump_only,
                                            on_label: "Only patch version will change between releases",
                                            off_label: "Minor version will change between releases (default)",
-                                           switch_data: { dependent_disable_target: "secondary", action: "dependent-disable#change" }) %>
+                                           switch_data: {dependent_disable_target: "secondary", action: "dependent-disable#change"}) %>
     <% end %>
 
     <% f.with_action do %>

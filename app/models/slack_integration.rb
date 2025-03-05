@@ -113,7 +113,7 @@ class SlackIntegration < ApplicationRecord
   def notify!(channel, message, type, params, file_id = nil, file_title = nil)
     installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
   rescue => e
-    elog(e)
+    elog(e, level: :warn)
   end
 
   def notify_with_snippet!(channel, message, type, params, snippet_content, snippet_title)
@@ -128,13 +128,13 @@ class SlackIntegration < ApplicationRecord
       installation.message(channel, msg, thread_id:)
     end
   rescue => e
-    elog(e)
+    elog(e, level: :warn)
   end
 
   def upload_file!(file, file_name)
     installation.upload_file(file, file_name)
   rescue => e
-    elog(e)
+    elog(e, level: :warn)
   end
 
   def notifier(type, params)

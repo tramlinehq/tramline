@@ -5,7 +5,6 @@ describe IntegrationsController do
   let(:organization) { app.organization }
   let(:user) { create(:user, :with_email_authentication, :as_developer, member_organization: organization) }
   let(:existing_integration) { create(:integration, status: "connected", category: "version_control", providable: create(:github_integration), integrable: app, metadata: {id: Faker::Number.number(digits: 8)}) }
-  let(:integration) { build(:integration, category: "ci_cd", providable: create(:github_integration), integrable: app) }
 
   before do
     sign_in user.email_authentication
@@ -25,23 +24,33 @@ describe IntegrationsController do
 
     context "when the existing integration is connected" do
       it "reuses the integration and redirects to the integrations path with a success message" do
-        new_integration = instance_double(Integration, save: true)
-        allow(controller).to receive(:initiate_integration).and_return(new_integration)
+        new_integration = build(:integration, category: "ci_cd", providable: create(:github_integration), integrable: app)
 
-        post :reuse, params: {integration: {existing_integration_id: existing_integration.id}, app_id: app.id}
+        post :reuse, params: {
+          integration: {
+            existing_integration_id: existing_integration.id,
+            category: new_integration.category,
+            providable: {type: new_integration.providable_type}
+          }, app_id: app.id
+        }
 
         expect(response).to redirect_to(app_integrations_path(app))
         expect(flash[:notice]).to eq("#{existing_integration.providable_type} integration reused successfully.")
       end
 
       it "fails to reuse the integration and redirects with an error message if saving the new integration fails" do
-        new_integration = instance_double(Integration, save: false, errors: instance_double(ActiveModel::Errors, full_messages: ["Save failed"]))
-        allow(controller).to receive(:initiate_integration).and_return(new_integration)
+        new_erroneous_integration = build(:integration, category: "build_channel", providable: create(:github_integration), integrable: app)
 
-        post :reuse, params: {integration: {existing_integration_id: existing_integration.id}, app_id: app.id}
+        post :reuse, params: {
+          integration: {
+            existing_integration_id: existing_integration.id,
+            category: new_erroneous_integration.category,
+            providable: {type: new_erroneous_integration.providable_type}
+          }, app_id: app.id
+        }
 
         expect(response).to redirect_to(app_integrations_path(app))
-        expect(flash[:error]).to eq("Save failed")
+        expect(flash[:error]).to eq("Provider is not allowed for app type: android")
       end
     end
   end

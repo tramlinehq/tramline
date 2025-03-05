@@ -1,14 +1,14 @@
 <%= render SectionComponent.new(style: :titled,
-                                    title: "Teams (#{@teams.size})",
-                                    subtitle: "Teams in your organization") do |sc| %>
+                                title: "Teams (#{@teams.size})",
+                                subtitle: "Teams in your organization") do |sc| %>
   <% sc.with_sidenote do %>
     <%= render ModalComponent.new(title: "Add team") do |modal| %>
       <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-              .with_icon("plus.svg", size: :sm) %>
+           .with_icon("plus.svg", size: :sm) %>
       <% modal.with_body do %>
-        <%= render partial: "accounts/teams/form", locals: { team: Accounts::Team.new(organization: current_organization),
-                                                             url: accounts_organization_teams_path(current_organization),
-                                                             form_method: :post } %>
+        <%= render partial: "accounts/teams/form", locals: {team: Accounts::Team.new(organization: current_organization),
+                                                            url: accounts_organization_teams_path(current_organization),
+                                                            form_method: :post} %>
       <% end %>
     <% end %>
   <% end %>
@@ -27,7 +27,7 @@
               }
             <% end %>
 
-            <div class="team-color-<%=team.id %> p-3 rounded-full"></div>
+            <div class="team-color-<%= team.id %> p-3 rounded-full"></div>
           </div>
         <% end %>
         <% row.with_cell(wrap: true) do %>
@@ -37,20 +37,21 @@
                                    type: :action,
                                    size: :xxs,
                                    arrow: :none)
-                      .with_icon("pencil.svg") %>
+                   .with_icon("pencil.svg") %>
               <% modal.with_body do %>
-                <%= render partial: "accounts/teams/form", locals: { team:,
-                                                                     url: accounts_organization_team_path(current_organization, team),
-                                                                     form_method: :put } %>
+                <%= render partial: "accounts/teams/form", locals: {team:,
+                                                                    url: accounts_organization_team_path(current_organization, team),
+                                                                    form_method: :put} %>
               <% end %>
             <% end %>
             <%= render ButtonComponent.new(
-              scheme: :light,
-              options: accounts_organization_team_path(current_organization, team),
-              type: :link,
-              html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the team? This will not remove the users that are part of the team." } }) do |b|
-              b.with_icon("trash.svg")
-            end %>
+                  scheme: :light,
+                  options: accounts_organization_team_path(current_organization, team),
+                  type: :link,
+                  html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the team? This will not remove the users that are part of the team."}}
+                ) do |b|
+                  b.with_icon("trash.svg")
+                end %>
           </div>
         <% end %>
       <% end %>
@@ -59,14 +60,14 @@
 <% end %>
 
 <%= render SectionComponent.new(style: :titled,
-                                    title: "Members (#{@users.size})",
-                                    subtitle: "Users in your organization") do |sc| %>
+                                title: "Members (#{@users.size})",
+                                subtitle: "Users in your organization") do |sc| %>
   <% sc.with_sidenote do %>
     <%= render ModalComponent.new(title: "Add team member") do |modal| %>
       <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-              .with_icon("plus.svg", size: :sm) %>
+           .with_icon("plus.svg", size: :sm) %>
       <% modal.with_body do %>
-        <%= render partial: "accounts/invitations/form", locals: { invite: Accounts::Invite.new(sender: current_user, organization: current_organization) } %>
+        <%= render partial: "accounts/invitations/form", locals: {invite: Accounts::Invite.new(sender: current_user, organization: current_organization)} %>
       <% end %>
     <% end %>
   <% end %>
@@ -107,24 +108,25 @@
             <% if can_current_user_edit_role?(member) %>
               <%= render ModalComponent.new(title: "Edit role") do |modal| %>
                 <% modal.with_button(scheme: :light,
-                                    type: :action,
-                                    size: :xxs,
-                                    arrow: :none)
-                        .with_icon("pencil.svg") %>
+                                     type: :action,
+                                     size: :xxs,
+                                     arrow: :none)
+                     .with_icon("pencil.svg") %>
                 <% modal.with_body do %>
-                  <%= render partial: "accounts/invitations/edit_form", locals: { email: member.email, member_role: member_role } %>
+                  <%= render partial: "accounts/invitations/edit_form", locals: {email: member.email, member_role: member_role} %>
                 <% end %>
               <% end %>
             <% end %>
             <% if can_current_user_remove_member?(member) %>
               <%= render ButtonComponent.new(
-                scheme: :danger,
-                type: :button,
-                size: :xxs,
-                options: accounts_organization_membership_path(current_organization, member.membership_for(current_organization)),
-                html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to remove #{member.email} from the organization?" } }) do |b|
-                b.with_icon("trash.svg")
-              end %>
+                    scheme: :danger,
+                    type: :button,
+                    size: :xxs,
+                    options: accounts_organization_membership_path(current_organization, member.membership_for(current_organization)),
+                    html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to remove #{member.email} from the organization?"}}
+                  ) do |b|
+                    b.with_icon("trash.svg")
+                  end %>
             <% end %>
           </div>
         <% end %>
@@ -161,13 +163,14 @@
         <% row.with_cell(wrap: true) do %>
           <div class="flex gap-x-2 justify-end">
             <%= render ButtonComponent.new(
-              scheme: :danger,
-              type: :button,
-              size: :xxs,
-              options: accounts_organization_invitation_path(current_organization, invite),
-              html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to cancel the invitation for #{invite.email}?" } }) do |b|
-              b.with_icon("trash.svg")
-            end %>
+                  scheme: :danger,
+                  type: :button,
+                  size: :xxs,
+                  options: accounts_organization_invitation_path(current_organization, invite),
+                  html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to cancel the invitation for #{invite.email}?"}}
+                ) do |b|
+                  b.with_icon("trash.svg")
+                end %>
           </div>
         <% end %>
       <% end %>

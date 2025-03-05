@@ -294,7 +294,7 @@ You can start your local development environment by running the following comman
 docker compose up
 ```
 
-Refer to `db/seeds.rb` for credentials on how to login using the seed users.
+Refer to `lib/seed/constants.rb` for credentials on how to login using the seed users.
 
 Below are some common commands you can use via `just`:
 

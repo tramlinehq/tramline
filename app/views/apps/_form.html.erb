@@ -8,9 +8,9 @@
          data-domain--build-number-help-number-current-value="">
 
       <%= form.F.labeled_number_field :build_number,
-                                    "Build Number",
-                                    { data: { domain__build_number_help_target: "input",
-                                              action: "domain--build-number-help#increment" } } %>
+            "Build Number",
+            {data: {domain__build_number_help_target: "input",
+                    action: "domain--build-number-help#increment"}} %>
       <div class="text-sm my-1 dark:text-main-200">
         <p>
           <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
@@ -27,7 +27,7 @@
     </div>
 
     <div><%= form.F.labeled_select :platform, "Mobile Platform", options_for_select(App.allowed_platforms, "Android") %></div>
-    <div><%= form.F.labeled_tz_select :timezone, "Timezone", default_timezones, { model: ActiveSupport::TimeZone } %></div>
+    <div><%= form.F.labeled_tz_select :timezone, "Timezone", default_timezones, {model: ActiveSupport::TimeZone} %></div>
     <div class="sm:col-span-2"><%= form.F.labeled_textarea :description, "Description" %></div>
   </div>
 
