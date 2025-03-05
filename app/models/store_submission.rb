@@ -102,14 +102,6 @@ class StoreSubmission < ApplicationRecord
     sequence_number = submission_config.number
     config = submission_config.as_json
 
-    # We need to check in store if build was uploaded directly from ci
-    # when artifact is not available with us
-    # before allowing submission to proceed
-    unless build.has_artifact?
-      build_in_store = release_platform_run.store_provider.find_build(build.build_number)
-      raise BuildNotFound, "Unable to find build #{build.build_number}" unless build_in_store
-    end
-
     submission = create!(parent_release:, release_platform_run:, build:, sequence_number:, config:)
     submission.trigger! if auto_promote
   end

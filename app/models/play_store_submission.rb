@@ -142,7 +142,14 @@ class PlayStoreSubmission < StoreSubmission
   def trigger!
     return unless actionable?
 
-    preprocess!
+    if release_platform_run.build.has_artifact?
+      # upload build only if we have it
+      preprocess!
+    elsif release_platform_run.store_provider.find_build(build.build_number).present?
+      # skip upload step and go directly to start_prepare
+      start_prepare!
+    end
+
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
   end
 
