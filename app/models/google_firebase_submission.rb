@@ -80,8 +80,6 @@ class GoogleFirebaseSubmission < StoreSubmission
   def trigger!
     return unless actionable?
     return unless may_prepare?
-
-    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     # return mock_upload_to_firebase if sandbox_mode?
 
     if build.has_artifact?
@@ -93,6 +91,8 @@ class GoogleFirebaseSubmission < StoreSubmission
     else
       raise BuildNotFound, "Unable to find build #{build.build_number}"
     end
+
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
   end
 
   def upload_build!
