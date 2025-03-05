@@ -148,6 +148,8 @@ class PlayStoreSubmission < StoreSubmission
     elsif release_platform_run.store_provider.find_build(build.build_number).present?
       # skip upload step and go directly to start_prepare
       start_prepare!
+    else
+      raise BuildNotFound, "Unable to find build #{build.build_number}"
     end
 
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
