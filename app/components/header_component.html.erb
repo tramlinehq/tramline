@@ -61,8 +61,8 @@
                   <%= render IconComponent.new("#{default_app.platform}.svg", size: :md) %>
                   <%= default_app.name %>
                   <span class="text-sm text-secondary dark:text-secondary-50">
-                      <%= default_app.bundle_identifier %>
-                    </span>
+                    <%= default_app.bundle_identifier %>
+                  </span>
                 </div>
               <% end %>
 
@@ -98,13 +98,13 @@
 
             <%= render ButtonComponent.new(
                   scheme: :light,
-                  options: all_builds_app_path(default_app),
+                  options: search_app_path(default_app),
                   type: :link,
                   size: :xxs,
                   authz: false
                 ) do |b| %>
-              <% b.with_tooltip("All Builds") %>
-              <% b.with_icon("drill.svg", size: :md) %>
+              <% b.with_tooltip("Search (Press /)") %>
+              <% b.with_icon("search.svg", size: :md) %>
             <% end %>
 
             <%= render ModalComponent.new(title: "Store Status", size: :xs, authz: false) do |modal| %>
