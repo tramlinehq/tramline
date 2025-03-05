@@ -1,5 +1,5 @@
 <%= render StatCardComponent.new(name, size:, external_url:, external_url_title: "Go to dashboard") do |stat| %>
-  <% stat.with_icon("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
+  <% stat.with_icon("integrations/logo_#{provider}.png", size: :md, rounded: false) %>
 
   <div class="flex flex-row justify-between items-end">
     <div class="text-base"><%= current %>%</div>

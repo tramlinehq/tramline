@@ -121,7 +121,8 @@ class StoreSubmission < ApplicationRecord
   end
 
   def fail_with_error!(error)
-    elog(error)
+    elog(error, level: :warn)
+
     if error.is_a?(Installations::Error)
       fail!(reason: error.reason, error: error)
     else

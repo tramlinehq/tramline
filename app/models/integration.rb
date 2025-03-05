@@ -88,12 +88,6 @@ class Integration < ApplicationRecord
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected].freeze
   DISABLED_CATEGORIES = ["project_management"].freeze
 
-  # FIXME: Can we make a better External Deployment abstraction?
-  EXTERNAL_BUILD_INTEGRATION = {
-    build_integration: ["None (outside Tramline)", nil],
-    build_channels: [{id: :external, name: "External"}]
-  }
-
   validate :allowed_integrations_for_app, on: :create
   validate :validate_providable, on: :create
   validate :app_variant_restriction, on: :create
@@ -145,7 +139,6 @@ class Integration < ApplicationRecord
     end
 
     def find_build_channels(id, with_production: false)
-      return EXTERNAL_BUILD_INTEGRATION[:build_channels] if id.blank?
       find_by(id: id).providable.build_channels(with_production:)
     end
 
@@ -229,9 +222,20 @@ class Integration < ApplicationRecord
     app.active_runs.none?
   end
 
+  def disconnectable_categories?
+    ci_cd? || version_control?
+  end
+
   def disconnect
     return unless disconnectable?
-    update(status: :disconnected, discarded_at: Time.current)
+    transaction do
+      integrable.config.disconnect!(self)
+      update!(status: :disconnected, discarded_at: Time.current)
+      true
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    errors.add(:base, e.message)
+    false
   end
 
   def set_metadata!
@@ -276,8 +280,8 @@ class Integration < ApplicationRecord
   end
 
   def validate_providable
-    unless providable&.valid?
-      errors.add(:base, providable.errors.full_messages[0])
+    if providable && !providable.valid?
+      errors.add(:base, providable&.errors&.full_messages&.[](0))
     end
   end
 

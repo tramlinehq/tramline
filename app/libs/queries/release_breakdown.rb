@@ -25,7 +25,7 @@ class Queries::ReleaseBreakdown
     validate_parts!(parts)
     parts.each { |part| cache.write(cache_key(part), public_send(part)) }
   rescue => e
-    elog(e)
+    elog(e, level: :debug)
   end
 
   def team_stability_commits

@@ -1,37 +1,37 @@
 <div data-controller="domain--build-queue-help">
   <%= render Form::SwitchComponent.new(form:,
-                                           field_name: :build_queue_enabled,
-                                           on_label: "Build Queue enabled",
-                                           off_label: "Build Queue disabled",
-                                           hide_child: !@train.build_queue_enabled,
-                                           switch_data: { action: "domain--build-queue-help#change",
-                                                          domain__build_queue_help_target: "checkbox" }) do |component| %>
+                                       field_name: :build_queue_enabled,
+                                       on_label: "Build Queue enabled",
+                                       off_label: "Build Queue disabled",
+                                       hide_child: !@train.build_queue_enabled,
+                                       switch_data: {action: "domain--build-queue-help#change",
+                                                     domain__build_queue_help_target: "checkbox"}) do |component| %>
     <% component.with_child do %>
       <div class="flex flex-row gap-x-2 items-baseline">
         <%= form.label_only :build_queue_size, "Apply after" %>
         <div class="w-1/6">
           <%= form.number_field_without_label :build_queue_size,
-                                              step: 1,
-                                              min: 1,
-                                              placeholder: 5,
-                                              data: { action: 'domain--build-queue-help#change',
-                                                      domain__build_queue_help_target: "size" } %>
+                step: 1,
+                min: 1,
+                placeholder: 5,
+                data: {action: "domain--build-queue-help#change",
+                       domain__build_queue_help_target: "size"} %>
         </div>
         <%= form.label_only :build_queue_size, "commits or after" %>
         <div class="w-1/6">
           <%= form.number_field_without_label :build_queue_wait_time_value,
-                                              step: 1,
-                                              min: 1,
-                                              placeholder: 3,
-                                              data: { action: 'domain--build-queue-help#change',
-                                                      domain__build_queue_help_target: "waitTimeValue" } %>
+                step: 1,
+                min: 1,
+                placeholder: 3,
+                data: {action: "domain--build-queue-help#change",
+                       domain__build_queue_help_target: "waitTimeValue"} %>
         </div>
         <div class="w-1/6">
           <%= form.select_without_label :build_queue_wait_time_unit,
-                                        options_for_select([%w[Minute(s) minutes], %w[Hour(s) hours]], @train.build_queue_wait_time_unit || "hours"),
-                                        { required: false },
-                                        { data: { action: 'domain--build-queue-help#change',
-                                                  domain__build_queue_help_target: "waitTimeUnit" } } %>
+                options_for_select([%w[Minute(s) minutes], %w[Hour(s) hours]], @train.build_queue_wait_time_unit || "hours"),
+                {required: false},
+                {data: {action: "domain--build-queue-help#change",
+                        domain__build_queue_help_target: "waitTimeUnit"}} %>
         </div>
       </div>
 

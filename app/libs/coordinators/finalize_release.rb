@@ -33,7 +33,7 @@ class Coordinators::FinalizeRelease
           release.finish!
           on_finish!
         else
-          elog(result.error) unless result.ok?
+          elog(result.error, level: :warn) unless result.ok?
           release.fail_post_release_phase!
           on_failure!
         end

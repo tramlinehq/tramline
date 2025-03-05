@@ -27,20 +27,20 @@
     <% if triggerable? %>
       <% card.with_action do %>
         <%= render ButtonComponent.new(label: "Create build",
-                                           scheme: :default,
-                                           options: trigger_workflow_run_path(workflow_run),
-                                           size: :xxs,
-                                           html_options: html_opts(:patch, "Are you sure you want to create a new build?")) %>
+                                       scheme: :default,
+                                       options: trigger_workflow_run_path(workflow_run),
+                                       size: :xxs,
+                                       html_options: html_opts(:patch, "Are you sure you want to create a new build?")) %>
       <% end %>
     <% end %>
 
     <% if retriggerable? %>
       <% card.with_action do %>
         <%= render ButtonComponent.new(label: "Retrigger build",
-                                           scheme: :default,
-                                           options: retry_workflow_run_path(workflow_run),
-                                           size: :xxs,
-                                           html_options: html_opts(:patch, "Are you sure you want to retrigger the build?")) %>
+                                       scheme: :default,
+                                       options: retry_workflow_run_path(workflow_run),
+                                       size: :xxs,
+                                       html_options: html_opts(:patch, "Are you sure you want to retrigger the build?")) %>
 
       <% end %>
     <% end %>
@@ -48,10 +48,10 @@
     <% if workflow_run.failed? %>
       <% card.with_action do %>
         <%= render ButtonComponent.new(label: "Re-fetch build status",
-                                           scheme: :light,
-                                           options: fetch_status_workflow_run_path(workflow_run),
-                                           size: :xxs,
-                                           html_options: html_opts(:patch, "Are you sure you want to re-fetch the build status?")) %>
+                                       scheme: :light,
+                                       options: fetch_status_workflow_run_path(workflow_run),
+                                       size: :xxs,
+                                       html_options: html_opts(:patch, "Are you sure you want to re-fetch the build status?")) %>
 
       <% end %>
     <% end %>
@@ -61,6 +61,12 @@
         <div class="self-start">
           <%= render BadgeComponent.new(**status) %>
         </div>
+
+        <% if workflow_run.trigger_failed? %>
+          <div class="self-start">
+            <%= render AlertComponent.new(type: :error, title: raw(workflow_run.trigger_failed_reason), full_screen: false) %>
+          </div>
+        <% end %>
 
         <% if build.present? %>
           <%= render LiveRelease::BuildComponent.new(build) %>

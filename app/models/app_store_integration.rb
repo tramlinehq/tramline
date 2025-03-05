@@ -212,7 +212,7 @@ class AppStoreIntegration < ApplicationRecord
   def channel_data
     installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
   rescue Installations::Apple::AppStoreConnect::Error => e
-    elog(e)
+    elog(e, level: :debug)
   end
 
   def pick_default_beta_channel

@@ -9,15 +9,13 @@
            data-string-affix-base-string-value="<%= @train.version_current || @train.version_seeded_with || "1.0.0" %>"
            data-string-affix-common-prefix-value="v">
         <%= form.labeled_text_field :tag_prefix, "Tag prefix",
-                                    placeholder: "Eg., foo",
-                                    autocomplete: "off",
-                                    data: { string_affix_target: "prefixInput",
-                                            action: "string-affix#set" } %>
+              placeholder: "Eg., foo",
+              autocomplete: "off",
+              data: {string_affix_target: "prefixInput", action: "string-affix#set"} %>
         <%= form.labeled_text_field :tag_suffix, "Tag suffix",
-                                    placeholder: "Eg., nightly",
-                                    autocomplete: "off",
-                                    data: { string_affix_target: "suffixInput",
-                                            action: "string-affix#set" } %>
+              placeholder: "Eg., nightly",
+              autocomplete: "off",
+              data: {string_affix_target: "suffixInput", action: "string-affix#set"} %>
         <div class="text-sm mt-1">
           These are appended to the <strong>tag name</strong> of the release, as follows:&nbsp;
           <span class="font-mono" data-string-affix-target="helpText"></span>

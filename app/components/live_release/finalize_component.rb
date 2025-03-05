@@ -79,7 +79,8 @@ class LiveRelease::FinalizeComponent < BaseComponent
   end
 
   def tag_link
-    link = release.tag_url || release.app.config.code_repo_url
+    link = release.tag_url || release.app.config&.code_repo_url
+    return NOT_AVAILABLE if link.blank?
     link_to_external train.vcs_provider.display, link, class: "underline"
   end
 end

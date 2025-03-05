@@ -106,7 +106,7 @@ class Train < ApplicationRecord
   after_initialize :set_backmerge_config, if: :persisted?
   after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
-  before_create :set_ci_cd_workflows
+  before_create :fetch_ci_cd_workflows
   before_create :set_current_version
   before_create :set_default_status
   after_create :create_release_platforms
@@ -157,7 +157,7 @@ class Train < ApplicationRecord
   end
 
   def workflows
-    @workflows ||= ci_cd_provider.workflows(working_branch)
+    @workflows ||= ci_cd_provider&.workflows(working_branch)
   end
 
   def version_ahead?(release)
@@ -282,31 +282,6 @@ class Train < ApplicationRecord
   def release_branch_name_fmt(hotfix: false)
     return "hotfix/#{display_name}/%Y-%m-%d" if hotfix
     "r/#{display_name}/%Y-%m-%d"
-  end
-
-  def replicate
-    ActiveRecord::Base.transaction do
-      new_train = dup
-      new_train.name = "#{name} - clone"
-      current_version = version_current.to_semverish
-      new_train.patch_version_seed = current_version.patch
-      new_train.minor_version_seed = current_version.minor
-      new_train.major_version_seed = current_version.major
-      new_train.kickoff_at = next_run_at
-      new_train.status = Train.statuses[:draft]
-      new_train.vcs_webhook_id = nil
-      new_train.save!
-      new_train.reload
-      new_train.release_platforms.each do |rp|
-        steps = release_platforms.where(platform: rp.platform).sole.steps
-        steps.each { |step| step.replicate(rp) }
-      end
-      notification_settings.presence&.replicate(new_train)
-      true
-    end
-  rescue ActiveRecord::RecordInvalid => e
-    elog(e)
-    false
   end
 
   def activate!
@@ -454,9 +429,8 @@ class Train < ApplicationRecord
     ongoing_release.stop!
   end
 
-  def set_ci_cd_workflows
-    config.set_ci_cd_workflows(workflows)
-  end
+  # call workflows to memoize and cache the result
+  def fetch_ci_cd_workflows = workflows
 
   def last_finished_release
     releases.where(status: "finished").reorder(completed_at: :desc).first

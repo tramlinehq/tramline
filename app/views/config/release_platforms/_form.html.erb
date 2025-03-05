@@ -1,5 +1,11 @@
 <%# locals: (app:, train:, platform:, platform_config:, platform_name:, platform_label:, ci_actions:, submission_types:) %>
 
+<% if @edit_allowed %>
+  <%= render AlertComponent.new(kind: :banner, type: :notice, title: "Updates will be applied on a new release", full_screen: false) do %>
+    The submissions settings can be edited while there are active releases. But they will only be applied on the next release.
+  <% end %>
+<% end %>
+
 <%= render FormComponent.new(model: [app, train, platform, platform_config],
                              url: app_train_platform_submission_config_path(app, train, platform_name)) do |f| %>
   <% f.with_section(heading: "Configure RC (Release Candidate) Workflow") do |section| %>
@@ -12,16 +18,16 @@
         <div>
           <%= rc_fields.hidden_field :id, value: rc_fields.object.id %>
           <%= rc_fields.labeled_select :identifier, "Release Candidate workflow",
-                                       options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.release_candidate_workflow.identifier),
-                                       { required: true },
-                                       data: { controller: "input-select" } %>
+                options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.release_candidate_workflow.identifier),
+                {required: true},
+                data: {controller: "input-select"} %>
 
           <div class="text-xs text-secondary mt-1">
             Please select the workflow that generates builds for <%= platform_label %> release candidates.
           </div>
         </div>
 
-        <%= render partial: "workflow_parameters", locals: { sub_fields: rc_fields } %>
+        <%= render partial: "workflow_parameters", locals: {sub_fields: rc_fields} %>
 
         <div class="flex flex-col gap-0.5">
           <%= render partial: "build_name_pattern_info" %>
@@ -74,11 +80,11 @@
                     <div class="flex flex-col gap-6">
                       <div data-controller="domain--staged-rollout-help">
                         <%= sub_fields.labeled_text_field :rollout_stages,
-                                                          "Rollout sequence",
-                                                          { value: sub_fields.object.rollout_stages.join(", "),
-                                                            placeholder: "1, 2, 5, 10, 20, 50, 100",
-                                                            data: { domain__staged_rollout_help_target: "input",
-                                                                    action: "domain--staged-rollout-help#validateString" } } %>
+                              "Rollout sequence",
+                              {value: sub_fields.object.rollout_stages.join(", "),
+                               placeholder: "1, 2, 5, 10, 20, 50, 100",
+                               data: {domain__staged_rollout_help_target: "input",
+                                      action: "domain--staged-rollout-help#validateString"}} %>
 
                         <div class="text-xs text-secondary mt-2">
                           <span data-domain--staged-rollout-help-target="helpSuccessText"></span>
@@ -152,16 +158,16 @@
             <div>
               <%= internal_fields.hidden_field :id, value: internal_fields.object.id %>
               <%= internal_fields.labeled_select :identifier, "Internal build workflow",
-                                                 options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.internal_workflow&.identifier),
-                                                 { required: false },
-                                                 data: { controller: "input-select" } %>
+                    options_for_select(ci_actions.map { |c| [c[:name], c[:id]] }, platform_config.internal_workflow&.identifier),
+                    {required: false},
+                    data: {controller: "input-select"} %>
 
               <div class="text-xs text-secondary mt-1">Select a workflow that generates internal / non-production
                 builds.
               </div>
             </div>
 
-            <%= render partial: "workflow_parameters", locals: { sub_fields: internal_fields } %>
+            <%= render partial: "workflow_parameters", locals: {sub_fields: internal_fields} %>
 
             <div class="flex flex-col gap-0.5">
               <%= render partial: "build_name_pattern_info" %>
@@ -183,6 +189,6 @@
   <% end %>
 
   <% f.with_action do %>
-    <%= f.F.authz_submit "Save", "archive.svg" %>
+    <%= f.F.authz_submit "Save", "archive.svg", disabled: !@app.ready? %>
   <% end %>
 <% end %>

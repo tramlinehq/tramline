@@ -4,20 +4,20 @@
       <div class="flex flex-row gap-x-1 items-center">
         <%= render IconComponent.new("git_commit_vertical.svg", size: :md) %>
         <%= render(ButtonComponent.new(scheme: :link,
-                                           label: truncated_message,
-                                           options: url,
-                                           type: :link_external,
-                                           size: :none,
-                                           authz: false,
-                                           html_options: { class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline" })) %>
+                                       label: truncated_message,
+                                       options: url,
+                                       type: :link_external,
+                                       size: :none,
+                                       authz: false,
+                                       html_options: {class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline"})) %>
       </div>
       <div class="flex flex-row gap-x-1.5 items-center">
         <% if show_avatar? %>
           <%= render ButtonComponent.new(scheme: :link,
-                                             options: author_link,
-                                             type: :link_external,
-                                             size: :none,
-                                             authz: false) do |button| %>
+                                         options: author_link,
+                                         type: :link_external,
+                                         size: :none,
+                                         authz: false) do |button| %>
             <% button.with_icon(user_avatar(author_name, limit: 2, size: 24), raw_svg: true, size: :xl) %>
           <% end %>
         <% end %>
@@ -25,11 +25,11 @@
         <span class="text-xs text-neutral-500 dark:text-white">
         <span class="font-semibold">
           <%= render(ButtonComponent.new(scheme: :link,
-                                             label: author_info,
-                                             options: author_link,
-                                             type: :link_external,
-                                             size: :none,
-                                             authz: false)) %>
+                                         label: author_info,
+                                         options: author_link,
+                                         type: :link_external,
+                                         size: :none,
+                                         authz: false)) %>
         </span>
         committed on <%= time_format(timestamp, only_day: true) %></span>
       </div>
@@ -58,7 +58,7 @@
         <% end %>
 
         <% if teams_supported? && team.present? %>
-          <%= render TeamPillComponent.new(team)%>
+          <%= render TeamPillComponent.new(team) %>
         <% end %>
       </div>
     <% end %>

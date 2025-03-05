@@ -57,7 +57,7 @@ describe PlayStoreRollout do
 
       it "retries (with skip review) if retry is true" do
         rollout.start_release!(retry_on_review_fail: true)
-        expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true).once
+        expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: false).once
       end
     end
   end
@@ -160,7 +160,7 @@ describe PlayStoreRollout do
 
       rollout.move_to_next_stage!
 
-      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true).once
+      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: false).once
     end
   end
 
@@ -239,7 +239,7 @@ describe PlayStoreRollout do
 
       rollout.release_fully!
 
-      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true).once
+      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: false).once
     end
   end
 
@@ -300,7 +300,7 @@ describe PlayStoreRollout do
 
       rollout.halt_release!
 
-      expect(providable_dbl).to have_received(:halt_release).with(anything, anything, anything, anything, retry_on_review_fail: true).once
+      expect(providable_dbl).to have_received(:halt_release).with(anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: false).once
     end
   end
 
@@ -352,7 +352,7 @@ describe PlayStoreRollout do
 
       rollout.resume_release!
 
-      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true).once
+      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: false).once
     end
   end
 end
