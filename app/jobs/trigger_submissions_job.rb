@@ -6,7 +6,7 @@ class TriggerSubmissionsJob < ApplicationJob
   def perform(workflow_run_id, retry_count = 0)
     workflow_run = WorkflowRun.find(workflow_run_id)
     Coordinators::TriggerSubmissions.call(workflow_run)
-  rescue Installations::Error => ex
+  rescue Installations::Error
     if retry_count >= MAX_RETRIES
       workflow_run&.triggering_release&.fail!
     else
