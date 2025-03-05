@@ -105,7 +105,7 @@ class Release < ApplicationRecord
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
   has_many :release_metadata, through: :release_platform_runs
-  has_many :all_commits, dependent: :destroy, inverse_of: :release, class_name: "Commit"
+  has_many :all_commits, -> { stability }, dependent: :destroy, inverse_of: :release, class_name: "Commit"
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :builds, through: :release_platform_runs
   has_many :build_queues, dependent: :destroy
@@ -336,8 +336,8 @@ class Release < ApplicationRecord
 
     return if source_commitish.blank?
 
-    ActiveRecord::Base.transaction do
-      create_release_changelog(from_ref:)
+    Release.transaction do
+      create_release_changelog!(from_ref:)
       vcs_provider.commit_log(source_commitish, target_branch).each do |commit_attrs|
         next if all_commits.exists?(commit_hash: commit_attrs["commit_hash"])
 

@@ -3,7 +3,6 @@
 # Table name: release_changelogs
 #
 #  id         :uuid             not null, primary key
-#  commits    :jsonb
 #  from_ref   :string           not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
@@ -16,7 +15,7 @@ class ReleaseChangelog < ApplicationRecord
   self.ignored_columns += ["commits"]
 
   belongs_to :release
-  has_many :commits, -> { order(timestamp: :desc) }, through: :release, source: :all_commits
+  has_many :commits, -> { sequential }
 
   def commit_messages(first_parent_only = false)
     ReleaseChangelog.commit_log(commits, first_parent_only)&.map(&:message)
