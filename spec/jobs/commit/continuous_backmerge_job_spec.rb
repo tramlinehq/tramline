@@ -78,7 +78,7 @@ describe Commit::ContinuousBackmergeJob do
       commit = create(:commit, release:)
       described_class.new.perform(commit.id)
 
-      expect(commit.reload.pull_request).to be_nil
+      expect(commit.reload.pull_requests).to be_empty
     end
 
     it "notifies about the backmerge failure", skip: "TODO: fix this test" do
