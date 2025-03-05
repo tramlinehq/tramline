@@ -337,11 +337,10 @@ class Release < ApplicationRecord
     return if source_commitish.blank?
 
     Release.transaction do
-      create_release_changelog!(from_ref:)
+      changelog = create_release_changelog!(from_ref:)
       vcs_provider.commit_log(source_commitish, target_branch).each do |commit_attrs|
-        next if all_commits.exists?(commit_hash: commit_attrs["commit_hash"])
-
-        all_commits.create!(
+        next if changelog.commits.exists?(commit_hash: commit_attrs["commit_hash"])
+        changelog.commits.create!(
           author_email: commit_attrs["author_email"],
           author_login: commit_attrs["author_login"],
           author_name: commit_attrs["author_name"],
@@ -349,7 +348,8 @@ class Release < ApplicationRecord
           message: commit_attrs["message"],
           parents: commit_attrs["parents"] || [],
           timestamp: commit_attrs["timestamp"],
-          url: commit_attrs["url"]
+          url: commit_attrs["url"],
+          release_id: id
         )
       end
     end
