@@ -228,7 +228,6 @@ class ReleasePlatformRun < ApplicationRecord
     locale = default_locale || ReleaseMetadata::DEFAULT_LOCALE
     release_metadata.create!(base.merge(locale: locale, default_locale: true))
   end
-
   # rubocop:enable Rails/SkipsModelValidations
 
   def correct_version!

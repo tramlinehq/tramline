@@ -15,7 +15,7 @@ class ReleaseChangelog < ApplicationRecord
   self.ignored_columns += ["commits"]
 
   belongs_to :release
-  has_many :commits, -> { sequential }
+  has_many :commits, -> { sequential }, inverse_of: :release_changelog, dependent: :destroy
 
   def commit_messages(first_parent_only = false)
     ReleaseChangelog.commit_log(commits, first_parent_only)&.map(&:message)

@@ -7,6 +7,7 @@ FactoryBot.define do
       # Create associated commits through the release
       rand(1..10).times do
         create(:commit,
+          release_changelog: changelog,
           release: changelog.release,
           url: Faker::Internet.url,
           message: Faker::Lorem.sentence,
