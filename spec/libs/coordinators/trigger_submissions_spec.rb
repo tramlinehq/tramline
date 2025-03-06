@@ -27,6 +27,7 @@ describe Coordinators::TriggerSubmissions do
     release_platform_run = create(:release_platform_run, :on_track)
     internal_release = create(:internal_release, release_platform_run:)
     workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release: internal_release)
+    create(:build, :with_artifact, release_platform_run:, workflow_run:)
     described_class.call(workflow_run)
     expect(internal_release.store_submissions.size).to eq(1)
   end
@@ -36,6 +37,7 @@ describe Coordinators::TriggerSubmissions do
     release_platform_run = create(:release_platform_run, :on_track, release:)
     beta_release = create(:beta_release, release_platform_run:)
     workflow_run = create(:workflow_run, :finished, :rc, release_platform_run:, triggering_release: beta_release)
+    create(:build, :with_artifact, release_platform_run:, workflow_run:)
     described_class.call(workflow_run)
     expect(release_platform_run.production_releases.size).to eq(1)
   end
@@ -45,6 +47,7 @@ describe Coordinators::TriggerSubmissions do
     release_platform_run = create(:release_platform_run, :on_track, release:)
     internal_release = create(:internal_release, release_platform_run:)
     workflow_run = create(:workflow_run, :finished, :internal, release_platform_run:, triggering_release: internal_release)
+    create(:build, :with_artifact, release_platform_run:, workflow_run:)
     described_class.call(workflow_run)
     expect(release_platform_run.production_releases.size).to eq(0)
   end
