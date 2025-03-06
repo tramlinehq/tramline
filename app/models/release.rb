@@ -337,7 +337,7 @@ class Release < ApplicationRecord
 
     return if source_commitish.blank?
 
-    Release.transaction do
+    transaction do
       changelog = create_release_changelog!(from_ref:)
       raw_commit_log = vcs_provider.commit_log(source_commitish, target_branch)
       return if raw_commit_log.blank?
