@@ -3,7 +3,6 @@
 # Table name: release_changelogs
 #
 #  id         :uuid             not null, primary key
-#  commits    :jsonb
 #  from_ref   :string           not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
@@ -13,14 +12,13 @@ class ReleaseChangelog < ApplicationRecord
   has_paper_trail
   include Commitable
 
-  belongs_to :release
+  self.ignored_columns += ["commits"]
 
-  def normalized_commits
-    commits.map { NormalizedCommit.new(_1, train: release.train) }.sort_by(&:timestamp).reverse
-  end
+  belongs_to :release
+  has_many :commits, -> { sequential }, inverse_of: :release_changelog, dependent: :destroy
 
   def commit_messages(first_parent_only = false)
-    ReleaseChangelog.commit_log(normalized_commits.sort_by(&:timestamp).reverse, first_parent_only)&.map(&:message)
+    ReleaseChangelog.commit_log(commits, first_parent_only)&.map(&:message)
   end
 
   def unique_authors
@@ -30,7 +28,7 @@ class ReleaseChangelog < ApplicationRecord
   def commits_by_team
     return unless release.organization.teams.exists?
 
-    relevant_commits = normalized_commits.reject { |c| c.author_login.nil? }
+    relevant_commits = commits.reject { |c| c.author_login.nil? }
     user_logins = relevant_commits.map(&:author_login).uniq
     users = Accounts::User
       .joins(memberships: [:team, :organization])

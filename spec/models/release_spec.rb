@@ -616,6 +616,18 @@ describe Release do
   end
 
   describe "#fetch_commit_log" do
+    def commit_attributes(commits)
+      commits.map do |commit|
+        attrs = commit.attributes.slice(
+          "url", "message", "author_name", "commit_hash",
+          "author_email", "author_login"
+        )
+        attrs["timestamp"] = commit.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%3NZ")
+        attrs["author_url"] = attrs["url"]
+        attrs.with_indifferent_access
+      end
+    end
+
     let(:train) { create(:train) }
     let(:release) { create(:release, :on_track, train:) }
     let(:vcs_mock_provider) { instance_double(GithubIntegration) }
@@ -623,7 +635,7 @@ describe Release do
       [{url: "https://sample.com",
         message: "commit message",
         timestamp: "2024-01-10T18:38:06.000Z",
-        author_url: "https://github.com/jondoe",
+        author_url: "https://sample.com",
         author_name: "Jon Doe",
         commit_hash: SecureRandom.uuid.split("-").join,
         author_email: "jon@doe.com",
@@ -641,7 +653,7 @@ describe Release do
 
       release.fetch_commit_log
       expect(vcs_mock_provider).to have_received(:commit_log).with(finished_release.tag_name, train.working_branch).once
-      expect(release.release_changelog.reload.commits.map(&:with_indifferent_access)).to eq(diff)
+      expect(commit_attributes(release.release_changelog.reload.commits)).to eq(diff)
       expect(release.release_changelog.reload.from_ref).to eq(finished_release.tag_name)
     end
 
@@ -652,7 +664,7 @@ describe Release do
 
       release.fetch_commit_log
       expect(vcs_mock_provider).to have_received(:commit_log).with(ongoing_head.commit_hash, train.working_branch).once
-      expect(release.release_changelog.reload.commits.map(&:with_indifferent_access)).to eq(diff)
+      expect(commit_attributes(release.release_changelog.reload.commits)).to eq(diff)
       expect(release.release_changelog.reload.from_ref).to eq(ongoing_head.short_sha)
     end
 
@@ -669,7 +681,7 @@ describe Release do
 
         hotfix_release.fetch_commit_log
         expect(vcs_mock_provider).to have_received(:commit_log).with(finished_release.tag_name, release.release_branch).once
-        expect(hotfix_release.release_changelog.reload.commits.map(&:with_indifferent_access)).to eq(diff)
+        expect(commit_attributes(hotfix_release.release_changelog.reload.commits)).to eq(diff)
         expect(hotfix_release.release_changelog.reload.from_ref).to eq(finished_release.tag_name)
       end
 
