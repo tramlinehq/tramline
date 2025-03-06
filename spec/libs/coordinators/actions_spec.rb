@@ -181,7 +181,7 @@ describe Coordinators::Actions do
         let(:store_provider) { instance_double(store_provider_klass) }
 
         before do
-          allow(release_platform_run).to receive(:store_provider).and_return(store_provider)
+          allow(submission).to receive(:provider).and_return(store_provider)
           allow(build).to receive(:attach_artifact!).and_raise(Installations::Error, reason: :artifact_not_found)
         end
 

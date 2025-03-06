@@ -145,7 +145,7 @@ class PlayStoreSubmission < StoreSubmission
     if build.has_artifact?
       # upload build only if we have it
       preprocess!
-    elsif release_platform_run.store_provider.find_build(build.build_number, raise_on_lock_error: false).present?
+    elsif provider.find_build(build.build_number, raise_on_lock_error: false).present?
       # skip upload step and go directly to start_prepare
       start_prepare!
     else

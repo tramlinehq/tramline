@@ -85,7 +85,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     if build.has_artifact?
       # upload build only if we have it
       preprocess!
-    elsif release_platform_run.store_provider.find_build(build.build_number, build.version_name, release_platform_run.platform).present?
+    elsif provider.find_build(build.build_number, build.version_name, release_platform_run.platform).present?
       # We can proceed to next step if build was already uploaded by ci
       prepare!
     else
