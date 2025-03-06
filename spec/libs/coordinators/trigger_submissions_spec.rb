@@ -13,7 +13,15 @@ describe Coordinators::TriggerSubmissions do
 
   it "attaches the artifact to the build for the workflow run" do
     ci_cd_double = instance_double(GithubIntegration)
-    allow(ci_cd_double).to receive(:get_artifact)
+    allow(ci_cd_double).to receive(:get_artifact).and_return({
+      stream: Artifacts::Stream.new("spec/fixtures/storage/test_artifact.aab.zip", is_archive: true),
+      artifact: {
+        generated_at: Time.zone.now,
+        size_in_bytes: 10,
+        name: "test_artifact_aab.zip",
+        id: "123456"
+      }
+    })
 
     release_platform_run = create(:release_platform_run, :on_track)
     allow(release_platform_run).to receive(:ci_cd_provider).and_return(ci_cd_double)
