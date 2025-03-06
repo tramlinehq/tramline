@@ -62,10 +62,7 @@ class Triggers::PreRelease
         # Use configured build files or fall back to finding them
         build_files = if train.version_bump_file_paths.present?
           train.version_bump_file_paths.split(",").map(&:strip)
-        else
-          find_build_files
         end
-
         return if build_files.empty?
 
         # Create a version bump branch
@@ -74,10 +71,9 @@ class Triggers::PreRelease
 
         # Update version in each build file on the version branch
         updated_files = []
-
         build_files.each do |file_path|
           file_result = update_version_in_file(version_branch, file_path)
-          updated_files << file_path if file_result.ok?
+          updated_files << file_path if file_result
         end
 
         if updated_files.any?
@@ -123,48 +119,9 @@ class Triggers::PreRelease
       end
     end
 
-    def find_build_files
-      files = []
-
-      # Check for Flutter pubspec.yaml
-      pubspec_result = train.vcs_provider.get_file_content(release_branch, "pubspec.yaml")
-      files << "pubspec.yaml" if pubspec_result.ok?
-
-      if train.app.android?
-        # Common Android build files
-        android_files = [
-          "android/app/build.gradle",
-          "android/build.gradle",
-          "app/build.gradle"
-        ]
-
-        android_files.each do |file|
-          result = train.vcs_provider.get_file_content(release_branch, file)
-          files << file if result.ok?
-        end
-      elsif train.app.ios?
-        # Common iOS build files
-        ios_files = [
-          "ios/App/Info.plist",
-          "ios/App/Project.pbxproj"
-        ]
-
-        ios_files.each do |file|
-          result = train.vcs_provider.get_file_content(release_branch, file)
-          files << file if result.ok?
-        end
-      end
-
-      files
-    end
-
     def update_version_in_file(branch, file_path)
       # Get the current file content
-      content_result = train.vcs_provider.get_file_content(branch, file_path)
-      return content_result unless content_result.ok?
-
-      # Safely extract content with error handling
-      content = content_result.value!
+      content = train.vcs_provider.get_file_content(branch, file_path)
 
       # Update version based on file type
       updated_content = if file_path.end_with?(".gradle")
@@ -189,9 +146,6 @@ class Triggers::PreRelease
           author_name: "Tramline",
           author_email: "tramline-bot@tramline.app"
         )
-      else
-        # Return success even if no changes were needed
-        GitHub::Result.new { true }
       end
     end
 

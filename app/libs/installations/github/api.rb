@@ -433,7 +433,7 @@ module Installations
     end
 
     def get_file_content(repo, branch, path)
-      GitHub::Result.new do
+      execute do
         response = client.contents(repo, path: path, ref: branch)
         if response.content && response.encoding == "base64"
           Base64.decode64(response.content)
@@ -442,13 +442,11 @@ module Installations
         end
       rescue Octokit::NotFound
         raise Installations::Error.new("File not found", reason: :file_not_found)
-      rescue => ex
-        raise Installations::Error.new("Failed to get file content: #{ex.message}", reason: :github_api_error)
       end
     end
 
     def update_file(repo, branch, path, content, message, author_name: nil, author_email: nil)
-      GitHub::Result.new do
+      execute do
         # First get the current file to get its SHA
         current_file = client.contents(repo, path: path, ref: branch)
 
@@ -475,15 +473,12 @@ module Installations
         # Update the file
         client.update_contents(repo, path, message, current_file.sha, content, branch: branch)
       rescue Octokit::NotFound
-        # If file doesn't exist, create it
-        create_file(repo, branch, path, content, message, author_name: author_name, author_email: author_email)
-      rescue => ex
-        raise Installations::Error.new("Failed to update file: #{ex.message}", reason: :github_api_error)
+        raise Installations::Error.new("File not found", reason: :file_not_found)
       end
     end
 
     def create_file(repo, branch, path, content, message, author_name: nil, author_email: nil)
-      GitHub::Result.new do
+      execute do
         # Prepare commit info
         commit_info = {
           message: message,
@@ -505,13 +500,11 @@ module Installations
 
         # Create the file
         client.create_contents(repo, path, message, content, branch: branch)
-      rescue => ex
-        raise Installations::Error.new("Failed to create file: #{ex.message}", reason: :github_api_error)
       end
     end
 
     def create_commit(repo, branch, message, author_name: nil, author_email: nil)
-      GitHub::Result.new do
+      execute do
         # Get the latest commit on the branch to get its tree
         latest_commit = client.ref(repo, "heads/#{branch}")
         base_commit = client.commit(repo, latest_commit.object.sha)
@@ -544,8 +537,6 @@ module Installations
         client.update_ref(repo, "heads/#{branch}", new_commit.sha)
 
         new_commit
-      rescue => ex
-        raise Installations::Error.new("Failed to create commit: #{ex.message}", reason: :github_api_error)
       end
     end
   end
