@@ -28,14 +28,15 @@
 
       <% if external_url %>
         <%= render ButtonComponent.new(
-          scheme: :naked_icon,
-          options: external_url,
-          size: :none,
-          authz: false,
-          type: :link_external) do |b|
-          b.with_icon("arrow_right.svg", size: :sm)
-          b.with_tooltip(external_url_title, placement: "top")
-        end %>
+              scheme: :naked_icon,
+              options: external_url,
+              size: :none,
+              authz: false,
+              type: :link_external
+            ) do |b|
+              b.with_icon("arrow_right.svg", size: :sm)
+              b.with_tooltip(external_url_title, placement: "top")
+            end %>
       <% end %>
     </div>
 

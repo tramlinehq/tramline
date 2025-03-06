@@ -4,14 +4,15 @@
       <div class="flex items-center">
         <% if fold? && !emptiness %>
           <%= render ButtonComponent.new(
-            scheme: :naked_icon,
-            type: :action,
-            authz: false,
-            html_options: fold_button_params,
-            size: :none) do |b|
-            b.with_icon("unfold_vertical.svg", size: :sm)
-            b.with_tooltip("Fold / unfold", placement: "top")
-          end %>
+                scheme: :naked_icon,
+                type: :action,
+                authz: false,
+                html_options: fold_button_params,
+                size: :none
+              ) do |b|
+                b.with_icon("unfold_vertical.svg", size: :sm)
+                b.with_tooltip("Fold / unfold", placement: "top")
+              end %>
         <% end %>
 
         <h5 class="flex heading-5-sc"><%= title %></h5>

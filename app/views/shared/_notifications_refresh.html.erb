@@ -6,13 +6,14 @@
 
   <div class="mt-2">
     <%= render ButtonComponent.new(
-      label: "Refresh",
-      scheme: :light,
-      type: :link,
-      size: :xxs,
-      options: refresh_channels_app_integration_slack_integration_path(app, app.notification_provider.integration, app.notification_provider),
-      html_options: { method: :post,
-                      data: { turbo_method: :post },
-                      class: "-mx-1" }) %>
+          label: "Refresh",
+          scheme: :light,
+          type: :link,
+          size: :xxs,
+          options: refresh_channels_app_integration_slack_integration_path(app, app.notification_provider.integration, app.notification_provider),
+          html_options: {method: :post,
+                         data: {turbo_method: :post},
+                         class: "-mx-1"}
+        ) %>
   </div>
 </div>

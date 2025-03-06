@@ -26,17 +26,19 @@
               <% end %>
             <% else %>
               <%= render EmptyStateComponent.new(
-                title: "Not ready yet",
-                text: "Please wait for changes to be applied before starting.",
-                banner_image: icon,
-                type: :subdued) %>
+                    title: "Not ready yet",
+                    text: "Please wait for changes to be applied before starting.",
+                    banner_image: icon,
+                    type: :subdued
+                  ) %>
             <% end %>
           <% else %>
             <%= render EmptyStateComponent.new(
-              title: "No internal build step configured",
-              text: "Please configure an internal build step for the train to see the build status.",
-              banner_image: "drill.svg",
-              type: :subdued) %>
+                  title: "No internal build step configured",
+                  text: "Please configure an internal build step for the train to see the build status.",
+                  banner_image: "drill.svg",
+                  type: :subdued
+                ) %>
           <% end %>
         </div>
       <% end %>

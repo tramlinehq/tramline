@@ -23,26 +23,28 @@
           <div class="flex justify-end gap-1">
             <% if build.ci_link.present? %>
               <%= render ButtonComponent.new(
-                scheme: :light,
-                options: build.ci_link,
-                size: :xxs,
-                type: :link_external,
-                authz: false) do |b|
-                b.with_tooltip("CI workflow")
-                b.with_icon("workflow.svg")
-              end %>
+                    scheme: :light,
+                    options: build.ci_link,
+                    size: :xxs,
+                    type: :link_external,
+                    authz: false
+                  ) do |b|
+                    b.with_tooltip("CI workflow")
+                    b.with_icon("workflow.svg")
+                  end %>
             <% end %>
 
             <% if build.download_url.present? %>
               <%= render ButtonComponent.new(
-                scheme: :light,
-                options: build.download_url,
-                size: :xxs,
-                type: :link_external,
-                authz: false) do |b|
-                b.with_tooltip("Download build")
-                b.with_icon("download.svg")
-              end %>
+                    scheme: :light,
+                    options: build.download_url,
+                    size: :xxs,
+                    type: :link_external,
+                    authz: false
+                  ) do |b|
+                    b.with_tooltip("Download build")
+                    b.with_icon("download.svg")
+                  end %>
             <% end %>
           </div>
         </div>
@@ -67,8 +69,9 @@
   </div>
 <% else %>
   <%= render EmptyStateComponent.new(
-    title: "No builds found",
-    text: "No builds are available at this time.",
-    banner_image: "drill.svg",
-    type: :subdued) %>
+        title: "No builds found",
+        text: "No builds are available at this time.",
+        banner_image: "drill.svg",
+        type: :subdued
+      ) %>
 <% end %>

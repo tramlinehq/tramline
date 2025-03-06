@@ -9,9 +9,9 @@
     <%= render CardComponent.new(title: @title, separator: false, fixed_height: card_height, border_style:) do |card| %>
       <% card.with_action do %>
         <%= render ModalComponent.new(title: "Rollout timeline",
-                                          size: :xs,
-                                          type: :drawer,
-                                          authz: false) do |modal| %>
+                                      size: :xs,
+                                      type: :drawer,
+                                      authz: false) do |modal| %>
           <% button = modal.with_button(scheme: :supporting,
                                         size: :xxs,
                                         type: :action,
@@ -34,12 +34,13 @@
         <div class="grid grid-cols-12">
           <div class="col-span-5 flex flex-col gap-2">
             <%= render LiveRelease::BuildComponent.new(
-              build,
-              show_metadata: false,
-              show_ci: false,
-              show_activity: false,
-              show_commit: false,
-              show_compact_metadata: true) %>
+                  build,
+                  show_metadata: false,
+                  show_ci: false,
+                  show_activity: false,
+                  show_commit: false,
+                  show_compact_metadata: true
+                ) %>
 
             <div class="flex items-baseline gap-2">
               <%= render IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
@@ -79,14 +80,14 @@
               </div>
               <div class="flex flex-row gap-2">
                 <%= render ButtonComponent.new(label: "Store dashboard ↗",
-                                                   scheme: :link,
-                                                   type: :link_external,
-                                                   options: external_link,
-                                                   html_options: {class: "text-sm"},
-                                                   authz: false,
-                                                   size: :none) do |b|
-                  b.with_icon(store_icon, size: :md)
-                end %>
+                                               scheme: :link,
+                                               type: :link_external,
+                                               options: external_link,
+                                               html_options: {class: "text-sm"},
+                                               authz: false,
+                                               size: :none) do |b|
+                      b.with_icon(store_icon, size: :md)
+                    end %>
               </div>
             </div>
           <% end %>

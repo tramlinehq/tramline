@@ -226,7 +226,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def fail_with_error!(error)
-    elog(error)
+    elog(error, level: :warn)
 
     return if fail_with_review_rejected!(error)
     return fail!(reason: error.reason, error: error) if error.is_a?(Installations::Google::PlayDeveloper::Error)

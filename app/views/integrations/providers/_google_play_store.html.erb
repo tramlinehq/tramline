@@ -4,8 +4,8 @@
       <p>Your Service Account Key</p>
       <p class="mt-2 text-xs">
         <%= link_to_external "How to create a service account?",
-                             "https://docs.tramline.app/integrations/distribution/play_store",
-                             class: "underline" %>
+              "https://docs.tramline.app/integrations/distribution/play_store",
+              class: "underline" %>
       </p>
     <% end %>
 
@@ -15,10 +15,10 @@
       <%= subf.hidden_field :type, value: integration.providable_type %>
       <div>
         <%= subf.labeled_file_field :json_key_file,
-                                    "JSON key file",
-                                    "Only .json files.",
-                                    accept: "application/json",
-                                    required: true %>
+              "JSON key file",
+              "Only .json files.",
+              accept: "application/json",
+              required: true %>
       </div>
     <% end %>
   <% end %>

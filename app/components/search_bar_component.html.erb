@@ -3,14 +3,14 @@
     <div class="flex flex-row justify-between">
       <div class="flex flex-row items-end">
         <%= text_field_tag search_name, search_value, {
-          placeholder: search_placeholder.presence || "Search",
-          class: "form-input inline-flex w-full",
-          autocomplete: "off",
-          autofocus: true,
-          data: { search_form_target: "searchInput", action: "input->search-form#search" }
-        } %>
+              placeholder: search_placeholder.presence || "Search",
+              class: "form-input inline-flex w-full",
+              autocomplete: "off",
+              autofocus: true,
+              data: {search_form_target: "searchInput", action: "input->search-form#search"}
+            } %>
 
-        <%= link_to "clear", "#", class: "underline hover:cursor-pointer text-xs ml-2", data: { action: "search-form#clear" } %>
+        <%= link_to "clear", "#", class: "underline hover:cursor-pointer text-xs ml-2", data: {action: "search-form#clear"} %>
       </div>
 
       <div class="flex items-end">

@@ -35,15 +35,16 @@
             </div>
 
             <%= render ButtonComponent.new(
-              scheme: :link,
-              type: :link,
-              size: :none,
-              options: timeline_release_path(release),
-              authz: false,
-              label: "Release activity",
-              html_options: { class: "text-sm" }) do |b|
-              b.with_icon("activity.svg")
-            end %>
+                  scheme: :link,
+                  type: :link,
+                  size: :none,
+                  options: timeline_release_path(release),
+                  authz: false,
+                  label: "Release activity",
+                  html_options: {class: "text-sm"}
+                ) do |b|
+                  b.with_icon("activity.svg")
+                end %>
           </div>
         </div>
 
@@ -83,15 +84,15 @@
           </div>
 
           <%= render SmartTextBoxComponent.new(release_branch,
-                                                   clipboard: true,
-                                                   clipboard_tooltip: "Copy release branch",
-                                                   size: :compact) %>
+                clipboard: true,
+                clipboard_tooltip: "Copy release branch",
+                size: :compact) %>
 
           <% if tag_name.present? %>
             <%= render SmartTextBoxComponent.new(tag_name,
-                                                     clipboard: true,
-                                                     clipboard_tooltip: "Copy final release tag",
-                                                     size: :compact) %>
+                  clipboard: true,
+                  clipboard_tooltip: "Copy final release tag",
+                  size: :compact) %>
           <% end %>
         </div>
 
@@ -108,8 +109,8 @@
                   <li class="flex items-center justify-center w-full gap-2">
                     <%= status_icon(config) %>
                     <%= content_tag(sidebar_title_tag(config),
-                                    class: "flex flex-row items-center justify-between w-full rounded hover:text-main-900 hover:bg-main-100 #{active_style(path)} mr-2 px-2",
-                                    href: path) do %>
+                          class: "flex flex-row items-center justify-between w-full rounded hover:text-main-900 hover:bg-main-100 #{active_style(path)} mr-2 px-2",
+                          href: path) do %>
                       <div class="flex gap-2 items-center">
                         <span class="text-sm font-normal py-1.5 dark:bg-gray-200"><%= title %></span>
                         <%= coming_soon(config) %>
@@ -128,25 +129,27 @@
       <div class="self-end mt-10 flex flex-col gap-2 items-end <%= RIGHT_GUTTER %>">
         <% if partially_finished? %>
           <%= render ButtonComponent.new(
-            scheme: :light,
-            type: :link,
-            size: :xxs,
-            options: finish_release_release_path(release),
-            label: "Mark release as finished",
-            html_options: html_opts(:post, "You have finished release to only one of the platforms. Are you sure you want to finish the release?")) do |b|
-            b.with_icon("list_checks.svg")
-          end %>
+                scheme: :light,
+                type: :link,
+                size: :xxs,
+                options: finish_release_release_path(release),
+                label: "Mark release as finished",
+                html_options: html_opts(:post, "You have finished release to only one of the platforms. Are you sure you want to finish the release?")
+              ) do |b|
+                b.with_icon("list_checks.svg")
+              end %>
         <% end %>
         <% if active? %>
           <%= render ButtonComponent.new(
-            scheme: :danger,
-            type: :button,
-            size: :xxs,
-            label: "Stop release",
-            options: release_path(release),
-            html_options: html_opts(:delete, stop_release_warning)) do |b|
-            b.with_icon("stop.svg")
-          end %>
+                scheme: :danger,
+                type: :button,
+                size: :xxs,
+                label: "Stop release",
+                options: release_path(release),
+                html_options: html_opts(:delete, stop_release_warning)
+              ) do |b|
+                b.with_icon("stop.svg")
+              end %>
         <% end %>
       </div>
     </div>

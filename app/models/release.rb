@@ -106,7 +106,7 @@ class Release < ApplicationRecord
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
   has_many :release_metadata, through: :release_platform_runs
-  has_many :all_commits, dependent: :destroy, inverse_of: :release, class_name: "Commit"
+  has_many :all_commits, -> { stability }, dependent: :destroy, inverse_of: :release, class_name: "Commit"
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :builds, through: :release_platform_runs
   has_many :build_queues, dependent: :destroy
@@ -322,8 +322,9 @@ class Release < ApplicationRecord
   end
 
   def fetch_commit_log
-    # release branch for a new release may not exist on vcs provider since pre release job runs in parallel to fetch commit log job
+    # release branch for a new release may not exist on vcs provider since pre-release job runs in parallel to fetch commit log job
     target_branch = train.working_branch
+
     if upcoming?
       ongoing_head = train.ongoing_release.first_commit
       source_commitish, from_ref = ongoing_head.commit_hash, ongoing_head.short_sha
@@ -337,10 +338,28 @@ class Release < ApplicationRecord
 
     return if source_commitish.blank?
 
-    create_release_changelog(
-      commits: vcs_provider.commit_log(source_commitish, target_branch),
-      from_ref:
-    )
+    transaction do
+      changelog = create_release_changelog!(from_ref:)
+      raw_commit_log = vcs_provider.commit_log(source_commitish, target_branch)
+      return if raw_commit_log.blank?
+      commits_to_create = raw_commit_log.map do |commit_attrs|
+        {
+          author_email: commit_attrs["author_email"],
+          author_login: commit_attrs["author_login"],
+          author_name: commit_attrs["author_name"],
+          commit_hash: commit_attrs["commit_hash"],
+          message: commit_attrs["message"],
+          parents: commit_attrs["parents"] || [],
+          timestamp: commit_attrs["timestamp"],
+          url: commit_attrs["url"],
+          release_id: id,
+          release_changelog_id: changelog.id
+        }
+      end
+      # rubocop:disable Rails/SkipsModelValidations
+      Commit.insert_all!(commits_to_create)
+      # rubocop:enable Rails/SkipsModelValidations
+    end
   end
 
   def end_ref

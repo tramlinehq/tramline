@@ -11,29 +11,30 @@
       <% if show_build %>
         <%= render IconComponent.new("connect_line.svg", size: :xl) %>
         <%= render LiveRelease::BuildComponent.new(
-          release.build,
-          show_number: false,
-          show_metadata: false,
-          show_ci: true,
-          show_activity: false,
-          show_commit: false) %>
+              release.build,
+              show_number: false,
+              show_metadata: false,
+              show_ci: true,
+              show_activity: false,
+              show_commit: false
+            ) %>
       <% end %>
 
       <%= render BadgeComponent.new(**release.overall_status) %>
 
       <% if release.previous.present? %>
         <%= render partial: "shared/changes_since_last_modal",
-                   locals: { title: "Changes since last submission",
-                             button_scheme: :naked_icon,
-                             subtitle: nil,
-                             changes_path: changes_since_previous_production_release_path(release),
-                             parent_release: release } %>
+                   locals: {title: "Changes since last submission",
+                            button_scheme: :naked_icon,
+                            subtitle: nil,
+                            changes_path: changes_since_previous_production_release_path(release),
+                            parent_release: release} %>
       <% end %>
     </div>
 
     <%= render partial: "shared/show_time_ago",
-               locals: { tooltip_text: release.last_activity_tooltip,
-                         time: release.last_activity_ts,
-                         tick: false } %>
+               locals: {tooltip_text: release.last_activity_tooltip,
+                        time: release.last_activity_ts,
+                        tick: false} %>
   </div>
 <% end %>

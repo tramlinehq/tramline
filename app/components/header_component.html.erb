@@ -10,10 +10,12 @@
       <div class="flex flex-wrap justify-between items-center py-3 px-4 pb-5 sm:pb-3 lg:px-6">
         <div class="flex items-center mb-2 sm:mb-0 gap-x-2">
           <% if current_organization %>
-            <%= render ButtonComponent.new(scheme: :light,
-                                           options: edit_accounts_organization_path(current_organization),
-                                           type: :link,
-                                           size: :xxs) do |b| %>
+            <%= render ButtonComponent.new(
+                  scheme: :light,
+                  options: edit_accounts_organization_path(current_organization),
+                  type: :link,
+                  size: :xxs
+                ) do |b| %>
               <% b.with_tooltip("Organization Settings") %>
               <% b.with_icon("building.svg", size: :md) %>
             <% end %>
@@ -31,7 +33,7 @@
 
               <% dropdown.with_item_group do |group| %>
                 <% current_user.organizations.each do |organization| %>
-                  <% group.with_item(link: { path: switch_accounts_organization_path(organization), "data-turbo": false },
+                  <% group.with_item(link: {path: switch_accounts_organization_path(organization), "data-turbo": false},
                                      selected: organization.id == current_organization.id) do %>
                     <div class="text-left">
                       <div class="font-medium leading-none mb-0.5 text-sm">
@@ -59,14 +61,14 @@
                   <%= render IconComponent.new("#{default_app.platform}.svg", size: :md) %>
                   <%= default_app.name %>
                   <span class="text-sm text-secondary dark:text-secondary-50">
-                      <%= default_app.bundle_identifier %>
-                    </span>
+                    <%= default_app.bundle_identifier %>
+                  </span>
                 </div>
               <% end %>
 
               <% dropdown.with_item_group do |group| %>
                 <% current_organization.apps.filter(&:persisted?).each do |app| %>
-                  <% group.with_item(link: { path: app_path(app) }, selected: app.id == default_app.id) do %>
+                  <% group.with_item(link: {path: app_path(app)}, selected: app.id == default_app.id) do %>
                     <div class="text-left">
                       <div class="font-medium leading-none mb-0.5 text-sm">
                         <%= app.name %>
@@ -83,21 +85,24 @@
               <% end %>
             <% end %>
 
-
-            <%= render ButtonComponent.new(scheme: :light,
-                                           options: edit_app_path(default_app),
-                                           type: :link,
-                                           authz: false,
-                                           size: :xxs) do |b| %>
+            <%= render ButtonComponent.new(
+                  scheme: :light,
+                  options: edit_app_path(default_app),
+                  type: :link,
+                  authz: false,
+                  size: :xxs
+                ) do |b| %>
               <% b.with_tooltip("App Settings") %>
               <% b.with_icon("cog.svg", size: :md) %>
             <% end %>
 
-            <%= render ButtonComponent.new(scheme: :light,
-                                           options: search_app_path(default_app),
-                                           type: :link,
-                                           size: :xxs,
-                                           authz: false) do |b| %>
+            <%= render ButtonComponent.new(
+                  scheme: :light,
+                  options: search_app_path(default_app),
+                  type: :link,
+                  size: :xxs,
+                  authz: false
+                ) do |b| %>
               <% b.with_tooltip("Search (Press /)") %>
               <% b.with_icon("search.svg", size: :md) %>
             <% end %>
@@ -118,7 +123,7 @@
               <% mb.with_tooltip("Add a new app") %>
               <% mb.with_icon("plus.svg", size: :md) %>
               <% modal.with_body do %>
-                <%= render partial: "apps/form", locals: { app: new_app } %>
+                <%= render partial: "apps/form", locals: {app: new_app} %>
               <% end %>
             <% end %>
           <% end %>
@@ -127,20 +132,21 @@
 
       <div class="flex justify-end items-center lg:order-2">
         <%= render ButtonComponent.new(
-          scheme: :naked_icon,
-          options: "https://docs.tramline.app",
-          type: :link_external,
-          size: :none,
-          authz: false) do |b|
-          b.with_tooltip("Read the docs")
-          b.with_icon("book.svg", rounded: false)
-        end %>
+              scheme: :naked_icon,
+              options: "https://docs.tramline.app",
+              type: :link_external,
+              size: :none,
+              authz: false
+            ) do |b|
+              b.with_tooltip("Read the docs")
+              b.with_icon("book.svg", rounded: false)
+            end %>
 
         <span class="mx-4 w-px h-5 bg-main-200 dark:bg-main-600"></span>
 
         <%= render DropdownComponent.new(authz: false) do |dropdown| %>
-          <% dropdown.with_button(size: :none, html_options: { class: "flex" }, scheme: :avatar_icon)
-                     .with_icon(user_avatar(user_full_name), raw_svg: true, size: :xl_3) %>
+          <% dropdown.with_button(size: :none, html_options: {class: "flex"}, scheme: :avatar_icon)
+               .with_icon(user_avatar(user_full_name), raw_svg: true, size: :xl_3) %>
           <% dropdown.with_subtext do %>
             <div class="py-3 px-4">
               <div class="text-sm text-secondary dark:text-secondary-50">
@@ -154,25 +160,25 @@
           <% end %>
 
           <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
-            <% group.with_item(link: { path: edit_accounts_user_path, "data-turbo": false }) do %>
+            <% group.with_item(link: {path: edit_accounts_user_path, "data-turbo": false}) do %>
               Settings
             <% end %>
           <% end %>
 
           <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
             <% if billing? %>
-              <% group.with_item(link: { path: billing_link, external: true }) do %>
+              <% group.with_item(link: {path: billing_link, external: true}) do %>
                 Go to billing ↗
               <% end %>
             <% end %>
 
-            <% group.with_item(link: { path: "https://calendar.app.google/bs6wimzo316W3yKz9", external: true }) do %>
+            <% group.with_item(link: {path: "https://calendar.app.google/bs6wimzo316W3yKz9", external: true}) do %>
               Book a demo ↗
             <% end %>
           <% end %>
 
           <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
-            <% group.with_item(link: { path: logout_path, "data-turbo": false }) do %>
+            <% group.with_item(link: {path: logout_path, "data-turbo": false}) do %>
               Sign out
             <% end %>
           <% end %>
