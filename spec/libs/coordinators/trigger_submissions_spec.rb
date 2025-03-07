@@ -13,7 +13,15 @@ describe Coordinators::TriggerSubmissions do
 
   it "attaches the artifact to the build for the workflow run" do
     ci_cd_double = instance_double(GithubIntegration)
-    allow(ci_cd_double).to receive(:get_artifact)
+    allow(ci_cd_double).to receive(:get_artifact).and_return({
+      stream: Artifacts::Stream.new("spec/fixtures/storage/test_artifact.aab.zip", is_archive: true),
+      artifact: {
+        generated_at: Time.zone.now,
+        size_in_bytes: 10,
+        name: "test_artifact_aab.zip",
+        id: "123456"
+      }
+    })
 
     release_platform_run = create(:release_platform_run, :on_track)
     allow(release_platform_run).to receive(:ci_cd_provider).and_return(ci_cd_double)
@@ -27,6 +35,7 @@ describe Coordinators::TriggerSubmissions do
     release_platform_run = create(:release_platform_run, :on_track)
     internal_release = create(:internal_release, release_platform_run:)
     workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release: internal_release)
+    create(:build, :with_artifact, release_platform_run:, workflow_run:)
     described_class.call(workflow_run)
     expect(internal_release.store_submissions.size).to eq(1)
   end
@@ -36,6 +45,7 @@ describe Coordinators::TriggerSubmissions do
     release_platform_run = create(:release_platform_run, :on_track, release:)
     beta_release = create(:beta_release, release_platform_run:)
     workflow_run = create(:workflow_run, :finished, :rc, release_platform_run:, triggering_release: beta_release)
+    create(:build, :with_artifact, release_platform_run:, workflow_run:)
     described_class.call(workflow_run)
     expect(release_platform_run.production_releases.size).to eq(1)
   end
@@ -45,6 +55,7 @@ describe Coordinators::TriggerSubmissions do
     release_platform_run = create(:release_platform_run, :on_track, release:)
     internal_release = create(:internal_release, release_platform_run:)
     workflow_run = create(:workflow_run, :finished, :internal, release_platform_run:, triggering_release: internal_release)
+    create(:build, :with_artifact, release_platform_run:, workflow_run:)
     described_class.call(workflow_run)
     expect(release_platform_run.production_releases.size).to eq(0)
   end

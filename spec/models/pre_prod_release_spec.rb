@@ -8,7 +8,7 @@ describe PreProdRelease do
     let(:workflow_run) { create(:workflow_run, triggering_release: pre_prod_release) }
 
     it "triggers the first submission" do
-      build = create(:build, workflow_run:)
+      build = create(:build, :with_artifact, workflow_run:)
       pre_prod_release.trigger_submissions!
       expect(pre_prod_release.store_submissions.count).to eq(1)
       expect(pre_prod_release.store_submissions.sole.build).to eq(build)
@@ -19,7 +19,7 @@ describe PreProdRelease do
   describe "#rollout_complete!" do
     let(:pre_prod_release) { create(:internal_release) }
     let(:workflow_run) { create(:workflow_run, triggering_release: pre_prod_release) }
-    let(:build) { create(:build, workflow_run:) }
+    let(:build) { create(:build, :with_artifact, workflow_run:) }
     let(:submission) { create(:play_store_submission, parent_release: pre_prod_release, build:, sequence_number: 1) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 

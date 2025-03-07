@@ -80,11 +80,23 @@ class GoogleFirebaseSubmission < StoreSubmission
   def trigger!
     return unless actionable?
     return unless may_prepare?
-
-    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     # return mock_upload_to_firebase if sandbox_mode?
 
-    preprocess!
+    if build.has_artifact?
+      # upload build only if we have it
+      preprocess!
+    else
+      release_info = provider.find_build(build.build_number, build.version_name, release_platform_run.platform)
+      if release_info.ok?
+        # We can proceed to next step if build was already uploaded by ci
+        prepare_and_update!(release_info.value!)
+        StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, release_info.value!.release.id)
+      else
+        raise BuildNotFound, "Unable to find build #{build.build_number}"
+      end
+    end
+
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
   end
 
   def upload_build!
