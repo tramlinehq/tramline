@@ -79,7 +79,14 @@ class Triggers::PreRelease
         if updated_files.any?
           # Create a PR to merge version changes into the release branch
           pr_title = "Bump version to #{release.release_version}"
-          pr_body = "Updates version numbers in build files for release #{release.release_version}.\n\nUpdated files:\n- #{updated_files.join("\n- ")}"
+          pr_body = <<~BODY
+            🎉 A new release has been started in Tramline.
+ 
+            This PR updates the version number in build files for release #{release.release_version}.
+
+            Updated files:
+            - #{updated_files.join("\n- ")}
+          BODY
 
           pr_result = train.vcs_provider.create_pr!(
             release_branch,
