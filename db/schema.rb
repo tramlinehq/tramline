@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_05_103927) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -441,6 +441,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_05_103927) do
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
   end
 
+  create_table "onboarding_states", force: :cascade do |t|
+    t.uuid "app_id", null: false
+    t.jsonb "data", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_id"], name: "index_onboarding_states_on_app_id"
+  end
+
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "status", null: false
     t.string "name", null: false
@@ -842,6 +850,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_05_103927) do
     t.boolean "is_staged_rollout", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "auto_rollout_enabled", default: false
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
     t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
   end
@@ -1074,6 +1083,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_05_103927) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
+  add_foreign_key "onboarding_states", "apps"
   add_foreign_key "pre_prod_releases", "commits"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "parent_internal_release_id"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "previous_id"

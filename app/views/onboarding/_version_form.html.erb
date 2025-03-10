@@ -1,0 +1,73 @@
+<%= turbo_frame_tag "onboarding_step_0" do %>
+  <div data-controller="onboarding-form"
+       data-onboarding-form-next-step-url-value="<%= branching_app_onboarding_path(@app) %>">
+
+    <div data-onboarding-form-target="error" class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 hidden" role="alert">
+    </div>
+
+    <%= form_with model: @onboarding_state,
+                  url: save_version_app_onboarding_path(@app),
+                  method: :post,
+                  data: {onboarding_form_target: "form"},
+                  class: "space-y-6" do |f| %>
+      <div class="grid gap-6 mb-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-4">Version Strategy</h3>
+          <p class="text-sm text-gray-600 mb-4">Configure how your app version numbers are managed through the release
+            cycle.</p>
+        </div>
+
+        <div class="grid gap-4">
+          <div>
+            <%= f.label :version_strategy, "Versioning Strategy", class: "block mb-2 text-sm font-medium text-gray-900 dark:text-white" %>
+            <%= f.select :version_strategy,
+                         [["Semantic Versioning (X.Y.Z)", "semantic"],
+                           ["CalVer (YYYY.MM.X)", "calver"]],
+                         {include_blank: "Select a version strategy"},
+                         class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" %>
+          </div>
+
+          <div>
+            <%= f.label :minor_version_bump_strategy, "Minor Version Increment Strategy", class: "block mb-2 text-sm font-medium text-gray-900 dark:text-white" %>
+            <%= f.select :minor_version_bump_strategy,
+                         [["Auto-increment on every release", "auto_increment"],
+                           ["Manual increment", "manual"]],
+                         {include_blank: "Select minor version strategy"},
+                         class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" %>
+          </div>
+
+          <div>
+            <%= f.label :patch_version_bump_strategy, "Patch Version Increment Strategy", class: "block mb-2 text-sm font-medium text-gray-900 dark:text-white" %>
+            <%= f.select :patch_version_bump_strategy,
+                         [["Auto-increment on every release", "auto_increment"],
+                           ["Manual increment", "manual"],
+                           ["Auto-increment only for hotfixes", "hotfix_only"]],
+                         {include_blank: "Select patch version strategy"},
+                         class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" %>
+          </div>
+
+          <div>
+            <%= f.label :build_version_strategy, "Build Number Strategy", class: "block mb-2 text-sm font-medium text-gray-900 dark:text-white" %>
+            <%= f.select :build_version_strategy,
+                         [["Auto-increment on every build", "auto_increment"],
+                           ["Use CI/CD build number", "ci_build_number"],
+                           ["Use timestamp (YYYYMMDDHHmm)", "timestamp"]],
+                         {include_blank: "Select build number strategy"},
+                         class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" %>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <button type="submit"
+                data-onboarding-form-target="submitButton"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+      <span data-onboarding-form-target="spinner" class="inline-block animate-spin mr-2 hidden">
+        <%= render IconComponent.new("circle_dashed.svg", size: :sm, classes: "animate-spin") %>
+      </span>
+          Save and Continue
+        </button>
+      </div>
+    <% end %>
+  </div>
+<% end %>

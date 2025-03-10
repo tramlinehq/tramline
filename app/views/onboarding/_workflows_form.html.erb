@@ -1,0 +1,44 @@
+<%= form_with model: @onboarding_state, url: save_workflows_app_onboarding_path(@app), method: :post, local: true, class: "space-y-6" do |f| %>
+  <div class="grid gap-6 mb-6">
+    <div>
+      <h3 class="text-xl font-semibold mb-4">CI/CD Workflows</h3>
+      <p class="text-sm text-gray-600 mb-4">Configure the build workflows Tramline will use for your app.</p>
+    </div>
+
+    <div class="grid gap-4">
+      <div>
+        <%= f.label :ci_cd_provider, "CI/CD Provider", class: "block mb-2 text-sm font-medium text-gray-900 dark:text-white" %>
+        <%= f.select :ci_cd_provider,
+                    [["GitHub Actions", "github_actions"],
+                      ["Bitrise", "bitrise"],
+                      ["GitLab CI", "gitlab_ci"],
+                      ["Jenkins", "jenkins"],
+                      ["CircleCI", "circleci"]],
+                    {include_blank: "Select a CI/CD provider"},
+                    class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" %>
+      </div>
+
+      <div>
+        <%= f.label :ci_cd_workflow, "Build Workflow Name", class: "block mb-2 text-sm font-medium text-gray-900 dark:text-white" %>
+        <%= f.text_field :ci_cd_workflow, placeholder: "build-and-test", class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" %>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">The name of the workflow that builds your app.</p>
+      </div>
+
+      <div>
+        <%= f.label :ci_cd_workflow_path, "Workflow Path", class: "block mb-2 text-sm font-medium text-gray-900 dark:text-white" %>
+        <%= f.text_field :ci_cd_workflow_path, placeholder: ".github/workflows/build.yml", class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" %>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Path to the workflow definition if applicable.</p>
+      </div>
+
+      <div>
+        <%= f.label :ci_cd_branch_pattern, "Branch Pattern", class: "block mb-2 text-sm font-medium text-gray-900 dark:text-white" %>
+        <%= f.text_field :ci_cd_branch_pattern, placeholder: "release/*", class: "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" %>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">The branch pattern that triggers this workflow.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center space-x-4">
+    <%= f.submit "Save and Continue", class: "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" %>
+  </div>
+<% end %>
