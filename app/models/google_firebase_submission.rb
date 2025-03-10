@@ -90,7 +90,7 @@ class GoogleFirebaseSubmission < StoreSubmission
       if release_info.ok?
         # We can proceed to next step if build was already uploaded by ci
         prepare_and_update!(release_info.value!)
-        StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, release_info.value!.release.id)
+        StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, external_id)
       else
         raise BuildNotFound, "Unable to find build #{build.build_number}"
       end
