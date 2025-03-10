@@ -20,7 +20,7 @@ describe Coordinators::Actions do
           {
             number: 1,
             submission_type: "PlayStoreSubmission",
-            submission_config: { id: Faker::FunnyName.name, name: Faker::FunnyName.name, is_internal: true },
+            submission_config: {id: Faker::FunnyName.name, name: Faker::FunnyName.name, is_internal: true},
             integrable_id: app.id,
             integrable_type: "App"
           }
@@ -33,7 +33,7 @@ describe Coordinators::Actions do
             number: 1,
             submission_type: "PlayStoreSubmission",
             submission_config: GooglePlayStoreIntegration::PROD_CHANNEL,
-            rollout_config: { enabled: true, stages: [1, 5, 10, 50, 100] },
+            rollout_config: {enabled: true, stages: [1, 5, 10, 50, 100]},
             integrable_id: app.id,
             integrable_type: "App"
           }
