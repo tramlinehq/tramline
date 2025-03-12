@@ -6,7 +6,7 @@
 # 1 release should be upcoming status and 1 should be running status, and the rest are completed (maybe a fraction of it could be stopped) - for each app
 # integrations should be setup for each app - 1 version control, 1 build server (both can be github), 1 slack, 1 playstore (for the android app), 1 app store (for the ios app), 1 bugsnag
 
-require 'faker'
+require "faker"
 
 module Seed
   class DemoStarter
@@ -146,8 +146,8 @@ module Seed
         # Create app config
         AppConfig.create!(
           app: app,
-          code_repository: { type: "github", repository: "demo-org/#{platform}-app" },
-          notification_channel: { type: "slack", channel: "##{platform}-releases" },
+          code_repository: {type: "github", repository: "demo-org/#{platform}-app"},
+          notification_channel: {type: "slack", channel: "##{platform}-releases"},
           created_at: 1.year.ago,
           updated_at: 1.year.ago
         )
@@ -211,7 +211,7 @@ module Seed
         kind: "build",
         created_at: 1.year.ago,
         updated_at: 1.year.ago,
-        ci_cd_channel: { type: "github_actions", workflow: "build.yml" }
+        ci_cd_channel: {type: "github_actions", workflow: "build.yml"}
       )
 
       platform_config = ReleasePlatform.create!(
@@ -248,7 +248,7 @@ module Seed
         providable: github_integration,
         created_at: 1.year.ago,
         updated_at: 1.year.ago,
-        metadata: { repository: "demo-org/#{app.platform}-app" }
+        metadata: {repository: "demo-org/#{app.platform}-app"}
       )
 
       # GitHub integration for CI/CD
@@ -265,7 +265,7 @@ module Seed
         providable: build_integration,
         created_at: 1.year.ago,
         updated_at: 1.year.ago,
-        metadata: { repository: "demo-org/#{app.platform}-app", workflow: "build.yml" }
+        metadata: {repository: "demo-org/#{app.platform}-app", workflow: "build.yml"}
       )
 
       # Slack integration
@@ -282,18 +282,18 @@ module Seed
         providable: slack_integration,
         created_at: 1.year.ago,
         updated_at: 1.year.ago,
-        metadata: { channel: "##{app.platform}-releases" }
+        metadata: {channel: "##{app.platform}-releases"}
       )
 
       # Store integration based on platform
-      if app.platform == "android"
-        store_integration = GooglePlayStoreIntegration.create!(
+      store_integration = if app.platform == "android"
+        GooglePlayStoreIntegration.create!(
           json_key: "{ \"type\": \"service_account\", \"project_id\": \"demo-android-app-#{Faker::Number.number(digits: 6)}\" }",
           created_at: 1.year.ago,
           updated_at: 1.year.ago
         )
       else # iOS
-        store_integration = AppStoreIntegration.create!(
+        AppStoreIntegration.create!(
           key_id: "A#{Faker::Number.hexadecimal(digits: 10)}",
           issuer_id: "#{Faker::Number.hexadecimal(digits: 8)}",
           p8_key: "-----BEGIN PRIVATE KEY-----\nMIIE#{Faker::Lorem.characters(number: 1000)}\n-----END PRIVATE KEY-----",
@@ -325,7 +325,7 @@ module Seed
         providable: bugsnag_integration,
         created_at: 1.year.ago,
         updated_at: 1.year.ago,
-        metadata: { project_id: Faker::Number.number(digits: 10).to_s }
+        metadata: {project_id: Faker::Number.number(digits: 10).to_s}
       )
     end
 
@@ -348,14 +348,14 @@ module Seed
 
     def create_commit_for_release(app, build_step, current_version, i, release_platform, release_statuses, train)
       # Bump version for each release
-      version_parts = current_version.split('.')
+      version_parts = current_version.split(".")
       if i % 3 == 0 && i > 0
         version_parts[1] = (version_parts[1].to_i + 1).to_s
         version_parts[2] = "0"
       else
         version_parts[2] = (version_parts[2].to_i + 1).to_s
       end
-      current_version = version_parts.join('.')
+      current_version = version_parts.join(".")
 
       # Calculate dates for this release
       release_start_date = (i + 1).months.ago
@@ -395,7 +395,7 @@ module Seed
         is_automatic: [true, false].sample,
         tag_name: "v#{current_version}",
         release_type: "standard",
-        slug: "release-#{current_version.gsub('.', '-')}"
+        slug: "release-#{current_version.tr(".", "-")}"
       )
 
       release_platform_run = ReleasePlatformRun.create!(
@@ -433,7 +433,7 @@ module Seed
         status: if release_statuses[i] == "completed"
                   "completed"
                 else
-                  release_statuses[i] == "running" ? "running" : "pending"
+                  (release_statuses[i] == "running") ? "running" : "pending"
                 end,
         created_at: release_start_date,
         updated_at: [release_end_date, Time.now].min,
@@ -490,7 +490,7 @@ module Seed
 
       if num_commits.is_a?(Integer)
         num_commits.times do |j|
-          commit_date = self.random_date(commit_start_date, commit_end_date)
+          commit_date = random_date(commit_start_date, commit_end_date)
 
           author = User.all.sample
 
@@ -547,6 +547,5 @@ module Seed
         raise ArgumentError, "Invalid range for random_date"
       end
     end
-
   end
 end
