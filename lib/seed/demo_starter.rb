@@ -45,9 +45,9 @@ module Seed
     private
 
     def clean_data
-      Organization.destroy_all
-      User.destroy_all
-      Team.destroy_all
+      Accounts::Organization.destroy_all
+      Accounts::User.destroy_all
+      Accounts::Team.destroy_all
       App.destroy_all
       Train.destroy_all
       Release.destroy_all
@@ -56,18 +56,19 @@ module Seed
     end
 
     def create_organization
-      Organization.create!(
+      Accounts::Organization.create!(
         name: "Demo Organization",
         slug: "demo-org",
         status: "active",
         created_at: 1.year.ago,
         updated_at: 1.year.ago,
+        created_by: email_authentication.email,
         api_key: SecureRandom.hex(16)
       )
     end
 
     def create_admin_user(organization)
-      admin_user = User.create!(
+      admin_user = Accounts::User.create!(
         full_name: "Admin User",
         preferred_name: "Admin",
         email: "admin@example.com",
@@ -93,7 +94,7 @@ module Seed
     def create_teams(organization)
       team_colors = %w[blue green]
       Array.new(2) do |i|
-        Team.create!(
+        Accounts::Team.create!(
           organization: organization,
           name: "Team #{i + 1}",
           color: team_colors[i],
@@ -106,7 +107,7 @@ module Seed
     def create_team_members(teams, organization)
       teams.each do |team|
         4.times do |i|
-          user = User.create!(
+          user = Accounts::User.create!(
             full_name: Faker::Name.name,
             preferred_name: Faker::Name.first_name,
             email: Faker::Internet.email,
@@ -485,7 +486,7 @@ module Seed
         num_commits.times do |j|
           commit_date = random_date(commit_start_date, commit_end_date)
 
-          author = User.all.sample
+          author = Accounts::User.all.sample
 
           commit = Commit.create!(
             commit_hash: Faker::Crypto.sha1,
