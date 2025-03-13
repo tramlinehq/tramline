@@ -69,7 +69,7 @@ class Queries::Releases
 
   def selected_records
     records
-      .order(:created_at)
+      .order(created_at: :desc)
       .limit(params.limit)
       .offset(params.offset)
   end
