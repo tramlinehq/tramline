@@ -92,7 +92,7 @@ class GoogleFirebaseSubmission < StoreSubmission
         prepare_and_update!(release_info.value!)
         StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, external_id)
       else
-        raise BuildNotFound, "Unable to find build #{build.build_number}"
+        fail_with_error!(BuildNotFound)
       end
     end
 
@@ -101,7 +101,6 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def upload_build!
     return unless may_prepare?
-    return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
     result = nil
     filename = build.artifact.file.filename.to_s

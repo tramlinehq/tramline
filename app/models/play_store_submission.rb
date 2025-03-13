@@ -149,7 +149,7 @@ class PlayStoreSubmission < StoreSubmission
       # skip upload step and go directly to start_prepare
       start_prepare!
     else
-      raise BuildNotFound, "Unable to find build #{build.build_number}"
+      fail_with_error!(BuildNotFound)
     end
 
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
@@ -166,7 +166,6 @@ class PlayStoreSubmission < StoreSubmission
 
     with_lock do
       return unless may_start_prepare?
-      return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
       build.artifact.with_open do |file|
         result = provider.upload(file, raise_on_lock_error:)
