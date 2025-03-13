@@ -56,7 +56,7 @@ module Coordinators
     end
 
     def self.workflow_run_finished!(workflow_run_id)
-      TriggerSubmissionsJob.perform_async(workflow_run_id)
+      Coordinators::TriggerSubmissionsJob.perform_async(workflow_run_id)
     end
 
     def self.internal_release_finished!(build)

@@ -88,7 +88,7 @@ class Build < ApplicationRecord
     notify!("A new build is available!", :build_available_v2, notification_params, slack_file_id, display_name)
   end
 
-  def mark_available_without_artifact
+  def mark_available_without_artifact!
     update!(generated_at: workflow_run.finished_at)
     notify!("A new build is available!", :build_available_v2, notification_params)
   end
