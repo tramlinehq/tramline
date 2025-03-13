@@ -208,12 +208,13 @@ describe Coordinators::Actions do
 
       context "when build is not externally uploaded to store" do
         before do
+          allow(submission).to receive_message_chain(:notification_params, :notify!).and_return(true)
           allow(store_provider).to receive_message_chain(:find_build, :present?).and_return(false)
         end
 
         it "does not trigger submission" do
-          result = described_class.trigger_submission!(submission)
-          expect(result).not_to be_ok
+          described_class.trigger_submission!(submission)
+          expect(submission.reload.preparing?).to be(false)
         end
       end
     end
