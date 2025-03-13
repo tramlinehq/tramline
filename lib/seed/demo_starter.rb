@@ -1,6 +1,7 @@
 # rubocop:disable Rails/Output
 
-# TODO: using schema.rb, create a demo organization
+# TODO:
+# using schema.rb, create a demo organization
 # it should have 2 teams and 4 members in each team
 # there should be 2 apps - one android and the other ios
 # each app should have 10 - 15  historical releases
@@ -152,7 +153,6 @@ module Seed
           updated_at: 1.year.ago
         )
 
-        # Create app config
         AppConfig.create!(
           app: app,
           code_repository: {type: "github", repository: "demo-org/#{platform}-app"},
@@ -243,7 +243,6 @@ module Seed
     def setup_integrations_for_app(app)
       puts "Creating integrations for #{app.name}..."
 
-      # GitHub integration for version control
       github_integration = GithubIntegration.create!(
         installation_id: Faker::Number.number(digits: 8).to_s,
         created_at: 1.year.ago,
@@ -260,7 +259,6 @@ module Seed
         metadata: {repository: "demo-org/#{app.platform}-app"}
       )
 
-      # GitHub integration for CI/CD
       build_integration = GithubIntegration.create!(
         installation_id: Faker::Number.number(digits: 8).to_s,
         created_at: 1.year.ago,
@@ -277,7 +275,6 @@ module Seed
         metadata: {repository: "demo-org/#{app.platform}-app", workflow: "build.yml"}
       )
 
-      # Slack integration
       slack_integration = SlackIntegration.create!(
         oauth_access_token: "xoxb-#{Faker::Number.number(digits: 12)}-#{Faker::Number.number(digits: 12)}",
         created_at: 1.year.ago,
@@ -294,14 +291,13 @@ module Seed
         metadata: {channel: "##{app.platform}-releases"}
       )
 
-      # Store integration based on platform
       store_integration = if app.platform == "android"
         GooglePlayStoreIntegration.create!(
           json_key: "{ \"type\": \"service_account\", \"project_id\": \"demo-android-app-#{Faker::Number.number(digits: 6)}\" }",
           created_at: 1.year.ago,
           updated_at: 1.year.ago
         )
-      else # iOS
+      else
         AppStoreIntegration.create!(
           key_id: "A#{Faker::Number.hexadecimal(digits: 10)}",
           issuer_id: Faker::Number.hexadecimal(digits: 8).to_s,
@@ -320,7 +316,6 @@ module Seed
         updated_at: 1.year.ago
       )
 
-      # Bugsnag integration
       bugsnag_integration = BugsnagIntegration.create!(
         access_token: Faker::Crypto.md5,
         created_at: 1.year.ago,
@@ -356,7 +351,6 @@ module Seed
     end
 
     def create_commit_for_release(app, build_step, current_version, i, release_platform, release_statuses, train)
-      # Bump version for each release
       version_parts = current_version.split(".")
       if i % 3 == 0 && i > 0
         version_parts[1] = (version_parts[1].to_i + 1).to_s
@@ -366,11 +360,9 @@ module Seed
       end
       current_version = version_parts.join(".")
 
-      # Calculate dates for this release
       release_start_date = (i + 1).months.ago
       release_end_date = release_start_date + 2.weeks
 
-      # Current date info for upcoming/running releases
       if release_statuses[i] == "upcoming"
         scheduled_at = 1.week.from_now
         completed_at = nil
@@ -384,7 +376,6 @@ module Seed
         completed_at = nil
         stopped_at = release_start_date + 2.days
       else
-        # completed
         scheduled_at = release_start_date
         completed_at = release_end_date
         stopped_at = nil
@@ -423,7 +414,6 @@ module Seed
         updated_at: [release_end_date, Time.zone.now].min
       )
 
-      # Create release metadata with notes
       ReleaseMetadata.create!(
         release: release,
         release_platform_run: release_platform_run,
@@ -434,7 +424,6 @@ module Seed
         updated_at: release_start_date
       )
 
-      # Create step runs
       step_run = CreateTrainStepRuns.create!(
         step: build_step,
         release_platform_run: release_platform_run,
@@ -450,11 +439,9 @@ module Seed
         build_number: (i + 100).to_s
       )
 
-      # Create 50-60 commits per release
       num_commits = rand(50..60)
 
       if release_statuses[i] == "completed" || release_statuses[i] == "running"
-        # Create a build if the release is completed or running
         build = Build.create!(
           release_platform_run: release_platform_run,
           version_name: current_version,
@@ -465,7 +452,6 @@ module Seed
           sequence_number: i + 1
         )
 
-        # Create a build artifact
         BuildArtifact.create!(
           step_run: step_run,
           build: build,
@@ -475,7 +461,6 @@ module Seed
           updated_at: release_start_date + 1.day
         )
 
-        # For completed releases, add a store submission
         if release_statuses[i] == "completed"
           StoreSubmission.create!(
             release_platform_run: release_platform_run,
@@ -493,7 +478,6 @@ module Seed
         end
       end
 
-      # Create commits
       commit_start_date = release_start_date - 1.week
       commit_end_date = release_start_date
 
@@ -518,7 +502,6 @@ module Seed
             updated_at: commit_date
           )
 
-          # Add some pull requests
           if j % 10 == 0
             PullRequest.create!(
               release_platform_run: release_platform_run,
