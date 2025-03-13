@@ -1,0 +1,87 @@
+<div data-controller="onboarding-wizard"
+     data-onboarding-wizard-current-step-value="<%= current_step %>"
+     data-onboarding-wizard-total-steps-value="<%= steps.size %>"
+     class="flex flex-col">
+
+  <!-- Progress Bar -->
+  <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6 dark:bg-gray-700">
+    <div data-onboarding-wizard-target="progress"
+         class="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+         style="width: <%= (current_step / (steps.size - 1).to_f * 100).round %>%"
+         aria-valuenow="<%= (current_step / (steps.size - 1).to_f * 100).round %>"
+         aria-valuemin="0"
+         aria-valuemax="100"></div>
+  </div>
+
+  <div class="flex flex-col md:flex-row gap-6">
+    <!-- Left sidebar with vertical stepper -->
+    <div class="w-full md:w-1/4">
+      <ol class="relative border-l border-gray-200 dark:border-gray-700">
+        <% steps.compact.each_with_index do |step, index| %>
+          <%
+            next unless step && step.respond_to?(:title)
+            is_active = index == current_step
+            step_name = step.title&.to_s.downcase.gsub(' ', '_')
+            is_completed = index < current_step || onboarding_state.step_completed?(step_name)
+            item_classes = "ml-6 mb-10"
+            point_classes = "absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full ring-8 ring-white dark:ring-gray-900"
+          %>
+
+          <li class="<%= item_classes %> <%= is_active ? 'active' : '' %> <%= is_completed ? 'completed' : '' %>"
+              data-onboarding-wizard-target="step"
+              data-action="click->onboarding-wizard#navigateTo"
+              data-step-index="<%= index %>">
+            <span data-onboarding-wizard-target="indicator"
+                  class="<%= point_classes %> <%= is_completed ? 'bg-green-500' : (is_active ? 'bg-blue-500' : 'bg-gray-200') %> transition-colors duration-300">
+              <% if is_completed %>
+                <%= render IconComponent.new("check.svg", size: :sm, classes: "text-white") %>
+              <% else %>
+                <span class="text-white text-sm"><%= index + 1 %></span>
+              <% end %>
+            </span>
+
+            <h3 class="flex items-center mb-1 text-lg font-semibold text-gray-900 dark:text-white <%= is_active ? 'text-blue-500' : '' %>">
+              <%= step&.title&.to_s %>
+              <% if is_active %>
+                <span class="bg-blue-100 text-blue-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 ml-3">Current</span>
+              <% elsif is_completed %>
+                <span class="bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300 ml-3">Completed</span>
+              <% end %>
+            </h3>
+            <p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400"><%= step&.description&.to_s %></p>
+          </li>
+        <% end %>
+      </ol>
+    </div>
+
+    <!-- Right content area -->
+    <div class="w-full md:w-3/4">
+      <div class="bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+        <% steps.compact.each_with_index do |step, index| %>
+          <% next unless step && step.respond_to?(:content) %>
+          <div data-onboarding-wizard-target="content"
+               class="p-6 rounded-lg <%= index == current_step ? '' : 'hidden' %>">
+            <%= tag.turbo_frame "onboarding_step_#{index}" do %>
+              <%= step %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="flex justify-between mt-4">
+        <button data-onboarding-wizard-target="prevButton"
+                data-action="click->onboarding-wizard#prev"
+                class="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg focus:outline-none hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 <%= current_step == 0 ? 'invisible' : '' %>">
+          Back
+        </button>
+
+        <button data-onboarding-wizard-target="nextButton"
+                data-action="click->onboarding-wizard#next"
+                class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 <%= current_step == steps.size - 1 ? 'bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700' : '' %>">
+          <%= current_step == steps.size - 1 ? 'Complete Setup' : 'Next Step' %>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

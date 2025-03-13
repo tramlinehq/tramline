@@ -30,3 +30,4 @@ Rails/I18nLocaleTexts:
     - 'app/controllers/app_variants_controller.rb'
     - 'app/controllers/accounts/users_controller.rb'
     - 'app/controllers/accounts/teams_controller.rb'
+    - 'app/controllers/onboarding_controller.rb'

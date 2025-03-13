@@ -3,6 +3,7 @@
 # Table name: store_rollouts
 #
 #  id                      :uuid             not null, primary key
+#  auto_rollout_enabled    :boolean          default(FALSE)
 #  completed_at            :datetime
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer
