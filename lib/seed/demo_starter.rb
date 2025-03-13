@@ -1,3 +1,5 @@
+# rubocop:disable Rails/Output
+
 # TODO: using schema.rb, create a demo organization
 # it should have 2 teams and 4 members in each team
 # there should be 2 apps - one android and the other ios
@@ -42,7 +44,6 @@ module Seed
     private
 
     def clean_data
-      # Add the models you want to clean here
       Organization.destroy_all
       User.destroy_all
       Team.destroy_all
@@ -72,7 +73,7 @@ module Seed
         encrypted_password: BCrypt::Password.create("password123"),
         slug: "admin-user",
         admin: true,
-        confirmed_at: Time.now,
+        confirmed_at: Time.zone.now,
         created_at: 1.year.ago,
         updated_at: 1.year.ago
       )
@@ -90,7 +91,7 @@ module Seed
 
     def create_teams(organization)
       team_colors = %w[blue green]
-      2.times.map do |i|
+      Array.new(2) do |i|
         Team.create!(
           organization: organization,
           name: "Team #{i + 1}",
@@ -110,7 +111,7 @@ module Seed
             email: Faker::Internet.email,
             encrypted_password: BCrypt::Password.create("password123"),
             slug: "user-#{team.id}-#{i}",
-            confirmed_at: Time.now,
+            confirmed_at: Time.zone.now,
             created_at: 1.year.ago,
             updated_at: 1.year.ago
           )
@@ -125,6 +126,14 @@ module Seed
           )
         end
       end
+    end
+
+    def random_date(from, to)
+      from ||= Time.zone.at(0)
+      to ||= Time.zone.now
+      raise ArgumentError, "Invalid range for random_date" if from > to
+
+      Time.zone.at(rand(from.to_i..to.to_i))
     end
 
     def create_apps(organization)
@@ -295,7 +304,7 @@ module Seed
       else # iOS
         AppStoreIntegration.create!(
           key_id: "A#{Faker::Number.hexadecimal(digits: 10)}",
-          issuer_id: "#{Faker::Number.hexadecimal(digits: 8)}",
+          issuer_id: Faker::Number.hexadecimal(digits: 8).to_s,
           p8_key: "-----BEGIN PRIVATE KEY-----\nMIIE#{Faker::Lorem.characters(number: 1000)}\n-----END PRIVATE KEY-----",
           created_at: 1.year.ago,
           updated_at: 1.year.ago
@@ -391,7 +400,7 @@ module Seed
         completed_at: completed_at,
         stopped_at: stopped_at,
         created_at: release_start_date,
-        updated_at: [release_end_date, Time.now].min,
+        updated_at: [release_end_date, Time.zone.now].min,
         is_automatic: [true, false].sample,
         tag_name: "v#{current_version}",
         release_type: "standard",
@@ -411,7 +420,7 @@ module Seed
         stopped_at: stopped_at,
         tag_name: "v#{current_version}",
         created_at: release_start_date,
-        updated_at: [release_end_date, Time.now].min
+        updated_at: [release_end_date, Time.zone.now].min
       )
 
       # Create release metadata with notes
@@ -436,7 +445,7 @@ module Seed
                   (release_statuses[i] == "running") ? "running" : "pending"
                 end,
         created_at: release_start_date,
-        updated_at: [release_end_date, Time.now].min,
+        updated_at: [release_end_date, Time.zone.now].min,
         build_version: current_version,
         build_number: (i + 100).to_s
       )
@@ -534,18 +543,7 @@ module Seed
         end
       end
     end
-
-    def random_date(from, to)
-      from ||= Time.at(0)
-      to ||= Time.now
-      raise ArgumentError, "Invalid range for random_date" if from.nil? || to.nil? || from > to
-
-      rdate = rand(from.to_i..to.to_i)
-      if rdate.is_a?(Integer)
-        Time.at(rdate)
-      else
-        raise ArgumentError, "Invalid range for random_date"
-      end
-    end
   end
 end
+
+# rubocop:enable Rails/Output
