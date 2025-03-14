@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-describe Coordinators::TriggerSubmissionsJob do
+describe Coordinators::AttachBuildJob do
   let(:ci_cd_double) { instance_double(GithubIntegration) }
   let(:artifacts_url) { Faker::Internet.url }
 
@@ -103,6 +103,7 @@ describe Coordinators::TriggerSubmissionsJob do
         id: "123456"
       }
     })
+    allow(Coordinators::TriggerSubmissionsJob).to receive(:perform_async)
     release = create(:release, :hotfix, :with_no_platform_runs)
     release_platform_run = create(:release_platform_run, :on_track, release:)
     beta_release = create(:beta_release, release_platform_run:)
@@ -111,7 +112,7 @@ describe Coordinators::TriggerSubmissionsJob do
 
     described_class.new.perform(workflow_run.id)
 
-    expect(release_platform_run.production_releases.size).to eq(1)
+    expect(Coordinators::TriggerSubmissionsJob).to have_received(:perform_async).with(workflow_run.id).once
   end
 
   it "does not start the production release for the hotfix release when internal build is finished" do
@@ -124,6 +125,7 @@ describe Coordinators::TriggerSubmissionsJob do
         id: "123456"
       }
     })
+    allow(Coordinators::TriggerSubmissionsJob).to receive(:perform_async)
     release = create(:release, :hotfix, :with_no_platform_runs)
     release_platform_run = create(:release_platform_run, :on_track, release:)
     internal_release = create(:internal_release, release_platform_run:)
@@ -132,6 +134,6 @@ describe Coordinators::TriggerSubmissionsJob do
 
     described_class.new.perform(workflow_run.id)
 
-    expect(release_platform_run.production_releases.size).to eq(0)
+    expect(Coordinators::TriggerSubmissionsJob).to have_received(:perform_async).with(workflow_run.id).once
   end
 end
