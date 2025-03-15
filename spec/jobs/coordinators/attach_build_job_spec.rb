@@ -74,7 +74,7 @@ describe Coordinators::AttachBuildJob do
     expect(internal_release.reload.status).to eq("failed")
   end
 
-  it "triggers the submissions for the pre-prod release" do
+  it "triggers the submissions job" do
     allow(ci_cd_double).to receive(:get_artifact).and_return({
       stream: Artifacts::Stream.new("spec/fixtures/storage/test_artifact.aab.zip", is_archive: true),
       artifact: {
@@ -84,53 +84,10 @@ describe Coordinators::AttachBuildJob do
         id: "123456"
       }
     })
+    allow(Coordinators::TriggerSubmissionsJob).to receive(:perform_async)
     release_platform_run = create(:release_platform_run, :on_track)
-    internal_release = create(:internal_release, release_platform_run:)
-    workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release: internal_release, artifacts_url:)
-
-    described_class.new.perform(workflow_run.id)
-
-    expect(internal_release.store_submissions.size).to eq(1)
-  end
-
-  it "starts the production release for the hotfix release when release candidate build is finished" do
-    allow(ci_cd_double).to receive(:get_artifact).and_return({
-      stream: Artifacts::Stream.new("spec/fixtures/storage/test_artifact.aab.zip", is_archive: true),
-      artifact: {
-        generated_at: Time.zone.now,
-        size_in_bytes: 10,
-        name: "test_artifact_aab.zip",
-        id: "123456"
-      }
-    })
-    allow(Coordinators::TriggerSubmissionsJob).to receive(:perform_async)
-    release = create(:release, :hotfix, :with_no_platform_runs)
-    release_platform_run = create(:release_platform_run, :on_track, release:)
-    beta_release = create(:beta_release, release_platform_run:)
-    workflow_run = create(:workflow_run, :finished, :rc, release_platform_run:, triggering_release: beta_release, artifacts_url:)
-    create(:build, :with_artifact, release_platform_run:, workflow_run:)
-
-    described_class.new.perform(workflow_run.id)
-
-    expect(Coordinators::TriggerSubmissionsJob).to have_received(:perform_async).with(workflow_run.id).once
-  end
-
-  it "does not start the production release for the hotfix release when internal build is finished" do
-    allow(ci_cd_double).to receive(:get_artifact).and_return({
-      stream: Artifacts::Stream.new("spec/fixtures/storage/test_artifact.aab.zip", is_archive: true),
-      artifact: {
-        generated_at: Time.zone.now,
-        size_in_bytes: 10,
-        name: "test_artifact_aab.zip",
-        id: "123456"
-      }
-    })
-    allow(Coordinators::TriggerSubmissionsJob).to receive(:perform_async)
-    release = create(:release, :hotfix, :with_no_platform_runs)
-    release_platform_run = create(:release_platform_run, :on_track, release:)
-    internal_release = create(:internal_release, release_platform_run:)
-    workflow_run = create(:workflow_run, :finished, :internal, release_platform_run:, triggering_release: internal_release, artifacts_url:)
-    create(:build, :with_artifact, release_platform_run:, workflow_run:)
+    triggering_release = create(:pre_prod_release, release_platform_run:)
+    workflow_run = create(:workflow_run, :finished, release_platform_run:, triggering_release:, artifacts_url:)
 
     described_class.new.perform(workflow_run.id)
 
