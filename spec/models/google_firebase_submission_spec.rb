@@ -14,6 +14,7 @@ describe GoogleFirebaseSubmission do
     let(:providable_dbl) { instance_double(GoogleFirebaseIntegration) }
 
     before do
+      submission.build.artifact = create(:build_artifact, build: submission.build)
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
     end
 

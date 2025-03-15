@@ -102,7 +102,9 @@ class StoreSubmission < ApplicationRecord
     sequence_number = submission_config.number
     config = submission_config.as_json
 
-    submission = create!(parent_release:, release_platform_run:, build:, sequence_number:, config:)
+    submission = find_or_create_by!(parent_release:, release_platform_run:, build:, sequence_number:) do |sub|
+      sub.config = config
+    end
     submission.trigger! if auto_promote
   end
 

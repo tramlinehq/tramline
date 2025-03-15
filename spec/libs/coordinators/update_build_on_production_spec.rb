@@ -87,7 +87,7 @@ describe Coordinators::UpdateBuildOnProduction do
 
     it "attaches the new build to the production store submission" do
       new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
-      new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
+      new_build = create(:build, :with_artifact, release_platform_run:, workflow_run: new_workflow_run)
       expect {
         described_class.call(store_submission, new_build.id)
       }.to change(store_submission, :build_id).to(new_build.id)
@@ -95,7 +95,7 @@ describe Coordinators::UpdateBuildOnProduction do
 
     it "updates the build number on the production release" do
       new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
-      new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
+      new_build = create(:build, :with_artifact, release_platform_run:, workflow_run: new_workflow_run)
       expect {
         described_class.call(store_submission, new_build.id)
       }.to change(production_release, :build_id).to(new_build.id)
@@ -112,7 +112,7 @@ describe Coordinators::UpdateBuildOnProduction do
     it "retriggers the store submission if the submission was previously triggered" do
       allow(StoreSubmissions::PlayStore::UploadJob).to receive(:perform_async)
       new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
-      new_build = create(:build, release_platform_run:, workflow_run: new_workflow_run)
+      new_build = create(:build, :with_artifact, release_platform_run:, workflow_run: new_workflow_run)
       described_class.call(store_submission, new_build.id)
       expect(store_submission.reload.preprocessing?).to be(true)
       expect(StoreSubmissions::PlayStore::UploadJob).to have_received(:perform_async).with(store_submission.id).once

@@ -68,14 +68,7 @@ class Build < ApplicationRecord
   def attach_artifact!
     # return mock_attach_artifact if sandbox_mode?
     return if artifacts_url.blank?
-
     artifact_data = get_build_artifact
-
-    if artifact_data.blank?
-      update!(generated_at: workflow_run.finished_at)
-      notify!("A new build is available!", :build_available_v2, notification_params)
-      return
-    end
 
     stream = artifact_data[:stream]
     artifact_metadata = artifact_data[:artifact]
@@ -95,6 +88,11 @@ class Build < ApplicationRecord
     notify!("A new build is available!", :build_available_v2, notification_params, slack_file_id, display_name)
   end
 
+  def mark_available_without_artifact!
+    update!(generated_at: workflow_run.finished_at)
+    notify!("A new build is available!", :build_available_v2, notification_params)
+  end
+
   def notification_params
     workflow_run.notification_params.merge(
       artifact_present: has_artifact?
@@ -112,12 +110,7 @@ class Build < ApplicationRecord
     self.version_name = [release_platform_run.release_version, build_suffix.presence].compact.join(BUILD_SUFFIX_SEPARATOR)
   end
 
-  # TODO: not just return nil but actually handle and raise it so it can be retried
   def get_build_artifact
     ci_cd_provider.get_artifact(artifacts_url, artifact_name_pattern, external_workflow_run_id: workflow_run.external_id)
-  rescue Installations::Error => ex
-    raise ex unless ex.reason == :artifact_not_found
-    elog(ex, level: :error)
-    nil
   end
 end
