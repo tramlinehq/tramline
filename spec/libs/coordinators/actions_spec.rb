@@ -225,6 +225,7 @@ describe Coordinators::Actions do
 
       before do
         allow(store_provider).to receive(:public_icon_img)
+        allow(store_provider).to receive(:project_link)
         allow(submission).to receive(:provider).and_return(store_provider)
         allow(build).to receive(:attach_artifact!).and_raise(Installations::Error, reason: :artifact_not_found)
       end
@@ -260,8 +261,8 @@ describe Coordinators::Actions do
         end
 
         it "does not trigger submission" do
-          result = described_class.trigger_submission!(submission)
-          expect(result).not_to be_ok
+          described_class.trigger_submission!(submission)
+          expect(submission.reload.preparing?).not_to be(true)
         end
       end
     end
