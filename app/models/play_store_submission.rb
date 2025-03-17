@@ -142,6 +142,8 @@ class PlayStoreSubmission < StoreSubmission
   def trigger!
     return unless actionable?
 
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
+
     if build.has_artifact?
       # upload build only if we have it
       preprocess!
@@ -151,8 +153,6 @@ class PlayStoreSubmission < StoreSubmission
     else
       fail_with_error!(BuildNotFound)
     end
-
-    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
   end
 
   def retry!

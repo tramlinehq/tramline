@@ -83,6 +83,8 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_prepare?
     # return mock_upload_to_firebase if sandbox_mode?
 
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
+
     if build.has_artifact?
       # upload build only if we have it
       preprocess!
@@ -100,8 +102,6 @@ class GoogleFirebaseSubmission < StoreSubmission
         fail_with_error!(BuildNotFound)
       end
     end
-
-    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
   end
 
   def upload_build!
