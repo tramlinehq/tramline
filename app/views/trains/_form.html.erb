@@ -302,7 +302,9 @@
                                            off_label: "Auto Version Bump disabled",
                                            hide_child: !train.version_bump_enabled?) do |component| %>
         <% component.with_child do %>
-          <%= section.F.labeled_text_field :version_bump_file_paths, "Build File Paths",
+          <%= section.F.labeled_text_field :version_bump_file_paths,
+                                           "Build File Paths",
+                                           value: list_to_csv(section.F.object.version_bump_file_paths),
                                            placeholder: "e.g., pubspec.yaml, android/app/build.gradle (comma-separated)",
                                            help_text: "Comma-separated list of file paths to update versions in" %>
         <% end %>

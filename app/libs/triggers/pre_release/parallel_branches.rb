@@ -2,8 +2,8 @@ class Triggers::PreRelease
   class ParallelBranches
     include ApplicationHelper
 
-    def self.call(release, release_branch)
-      new(release, release_branch).call
+    def self.call(release, release_branch, bump_version: false)
+      new(release, release_branch).call(bump_version:)
     end
 
     def initialize(release, release_branch)
@@ -11,7 +11,7 @@ class Triggers::PreRelease
       @release_branch = release_branch
     end
 
-    def call
+    def call(bump_version: false)
       create_and_merge_pr
     end
 

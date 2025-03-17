@@ -142,4 +142,8 @@ module ApplicationHelper
 
     [prefix&.titleize, middle_section&.titleize, suffix&.titleize].compact.join(" | ")
   end
+
+  def list_to_csv(list)
+    list.map(&:to_s).join(",")
+  end
 end

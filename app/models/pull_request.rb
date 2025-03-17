@@ -34,6 +34,7 @@ class PullRequest < ApplicationRecord
 
   enum :phase, {
     pre_release: "pre_release",
+    version_bump: "version_bump",
     mid_release: "mid_release",
     ongoing: "ongoing",
     post_release: "post_release"

@@ -9,7 +9,7 @@ class Triggers::PullRequest
     new(**args).create_and_merge!
   end
 
-  def initialize(release:, new_pull_request:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true, existing_pr: nil, patch_pr: false, patch_commit: nil)
+  def initialize(release:, new_pull_request:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true, existing_pr: nil, patch_pr: false, patch_commit: nil, error_result_on_auto_merge: false)
     @release = release
     @to_branch_ref = to_branch_ref
     @from_branch_ref = from_branch_ref
@@ -20,6 +20,7 @@ class Triggers::PullRequest
     @existing_pr = existing_pr
     @patch_pr = patch_pr
     @patch_commit = patch_commit
+    @error_result_on_auto_merge = error_result_on_auto_merge
   end
 
   delegate :train, to: :release
@@ -62,6 +63,7 @@ class Triggers::PullRequest
       pr_in_work.close!
     elsif enable_auto_merge? # enable auto-merge if possible
       repo_integration.enable_auto_merge!(pr_in_work.number)
+      return merge_result if @error_result_on_auto_merge
     else
       return merge_result
     end

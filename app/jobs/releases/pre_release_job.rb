@@ -1,7 +1,7 @@
 class Releases::PreReleaseJob < ApplicationJob
   queue_as :high
 
-  def perform(release_id)
+  def perform(release_id, bump_version = true)
     release = Release.find(release_id)
 
     if release.retrigger_for_hotfix?
@@ -9,6 +9,6 @@ class Releases::PreReleaseJob < ApplicationJob
       return Signal.commits_have_landed!(release, latest_commit, [])
     end
 
-    Triggers::PreRelease.call(release)
+    Triggers::PreRelease.call(release, bump_version:)
   end
 end
