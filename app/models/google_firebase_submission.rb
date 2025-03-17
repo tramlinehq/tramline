@@ -86,6 +86,10 @@ class GoogleFirebaseSubmission < StoreSubmission
     if build.has_artifact?
       # upload build only if we have it
       preprocess!
+    elsif Flipper.enabled?(:skip_finding_builds_for_firebase, app)
+      # We do not want to find builds in firebase in this case
+      # Fail with error since we have no way of completing this submission
+      fail_with_error!(BuildNotFound)
     else
       release_info = provider.find_build(build.build_number, build.version_name, release_platform_run.platform)
       if release_info.ok?
