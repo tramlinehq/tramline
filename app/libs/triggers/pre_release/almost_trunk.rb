@@ -68,50 +68,50 @@ class Triggers::PreRelease
     end
 
     def create_bump_version_pr
-      GitHub::Result.new do
-        # Use configured build files or fall back to finding them
-        build_files = train.version_bump_file_paths
-        return if build_files.empty?
+      # Use configured build files or fall back to finding them
+      build_files = train.version_bump_file_paths
+      return GitHub::Result.new if build_files.empty?
 
-        # Update version in each build file on the version branch
+      # Update version in each build file on the version branch
+      updated_files_result = GitHub::Result.new do
         updated_files = []
         build_files.each do |file_path|
           file_result = update_version_in_file(version_bump_branch, file_path)
           updated_files << file_path if file_result
         end
-
-        unless updated_files.any?
-          release.event_stamp_now!(reason: :version_bump_no_changes, kind: :notice, data: {release_version:})
-          return
-        end
-
-        pr_title = "Bump version to #{release_version}"
-        pr_body = <<~BODY
-          🎉 A new release #{release_version} has kicked off!
-
-          This PR updates the version number in `#{updated_files.join(", ")}` to prepare for our #{release_version} release.
-
-          All aboard the release train!
-        BODY
-
-        result = Triggers::PullRequest.create_and_merge!(
-          release: release,
-          new_pull_request: release.pull_requests.version_bump.open.build,
-          to_branch_ref: working_branch,
-          from_branch_ref: version_bump_branch,
-          title: pr_title,
-          description: pr_body,
-          error_result_on_auto_merge: true
-        )
-
-        if result.ok?
-          release.event_stamp_now!(reason: :version_bump_pr_created, kind: :notice, data: {release_version:})
-        else
-          release.event_stamp_now!(reason: :version_bump_pr_failed, kind: :error, data: {error: result.error})
-        end
-
-        result.value!
+        updated_files
       end
+      return updated_files_result unless updated_files_result.ok?
+      updated_files = updated_files_result.value!
+      if updated_files.empty?
+        release.event_stamp_now!(reason: :version_bump_no_changes, kind: :notice, data: {release_version:})
+        return GitHub::Result.new
+      end
+
+      # create PR
+      pr_title = "Bump version to #{release_version}"
+      pr_body = <<~BODY
+        🎉 A new release #{release_version} has kicked off!
+
+        This PR updates the version number in `#{updated_files.join(", ")}` to prepare for our #{release_version} release.
+
+        All aboard the release train!
+      BODY
+      pr_result = Triggers::PullRequest.create_and_merge!(
+        release: release,
+        new_pull_request: release.pull_requests.version_bump.open.build,
+        to_branch_ref: working_branch,
+        from_branch_ref: version_bump_branch,
+        title: pr_title,
+        description: pr_body,
+        error_result_on_auto_merge: true
+      )
+      if pr_result.ok?
+        release.event_stamp_now!(reason: :version_bump_pr_created, kind: :notice, data: {release_version:})
+      else
+        release.event_stamp_now!(reason: :version_bump_pr_failed, kind: :error, data: {error: pr_result.error})
+      end
+      pr_result
     end
 
     def update_version_in_file(branch, file_path)
