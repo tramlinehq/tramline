@@ -224,6 +224,7 @@ describe Coordinators::Actions do
       let(:store_provider) { instance_double(GoogleFirebaseIntegration) }
 
       before do
+        allow(store_provider).to receive(:public_icon_img)
         allow(submission).to receive(:provider).and_return(store_provider)
         allow(build).to receive(:attach_artifact!).and_raise(Installations::Error, reason: :artifact_not_found)
       end
