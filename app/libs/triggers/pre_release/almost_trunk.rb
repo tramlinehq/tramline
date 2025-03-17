@@ -156,39 +156,16 @@ class Triggers::PreRelease
     end
 
     def update_gradle_version(content)
-      # For Android build.gradle files
-      version_name = release.release_version
-      version_code = train.app.bump_build_number!(release_version: version_name)
-
-      # Update versionName
-      content = content.gsub(/versionName\s+["'].*?["']/, "versionName \"#{version_name}\"")
-
-      # Update versionCode
-      content.gsub(/versionCode\s+\d+/, "versionCode #{version_code}")
+      content.gsub(/versionName\s+["'].*?["']/, "versionName \"#{release_version}\"")
     end
 
     def update_plist_version(content)
-      # For iOS Info.plist files
-      version = release.release_version
-      build_number = train.app.bump_build_number!(release_version: version)
-
-      content = content.gsub(/<key>CFBundleShortVersionString<\/key>\s*<string>.*?<\/string>/,
-        "<key>CFBundleShortVersionString</key>\n\t<string>#{version}</string>")
-
-      content.gsub(/<key>CFBundleVersion<\/key>\s*<string>.*?<\/string>/,
-        "<key>CFBundleVersion</key>\n\t<string>#{build_number}</string>")
+      content.gsub(/<key>CFBundleShortVersionString<\/key>\s*<string>.*?<\/string>/,
+        "<key>CFBundleShortVersionString</key>\n\t<string>#{release_version}</string>")
     end
 
     def update_pbxproj_version(content)
-      # For iOS project files
-      version = release.release_version
-      build_number = train.app.bump_build_number!(release_version: version)
-
-      # Update MARKETING_VERSION
-      content = content.gsub(/MARKETING_VERSION = .*?;/, "MARKETING_VERSION = #{version};")
-
-      # Update CURRENT_PROJECT_VERSION
-      content.gsub(/CURRENT_PROJECT_VERSION = .*?;/, "CURRENT_PROJECT_VERSION = #{build_number};")
+      content.gsub(/MARKETING_VERSION = .*?;/, "MARKETING_VERSION = #{release_version};")
     end
 
     memoize def version_bump_branch
