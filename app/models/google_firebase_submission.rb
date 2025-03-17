@@ -49,7 +49,8 @@ class GoogleFirebaseSubmission < StoreSubmission
   }
 
   enum :failure_reason, {
-    unknown_failure: "unknown_failure"
+    unknown_failure: "unknown_failure",
+    build_not_found: "build_not_found"
   }.merge(Installations::Google::Firebase::Error.reasons.zip_map_self).merge(Installations::Google::Firebase::OpError.reasons.zip_map_self)
 
   enum :status, STATES
