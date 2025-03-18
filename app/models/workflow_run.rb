@@ -180,7 +180,9 @@ class WorkflowRun < ApplicationRecord
     if retrigger
       retrigger_external_run!
     else
-      update_build_number!
+      unless Flipper.enabled?(:use_build_number_from_workflow, app)
+        update_build_number!(tramline_managed: true)
+      end
       trigger_external_run!
     end
 
@@ -246,6 +248,10 @@ class WorkflowRun < ApplicationRecord
       external_url: workflow_run[:ci_link],
       external_number: workflow_run[:number]
     )
+
+    if Flipper.enabled?(:use_build_number_from_workflow, app)
+      update_build_number!(tramline_managed: false)
+    end
   end
 
   def find_external_run
