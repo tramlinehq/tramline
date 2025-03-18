@@ -18,7 +18,9 @@
       </div>
     </div>
 
-    <%= tag.turbo_frame id: FRAME do %>
+    <% frame = EnhancedTurboFrameComponent.new(FRAME, classes: "with-turbo-frame-loader") %>
+    <% frame.with_loading_indicator %>
+    <%= render frame do %>
       <%= content %>
     <% end %>
   </div>
