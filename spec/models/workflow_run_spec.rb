@@ -8,7 +8,7 @@ describe WorkflowRun do
   end
 
   describe "#trigger!" do
-    let(:ci_ref) { Faker::Lorem.word }
+    let(:ci_ref) { Faker::Number.number(digits: 5).to_s }
     let(:ci_link) { Faker::Internet.url }
     let(:number) { Faker::Number.number(digits: 3).to_s }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
@@ -59,12 +59,27 @@ describe WorkflowRun do
         expect(workflow_run.external_url).to eq(ci_link)
         expect(workflow_run.external_number).to eq(number)
       end
-    end
 
-    it "updates build number" do
-      expect(workflow_run.build.build_number).to be_nil
-      workflow_run.trigger!
-      expect(workflow_run.build.build_number).not_to be_empty
+      context "when use build number from workflow is disabled" do
+        it "updates build number" do
+          expect(workflow_run.build.build_number).to be_nil
+          workflow_run.trigger!
+          expect(workflow_run.build.build_number).not_to be_empty
+        end
+      end
+
+      context "when use build number from workflow is enabled" do
+        before do
+          Flipper.enable(:use_build_number_from_workflow, workflow_run.app)
+        end
+
+        it "updates build number" do
+          expect(workflow_run.build.build_number).to be_nil
+          workflow_run.trigger!
+          expect(workflow_run.build.build_number).to eq(ci_ref)
+          expect(workflow_run.app.build_number.to_s).to eq(ci_ref)
+        end
+      end
     end
   end
 end
