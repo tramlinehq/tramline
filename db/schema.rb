@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_18_151644) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -539,6 +539,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.index ["phase"], name: "index_pull_requests_on_phase"
     t.index ["release_id", "head_ref"], name: "index_pull_requests_on_release_id_and_head_ref"
     t.index ["release_id", "phase", "number"], name: "idx_prs_on_release_id_and_phase_and_number", unique: true
+    t.index ["release_id", "phase"], name: "index_pull_requests_on_release_id_and_phase", unique: true, where: "(((phase)::text = 'version_bump'::text) AND ((state)::text = 'open'::text))"
     t.index ["search_vector"], name: "index_pull_requests_on_search_vector", using: :gin
     t.index ["source"], name: "index_pull_requests_on_source"
     t.index ["source_id"], name: "index_pull_requests_on_source_id"

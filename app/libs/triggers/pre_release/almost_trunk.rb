@@ -2,8 +2,8 @@ class Triggers::PreRelease
   class AlmostTrunk
     include Memery
 
-    def self.call(release, release_branch, bump_version: true)
-      new(release, release_branch).call(bump_version:)
+    def self.call(release, release_branch)
+      new(release, release_branch).call
     end
 
     def initialize(release, release_branch)
@@ -11,8 +11,8 @@ class Triggers::PreRelease
       @release_branch = release_branch
     end
 
-    def call(bump_version: true)
-      if bump_version && version_bump_enabled?
+    def call
+      if version_bump_enabled?
         create_bump_version_branch
           .then { create_bump_version_pr }
           .then { create_default_release_branch }
@@ -60,7 +60,7 @@ class Triggers::PreRelease
         end
       rescue Installations::Error => ex
         if ex.reason == :tag_reference_already_exists
-          logger.debug { "Pre-release branch already exists: #{release_branch}" }
+          logger.debug { "Pre-release branch already exists: #{to}" }
         else
           raise ex
         end
@@ -100,6 +100,7 @@ class Triggers::PreRelease
       pr_result = Triggers::PullRequest.create_and_merge!(
         release: release,
         new_pull_request: release.pull_requests.version_bump.open.build,
+        existing_pr: release.pull_requests.version_bump.open.first,
         to_branch_ref: working_branch,
         from_branch_ref: version_bump_branch,
         title: pr_title,
@@ -169,7 +170,7 @@ class Triggers::PreRelease
     end
 
     memoize def version_bump_branch
-      "version-bump-#{release_version}-#{Time.now.to_i}"
+      "version-bump-#{release_version}-#{release.slug}"
     end
 
     def hotfix_branch?

@@ -7,8 +7,8 @@ class Triggers::PreRelease
     "release_backmerge" => ReleaseBackMerge
   }
 
-  def self.call(release, bump_version: true)
-    new(release).call(bump_version:)
+  def self.call(release)
+    new(release).call
   end
 
   def initialize(release)
@@ -19,8 +19,8 @@ class Triggers::PreRelease
   delegate :branching_strategy, to: :train
   attr_reader :release
 
-  def call(bump_version: true)
-    RELEASE_HANDLERS[branching_strategy].call(release, release_branch, bump_version:).value!
+  def call
+    RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
   rescue Triggers::PullRequest::CreateError
     release.event_stamp!(reason: :pre_release_pr_not_creatable, kind: :error, data: {release_branch:})
     release.stop!

@@ -10,7 +10,7 @@
 #  labels                  :jsonb
 #  number                  :bigint           not null, indexed => [release_id, phase], indexed
 #  opened_at               :datetime         not null
-#  phase                   :string           not null, indexed => [release_id, number], indexed
+#  phase                   :string           not null, indexed => [release_id, number], indexed, indexed => [release_id]
 #  search_vector           :tsvector         indexed
 #  source                  :string           not null, indexed
 #  state                   :string           not null, indexed
@@ -19,7 +19,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             indexed
-#  release_id              :uuid             indexed => [phase, number], indexed => [head_ref]
+#  release_id              :uuid             indexed => [phase, number], indexed => [head_ref], indexed => [phase]
 #  release_platform_run_id :uuid
 #  source_id               :string           not null, indexed
 #
@@ -52,6 +52,8 @@ class PullRequest < ApplicationRecord
   }
 
   scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
+
+  validates :phase, uniqueness: {scope: :release_id, conditions: -> { open.version_bump }}
 
   pg_search_scope :search,
     against: [:title, :body, :number],
