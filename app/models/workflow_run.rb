@@ -219,8 +219,13 @@ class WorkflowRun < ApplicationRecord
       .then { |wr| update_external_metadata!(wr) }
   end
 
-  def update_build_number!
-    build.update!(build_number: app.bump_build_number!(release_version: build.release_version))
+  def update_build_number!(tramline_managed:)
+    if tramline_managed
+      build.update!(build_number: app.bump_build_number!(release_version: build.release_version))
+    else
+      build.update!(build_number: external_id)
+      app.bump_build_number!(release_version: build.release_version, workflow_build_number: external_id)
+    end
   end
 
   def workflow_inputs
