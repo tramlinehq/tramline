@@ -123,6 +123,8 @@ class Triggers::PreRelease
       updated_content =
         if file_path.end_with?(".gradle")
           update_gradle_version(content)
+        elsif file_path.end_with?(".gradle.kts")
+          update_gradle_kts_version(content)
         elsif file_path.end_with?(".plist")
           update_plist_version(content)
         elsif file_path.end_with?(".pbxproj")
@@ -139,7 +141,7 @@ class Triggers::PreRelease
           branch,
           file_path,
           updated_content,
-          "Bump version to #{release_version}",
+          "Bump version to #{release_version} in #{file_path}",
           author_name: "Tramline",
           author_email: "tramline-bot@tramline.app"
         )
@@ -157,7 +159,13 @@ class Triggers::PreRelease
     end
 
     def update_gradle_version(content)
-      content.gsub(/versionName\s+["'].*?["']/, "versionName \"#{release_version}\"")
+      content.gsub(/versionName\s+(['"][^'"]*['"]|\w+)/, "versionName \"#{release_version}\"")
+    end
+
+    def update_gradle_kts_version(content)
+      content.gsub(/versionName\s*=\s*(['"][^'"]*['"]|\w+)(?=\s*[^=]*$)/, "versionName = \"#{release_version}\"") do
+        "#{match.split("=").first.strip} = #{new_value}"
+      end
     end
 
     def update_plist_version(content)
