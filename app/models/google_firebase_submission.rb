@@ -49,7 +49,8 @@ class GoogleFirebaseSubmission < StoreSubmission
   }
 
   enum :failure_reason, {
-    unknown_failure: "unknown_failure"
+    unknown_failure: "unknown_failure",
+    build_not_found: "build_not_found"
   }.merge(Installations::Google::Firebase::Error.reasons.zip_map_self).merge(Installations::Google::Firebase::OpError.reasons.zip_map_self)
 
   enum :status, STATES
@@ -80,16 +81,31 @@ class GoogleFirebaseSubmission < StoreSubmission
   def trigger!
     return unless actionable?
     return unless may_prepare?
-
-    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     # return mock_upload_to_firebase if sandbox_mode?
 
-    preprocess!
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
+
+    if build.has_artifact?
+      # upload build only if we have it
+      preprocess!
+    elsif app.skip_finding_builds_for_firebase?
+      # We do not want to find builds in firebase in this case
+      # Fail with error since we have no way of completing this submission
+      fail_with_error!(BuildNotFound)
+    else
+      release_info = provider.find_build(build.build_number, build.version_name, release_platform_run.platform)
+      if release_info.ok?
+        # We can proceed to next step if build was already uploaded by ci
+        prepare_and_update!(release_info.value!)
+        StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, external_id)
+      else
+        fail_with_error!(BuildNotFound)
+      end
+    end
   end
 
   def upload_build!
     return unless may_prepare?
-    return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
     result = nil
     filename = build.artifact.file.filename.to_s
