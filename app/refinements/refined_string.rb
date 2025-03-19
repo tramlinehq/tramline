@@ -45,8 +45,16 @@ module RefinedString
       {}
     end
 
-    def safe_csv_parse(coerce_float: true)
-      split(",").reject(&:empty?).map { |v| coerce_float ? Float(v) : String(v.squish) }
+    def safe_csv_parse(coerce_float: false, coerce_string: false)
+      split(",").reject(&:empty?).map do |v|
+        if coerce_float
+          Float(v)
+        elsif coerce_string
+          String(v.squish)
+        else
+          v
+        end
+      end
     rescue ArgumentError
       []
     end

@@ -140,7 +140,7 @@ class TrainsController < SignedInApplicationController
       .merge(build_queue_config(train_params.slice(*build_queue_config_params)))
       .merge(backmerge_config(train_params[:continuous_backmerge_enabled]))
       .merge(notifications_config(train_params[:notifications_enabled]))
-      .merge(version_bump_file_paths: train_params[:version_bump_file_paths].safe_csv_parse(coerce_float: false))
+      .merge(version_bump_file_paths: train_params[:version_bump_file_paths].safe_csv_parse(coerce_string: true))
       .except(:build_queue_wait_time_value, :build_queue_wait_time_unit, :continuous_backmerge_enabled, :notifications_enabled)
       .except(*release_schedule_config_params)
     create_params.merge!(release_schedule_params) if release_schedule_params
@@ -185,7 +185,7 @@ class TrainsController < SignedInApplicationController
       .merge(build_queue_config(train_update_params.slice(*build_queue_config_params)))
       .merge(backmerge_config(train_update_params[:continuous_backmerge_enabled]))
       .merge(notifications_config(train_update_params[:notifications_enabled]))
-      .merge(version_bump_file_paths: train_params[:version_bump_file_paths].safe_csv_parse(coerce_float: false))
+      .merge(version_bump_file_paths: train_params[:version_bump_file_paths].safe_csv_parse(coerce_string: true))
       .except(:build_queue_wait_time_value, :build_queue_wait_time_unit, :continuous_backmerge_enabled)
       .except(*release_schedule_config_params)
     update_params.merge!(release_schedule_params) if release_schedule_params

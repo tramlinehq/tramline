@@ -147,7 +147,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   def update_production_release_rollout_stages(production_release_attributes)
     submission_attributes = production_release_attributes[:submissions_attributes]["0"]
     if production_release_attributes.present? && submission_attributes[:rollout_enabled] == "true"
-      submission_attributes[:rollout_stages] = submission_attributes[:rollout_stages].safe_csv_parse
+      submission_attributes[:rollout_stages] = submission_attributes[:rollout_stages].safe_csv_parse(coerce_float: true)
     else
       submission_attributes[:finish_rollout_in_next_release] = false
     end
