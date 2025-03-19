@@ -56,6 +56,13 @@ class Train < ApplicationRecord
     release_backmerge: "Release with Backmerge",
     parallel_working: "Parallel Working and Release"
   }.freeze
+  ALLOWED_VERSION_BUMP_FILE_TYPES = {
+    gradle: ".gradle",
+    kotlin_gradle: ".kts",
+    plist: ".plist",
+    pbxproj: ".pbxproj",
+    yaml: ".yaml"
+  }.freeze
 
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
