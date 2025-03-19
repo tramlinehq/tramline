@@ -29,6 +29,7 @@ class App < ApplicationRecord
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_one :config, class_name: "AppConfig", dependent: :destroy
+  has_one :onboarding_state, dependent: :destroy
   has_many :variants, through: :config
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
@@ -124,6 +125,14 @@ class App < ApplicationRecord
 
   def guided_train_setup?
     trains.none? || train_in_creation.present?
+  end
+
+  def onboarding_completed?
+    onboarding_state&.ready_for_completion?
+  end
+
+  def onboarding_in_progress?
+    onboarding_state.present? && !onboarding_completed?
   end
 
   def train_in_creation

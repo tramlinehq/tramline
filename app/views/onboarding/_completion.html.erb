@@ -1,0 +1,25 @@
+<div id="onboarding_wizard" class="flex flex-col items-center justify-center py-12 px-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+  <div class="max-w-3xl mx-auto text-center">
+    <%= render IconComponent.new("party_popper.svg", size: :xl_6, classes: "mx-auto mb-4 text-green-500") %>
+
+    <h1 class="text-3xl font-bold mb-4 text-gray-900 dark:text-white">Onboarding Complete!</h1>
+
+    <p class="text-lg mb-8 text-gray-600 dark:text-gray-300">
+      Congratulations! Your release train has been created and is ready to go. You can now start using Tramline to manage your app releases.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <%= link_to app_trains_path(app), class: "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-base px-6 py-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" do %>
+        <div class="flex items-center gap-2">
+          <span>View Release Train</span>
+          <%= render IconComponent.new("arrow_right.svg", size: :sm, classes: "fill-current") %>
+        </div>
+      <% end %>
+
+      <button onclick="window.print()" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-base px-6 py-3 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+        <%= render IconComponent.new("save.svg", size: :sm, classes: "inline-block mr-2") %>
+        Print Configuration
+      </button>
+    </div>
+  </div>
+</div>

@@ -73,6 +73,23 @@ Rails.application.routes.draw do
       post :refresh_external
     end
 
+    resource :onboarding, only: [:show], controller: "onboarding" do
+      get :version
+      get :branching
+      get :tags
+      get :workflows
+      get :cycle_features
+      get :submissions
+      get :complete
+
+      post :save_version
+      post :save_branching
+      post :save_tags
+      post :save_workflows
+      post :save_cycle_features
+      post :save_submissions
+    end
+
     resources :trains, only: %i[new create edit update destroy] do
       member do
         get :rules
