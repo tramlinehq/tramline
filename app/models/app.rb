@@ -133,20 +133,19 @@ class App < ApplicationRecord
   # NOTE: fetches and uses latest build numbers from the stores, if added,
   # to reduce build upload rejection probability
   def bump_build_number!(release_version: nil, workflow_build_number: nil)
-    store_build_number = latest_store_build_number
-
     with_lock do
-      self.build_number =
-        VersioningStrategies::Codes.bump(
-          {
-            value: [store_build_number, build_number].compact.max,
-            release_version: release_version
-          },
-          strategy: build_number_increment_strategy
-        )
-
       if workflow_build_number.present?
-        self.build_number = [build_number, workflow_build_number.to_i].compact.max
+        self.build_number = workflow_build_number
+      else
+        store_build_number = latest_store_build_number
+        self.build_number =
+          VersioningStrategies::Codes.bump(
+            {
+              value: [store_build_number, build_number].compact.max,
+              release_version: release_version
+            },
+            strategy: build_number_increment_strategy
+          )
       end
 
       save!
