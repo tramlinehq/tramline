@@ -3,6 +3,10 @@
     <div><%= form.F.labeled_text_field :name, "Name" %></div>
     <div><%= form.F.labeled_text_field :bundle_identifier, "Bundle Identifier" %></div>
 
+    <div class="sm:col-span-2">
+      <%= form.F.labeled_select :build_number_managed_internally, "Build number source", [["Internal (Tramline managed)", true], ["External (CI Workflow managed)", false]] %>
+    </div>
+
     <div class="sm:col-span-2"
          data-controller="domain--build-number-help"
          data-domain--build-number-help-number-current-value="">

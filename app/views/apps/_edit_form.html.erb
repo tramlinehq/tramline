@@ -17,6 +17,7 @@
     <% end %>
 
     <div><%= section.F.labeled_text_field :bundle_identifier, "Bundle Identifier", required: true %></div>
+    <div><%= section.F.labeled_select :build_number_managed_internally, "Build number source", [["Internal (Tramline managed)", true], ["External (CI Workflow managed)", false]] %></div>
 
     <div data-controller="domain--build-number-help"
          data-domain--build-number-help-number-current-value="<%= @app.build_number.presence %>">
