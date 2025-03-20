@@ -291,16 +291,22 @@
                                            switch_data: {dependent_disable_target: "secondary", action: "dependent-disable#change"}) %>
     <% end %>
 
-    <%= f.with_advanced_section(heading: "Auto Version Bump") do |section| %>
+    <%= f.with_advanced_section(heading: "Automatic Version Bumps") do |section| %>
       <% section.with_description do %>
-        Enable automatic version bump PRs for releases. When enabled, Tramline will create a PR to update version numbers in your build files.
+        When enabled, Tramline will create and merge a Pull Request to update the version name (eg. 1.0.0) directly in your configured build files before starting a new release or cutting a release branch. You can supply more than one path and Tramline will update all of them.
       <% end %>
 
       <%= render Form::SwitchComponent.new(form: section.F,
                                            field_name: :version_bump_enabled,
-                                           on_label: "Auto Version Bump enabled",
-                                           off_label: "Auto Version Bump disabled",
+                                           on_label: "Automatic Version Bump enabled",
+                                           off_label: "Automatic Version Bump disabled",
                                            hide_child: !train.version_bump_enabled?) do |component| %>
+
+        <% component.with_info_icon do %>
+          The following file extensions are allowed —
+          <code><%= Train::ALLOWED_VERSION_BUMP_FILE_TYPES.values.join(" ") %></code>
+        <% end %>
+
         <% component.with_child do %>
           <%= section.F.labeled_text_field :version_bump_file_paths,
                                            "Build File Paths",
