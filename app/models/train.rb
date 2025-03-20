@@ -567,8 +567,28 @@ class Train < ApplicationRecord
   end
 
   def version_bump_config
-    if version_bump_enabled? && version_bump_file_paths.blank?
-      errors.add(:version_bump_file_paths, :blank)
+    if version_bump_enabled?
+      if version_bump_file_paths.blank?
+        errors.add(:version_bump_file_paths, :blank)
+        return
+      end
+
+      if version_bump_file_paths.any?(&:blank?)
+        errors.add(:version_bump_file_paths, :blank_file)
+        return
+      end
+
+      # files must have an extension
+      if version_bump_file_paths.any? { |p| File.extname(p.to_s).blank? }
+        errors.add(:version_bump_file_paths, :invalid_file_extension)
+        return
+      end
+
+      # files must have a valid extension
+      valid_extensions = ALLOWED_VERSION_BUMP_FILE_TYPES.values
+      unless version_bump_file_paths.all? { |p| valid_extensions.include?(File.extname(p.to_s)) }
+        errors.add(:version_bump_file_paths, :invalid_file_type, valid_extensions: valid_extensions.join(", "))
+      end
     end
   end
 end
