@@ -2,19 +2,20 @@
 #
 # Table name: apps
 #
-#  id                :uuid             not null, primary key
-#  build_number      :bigint           not null
-#  bundle_identifier :string           not null, indexed => [platform, organization_id]
-#  description       :string
-#  draft             :boolean
-#  name              :string           not null
-#  platform          :string           not null, indexed => [bundle_identifier, organization_id]
-#  slug              :string
-#  timezone          :string           not null
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  external_id       :string
-#  organization_id   :uuid             not null, indexed, indexed => [platform, bundle_identifier]
+#  id                              :uuid             not null, primary key
+#  build_number                    :bigint           not null
+#  build_number_managed_internally :boolean          default(TRUE), not null
+#  bundle_identifier               :string           not null, indexed => [platform, organization_id]
+#  description                     :string
+#  draft                           :boolean
+#  name                            :string           not null
+#  platform                        :string           not null, indexed => [bundle_identifier, organization_id]
+#  slug                            :string
+#  timezone                        :string           not null
+#  created_at                      :datetime         not null
+#  updated_at                      :datetime         not null
+#  external_id                     :string
+#  organization_id                 :uuid             not null, indexed, indexed => [platform, bundle_identifier]
 #
 class App < ApplicationRecord
   has_paper_trail

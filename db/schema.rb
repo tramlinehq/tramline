@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_05_103927) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_20_064740) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -122,6 +122,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_05_103927) do
     t.datetime "updated_at", null: false
     t.string "external_id"
     t.boolean "draft"
+    t.boolean "build_number_managed_internally", default: true, null: false
     t.index ["organization_id"], name: "index_apps_on_organization_id"
     t.index ["platform", "bundle_identifier", "organization_id"], name: "index_apps_on_platform_and_bundle_id_and_org_id", unique: true
   end
