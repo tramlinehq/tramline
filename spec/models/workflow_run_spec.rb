@@ -69,6 +69,10 @@ describe WorkflowRun do
       end
 
       context "when use build number from workflow is enabled" do
+        # New build number from workflow must be always higher than currently known build number
+        # generated in app
+        let(:number) { (workflow_run.app.build_number + 1).to_s }
+
         before do
           workflow_run.app.update(build_number_managed_internally: false)
         end
