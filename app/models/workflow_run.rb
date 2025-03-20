@@ -180,9 +180,7 @@ class WorkflowRun < ApplicationRecord
     if retrigger
       retrigger_external_run!
     else
-      unless Flipper.enabled?(:use_build_number_from_workflow, app)
-        update_build_number!(tramline_managed: true)
-      end
+      update_internally_managed_build_number! if app.build_number_managed_internally?
       trigger_external_run!
     end
 
@@ -221,12 +219,16 @@ class WorkflowRun < ApplicationRecord
       .then { |wr| update_external_metadata!(wr) }
   end
 
-  def update_build_number!(tramline_managed:)
-    if tramline_managed
-      build.update!(build_number: app.bump_build_number!(release_version: build.release_version))
-    else
+  def update_internally_managed_build_number!
+    build.update!(build_number: app.bump_build_number!(release_version: build.release_version))
+  end
+
+  def update_build_number_from_external_metadata!
+    if external_number.present?
       build.update!(build_number: external_number)
       app.bump_build_number!(release_version: build.release_version, workflow_build_number: external_number)
+    else
+      fail!
     end
   end
 
@@ -249,9 +251,7 @@ class WorkflowRun < ApplicationRecord
       external_number: workflow_run[:number]
     )
 
-    if Flipper.enabled?(:use_build_number_from_workflow, app)
-      update_build_number!(tramline_managed: false)
-    end
+    update_build_number_from_external_metadata! if app.build_number_managed_externally?
   end
 
   def find_external_run

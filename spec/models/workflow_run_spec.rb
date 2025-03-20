@@ -69,14 +69,8 @@ describe WorkflowRun do
       end
 
       context "when use build number from workflow is enabled" do
-        # For the purpose of the test, we need to ensure the build number
-        # received from ci run is higher than the one already present in app
-        # In real scenario it will be controlled by max[store_version, ci_version] + increment strategy
-        # Ref to App#bump_build_number!
-        let(:number) { (workflow_run.app.build_number + 1).to_s }
-
         before do
-          Flipper.enable(:use_build_number_from_workflow, workflow_run.app)
+          workflow_run.app.update(build_number_managed_internally: false)
         end
 
         it "updates build number" do
