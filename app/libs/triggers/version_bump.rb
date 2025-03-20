@@ -107,21 +107,28 @@ class Triggers::VersionBump
     end
   end
 
-  # The version line typically looks like: version: 1.2.3+45
+  # The version line typically looks like: version: 1.2.3+45 (+45 is optional)
   # We want to update the semantic version part (1.2.3) but keep the build number (+45) if present
+  # Note that – version: "1.0.0+1" is also valid, since quotes around strings in YAML are optional
   def update_pubspec_version(content)
-    content.gsub(/^version:\s*(\d+\.\d+\.\d+)(\+\d+)?/) do
-      build_number = $2 || ""
+    content.gsub(/^version:\s*["']?(?<version>\d+\.\d+\.\d+)(?<build>\+\d+)?["']?/) do
+      build_number = Regexp.last_match[:build] || ""
       "version: #{release_version}#{build_number}"
     end
   end
 
+  # The version line typically looks like: versionName "1.0.0"
+  # The quotations are mandatory and the spaces between the keyword and the string are also mandatory
+  # If there is a variable that succeeds it, we ignore and don't change anything
   def update_gradle_version(content)
-    content.gsub(/versionName\s+(['"][^'"]*['"]|\w+)/, "versionName \"#{release_version}\"")
+    content.gsub(/versionName\s+"[^"]*"/, "versionName \"#{release_version}\"")
   end
 
+  # The version line typically looks like: versionName = "1.0.0"
+  # The quotations are mandatory and the spaces between the variable and the string are optional
+  # If instead of a string we have a variable, we ignore and don't change anything
   def update_gradle_kts_version(content)
-    content.gsub(/versionName\s*=\s*(['"][^'"]*['"]|\w+)(?=\s*[^=]*$)/, "versionName = \"#{release_version}\"") do
+    content.gsub(/versionName\s*=\s*"[^"]*"/, "versionName = \"#{release_version}\"") do
       "#{match.split("=").first.strip} = #{new_value}"
     end
   end

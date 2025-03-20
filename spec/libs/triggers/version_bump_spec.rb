@@ -124,5 +124,81 @@ describe Triggers::VersionBump do
         expect(vcs_provider_dbl).to have_received(:update_file).with(anything, project_file, updated_contents, anything, anything).once
       end
     end
+
+    describe "#update_gradle_version" do
+      let(:release) { create(:release) }
+
+      before do
+        allow(release).to receive(:release_version).and_return("1.2.0")
+      end
+
+      [
+        ['versionName "1.0.0"', 'versionName "1.2.0"'],
+        ['versionName"1.0.0"', 'versionName"1.0.0"'],
+        ['versionName      "1.0.0"', 'versionName "1.2.0"'],
+        ["versionName 1.0.0", "versionName 1.0.0"],
+        ["versionName 1", "versionName 1"],
+        ["versionName 1.", "versionName 1."],
+        ["versionName 1.0", "versionName 1.0"],
+        ['versionName \n\tif', 'versionName \n\tif'],
+        ["", ""],
+        ["versionCode 1", "versionCode 1"]
+      ].each do |input, expected|
+        it "matches against <#{input}>" do
+          expect(described_class.new(release).update_gradle_version(input)).to eq(expected)
+        end
+      end
+    end
+
+    describe "#update_gradle_kts_version" do
+      let(:release) { create(:release) }
+
+      before do
+        allow(release).to receive(:release_version).and_return("1.2.0")
+      end
+
+      [
+        ['versionName = "1.0.0"', 'versionName = "1.2.0"'],
+        ['versionName="1.0.0"', 'versionName = "1.2.0"'],
+        ['versionName= "1.0.0"', 'versionName = "1.2.0"'],
+        ['versionName ="1.0.0"', 'versionName = "1.2.0"'],
+        ['versionName   =    "1.0.0"', 'versionName = "1.2.0"'],
+        ["versionName = 1.0.0", "versionName = 1.0.0"],
+        ["versionName = 1", "versionName = 1"],
+        ["versionName = 1.", "versionName = 1."],
+        ["versionName = 1.0", "versionName = 1.0"],
+        ['versionName = \n\tif', 'versionName = \n\tif'],
+        ["", ""],
+        ["versionCode = 1", "versionCode = 1"]
+      ].each do |input, expected|
+        it "matches against <#{input}>" do
+          expect(described_class.new(release).update_gradle_kts_version(input)).to eq(expected)
+        end
+      end
+    end
+
+    describe "#update_pubspec_version" do
+      let(:release) { create(:release) }
+
+      before do
+        allow(release).to receive(:release_version).and_return("1.2.0")
+      end
+
+      [
+        ["version: 1.0.0+1", "version: 1.2.0+1"],
+        ["version: 1.0.0", "version: 1.2.0"],
+        ['version: "1.0.0"', "version: 1.2.0"],
+        ['version: "1.0.0+1"', "version: 1.2.0+1"],
+        ["version:", "version:"],
+        ["version: ", "version: "],
+        ["version:        ", "version:        "],
+        ["vershion: 1.0.0+1", "vershion: 1.0.0+1"],
+        ["", ""]
+      ].each do |input, expected|
+        it "matches against <#{input}>" do
+          expect(described_class.new(release).update_pubspec_version(input)).to eq(expected)
+        end
+      end
+    end
   end
 end
