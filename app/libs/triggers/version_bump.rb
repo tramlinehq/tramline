@@ -33,8 +33,8 @@ class Triggers::VersionBump
   def create_pr
     return GitHub::Result.new if version_bump_file_paths.empty?
 
-    # Update version in each build file on the version branch
-    # Each file will create its own commit so that its easy to revert changes
+    # update version in each build file on the version branch
+    # each file will create its own commit so that its easy to revert changes
     updated_files_result = GitHub::Result.new do
       updated_files = []
       version_bump_file_paths.each do |file_path|
@@ -69,6 +69,7 @@ class Triggers::VersionBump
       description: pr_body,
       error_result_on_auto_merge: true
     )
+
     if pr_result.ok?
       release.event_stamp_now!(reason: :version_bump_pr_created, kind: :notice, data: {release_version:})
     else
@@ -90,11 +91,10 @@ class Triggers::VersionBump
       when file_types[:pbxproj] then update_pbxproj_version(content)
       when file_types[:yaml] then update_pubspec_version(content)
       else
-        # No change for unknown file types
-        content
+        content # no change for unknown file types
       end
 
-    # Write it back if changed
+    # write it back if changed
     if content != updated_content
       train.vcs_provider.update_file(
         branch,

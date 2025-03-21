@@ -11,7 +11,7 @@
   "review_comment_url": "https://api.github.com/repos/octocat/Hello-World/pulls/comments{/number}",
   "comments_url": "https://api.github.com/repos/octocat/Hello-World/issues/1347/comments",
   "statuses_url": "https://api.github.com/repos/octocat/Hello-World/statuses/6dcb09b5b57875f334f61aebed695e2e4193db5e",
-  "number": 1347,
+  "number": 1,
   "state": "open",
   "locked": true,
   "title": "Amazing new feature",

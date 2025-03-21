@@ -120,7 +120,9 @@ class BitbucketIntegration < ApplicationRecord
     state: :state,
     head_ref: [:source, :branch, :name],
     base_ref: [:destination, :branch, :name],
-    opened_at: :created_on
+    opened_at: :created_on,
+    closed_at: :updated_on,
+    merge_commit_sha: :merge_commit
   }
 
   COMMITS_TRANSFORMATIONS = {
@@ -244,7 +246,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def merge_pr!(pr_number)
-    with_api_retries { installation.merge_pr!(code_repository_name, pr_number) }
+    with_api_retries { installation.merge_pr!(code_repository_name, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :bitbucket) }
   end
 
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title, pr_description)

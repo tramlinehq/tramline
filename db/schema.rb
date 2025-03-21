@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_18_151644) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_21_075701) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -533,6 +533,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_18_151644) do
     t.uuid "commit_id"
     t.jsonb "labels"
     t.tsvector "search_vector"
+    t.string "merge_commit_sha"
     t.index ["body"], name: "index_pull_requests_on_body", opclass: :gin_trgm_ops, using: :gin
     t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
     t.index ["number"], name: "index_pull_requests_on_number"

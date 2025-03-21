@@ -23,7 +23,12 @@ describe Triggers::PullRequest do
         .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], GithubIntegration::PR_TRANSFORMATIONS) }
         .first
     }
-    let(:merge_payload) { JSON.parse(File.read("spec/fixtures/github/merge_pull_request.json")).with_indifferent_access }
+    let(:merge_payload) {
+      File.read("spec/fixtures/github/merge_pull_request.json")
+        .then { |pr| JSON.parse(pr) }
+        .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], GithubIntegration::PR_TRANSFORMATIONS) }
+        .first
+    }
 
     it "creates a PR for the release" do
       allow(repo_integration).to receive_messages(create_pr!: create_payload, merge_pr!: merge_payload, enable_auto_merge: true)
@@ -75,7 +80,7 @@ describe Triggers::PullRequest do
         title: pr_title,
         description: pr_description
       )
-      expect(repo_integration).to have_received(:merge_pr!).with(repo_name, result.value!.number)
+      expect(repo_integration).to have_received(:merge_pr!).with(repo_name, result.value!.number, GithubIntegration::PR_TRANSFORMATIONS).once
       expect(result.ok?).to be(true)
       expect(release.reload.pull_requests.size).to eq(1)
     end
@@ -100,7 +105,7 @@ describe Triggers::PullRequest do
       created_pr = commit.reload.pull_request
 
       expect(repo_integration).to have_received(:cherry_pick_pr).with(repo_name, working_branch, commit.commit_hash, patch_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
-      expect(repo_integration).to have_received(:merge_pr!).with(repo_name, created_pr.number)
+      expect(repo_integration).to have_received(:merge_pr!).with(repo_name, created_pr.number, GithubIntegration::PR_TRANSFORMATIONS)
       expect(repo_integration).to have_received(:enable_auto_merge).with(app.config.code_repo_namespace, app.config.code_repo_name_only, created_pr.number)
       expect(result.ok?).to be(true)
       expect(created_pr.closed?).to be(false)
@@ -169,7 +174,7 @@ describe Triggers::PullRequest do
         expect(result.ok?).to be(true)
         created_pr = release.reload.pull_requests.sole
         expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, release_branch, pr_title, pr_description, BitbucketIntegration::PR_TRANSFORMATIONS)
-        expect(repo_integration).to have_received(:merge_pr!).with(repo_name, created_pr.number)
+        expect(repo_integration).to have_received(:merge_pr!).with(repo_name, created_pr.number, BitbucketIntegration::PR_TRANSFORMATIONS)
         expect(created_pr.closed?).to be(true)
       end
 
@@ -227,12 +232,16 @@ describe Triggers::PullRequest do
 
         existing_pr = create(:pull_request, release:, state: "open", number: 1)
         existing_pr_payload =
-          File.read("spec/fixtures/github/get_pr_[open].json")
+          File.read("spec/fixtures/bitbucket/pull_request.json")
             .then { |pr| JSON.parse(pr) }
-            .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], GithubIntegration::PR_TRANSFORMATIONS) }
+            .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], BitbucketIntegration::PR_TRANSFORMATIONS) }
             .first
-        allow(repo_integration).to receive(:get_pr).and_return(existing_pr_payload)
-        allow(repo_integration).to receive(:merge_pr!)
+        merged_pr_payload =
+          File.read("spec/fixtures/bitbucket/merge_pull_request.json")
+            .then { |pr| JSON.parse(pr) }
+            .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], BitbucketIntegration::PR_TRANSFORMATIONS) }
+            .first
+        allow(repo_integration).to receive_messages(get_pr: existing_pr_payload, merge_pr!: merged_pr_payload)
 
         result = described_class.create_and_merge!(
           release: release,

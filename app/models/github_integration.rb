@@ -90,6 +90,7 @@ class GithubIntegration < ApplicationRecord
     base_ref: [:base, :ref],
     opened_at: :created_at,
     closed_at: :closed_at,
+    merge_commit_sha: :merge_commit_sha,
     labels: {
       labels: {
         id: :id,
@@ -309,7 +310,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def merge_pr!(pr_number)
-    installation.merge_pr!(code_repository_name, pr_number)
+    installation.merge_pr!(code_repository_name, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
   def commit_log(from_branch, to_branch)

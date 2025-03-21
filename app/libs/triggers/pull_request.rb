@@ -31,7 +31,7 @@ class Triggers::PullRequest
     if pr_in_work.present?
       pr_data = repo_integration.get_pr(pr_in_work.number)
       if repo_integration.pr_closed?(pr_data)
-        return GitHub::Result.new { pr_in_work.close! } # FIXME: update the PR details, not just state
+        return GitHub::Result.new { pr_in_work.update_or_insert!(pr_data) }
       end
     end
 
@@ -60,7 +60,7 @@ class Triggers::PullRequest
     # - or PR already exists and is _not_ already closed
     merge_result = merge!(pr_in_work)
     if merge_result.ok?
-      pr_in_work.close!
+      pr_in_work.update_or_insert!(merge_result.value!)
     elsif enable_auto_merge? # enable auto-merge if possible
       repo_integration.enable_auto_merge!(pr_in_work.number)
       return merge_result if @error_result_on_auto_merge

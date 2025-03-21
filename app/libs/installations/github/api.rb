@@ -262,9 +262,11 @@ module Installations
       end
     end
 
-    def merge_pr!(repo, pr_number)
+    def merge_pr!(repo, pr_number, transforms)
       execute do
-        @client.merge_pull_request(repo, pr_number)
+        @client
+          .merge_pull_request(repo, pr_number)
+          .then { get_pr(repo, pr_number, transforms) }
       end
     end
 
