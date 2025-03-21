@@ -1,13 +1,6 @@
 require "rails_helper"
 
 describe Triggers::PullRequest do
-  def parse_fixture(path, transformations)
-    File.read("spec/fixtures/#{path}")
-        .then { |pr| JSON.parse(pr) }
-        .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], transformations) }
-        .first
-  end
-
   let(:app) { create(:app, :android) }
   let(:train) { create(:train, app:) }
   let(:release) { create(:release, train:) }
