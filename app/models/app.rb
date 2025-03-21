@@ -131,9 +131,7 @@ class App < ApplicationRecord
     trains.first if trains.size == 1
   end
 
-  def build_number_managed_externally?
-    !build_number_managed_internally
-  end
+  def build_number_managed_externally? = !build_number_managed_internally
 
   # NOTE: fetches and uses latest build numbers from the stores, if added,
   # to reduce build upload rejection probability
