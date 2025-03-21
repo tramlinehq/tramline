@@ -10,7 +10,7 @@ class Triggers::PreRelease
     end
 
     def call
-      if version_bump_enabled?
+      if version_bump_enabled? && !hotfix_branch?
         Triggers::VersionBump.call(release).then { create_default_release_branch }
       else
         create_default_release_branch
@@ -30,13 +30,26 @@ class Triggers::PreRelease
             ref: release.hotfixed_from.end_ref,
             type: :tag
           }
+        elsif version_bump_enabled?
+          merge_commit = release.pull_requests.version_bump.sole.merge_commit_sha
+          if merge_commit.present?
+            {
+              ref: merge_commit,
+              type: :commit
+            }
+          else
+            {
+              ref: working_branch,
+              type: :branch
+            }
+          end
         else
           {
             ref: working_branch,
             type: :branch
           }
         end
-      stamp_data = {working_branch: source[:ref], release_branch:}
+      stamp_data = { working_branch: source[:ref], release_branch: }
       stamp_type = :release_branch_created
       Triggers::Branch.call(release, source[:ref], release_branch, source[:type], stamp_data, stamp_type)
     end
