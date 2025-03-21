@@ -20,7 +20,7 @@
 
     <%= render Form::SwitchComponent.new(form: section.F, field_name: :build_number_managed_internally,
                                          on_label: "Build number managed by Tramline",
-                                         off_label: "Build number managed by workflow",
+                                         off_label: "Build number managed externally (using CI pipelines)") do |component| %>
                                          hide_child: @app.build_number_managed_externally?) do |component| %>
       <% component.with_child do %>
         <div data-controller="domain--build-number-help"
