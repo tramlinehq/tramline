@@ -86,7 +86,7 @@ describe Triggers::PreRelease::AlmostTrunk do
 
         described_class.call(hotfix_release, hotfix_release_branch)
 
-        expect(Triggers::VersionBump).to_not have_received(:call)
+        expect(Triggers::VersionBump).not_to have_received(:call)
         expect(Triggers::Branch).to have_received(:call).with(hotfix_release, release_tag_name, hotfix_release_branch, :tag, anything, anything)
       end
     end

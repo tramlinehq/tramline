@@ -49,7 +49,7 @@ class Triggers::PreRelease
             type: :branch
           }
         end
-      stamp_data = { working_branch: source[:ref], release_branch: }
+      stamp_data = {working_branch: source[:ref], release_branch:}
       stamp_type = :release_branch_created
       Triggers::Branch.call(release, source[:ref], release_branch, source[:type], stamp_data, stamp_type)
     end
