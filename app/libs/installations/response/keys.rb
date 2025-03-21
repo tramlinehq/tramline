@@ -1,4 +1,6 @@
 class Installations::Response::Keys
+  Either = Struct.new(:left, :right)
+
   class << self
     using RefinedHash
 
@@ -27,7 +29,11 @@ class Installations::Response::Keys
     end
 
     def transform_path(in_m, path, path_key)
-      if path.is_a?(Hash)
+      if path.is_a?(Either)
+        left_value = transform_path(in_m, path.left, path_key)[1]
+        right_value = transform_path(in_m, path.right, path_key)[1]
+        [path_key, left_value.presence || right_value.presence]
+      elsif path.is_a?(Hash)
         raise ArgumentError, "Invalid transformation" if path.size > 1
         [path_key, in_m.get_in(*path.keys.first)&.map { |m| transform_paths(m, path.values.first) }]
       else

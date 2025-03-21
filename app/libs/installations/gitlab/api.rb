@@ -186,8 +186,10 @@ module Installations
         .first
     end
 
-    def merge_pr!(project_id, pr_number)
+    def merge_pr!(project_id, pr_number, transforms)
       execute(:put, MR_MERGE_URL.expand(project_id:, merge_request_iid: pr_number).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def diff?(project_id, from, to)

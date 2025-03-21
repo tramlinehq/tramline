@@ -17,14 +17,30 @@ describe Triggers::PatchPullRequest do
       #{commit.message}
     TEXT
   }
+  let(:pr_source_id) { Faker::Lorem.word }
+  let(:pr_number) { Faker::Number.number(digits: 2) }
   let(:created_pr) {
     {
-      source_id: Faker::Lorem.word,
-      number: Faker::Number.number(digits: 2),
+      source_id: pr_source_id,
+      number: pr_number,
       title: expected_title,
       body: expected_description,
       url: Faker::Internet.url,
       state: "open",
+      head_ref: expected_patch_branch,
+      base_ref: train.working_branch,
+      opened_at: Time.current,
+      source: :github
+    }
+  }
+  let(:merged_pr) {
+    {
+      source_id: pr_source_id,
+      number: pr_number,
+      title: expected_title,
+      body: expected_description,
+      url: Faker::Internet.url,
+      state: "closed",
       head_ref: expected_patch_branch,
       base_ref: train.working_branch,
       opened_at: Time.current,
@@ -40,7 +56,7 @@ describe Triggers::PatchPullRequest do
       pr_closed?: false,
       enable_auto_merge!: true,
       enable_auto_merge?: true,
-      merge_pr!: true
+      merge_pr!: merged_pr
     )
   end
 

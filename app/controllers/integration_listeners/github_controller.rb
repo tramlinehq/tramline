@@ -60,6 +60,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
         :created_at,
         :closed_at,
         :id,
+        :merge_commit_sha,
         :html_url,
         base: [:ref],
         head: [:ref, repo: [:full_name]],

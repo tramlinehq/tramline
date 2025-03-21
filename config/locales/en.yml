@@ -471,6 +471,11 @@ en:
             backmerge_strategy:
               continuous_not_allowed: "continuous backmerge only allowed for Almost Trunk branching strategy"
               disabled_for_bitbucket: "continuous backmerge is not allowed for Bitbucket at the moment"
+            version_bump_file_paths:
+              blank: "must have at least one file path"
+              blank_file: "it should be a valid comma-separated list of files"
+              invalid_file_type: "files should have a valid extension — %{valid_extensions}"
+              invalid_file_extension: "files should have an extension, like build.gradle or pubspec.yaml"
         notification_setting:
           attributes:
             notification_channels:

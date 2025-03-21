@@ -19,8 +19,8 @@
       "html": "\u003cul\u003e\n\u003cli\u003eCherry-pick \u003ca href=\"https://bitbucket.org/tramline/ueno/commits/efd3c2dd77698c99c614caddd6fffdbca0af7869\" rel=\"nofollow\" class=\"ap-connect-link\"\u003eefd3c2dd77698c99c614caddd6fffdbca0af7869\u003c/a\u003e commit\u003c/li\u003e\n\u003cli\u003eAuthored by: @nivedita@tramline.app\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003efourth change on the release branch\u003c/p\u003e"
     }
   },
-  "state": "OPEN",
-  "merge_commit": null,
+  "state": "MERGED",
+  "merge_commit": "e5bd3914e2e596debea16f433f57875b5b90bcd6",
   "close_source_branch": false,
   "closed_by": null,
   "author": {

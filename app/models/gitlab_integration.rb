@@ -27,6 +27,7 @@ class GitlabIntegration < ApplicationRecord
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
+  EitherTransformation = Installations::Response::Keys::Either
 
   REPOS_TRANSFORMATIONS = {
     id: :id,
@@ -88,7 +89,9 @@ class GitlabIntegration < ApplicationRecord
     state: :state,
     head_ref: :source_branch,
     base_ref: :target_branch,
-    opened_at: :created_at
+    opened_at: :created_at,
+    closed_at: EitherTransformation.new(:closed_at, :merged_at),
+    merge_commit_sha: EitherTransformation.new(:merge_commit_sha, :squash_commit_sha)
   }
 
   WEBHOOK_PR_TRANSFORMATIONS = {
@@ -100,7 +103,9 @@ class GitlabIntegration < ApplicationRecord
     state: :state,
     head_ref: :source_branch,
     base_ref: :target_branch,
-    opened_at: :created_at
+    opened_at: :created_at,
+    closed_at: :updated_at,
+    merge_commit_sha: [:last_commit, :id] # FIXME: this is not correct, we might need to fetch this, just stubbing this for now.
   }
 
   def install_path
@@ -236,7 +241,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def merge_pr!(pr_number)
-    with_api_retries { installation.merge_pr!(code_repository_name, pr_number) }
+    with_api_retries { installation.merge_pr!(code_repository_name, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :gitlab) }
   end
 
   def commit_log(from_branch, to_branch)

@@ -90,6 +90,7 @@ class GithubIntegration < ApplicationRecord
     base_ref: [:base, :ref],
     opened_at: :created_at,
     closed_at: :closed_at,
+    merge_commit_sha: :merge_commit_sha,
     labels: {
       labels: {
         id: :id,
@@ -309,7 +310,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def merge_pr!(pr_number)
-    installation.merge_pr!(code_repository_name, pr_number)
+    installation.merge_pr!(code_repository_name, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
   def commit_log(from_branch, to_branch)
@@ -337,6 +338,32 @@ class GithubIntegration < ApplicationRecord
 
   def branch_head_sha(branch, sha_only: true)
     installation.head(code_repository_name, branch, sha_only:, commit_transforms: COMMITS_TRANSFORMATIONS)
+  end
+
+  def get_file_content(branch_name, file_path)
+    installation.get_file_content(code_repository_name, branch_name, file_path)
+  end
+
+  def update_file(branch_name, file_path, content, commit_message, author_name: nil, author_email: nil)
+    installation.update_file(
+      code_repository_name,
+      branch_name,
+      file_path,
+      content,
+      commit_message,
+      author_name: author_name,
+      author_email: author_email
+    )
+  end
+
+  def commit(branch_name, commit_message, author_name: nil, author_email: nil)
+    installation.create_commit(
+      code_repository_name,
+      branch_name,
+      commit_message,
+      author_name: author_name,
+      author_email: author_email
+    )
   end
 
   private

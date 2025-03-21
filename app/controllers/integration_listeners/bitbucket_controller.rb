@@ -48,6 +48,7 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
     params.permit(
       repository: [:name, :full_name],
       pullrequest: [
+        :merge_commit,
         :id,
         :title,
         :description,

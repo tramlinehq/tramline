@@ -1,19 +1,18 @@
-<div class="text-secondary">
-  <p class="mt-2">
-    To receive notifications in private channels, invite <strong>@Tramline</strong> into your private
-    channel and then select it from this list. Refresh your notifications channels from down below, if you can't find them in the list.
-  </p>
+<p class="text-secondary text-sm mt-2">
+  To receive notifications in private channels, invite <strong>@Tramline</strong> into your private
+  channel and then select it from this list. Refresh your notifications channels from down below, if you can't find them
+  in the list.
+</p>
 
-  <div class="mt-2">
-    <%= render ButtonComponent.new(
-          label: "Refresh",
-          scheme: :light,
-          type: :link,
-          size: :xxs,
-          options: refresh_channels_app_integration_slack_integration_path(app, app.notification_provider.integration, app.notification_provider),
-          html_options: {method: :post,
-                         data: {turbo_method: :post},
-                         class: "-mx-1"}
-        ) %>
-  </div>
+<div class="mt-2">
+  <%= render ButtonComponent.new(
+        label: "Refresh",
+        scheme: :light,
+        type: :link,
+        size: :xxs,
+        options: refresh_channels_app_integration_slack_integration_path(app, app.notification_provider.integration, app.notification_provider),
+        html_options: {method: :post,
+                       data: {turbo_method: :post},
+                       class: "-mx-1"}
+      ) %>
 </div>

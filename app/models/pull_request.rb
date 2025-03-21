@@ -8,9 +8,10 @@
 #  closed_at               :datetime
 #  head_ref                :string           not null, indexed => [release_id]
 #  labels                  :jsonb
+#  merge_commit_sha        :string
 #  number                  :bigint           not null, indexed => [release_id, phase], indexed
 #  opened_at               :datetime         not null
-#  phase                   :string           not null, indexed => [release_id, number], indexed
+#  phase                   :string           not null, indexed => [release_id, number], indexed, indexed => [release_id]
 #  search_vector           :tsvector         indexed
 #  source                  :string           not null, indexed
 #  state                   :string           not null, indexed
@@ -19,7 +20,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             indexed
-#  release_id              :uuid             indexed => [phase, number], indexed => [head_ref]
+#  release_id              :uuid             indexed => [phase, number], indexed => [head_ref], indexed => [phase]
 #  release_platform_run_id :uuid
 #  source_id               :string           not null, indexed
 #
@@ -34,6 +35,7 @@ class PullRequest < ApplicationRecord
 
   enum :phase, {
     pre_release: "pre_release",
+    version_bump: "version_bump",
     mid_release: "mid_release",
     ongoing: "ongoing",
     post_release: "post_release"
@@ -52,11 +54,16 @@ class PullRequest < ApplicationRecord
 
   scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
 
+  validates :phase, uniqueness: {scope: :release_id, conditions: -> { open.version_bump }}
+
+  before_save :generate_search_vector_data
+
   pg_search_scope :search,
     against: [:title, :body, :number],
     **search_config
 
   # rubocop:disable Rails/SkipsModelValidations
+
   def update_or_insert!(attributes)
     PullRequest
       .upsert(normalize_attributes(attributes), unique_by: [:release_id, :phase, :number])
@@ -65,15 +72,8 @@ class PullRequest < ApplicationRecord
       .first
       .then { |id| PullRequest.find_by(id: id) }
   end
+
   # rubocop:enable Rails/SkipsModelValidations
-
-  def close!
-    self.closed_at = Time.current
-    self.state = PullRequest.states[:closed]
-    save!
-  end
-
-  before_save :generate_search_vector_data
 
   private
 
@@ -82,20 +82,27 @@ class PullRequest < ApplicationRecord
       release_id: release.id,
       commit_id: commit&.id,
       phase: phase,
-      state: normalize_state(attributes[:state])
+      state: normalize_state(attributes),
+      closed_at: normalize_closed_at(attributes)
     }
 
     attributes.merge(generic_attributes)
   end
 
-  def normalize_state(state)
-    case state.to_s.downcase
+  def normalize_state(attributes)
+    case attributes[:state].to_s.downcase
     when "open", "opened", "locked"
       PullRequest.states[:open]
     when "merged", "closed"
       PullRequest.states[:closed]
     else
       PullRequest.states[:closed]
+    end
+  end
+
+  def normalize_closed_at(attributes)
+    if normalize_state(attributes) == PullRequest.states[:closed]
+      attributes[:closed_at].presence || Time.current
     end
   end
 

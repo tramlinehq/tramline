@@ -206,8 +206,10 @@ module Installations
         .first
     end
 
-    def merge_pr!(repo_slug, pr_number)
+    def merge_pr!(repo_slug, pr_number, transforms)
       execute(:post, PR_MERGE_URL.expand(repo_slug:, pr_number:).to_s)
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def commits_between(repo, from_branch, to_branch, transforms)

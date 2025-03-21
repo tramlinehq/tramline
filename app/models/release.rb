@@ -49,6 +49,10 @@ class Release < ApplicationRecord
   STAMPABLE_REASONS = %w[
     created
     release_branch_created
+    version_bump_branch_created
+    version_bump_pr_created
+    version_bump_pr_failed
+    version_bump_no_changes
     kickoff_pr_succeeded
     version_changed
     approvals_overwritten

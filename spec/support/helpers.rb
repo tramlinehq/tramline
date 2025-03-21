@@ -9,6 +9,13 @@ module TestHelpers
       end
     end
   end
+
+  def parse_fixture(path, transformations)
+    File.read("spec/fixtures/#{path}")
+      .then { |pr| JSON.parse(pr) }
+      .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], transformations) }
+      .first
+  end
 end
 
 RSpec.configure do |config|
