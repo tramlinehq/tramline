@@ -1,6 +1,13 @@
 require "rails_helper"
 
 describe Triggers::PullRequest do
+  def parse_fixture(path, transformations)
+    File.read("spec/fixtures/#{path}")
+        .then { |pr| JSON.parse(pr) }
+        .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], transformations) }
+        .first
+  end
+
   let(:app) { create(:app, :android) }
   let(:train) { create(:train, app:) }
   let(:release) { create(:release, train:) }
@@ -17,18 +24,8 @@ describe Triggers::PullRequest do
   end
 
   describe ".create_and_merge!" do
-    let(:create_payload) {
-      File.read("spec/fixtures/github/pull_request.json")
-        .then { |pr| JSON.parse(pr) }
-        .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], GithubIntegration::PR_TRANSFORMATIONS) }
-        .first
-    }
-    let(:merge_payload) {
-      File.read("spec/fixtures/github/merge_pull_request.json")
-        .then { |pr| JSON.parse(pr) }
-        .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], GithubIntegration::PR_TRANSFORMATIONS) }
-        .first
-    }
+    let(:create_payload) { parse_fixture("github/pull_request.json", GithubIntegration::PR_TRANSFORMATIONS) }
+    let(:merge_payload) { parse_fixture("github/merge_pull_request.json", GithubIntegration::PR_TRANSFORMATIONS) }
 
     it "creates a PR for the release" do
       allow(repo_integration).to receive_messages(create_pr!: create_payload, merge_pr!: merge_payload, enable_auto_merge: true)
@@ -202,12 +199,7 @@ describe Triggers::PullRequest do
     context "when pr is found" do
       it "finds an existing closed PR and updates the status" do
         existing_pr = create(:pull_request, release:, state: "open", number: 1)
-        existing_pr_payload =
-          File.read("spec/fixtures/github/get_pr_[closed].json")
-            .then { |pr| JSON.parse(pr) }
-            .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], GithubIntegration::PR_TRANSFORMATIONS) }
-            .first
-
+        existing_pr_payload = parse_fixture("github/get_pr_[closed].json", GithubIntegration::PR_TRANSFORMATIONS)
         allow(repo_integration).to receive(:get_pr).and_return(existing_pr_payload)
         result = described_class.create_and_merge!(
           release: release,
@@ -229,18 +221,9 @@ describe Triggers::PullRequest do
         repo_integration = instance_double(Installations::Bitbucket::Api)
         allow(train).to receive(:vcs_provider).and_return(vcs_integration.providable)
         allow(Installations::Bitbucket::Api).to receive(:new).and_return(repo_integration)
-
         existing_pr = create(:pull_request, release:, state: "open", number: 1)
-        existing_pr_payload =
-          File.read("spec/fixtures/bitbucket/pull_request.json")
-            .then { |pr| JSON.parse(pr) }
-            .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], BitbucketIntegration::PR_TRANSFORMATIONS) }
-            .first
-        merged_pr_payload =
-          File.read("spec/fixtures/bitbucket/merge_pull_request.json")
-            .then { |pr| JSON.parse(pr) }
-            .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], BitbucketIntegration::PR_TRANSFORMATIONS) }
-            .first
+        existing_pr_payload = parse_fixture("bitbucket/pull_request.json", BitbucketIntegration::PR_TRANSFORMATIONS)
+        merged_pr_payload = parse_fixture("bitbucket/merge_pull_request.json", BitbucketIntegration::PR_TRANSFORMATIONS)
         allow(repo_integration).to receive_messages(get_pr: existing_pr_payload, merge_pr!: merged_pr_payload)
 
         result = described_class.create_and_merge!(
