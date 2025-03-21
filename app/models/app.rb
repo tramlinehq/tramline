@@ -51,6 +51,12 @@ class App < ApplicationRecord
     throw(:abort) if errors.present?
   end
 
+  before_validation do
+    if new_record? && build_number_managed_externally?
+      self.build_number = 0
+    end
+  end
+
   friendly_id :name, use: :slugged
   normalizes :name, with: ->(name) { name.squish }
 
