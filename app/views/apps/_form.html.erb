@@ -3,31 +3,36 @@
     <div><%= form.F.labeled_text_field :name, "Name" %></div>
     <div><%= form.F.labeled_text_field :bundle_identifier, "Bundle Identifier" %></div>
 
-    <div class="sm:col-span-2">
-      <%= form.F.labeled_select :build_number_managed_internally, "Build number source", [["Internal (Tramline managed)", true], ["External (CI Workflow managed)", false]] %>
-    </div>
-
     <div class="sm:col-span-2"
          data-controller="domain--build-number-help"
          data-domain--build-number-help-number-current-value="">
 
-      <%= form.F.labeled_number_field :build_number,
-            "Build Number",
-            {data: {domain__build_number_help_target: "input",
-                    action: "domain--build-number-help#increment"}} %>
-      <div class="text-sm my-1 dark:text-main-200">
-        <p>
-          <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
-          <span class="font-semibold" data-domain--build-number-help-target="helpTextVal"></span>
-        </p>
+      <%= render Form::SwitchComponent.new(form: form.F,
+                                           field_name: :build_number_managed_internally,
+                                           on_label: "Build number managed by Tramline",
+                                           off_label: "Build number managed externally (using CI pipelines)",
+                                           hide_child: @app.build_number_managed_externally?,
+                                           switch_id: "add_build_number_managed_internally") do |component| %>
 
-        <p class="pt-1">
-          This number
-          <strong>must be</strong> the same or higher than the build number of the last build you
-          deployed to the store.
-          If you make a mistake, you can edit this later.
-        </p>
-      </div>
+        <% component.with_child do %>
+          <%= form.F.labeled_number_field :build_number,
+                                          "Build Number",
+                                          {data: {domain__build_number_help_target: "input",
+                                                  action: "domain--build-number-help#increment"}} %>
+          <div class="text-sm my-1 dark:text-main-200">
+            <p>
+              <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
+              <span class="font-semibold" data-domain--build-number-help-target="helpTextVal"></span>
+            </p>
+            <p class="pt-1">
+              This number
+              <strong>must be</strong> the same or higher than the build number of the last build you
+              deployed to the store.
+              If you make a mistake, you can edit this later.
+            </p>
+          </div>
+        <% end %>
+      <% end %>
     </div>
 
     <div><%= form.F.labeled_select :platform, "Mobile Platform", options_for_select(App.allowed_platforms, "Android") %></div>
