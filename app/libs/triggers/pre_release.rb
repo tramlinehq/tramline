@@ -20,10 +20,11 @@ class Triggers::PreRelease
   attr_reader :release
 
   def call
+    release.start_pre_release_phase!
     RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
   rescue Triggers::PullRequest::CreateError
     release.event_stamp!(reason: :pre_release_pr_not_creatable, kind: :error, data: {release_branch:})
-    release.stop!
+    release.fail_pre_release_phase!
   rescue Triggers::PullRequest::MergeError
     Rails.logger.debug { "Pre-release pull request not merged: #{release.pull_requests.pre_release}" }
   end

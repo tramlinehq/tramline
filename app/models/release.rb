@@ -72,6 +72,8 @@ class Release < ApplicationRecord
   STAMPABLE_REASONS.concat(["status_changed"])
   STATES = {
     created: "created",
+    pre_release_started: "pre_release_started",
+    pre_release_failed: "pre_release_failed",
     on_track: "on_track",
     post_release: "post_release",
     post_release_started: "post_release_started",
@@ -135,8 +137,16 @@ class Release < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
+    event :start_pre_release_phase do
+      transitions from: :created, to: :pre_release_started
+    end
+
+    event :fail_pre_release_phase do
+      transitions from: :pre_release_started, to: :pre_release_failed
+    end
+
     event :start do
-      transitions from: :created, to: :on_track
+      transitions from: [:created, :pre_release_started], to: :on_track
     end
 
     event :start_post_release_phase do
@@ -266,6 +276,10 @@ class Release < ApplicationRecord
 
   def mid_release_prs
     pull_requests.mid_release
+  end
+
+  def pre_release?
+    pre_release_started? || pre_release_failed?
   end
 
   def duration

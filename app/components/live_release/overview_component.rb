@@ -54,6 +54,6 @@ class LiveRelease::OverviewComponent < BaseComponent
   end
 
   def version_bump_prs_banner?
-    release.train.version_bump_enabled? && release.pull_requests.version_bump.open.any?
+    release.pre_release? && release.train.version_bump_enabled? && release.pull_requests.version_bump.open.any?
   end
 end
