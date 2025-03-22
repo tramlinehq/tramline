@@ -5,21 +5,20 @@ require "rails_helper"
 describe Triggers::VersionBump do
   def setup_mocks(train, vcs_provider_dbl, project_file, updated_contents_file)
     allow(train).to receive(:vcs_provider).and_return(vcs_provider_dbl)
-    allow(vcs_provider_dbl).to receive_messages(get_file_content: File.read(project_file), update_file: File.read(updated_contents_file))
+    allow(vcs_provider_dbl).to receive_messages(get_file_content: File.read(project_file), update_file!: File.read(updated_contents_file))
     allow(Triggers::Branch).to receive(:call).and_return(GitHub::Result.new)
     allow(Triggers::PullRequest).to receive(:create_and_merge!).and_return(GitHub::Result.new)
   end
 
   describe ".call" do
-    it "creates the version bump branch" do
+    it "does not create a version bump branch if version bump is disabled" do
       allow(Triggers::Branch).to receive(:call)
       train = create(:train)
       release = create(:release, train:)
 
       described_class.call(release)
 
-      expected_new_branch = "version-bump-#{release.release_version}-#{release.slug}"
-      expect(Triggers::Branch).to have_received(:call).with(release, train.working_branch, expected_new_branch, :branch, anything, anything).once
+      expect(Triggers::Branch).not_to have_received(:call)
     end
 
     context "when a version bump PR is attempted" do
@@ -29,6 +28,15 @@ describe Triggers::VersionBump do
       let(:release) { create(:release, train:) }
       let(:vcs_provider_dbl) { instance_double(GithubIntegration) }
       let(:expected_new_branch) { "version-bump-#{release.release_version}-#{release.slug}" }
+
+      it "creates the version bump branch" do
+        setup_mocks(train, vcs_provider_dbl, project_file, updated_contents_file)
+
+        described_class.call(release)
+
+        expected_new_branch = "version-bump-#{release.release_version}-#{release.slug}"
+        expect(Triggers::Branch).to have_received(:call).with(release, train.working_branch, expected_new_branch, :branch, anything, anything).once
+      end
 
       it "fetches the file content from the vcs provider" do
         setup_mocks(train, vcs_provider_dbl, project_file, updated_contents_file)
@@ -44,7 +52,7 @@ describe Triggers::VersionBump do
         described_class.call(release)
 
         commit_title = "Bump version to #{release.release_version} in #{project_file}"
-        expect(vcs_provider_dbl).to have_received(:update_file).with(expected_new_branch, project_file, anything, commit_title, anything).once
+        expect(vcs_provider_dbl).to have_received(:update_file!).with(expected_new_branch, project_file, anything, commit_title, anything).once
       end
 
       it "does not update the file content if there is no diff" do
@@ -54,7 +62,7 @@ describe Triggers::VersionBump do
 
         described_class.call(release)
 
-        expect(vcs_provider_dbl).not_to have_received(:update_file).with(anything, anything, anything, anything, anything)
+        expect(vcs_provider_dbl).not_to have_received(:update_file!).with(anything, anything, anything, anything, anything)
       end
 
       it "creates the version bump PR if it doesn't exist" do
@@ -71,7 +79,7 @@ describe Triggers::VersionBump do
         BODY
         expect(Triggers::PullRequest).to have_received(:create_and_merge!).with(
           release: release,
-          new_pull_request: anything,
+          new_pull_request_attrs: anything,
           to_branch_ref: train.working_branch,
           from_branch_ref: expected_new_branch,
           existing_pr: nil,
@@ -95,7 +103,7 @@ describe Triggers::VersionBump do
 
         described_class.call(release)
 
-        expect(vcs_provider_dbl).to have_received(:update_file).with(anything, project_file, updated_contents, anything, anything).once
+        expect(vcs_provider_dbl).to have_received(:update_file!).with(anything, project_file, updated_contents, anything, anything).once
       end
 
       it "updates the gradle kotlin file" do
@@ -108,7 +116,7 @@ describe Triggers::VersionBump do
 
         described_class.call(release)
 
-        expect(vcs_provider_dbl).to have_received(:update_file).with(anything, project_file, updated_contents, anything, anything).once
+        expect(vcs_provider_dbl).to have_received(:update_file!).with(anything, project_file, updated_contents, anything, anything).once
       end
 
       it "updates the flutter pubspec file" do
@@ -121,7 +129,7 @@ describe Triggers::VersionBump do
 
         described_class.call(release)
 
-        expect(vcs_provider_dbl).to have_received(:update_file).with(anything, project_file, updated_contents, anything, anything).once
+        expect(vcs_provider_dbl).to have_received(:update_file!).with(anything, project_file, updated_contents, anything, anything).once
       end
     end
 

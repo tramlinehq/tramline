@@ -7,9 +7,8 @@ class Webhooks::ClosePullRequestJob < ApplicationJob
     number = pr_attributes[:number]
 
     Train.find(train_id).open_active_prs_for(head_ref).where(number:).find_each do |pr|
-      pr.update_or_insert!(pr_attributes)
+      pr.safe_update!(pr_attributes)
       pr.stamp_merge!
-      pr.reload
       Signal.pull_request_closed!(pr)
     end
   end

@@ -9,13 +9,13 @@ class Triggers::PullRequest
     new(**args).create_and_merge!
   end
 
-  def initialize(release:, new_pull_request:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true, existing_pr: nil, patch_pr: false, patch_commit: nil, error_result_on_auto_merge: false)
+  def initialize(release:, new_pull_request_attrs:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true, existing_pr: nil, patch_pr: false, patch_commit: nil, error_result_on_auto_merge: false)
     @release = release
     @to_branch_ref = to_branch_ref
     @from_branch_ref = from_branch_ref
     @title = title
     @description = description
-    @new_pull_request = new_pull_request
+    @new_pull_request_attrs = new_pull_request_attrs
     @allow_without_diff = allow_without_diff
     @existing_pr = existing_pr
     @patch_pr = patch_pr
@@ -26,12 +26,12 @@ class Triggers::PullRequest
   delegate :train, to: :release
 
   def create_and_merge!
-    pr_in_work = existing_pr if existing_pr&.persisted?
+    pr_in_work = existing_pr
 
     if pr_in_work.present?
       pr_data = repo_integration.get_pr(pr_in_work.number)
       if repo_integration.pr_closed?(pr_data)
-        return GitHub::Result.new { pr_in_work.update_or_insert!(pr_data) }
+        return GitHub::Result.new { pr_in_work.safe_update!(pr_data) }
       end
     end
 
@@ -39,8 +39,9 @@ class Triggers::PullRequest
       result = create!
 
       if result.ok?
-        pr_in_work = @new_pull_request.update_or_insert!(result.value!)
+        pr_in_work = new_pull_request(result.value!)
         pr_in_work.stamp_create!
+
       else
         # ignore the specific create error if PRs are allowed without diffs
         if @allow_without_diff && pr_without_commits_error?(result)
@@ -61,7 +62,7 @@ class Triggers::PullRequest
     # - or PR already exists and is _not_ already closed
     merge_result = merge!(pr_in_work)
     if merge_result.ok?
-      pr_in_work.update_or_insert!(merge_result.value!)
+      pr_in_work.safe_update!(merge_result.value!)
       pr_in_work.stamp_merge!
     elsif enable_auto_merge? # enable auto-merge if possible
       repo_integration.enable_auto_merge!(pr_in_work.number)
@@ -113,6 +114,11 @@ class Triggers::PullRequest
     else
       repo_integration.create_pr!(to_branch_ref, from_branch_ref, title, description)
     end
+  end
+
+  def new_pull_request(pr_data)
+    attrs = @new_pull_request_attrs.merge(pr_data)
+    PullRequest.update_or_insert!(attrs)
   end
 
   def enable_auto_merge?

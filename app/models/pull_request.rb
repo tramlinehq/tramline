@@ -65,61 +65,72 @@ class PullRequest < ApplicationRecord
     against: [:title, :body, :number],
     **search_config
 
-  # rubocop:disable Rails/SkipsModelValidations
+  class << self
+    # rubocop:disable Rails/SkipsModelValidations
 
-  def update_or_insert!(attributes)
-    PullRequest
-      .upsert(normalize_attributes(attributes), unique_by: [:release_id, :phase, :number])
-      .rows
-      .first
-      .first
-      .then { |id| PullRequest.find_by(id: id) }
+    def update_or_insert!(attributes)
+      attributes = attributes.with_indifferent_access
+      raise ArgumentError, "attributes must be a Hash" unless attributes.is_a?(Hash)
+      raise ArgumentError, "attributes must include a release_id" if attributes[:release_id].blank?
+      raise ArgumentError, "attributes must include a phase" if attributes[:phase].blank?
+      raise ArgumentError, "attributes must include a number" if attributes[:number].blank?
+
+      PullRequest
+        .upsert(normalize_attributes(attributes), unique_by: [:release_id, :phase, :number])
+        .rows
+        .first
+        .first
+        .then { |id| PullRequest.find_by(id: id) }
+    end
+
+    # rubocop:enable Rails/SkipsModelValidations
+
+    def normalize_attributes(attributes)
+      generic_attributes = {
+        state: normalize_state(attributes),
+        closed_at: normalize_closed_at(attributes)
+      }
+
+      attributes.merge(generic_attributes)
+    end
+
+    def normalize_state(attributes)
+      case attributes[:state].to_s.downcase
+      when "open", "opened", "locked"
+        PullRequest.states[:open]
+      when "merged", "closed"
+        PullRequest.states[:closed]
+      else
+        PullRequest.states[:closed]
+      end
+    end
+
+    def normalize_closed_at(attributes)
+      if normalize_state(attributes) == PullRequest.states[:closed]
+        attributes[:closed_at].presence || Time.current
+      end
+    end
   end
 
-  # rubocop:enable Rails/SkipsModelValidations
+  delegate :normalize_attributes, to: self
+
+  def safe_update!(attributes)
+    update!(normalize_attributes(attributes))
+  end
 
   def stamp_create!
-    event_stamp!(reason: :created, kind: :notice, data: stamp_data)
+    event_stamp_now!(reason: :created, kind: :notice, data: stamp_data)
   end
 
   def stamp_merge!
-    event_stamp!(reason: :merged, kind: :notice, data: stamp_data)
+    event_stamp_now!(reason: :merged, kind: :notice, data: stamp_data)
   end
 
   def stamp_unmergeable!
-    event_stamp!(reason: :unmergeable, kind: :error, data: stamp_data)
+    event_stamp_now!(reason: :unmergeable, kind: :error, data: stamp_data)
   end
 
   private
-
-  def normalize_attributes(attributes)
-    generic_attributes = {
-      release_id: release.id,
-      commit_id: commit&.id,
-      phase: phase,
-      state: normalize_state(attributes),
-      closed_at: normalize_closed_at(attributes)
-    }
-
-    attributes.merge(generic_attributes)
-  end
-
-  def normalize_state(attributes)
-    case attributes[:state].to_s.downcase
-    when "open", "opened", "locked"
-      PullRequest.states[:open]
-    when "merged", "closed"
-      PullRequest.states[:closed]
-    else
-      PullRequest.states[:closed]
-    end
-  end
-
-  def normalize_closed_at(attributes)
-    if normalize_state(attributes) == PullRequest.states[:closed]
-      attributes[:closed_at].presence || Time.current
-    end
-  end
 
   def generate_search_vector_data
     search_text = [title, body, number.to_s].compact.join(" ")
@@ -127,6 +138,6 @@ class PullRequest < ApplicationRecord
   end
 
   def stamp_data
-    slice(:url, :number, :base_ref, :head_ref)
+    slice(:url, :number, :base_ref, :head_ref).merge(phase: phase.humanize.downcase)
   end
 end

@@ -25,7 +25,7 @@ describe Triggers::PullRequest do
 
       result = described_class.create_and_merge!(
         release: release,
-        new_pull_request: release.pull_requests.post_release.open.build,
+        new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
         to_branch_ref: working_branch,
         from_branch_ref: release_branch,
         title: pr_title,
@@ -45,7 +45,7 @@ describe Triggers::PullRequest do
 
       result = described_class.create_and_merge!(
         release: release,
-        new_pull_request: commit.build_pull_request(release:, phase: :ongoing),
+        new_pull_request_attrs: {phase: :ongoing, release_id: release.id, state: :open, commit_id: commit.id},
         to_branch_ref: working_branch,
         from_branch_ref: patch_branch,
         title: pr_title,
@@ -64,7 +64,7 @@ describe Triggers::PullRequest do
 
       result = described_class.create_and_merge!(
         release: release,
-        new_pull_request: release.pull_requests.post_release.open.build,
+        new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
         to_branch_ref: working_branch,
         from_branch_ref: release_branch,
         title: pr_title,
@@ -83,7 +83,7 @@ describe Triggers::PullRequest do
 
       result = described_class.create_and_merge!(
         release: release,
-        new_pull_request: commit.build_pull_request(release:, phase: :ongoing),
+        new_pull_request_attrs: {phase: :ongoing, release_id: release.id, state: :open, commit_id: commit.id},
         to_branch_ref: working_branch,
         from_branch_ref: patch_branch,
         title: pr_title,
@@ -106,7 +106,7 @@ describe Triggers::PullRequest do
 
       result = described_class.create_and_merge!(
         release: release,
-        new_pull_request: release.pull_requests.post_release.open.build,
+        new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
         to_branch_ref: working_branch,
         from_branch_ref: release_branch,
         title: pr_title,
@@ -125,7 +125,7 @@ describe Triggers::PullRequest do
 
       result = described_class.create_and_merge!(
         release: release,
-        new_pull_request: release.pull_requests.post_release.open.build,
+        new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
         to_branch_ref: working_branch,
         from_branch_ref: release_branch,
         title: pr_title,
@@ -154,7 +154,7 @@ describe Triggers::PullRequest do
 
         result = described_class.create_and_merge!(
           release: release,
-          new_pull_request: release.pull_requests.post_release.open.build,
+          new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
           to_branch_ref: working_branch,
           from_branch_ref: release_branch,
           title: pr_title,
@@ -174,7 +174,7 @@ describe Triggers::PullRequest do
 
         result = described_class.create_and_merge!(
           release: release,
-          new_pull_request: release.pull_requests.post_release.open.build,
+          new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
           to_branch_ref: working_branch,
           from_branch_ref: release_branch,
           title: pr_title,
@@ -197,7 +197,7 @@ describe Triggers::PullRequest do
         result = described_class.create_and_merge!(
           release: release,
           to_branch_ref: working_branch,
-          new_pull_request: nil,
+          new_pull_request_attrs: nil,
           from_branch_ref: release_branch,
           title: pr_title,
           description: pr_description,
@@ -221,7 +221,7 @@ describe Triggers::PullRequest do
 
         result = described_class.create_and_merge!(
           release: release,
-          new_pull_request: release.pull_requests.post_release.open.build,
+          new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
           to_branch_ref: working_branch,
           from_branch_ref: release_branch,
           title: pr_title,

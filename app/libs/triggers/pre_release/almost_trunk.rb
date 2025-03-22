@@ -30,19 +30,11 @@ class Triggers::PreRelease
             ref: release.hotfixed_from.end_ref,
             type: :tag
           }
-        elsif version_bump_enabled?
-          merge_commit = release.pull_requests.version_bump.sole.merge_commit_sha
-          if merge_commit.present?
-            {
-              ref: merge_commit,
-              type: :commit
-            }
-          else
-            {
-              ref: working_branch,
-              type: :branch
-            }
-          end
+        elsif version_bump_enabled? && (commit = release.pull_requests.version_bump.first&.merge_commit_sha).present?
+          {
+            ref: commit,
+            type: :commit
+          }
         else
           {
             ref: working_branch,
