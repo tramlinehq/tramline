@@ -11,8 +11,7 @@
         the identifier in the store listing.
       </div>
       <div class="mt-4">
-        The <strong>build number</strong> must be the same or higher than the build number of the last build you
-        deployed to the store.
+        <%= render partial: "build_number_management_help" %>
       </div>
     <% end %>
 
@@ -23,7 +22,13 @@
                                          on_label: "Build number managed by Tramline",
                                          off_label: "Build number managed externally (using CI pipelines)",
                                          hide_child: @app.build_number_managed_externally?,
+                                         html_options: {disabled: true},
                                          switch_id: "edit_build_number_managed_internally") do |component| %>
+
+      <% component.with_info_icon do %>
+        <p>This setting cannot be changed after the app is created.</p>
+      <% end %>
+
       <% component.with_child do %>
         <div data-controller="domain--build-number-help"
              data-domain--build-number-help-number-current-value="<%= @app.build_number.presence %>">
