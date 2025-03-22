@@ -284,6 +284,10 @@ class App < ApplicationRecord
     :increment
   end
 
+  def skip_finding_builds_for_firebase?
+    Flipper.enabled?(:skip_finding_builds_for_firebase, self)
+  end
+
   private
 
   def latest_store_build_number
