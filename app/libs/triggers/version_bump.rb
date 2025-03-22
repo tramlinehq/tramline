@@ -13,7 +13,8 @@ class Triggers::VersionBump
   end
 
   def call
-    create_branch.then { create_pr }
+    return GitHub::Result.new if version_bump_file_paths.empty?
+    create_branch.then { update_files_and_create_pr }
   end
 
   attr_reader :release
@@ -30,9 +31,7 @@ class Triggers::VersionBump
       :version_bump_branch_created)
   end
 
-  def create_pr
-    return GitHub::Result.new if version_bump_file_paths.empty?
-
+  def update_files_and_create_pr
     # update version in each build file on the version branch
     # each file will create its own commit so that its easy to revert changes
     updated_files_result = GitHub::Result.new do
@@ -43,14 +42,16 @@ class Triggers::VersionBump
       end
       updated_files
     end
+
     return updated_files_result unless updated_files_result.ok?
+
     updated_files = updated_files_result.value!
     if updated_files.empty?
       release.event_stamp_now!(reason: :version_bump_no_changes, kind: :notice, data: {release_version:})
       return GitHub::Result.new
     end
 
-    # create PR
+    # create (and merge) PR
     pr_title = "Bump version to #{release_version}"
     pr_body = <<~BODY
       🎉 A new release #{release_version} has kicked off!
@@ -59,9 +60,9 @@ class Triggers::VersionBump
 
       All aboard the release train!
     BODY
-    pr_result = Triggers::PullRequest.create_and_merge!(
+    Triggers::PullRequest.create_and_merge!(
       release: release,
-      new_pull_request: release.pull_requests.version_bump.open.build,
+      new_pull_request_attrs: {phase: :version_bump, release_id: release.id, state: :open},
       existing_pr: release.pull_requests.version_bump.open.first,
       to_branch_ref: working_branch,
       from_branch_ref: version_bump_branch,
@@ -69,13 +70,6 @@ class Triggers::VersionBump
       description: pr_body,
       error_result_on_auto_merge: true
     )
-
-    if pr_result.ok?
-      release.event_stamp_now!(reason: :version_bump_pr_created, kind: :notice, data: {release_version:})
-    else
-      release.event_stamp_now!(reason: :version_bump_pr_failed, kind: :error, data: {error: pr_result.error})
-    end
-    pr_result
   end
 
   # The matchers will update all instances of matches in the file (can be more than 1)
@@ -96,7 +90,7 @@ class Triggers::VersionBump
 
     # write it back if changed
     if content != updated_content
-      train.vcs_provider.update_file(
+      train.vcs_provider.update_file!(
         branch,
         file_path,
         updated_content,

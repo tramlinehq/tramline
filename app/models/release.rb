@@ -156,7 +156,7 @@ class Release < ApplicationRecord
     event :stop do
       before { self.stopped_at = Time.current }
       transitions from: :partially_finished, to: :stopped_after_partial_finish
-      transitions from: [:created, :on_track, :post_release_started, :post_release_failed], to: :stopped
+      transitions from: [:created, :on_track, :post_release_started, :post_release_failed, :pre_release_started, :pre_release_failed], to: :stopped
     end
 
     event :finish do
@@ -311,7 +311,7 @@ class Release < ApplicationRecord
   end
 
   def committable?
-    created? || on_track? || partially_finished?
+    created? || pre_release_started? || on_track? || partially_finished?
   end
 
   def active?

@@ -66,6 +66,10 @@ module Installations
       {
         message_matcher: /Workflow does not have 'workflow_dispatch' trigger/i,
         decorated_reason: :workflow_dispatch_missing
+      },
+      {
+        message_matcher: /Changes must be made through a pull request/i,
+        decorated_reason: :protected_branch
       }
     ]
 

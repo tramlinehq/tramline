@@ -304,33 +304,6 @@ module Installations
       @client.commit(repo, sha).then { |commit| Installations::Response::Keys.transform([commit], commit_transforms) }.first
     end
 
-    def create_commit(repo, branch, message, author_name: nil, author_email: nil)
-      execute do
-        # get the latest commit on the branch to get its tree
-        latest_commit = @client.ref(repo, "heads/#{branch}")
-        base_commit = @client.commit(repo, latest_commit.object.sha)
-
-        # create a new commit with the same tree
-        commit_data = {
-          message: message,
-          tree: base_commit.commit.tree.sha,
-          parents: [latest_commit.object.sha]
-        }
-
-        if author_name && author_email
-          commit_data[:author] = {name: author_name, email: author_email, date: Time.now.iso8601}
-          commit_data[:committer] = {name: author_name, email: author_email, date: Time.now.iso8601}
-        end
-
-        new_commit = @client.create_commit(repo, commit_data)
-
-        # Update the reference to point to the new commit
-        @client.update_ref(repo, "heads/#{branch}", new_commit.sha)
-
-        new_commit
-      end
-    end
-
     def assign_pr(repo, pr_number, login)
       execute do
         @client.add_assignees(repo, pr_number, [login])
@@ -427,19 +400,24 @@ module Installations
     def get_file_content(repo, branch, path)
       execute do
         response = @client.contents(repo, path: path, ref: branch)
-        if response.content && response.encoding == "base64"
+
+        # ignore directories
+        if response.is_a?(Array)
+          raise Installations::Error.new("Could not get file contents", reason: :not_found)
+        end
+
+        # ignore symlinks, submodules, large files, etc.
+        if response.type == "file" && response.encoding == "base64"
           Base64.decode64(response.content)
         else
-          raise Installations::Error.new("Could not get file content", reason: :file_not_found)
+          raise Installations::Error.new("Could not get file contents", reason: :not_found)
         end
-      rescue Octokit::NotFound
-        raise Installations::Error.new("File not found", reason: :file_not_found)
       end
     end
 
-    def update_file(repo, branch, path, content, message, author_name: nil, author_email: nil)
+    def update_file!(repo, branch, path, content, message, author_name: nil, author_email: nil)
       execute do
-        # first, get the current file to get its SHA
+        # first, get the current file to get its blob SHA
         current_file = @client.contents(repo, path: path, ref: branch)
 
         commit_info = {
@@ -450,30 +428,11 @@ module Installations
         }
 
         if author_name && author_email
-          commit_info[:committer] = {name: author_name, email: author_email}
           commit_info[:author] = {name: author_name, email: author_email}
+          commit_info[:committer] = {name: author_name, email: author_email}
         end
 
         @client.update_contents(repo, path, message, current_file.sha, content, branch: branch)
-      rescue Octokit::NotFound
-        raise Installations::Error.new("File not found", reason: :file_not_found)
-      end
-    end
-
-    def create_file(repo, branch, path, content, message, author_name: nil, author_email: nil)
-      execute do
-        commit_info = {
-          message: message,
-          content: Base64.strict_encode64(content),
-          branch: branch
-        }
-
-        if author_name && author_email
-          commit_info[:committer] = {name: author_name, email: author_email}
-          commit_info[:author] = {name: author_name, email: author_email}
-        end
-
-        @client.create_contents(repo, path, message, content, branch: branch)
       end
     end
 

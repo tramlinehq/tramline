@@ -344,26 +344,8 @@ class GithubIntegration < ApplicationRecord
     installation.get_file_content(code_repository_name, branch_name, file_path)
   end
 
-  def update_file(branch_name, file_path, content, commit_message, author_name: nil, author_email: nil)
-    installation.update_file(
-      code_repository_name,
-      branch_name,
-      file_path,
-      content,
-      commit_message,
-      author_name: author_name,
-      author_email: author_email
-    )
-  end
-
-  def commit(branch_name, commit_message, author_name: nil, author_email: nil)
-    installation.create_commit(
-      code_repository_name,
-      branch_name,
-      commit_message,
-      author_name: author_name,
-      author_email: author_email
-    )
+  def update_file!(branch_name, file_path, content, commit_message, author_name: nil, author_email: nil)
+    installation.update_file!(code_repository_name, branch_name, file_path, content, commit_message, author_name:, author_email:)
   end
 
   private
