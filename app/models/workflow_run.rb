@@ -180,7 +180,7 @@ class WorkflowRun < ApplicationRecord
     if retrigger
       retrigger_external_run!
     else
-      update_build_number!
+      update_internally_managed_build_number! if app.build_number_managed_internally?
       trigger_external_run!
     end
 
@@ -219,8 +219,17 @@ class WorkflowRun < ApplicationRecord
       .then { |wr| update_external_metadata!(wr) }
   end
 
-  def update_build_number!
+  def update_internally_managed_build_number!
     build.update!(build_number: app.bump_build_number!(release_version: build.release_version))
+  end
+
+  def update_build_number_from_external_metadata!
+    if external_number.present?
+      build.update!(build_number: external_number)
+      app.bump_build_number!(release_version: build.release_version, workflow_build_number: external_number)
+    else
+      fail!
+    end
   end
 
   def workflow_inputs
@@ -241,6 +250,8 @@ class WorkflowRun < ApplicationRecord
       external_url: workflow_run[:ci_link],
       external_number: workflow_run[:number]
     )
+
+    update_build_number_from_external_metadata! if app.build_number_managed_externally?
   end
 
   def find_external_run

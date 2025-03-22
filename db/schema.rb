@@ -122,6 +122,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_21_075701) do
     t.datetime "updated_at", null: false
     t.string "external_id"
     t.boolean "draft"
+    t.boolean "build_number_managed_internally", default: true, null: false
     t.index ["organization_id"], name: "index_apps_on_organization_id"
     t.index ["platform", "bundle_identifier", "organization_id"], name: "index_apps_on_platform_and_bundle_id_and_org_id", unique: true
   end
