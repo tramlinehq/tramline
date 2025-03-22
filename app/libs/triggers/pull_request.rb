@@ -40,6 +40,7 @@ class Triggers::PullRequest
 
       if result.ok?
         pr_in_work = @new_pull_request.update_or_insert!(result.value!)
+        pr_in_work.stamp_create!
       else
         # ignore the specific create error if PRs are allowed without diffs
         if @allow_without_diff && pr_without_commits_error?(result)
@@ -61,6 +62,7 @@ class Triggers::PullRequest
     merge_result = merge!(pr_in_work)
     if merge_result.ok?
       pr_in_work.update_or_insert!(merge_result.value!)
+      pr_in_work.stamp_merge!
     elsif enable_auto_merge? # enable auto-merge if possible
       repo_integration.enable_auto_merge!(pr_in_work.number)
       return merge_result if @error_result_on_auto_merge
@@ -89,7 +91,7 @@ class Triggers::PullRequest
       repo_integration.merge_pr!(pr.number)
     rescue Installations::Error => ex
       if ex.reason == :pull_request_not_mergeable
-        release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: {url: pr.url, number: pr.number})
+        pr.stamp_unmergeable!
         raise MergeError, "Failed to merge the Pull Request"
       elsif ex.reason == :pull_request_failed_merge_check
         raise RetryableMergeError, "Failed to merge the Pull Request because of merge checks."

@@ -27,15 +27,7 @@ class Coordinators::FinalizeRelease::ParallelBranches
       title: pr_title,
       description: pr_description,
       existing_pr: release.pull_requests.post_release.first
-    ).then do |value|
-      stamp_pr_success
-      GitHub::Result.new { value }
-    end
-  end
-
-  def stamp_pr_success
-    pr = release.reload.pull_requests.post_release.first
-    release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number}) if pr
+    )
   end
 
   def create_tag

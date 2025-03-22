@@ -36,15 +36,6 @@ class Coordinators::FinalizeRelease::ReleaseBackMerge
         title: backmerge_pr_title,
         description: pr_description(release_backmerge_branch, working_branch)
       )
-    end.then do |value|
-      stamp_pr_success
-      GitHub::Result.new { value }
-    end
-  end
-
-  def stamp_pr_success
-    release.reload.pull_requests.post_release.each do |pr|
-      release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
     end
   end
 

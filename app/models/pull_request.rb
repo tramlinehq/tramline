@@ -27,6 +27,9 @@
 class PullRequest < ApplicationRecord
   has_paper_trail
   include Searchable
+  include Passportable
+
+  STAMPABLE_REASONS = %w[created merged unmergeable]
 
   class UnsupportedPullRequestSource < StandardError; end
 
@@ -75,6 +78,18 @@ class PullRequest < ApplicationRecord
 
   # rubocop:enable Rails/SkipsModelValidations
 
+  def stamp_create!
+    event_stamp!(reason: :created, kind: :notice, data: stamp_data)
+  end
+
+  def stamp_merge!
+    event_stamp!(reason: :merged, kind: :notice, data: stamp_data)
+  end
+
+  def stamp_unmergeable!
+    event_stamp!(reason: :unmergeable, kind: :error, data: stamp_data)
+  end
+
   private
 
   def normalize_attributes(attributes)
@@ -109,5 +124,9 @@ class PullRequest < ApplicationRecord
   def generate_search_vector_data
     search_text = [title, body, number.to_s].compact.join(" ")
     self.search_vector = self.class.generate_search_vector(search_text)
+  end
+
+  def stamp_data
+    slice(:url, :number, :base_ref, :head_ref)
   end
 end

@@ -50,26 +50,18 @@ class Release < ApplicationRecord
     created
     release_branch_created
     version_bump_branch_created
-    version_bump_pr_created
-    version_bump_pr_failed
     version_bump_no_changes
-    kickoff_pr_succeeded
     version_changed
     approvals_overwritten
     finalizing
-    pre_release_pr_not_creatable
-    pull_request_not_mergeable
-    post_release_pr_succeeded
-    backmerge_pr_created
-    pr_merged
+    pre_release_failed
     backmerge_failure
     vcs_release_created
     finalize_failed
     stopped
     finished
   ]
-  # TODO: deprecate this
-  STAMPABLE_REASONS.concat(["status_changed"])
+  STAMPABLE_REASONS.concat(%w[status_changed backmerge_pr_created pr_merged pull_request_not_mergeable post_release_pr_succeeded kickoff_pr_succeeded]) # TODO: deprecate this
   STATES = {
     created: "created",
     pre_release_started: "pre_release_started",
@@ -138,7 +130,7 @@ class Release < ApplicationRecord
     state(*STATES.keys)
 
     event :start_pre_release_phase do
-      transitions from: :created, to: :pre_release_started
+      transitions from: [:created, :pre_release_failed], to: :pre_release_started
     end
 
     event :fail_pre_release_phase do
