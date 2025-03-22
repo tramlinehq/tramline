@@ -1,7 +1,7 @@
 class Computations::Release::StepStatuses
   using RefinedArray
   STATUS = [:blocked, :unblocked, :ongoing, :success, :none, :hidden].zip_map_self
-  PHASES = [:completed, :stopped, :kickoff, :stabilization, :approvals, :review, :rollout, :finishing].zip_map_self
+  PHASES = [:completed, :stopped, :kickoff, :stabilization, :approvals, :review, :rollout, :finishing, :pre_release_failed].zip_map_self
 
   def self.call(release)
     new(release).call
@@ -101,6 +101,7 @@ class Computations::Release::StepStatuses
     return PHASES[:approvals] if @release.approvals_blocking? && in_review
     return PHASES[:review] if in_review
     return PHASES[:stabilization] if any_platforms? { |rp| rp.pre_prod_releases.any? }
+    return PHASES[:pre_release_failed] if @release.pre_release_failed?
     PHASES[:kickoff]
   end
 

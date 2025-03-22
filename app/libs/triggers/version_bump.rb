@@ -1,6 +1,7 @@
 class Triggers::VersionBump
   include Memery
 
+  VersionBumpError = Class.new(Triggers::Errors)
   DEFAULT_PR_AUTHOR_NAME = "Tramline"
   DEFAULT_PR_AUTHOR_EMAIL = "tramline-bot@tramline.app"
 
@@ -99,6 +100,8 @@ class Triggers::VersionBump
         author_email: DEFAULT_PR_AUTHOR_EMAIL
       )
     end
+  rescue Installations::Error
+    raise VersionBumpError, "Failed to update #{file_path} with version #{release_version}"
   end
 
   # The version line typically looks like: version: 1.2.3+45 (+45 is optional)

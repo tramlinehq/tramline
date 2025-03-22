@@ -1,8 +1,8 @@
 class Triggers::PullRequest
   include Memery
 
-  CreateError = Class.new(StandardError)
-  MergeError = Class.new(StandardError)
+  CreateError = Class.new(Triggers::Errors)
+  MergeError = Class.new(Triggers::Errors)
   RetryableMergeError = Class.new(MergeError)
 
   def self.create_and_merge!(**args)
@@ -95,7 +95,7 @@ class Triggers::PullRequest
         pr.stamp_unmergeable!
         raise MergeError, "Failed to merge the Pull Request"
       elsif ex.reason == :pull_request_failed_merge_check
-        raise RetryableMergeError, "Failed to merge the Pull Request because of merge checks."
+        raise RetryableMergeError, "Failed to merge the Pull Request because of merge checks"
       elsif ex.reason == :pull_request_closed
         true
       else

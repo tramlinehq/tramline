@@ -491,7 +491,11 @@ class Release < ApplicationRecord
     approvals_blocking?
   end
 
-  def retrigger_for_hotfix?
+  def hotfix_with_new_branch?
+    hotfix? && new_hotfix_branch?
+  end
+
+  def hotfix_with_existing_branch?
     hotfix? && !new_hotfix_branch?
   end
 

@@ -1,4 +1,6 @@
 class Triggers::Branch
+  BranchCreateError = Class.new(Triggers::Errors)
+
   def self.call(release, source_branch, new_branch, source_type, stamp_data, stamp_type)
     new(release, source_branch, new_branch, source_type, stamp_data, stamp_type).call
   end
@@ -27,7 +29,7 @@ class Triggers::Branch
         logger.debug { "Branch already exists: #{new_branch}" }
         nil
       else
-        raise ex
+        raise BranchCreateError, "Could not create branch #{new_branch} from #{source_branch}"
       end
     end
   end

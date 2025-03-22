@@ -10,7 +10,8 @@ class LiveRelease::ContainerComponent < BaseComponent
     review: ["Under store review", :ongoing],
     rollout: ["Rolling out to users", :inert],
     approvals: ["Requires approvals", :inert],
-    stopped: ["Stopped", :failure]
+    stopped: ["Stopped", :failure],
+    pre_release_failed: ["Could not prepare release", :inert]
   }
   SELECTED_TAB_STYLE = "active text-main bg-main-100 border-l-2 border-main-400"
   TAB_STATUS_ICON = {
