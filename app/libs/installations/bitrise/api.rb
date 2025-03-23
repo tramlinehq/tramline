@@ -83,6 +83,8 @@ module Installations
         }
       }
 
+      params[:json][:build_params][:environments].reject! { |env| env[:value].nil? }
+
       execute(:post, TRIGGER_WORKFLOW_URL.expand(app_slug:).to_s, params)
         .tap { |response| raise Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed) if response.blank? }
         .then { |response| Installations::Response::Keys.transform([response], transforms) }

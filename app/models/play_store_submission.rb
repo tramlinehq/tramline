@@ -65,11 +65,11 @@ class PlayStoreSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :preprocess, after: :on_preprocess! do
+    event :preprocess, after_commit: :on_preprocess! do
       transitions from: CHANGEABLE_STATES, to: :preprocessing
     end
 
-    event :start_prepare, after: :on_start_prepare! do
+    event :start_prepare, after_commit: :on_start_prepare! do
       transitions from: [:created, :preprocessing, :prepared, :failed], to: :preparing
     end
 
@@ -142,8 +142,17 @@ class PlayStoreSubmission < StoreSubmission
   def trigger!
     return unless actionable?
 
-    preprocess!
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
+
+    if build.has_artifact?
+      # upload build only if we have it
+      preprocess!
+    elsif provider.find_build(build.build_number, raise_on_lock_error: false).present?
+      # skip upload step and go directly to start_prepare
+      start_prepare!
+    else
+      fail_with_error!(BuildNotFound)
+    end
   end
 
   def retry!
@@ -157,7 +166,6 @@ class PlayStoreSubmission < StoreSubmission
 
     with_lock do
       return unless may_start_prepare?
-      return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
       build.artifact.with_open do |file|
         result = provider.upload(file, raise_on_lock_error:)

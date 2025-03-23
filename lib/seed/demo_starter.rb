@@ -21,11 +21,11 @@ module Seed
       puts "Cleaning existing data..."
       clean_data
 
-      puts "Creating demo organization..."
-      organization = create_organization
-
       puts "Creating admin user..."
-      create_admin_user(organization)
+      admin_user = create_admin_user(organization)
+
+      puts "Creating demo organization..."
+      organization = create_organization(admin_user)
 
       puts "Creating teams..."
       teams = create_teams(organization)
@@ -55,14 +55,14 @@ module Seed
       Integration.destroy_all
     end
 
-    def create_organization
+    def create_organization(admin_user)
       Accounts::Organization.create!(
         name: "Demo Organization",
         slug: "demo-org",
         status: "active",
         created_at: 1.year.ago,
         updated_at: 1.year.ago,
-        created_by: email_authentication.email,
+        created_by: admin_user.id,
         api_key: SecureRandom.hex(16)
       )
     end
@@ -106,26 +106,28 @@ module Seed
 
     def create_team_members(teams, organization)
       teams.each do |team|
-        4.times do |i|
-          user = Accounts::User.create!(
-            full_name: Faker::Name.name,
-            preferred_name: Faker::Name.first_name,
-            email: Faker::Internet.email,
-            encrypted_password: BCrypt::Password.create("password123"),
-            slug: "user-#{team.id}-#{i}",
-            confirmed_at: Time.zone.now,
-            created_at: 1.year.ago,
-            updated_at: 1.year.ago
-          )
+        6.times do |i|
+          ActiveRecord::Base.transaction do
+            user = Accounts::User.create!(
+              full_name: Faker::Name.name,
+              preferred_name: Faker::Name.first_name,
+              email: Faker::Internet.email,
+              encrypted_password: BCrypt::Password.create("password123"),
+              slug: "user-#{team.id}-#{i}",
+              confirmed_at: Time.zone.now,
+              created_at: 1.year.ago,
+              updated_at: 1.year.ago
+            )
 
-          Membership.create!(
-            user: user,
-            organization: organization,
-            team: team,
-            role: "developer",
-            created_at: 1.year.ago,
-            updated_at: 1.year.ago
-          )
+            Membership.create!(
+              user: user,
+              organization: organization,
+              team: team,
+              role: "developer",
+              created_at: 1.year.ago,
+              updated_at: 1.year.ago
+            )
+          end
         end
       end
     end
@@ -133,7 +135,10 @@ module Seed
     def random_date(from, to)
       from ||= Time.zone.at(0)
       to ||= Time.zone.now
-      raise ArgumentError, "Invalid range for random_date" if from > to
+
+      if from > to
+        raise ArgumentError, "Invalid range for random_date"
+      end
 
       Time.zone.at(rand(from.to_i..to.to_i))
     end
@@ -146,8 +151,8 @@ module Seed
           name: "Demo #{platform.capitalize} App",
           description: "A demo #{platform} application",
           platform: platform,
-          bundle_identifier: "com.demo.#{platform}app",
-          build_number: 1,
+          bundle_identifier: "com.demo.#{platform}_app",
+          build_number: Faker::Number,
           timezone: "UTC",
           slug: "demo-#{platform}-app",
           created_at: 1.year.ago,

@@ -115,6 +115,7 @@ class AppsController < SignedInApplicationController
       :description,
       :bundle_identifier,
       :platform,
+      :build_number_managed_internally,
       :build_number,
       :timezone
     )
