@@ -35,7 +35,8 @@ describe Triggers::Branch do
       result = described_class.call(release, source_branch, new_branch, :branch, anything, anything)
 
       expect(result.ok?).to be(false)
-      expect(result.error.reason).to be(:unknown_failure)
+      expect(result.error).to be_a(Triggers::Branch::BranchCreateError)
+      expect(result.error.message).to eq("Could not create branch #{new_branch} from #{source_branch}")
     end
 
     it "gracefully handles error when branch already exists" do
