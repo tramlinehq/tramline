@@ -179,6 +179,11 @@ class Release < ApplicationRecord
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
   delegate :platform, :organization, to: :app
 
+  def pre_release_error_message
+    last_error = passports.where(reason: :pre_release_failed, kind: :error).last
+    last_error&.message
+  end
+
   def copy_previous_approvals
     previous_release = train.previously_finished_release
     return if previous_release.blank?
@@ -459,8 +464,8 @@ class Release < ApplicationRecord
         is_release_unhealthy: unhealthy?,
         release_completed_at: completed_at,
         release_started_at: scheduled_at,
-        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?),
-        final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?)
+        final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?),
+        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?)
       }
     )
   end

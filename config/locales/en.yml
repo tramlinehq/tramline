@@ -233,6 +233,13 @@ en:
       play_store_submission: "Google Play Store"
       crashlytics_integration: "Firebase Crashlytics"
     values:
+      pull_request:
+        phase:
+          version_bump: "version bump"
+          pre_release: "pre-release"
+          post_release: "post-release"
+          mid_release: "unmerged work"
+          ongoing: "backmerge"
       app:
         platform:
           ios: "iOS"

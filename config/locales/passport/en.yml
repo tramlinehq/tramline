@@ -2,7 +2,7 @@ en:
   passport:
     release:
       backmerge_failure_html: 'Backmerge failed for <a class="emphasize-link" href="%{commit_url}">%{commit_sha}</a>'
-      pre_release_failed_html: 'Could not prepare the release because – <span class="emphasize">%{error}</span>'
+      pre_release_failed_html: 'Could not prepare the release because — <span class="emphasize">%{error}</span>'
       created_html: 'Started a new release <span class="emphasize">%{version}</span>'
       release_branch_created_html: 'Created a release branch <span class="emphasize">%{release_branch}</span> from <span class="emphasize">%{working_branch}</span>'
       version_bump_branch_created_html: 'Created a branch <span class="emphasize">%{version_bump_branch}</span> to bump the version to <span class="emphasize">%{release_version}</span>'

@@ -1,4 +1,8 @@
 <div class="flex flex-col section-gap-default">
+  <% if release.pre_release_failed? %>
+    <%= render AlertComponent.new(type: :error, title: raw(release.pre_release_error_message), full_screen: false) %>
+  <% end %>
+
   <%= render CardComponent.new(title: "Version Bumps",
                                fold: false,
                                size: :base,

@@ -27,6 +27,7 @@
 class PullRequest < ApplicationRecord
   has_paper_trail
   include Searchable
+  include Displayable
   include Passportable
 
   STAMPABLE_REASONS = %w[created merged unmergeable]
@@ -138,6 +139,6 @@ class PullRequest < ApplicationRecord
   end
 
   def stamp_data
-    slice(:url, :number, :base_ref, :head_ref).merge(phase: phase.humanize.downcase)
+    slice(:url, :number, :base_ref, :head_ref).merge(phase: display_attr(:phase))
   end
 end
