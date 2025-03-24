@@ -303,7 +303,7 @@ module Seed
         end
 
         def branch_exists?(branch_name)
-          true
+          @branch_name = branch_name
         end
       end
 
@@ -318,10 +318,10 @@ module Seed
       puts "Set up demo train for #{app.name}!"
 
       release_platform = create_release_platform(app, train)
-      build_step = create_release_platform_steps(release_platform)
+       create_release_platform_steps(release_platform)
       setup_integrations_for_app(app)
 
-      setup_releases_and_commits(app, build_step, release_platform, train)
+      setup_releases_and_commits(app, release_platform, train)
     end
 
     def create_release_platform(app, train)
@@ -337,13 +337,6 @@ module Seed
     end
 
     def create_release_platform_steps(release_platform)
-      # Ensure that the platform configuration exists
-      platform_config = release_platform.platform_config || Config::ReleasePlatform.create!(
-        release_platform: release_platform,
-        created_at: 1.year.ago,
-        updated_at: 1.year.ago
-      )
-
       # Set up the release candidate workflow
       workflow_name = "Release Candidate Workflow"
       rc_ci_cd_channel = release_platform.train.workflows.first || { id: "build", name: "Build Workflow" }
@@ -387,6 +380,8 @@ module Seed
         created_at: 1.year.ago,
         updated_at: 1.year.ago
       )
+
+      nil
     end
 
     def setup_integrations_for_app(app)
@@ -489,7 +484,7 @@ module Seed
       puts "Integrations set up for #{app.name}!"
     end
 
-    def setup_releases_and_commits(app, build_step, release_platform, train)
+    def setup_releases_and_commits(app, release_platform, train)
       num_releases = rand(size_config[:releases])
       release_statuses = ["completed"] * (num_releases - 2) + %w[upcoming running]
 
@@ -501,12 +496,12 @@ module Seed
 
       if num_releases.is_a?(Integer)
         num_releases.times do |i|
-          create_commit_for_release(app, build_step, current_version, i, release_platform, release_statuses, train)
+          create_commit_for_release(app, current_version, i, release_platform, release_statuses, train)
         end
       end
     end
 
-    def create_commit_for_release(app, build_step, current_version, i, release_platform, release_statuses, train)
+    def create_commit_for_release(app, current_version, i, release_platform, release_statuses, train)
       version_parts = current_version.split(".")
       if i % 3 == 0 && i > 0
         version_parts[1] = (version_parts[1].to_i + 1).to_s
