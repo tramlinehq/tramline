@@ -22,11 +22,11 @@ module Seed
     def size_config
       case ENV.fetch("SEED_SIZE", "medium").downcase
       when "small"
-        { teams: 1, members_per_team: 4, releases: 5..8, commits_per_release: 20..30 }
+        {teams: 1, members_per_team: 4, releases: 5..8, commits_per_release: 20..30}
       when "medium"
-        { teams: 2, members_per_team: 6, releases: 10..15, commits_per_release: 50..60 }
+        {teams: 2, members_per_team: 6, releases: 10..15, commits_per_release: 50..60}
       when "large"
-        { teams: 3, members_per_team: 8, releases: 20..25, commits_per_release: 80..100 }
+        {teams: 3, members_per_team: 8, releases: 20..25, commits_per_release: 80..100}
       else
         raise ArgumentError, "Invalid SEED_SIZE. Valid values are: small, medium, large."
       end
@@ -318,7 +318,7 @@ module Seed
       puts "Set up demo train for #{app.name}!"
 
       release_platform = create_release_platform(app, train)
-       create_release_platform_steps(release_platform)
+      create_release_platform_steps(release_platform)
       setup_integrations_for_app(app)
 
       setup_releases_and_commits(app, release_platform, train)
@@ -339,7 +339,7 @@ module Seed
     def create_release_platform_steps(release_platform)
       # Set up the release candidate workflow
       workflow_name = "Release Candidate Workflow"
-      rc_ci_cd_channel = release_platform.train.workflows.first || { id: "build", name: "Build Workflow" }
+      rc_ci_cd_channel = release_platform.train.workflows.first || {id: "build", name: "Build Workflow"}
 
       # Create the beta release configuration
       beta_release = {
@@ -349,7 +349,7 @@ module Seed
             number: 1,
             submission_type: "AppStoreSubmission",
             submission_config: "prod",
-            rollout_config: { enabled: true, stages: [] },
+            rollout_config: {enabled: true, stages: []},
             auto_promote: false
           }
         ]
