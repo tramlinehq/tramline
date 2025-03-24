@@ -137,15 +137,23 @@ class ReleasePlatform < ApplicationRecord
     end
 
     if base_config_map[:production_release].nil?
-      providable = app.integrations.build_channels_for_platform(platform).first.providable
+      # Attempt to get the providable object
+      integration = app.integrations.build_channels_for_platform(platform).first
+
+      if integration.nil? || integration.providable.nil?
+        Rails.logger.debug { "Warning: No valid integration or providable found for platform #{platform}. Skipping submission setup." }
+        return
+      end
+
+      providable = integration.providable
       providable_type = providable.class
       submission_type = Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym][providable_type].to_s
       submission_config = providable.pick_default_beta_channel
       submissions = [
         {
           number: 1,
-          submission_type:,
-          submission_config:,
+          submission_type: submission_type,
+          submission_config: submission_config,
           auto_promote: false,
           integrable_id: app.id,
           integrable_type: "App"

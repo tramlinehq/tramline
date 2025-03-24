@@ -93,7 +93,9 @@ class SlackIntegration < ApplicationRecord
   end
 
   def fetch_channels
-    RefreshSlackChannelsJob.perform_async(id)
+    if ENV["SEED_MODE"] != "demo"
+      RefreshSlackChannelsJob.perform_async(id)
+    end
   end
 
   def populate_channels!

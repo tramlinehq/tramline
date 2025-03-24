@@ -13,19 +13,35 @@ require "faker"
 
 module Seed
   class DemoStarter
+    include Seed::Constants
+
     def self.call
       new.call
     end
 
+    def size_config
+      case ENV.fetch("SEED_SIZE", "medium").downcase
+      when "small"
+        { teams: 1, members_per_team: 4, releases: 5..8, commits_per_release: 20..30 }
+      when "medium"
+        { teams: 2, members_per_team: 6, releases: 10..15, commits_per_release: 50..60 }
+      when "large"
+        { teams: 3, members_per_team: 8, releases: 20..25, commits_per_release: 80..100 }
+      else
+        raise ArgumentError, "Invalid SEED_SIZE. Valid values are: small, medium, large."
+      end
+    end
+
     def call
       puts "Cleaning existing data..."
+
       clean_data
 
-      puts "Creating admin user..."
-      admin_user = create_admin_user(organization)
-
       puts "Creating demo organization..."
-      organization = create_organization(admin_user)
+      organization = create_organization
+
+      puts "Creating admin user..."
+      create_admin_user(organization)
 
       puts "Creating teams..."
       teams = create_teams(organization)
@@ -45,55 +61,77 @@ module Seed
     private
 
     def clean_data
-      Accounts::Organization.destroy_all
-      Accounts::User.destroy_all
-      Accounts::Team.destroy_all
-      App.destroy_all
-      Train.destroy_all
-      Release.destroy_all
-      Commit.destroy_all
-      Integration.destroy_all
+      Commit.delete_all
+      PullRequest.delete_all
+      BuildArtifact.delete_all
+      Build.delete_all
+      ReleaseMetadata.delete_all
+      ReleasePlatformRun.delete_all
+      ReleasePlatform.delete_all
+      Release.delete_all
+      Steps.delete_all
+      Integration.delete_all
+      AppConfig.delete_all
+      ReleaseIndexComponent.delete_all
+      ReleaseIndex.delete_all
+      Train.delete_all
+      App.delete_all
+      Accounts::Membership.delete_all
+      Accounts::Team.delete_all
+      Accounts::UserAuthentication.delete_all
+      Accounts::User.delete_all
+      Accounts::Organization.delete_all
     end
 
-    def create_organization(admin_user)
+    def create_organization
       Accounts::Organization.create!(
         name: "Demo Organization",
         slug: "demo-org",
         status: "active",
         created_at: 1.year.ago,
         updated_at: 1.year.ago,
-        created_by: admin_user.id,
-        api_key: SecureRandom.hex(16)
+        created_by: "admin@example.com"
       )
     end
 
     def create_admin_user(organization)
-      admin_user = Accounts::User.create!(
-        full_name: "Admin User",
-        preferred_name: "Admin",
-        email: "admin@example.com",
-        encrypted_password: BCrypt::Password.create("password123"),
-        slug: "admin-user",
-        admin: true,
-        confirmed_at: Time.zone.now,
-        created_at: 1.year.ago,
-        updated_at: 1.year.ago
-      )
+      email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: "admin@example.com")
 
-      Membership.create!(
-        user: admin_user,
-        organization: organization,
-        role: "admin",
-        created_at: 1.year.ago,
-        updated_at: 1.year.ago
-      )
+      unless email_authentication.persisted?
+        admin_user = Accounts::User.create!(
+          full_name: "Admin User",
+          preferred_name: "Admin",
+          unique_authn_id: "admin@example.com",
+          slug: "admin-user",
+          admin: true,
+          created_at: 1.year.ago,
+          updated_at: 1.year.ago
+        )
+
+        email_authentication.update!(
+          password: ADMIN_PASSWORD,
+          confirmed_at: DateTime.now,
+          user: admin_user
+        )
+        email_authentication.reload
+
+        Accounts::Membership.create!(
+          user: admin_user,
+          organization: organization,
+          role: Accounts::Membership.roles[:owner],
+          created_at: 1.year.ago,
+          updated_at: 1.year.ago
+        )
+
+        puts "Added/updated admin user."
+      end
 
       admin_user
     end
 
     def create_teams(organization)
       team_colors = %w[blue green]
-      Array.new(2) do |i|
+      Array.new(size_config[:teams]) do |i|
         Accounts::Team.create!(
           organization: organization,
           name: "Team #{i + 1}",
@@ -106,30 +144,40 @@ module Seed
 
     def create_team_members(teams, organization)
       teams.each do |team|
-        6.times do |i|
+        size_config[:teams].times do |i|
           ActiveRecord::Base.transaction do
             user = Accounts::User.create!(
               full_name: Faker::Name.name,
               preferred_name: Faker::Name.first_name,
-              email: Faker::Internet.email,
-              encrypted_password: BCrypt::Password.create("password123"),
+              unique_authn_id: Faker::Internet.email,
               slug: "user-#{team.id}-#{i}",
-              confirmed_at: Time.zone.now,
               created_at: 1.year.ago,
               updated_at: 1.year.ago
             )
 
-            Membership.create!(
+            # Create email authentication for the user
+            Accounts::EmailAuthentication.create!(
+              email: user.unique_authn_id,
+              password: DEVELOPER_PASSWORD,
+              confirmed_at: Time.zone.now,
+              user: user,
+              created_at: 1.year.ago,
+              updated_at: 1.year.ago
+            )
+
+            Accounts::Membership.create!(
               user: user,
               organization: organization,
               team: team,
-              role: "developer",
+              role: Accounts::Membership.roles[:developer],
               created_at: 1.year.ago,
               updated_at: 1.year.ago
             )
           end
         end
       end
+
+      puts "Created team members."
     end
 
     def random_date(from, to)
@@ -144,52 +192,130 @@ module Seed
     end
 
     def create_apps(organization)
-      platforms = %w[android ios]
-      platforms.map do |platform|
-        app = App.create!(
+      %w[android ios].map do |platform|
+        app = App.find_or_create_by!(
           organization: organization,
           name: "Demo #{platform.capitalize} App",
           description: "A demo #{platform} application",
           platform: platform,
           bundle_identifier: "com.demo.#{platform}_app",
-          build_number: Faker::Number,
+          build_number: Faker::Number.number(digits: 5),
           timezone: "UTC",
           slug: "demo-#{platform}-app",
           created_at: 1.year.ago,
           updated_at: 1.year.ago
         )
 
-        AppConfig.create!(
-          app: app,
-          code_repository: {type: "github", repository: "demo-org/#{platform}-app"},
-          notification_channel: {type: "slack", channel: "##{platform}-releases"},
+        # Check if AppConfig exists for this app
+        app_config = AppConfig.find_by(app: app)
+
+        unless app_config
+          AppConfig.create!(
+            app: app,
+            code_repository: {type: "github", repository: "demo-org/#{platform}-app"}.to_json,
+            created_at: 1.year.ago,
+            updated_at: 1.year.ago
+          )
+        end
+
+        # Set up the Slack integration
+        slack_integration = SlackIntegration.create!(
+          oauth_access_token: "xoxb-#{Faker::Number.number(digits: 12)}-#{Faker::Number.number(digits: 12)}",
           created_at: 1.year.ago,
           updated_at: 1.year.ago
         )
 
+        Integration.create!(
+          integrable: app,
+          category: "notification",
+          status: "connected",
+          providable: slack_integration,
+          metadata: {channel: "##{platform}-releases"},
+          created_at: 1.year.ago,
+          updated_at: 1.year.ago
+        )
+
+        # Set up the Version Control integration (GitHub)
+        github_integration = GithubIntegration.create!(
+          installation_id: Faker::Number.number(digits: 10).to_s,
+          created_at: 1.year.ago,
+          updated_at: 1.year.ago
+        )
+
+        Integration.create!(
+          integrable: app,
+          category: "version_control",
+          status: "connected",
+          providable: github_integration,
+          metadata: {branch: "main"},
+          created_at: 1.year.ago,
+          updated_at: 1.year.ago
+        )
+
+        puts "Created demo app and integrations for #{platform.capitalize}!"
         app
       end
     end
 
     def setup_train_for_app(app)
+      ci_cd_integration = GithubIntegration.create!(
+        installation_id: Faker::Number.number(digits: 8).to_s,
+        created_at: 1.year.ago,
+        updated_at: 1.year.ago
+      )
+
+      Integration.create!(
+        integrable: app,
+        category: "ci_cd",
+        status: "connected",
+        providable: ci_cd_integration,
+        metadata: {workflow: "build"},
+        created_at: 1.year.ago,
+        updated_at: 1.year.ago
+      )
+
+      # Create the train after setting up the integration
       train = Train.create!(
         app: app,
-        name: "Main Train",
-        description: "Main release train for #{app.name}",
-        status: "active",
-        branching_strategy: "gitflow",
-        release_branch: "release",
-        working_branch: "develop",
-        slug: "main-train-#{app.id}",
-        version_seeded_with: "1.0.0",
-        version_current: "1.0.0",
-        created_at: 1.year.ago,
-        updated_at: 1.year.ago,
-        kickoff_at: 1.year.ago,
-        repeat_duration: 2.weeks,
+        name: "Demo Train for #{app.name}",
+        description: "A train for demo purposes",
+        branching_strategy: "almost_trunk",
+        working_branch: "main",
+        status: "draft",
+        kickoff_at: 1.day.from_now,
+        repeat_duration: 7.days,
         build_queue_enabled: true,
-        tag_releases: true
+        build_queue_size: 5,
+        build_queue_wait_time: 1.hour,
+        versioning_strategy: "semver",
+        version_seeded_with: "1.0.0",
+        created_at: 1.year.ago,
+        updated_at: 1.year.ago
       )
+
+      # Mocking the workflow call on the CI/CD provider
+      GithubIntegration.class_eval do
+        def workflows
+          [
+            {id: "build", name: "Build Workflow"},
+            {id: "deploy", name: "Deploy Workflow"}
+          ]
+        end
+
+        def branch_exists?(branch_name)
+          true
+        end
+      end
+
+      GithubIntegration.define_method(:branch_exists?) { true }
+      GithubIntegration.define_method(:workflows) do
+        [
+          {id: "build", name: "Build Workflow"},
+          {id: "deploy", name: "Deploy Workflow"}
+        ]
+      end
+
+      puts "Set up demo train for #{app.name}!"
 
       release_platform = create_release_platform(app, train)
       build_step = create_release_platform_steps(release_platform)
@@ -203,11 +329,6 @@ module Seed
         app: app,
         train: train,
         name: "#{app.platform.capitalize} Platform",
-        description: "Release platform for #{app.platform}",
-        status: "active",
-        working_branch: "develop",
-        branching_strategy: "gitflow",
-        release_branch: "release",
         platform: app.platform,
         slug: "#{app.platform}-platform-#{app.id}",
         created_at: 1.year.ago,
@@ -216,39 +337,62 @@ module Seed
     end
 
     def create_release_platform_steps(release_platform)
-      build_step = Step.create!(
-        release_platform: release_platform,
-        name: "Build",
-        description: "Build the app",
-        status: "active",
-        step_number: 1,
-        slug: "build-#{release_platform.id}",
-        kind: "build",
-        created_at: 1.year.ago,
-        updated_at: 1.year.ago,
-        ci_cd_channel: {type: "github_actions", workflow: "build.yml"}
-      )
-
-      platform_config = ReleasePlatform.create!(
+      # Ensure that the platform configuration exists
+      platform_config = release_platform.platform_config || Config::ReleasePlatform.create!(
         release_platform: release_platform,
         created_at: 1.year.ago,
         updated_at: 1.year.ago
       )
 
-      ReleaseStep.create!(
+      # Set up the release candidate workflow
+      workflow_name = "Release Candidate Workflow"
+      rc_ci_cd_channel = release_platform.train.workflows.first || { id: "build", name: "Build Workflow" }
+
+      # Create the beta release configuration
+      beta_release = {
+        auto_promote: false,
+        submissions: [
+          {
+            number: 1,
+            submission_type: "AppStoreSubmission",
+            submission_config: "prod",
+            rollout_config: { enabled: true, stages: [] },
+            auto_promote: false
+          }
+        ]
+      }
+
+      # Create the release platform configuration
+      platform_config = Config::ReleasePlatform.create!(
+        release_platform: release_platform,
+        beta_release: beta_release,
+        workflows: {
+          internal: nil,
+          release_candidate: {
+            kind: "release_candidate",
+            name: workflow_name,
+            id: rc_ci_cd_channel[:id],
+            artifact_name_pattern: nil
+          }
+        },
+        created_at: 1.year.ago,
+        updated_at: 1.year.ago
+      )
+
+      # Create the build step
+      Config::ReleaseStep.create!(
         release_platform_config: platform_config,
-        kind: "store",
+        kind: "internal",
         auto_promote: false,
         created_at: 1.year.ago,
         updated_at: 1.year.ago
       )
-
-      build_step
     end
 
     def setup_integrations_for_app(app)
       puts "Creating integrations for #{app.name}..."
 
+      # GitHub (Version Control) Integration
       github_integration = GithubIntegration.create!(
         installation_id: Faker::Number.number(digits: 8).to_s,
         created_at: 1.year.ago,
@@ -256,31 +400,33 @@ module Seed
       )
 
       Integration.create!(
-        app: app,
+        integrable: app,
         category: "version_control",
-        status: "active",
+        status: "connected",
         providable: github_integration,
+        metadata: {repository: "demo-org/#{app.platform}-app"},
         created_at: 1.year.ago,
-        updated_at: 1.year.ago,
-        metadata: {repository: "demo-org/#{app.platform}-app"}
+        updated_at: 1.year.ago
       )
 
-      build_integration = GithubIntegration.create!(
+      # CI/CD Integration (GitHub Actions)
+      ci_cd_integration = GithubIntegration.create!(
         installation_id: Faker::Number.number(digits: 8).to_s,
         created_at: 1.year.ago,
         updated_at: 1.year.ago
       )
 
       Integration.create!(
-        app: app,
+        integrable: app,
         category: "ci_cd",
-        status: "active",
-        providable: build_integration,
+        status: "connected",
+        providable: ci_cd_integration,
+        metadata: {repository: "demo-org/#{app.platform}-app", workflow: "build.yml"},
         created_at: 1.year.ago,
-        updated_at: 1.year.ago,
-        metadata: {repository: "demo-org/#{app.platform}-app", workflow: "build.yml"}
+        updated_at: 1.year.ago
       )
 
+      # Slack Integration
       slack_integration = SlackIntegration.create!(
         oauth_access_token: "xoxb-#{Faker::Number.number(digits: 12)}-#{Faker::Number.number(digits: 12)}",
         created_at: 1.year.ago,
@@ -288,15 +434,16 @@ module Seed
       )
 
       Integration.create!(
-        app: app,
+        integrable: app,
         category: "notification",
-        status: "active",
+        status: "connected",
         providable: slack_integration,
+        metadata: {channel: "##{app.platform}-releases"},
         created_at: 1.year.ago,
-        updated_at: 1.year.ago,
-        metadata: {channel: "##{app.platform}-releases"}
+        updated_at: 1.year.ago
       )
 
+      # Store Integration (Google Play or App Store)
       store_integration = if app.platform == "android"
         GooglePlayStoreIntegration.create!(
           json_key: "{ \"type\": \"service_account\", \"project_id\": \"demo-android-app-#{Faker::Number.number(digits: 6)}\" }",
@@ -314,14 +461,15 @@ module Seed
       end
 
       Integration.create!(
-        app: app,
+        integrable: app,
         category: "app_store",
-        status: "active",
+        status: "connected",
         providable: store_integration,
         created_at: 1.year.ago,
         updated_at: 1.year.ago
       )
 
+      # Error Tracking Integration (Bugsnag)
       bugsnag_integration = BugsnagIntegration.create!(
         access_token: Faker::Crypto.md5,
         created_at: 1.year.ago,
@@ -329,18 +477,20 @@ module Seed
       )
 
       Integration.create!(
-        app: app,
+        integrable: app,
         category: "error_tracking",
-        status: "active",
+        status: "connected",
         providable: bugsnag_integration,
+        metadata: {project_id: Faker::Number.number(digits: 10).to_s},
         created_at: 1.year.ago,
-        updated_at: 1.year.ago,
-        metadata: {project_id: Faker::Number.number(digits: 10).to_s}
+        updated_at: 1.year.ago
       )
+
+      puts "Integrations set up for #{app.name}!"
     end
 
     def setup_releases_and_commits(app, build_step, release_platform, train)
-      num_releases = rand(12..15)
+      num_releases = rand(size_config[:releases])
       release_statuses = ["completed"] * (num_releases - 2) + %w[upcoming running]
 
       num_stopped = (num_releases * 0.2).to_i
@@ -430,22 +580,25 @@ module Seed
         updated_at: release_start_date
       )
 
-      step_run = CreateTrainStepRuns.create!(
-        step: build_step,
-        release_platform_run: release_platform_run,
-        scheduled_at: release_start_date,
+      step_run = Steps.create!(
+        train: train,
+        name: "Build Step #{i + 1}",
+        description: "Automated build step for version #{current_version}",
         status: if release_statuses[i] == "completed"
                   "completed"
                 else
                   (release_statuses[i] == "running") ? "running" : "pending"
                 end,
+        step_number: 1,
+        run_after_duration: "00:30:00", # Placeholder for duration
+        ci_cd_channel: {type: "github_actions", workflow: "build.yml"},
+        build_artifact_channel: {type: "artifact", path: "path/to/artifact"},
+        slug: "build-step-#{i + 1}",
         created_at: release_start_date,
-        updated_at: [release_end_date, Time.zone.now].min,
-        build_version: current_version,
-        build_number: (i + 100).to_s
+        updated_at: [release_end_date, Time.zone.now].min
       )
 
-      num_commits = rand(50..60)
+      num_commits = rand(size_config[:commits_per_release])
 
       if release_statuses[i] == "completed" || release_statuses[i] == "running"
         build = Build.create!(

@@ -8,7 +8,7 @@
 #  author_name             :string           not null
 #  backmerge_failure       :boolean          default(FALSE)
 #  commit_hash             :string           not null, indexed => [release_id, release_changelog_id]
-#  message                 :string           indexed
+#  message                 :string
 #  parents                 :jsonb
 #  search_vector           :tsvector         indexed
 #  timestamp               :datetime         not null, indexed => [release_id]
