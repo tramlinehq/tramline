@@ -3,7 +3,8 @@ class WorkflowRuns::TriggerJob < ApplicationJob
 
   TRIGGER_FAILED_REASONS = [
     :workflow_parameter_not_provided,
-    :workflow_dispatch_missing
+    :workflow_dispatch_missing,
+    :workflow_parameter_invalid
   ]
 
   def perform(workflow_run_id, retrigger = false)
