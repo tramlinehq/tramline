@@ -66,6 +66,10 @@ module Installations
       {
         message_matcher: /Workflow does not have 'workflow_dispatch' trigger/i,
         decorated_reason: :workflow_dispatch_missing
+      },
+      {
+        message_matcher: /Unexpected inputs provided/i,
+        decorated_reason: :workflow_parameter_invalid
       }
     ]
 
