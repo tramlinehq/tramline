@@ -8,7 +8,7 @@ describe WorkflowRun do
   end
 
   describe "#trigger!" do
-    let(:ci_ref) { Faker::Lorem.word }
+    let(:ci_ref) { Faker::Number.number(digits: 6).to_s }
     let(:ci_link) { Faker::Internet.url }
     let(:number) { Faker::Number.number(digits: 3).to_s }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
@@ -40,7 +40,7 @@ describe WorkflowRun do
       end
     end
 
-    context "when workflow found" do
+    context "when workflow found (github)" do
       before do
         allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:})
       end
@@ -66,6 +66,28 @@ describe WorkflowRun do
           workflow_run.trigger!
           expect(workflow_run.build.build_number).not_to be_empty
         end
+      end
+
+      context "when use build number from workflow is enabled" do
+        before do
+          workflow_run.app.update(build_number_managed_internally: false)
+        end
+
+        it "updates build number" do
+          expect(workflow_run.build.build_number).to be_nil
+          workflow_run.trigger!
+          expect(workflow_run.build.build_number).to eq(ci_ref)
+          expect(workflow_run.app.build_number.to_s).to eq(ci_ref)
+        end
+      end
+    end
+
+    context "when workflow found (bitrise)" do
+      let(:ci_ref) { Faker::Internet.uuid }
+
+      before do
+        # TODO: Use BitriseIntegration here for actual better testing
+        allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:})
       end
 
       context "when use build number from workflow is enabled" do

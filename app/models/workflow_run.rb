@@ -224,9 +224,14 @@ class WorkflowRun < ApplicationRecord
   end
 
   def update_build_number_from_external_metadata!
-    if external_number.present?
-      build.update!(build_number: external_number)
-      app.bump_build_number!(release_version: build.release_version, workflow_build_number: external_number)
+    # Pick the first one which is a number
+    # Build numbers *must* be numeric
+    # In case of bitrise, external_id is usually a UUID, and in github external_id is a number
+
+    workflow_build_number = [external_id, external_number].find { |e| e =~ /^\d+$/ }
+    if workflow_build_number.present?
+      build.update!(build_number: workflow_build_number)
+      app.bump_build_number!(release_version: build.release_version, workflow_build_number:)
     else
       fail!
     end
