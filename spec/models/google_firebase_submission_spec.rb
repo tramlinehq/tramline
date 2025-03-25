@@ -10,15 +10,19 @@ describe GoogleFirebaseSubmission do
   end
 
   describe "#trigger!" do
-    let(:submission) { create(:google_firebase_submission) }
+    let(:parent_release) { create(:internal_release) }
+    let(:workflow_run) { create(:workflow_run, triggering_release: parent_release) }
+    let(:submission) { create(:google_firebase_submission, parent_release:, build: workflow_run.build) }
     let(:providable_dbl) { instance_double(GoogleFirebaseIntegration) }
 
     before do
-      submission.build.artifact = create(:build_artifact, build: submission.build)
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:project_link)
+      allow(providable_dbl).to receive(:public_icon_img)
     end
 
-    it "preprocesses the submission if build not in store" do
+    it "preprocess when build has an artifact" do
+      create(:build_artifact, build: submission.build)
       expected_job = StoreSubmissions::GoogleFirebase::UploadJob
       allow(expected_job).to receive(:perform_async)
 
@@ -29,26 +33,28 @@ describe GoogleFirebaseSubmission do
       expect(submission.store_link).to be_nil
       expect(expected_job).to have_received(:perform_async).with(submission.id).once
     end
+
+    it "fails when build does not have an artifact and skip_finding_builds_for_firebase? is true" do
+      Flipper.enable_actor(:skip_finding_builds_for_firebase, submission.app)
+
+      submission.trigger!
+
+      expect(submission.failed?).to be(true)
+    end
+
+    it "preprocess even when build does not have an artifact" do
+      submission.trigger!
+
+      expect(submission.preprocessing?).to be(true)
+    end
   end
 
   describe "#upload_build!" do
     let(:parent_release) { create(:internal_release) }
     let(:release_platform_run) { parent_release.release_platform_run }
     let(:workflow_run) { create(:workflow_run, :finished, triggering_release: parent_release) }
-    let(:build) { create(:build, :with_artifact, workflow_run:) }
     let(:submission) { create(:google_firebase_submission, :preprocessing, build:, release_platform_run:, parent_release:) }
     let(:providable_dbl) { instance_double(GoogleFirebaseIntegration) }
-    let(:release_info) {
-      {
-        build_version: "471280959",
-        create_time: "2024-07-05T23:51:56.539088Z",
-        display_version: "10.31.0",
-        firebase_console_uri: Faker::Internet.url,
-        name: Faker::String.random(length: 10),
-        release_notes: {text: "NOTES"}
-      }
-    }
-    let(:release_info_obj) { GoogleFirebaseIntegration::ReleaseInfo.new(release_info, GoogleFirebaseIntegration::BUILD_TRANSFORMATIONS) }
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
@@ -56,34 +62,77 @@ describe GoogleFirebaseSubmission do
       allow(providable_dbl).to receive(:project_link)
     end
 
-    it "starts the upload" do
-      expected_job = StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob
-      result = 1
-      allow(providable_dbl).to receive(:upload).and_return(GitHub::Result.new { result })
-      allow(expected_job).to receive(:perform_async)
+    context "when build has an artifact" do
+      let(:build) { create(:build, :with_artifact, workflow_run:) }
 
-      submission.upload_build!
-      expect(expected_job).to have_received(:perform_async).with(submission.id, result).once
+      it "starts the upload if build has an artifact" do
+        expected_job = StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob
+        result = 1
+        allow(providable_dbl).to receive(:upload).and_return(GitHub::Result.new { result })
+        allow(expected_job).to receive(:perform_async)
+
+        submission.upload_build!
+        expect(expected_job).to have_received(:perform_async).with(submission.id, result).once
+      end
+
+      it "marks failure if upload fails" do
+        expected_job = StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob
+        result = 1
+        error = {
+          "error" => {
+            "status" => "PERMISSION_DENIED",
+            "code" => 403,
+            "message" => "The caller does not have permission"
+          }
+        }
+        client_error = Google::Apis::ClientError.new("Error", body: error.to_json)
+        error_obj = Installations::Google::Firebase::Error.new(client_error)
+        allow(providable_dbl).to receive(:upload).and_return(GitHub::Result.new { raise error_obj })
+        allow(expected_job).to receive(:perform_async)
+
+        submission.upload_build!
+        expect(submission.failed?).to be(true)
+        expect(expected_job).not_to have_received(:perform_async).with(submission.id, result)
+      end
     end
 
-    it "marks failure if upload fails" do
-      expected_job = StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob
-      result = 1
-      error = {
-        "error" => {
-          "status" => "PERMISSION_DENIED",
-          "code" => 403,
-          "message" => "The caller does not have permission"
-        }
-      }
-      client_error = Google::Apis::ClientError.new("Error", body: error.to_json)
-      error_obj = Installations::Google::Firebase::Error.new(client_error)
-      allow(providable_dbl).to receive(:upload).and_return(GitHub::Result.new { raise error_obj })
-      allow(expected_job).to receive(:perform_async)
+    context "when build does not have an artifact" do
+      let(:build) { create(:build, workflow_run:) }
+      let(:build_info_obj) do
+        GoogleFirebaseIntegration::ReleaseInfo.new({
+          build_version: "471280959",
+          create_time: "2024-07-05T23:51:56.539088Z",
+          display_version: "10.31.0",
+          firebase_console_uri: Faker::Internet.url,
+          name: Faker::String.random(length: 10),
+          release_notes: {text: "NOTES"}
+        },
+          GoogleFirebaseIntegration::BUILD_TRANSFORMATIONS)
+      end
 
-      submission.upload_build!
-      expect(submission.failed?).to be(true)
-      expect(expected_job).not_to have_received(:perform_async).with(submission.id, result)
+      it "finds the build" do
+        expected_job = StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob
+        allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { build_info_obj })
+        allow(expected_job).to receive(:perform_async)
+
+        submission.upload_build!
+        submission.reload
+
+        expect(submission.preparing?).to be(true)
+        expect(expected_job).to have_received(:perform_async).with(submission.id, build_info_obj.id).once
+      end
+
+      it "marks failure if build not found" do
+        expected_job = StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob
+        allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise Installations::Error.new("Some Error", reason: :unknown_failure) })
+        allow(expected_job).to receive(:perform_async)
+
+        submission.upload_build!
+        submission.reload
+
+        expect(submission.failed?).to be(true)
+        expect(expected_job).not_to have_received(:perform_async).with(submission.id, build_info_obj.id)
+      end
     end
   end
 
@@ -219,6 +268,18 @@ describe GoogleFirebaseSubmission do
       app_integration = create(:integration, :with_google_firebase, integrable: app)
       submission.update!(config: submission.config.merge(integrable_id: app.id, integrable_type: "App"))
       expect(submission.reload.provider).to eq(app_integration.providable)
+    end
+  end
+
+  describe "#retryable?" do
+    it "is true when failed and last stable status is not created" do
+      submission = create(:google_firebase_submission, status: "failed", last_stable_status: "preparing")
+      expect(submission.retryable?).to be(true)
+    end
+
+    it "is false when failed and last stable status is created" do
+      submission = create(:google_firebase_submission, status: "failed", last_stable_status: "created")
+      expect(submission.retryable?).to be(false)
     end
   end
 end

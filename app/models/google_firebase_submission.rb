@@ -76,47 +76,50 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
-  def retryable? = failed?
+  def retryable? = failed? && last_stable_status != STATES[:created]
 
   def trigger!
     return unless actionable?
     return unless may_prepare?
-    # return mock_upload_to_firebase if sandbox_mode?
-
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
 
     if build.has_artifact?
-      # upload build only if we have it
+      # try and upload the build if we have it
       preprocess!
     elsif app.skip_finding_builds_for_firebase?
-      # We do not want to find builds in firebase in this case
-      # Fail with error since we have no way of completing this submission
+      # we do not want to find builds in firebase in this case
+      # fail with error since we have no way of completing this submission
       fail_with_error!(BuildNotFound)
     else
-      release_info = provider.find_build(build.build_number, build.version_name, release_platform_run.platform)
-      if release_info.ok?
-        # We can proceed to next step if build was already uploaded by ci
-        prepare_and_update!(release_info.value!)
-        StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, external_id)
-      else
-        fail_with_error!(BuildNotFound)
-      end
+      # move to preprocessing regardless and hopefully find it eventually
+      preprocess!
     end
   end
 
   def upload_build!
     return unless may_prepare?
 
-    result = nil
-    filename = build.artifact.file.filename.to_s
-    build.artifact.with_open do |file|
-      result = provider.upload(file, filename, platform:)
-      unless result.ok?
-        fail_with_error!(result.error)
+    if build.has_artifact?
+      # if we have the build, we can upload it
+      result = nil
+      filename = build.artifact.file.filename.to_s
+      build.artifact.with_open do |file|
+        result = provider.upload(file, filename, platform:)
+      end
+      if result&.ok?
+        StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob.perform_async(id, result.value!)
+      else
+        fail_with_error!(result&.error)
+      end
+    else
+      # if we don't have the build, we can try and find it
+      release_info = provider.find_build(build.build_number, build.version_name, release_platform_run.platform)
+      if release_info.ok?
+        prepare_and_update!(release_info.value!)
+      else
+        fail_with_error!(BuildNotFound)
       end
     end
-
-    StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob.perform_async(id, result.value!) if result&.ok?
   end
 
   def update_upload_status!(op_name)
@@ -131,7 +134,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     raise UploadNotComplete unless op_info.done?
 
     prepare_and_update!(op_info.release, op_info.status)
-    StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, op_info.release.id)
   end
 
   def update_build_notes!(release_name)
@@ -140,8 +142,6 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def prepare_for_release!
     return unless may_finish?
-    # return mock_finish_firebase_release if sandbox_mode?
-
     return finish! if submission_channel_id == GoogleFirebaseIntegration::EMPTY_CHANNEL[:id].to_s
 
     deployment_channels = [submission_channel_id]
@@ -153,7 +153,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
-  # app.firebase_build_channel_provider
   def provider = conf.integrable.firebase_build_channel_provider
 
   def notification_params(failure_message: nil)
@@ -173,6 +172,8 @@ class GoogleFirebaseSubmission < StoreSubmission
       prepare!
       update_store_info!(release_info, build_status)
     end
+
+    StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, external_id)
   end
 
   def on_preprocess!
