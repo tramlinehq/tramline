@@ -19,5 +19,7 @@ class WorkflowRuns::TriggerJob < ApplicationJob
     else
       raise
     end
+  rescue WorkflowRun::ExternalUniqueNumberNotFound
+    workflow_run.unavailable!
   end
 end

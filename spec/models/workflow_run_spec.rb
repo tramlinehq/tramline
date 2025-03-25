@@ -13,6 +13,7 @@ describe WorkflowRun do
     let(:number) { Faker::Number.number(digits: 3).to_s }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
     let(:workflow_run) { create(:workflow_run, :triggering) }
+    let(:unique_number) { (workflow_run.app.build_number + 1).to_s }
 
     before do
       allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!)
@@ -42,7 +43,7 @@ describe WorkflowRun do
 
     context "when workflow found (github)" do
       before do
-        allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:})
+        allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:, unique_number:})
       end
 
       it "transitions state to started" do
@@ -75,35 +76,19 @@ describe WorkflowRun do
 
         it "updates build number" do
           expect(workflow_run.build.build_number).to be_nil
+
           workflow_run.trigger!
-          expect(workflow_run.build.build_number).to eq(ci_ref)
-          expect(workflow_run.app.build_number.to_s).to eq(ci_ref)
-        end
-      end
-    end
 
-    context "when workflow found (bitrise)" do
-      let(:ci_ref) { Faker::Internet.uuid }
-
-      before do
-        # TODO: Use BitriseIntegration here for actual better testing
-        allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:})
-      end
-
-      context "when use build number from workflow is enabled" do
-        # New build number from workflow must be always higher than currently known build number
-        # generated in app
-        let(:number) { (workflow_run.app.build_number + 1).to_s }
-
-        before do
-          workflow_run.app.update(build_number_managed_internally: false)
+          expect(workflow_run.build.build_number).to eq(unique_number)
+          expect(workflow_run.app.build_number.to_s).to eq(unique_number)
         end
 
-        it "updates build number" do
-          expect(workflow_run.build.build_number).to be_nil
-          workflow_run.trigger!
-          expect(workflow_run.build.build_number).to eq(number)
-          expect(workflow_run.app.build_number.to_s).to eq(number)
+        it "fails the workflow run if external unique number is not available" do
+          allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:, unique_number: nil})
+
+          expect {
+            workflow_run.trigger!
+          }.to raise_error(WorkflowRun::ExternalUniqueNumberNotFound)
         end
       end
     end
