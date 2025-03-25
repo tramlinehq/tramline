@@ -35,7 +35,8 @@ class BitriseIntegration < ApplicationRecord
   WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :build_slug,
     ci_link: :build_url,
-    number: :build_number
+    number: :build_number,
+    unique_number: :build_number
   }
 
   ORGANIZATIONS_TRANSFORMATIONS = {
