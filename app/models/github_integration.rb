@@ -47,7 +47,8 @@ class GithubIntegration < ApplicationRecord
   WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :id,
     ci_link: :html_url,
-    number: :run_number
+    number: :run_number,
+    unique_number: :id
   }
 
   INSTALLATION_TRANSFORMATIONS = {
