@@ -82,7 +82,7 @@ module Installations
               {mapped_to: "versionCode", value: inputs[:version_code]},
               {mapped_to: "buildNotes", value: inputs[:build_notes] || ""},
               *inputs[:parameters].map { |mapped_to, value| {mapped_to:, value:} }
-            ]
+            ].reject { |param| param[:value].nil? }
           },
 
           hook_info: {
@@ -90,8 +90,6 @@ module Installations
           }
         }
       }
-
-      params[:json][:build_params][:environments].reject! { |env| env[:value].nil? }
 
       execute(:post, TRIGGER_WORKFLOW_URL.expand(app_slug:).to_s, params)
         .tap { |response| raise Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed) if response.blank? }
