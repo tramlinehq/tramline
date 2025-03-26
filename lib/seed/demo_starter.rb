@@ -498,7 +498,6 @@ module Seed
       ReleasePlatformRun.delete_all
       ReleasePlatform.delete_all
       Release.delete_all
-      Steps.delete_all
       Integration.delete_all
       AppConfig.delete_all
       ReleaseIndexComponent.delete_all
