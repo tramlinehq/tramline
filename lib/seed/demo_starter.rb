@@ -1,13 +1,442 @@
-# rubocop:disable Rails/Output
+# # rubocop:disable Rails/Output
+#
+# # TODO:
+# # using schema.rb, create a demo organization
+# # it should have 2 teams and 4 members in each team
+# # there should be 2 apps - one android and the other ios
+# # each app should have 10 - 15  historical releases
+# # 50 - 60 commits per release
+# # 1 release should be upcoming status and 1 should be running status, and the rest are completed (maybe a fraction of it could be stopped) - for each app
+# # integrations should be setup for each app - 1 version control, 1 build server (both can be github), 1 slack, 1 playstore (for the android app), 1 app store (for the ios app), 1 bugsnag
+#
+# require "faker"
+#
+# module Seed
+#   class DemoStarter
+#     include Seed::Constants
+#
+#     SIZES = {
+#       small: {releases: 5, commits: 20},
+#       medium: {releases: 12, commits: 50},
+#       large: {releases: 20, commits: 100}
+#     }.freeze
+#
+#     def self.call(size: :medium)
+#       new(size).call
+#     end
+#
+#     def initialize(size)
+#       @size = size
+#       @config = SIZES[@size]
+#     end
+#
+#     def call
+#       puts "Cleaning existing demo data..."
+#       clean_data
+#
+#       puts "Creating demo organization..."
+#       organization = create_organization
+#
+#       puts "Creating admin user..."
+#       create_admin_user(organization)
+#
+#       puts "Creating teams..."
+#       teams = create_teams(organization)
+#
+#       puts "Creating team members..."
+#       create_team_members(teams, organization)
+#
+#       puts "Creating apps (Android and iOS)..."
+#       apps = create_apps(organization)
+#
+#       apps.each do |app|
+#         puts "Setting up train for #{app.name}..."
+#         setup_train_for_app(app)
+#
+#         puts "Setting up integrations for #{app.name}..."
+#         setup_integrations_for_app(app)
+#
+#         puts "Creating releases and commits for #{app.name}..."
+#         setup_releases_and_commits(app)
+#       end
+#
+#       puts "Demo data setup completed!"
+#     end
+#
+#     private
+#
+#     def clean_data
+#       Commit.delete_all
+#       PullRequest.delete_all
+#       BuildArtifact.delete_all
+#       Build.delete_all
+#       ReleaseMetadata.delete_all
+#       ReleasePlatformRun.delete_all
+#       ReleasePlatform.delete_all
+#       Release.delete_all
+#       Steps.delete_all
+#       Integration.delete_all
+#       AppConfig.delete_all
+#       ReleaseIndexComponent.delete_all
+#       ReleaseIndex.delete_all
+#       Train.delete_all
+#       App.delete_all
+#       Accounts::Membership.delete_all
+#       Accounts::Team.delete_all
+#       Accounts::UserAuthentication.delete_all
+#       Accounts::User.delete_all
+#       Accounts::Organization.delete_all
+#     end
+#
+#     def create_organization
+#       Accounts::Organization.create!(
+#         name: "Demo Organization",
+#         slug: "demo-org",
+#         status: "active",
+#         created_by: "admin@example.com"
+#       )
+#     end
+#
+#     def create_admin_user(organization)
+#       admin_user = Accounts::User.create!(
+#         full_name: "Demo Admin User",
+#         preferred_name: "Demo Admin",
+#         unique_authn_id: "demo.admin@example.com",
+#         slug: "admin-user",
+#         admin: true
+#       )
+#
+#       Accounts::EmailAuthentication.create!(
+#         email: "demo.admin@example.com",
+#         password: ADMIN_PASSWORD,
+#         confirmed_at: Time.zone.now,
+#         user: admin_user
+#       )
+#
+#       Accounts::Membership.create!(
+#         user: admin_user,
+#         organization: organization,
+#         role: "owner"
+#       )
+#
+#       nil
+#     end
+#
+#     def create_teams(organization)
+#       %w[Team\ Blue Team\ Green].map do |team_name|
+#         Accounts::Team.create!(
+#           organization: organization,
+#           name: team_name,
+#           color: Faker::Color.color_name
+#         )
+#       end
+#     end
+#
+#     def create_team_members(teams, organization)
+#       teams.each do |team|
+#         4.times do
+#           user = Accounts::User.create!(
+#             full_name: Faker::Name.name,
+#             preferred_name: Faker::Name.first_name,
+#             unique_authn_id: Faker::Internet.email,
+#             slug: Faker::Internet.username
+#           )
+#
+#           Accounts::EmailAuthentication.create!(
+#             email: user.unique_authn_id,
+#             password: DEVELOPER_PASSWORD,
+#             confirmed_at: Time.zone.now,
+#             user: user
+#           )
+#
+#           Accounts::Membership.create!(
+#             user: user,
+#             organization: organization,
+#             team: team,
+#             role: "developer"
+#           )
+#         end
+#       end
+#     end
+#
+#     def create_apps(organization)
+#       %w[android ios].map do |platform|
+#         App.create!(
+#           organization: organization,
+#           name: "Demo #{platform.capitalize} App",
+#           description: "Demo app for #{platform}",
+#           platform: platform,
+#           bundle_identifier: "com.demo.#{platform}",
+#           build_number: 1,
+#           timezone: "UTC"
+#         )
+#       end
+#     end
+#
+#     def setup_train_for_app(app)
+#       branching_strategy = %w[almost_trunk release_backmerge parallel_working].sample
+#       Train.create!(
+#         app: app,
+#         name: "Main Train",
+#         status: "active",
+#         branching_strategy: branching_strategy,
+#         working_branch: "main",
+#         version_seeded_with: "1.0.0",
+#         version_current: "1.0.0"
+#       )
+#     end
+#
+#     def setup_integrations_for_app(app)
+#       Integration.create!(
+#         integrable: app,
+#         category: "version_control",
+#         status: "connected",
+#         providable: GithubIntegration.create!(installation_id: Faker::Number.number(digits: 10))
+#       )
+#
+#       Integration.create!(
+#         integrable: app,
+#         category: "notification",
+#         status: "connected",
+#         providable: SlackIntegration.create!(oauth_access_token: Faker::Crypto.md5)
+#       )
+#
+#       Integration.create!(
+#         integrable: app,
+#         category: "error_tracking",
+#         status: "connected",
+#         providable: BugsnagIntegration.create!(access_token: Faker::Crypto.md5)
+#       )
+#     end
+#
+#     def setup_releases_and_commits(app)
+#       release_statuses = ["completed"] * (@config[:releases] - 2) + %w[upcoming running]
+#       release_statuses.shuffle!
+#
+#       @config[:releases].times do |i|
+#         release = Release.create!(
+#           train: Train.first,
+#           branch_name: "release/v#{i + 1}.0.0",
+#           status: release_statuses[i],
+#           release_version: "v#{i + 1}.0.0"
+#         )
+#
+#         create_commits_for_release(app, release)
+#       end
+#     end
+#
+#     def create_commits_for_release(app, release)
+#       @config[:commits].times do
+#         Commit.create!(
+#           release: release,
+#           commit_hash: Faker::Crypto.sha1,
+#           message: Faker::Lorem.sentence,
+#           author_name: Faker::Name.name,
+#           author_email: Faker::Internet.email,
+#           timestamp: Time.zone.now
+#         )
+#       end
+#     end
+#   end
+# end
+#
+# # module Seed
+# #   class DemoStarter
+# #     SIZES = {
+# #       small: {releases: 5, commits: 20},
+# #       medium: {releases: 12, commits: 50},
+# #       large: {releases: 20, commits: 100}
+# #     }.freeze
+# #
+# #     def self.call(size: :medium)
+# #       new(size).call
+# #     end
+# #
+# #     def initialize(size)
+# #       @size = size
+# #       @config = SIZES[@size]
+# #     end
+# #
+# #     def random_uuid
+# #       SecureRandom.uuid
+# #     end
+# #
+# #     # def clean_database
+# #     #   Rake::Task["db:nuke_app"].invoke
+# #     #   puts "🗑️  Database cleaned successfully!"
+# #     # end
+# #
+# #     def create_organization(name)
+# #       Organization.create!(
+# #         name: name,
+# #         slug: name.parameterize,
+# #         status: "active",
+# #         created_by: "seed_script"
+# #       )
+# #     end
+# #
+# #     def create_team(org, name, color)
+# #       Team.create!(organization: org, name: name, color: color)
+# #     end
+# #
+# #     def create_user(full_name, email)
+# #       User.create!(
+# #         full_name: full_name,
+# #         email: email,
+# #         encrypted_password: Devise::Encryptor.digest(User, "password123"),
+# #         confirmed_at: Time.current,
+# #         unique_authn_id: random_uuid
+# #       )
+# #     end
+# #
+# #     def create_app(org, name, platform)
+# #       App.create!(
+# #         organization: org,
+# #         name: name,
+# #         platform: platform,
+# #         bundle_identifier: "#{org.slug}.#{name.downcase}",
+# #         build_number: 1000,
+# #         timezone: "UTC"
+# #       )
+# #     end
+# #
+# #     def create_integration(app, category, integration_details)
+# #       Integration.create!(
+# #         app: app,
+# #         category: category,
+# #         status: "connected",
+# #         metadata: integration_details
+# #       )
+# #     end
+# #
+# #     def create_release(train, branch, status, scheduled_at)
+# #       Release.create!(
+# #         train: train,
+# #         branch_name: branch,
+# #         status: status,
+# #         scheduled_at: scheduled_at
+# #       )
+# #     end
+# #
+# #     def create_commits(release, num_commits)
+# #       commit_attrs = Array.new(num_commits) do
+# #         {
+# #           commit_hash: SecureRandom.hex(20),
+# #           release_id: release.id,
+# #           message: Faker::Lorem.sentence(word_count: 8),
+# #           timestamp: Faker::Time.backward(days: 30),
+# #           author_name: Faker::Name.name,
+# #           author_email: Faker::Internet.email,
+# #           url: Faker::Internet.url,
+# #           created_at: Time.current,
+# #           updated_at: Time.current
+# #         }
+# #       end
+# #
+# #       Commit.insert_all!(commit_attrs)
+# #     end
+# #
+# #     def call
+# #       puts "Starting seeding process..."
+# #       clean_database
+# #
+# #       ActiveRecord::Base.transaction do
+# #         puts " Creating organization..."
+# #         org = create_organization("Demo Organization")
+# #         puts " Organization created: #{org.name}"
+# #
+# #         colors = %w[#FF5733 #33FF57]
+# #         colors.each.with_index(1) do |color, idx|
+# #           puts " Creating Team #{idx}..."
+# #           team = create_team(org, "Team #{idx}", color)
+# #           4.times do |user_idx|
+# #             puts "Creating user #{user_idx + 1} for Team #{idx}..."
+# #             user = create_user(Faker::Name.name, Faker::Internet.unique.email)
+# #             Membership.create!(user: user, organization: org, team: team, role: "developer")
+# #           end
+# #           puts "eam #{idx} and users created."
+# #         end
+# #
+# #         apps = {
+# #           android: create_app(org, "DemoAndroidApp", "android"),
+# #           ios: create_app(org, "DemoiOSApp", "ios")
+# #         }
+# #
+# #         apps.each do |platform, app|
+# #           puts "Setting up integrations for #{app.name}..."
+# #           github_details = {installation_id: Faker::Number.number(digits: 8)}
+# #           slack_details = {oauth_access_token: SecureRandom.hex(16)}
+# #           bugsnag_details = {access_token: SecureRandom.hex(32)}
+# #
+# #           create_integration(app, "version_control", github_details)
+# #           create_integration(app, "build_server", github_details)
+# #           create_integration(app, "notification_channel", slack_details)
+# #           create_integration(app, "bugsnag", bugsnag_details)
+# #
+# #           if platform == :android
+# #             playstore_details = {json_key: SecureRandom.hex(32)}
+# #             create_integration(app, "play_store", playstore_details)
+# #           else
+# #             appstore_details = {
+# #               key_id: SecureRandom.hex(8),
+# #               p8_key: SecureRandom.hex(32),
+# #               issuer_id: SecureRandom.hex(8)
+# #             }
+# #             create_integration(app, "app_store", appstore_details)
+# #           end
+# #           puts "Integrations set for #{app.name}."
+# #
+# #           puts "Creating train for #{app.name}..."
+# #           train = Train.create!(
+# #             app: app,
+# #             name: "#{app.name} Train",
+# #             status: "active",
+# #             branching_strategy: "release_branch",
+# #             release_branch: "main",
+# #             working_branch: "develop",
+# #             kickoff_at: Time.current,
+# #             repeat_duration: "7 days"
+# #           )
+# #           puts "Train created: #{train.name}"
+# #
+# #           total_releases = @config[:releases]
+# #           statuses = %w[upcoming running]
+# #           completed_count = total_releases - statuses.size
+# #           completed_releases = Array.new(completed_count, "completed")
+# #           completed_releases.sample([1, completed_count / 4].min).each { |status| status.replace("stopped") }
+# #           statuses += completed_releases
+# #           statuses.shuffle!
+# #
+# #           statuses.each_with_index do |status, idx|
+# #             scheduled_at = case status
+# #             when "upcoming"
+# #               Faker::Time.forward(days: 5)
+# #             when "running"
+# #               Time.current
+# #             else
+# #               Faker::Time.backward(days: 60 - idx)
+# #             end
+# #
+# #             puts "Creating release #{idx + 1} (#{status})..."
+# #             release = create_release(train, "release/#{idx + 1}", status, scheduled_at)
+# #
+# #             puts " Creating #{@config[:commits]} commits for release #{idx + 1}..."
+# #             create_commits(release, @config[:commits])
+# #             puts " Release #{idx + 1} and commits created."
+# #           end
+# #         end
+# #       end
+# #       puts " Seeding complete!"
+# #     rescue => e
+# #       Rails.logger.error("Seeding failed: #{e.message}")
+# #       puts "Seeding failed: #{e.message}. Check logs for details."
+# #     end
+# #   end
+# # end
+#
+# # rubocop:enable Rails/Output
 
-# TODO:
-# using schema.rb, create a demo organization
-# it should have 2 teams and 4 members in each team
-# there should be 2 apps - one android and the other ios
-# each app should have 10 - 15  historical releases
-# 50 - 60 commits per release
-# 1 release should be upcoming status and 1 should be running status, and the rest are completed (maybe a fraction of it could be stopped) - for each app
-# integrations should be setup for each app - 1 version control, 1 build server (both can be github), 1 slack, 1 playstore (for the android app), 1 app store (for the ios app), 1 bugsnag
+# rubocop:disable Rails/Output
 
 require "faker"
 
@@ -24,7 +453,7 @@ module Seed
       when "small"
         {teams: 1, members_per_team: 4, releases: 5..8, commits_per_release: 20..30}
       when "medium"
-        {teams: 2, members_per_team: 6, releases: 10..15, commits_per_release: 50..60}
+        {teams: 2, members_per_team: 4, releases: 10..15, commits_per_release: 50..60}
       when "large"
         {teams: 3, members_per_team: 8, releases: 20..25, commits_per_release: 80..100}
       else
@@ -144,7 +573,7 @@ module Seed
 
     def create_team_members(teams, organization)
       teams.each do |team|
-        size_config[:teams].times do |i|
+        size_config[:members_per_team].times do |i|
           ActiveRecord::Base.transaction do
             user = Accounts::User.create!(
               full_name: Faker::Name.name,
@@ -492,195 +921,13 @@ module Seed
       release_statuses[0...num_stopped] = ["stopped"] * num_stopped
 
       release_statuses.shuffle!
-      current_version = "1.0.0"
+      # current_version = "1.0.0"
 
       if num_releases.is_a?(Integer)
         num_releases.times do |i|
-          create_commit_for_release(app, current_version, i, release_platform, release_statuses, train)
-        end
-      end
-    end
-
-    def create_commit_for_release(app, current_version, i, release_platform, release_statuses, train)
-      version_parts = current_version.split(".")
-      if i % 3 == 0 && i > 0
-        version_parts[1] = (version_parts[1].to_i + 1).to_s
-        version_parts[2] = "0"
-      else
-        version_parts[2] = (version_parts[2].to_i + 1).to_s
-      end
-      current_version = version_parts.join(".")
-
-      release_start_date = (i + 1).months.ago
-      release_end_date = release_start_date + 2.weeks
-
-      if release_statuses[i] == "upcoming"
-        scheduled_at = 1.week.from_now
-        completed_at = nil
-        stopped_at = nil
-      elsif release_statuses[i] == "running"
-        scheduled_at = 2.days.ago
-        completed_at = nil
-        stopped_at = nil
-      elsif release_statuses[i] == "stopped"
-        scheduled_at = release_start_date
-        completed_at = nil
-        stopped_at = release_start_date + 2.days
-      else
-        scheduled_at = release_start_date
-        completed_at = release_end_date
-        stopped_at = nil
-      end
-
-      release = Release.create!(
-        train: train,
-        branch_name: "release/#{current_version}",
-        status: release_statuses[i],
-        original_release_version: current_version,
-        release_version: current_version,
-        scheduled_at: scheduled_at,
-        completed_at: completed_at,
-        stopped_at: stopped_at,
-        created_at: release_start_date,
-        updated_at: [release_end_date, Time.zone.now].min,
-        is_automatic: [true, false].sample,
-        tag_name: "v#{current_version}",
-        release_type: "standard",
-        slug: "release-#{current_version.tr(".", "-")}"
-      )
-
-      release_platform_run = ReleasePlatformRun.create!(
-        release_platform: release_platform,
-        release: release,
-        code_name: "R#{i + 1}",
-        scheduled_at: scheduled_at,
-        commit_sha: Faker::Crypto.sha1,
-        status: release_statuses[i],
-        branch_name: "release/#{current_version}",
-        release_version: current_version,
-        completed_at: completed_at,
-        stopped_at: stopped_at,
-        tag_name: "v#{current_version}",
-        created_at: release_start_date,
-        updated_at: [release_end_date, Time.zone.now].min
-      )
-
-      ReleaseMetadata.create!(
-        release: release,
-        release_platform_run: release_platform_run,
-        locale: "en-US",
-        release_notes: Faker::Lorem.paragraphs(number: 3).join("\n\n"),
-        default_locale: true,
-        created_at: release_start_date,
-        updated_at: release_start_date
-      )
-
-      step_run = Steps.create!(
-        train: train,
-        name: "Build Step #{i + 1}",
-        description: "Automated build step for version #{current_version}",
-        status: if release_statuses[i] == "completed"
-                  "completed"
-                else
-                  (release_statuses[i] == "running") ? "running" : "pending"
-                end,
-        step_number: 1,
-        run_after_duration: "00:30:00", # Placeholder for duration
-        ci_cd_channel: {type: "github_actions", workflow: "build.yml"},
-        build_artifact_channel: {type: "artifact", path: "path/to/artifact"},
-        slug: "build-step-#{i + 1}",
-        created_at: release_start_date,
-        updated_at: [release_end_date, Time.zone.now].min
-      )
-
-      num_commits = rand(size_config[:commits_per_release])
-
-      if release_statuses[i] == "completed" || release_statuses[i] == "running"
-        build = Build.create!(
-          release_platform_run: release_platform_run,
-          version_name: current_version,
-          build_number: (i + 100).to_s,
-          generated_at: release_start_date + 1.day,
-          created_at: release_start_date + 1.day,
-          updated_at: release_start_date + 1.day,
-          sequence_number: i + 1
-        )
-
-        BuildArtifact.create!(
-          step_run: step_run,
-          build: build,
-          generated_at: release_start_date + 1.day,
-          uploaded_at: release_start_date + 1.day,
-          created_at: release_start_date + 1.day,
-          updated_at: release_start_date + 1.day
-        )
-
-        if release_statuses[i] == "completed"
-          StoreSubmission.create!(
-            release_platform_run: release_platform_run,
-            build: build,
-            status: "approved",
-            name: "Store Submission #{current_version}",
-            type: "standard",
-            prepared_at: release_start_date + 2.days,
-            submitted_at: release_start_date + 2.days,
-            approved_at: release_end_date - 1.day,
-            store_status: "live",
-            created_at: release_start_date + 2.days,
-            updated_at: release_end_date
-          )
-        end
-      end
-
-      commit_start_date = release_start_date - 1.week
-      commit_end_date = release_start_date
-
-      if num_commits.is_a?(Integer)
-        num_commits.times do |j|
-          commit_date = random_date(commit_start_date, commit_end_date)
-
-          author = Accounts::User.all.sample
-
-          commit = Commit.create!(
-            commit_hash: Faker::Crypto.sha1,
-            release_platform: release_platform,
-            release: release,
-            release_platform_run: release_platform_run,
-            message: "#{Faker::Hacker.verb} #{Faker::Hacker.noun} #{Faker::Hacker.ingverb} #{Faker::Hacker.adjective} #{Faker::Hacker.noun}",
-            timestamp: commit_date,
-            author_name: author.full_name,
-            author_email: author.email,
-            author_login: author.slug,
-            url: "https://github.com/demo-org/#{app.platform}-app/commit/#{Faker::Crypto.sha1}",
-            created_at: commit_date,
-            updated_at: commit_date
-          )
-
-          if j % 10 == 0
-            PullRequest.create!(
-              release_platform_run: release_platform_run,
-              release: release,
-              commit: commit,
-              number: j + 1,
-              source_id: (j + 100).to_s,
-              url: "https://github.com/demo-org/#{app.platform}-app/pull/#{j + 1}",
-              title: "Feature: #{Faker::Hacker.say_something_smart}",
-              body: Faker::Lorem.paragraphs(number: 2).join("\n\n"),
-              state: "merged",
-              phase: "development",
-              source: "github",
-              head_ref: "feature/#{Faker::Hacker.noun.parameterize}",
-              base_ref: "develop",
-              opened_at: commit_date - 1.day,
-              closed_at: commit_date,
-              created_at: commit_date - 1.day,
-              updated_at: commit_date
-            )
-          end
+          # create_commit_for_release(app, current_version, i, release_platform, release_statuses, train)
         end
       end
     end
   end
 end
-
-# rubocop:enable Rails/Output
