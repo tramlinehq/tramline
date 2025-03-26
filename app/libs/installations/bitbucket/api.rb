@@ -308,7 +308,7 @@ module Installations
               value: inputs[:version_code]
             },
             *inputs[:parameters].map { |key, value| {key: key.upcase, value:} }
-          ]
+          ].reject { |param| param[:value].nil? }
         }
       }
 
