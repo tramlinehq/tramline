@@ -230,40 +230,12 @@ describe Coordinators::Actions do
         allow(build).to receive(:attach_artifact!).and_raise(Installations::Error, reason: :artifact_not_found)
       end
 
-      context "when build is externally uploaded to store" do
-        let(:release_info) {
-          OpenStruct.new(
-            {
-              id: Faker::FunnyName.name,
-              name: Faker::FunnyName.name,
-              build_number: build.build_number,
-              added_at: Time.zone.now,
-              console_link: Faker::Internet.url,
-              release_notes: nil
-            }
-          )
-        }
+      it "moves submission to preprocessing" do
+        result = described_class.trigger_submission!(submission)
 
-        before do
-          allow(store_provider).to receive(:find_build).and_return(GitHub::Result.new { release_info })
-        end
+        expect(result).to be_ok
 
-        it "triggers submission" do
-          result = described_class.trigger_submission!(submission)
-          expect(result).to be_ok
-          expect(submission.reload.preparing?).to be(true)
-        end
-      end
-
-      context "when build is not externally uploaded to store" do
-        before do
-          allow(store_provider).to receive(:find_build).and_return(GitHub::Result.new { raise Installations::Error, "Some Error" })
-        end
-
-        it "does not trigger submission" do
-          described_class.trigger_submission!(submission)
-          expect(submission.reload.preparing?).not_to be(true)
-        end
+        expect(submission.reload.preprocessing?).to be(true)
       end
     end
   end
