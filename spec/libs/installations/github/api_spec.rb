@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Installations::Github::Api, type: :integration do
+describe Installatgions::Github::Api, type: :integration do
   let(:installation_id) { Faker::String.random(length: 8) }
 
   before do
@@ -67,7 +67,7 @@ describe Installations::Github::Api, type: :integration do
         ci_ref: 30433642,
         ci_link: "https://github.com/octo-org/octo-repo/actions/runs/30433642",
         number: 562,
-        unique_number: 30433642 # same as ci_ref
+        unique_number: 562 # same as ci_ref
       }
       expect(result).to match(expected)
     end
