@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Installatgions::Github::Api, type: :integration do
+describe Installations::Github::Api, type: :integration do
   let(:installation_id) { Faker::String.random(length: 8) }
 
   before do
