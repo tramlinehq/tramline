@@ -33,7 +33,15 @@ module Installations
       end
 
       def find_biggest(artifacts)
-        artifacts.max_by { |artifact| artifact.dig("artifact_meta", "file_size_bytes")&.safe_float }
+        artifacts.max_by do |artifact|
+          file_size_bytes = artifact.dig("artifact_meta", "file_size_bytes")
+          case file_size_bytes.class
+          when Integer
+            file_size_bytes
+          when String
+            file_size_bytes.safe_integer
+          end
+        end
       end
 
       def filter_by_name(artifacts, name_pattern)
