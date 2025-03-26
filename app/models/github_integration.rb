@@ -48,7 +48,7 @@ class GithubIntegration < ApplicationRecord
     ci_ref: :id,
     ci_link: :html_url,
     number: :run_number,
-    unique_number: :id
+    unique_number: :run_number
   }
 
   INSTALLATION_TRANSFORMATIONS = {
