@@ -225,6 +225,8 @@ class WorkflowRun < ApplicationRecord
   end
 
   def check_external_data(external_workflow_run)
+    return unless external_workflow_run.is_a?(Hash)
+
     if app.build_number_managed_externally?
       external_unique_number = external_workflow_run[:unique_number]
       raise ExternalUniqueNumberNotFound if external_unique_number.blank?
