@@ -334,6 +334,10 @@ class BitbucketIntegration < ApplicationRecord
     raise Integrations::UnsupportedAction
   end
 
+  def bot_name
+    nil
+  end
+
   private
 
   MAX_RETRY_ATTEMPTS = 2
