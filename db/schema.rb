@@ -948,7 +948,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_25_093941) do
     t.string "tag_prefix"
     t.boolean "copy_approvals", default: false
     t.boolean "auto_apply_patch_changes", default: true
-    t.boolean "backmerge_to_upcoming_release", default: false
     t.boolean "version_bump_enabled", default: false
     t.string "version_bump_file_paths", default: [], array: true
     t.index ["app_id"], name: "index_trains_on_app_id"
