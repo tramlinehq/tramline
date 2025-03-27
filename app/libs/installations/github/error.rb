@@ -70,6 +70,10 @@ module Installations
       {
         message_matcher: /Changes must be made through a pull request/i,
         decorated_reason: :protected_branch
+      },
+      {
+        message_matcher: /Unexpected inputs provided/i,
+        decorated_reason: :workflow_parameter_invalid
       }
     ]
 

@@ -270,7 +270,8 @@ class BitbucketIntegration < ApplicationRecord
 
   WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :uuid,
-    number: :build_number
+    number: :build_number,
+    unique_number: :build_number
   }
 
   ARTIFACTS_TRANSFORMATIONS = {
@@ -333,6 +334,10 @@ class BitbucketIntegration < ApplicationRecord
 
   def artifact_url
     raise Integrations::UnsupportedAction
+  end
+
+  def bot_name
+    nil
   end
 
   private

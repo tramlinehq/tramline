@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_21_075701) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_25_093941) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1043,6 +1043,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_21_075701) do
     t.datetime "finished_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "external_unique_number"
     t.index ["commit_id"], name: "index_workflow_runs_on_commit_id"
     t.index ["pre_prod_release_id", "commit_id"], name: "index_workflow_runs_on_pre_prod_release_id_and_commit_id", unique: true
     t.index ["pre_prod_release_id"], name: "index_workflow_runs_on_pre_prod_release_id"
