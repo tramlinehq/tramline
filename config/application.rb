@@ -5,10 +5,28 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+def add_dummy_gcp_config_for_demo_seed_mode
+  if ENV["SEED_MODE"] == "demo"
+    Rails.application.credentials.dependencies = ActiveSupport::OrderedOptions.new
+    Rails.application.credentials.dependencies.gcp = ActiveSupport::OrderedOptions.new
+
+    Rails.application.credentials.dependencies.gcp.project_id = "dummy-project-id"
+    Rails.application.credentials.dependencies.gcp.private_key_id = "dummy-private-key-id"
+    Rails.application.credentials.dependencies.gcp.private_key = "-----BEGIN PRIVATE KEY-----\nDUMMYKEY\n-----END PRIVATE KEY-----"
+    Rails.application.credentials.dependencies.gcp.client_email = "dummy@demo-app.iam.gserviceaccount.com"
+    Rails.application.credentials.dependencies.gcp.client_id = "1234567890"
+    Rails.application.credentials.dependencies.gcp.client_x509_cert_url = "https://www.googleapis.com/robot/v1/metadata/x509/dummy%40demo-app.iam.gserviceaccount.com"
+
+    ENV["ARTIFACT_BUILDS_BUCKET_NAME"] = "dummy-bucket"
+  end
+end
+
 module Site
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.1
+
+    add_dummy_gcp_config_for_demo_seed_mode
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.

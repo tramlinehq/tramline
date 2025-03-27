@@ -1,16 +1,4 @@
 namespace :db do
-  desc "Nuke everything except users, organizations and apps"
-  task nuke: [:destructive, :environment] do
-    BuildArtifact.delete_all
-    Commit.delete_all
-    ReleasePlatformRun.delete_all
-    ReleasePlatform.delete_all
-    Release.delete_all
-    Train.delete_all
-
-    puts "Data was nuked!"
-  end
-
   desc "Nuke the train and its entire tree"
   task :nuke_train, %i[train_id] => [:destructive, :environment] do |_, args|
     train_id = args[:train_id].to_s
@@ -49,6 +37,12 @@ namespace :db do
 end
 
 def nuke_train(train)
+  # Clean up release indices associated with the train
+  if train.release_index
+    train.release_index.components&.delete_all
+    train.release_index&.delete
+  end
+
   train.releases.each do |run|
     run.release_platform_runs.each do |prun|
       sql = "delete from external_releases where deployment_run_id IN (SELECT id FROM deployment_runs WHERE step_run_id IN (SELECT id FROM step_runs WHERE release_platform_run_id = '#{prun.id}'))"

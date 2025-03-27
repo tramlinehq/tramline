@@ -102,9 +102,13 @@ class Integration < ApplicationRecord
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
 
   before_create :set_connected
-  after_create_commit -> { IntegrationMetadataJob.perform_async(id) }
+  after_create_commit :enqueue_metadata_job, unless: -> { ENV["SEED_MODE"] == "demo" }
 
   class << self
+    def enqueue_metadata_job
+      IntegrationMetadataJob.perform_async(id)
+    end
+
     def by_categories_for(app)
       existing_integrations = app.integrations.connected.includes(:providable)
       integrations = ALLOWED_INTEGRATIONS_FOR_APP[app.platform]

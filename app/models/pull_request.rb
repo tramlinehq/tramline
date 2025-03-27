@@ -4,7 +4,7 @@
 #
 #  id                      :uuid             not null, primary key
 #  base_ref                :string           not null
-#  body                    :text             indexed
+#  body                    :text
 #  closed_at               :datetime
 #  head_ref                :string           not null, indexed => [release_id]
 #  labels                  :jsonb
@@ -14,7 +14,7 @@
 #  search_vector           :tsvector         indexed
 #  source                  :string           not null, indexed
 #  state                   :string           not null, indexed
-#  title                   :string           not null, indexed
+#  title                   :string           not null
 #  url                     :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
