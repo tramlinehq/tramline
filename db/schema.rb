@@ -58,10 +58,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_25_093941) do
     t.jsonb "bugsnag_ios_config"
     t.jsonb "bugsnag_android_config"
     t.string "bitbucket_workspace"
+    t.jsonb "ci_cd_workflows"
     t.jsonb "firebase_crashlytics_ios_config"
     t.jsonb "firebase_crashlytics_android_config"
     t.jsonb "jira_config", default: {}, null: false
-    t.jsonb "ci_cd_workflows"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -534,12 +534,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_25_093941) do
     t.uuid "commit_id"
     t.jsonb "labels"
     t.tsvector "search_vector"
+    t.string "merge_commit_sha"
     t.index ["body"], name: "index_pull_requests_on_body", opclass: :gin_trgm_ops, using: :gin
     t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
     t.index ["release_id", "head_ref"], name: "index_pull_requests_on_release_id_and_head_ref"
     t.index ["release_id", "phase", "number"], name: "idx_prs_on_release_id_and_phase_and_number", unique: true
+    t.index ["release_id", "phase"], name: "index_pull_requests_on_release_id_and_phase", unique: true, where: "(((phase)::text = 'version_bump'::text) AND ((state)::text = 'open'::text))"
     t.index ["search_vector"], name: "index_pull_requests_on_search_vector", using: :gin
     t.index ["source"], name: "index_pull_requests_on_source"
     t.index ["source_id"], name: "index_pull_requests_on_source_id"
@@ -943,9 +945,12 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_25_093941) do
     t.boolean "patch_version_bump_only", default: false, null: false
     t.boolean "approvals_enabled", default: false, null: false
     t.boolean "freeze_version", default: false
+    t.string "tag_prefix"
     t.boolean "copy_approvals", default: false
     t.boolean "auto_apply_patch_changes", default: true
-    t.string "tag_prefix"
+    t.boolean "backmerge_to_upcoming_release", default: false
+    t.boolean "version_bump_enabled", default: false
+    t.string "version_bump_file_paths", default: [], array: true
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

@@ -52,4 +52,8 @@ class LiveRelease::OverviewComponent < BaseComponent
   def hotfix_banner?
     hotfix? && release.all_commits.exists? && release.pre_prod_releases.none?
   end
+
+  def version_bump_prs_banner?
+    release.pre_release? && release.train.version_bump_enabled? && release.pull_requests.version_bump.open.any?
+  end
 end

@@ -29,6 +29,8 @@
 #  tag_prefix                         :string
 #  tag_releases                       :boolean          default(TRUE)
 #  tag_suffix                         :string
+#  version_bump_enabled               :boolean          default(FALSE)
+#  version_bump_file_paths            :string           default([]), is an Array
 #  version_current                    :string
 #  version_seeded_with                :string
 #  versioning_strategy                :string           default("semver")
@@ -53,6 +55,13 @@ class Train < ApplicationRecord
     almost_trunk: "Almost Trunk",
     release_backmerge: "Release with Backmerge",
     parallel_working: "Parallel Working and Release"
+  }.freeze
+  ALLOWED_VERSION_BUMP_FILE_TYPES = {
+    gradle: ".gradle",
+    kotlin_gradle: ".kts",
+    plist: ".plist",
+    pbxproj: ".pbxproj",
+    yaml: ".yaml"
   }.freeze
 
   belongs_to :app
@@ -98,6 +107,7 @@ class Train < ApplicationRecord
   validate :ci_cd_workflows_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
   validate :version_config_constraints
+  validate :version_bump_config
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -553,6 +563,32 @@ class Train < ApplicationRecord
   def version_config_constraints
     if freeze_version && patch_version_bump_only
       errors.add(:base, "both freeze_version and patch_version_bump_only cannot be true at the same time")
+    end
+  end
+
+  def version_bump_config
+    if version_bump_enabled?
+      if version_bump_file_paths.blank?
+        errors.add(:version_bump_file_paths, :blank)
+        return
+      end
+
+      if version_bump_file_paths.any?(&:blank?)
+        errors.add(:version_bump_file_paths, :blank_file)
+        return
+      end
+
+      # files must have an extension
+      if version_bump_file_paths.any? { |p| File.extname(p.to_s).blank? }
+        errors.add(:version_bump_file_paths, :invalid_file_extension)
+        return
+      end
+
+      # files must have a valid extension
+      valid_extensions = ALLOWED_VERSION_BUMP_FILE_TYPES.values
+      unless version_bump_file_paths.all? { |p| valid_extensions.include?(File.extname(p.to_s)) }
+        errors.add(:version_bump_file_paths, :invalid_file_type, valid_extensions: valid_extensions.join(", "))
+      end
     end
   end
 end

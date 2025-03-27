@@ -7,9 +7,9 @@ class Webhooks::ClosePullRequestJob < ApplicationJob
     number = pr_attributes[:number]
 
     Train.find(train_id).open_active_prs_for(head_ref).where(number:).find_each do |pr|
-      pr.update_or_insert!(pr_attributes)
-      pr.release.event_stamp!(reason: :pr_merged, kind: :success, data: {url: pr.url, number: pr.number, base_branch: pr.base_ref})
-      Action.complete_release!(pr.release) if pr.release.post_release_failed?
+      pr.safe_update!(pr_attributes)
+      pr.stamp_merge!
+      Signal.pull_request_closed!(pr)
     end
   end
 end

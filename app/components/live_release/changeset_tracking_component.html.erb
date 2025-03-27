@@ -1,4 +1,19 @@
 <div class="flex flex-col section-gap-default">
+  <% if release.pre_release_failed? %>
+    <%= render AlertComponent.new(type: :error, title: raw(release.pre_release_error_message), full_screen: false) %>
+  <% end %>
+
+  <%= render CardComponent.new(title: "Version Bumps",
+                               fold: false,
+                               size: :base,
+                               separator: true,
+                               emptiness: version_bump_prs.empty?) do |card| %>
+    <% card.with_empty_state(text: "No version bump PRs are currently active.", banner_image: "check.svg") %>
+
+    <%= render partial: "shared/divide_collection",
+               locals: {collection: render(PullRequestComponent.with_collection(version_bump_prs))} %>
+  <% end %>
+
   <% if changelog_present? %>
     <%= render CardComponent.new(title: "Changes since last release (#{commits_since_last.size})", separator: true, size: :base) do |card| %>
       <% card.with_action do %>

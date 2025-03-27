@@ -13,7 +13,8 @@ class ApplicationRecord < ActiveRecord::Base
       requires_lock: with_lock,
       requires_new_transaction: false,
       enum: true,
-      create_scopes: false
+      create_scopes: false,
+      whiny_persistence: true
     }
   end
 

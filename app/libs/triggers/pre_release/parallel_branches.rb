@@ -24,17 +24,13 @@ class Triggers::PreRelease
     def create_and_merge_pr
       Triggers::PullRequest.create_and_merge!(
         release: release,
-        new_pull_request: release.pull_requests.pre_release.open.build,
+        new_pull_request_attrs: {phase: :pre_release, release_id: release.id, state: :open},
         to_branch_ref: release_branch,
         from_branch_ref: working_branch,
         title: pr_title,
         description: pr_description,
         allow_without_diff: false
-      ).then do |value|
-        pr = release.reload.pull_requests.pre_release.first
-        release.event_stamp_now!(reason: :kickoff_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
-        GitHub::Result.new { value }
-      end
+      )
     end
 
     def pr_title

@@ -22,7 +22,7 @@ class Coordinators::FinalizeRelease::ReleaseBackMerge
   def create_and_merge_prs
     Triggers::PullRequest.create_and_merge!(
       release: release,
-      new_pull_request: release.pull_requests.post_release.open.build,
+      new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
       to_branch_ref: release_backmerge_branch,
       from_branch_ref: branch_name,
       title: release_pr_title,
@@ -30,21 +30,12 @@ class Coordinators::FinalizeRelease::ReleaseBackMerge
     ).then do
       Triggers::PullRequest.create_and_merge!(
         release: release,
-        new_pull_request: release.pull_requests.post_release.open.build,
+        new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
         to_branch_ref: working_branch,
         from_branch_ref: release_backmerge_branch,
         title: backmerge_pr_title,
         description: pr_description(release_backmerge_branch, working_branch)
       )
-    end.then do |value|
-      stamp_pr_success
-      GitHub::Result.new { value }
-    end
-  end
-
-  def stamp_pr_success
-    release.reload.pull_requests.post_release.each do |pr|
-      release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
     end
   end
 
