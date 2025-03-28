@@ -440,7 +440,7 @@ class Release < ApplicationRecord
       if created_pr[:state].in? %w[open opened]
         raise PreReleaseUnfinishedError, "Pre-release pull request is not merged yet."
       else
-        pr.close!
+        pr.safe_update!(created_pr)
       end
     end
   end
