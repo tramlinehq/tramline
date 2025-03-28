@@ -291,30 +291,37 @@
                                            switch_data: {dependent_disable_target: "secondary", action: "dependent-disable#change"}) %>
     <% end %>
 
-    <%= f.with_advanced_section(heading: "Automatic Version Bumps") do |section| %>
-      <% section.with_description do %>
-        When enabled, Tramline will create and merge a Pull Request to update the version name (eg. 1.0.0) directly in
-        your configured build files before starting a new release or cutting a release branch. You can supply more than
-        one path and Tramline will update all of them.
-      <% end %>
-
-      <%= render Form::SwitchComponent.new(form: section.F,
-                                           field_name: :version_bump_enabled,
-                                           on_label: "Automatic Version Bump enabled",
-                                           off_label: "Automatic Version Bump disabled",
-                                           hide_child: !train.version_bump_enabled?) do |component| %>
-
-        <% component.with_info_icon do %>
-          The following file extensions are allowed —
-          <code><%= Train::ALLOWED_VERSION_BUMP_FILE_TYPES.values.join(" ") %></code>
+    <!--
+    temporarily disable automatic version bumps for non-github integrations
+    TODO: remove this once we've implemented this for all integrations
+    -->
+    <% if train.vcs_provider.is_a?(GithubIntegration) %>
+      <%= f.with_advanced_section(heading: "Automatic Version Bumps") do |section| %>
+        <% section.with_description do %>
+          When enabled, Tramline will create and merge a Pull Request to update the version name (eg. 1.0.0) directly in
+          your configured build files before starting a new release or cutting a release branch. You can supply more
+          than
+          one path and Tramline will update all of them.
         <% end %>
 
-        <% component.with_child do %>
-          <%= section.F.labeled_text_field :version_bump_file_paths,
-                                           "Build File Paths",
-                                           value: list_to_csv(section.F.object.version_bump_file_paths),
-                                           placeholder: "e.g., pubspec.yaml, android/app/build.gradle (comma-separated)",
-                                           help_text: "Comma-separated list of file paths to update versions in" %>
+        <%= render Form::SwitchComponent.new(form: section.F,
+                                             field_name: :version_bump_enabled,
+                                             on_label: "Automatic Version Bump enabled",
+                                             off_label: "Automatic Version Bump disabled",
+                                             hide_child: !train.version_bump_enabled?) do |component| %>
+
+          <% component.with_info_icon do %>
+            The following file extensions are allowed —
+            <code><%= Train::ALLOWED_VERSION_BUMP_FILE_TYPES.values.join(" ") %></code>
+          <% end %>
+
+          <% component.with_child do %>
+            <%= section.F.labeled_text_field :version_bump_file_paths,
+                                             "Build File Paths",
+                                             value: list_to_csv(section.F.object.version_bump_file_paths),
+                                             placeholder: "e.g., pubspec.yaml, android/app/build.gradle (comma-separated)",
+                                             help_text: "Comma-separated list of file paths to update versions in" %>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>
