@@ -117,8 +117,13 @@ class Triggers::VersionBump
   # The version line typically looks like: versionName "1.0.0"
   # The quotations are mandatory and the spaces between the keyword and the string are also mandatory
   # If there is a variable that succeeds it, we ignore and don't change anything
+  # --
+  # We also support versionName being updated in a groovy dictionary (https://groovy.code-maven.com/groovy-map)
+  # The line would be typically like: "versionName": "1.0.0" as a part of a larger dict or associative array
   def update_gradle_version(content)
-    content.gsub(/versionName\s+"[^"]*"/, "versionName \"#{release_version}\"")
+    content
+      .then { |c| c.gsub(/versionName\s+"[^"]*"/, "versionName \"#{release_version}\"") } # direct declaration
+      .then { |c| c.gsub(/("versionName"\s*:\s*)"[^"]*"/, "\\1\"#{release_version}\"") }  # dictionary declaration
   end
 
   # The version line typically looks like: versionName = "1.0.0"

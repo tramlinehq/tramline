@@ -93,9 +93,22 @@ describe Triggers::VersionBump do
     context "when a version bump PR is attempted and versions can be updated" do
       let(:vcs_provider_dbl) { instance_double(GithubIntegration) }
 
-      it "updates the gradle file" do
+      it "updates the gradle file (direct declaration)" do
         project_file = "spec/fixtures/project_files/build.1.0.0.gradle"
         updated_contents_file = "spec/fixtures/project_files/build.1.2.0.gradle"
+        updated_contents = File.read(updated_contents_file)
+        train = create(:train, version_seeded_with: "1.1.0", version_bump_enabled: true, version_bump_file_paths: [project_file])
+        release = create(:release, train:)
+        setup_mocks(train, vcs_provider_dbl, project_file, updated_contents_file)
+
+        described_class.call(release)
+
+        expect(vcs_provider_dbl).to have_received(:update_file!).with(anything, project_file, updated_contents, anything, anything).once
+      end
+
+      it "updates the gradle file (dictionary version)" do
+        project_file = "spec/fixtures/project_files/build.1.0.0.dict.gradle"
+        updated_contents_file = "spec/fixtures/project_files/build.1.2.0.dict.gradle"
         updated_contents = File.read(updated_contents_file)
         train = create(:train, version_seeded_with: "1.1.0", version_bump_enabled: true, version_bump_file_paths: [project_file])
         release = create(:release, train:)
@@ -148,6 +161,10 @@ describe Triggers::VersionBump do
         ["versionName 1", "versionName 1"],
         ["versionName 1.", "versionName 1."],
         ["versionName 1.0", "versionName 1.0"],
+        ["versionName 1.0", "versionName 1.0"],
+        ['"versionName": "1.0.0",', '"versionName": "1.2.0",'],
+        ['"versionName" :"1.0.0",', '"versionName" :"1.2.0",'],
+        ['"versionName" : "1.0.0",', '"versionName" : "1.2.0",'],
         ['versionName \n\tif', 'versionName \n\tif'],
         ["", ""],
         ["versionCode 1", "versionCode 1"]
