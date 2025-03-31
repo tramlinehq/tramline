@@ -3,9 +3,9 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   using RefinedString
 
   before_action :require_write_access!, only: %i[update]
-  before_action :set_train, only: %i[edit update]
+  before_action :set_train, only: %i[edit update refresh_workflows]
   before_action :set_app_from_train, only: %i[edit update]
-  before_action :set_release_platform, only: %i[edit update]
+  before_action :set_release_platform, only: %i[edit update refresh_workflows]
   before_action :set_config, only: %i[edit update]
   before_action :set_train_config_tabs, only: %i[edit update]
   before_action :ensure_app_ready, only: %i[edit update]
@@ -23,6 +23,11 @@ class Config::ReleasePlatformsController < SignedInApplicationController
     else
       redirect_to update_redirect_path, flash: {error: @config.errors.full_messages.to_sentence}
     end
+  end
+
+  def refresh_workflows
+    RefreshWorkflowsJob.perform_async(@train.id)
+    redirect_to update_redirect_path, notice: t(".success")
   end
 
   private

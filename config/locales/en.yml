@@ -82,6 +82,8 @@ en:
   config:
     release_platforms:
       success: "Platform configuration was successfully updated."
+      refresh_workflows:
+        success: "The workflow list is being refreshed. This may take a few seconds."
   release_metadata:
     metadata_not_editable: "Cannot update the release metadata once the production release has begun."
     update:

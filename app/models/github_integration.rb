@@ -232,7 +232,9 @@ class GithubIntegration < ApplicationRecord
 
   ## CI/CD
 
-  def workflows(_ = nil)
+  def workflows(_ = nil, bust_cache: false)
+    Rails.cache.delete(workflows_cache_key) if bust_cache
+
     cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
       installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
     end

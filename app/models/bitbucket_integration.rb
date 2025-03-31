@@ -282,7 +282,9 @@ class BitbucketIntegration < ApplicationRecord
     generated_at: :created_on
   }
 
-  def workflows(branch_name)
+  def workflows(branch_name, bust_cache: false)
+    Rails.cache.delete(workflows_cache_key(branch_name)) if bust_cache
+
     cache.fetch(workflows_cache_key(branch_name), expires_in: 120.minutes) do
       with_api_retries { installation.list_pipeline_selectors(code_repository_name, branch_name) }
     end

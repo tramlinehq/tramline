@@ -85,7 +85,11 @@ Rails.application.routes.draw do
 
       resources :release_platforms, path: :platforms, as: :platforms do
         resources :release_health_rules, path: :rules
-        resource :release_platform_configs, only: %i[edit update], path: :submissions, as: :submission_config, controller: "config/release_platforms"
+        resource :release_platform_configs, only: %i[edit update], path: :submissions, as: :submission_config, controller: "config/release_platforms" do
+          collection do
+            post :refresh_workflows
+          end
+        end
       end
 
       resources :releases, only: %i[show create destroy index update], shallow: true do

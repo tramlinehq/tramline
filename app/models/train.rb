@@ -166,8 +166,8 @@ class Train < ApplicationRecord
     Flipper.enabled?(:temporarily_allow_workflow_errors, self)
   end
 
-  def workflows
-    @workflows ||= ci_cd_provider&.workflows(working_branch)
+  def workflows(bust_cache: false)
+    @workflows ||= ci_cd_provider&.workflows(working_branch, bust_cache:)
   end
 
   def version_ahead?(release)
