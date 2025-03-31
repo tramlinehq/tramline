@@ -48,7 +48,7 @@ class StoreRollout < ApplicationRecord
   delegate :stale?, :actionable?, to: :parent_release
 
   scope :production, -> { joins(store_submission: :production_release) }
-  scope :automatic_rollouts_enabled, -> { where(status: [:created, :started], is_staged_rollout: true) }
+  scope :automatic_rollouts_enabled, -> { where(status: [:created, :started], is_staged_rollout: true, automatic_rollout: true) }
 
   def staged_rollout? = is_staged_rollout
 
