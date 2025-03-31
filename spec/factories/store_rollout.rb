@@ -3,6 +3,7 @@ FactoryBot.define do
     config { [1, 100] }
     current_stage { nil }
     is_staged_rollout { true }
+    automatic_rollout { false }
     release_platform_run
     store_submission factory: :play_store_submission
 
