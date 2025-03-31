@@ -11,8 +11,13 @@
         type: :link,
         size: :xxs,
         options: refresh_channels_app_integration_slack_integration_path(app, app.notification_provider.integration, app.notification_provider),
-        html_options: {method: :post,
-                       data: {turbo_method: :post},
-                       class: "-mx-1"}
+        html_options: {
+          method: :post,
+          class: "-mx-1",
+          data: {
+            turbo_method: :post,
+            turbo_confirm: "Refreshing notification channels will clear any unsaved changes on this page. Are you sure?"
+          }
+        }
       ) %>
 </div>
