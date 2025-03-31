@@ -71,6 +71,17 @@ RSpec.describe IncreaseHealthyReleaseRolloutsJob do
     end
   end
 
+  context "when a play store rollout (staged) is available for rollout without automatic rollout" do
+    before do
+      create(:store_rollout, :play_store, :created, is_staged_rollout: true, automatic_rollout: false, store_submission: play_store_submission)
+    end
+
+    it "does not rollout the release" do
+      described_class.new.perform
+      expect(play_store_integration).not_to have_received(:rollout_release)
+    end
+  end
+
   context "when a play store submission (non-staged) is available for rollout" do
     before do
       create(:store_rollout, :play_store, :created, is_staged_rollout: false, store_submission: play_store_submission)
