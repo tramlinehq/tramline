@@ -50,7 +50,8 @@ class Config::Submission < ApplicationRecord
       finish_rollout_in_next_release: finish_rollout_in_next_release,
       rollout_config: {
         enabled: rollout_enabled,
-        stages: rollout_stages
+        stages: rollout_stages,
+        automatic: automatic_rollout
       }
     }
   end
@@ -79,6 +80,7 @@ class Config::Submission < ApplicationRecord
     submission.submission_external = Config::SubmissionExternal.from_json(json["submission_config"])
     submission.rollout_stages = json.dig("rollout_config", "stages")
     submission.rollout_enabled = json.dig("rollout_config", "enabled")
+    submission.automatic_rollout = json.dig("rollout_config", "automatic")
     submission
   end
 
