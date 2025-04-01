@@ -4,8 +4,35 @@ module Seed
   class DemoStarter
     include Seed::Constants
 
+    SIZE_CONFIGS = {
+      small: {
+        team_count: 1,
+        users_per_team: 2,
+        app_count: 1,
+        release_count: (5..7),
+        commits_per_release: (20..30),
+        workflow_runs_per_release: 1
+      },
+      medium: {
+        team_count: 2,
+        users_per_team: 4,
+        app_count: 2,
+        release_count: (12..15),
+        commits_per_release: (50..60),
+        workflow_runs_per_release: 2
+      },
+      large: {
+        team_count: 3,
+        users_per_team: 6,
+        app_count: 3,
+        release_count: (20..25),
+        commits_per_release: (100..150),
+        workflow_runs_per_release: 3
+      }
+    }.freeze
+
     TEAM_NAMES = ["Engineering", "Product"]
-    TEAM_COLORS = ["#FF5733", "#33FF57"]
+    TEAM_COLORS = ["#FF5733", "#33FF57", "#3357FF", "#FF33F6", "#33FFF6"]
 
     USER_NAMES = [
       {full_name: "Alex Johnson", preferred_name: "Alex"},
@@ -15,25 +42,46 @@ module Seed
       {full_name: "Morgan Lee", preferred_name: "Morgan"},
       {full_name: "Casey Brown", preferred_name: "Casey"},
       {full_name: "Riley Wilson", preferred_name: "Riley"},
-      {full_name: "Jordan Davis", preferred_name: "Jordan"}
+      {full_name: "Jordan Davis", preferred_name: "Jordan"},
+      {full_name: "Drew Anderson", preferred_name: "Drew"},
+      {full_name: "Jordan Taylor", preferred_name: "Jordan"},
+      {full_name: "Morgan Parker", preferred_name: "Morgan"},
+      {full_name: "Riley Johnson", preferred_name: "Riley"},
+      {full_name: "Casey Smith", preferred_name: "Casey"},
+      {full_name: "Taylor Wilson", preferred_name: "Taylor"},
+      {full_name: "Jamie Brown", preferred_name: "Jamie"},
+      {full_name: "Sam Davis", preferred_name: "Sam"},
+      {full_name: "Alex Lee", preferred_name: "Alex"},
+      {full_name: "Drew Williams", preferred_name: "Drew"}
     ]
 
-    APP_NAMES = ["ShopSmart", "FitTracker"]
+    APP_NAMES = ["ShopSmart", "FitTracker", "TaskMaster", "WeatherPro", "RecipeHub"]
     APP_PLATFORMS = ["android", "ios"]
-    APP_BUNDLE_IDS = ["com.tramline.demo.shopsmart", "com.tramline.demo.fittracker"]
+    APP_BUNDLE_IDS = [
+      "com.tramline.demo.shopsmart",
+      "com.tramline.demo.fittracker",
+      "com.tramline.demo.taskmaster",
+      "com.tramline.demo.weatherpro",
+      "com.tramline.demo.recipehub"
+    ]
 
     RELEASE_STATUSES = ["completed", "completed", "completed", "completed", "stopped", "completed", "completed", "completed"]
     BOOLEAN_OPTIONS = [true, false]
 
-    def self.call
-      new.call
+    def self.call(size = :medium)
+      new(size).call
+    end
+
+    def initialize(size = :medium)
+      @size = size.to_sym
+      @config = SIZE_CONFIGS[@size] || SIZE_CONFIGS[:medium]
     end
 
     def call
       puts "Clearing database..."
       clear_database
 
-      puts "Seeding database with demo data..."
+      puts "Seeding database with #{@size} demo data..."
 
       ActiveRecord::Base.transaction do
         organization = create_demo_organization
@@ -44,7 +92,7 @@ module Seed
         create_releases_and_commits(apps)
       end
 
-      puts "Completed seeding demo database"
+      puts "Completed seeding #{@size} demo database"
     end
 
     private
@@ -132,9 +180,9 @@ module Seed
     def create_teams(organization)
       teams = []
 
-      TEAM_NAMES.each_with_index do |name, index|
+      @config[:team_count].times do |index|
         team = Accounts::Team.find_or_create_by!(
-          name: name,
+          name: "Team #{index + 1}",
           organization: organization,
           color: TEAM_COLORS[index]
         )
@@ -148,7 +196,8 @@ module Seed
     def create_users(organization, teams)
       users = []
 
-      USER_NAMES.each_with_index do |user_data, index|
+      @config[:users_per_team].times do |index|
+        user_data = USER_NAMES[index]
         email = "demo.#{user_data[:preferred_name].downcase}@tramline.app"
         password = "demo-password"
 
@@ -199,7 +248,11 @@ module Seed
     def create_apps(organization)
       apps = []
 
-      APP_NAMES.zip(APP_PLATFORMS, APP_BUNDLE_IDS).each do |name, platform, bundle_id|
+      @config[:app_count].times do |index|
+        name = APP_NAMES[index]
+        platform = APP_PLATFORMS[index % APP_PLATFORMS.size]
+        bundle_id = APP_BUNDLE_IDS[index]
+
         app = App.find_or_create_by!(
           name: name,
           organization: organization,
@@ -399,8 +452,8 @@ module Seed
 
         puts "Created release platform: #{release_platform.name} for app: #{app.name}"
 
-        # Create releases (12-15 total releases)
-        release_count = rand(12..15)
+        # Create releases based on size configuration
+        release_count = rand(@config[:release_count])
 
         release_count.times do |i|
           version = "1.#{i / 5}.#{i % 5}"
@@ -449,8 +502,8 @@ module Seed
           # Skip validations
           release_platform_run.save(validate: false)
 
-          # Create 50-60 commits per release
-          commit_count = rand(50..60)
+          # Create commits based on size configuration
+          commit_count = rand(@config[:commits_per_release])
 
           last_commit = nil
           commit_count.times do |j|
@@ -472,82 +525,103 @@ module Seed
           end
 
           if last_commit && status != "created"
-            # Create workflow run, build, and other necessary objects
-            pre_prod_release = PreProdRelease.new(
-              release_platform_run: release_platform_run,
-              commit: last_commit,
-              type: "InternalRelease",
-              status: "created"
-            )
-
-            # Skip validations
-            pre_prod_release.save(validate: false)
-
-            workflow_run = WorkflowRun.new(
-              release_platform_run: release_platform_run,
-              commit: last_commit,
-              pre_prod_release_id: pre_prod_release.id,
-              status: "finished",
-              kind: "release_candidate",
-              started_at: (release_count - i).weeks.ago + 1.hour,
-              finished_at: (release_count - i).weeks.ago + 2.hours,
-              workflow_config: {
-                "id" => "build",
-                "name" => "Build",
-                "kind" => "release_candidate",
-                "artifact_name_pattern" => nil,
-                "build_suffix" => nil,
-                "parameters" => []
-              }
-            )
-
-            # Skip validations
-            workflow_run.save(validate: false)
-
-            build = Build.new(
-              release_platform_run: release_platform_run,
-              commit: last_commit,
-              workflow_run: workflow_run,
-              version_name: version,
-              build_number: i + 1,
-              generated_at: (release_count - i).weeks.ago + 2.hours
-            )
-
-            # Skip validations
-            build.save(validate: false)
-
-            if status == "finished" || status == "on_track"
-              # Create store submissions
-              store_submission_type = (app.platform == "ios") ? "AppStoreSubmission" : "PlayStoreSubmission"
-
-              # Use different statuses based on platform
-              submission_status = if app.platform == "ios"
-                (status == "finished") ? "approved" : "submitted_for_review"
-              else
-                (status == "finished") ? "prepared" : "preprocessing"
-              end
-
-              store_submission = Object.const_get(store_submission_type).new(
-                release_platform_run: release_platform_run,
-                build: build,
-                status: submission_status,
-                submitted_at: (status == "finished") ? (release_count - i - 1).weeks.ago - 3.days : nil,
-                approved_at: (status == "finished") ? (release_count - i - 1).weeks.ago - 1.day : nil
+            # Create workflow runs based on size configuration
+            @config[:workflow_runs_per_release].times do |workflow_index|
+              # Create a unique commit for this workflow run
+              workflow_commit = Commit.new(
+                release_platform_id: release_platform.id,
+                release: release,
+                release_platform_run_id: release_platform_run.id,
+                commit_hash: SecureRandom.hex(20),
+                message: "feat: Demo workflow commit #{workflow_index + 1} for release #{version}",
+                timestamp: (release_count - i).weeks.ago + (workflow_index + 1).hours,
+                author_name: USER_NAMES.sample[:full_name],
+                author_email: "demo.user#{workflow_index % 8}@tramline.app",
+                url: "https://github.com/tramlineapp/#{app.name.downcase}/commit/#{SecureRandom.hex(20)}"
               )
 
               # Skip validations
-              store_submission.save(validate: false)
+              workflow_commit.save(validate: false)
 
-              # For completed releases, create production release
-              if status == "finished"
-                production_release = ProductionRelease.new(
+              pre_prod_release = PreProdRelease.new(
+                release_platform_run: release_platform_run,
+                commit: workflow_commit,
+                type: "InternalRelease",
+                status: "created"
+              )
+
+              # Skip validations
+              pre_prod_release.save(validate: false)
+
+              workflow_run = WorkflowRun.new(
+                release_platform_run: release_platform_run,
+                commit: workflow_commit,
+                pre_prod_release_id: pre_prod_release.id,
+                status: "finished",
+                kind: "release_candidate",
+                started_at: (release_count - i).weeks.ago + (workflow_index + 1).hours,
+                finished_at: (release_count - i).weeks.ago + (workflow_index + 2).hours,
+                workflow_config: {
+                  "id" => "build",
+                  "name" => "Build",
+                  "kind" => "release_candidate",
+                  "artifact_name_pattern" => nil,
+                  "build_suffix" => nil,
+                  "parameters" => []
+                }
+              )
+
+              # Skip validations
+              workflow_run.save(validate: false)
+
+              build = Build.new(
+                release_platform_run: release_platform_run,
+                commit: workflow_commit,
+                workflow_run: workflow_run,
+                version_name: version,
+                build_number: i + 1,
+                generated_at: (release_count - i).weeks.ago + (workflow_index + 2).hours
+              )
+
+              # Skip validations
+              build.save(validate: false)
+
+              if status == "finished" || status == "on_track"
+                # Create store submissions
+                store_submission_type = (app.platform == "ios") ? "AppStoreSubmission" : "PlayStoreSubmission"
+
+                # Use different statuses based on platform
+                submission_status = if app.platform == "ios"
+                  (status == "finished") ? "approved" : "submitted_for_review"
+                else
+                  (status == "finished") ? "prepared" : "preprocessing"
+                end
+
+                store_submission = Object.const_get(store_submission_type).new(
                   release_platform_run: release_platform_run,
                   build: build,
-                  status: "active"
+                  status: submission_status,
+                  submitted_at: (status == "finished") ? (release_count - i - 1).weeks.ago - 3.days : nil,
+                  approved_at: (status == "finished") ? (release_count - i - 1).weeks.ago - 1.day : nil
                 )
 
                 # Skip validations
-                production_release.save(validate: false)
+                store_submission.save(validate: false)
+
+                # For completed releases, create production release
+                if status == "finished"
+                  # Only create an active production release if there isn't one already
+                  unless ProductionRelease.exists?(release_platform_run: release_platform_run, status: "active")
+                    production_release = ProductionRelease.new(
+                      release_platform_run: release_platform_run,
+                      build: build,
+                      status: "active"
+                    )
+
+                    # Skip validations
+                    production_release.save(validate: false)
+                  end
+                end
               end
             end
           end
