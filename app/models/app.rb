@@ -96,6 +96,10 @@ class App < ApplicationRecord
     Flipper.enabled?(:monitoring_disabled, self)
   end
 
+  def custom_bitrise_pipelines?
+    true
+  end
+
   def variant_options
     opts = {"Default (#{bundle_identifier})" => nil}
     opts.merge variants.map.to_h { |v| [v.display_text, v.id] }

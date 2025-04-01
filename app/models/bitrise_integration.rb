@@ -16,6 +16,7 @@ class BitriseIntegration < ApplicationRecord
   include Rails.application.routes.url_helpers
 
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/bitrise_small.png".freeze
+  CUSTOM_BITRISE_PIPELINES_URL = "https://storage.googleapis.com/tramline-public-assets/custom_bitrise_pipelines.yml?ignoreCache=0".freeze
 
   API = Installations::Bitrise::Api
 
@@ -104,19 +105,31 @@ class BitriseIntegration < ApplicationRecord
   end
 
   def workflows(_ = nil, bust_cache: false)
-    Rails.cache.delete(workflows_cache_key) if bust_cache
+    if integrable.custom_bitrise_pipelines?
+      load_custom_bitrise_pipelines
+    else
+      Rails.cache.delete(workflows_cache_key) if bust_cache
 
-    cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
-      installation.list_workflows(project, WORKFLOWS_TRANSFORMATIONS)
+      cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
+        installation.list_workflows(project, WORKFLOWS_TRANSFORMATIONS)
+      end
     end
   end
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
-    installation.run_workflow!(project, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
+    if integrable.custom_bitrise_pipelines?
+      installation.run_workflow!(project, nil, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
+    else
+      installation.run_workflow!(project, ci_cd_channel, nil, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
+    end
   end
 
   def cancel_workflow_run!(ci_ref)
-    installation.cancel_workflow!(project, ci_ref)
+    if integrable.custom_bitrise_pipelines?
+      installation.cancel_pipeline!(project, ci_ref)
+    else
+      installation.cancel_workflow!(project, ci_ref)
+    end
   end
 
   def find_workflow_run(_workflow_id, _branch, _commit_sha)
@@ -124,7 +137,11 @@ class BitriseIntegration < ApplicationRecord
   end
 
   def get_workflow_run(workflow_run_id)
-    installation.get_workflow_run(project, workflow_run_id)
+    if integrable.custom_bitrise_pipelines?
+      installation.get_pipeline_run(project, workflow_run_id)
+    else
+      installation.get_workflow_run(project, workflow_run_id)
+    end
   end
 
   # NOTE: this is bitrise specific right now
@@ -144,7 +161,7 @@ class BitriseIntegration < ApplicationRecord
     raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank?
 
     stream = installation.download_artifact(artifact[:archive_download_url])
-    {artifact:, stream: Artifacts::Stream.new(stream)}
+    { artifact:, stream: Artifacts::Stream.new(stream) }
   end
 
   def public_icon_img
@@ -156,6 +173,17 @@ class BitriseIntegration < ApplicationRecord
   end
 
   private
+
+  def load_custom_bitrise_pipelines
+    path = URI.open(CUSTOM_BITRISE_PIPELINES_URL, "Cache-Control" => "max-age=0").read
+    app_id = integrable.id
+    content = YAML.safe_load(path)
+    pipelines = content.dig("app_id", app_id).presence || []
+    pipelines.map(&:with_indifferent_access)
+  rescue OpenURI::HTTPError, SocketError => e
+    elog(e, level: :warn)
+    []
+  end
 
   def app_config
     integrable.config
