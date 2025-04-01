@@ -102,7 +102,7 @@ class Integration < ApplicationRecord
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
 
   before_create :set_connected
-  after_create_commit :enqueue_metadata_job, unless: -> { ENV["SEED_MODE"] == "demo" }
+  after_create_commit :enqueue_metadata_job, unless: -> { Seed.demo_mode? }
 
   class << self
     def enqueue_metadata_job

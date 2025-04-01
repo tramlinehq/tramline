@@ -11,7 +11,7 @@ module Installations
     RERUN_FAILED_JOBS_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/actions/runs/{run_id}/rerun-failed-jobs"
 
     def initialize(installation_id)
-      if ENV["SEED_MODE"] == "demo"
+      if Seed.demo_mode?
         @app_name = "demo-app-name"
         @installation_id = installation_id
         @jwt = "dummy-jwt"
@@ -433,7 +433,7 @@ module Installations
     end
 
     def set_client
-      if ENV["SEED_MODE"] == "demo"
+      if Seed.demo_mode?
         @client = Installations::Github::MockClient.new
       else
         client = Octokit::Client.new(bearer_token: jwt.get)

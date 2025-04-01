@@ -107,6 +107,7 @@ class GoogleFirebaseSubmission < StoreSubmission
         result = provider.upload(file, filename, platform:)
       end
       if result&.ok?
+        return if Seed.demo_mode?
         StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob.perform_async(id, result.value!)
       else
         fail_with_error!(result&.error)
@@ -173,14 +174,17 @@ class GoogleFirebaseSubmission < StoreSubmission
       update_store_info!(release_info, build_status)
     end
 
+    return if Seed.demo_mode?
     StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, external_id)
   end
 
   def on_preprocess!
+    return if Seed.demo_mode?
     StoreSubmissions::GoogleFirebase::UploadJob.perform_async(id)
   end
 
   def on_prepare!
+    return if Seed.demo_mode?
     StoreSubmissions::GoogleFirebase::PrepareForReleaseJob.perform_async(id)
   end
 

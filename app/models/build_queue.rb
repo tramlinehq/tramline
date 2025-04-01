@@ -28,6 +28,7 @@ class BuildQueue < ApplicationRecord
   end
 
   def schedule_kickoff!
+    return if Seed.demo_mode?
     BuildQueueApplicationJob.set(wait_until: scheduled_at).perform_async(id)
   end
 
