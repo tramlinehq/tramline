@@ -93,7 +93,7 @@ class Release < ApplicationRecord
     rollout_to_users: {title: "Rollout"},
     wrap_up_automations: {title: "Automations"}
   }
-  FULL_ROLLOUT_VALUE = BigDecimal(100)
+  FULL_ROLLOUT_VALUE = BigDecimal(100.to_s)
 
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases

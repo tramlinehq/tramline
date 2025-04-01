@@ -31,6 +31,7 @@ module Installations
     PIPELINE_YAML_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/src/{sha}/bitbucket-pipelines.yml"
 
     WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
+    MAX_PAGES = 100
 
     class << self
       include Vaultable
@@ -353,8 +354,6 @@ module Installations
         raise ArgumentError, "Invalid ref type"
       end
     end
-
-    MAX_PAGES = 100
 
     def find_file(url, files, file_name, page = 0)
       return if page == MAX_PAGES

@@ -11,9 +11,7 @@ class Reldex::StatusComponent < Reldex::BaseComponent
     "%.2f" % @reldex_score.value
   end
 
-  def grade
-    @reldex_score.grade
-  end
+  delegate :grade, to: :@reldex_score
 
   def tolerable_min
     @reldex_score.release_index&.tolerable_range&.min
@@ -23,9 +21,7 @@ class Reldex::StatusComponent < Reldex::BaseComponent
     @reldex_score.release_index&.tolerable_range&.max
   end
 
-  def components
-    @reldex_score.components
-  end
+  delegate :components, to: :@reldex_score
 
   def component_raw_value(component)
     unit = (component.release_index_component.tolerable_unit == "number") ? nil : component.release_index_component.tolerable_unit.pluralize

@@ -5,6 +5,7 @@ module Installations
     SERVICE_ACCOUNT = ::Google::Auth::ServiceAccountCredentials
     SCOPE = ANDROID_PUBLISHER::AUTH_ANDROIDPUBLISHER
     CONTENT_TYPE = "application/octet-stream".freeze
+    NOTES_MAX_LENGTH = 500
 
     RELEASE_STATUS = {
       in_progress: "inProgress",
@@ -122,8 +123,6 @@ module Installations
     end
 
     private
-
-    NOTES_MAX_LENGTH = 500
 
     attr_writer :track_name, :version_code, :release_version, :rollout_percentage
 

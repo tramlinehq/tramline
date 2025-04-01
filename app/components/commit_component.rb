@@ -30,9 +30,7 @@ class CommitComponent < BaseComponent
 
   def show_avatar? = @avatar
 
-  def pull_request
-    @commit.pull_request
-  end
+  delegate :pull_request, to: :@commit
 
   def outer_classes
     return "" unless detailed?
