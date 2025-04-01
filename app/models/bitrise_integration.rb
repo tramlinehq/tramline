@@ -16,7 +16,6 @@ class BitriseIntegration < ApplicationRecord
   include Rails.application.routes.url_helpers
 
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/bitrise_small.png".freeze
-  CUSTOM_BITRISE_PIPELINES_URL = "https://storage.googleapis.com/tramline-public-assets/custom_bitrise_pipelines.yml?ignoreCache=0".freeze
 
   API = Installations::Bitrise::Api
 
@@ -161,7 +160,7 @@ class BitriseIntegration < ApplicationRecord
     raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank?
 
     stream = installation.download_artifact(artifact[:archive_download_url])
-    { artifact:, stream: Artifacts::Stream.new(stream) }
+    {artifact:, stream: Artifacts::Stream.new(stream)}
   end
 
   def public_icon_img
@@ -175,7 +174,7 @@ class BitriseIntegration < ApplicationRecord
   private
 
   def load_custom_bitrise_pipelines
-    path = URI.open(CUSTOM_BITRISE_PIPELINES_URL, "Cache-Control" => "max-age=0").read
+    path = URI.open("https://storage.googleapis.com/tramline-public-assets/custom_bitrise_pipelines.yml?ignoreCache=0", "Cache-Control" => "max-age=0").read
     app_id = integrable.id
     content = YAML.safe_load(path)
     pipelines = content.dig("app_id", app_id).presence || []

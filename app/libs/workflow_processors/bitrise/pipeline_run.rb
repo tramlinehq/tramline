@@ -4,7 +4,7 @@ class WorkflowProcessors::Bitrise::PipelineRun
   end
 
   def in_progress?
-    %w[initializing in-progress in_progress on-hold on_hold].include?(status)
+    %w[initializing in-progress in_progress on-hold on_hold running].include?(status)
   end
 
   def successful?
