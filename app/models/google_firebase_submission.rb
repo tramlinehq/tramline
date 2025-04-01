@@ -84,7 +84,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
 
     if build.has_artifact?
-      # try and upload the build if we have it
+      # try and find/upload the build if we have it
       preprocess!
     elsif app.skip_finding_builds_for_firebase?
       # we do not want to find builds in firebase in this case
@@ -99,27 +99,48 @@ class GoogleFirebaseSubmission < StoreSubmission
   def upload_build!
     return unless may_prepare?
 
-    if build.has_artifact?
-      # if we have the build, we can upload it
-      result = nil
-      filename = build.artifact.file.filename.to_s
-      build.artifact.with_open do |file|
-        result = provider.upload(file, filename, platform:)
-      end
-      if result&.ok?
-        return if Seed.demo_mode?
-        StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob.perform_async(id, result.value!)
-      else
-        fail_with_error!(result&.error)
-      end
-    else
-      # if we don't have the build, we can try and find it
-      release_info = provider.find_build(build.build_number, build.version_name, release_platform_run.platform)
+    # try to find before uploading and return early if found
+    unless app.skip_finding_builds_for_firebase?
+      release_info = provider.find_build(build.build_number, build_version_name, release_platform_run.platform)
       if release_info.ok?
         prepare_and_update!(release_info.value!)
-      else
-        fail_with_error!(BuildNotFound)
+        return
       end
+    end
+
+    # if we don't have the build artifact, and we couldn't find it previously, we fail
+    unless build.has_artifact?
+      fail_with_error!(BuildNotFound)
+      return
+    end
+
+    # if we have the build artifact, we can try and upload it
+    result = nil
+    filename = build.artifact.file.filename.to_s
+    build.artifact.with_open do |file|
+      result = provider.upload(file, filename, platform:)
+    end
+    if result&.ok?
+      # start tracking the upload status asynchronously
+      StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob.perform_async(id, result.value!)
+    else
+      # if we couldn't upload the build artifact, we fail
+      fail_with_error!(result&.error)
+    end
+  end
+
+  # TODO: This should eventually become some sort of config or a generalized feature
+  # But for now, this allows us to find the build in Firebase with the version 1.0.0+1 instead of just 1.0.0
+  # Note: this is only the case for when the submission is for an AppVariant
+  # Note: this will only find by 1.0.0+1, uploads from tramline (if possible) will continue to be 1.0.0
+  def build_version_name
+    # intentionally referencing the flag here directly, so we can remove this hack easily later
+    flag = Flipper.enabled?(:append_build_number_to_version_name, release_platform_run.organization)
+
+    if flag && provider.integrable.is_a?(AppVariant)
+      "#{build.version_name}+#{build.build_number}"
+    else
+      build.version_name
     end
   end
 
