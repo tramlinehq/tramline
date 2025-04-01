@@ -106,7 +106,7 @@ class App < ApplicationRecord
   end
 
   def bitrise_connected?
-    integrations.bitrise_integrations.any?
+    integrations.connected.bitrise_integrations.any?
   end
 
   def bugsnag_connected?

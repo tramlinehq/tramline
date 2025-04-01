@@ -8,9 +8,10 @@
 #  closed_at               :datetime
 #  head_ref                :string           not null, indexed => [release_id]
 #  labels                  :jsonb
+#  merge_commit_sha        :string
 #  number                  :bigint           not null, indexed => [release_id, phase], indexed
 #  opened_at               :datetime         not null
-#  phase                   :string           not null, indexed => [release_id, number], indexed
+#  phase                   :string           not null, indexed => [release_id, number], indexed, indexed => [release_id]
 #  search_vector           :tsvector         indexed
 #  source                  :string           not null, indexed
 #  state                   :string           not null, indexed
@@ -19,13 +20,17 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             indexed
-#  release_id              :uuid             indexed => [phase, number], indexed => [head_ref]
+#  release_id              :uuid             indexed => [phase, number], indexed => [head_ref], indexed => [phase]
 #  release_platform_run_id :uuid
 #  source_id               :string           not null, indexed
 #
 class PullRequest < ApplicationRecord
   has_paper_trail
   include Searchable
+  include Displayable
+  include Passportable
+
+  STAMPABLE_REASONS = %w[created merged unmergeable]
 
   class UnsupportedPullRequestSource < StandardError; end
 
@@ -34,6 +39,7 @@ class PullRequest < ApplicationRecord
 
   enum :phase, {
     pre_release: "pre_release",
+    version_bump: "version_bump",
     mid_release: "mid_release",
     ongoing: "ongoing",
     post_release: "post_release"
@@ -52,55 +58,87 @@ class PullRequest < ApplicationRecord
 
   scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
 
+  validates :phase, uniqueness: {scope: :release_id, conditions: -> { open.version_bump }}
+
+  before_save :generate_search_vector_data
+
   pg_search_scope :search,
     against: [:title, :body, :number],
     **search_config
 
-  # rubocop:disable Rails/SkipsModelValidations
-  def update_or_insert!(attributes)
-    PullRequest
-      .upsert(normalize_attributes(attributes), unique_by: [:release_id, :phase, :number])
-      .rows
-      .first
-      .first
-      .then { |id| PullRequest.find_by(id: id) }
-  end
-  # rubocop:enable Rails/SkipsModelValidations
+  class << self
+    # rubocop:disable Rails/SkipsModelValidations
 
-  def close!
-    self.closed_at = Time.current
-    self.state = PullRequest.states[:closed]
-    save!
-  end
+    def update_or_insert!(attributes)
+      attributes = attributes.with_indifferent_access
+      raise ArgumentError, "attributes must be a Hash" unless attributes.is_a?(Hash)
+      raise ArgumentError, "attributes must include a release_id" if attributes[:release_id].blank?
+      raise ArgumentError, "attributes must include a phase" if attributes[:phase].blank?
+      raise ArgumentError, "attributes must include a number" if attributes[:number].blank?
 
-  before_save :generate_search_vector_data
+      PullRequest
+        .upsert(normalize_attributes(attributes), unique_by: [:release_id, :phase, :number])
+        .rows
+        .first
+        .first
+        .then { |id| PullRequest.find_by(id: id) }
+    end
 
-  private
+    # rubocop:enable Rails/SkipsModelValidations
 
-  def normalize_attributes(attributes)
-    generic_attributes = {
-      release_id: release.id,
-      commit_id: commit&.id,
-      phase: phase,
-      state: normalize_state(attributes[:state])
-    }
+    def normalize_attributes(attributes)
+      generic_attributes = {
+        state: normalize_state(attributes),
+        closed_at: normalize_closed_at(attributes)
+      }
 
-    attributes.merge(generic_attributes)
-  end
+      attributes.merge(generic_attributes)
+    end
 
-  def normalize_state(state)
-    case state.to_s.downcase
-    when "open", "opened", "locked"
-      PullRequest.states[:open]
-    when "merged", "closed"
-      PullRequest.states[:closed]
-    else
-      PullRequest.states[:closed]
+    def normalize_state(attributes)
+      case attributes[:state].to_s.downcase
+      when "open", "opened", "locked"
+        PullRequest.states[:open]
+      when "merged", "closed"
+        PullRequest.states[:closed]
+      else
+        PullRequest.states[:closed]
+      end
+    end
+
+    def normalize_closed_at(attributes)
+      if normalize_state(attributes) == PullRequest.states[:closed]
+        attributes[:closed_at].presence || Time.current
+      end
     end
   end
+
+  delegate :normalize_attributes, to: self
+
+  def safe_update!(attributes)
+    update!(normalize_attributes(attributes))
+  end
+
+  def stamp_create!
+    event_stamp_now!(reason: :created, kind: :notice, data: stamp_data)
+  end
+
+  def stamp_merge!
+    event_stamp_now!(reason: :merged, kind: :notice, data: stamp_data)
+  end
+
+  def stamp_unmergeable!
+    event_stamp_now!(reason: :unmergeable, kind: :error, data: stamp_data)
+  end
+
+  private
 
   def generate_search_vector_data
     search_text = [title, body, number.to_s].compact.join(" ")
     self.search_vector = self.class.generate_search_vector(search_text)
+  end
+
+  def stamp_data
+    slice(:url, :number, :base_ref, :head_ref).merge(phase: display_attr(:phase))
   end
 end

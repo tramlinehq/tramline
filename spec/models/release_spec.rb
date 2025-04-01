@@ -599,19 +599,19 @@ describe Release do
     it "is true when hotfix release and existing hotfix branch" do
       run = create(:release, :hotfix, :created, new_hotfix_branch: false)
 
-      expect(run.retrigger_for_hotfix?).to be(true)
+      expect(run.hotfix_with_existing_branch?).to be(true)
     end
 
     it "is false when hotfix release and new hotfix branch" do
       run = create(:release, :hotfix, :created, new_hotfix_branch: true)
 
-      expect(run.retrigger_for_hotfix?).to be(false)
+      expect(run.hotfix_with_existing_branch?).to be(false)
     end
 
     it "is false when not hotfix release" do
       run = create(:release, :created)
 
-      expect(run.retrigger_for_hotfix?).to be(false)
+      expect(run.hotfix_with_existing_branch?).to be(false)
     end
   end
 

@@ -88,6 +88,12 @@ module Coordinators
     def self.workflow_run_trigger_failed!(workflow_run)
       workflow_run.triggering_release.fail!
     end
+
+    def self.pull_request_closed!(pr)
+      release = pr.release
+      Action.complete_release!(release) if release.post_release_failed?
+      Releases::PreReleaseJob.perform_async(release.id) if release.pre_release? && pr.version_bump?
+    end
   end
 
   module Actions

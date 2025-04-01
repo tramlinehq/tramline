@@ -1,5 +1,6 @@
 class Triggers::PreRelease
   include Memery
+  include Loggable
 
   RELEASE_HANDLERS = {
     "almost_trunk" => AlmostTrunk,
@@ -20,11 +21,11 @@ class Triggers::PreRelease
   attr_reader :release
 
   def call
+    release.start_pre_release_phase!
     RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
-  rescue Triggers::PullRequest::CreateError
-    release.event_stamp!(reason: :pre_release_pr_not_creatable, kind: :error, data: {release_branch:})
-    release.stop!
-  rescue Triggers::PullRequest::MergeError
-    Rails.logger.debug { "Pre-release pull request not merged: #{release.pull_requests.pre_release}" }
+  rescue Triggers::Errors => ex
+    elog(ex, level: :warn)
+    release.fail_pre_release_phase!
+    release.event_stamp!(reason: :pre_release_failed, kind: :error, data: {error: ex.message})
   end
 end

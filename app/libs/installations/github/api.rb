@@ -268,9 +268,11 @@ module Installations
       end
     end
 
-    def merge_pr!(repo, pr_number)
+    def merge_pr!(repo, pr_number, transforms)
       execute do
-        @client.merge_pull_request(repo, pr_number)
+        @client
+          .merge_pull_request(repo, pr_number)
+          .then { get_pr(repo, pr_number, transforms) }
       end
     end
 
@@ -399,6 +401,45 @@ module Installations
         .get(artifacts_url)
         .then { |resp| JSON.parse(resp.to_s) }
         .then { |parsed_resp| Installations::Response::Keys.transform(parsed_resp["artifacts"], transforms) }
+    end
+
+    def get_file_content(repo, branch, path)
+      execute do
+        response = @client.contents(repo, path: path, ref: branch)
+
+        # ignore directories
+        if response.is_a?(Array)
+          raise Installations::Error.new("Could not get file contents", reason: :not_found)
+        end
+
+        # ignore symlinks, submodules, large files, etc.
+        if response.type == "file" && response.encoding == "base64"
+          Base64.decode64(response.content)
+        else
+          raise Installations::Error.new("Could not get file contents", reason: :not_found)
+        end
+      end
+    end
+
+    def update_file!(repo, branch, path, content, message, author_name: nil, author_email: nil)
+      execute do
+        # first, get the current file to get its blob SHA
+        current_file = @client.contents(repo, path: path, ref: branch)
+
+        commit_info = {
+          message: message,
+          content: Base64.strict_encode64(content),
+          sha: current_file.sha,
+          branch: branch
+        }
+
+        if author_name && author_email
+          commit_info[:author] = {name: author_name, email: author_email}
+          commit_info[:committer] = {name: author_name, email: author_email}
+        end
+
+        @client.update_contents(repo, path, message, current_file.sha, content, branch: branch)
+      end
     end
 
     def execute

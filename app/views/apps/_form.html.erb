@@ -11,7 +11,7 @@
                                            field_name: :build_number_managed_internally,
                                            on_label: "Build number managed by Tramline",
                                            off_label: "Build number managed externally (using CI pipelines)",
-                                           hide_child: @app.build_number_managed_externally?,
+                                           hide_child: @app&.build_number_managed_externally?,
                                            switch_id: "add_build_number_managed_internally") do |component| %>
 
         <% component.with_info_icon do %>

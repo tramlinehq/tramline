@@ -1,6 +1,6 @@
 class Coordinators::AttachBuildJob < ApplicationJob
   HANDLED_EXCEPTION = Installations::Error
-  sidekiq_options queue: :high, retry: 15
+  sidekiq_options queue: :high, retry: 3
 
   sidekiq_retry_in do |count, ex|
     if artifact_not_found?(ex)

@@ -103,9 +103,9 @@ class BitriseIntegration < ApplicationRecord
     installation.list_organizations(ORGANIZATIONS_TRANSFORMATIONS)
   end
 
-  # CI/CD
+  def workflows(_ = nil, bust_cache: false)
+    Rails.cache.delete(workflows_cache_key) if bust_cache
 
-  def workflows(_ = nil)
     cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
       installation.list_workflows(project, WORKFLOWS_TRANSFORMATIONS)
     end

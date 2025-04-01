@@ -33,7 +33,15 @@ module Installations
       end
 
       def find_biggest(artifacts)
-        artifacts.max_by { |artifact| artifact.dig("artifact_meta", "file_size_bytes")&.safe_float }
+        artifacts.max_by do |artifact|
+          file_size_bytes = artifact.dig("artifact_meta", "file_size_bytes")
+          case file_size_bytes.class
+          when Integer
+            file_size_bytes
+          when String
+            file_size_bytes.safe_integer
+          end
+        end
       end
 
       def filter_by_name(artifacts, name_pattern)
@@ -74,7 +82,7 @@ module Installations
               {mapped_to: "versionCode", value: inputs[:version_code]},
               {mapped_to: "buildNotes", value: inputs[:build_notes] || ""},
               *inputs[:parameters].map { |mapped_to, value| {mapped_to:, value:} }
-            ]
+            ].reject { |param| param[:value].nil? }
           },
 
           hook_info: {
@@ -82,8 +90,6 @@ module Installations
           }
         }
       }
-
-      params[:json][:build_params][:environments].reject! { |env| env[:value].nil? }
 
       execute(:post, TRIGGER_WORKFLOW_URL.expand(app_slug:).to_s, params)
         .tap { |response| raise Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed) if response.blank? }

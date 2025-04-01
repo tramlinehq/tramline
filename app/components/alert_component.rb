@@ -81,6 +81,10 @@ class AlertComponent < BaseComponent
     @info.present? && @info[:label].present? && @info[:link].present?
   end
 
+  def info_link_type
+    @info[:type] || :link_external
+  end
+
   def border_style
     return if full_screen
     "rounded-lg"
