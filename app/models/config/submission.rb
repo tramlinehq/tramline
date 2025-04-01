@@ -4,6 +4,7 @@
 #
 #  id                             :bigint           not null, primary key
 #  auto_promote                   :boolean          default(FALSE)
+#  automatic_rollout              :boolean          default(FALSE), not null
 #  finish_rollout_in_next_release :boolean          default(FALSE), not null
 #  integrable_type                :string
 #  number                         :integer          indexed, indexed => [release_step_config_id]
