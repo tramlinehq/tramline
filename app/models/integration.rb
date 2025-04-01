@@ -105,7 +105,7 @@ class Integration < ApplicationRecord
   after_create_commit :enqueue_metadata_job, unless: -> { Seed.demo_mode? }
 
   class << self
-    def enqueue_metadata_job
+    def enqueue_metadata_job(id)
       IntegrationMetadataJob.perform_async(id)
     end
 
@@ -299,5 +299,10 @@ class Integration < ApplicationRecord
     if APP_VARIANT_PROVIDABLE_TYPES.exclude?(providable_type)
       errors.add(:providable_type, :not_allowed_for_app_variant)
     end
+  end
+
+  def enqueue_metadata_job
+    return if Seed.demo_mode?
+    IntegrationMetadataJob.perform_async(id)
   end
 end
