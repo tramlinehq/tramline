@@ -633,4 +633,4 @@ module Seed
   end
 end
 
-# rubocop:disable Rails/Output
+# rubocop:enable Rails/Output

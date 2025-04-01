@@ -5,7 +5,7 @@ module Vaultable
     private
 
     def creds
-      if ENV["SEED_MODE"] != "demo"
+      if Seed.not_demo_mode?
         Rails.application.credentials
       else
         OpenStruct.new(
