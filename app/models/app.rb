@@ -97,7 +97,7 @@ class App < ApplicationRecord
   end
 
   def custom_bitrise_pipelines?
-    true
+    Flipper.enabled?(:custom_bitrise_pipelines, self)
   end
 
   def variant_options
