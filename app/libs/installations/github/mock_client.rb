@@ -1,22 +1,18 @@
 module Installations
   class Github::MockClient
     def branch(repo, branch_name)
-      # Return a dummy response similar to what Octokit would return
       {name: branch_name, commit: {sha: "dummy_sha"}}
     end
 
     def ref(repo, ref_name)
-      # Return a dummy ref response
       {object: {sha: "dummy_sha", type: "commit"}}
     end
 
     def create_ref(repo, ref_name, sha)
-      # Return a successful creation response
       {ref: ref_name, url: "https://github.com/#{repo}/#{ref_name}"}
     end
 
     def list_app_installation_repositories
-      # Dummy response for repositories
       {
         repositories: [
           {name: "demo-repo", full_name: "demo-org/demo-repo"}
