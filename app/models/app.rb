@@ -126,7 +126,7 @@ class App < ApplicationRecord
   end
 
   def ready?
-    integrations.ready? and config&.ready?
+    Integration.ready? and config&.ready?
   end
 
   def guided_train_setup?
