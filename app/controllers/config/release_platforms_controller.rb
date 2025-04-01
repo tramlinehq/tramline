@@ -82,7 +82,8 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       production_release_attributes: [
         :id,
         submissions_attributes: [
-          :id, :submission_type, :_destroy, :rollout_stages, :rollout_enabled, :finish_rollout_in_next_release
+          :id, :submission_type, :_destroy, :rollout_stages, :rollout_enabled, :finish_rollout_in_next_release,
+          :automatic_rollout
         ]
       ],
       internal_workflow_attributes: [
@@ -155,6 +156,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       submission_attributes[:rollout_stages] = submission_attributes[:rollout_stages].safe_csv_parse(coerce_float: true)
     else
       submission_attributes[:finish_rollout_in_next_release] = false
+      submission_attributes[:automatic_rollout] = false
     end
   end
 
