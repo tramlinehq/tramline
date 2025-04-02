@@ -26,12 +26,12 @@ namespace :db do
   end
 
   desc "Clear all database tables"
-  task clear_for_demo: [:environment] do
-    clear_database_for_demo
+  task clear_db_tables: [:environment] do
+    clear_database_tables
     puts "Database cleared for demo!"
   end
 
-  def clear_database_for_demo
+  def clear_database_tables
     # Get tables from schema.rb
     tables_to_clear = extract_tables_from_schema
 

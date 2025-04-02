@@ -98,7 +98,7 @@ module Seed
 
     def clear_database
       puts "Clearing database..."
-      Rake::Task["db:clear_for_demo"].invoke
+      Rake::Task["db:clear_db_tables"].invoke
     end
 
     def create_demo_organization
