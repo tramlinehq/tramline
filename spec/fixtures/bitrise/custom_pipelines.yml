@@ -2,3 +2,5 @@ app_id:
   a6f392f6-e92c-4f00-a2e6-a5db7abfb0e0:
     - id: build-and-deploy-pipeline
       name: build-and-deploy-pipeline
+    - id: primary
+      name: primary

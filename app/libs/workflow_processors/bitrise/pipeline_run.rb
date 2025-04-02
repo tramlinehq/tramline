@@ -8,11 +8,11 @@ class WorkflowProcessors::Bitrise::PipelineRun
   end
 
   def successful?
-    status == "success"
+    %w[succeeded success].include?(status)
   end
 
   def failed?
-    status == "failed" || status == "error"
+    %w[failed error].include?(status)
   end
 
   def halted?
