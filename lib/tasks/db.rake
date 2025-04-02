@@ -63,13 +63,11 @@ namespace :db do
   end
 
   def clear_data_from_table(table_name)
-    begin
-      sql = "DELETE FROM #{table_name}"
-      ActiveRecord::Base.connection.execute(sql)
-      puts "  Cleared table: #{table_name}"
-    rescue => e
-      puts "  Warning: Could not clear table #{table_name}: #{e.message}"
-    end
+    sql = "DELETE FROM #{table_name}"
+    ActiveRecord::Base.connection.execute(sql)
+    puts "  Cleared table: #{table_name}"
+  rescue => e
+    puts "  Warning: Could not clear table #{table_name}: #{e.message}"
   end
 
   def nuke_app(app)
