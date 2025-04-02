@@ -1,19 +1,21 @@
+previews:
+  generation: automatic
+
 databases:
   - name: site-db
     plan: free
     databaseName: tramline_site_production
     user: tramline
-    postgresMajorVersion: 14
+    postgresMajorVersion: "14"
 
 services:
   - type: web
     plan: free
     name: site-web
-    env: ruby
+    runtime: ruby
     buildCommand: ./bin/render.build
     startCommand: "bundle exec puma -C config/puma.rb"
     autoDeploy: false
-    branch: main
     envVars:
       - key: HOSTNAME
         fromService:
@@ -38,14 +40,15 @@ services:
           property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
+      - key: RAILS_ENV
+        value: preview
 
   - type: worker
     name: site-jobs
-    env: ruby
+    runtime: ruby
     buildCommand: bundle install
     startCommand: bundle exec sidekiq
     autoDeploy: false
-    branch: main
     envVars:
       - key: HOSTNAME
         fromService:
@@ -70,16 +73,18 @@ services:
           property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
+      - key: RAILS_ENV
+        value: preview
 
-#  - type: web
-#    name: applelink
-#    env: ruby
-#    plan: free
-#    repo: https://github.com/tramlinehq/applelink.git
-#    buildCommand: bundle install
-#    startCommand: ./bin/prod
-#    autoDeploy: false
-#    branch: main
+  #  - type: web
+  #    name: applelink
+  #    env: ruby
+  #    plan: free
+  #    repo: https://github.com/tramlinehq/applelink.git
+  #    buildCommand: bundle install
+  #    startCommand: ./bin/prod
+  #    autoDeploy: false
+  #    branch: main
 
   - type: redis
     plan: free
