@@ -31,7 +31,7 @@ describe "BitriseIntegration" do
       before do
         Flipper.enable_actor(:custom_bitrise_pipelines, app)
         allow(bitrise_integration).to receive(:installation).and_return(installation)
-        mock_file = double("external_file")
+        mock_file = instance_double(StringIO)
         allow(URI).to(
           receive(:open)
             .with(
