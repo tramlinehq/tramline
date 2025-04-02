@@ -3,9 +3,8 @@ previews:
 
 databases:
   - name: site-db
-    plan: standard
-    previewPlan: starter
-    previewDiskSizeGB: 5
+    plan: pro
+    previewPlan: 	basic-256mb
     databaseName: tramline_site_production
     user: tramline
     postgresMajorVersion: "14"
