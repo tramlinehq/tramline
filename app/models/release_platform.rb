@@ -137,7 +137,6 @@ class ReleasePlatform < ApplicationRecord
     end
 
     if base_config_map[:production_release].nil?
-      # Attempt to get the providable object
       integration = app.integrations.build_channels_for_platform(platform).first
 
       if integration.nil? || integration.providable.nil?
