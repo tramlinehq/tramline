@@ -6,7 +6,7 @@ require "rails/all"
 Bundler.require(*Rails.groups)
 
 def add_dummy_gcp_config_for_demo_seed_mode
-  if Seed.demo_mode?
+  if ENV["SEED_MODE"] == "demo"
     Rails.application.credentials.dependencies = ActiveSupport::OrderedOptions.new
     Rails.application.credentials.dependencies.gcp = ActiveSupport::OrderedOptions.new
     Rails.application.credentials.dependencies.gcp.project_id = "dummy-project-id"
