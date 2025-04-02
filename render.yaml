@@ -73,9 +73,6 @@ services:
           property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
-      - key: RAILS_ENV
-        value: production
-        previewValue: preview
 
   #  - type: web
   #    name: applelink
