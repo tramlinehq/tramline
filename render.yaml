@@ -4,7 +4,7 @@ previews:
 databases:
   - name: site-db
     plan: standard
-    previewPlan: free
+    previewPlan: starter
     previewDiskSizeGB: 5
     databaseName: tramline_site_production
     user: tramline
@@ -13,8 +13,6 @@ databases:
 services:
   - type: web
     plan: free
-    previews:
-      plan: free
     name: site-web
     runtime: ruby
     buildCommand: ./bin/render.build
@@ -52,7 +50,7 @@ services:
     startCommand: bundle exec sidekiq
     autoDeploy: false
     previews:
-      plan: free
+      plan: starter
     envVars:
       - key: HOSTNAME
         fromService:
@@ -93,7 +91,7 @@ services:
   - type: redis
     plan: starter
     name: site-redis
-    previewPlan: free
+    previewPlan: starter
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere
