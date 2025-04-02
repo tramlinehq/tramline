@@ -367,7 +367,7 @@ use https://tramline.local.gd:3000.
 
 This is the default `HOST_NAME` that can be changed via `.env.development` if necessary.
 
-### Letter Opener 
+### Letter Opener
 
 All e-mails are caught and can be viewed [here](https://tramline.local.gd:3000/letter_opener).
 
