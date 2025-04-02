@@ -93,8 +93,7 @@ services:
   - type: redis
     plan: starter
     name: site-redis
-    preview:
-      plan: free
+    previewPlan: free
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere
