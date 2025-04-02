@@ -1,5 +1,6 @@
 previews:
   generation: automatic
+  expireAfterDays: 3
 
 databases:
   - name: site-db
@@ -48,8 +49,6 @@ services:
     buildCommand: bundle install
     startCommand: bundle exec sidekiq
     autoDeploy: false
-    previews:
-      plan: starter
     envVars:
       - key: HOSTNAME
         fromService:
@@ -75,7 +74,8 @@ services:
       - key: RAILS_MASTER_KEY
         sync: false
       - key: RAILS_ENV
-        value: preview
+        value: production
+        previewValue: preview
 
   #  - type: web
   #    name: applelink
@@ -90,7 +90,6 @@ services:
   - type: redis
     plan: starter
     name: site-redis
-    previewPlan: starter
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere
