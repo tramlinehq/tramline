@@ -24,8 +24,7 @@ default: &default
 development:
   <<: *default
   database: tramline_site_development
-  host: localhost
-  port: 5442
+  host: postgres
   username: postgres
   password: postgres
 
@@ -55,12 +54,13 @@ development:
   #   log, notice, warning, error, fatal, and panic
   # Defaults to warning.
   #min_messages: notice
+
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
-# test:
-#   <<: *default
-#   database: tramline_site_test
+test:
+  <<: *default
+  database: tramline_site_test
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -82,6 +82,6 @@ development:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
-# production:
-#   <<: *default
-#   url: <%= ENV['DATABASE_URL'] %>
+production:
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
