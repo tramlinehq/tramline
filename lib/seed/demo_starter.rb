@@ -101,9 +101,7 @@ module Seed
       # Disable referential integrity to allow truncating tables with foreign key constraints
       ActiveRecord::Base.connection.execute("SET session_replication_role = 'replica';")
 
-      # Truncate all tables in the proper order to respect dependencies
       tables_to_truncate = [
-        # Start with join tables and dependent tables
         "user_authentications",
         "approval_assignees",
         "approval_items",
@@ -148,7 +146,6 @@ module Seed
         "organizations"
       ]
 
-      # Execute truncate for each table
       tables_to_truncate.each do |table|
         ActiveRecord::Base.connection.execute("TRUNCATE TABLE #{table} CASCADE")
         puts "  Truncated #{table} table"
@@ -212,22 +209,18 @@ module Seed
             unique_authn_id: email
           )
 
-          # Set password and confirmation
           email_authentication.password = password
           email_authentication.confirmed_at = DateTime.now
           email_authentication.save!
 
-          # Create the user_authentication record to associate the user with the email authentication
           Accounts::UserAuthentication.create!(
             user: user,
             authenticatable: email_authentication
           )
         end
 
-        # Assign to team (alternating)
         team = teams[index % teams.size]
 
-        # Create membership if it doesn't exist
         unless Accounts::Membership.exists?(user: user, organization: organization)
           role = (index == 0) ? :owner : :developer
           Accounts::Membership.find_or_create_by!(
@@ -263,10 +256,8 @@ module Seed
           description: "Demo #{platform} app for Tramline"
         )
 
-        # Set external_id
         app.update_column(:external_id, "demo-app-#{SecureRandom.hex(4)}") # rubocop:disable Rails/SkipsModelValidations
 
-        # Create app config
         unless AppConfig.exists?(app: app)
           AppConfig.create!(
             app: app,
@@ -284,7 +275,6 @@ module Seed
 
     def setup_integrations(apps)
       apps.each do |app|
-        # GitHub integration - skip validations for seed data
         github_providable = GithubIntegration.new(installation_id: "12345678")
         github_providable.save(validate: false)
 
@@ -297,10 +287,8 @@ module Seed
         )
         github_integration.save(validate: false)
 
-        # Set the inverse relationship
         github_providable.instance_variable_set(:@integration, github_integration)
 
-        # Slack integration
         slack_providable = SlackIntegration.new(oauth_access_token: "xoxp-demo-token-#{SecureRandom.hex(8)}")
         slack_providable.save(validate: false)
 
@@ -313,14 +301,11 @@ module Seed
         )
         slack_integration.save(validate: false)
 
-        # Set the inverse relationship
         slack_providable.instance_variable_set(:@integration, slack_integration)
 
-        # Bugsnag integration - skip validation that would check the token with Bugsnag API
         bugsnag_providable = BugsnagIntegration.new(access_token: "bugsnag-demo-token-#{SecureRandom.hex(8)}")
         bugsnag_providable.save(validate: false)
 
-        # Set some metadata to simulate the response from Bugsnag API
         bugsnag_integration = Integration.new(
           integrable: app,
           integrable_type: "App",
@@ -331,12 +316,9 @@ module Seed
         )
         bugsnag_integration.save(validate: false)
 
-        # Set the inverse relationship
         bugsnag_providable.instance_variable_set(:@integration, bugsnag_integration)
 
-        # App store integration for iOS
         if app.platform == "ios"
-          # Skip set_external_details_on_app callback
           AppStoreIntegration.skip_callback(:create, :before, :set_external_details_on_app)
 
           app_store_providable = AppStoreIntegration.new(
@@ -346,7 +328,6 @@ module Seed
           )
           app_store_providable.save(validate: false)
 
-          # Re-enable the callback for future records
           AppStoreIntegration.set_callback(:create, :before, :set_external_details_on_app)
 
           app_store_integration = Integration.new(
@@ -357,12 +338,9 @@ module Seed
             providable: app_store_providable
           )
           app_store_integration.save(validate: false)
-
-          # Set the inverse relationship to avoid the error
           app_store_providable.instance_variable_set(:@integration, app_store_integration)
         end
 
-        # Play store integration for Android
         if app.platform == "android"
           play_store_providable = GooglePlayStoreIntegration.new(
             json_key: '{"type":"service_account","project_id":"demo-project","client_email":"demo@example.com"}'
@@ -378,7 +356,6 @@ module Seed
           )
           play_store_integration.save(validate: false)
 
-          # Set the inverse relationship
           play_store_providable.instance_variable_set(:@integration, play_store_integration)
         end
 
@@ -388,7 +365,6 @@ module Seed
 
     def create_releases_and_commits(apps)
       apps.each do |app|
-        # Create a train for the app using our mock class
         train = MockTrain.new(
           app: app,
           name: "#{app.name} Release Train",
@@ -399,12 +375,10 @@ module Seed
           version_current: "1.0.0"
         )
 
-        # Skip validations
         train.save(validate: false)
 
         puts "Created train: #{train.name} for app: #{app.name}"
 
-        # Create a release platform using our mock class
         release_platform = MockReleasePlatform.new(
           app: app,
           name: "#{app.platform.capitalize} Platform",
@@ -412,10 +386,8 @@ module Seed
           platform: app.platform
         )
 
-        # Skip validations
         release_platform.save(validate: false)
 
-        # Manually set some basic platform config
         rc_ci_cd_channel = {id: "build", name: "Build"}
         base_config_map = {
           release_platform: release_platform,
@@ -439,11 +411,9 @@ module Seed
         platform_config.release_platform = release_platform
         platform_config.save(validate: false)
 
-        # Associate the platform with its config
         release_platform.platform_config = platform_config
         release_platform.save(validate: false)
 
-        # Create minimal release index
         release_index = ReleaseIndex.new(
           train: train,
           tolerable_range: "[0,10)"
@@ -452,13 +422,11 @@ module Seed
 
         puts "Created release platform: #{release_platform.name} for app: #{app.name}"
 
-        # Create releases based on size configuration
         release_count = rand(@config[:release_count])
 
         release_count.times do |i|
           version = "1.#{i / 5}.#{i % 5}"
 
-          # For the last two releases, set one to upcoming and one to running
           status = if i == release_count - 1
             "created"
           elsif i == release_count - 2
@@ -482,30 +450,25 @@ module Seed
             slug: "release-#{version}-#{SecureRandom.hex(4)}"
           )
 
-          # Skip the set_version callback that's causing issues
           Release.skip_callback(:create, :before, :set_version)
           release.save(validate: false)
           Release.set_callback(:create, :before, :set_version)
 
-          # Create release platform run with explicit release_version
           release_platform_run = ReleasePlatformRun.new(
             release_platform: release_platform,
             release: release,
             code_name: "#{app.name} #{version}",
             scheduled_at: (release_count - i).weeks.ago,
             status: status,
-            release_version: version,  # Explicitly set release_version
+            release_version: version,
             completed_at: (status == "finished") ? (release_count - i - 1).weeks.ago : nil,
             stopped_at: (status == "stopped") ? (release_count - i - 1).weeks.ago : nil
           )
 
-          # Skip validations
           release_platform_run.save(validate: false)
-
-          # Create commits based on size configuration
           commit_count = rand(@config[:commits_per_release])
-
           last_commit = nil
+
           commit_count.times do |j|
             commit = Commit.new(
               release_platform_id: release_platform.id,
@@ -519,15 +482,12 @@ module Seed
               url: "https://github.com/tramlineapp/#{app.name.downcase}/commit/#{SecureRandom.hex(20)}"
             )
 
-            # Skip validations
             commit.save(validate: false)
             last_commit = commit
           end
 
           if last_commit && status != "created"
-            # Create workflow runs based on size configuration
             @config[:workflow_runs_per_release].times do |workflow_index|
-              # Create a unique commit for this workflow run
               workflow_commit = Commit.new(
                 release_platform_id: release_platform.id,
                 release: release,
@@ -540,7 +500,6 @@ module Seed
                 url: "https://github.com/tramlineapp/#{app.name.downcase}/commit/#{SecureRandom.hex(20)}"
               )
 
-              # Skip validations
               workflow_commit.save(validate: false)
 
               pre_prod_release = PreProdRelease.new(
@@ -550,7 +509,6 @@ module Seed
                 status: "created"
               )
 
-              # Skip validations
               pre_prod_release.save(validate: false)
 
               workflow_run = WorkflowRun.new(
@@ -570,8 +528,6 @@ module Seed
                   "parameters" => []
                 }
               )
-
-              # Skip validations
               workflow_run.save(validate: false)
 
               build = Build.new(
@@ -583,14 +539,10 @@ module Seed
                 generated_at: (release_count - i).weeks.ago + (workflow_index + 2).hours
               )
 
-              # Skip validations
               build.save(validate: false)
 
               if status == "finished" || status == "on_track"
-                # Create store submissions
                 store_submission_type = (app.platform == "ios") ? "AppStoreSubmission" : "PlayStoreSubmission"
-
-                # Use different statuses based on platform
                 submission_status = if app.platform == "ios"
                   (status == "finished") ? "approved" : "submitted_for_review"
                 else
@@ -605,10 +557,7 @@ module Seed
                   approved_at: (status == "finished") ? (release_count - i - 1).weeks.ago - 1.day : nil
                 )
 
-                # Skip validations
                 store_submission.save(validate: false)
-
-                # For completed releases, create production release
                 if status == "finished"
                   # Only create an active production release if there isn't one already
                   unless ProductionRelease.exists?(release_platform_run: release_platform_run, status: "active")
@@ -617,8 +566,6 @@ module Seed
                       build: build,
                       status: "active"
                     )
-
-                    # Skip validations
                     production_release.save(validate: false)
                   end
                 end
