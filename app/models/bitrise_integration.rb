@@ -183,7 +183,7 @@ class BitriseIntegration < ApplicationRecord
     raw_data = URI.open(
       "https://storage.googleapis.com/tramline-public-assets/custom_bitrise_pipelines.yml?ignoreCache=0",
       "Cache-Control" => "max-age=0",
-      read_timeout: 10
+      :read_timeout => 10
     ).read # ignoring caches ensures we don't have to wait for new changes in the file to propagate
     app_id = integrable.id
     parsed_content = YAML.safe_load(raw_data)
