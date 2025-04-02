@@ -67,7 +67,7 @@ class Build < ApplicationRecord
 
   def attach_artifact!
     # return mock_attach_artifact if sandbox_mode?
-    return if artifacts_url.blank?
+    # return if artifacts_url.blank?
     artifact_data = get_build_artifact
 
     stream = artifact_data[:stream]
