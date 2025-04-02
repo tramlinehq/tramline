@@ -78,7 +78,6 @@ module Seed
     end
 
     def call
-      puts "Clearing database..."
       clear_database
 
       puts "Seeding database with #{@size} demo data..."
@@ -92,69 +91,14 @@ module Seed
         create_releases_and_commits(apps)
       end
 
-      puts "Completed seeding #{@size} demo database"
+      puts "[size: #{@size}]: Completed seeding demo database"
     end
 
     private
 
     def clear_database
-      # Disable referential integrity to allow truncating tables with foreign key constraints
-      ActiveRecord::Base.connection.execute("SET session_replication_role = 'replica';")
-
-      tables_to_truncate = [
-        "user_authentications",
-        "approval_assignees",
-        "approval_items",
-        "build_artifacts",
-        "builds",
-        "commits",
-        "invites",
-        "memberships",
-        "workflow_runs",
-        "release_platform_runs",
-        "release_platforms",
-        "releases",
-        "pre_prod_releases",
-        "production_releases",
-        "store_submissions",
-        "store_rollouts",
-
-        # Main model tables
-        "trains",
-        "apps",
-        "app_configs",
-        "app_variants",
-        "external_apps",
-        "external_builds",
-        "integrations",
-        "github_integrations",
-        "google_play_store_integrations",
-        "app_store_integrations",
-        "bitbucket_integrations",
-        "slack_integrations",
-        "bugsnag_integrations",
-        "bitrise_integrations",
-        "crashlytics_integrations",
-        "google_firebase_integrations",
-        "jira_integrations",
-
-        # User and organization tables
-        "email_authentications",
-        "sso_authentications",
-        "teams",
-        "users",
-        "organizations"
-      ]
-
-      tables_to_truncate.each do |table|
-        ActiveRecord::Base.connection.execute("TRUNCATE TABLE #{table} CASCADE")
-        puts "  Truncated #{table} table"
-      rescue => e
-        puts "  Warning: Couldn't truncate #{table}: #{e.message}"
-      end
-    ensure
-      # Re-enable referential integrity - this will always run, even if there's an error
-      ActiveRecord::Base.connection.execute("SET session_replication_role = 'origin';")
+      puts "Clearing database..."
+      Rake::Task["db:clear_for_demo"].invoke
     end
 
     def create_demo_organization
