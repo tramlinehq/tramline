@@ -3,7 +3,7 @@ previews:
 
 databases:
   - name: site-db
-    plan: free
+    plan: standard
     databaseName: tramline_site_production
     user: tramline
     postgresMajorVersion: "14"
@@ -87,7 +87,7 @@ services:
   #    branch: main
 
   - type: redis
-    plan: free
+    plan: starter
     name: site-redis
     ipAllowList:
       - source: 0.0.0.0/0
