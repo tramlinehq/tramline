@@ -4,6 +4,8 @@ previews:
 databases:
   - name: site-db
     plan: standard
+    previewPlan: free
+    previewDiskSizeGB: 5
     databaseName: tramline_site_production
     user: tramline
     postgresMajorVersion: "14"
@@ -11,6 +13,8 @@ databases:
 services:
   - type: web
     plan: free
+    previews:
+      plan: free
     name: site-web
     runtime: ruby
     buildCommand: ./bin/render.build
@@ -40,8 +44,6 @@ services:
           property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
-      - key: RAILS_ENV
-        value: preview
 
   - type: worker
     name: site-jobs
@@ -49,6 +51,8 @@ services:
     buildCommand: bundle install
     startCommand: bundle exec sidekiq
     autoDeploy: false
+    previews:
+      plan: free
     envVars:
       - key: HOSTNAME
         fromService:
@@ -89,6 +93,8 @@ services:
   - type: redis
     plan: starter
     name: site-redis
+    preview:
+      plan: free
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere
