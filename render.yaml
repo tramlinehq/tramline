@@ -73,17 +73,7 @@ services:
           property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
-
-  #  - type: web
-  #    name: applelink
-  #    env: ruby
-  #    plan: free
-  #    repo: https://github.com/tramlinehq/applelink.git
-  #    buildCommand: bundle install
-  #    startCommand: ./bin/prod
-  #    autoDeploy: false
-  #    branch: main
-
+  
   - type: redis
     plan: starter
     name: site-redis
