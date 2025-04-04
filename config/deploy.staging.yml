@@ -1,0 +1,124 @@
+service: tramline-staging-site
+image: tramline-staging-site
+registry:
+  server: gcr.io
+  username: <your-gcp-service-account-email>
+  password: "{{GCP_SERVICE_ACCOUNT_JSON}}" # TODO: add actual value to secrets file
+
+# DNS Configuration
+dns:
+  provider: "gcp"
+  zone: "{{GCP_DNS_ZONE}}" # TODO: add actual value to secrets file
+  domain: "staging.tramline.com"
+  records:
+    - type: A
+      name: "@"
+      ttl: 300
+      value: "{{GCP_INSTANCE_IP}}" # TODO: add actual value to secrets file
+    - type: CNAME
+      name: "www"
+      ttl: 300
+      value: "staging.tramline.com"
+    - type: TXT
+      name: "@"
+      ttl: 300
+      value: "v=spf1 include:_spf.google.com ~all"
+    - type: MX
+      name: "@"
+      ttl: 300
+      value: "10 aspmx.l.google.com"
+      priority: 10
+
+# GCP Compute Engine configuration
+servers:
+  web:
+    hosts:
+      - 34.123.45.67 # TODO: add actual value of instance here
+    labels:
+      traefik.http.routers.tramline-site.rule: Host(`staging.tramline.com`) # TODO: add actual value of staging domain
+      traefik.http.services.tramline-site.loadbalancer.server.port: 3000
+
+  worker:
+    hosts:
+      - 34.123.45.67 # TODO: add actual value of instance here
+      # Same instance for worker, or use a different one
+
+# Environment variables
+env:
+  clear:
+    RAILS_ENV: staging
+    RAILS_MASTER_KEY: "{{RAILS_MASTER_KEY}}" # Place your master key here
+    DATABASE_URL: "postgres://postgres:{{POSTGRES_PASSWORD}}@{{POSTGRES_HOST}}:5432/tramline_site_staging"
+    REDIS_URL: "redis://{{REDIS_HOST}}:6379/1"
+    ARTIFACT_BUILDS_BUCKET_NAME: "artifacts-build-staging"
+  secret:
+    - RAILS_MASTER_KEY
+    - POSTGRES_PASSWORD
+
+# Health check configuration - TODO: see if this is needed
+healthcheck:
+  path: /up
+  port: 3000
+  max_attempts: 3
+  interval: 10s
+
+# Rolling deployment configuration - TODO: see if this is needed (k8s concept here)
+rolling_deploy:
+  max_unavailable: 0
+  max_surge: 1
+
+# Build configuration
+builder:
+  multiarch: false
+  args:
+    RUBY_VERSION: "3.3.6"
+    PG_MAJOR: "14"
+
+# Asset compilation
+asset_path: public/assets
+
+# SSH configuration for GCP
+ssh:
+  user: "{{GCP_SSH_USER}}" # Replace with your GCP SSH user
+  proxy_command: "gcloud compute ssh %h --zone={{GCP_ZONE}} --command='nc %h %p'" # Replace with your GCP zone
+
+# GCP specific configurations
+gcp:
+  project: "{{GCP_PROJECT_ID}}" # Replace with your GCP project ID
+  zone: "{{GCP_ZONE}}" # Replace with your GCP zone
+  machine_type: "e2-medium" # Adjust based on your needs
+  disk_size: 20 # GB
+  tags:
+    - staging
+    - tramline-staging-site
+
+# Monitoring configuration - TODO: see if this is needed
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    port: 9090
+  grafana:
+    enabled: true
+    port: 3000
+
+# Logging configuration - TODO: see if this is needed
+logging:
+  driver: "gcplogs"
+  options:
+    gcp-project: "{{GCP_PROJECT_ID}}"
+    gcp-log-name: "tramline-site-staging"
+
+# Security configuration - TODO: see if this is needed
+security:
+  ssl:
+    enabled: true
+    provider: "letsencrypt"
+    email: "{{SSL_EMAIL}}" # TODO: add actual value to secrets file
+  firewall:
+    - port: 80
+      protocol: tcp
+    - port: 443
+      protocol: tcp
+    - port: 3000
+      protocol: tcp
