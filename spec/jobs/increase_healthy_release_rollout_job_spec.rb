@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe IncreaseHealthyReleaseRolloutsJob do
+RSpec.describe IncreaseHealthyReleaseRolloutJob do
   let(:play_store_integration) { instance_double(GooglePlayStoreIntegration) }
   let(:play_store_submission) { create(:play_store_submission, :prod_release) }
 
@@ -12,17 +12,16 @@ RSpec.describe IncreaseHealthyReleaseRolloutsJob do
   end
 
   context "when a play store rollout (staged) is available for rollout for the first time" do
-    let!(:store_rollout) { create(:store_rollout, :play_store, :created, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission) }
+    let(:store_rollout) { create(:store_rollout, :play_store, :created, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission) }
 
-    it "rolls out the release" do
-      described_class.new.perform
-      expect(play_store_integration).to have_received(:rollout_release)
-      expect(store_rollout.reload.current_stage).to eq(0)
+    it "does not roll out the release" do
+      described_class.new.perform(store_rollout.id)
+      expect(play_store_integration).not_to have_received(:rollout_release)
     end
   end
 
   context "when a play store rollout (staged) is rolled out in first stage" do
-    let!(:store_rollout) { create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 1) }
+    let(:store_rollout) { create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 1) }
 
     context "when release is healthy" do
       before do
@@ -30,9 +29,17 @@ RSpec.describe IncreaseHealthyReleaseRolloutsJob do
       end
 
       it "rolls out the release to next stage" do
-        described_class.new.perform
-        expect(play_store_integration).to have_received(:rollout_release)
-        expect(store_rollout.reload.current_stage).to eq(2)
+        freeze_time do
+          described_class.new.perform(store_rollout.id)
+          expect(play_store_integration).to have_received(:rollout_release)
+          expect(store_rollout.reload.current_stage).to eq(2)
+          expect(store_rollout.automatic_rollout_updated_at).to eq(Time.current)
+        end
+      end
+
+      it "schedules rollout job after 24 hours" do
+        expect(described_class).to receive(:perform_in).with(24.hours, store_rollout.id)
+        described_class.new.perform(store_rollout.id)
       end
     end
 
@@ -42,31 +49,33 @@ RSpec.describe IncreaseHealthyReleaseRolloutsJob do
       end
 
       it "does not roll out the release to next stage" do
-        described_class.new.perform
+        described_class.new.perform(store_rollout.id)
         expect(play_store_integration).not_to have_received(:rollout_release)
-        expect(store_rollout.reload.current_stage).to eq(1)
+        expect(store_rollout.reload.current_stage).not_to eq(2)
+        expect(store_rollout.automatic_rollout_updated_at).to be_nil
+      end
+
+      it "schedules rollout job after 24 hours" do
+        expect(described_class).to receive(:perform_in).with(24.hours, store_rollout.id)
+        described_class.new.perform(store_rollout.id)
       end
     end
   end
 
   context "when a play store rollout (staged) is halted" do
-    before do
-      create(:store_rollout, :play_store, :halted, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission)
-    end
+    let(:store_rollout) { create(:store_rollout, :play_store, :halted, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission) }
 
     it "does not rollout the release" do
-      described_class.new.perform
+      described_class.new.perform(store_rollout.id)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
   end
 
   context "when a play store rollout (staged) is completed" do
-    before do
-      create(:store_rollout, :play_store, :completed, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission)
-    end
+    let(:store_rollout) { create(:store_rollout, :play_store, :completed, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission) }
 
     it "does not rollout the release" do
-      described_class.new.perform
+      described_class.new.perform(store_rollout.id)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
   end
