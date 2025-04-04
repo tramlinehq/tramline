@@ -1,0 +1,91 @@
+x-app: &app
+  build:
+    dockerfile: ./Dockerfile
+    context: .
+  image: tramline-site:${TAG:-staging}
+  restart: unless-stopped
+
+x-backend: &backend
+  <<: *app
+  environment:
+    RAILS_ENV: ${RAILS_ENV:-staging}
+    REDIS_URL: ${REDIS_URL:-redis://redis:6379/}
+    DATABASE_URL: ${DATABASE_URL:-postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432}
+    BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  web:
+    <<: *backend
+    command: bundle exec puma -C config/puma.rb
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+    networks:
+      - backend
+
+  worker:
+    <<: *backend
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    networks:
+      - backend
+
+  postgres:
+    image: postgres:14-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-tramline_site_staging}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - backend
+
+  redis:
+    image: redis:6.2-alpine
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - backend
+
+networks:
+  backend:
+
+volumes:
+  postgres_data:
+  redis_data: 
