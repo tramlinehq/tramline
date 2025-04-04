@@ -1,18 +1,19 @@
-previews:
-  generation: automatic
-  expireAfterDays: 3
+#previews:
+#  generation: manual
+#  expireAfterDays: 2
 
 databases:
   - name: site-db
-    plan: pro-8gb
-    previewPlan: basic-256mb
+    plan: basic-1gb
+    # previewPlan: basic-256mb
     databaseName: tramline_site_production
     user: tramline
     postgresMajorVersion: "14"
 
 services:
   - type: web
-    plan: free
+    plan: pro
+    # previewPlan: standard
     name: site-web
     runtime: ruby
     buildCommand: ./bin/render.build
@@ -45,6 +46,8 @@ services:
 
   - type: worker
     name: site-jobs
+    plan: standard
+    # previewPlan: starter
     runtime: ruby
     buildCommand: bundle install
     startCommand: bundle exec sidekiq
@@ -73,9 +76,10 @@ services:
           property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
-  
+
   - type: redis
     plan: starter
+    # previewPlan: free
     name: site-redis
     ipAllowList:
       - source: 0.0.0.0/0
