@@ -846,6 +846,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "automatic_rollout", default: false, null: false
+    t.datetime "automatic_rollout_updated_at"
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
     t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
   end
