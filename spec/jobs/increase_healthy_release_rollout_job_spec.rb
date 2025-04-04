@@ -11,7 +11,7 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
     allow(play_store_integration).to receive(:rollout_release).and_return(GitHub::Result.new { true })
   end
 
-  context "when a play store rollout (staged) is available for rollout for the first time" do
+  context "when a staged play store rollout is created (rollout not initiated by user)" do
     let(:store_rollout) { create(:store_rollout, :play_store, :created, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission) }
 
     it "does not roll out the release" do
@@ -20,7 +20,7 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
     end
   end
 
-  context "when a play store rollout (staged) is rolled out in first stage" do
+  context "when a staged play store rollout is in first stage" do
     let(:store_rollout) { create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 1) }
 
     context "when release is healthy" do
@@ -62,7 +62,7 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
     end
   end
 
-  context "when a play store rollout (staged) is halted" do
+  context "when a staged play store rollout is halted" do
     let(:store_rollout) { create(:store_rollout, :play_store, :halted, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission) }
 
     it "does not rollout the release" do
@@ -71,34 +71,45 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
     end
   end
 
-  context "when a play store rollout (staged) is completed" do
+  context "when a staged play store rollout is completed" do
     let(:store_rollout) { create(:store_rollout, :play_store, :completed, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission) }
 
     it "does not rollout the release" do
       described_class.new.perform(store_rollout.id)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
-  end
 
-  context "when a play store rollout (staged) is available for rollout without automatic rollout" do
-    before do
-      create(:store_rollout, :play_store, :created, is_staged_rollout: true, automatic_rollout: false, store_submission: play_store_submission)
-    end
-
-    it "does not rollout the release" do
-      described_class.new.perform
-      expect(play_store_integration).not_to have_received(:rollout_release)
+    it "does not schedule rollout job after 24 hours" do
+      expect(described_class).not_to receive(:perform_in).with(24.hours, store_rollout.id)
+      described_class.new.perform(store_rollout.id)
     end
   end
 
-  context "when a play store submission (non-staged) is available for rollout" do
-    before do
-      create(:store_rollout, :play_store, :created, is_staged_rollout: false, store_submission: play_store_submission)
-    end
+  context "when a staged play store rollout does not have automatic rollout" do
+    let(:store_rollout) { create(:store_rollout, :play_store, :created, is_staged_rollout: true, automatic_rollout: false, store_submission: play_store_submission) }
 
     it "does not rollout the release" do
-      described_class.new.perform
+      described_class.new.perform(store_rollout.id)
       expect(play_store_integration).not_to have_received(:rollout_release)
+    end
+
+    it "does not schedule rollout job after 24 hours" do
+      expect(described_class).not_to receive(:perform_in).with(24.hours, store_rollout.id)
+      described_class.new.perform(store_rollout.id)
+    end
+  end
+
+  context "when a non-staged play store rollout is created" do
+    let(:store_rollout) { create(:store_rollout, :play_store, :created, is_staged_rollout: false, store_submission: play_store_submission) }
+
+    it "does not rollout the release" do
+      described_class.new.perform(store_rollout.id)
+      expect(play_store_integration).not_to have_received(:rollout_release)
+    end
+
+    it "does not schedule rollout job after 24 hours" do
+      expect(described_class).not_to receive(:perform_in).with(24.hours, store_rollout.id)
+      described_class.new.perform(store_rollout.id)
     end
   end
 end
