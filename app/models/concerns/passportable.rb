@@ -6,6 +6,8 @@ module Passportable
   end
 
   def event_stamp!(reason:, kind:, data: {}, ts: Time.current)
+    return if Seed.demo_mode?
+
     PassportJob.perform_async(
       id,
       self.class.name,
@@ -23,6 +25,8 @@ module Passportable
   end
 
   def event_stamp_now!(reason:, kind:, data: {})
+    return if Seed.demo_mode?
+
     PassportJob.new.perform(
       id,
       self.class.name,

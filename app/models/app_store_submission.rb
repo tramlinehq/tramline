@@ -279,15 +279,18 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def poll_external_status
+    return if Seed.demo_mode?
     StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, true)
   end
 
   def update_external_status
+    return if Seed.demo_mode?
     StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, false)
   end
 
   def on_start_prepare!
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
+    return if Seed.demo_mode?
     StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
   end
 
@@ -297,6 +300,7 @@ class AppStoreSubmission < StoreSubmission
 
   def on_start_submission!
     event_stamp!(reason: :submitting_for_review, kind: :notice, data: stamp_data)
+    return if Seed.demo_mode?
     StoreSubmissions::AppStore::SubmitForReviewJob.perform_async(id)
   end
 
@@ -311,11 +315,13 @@ class AppStoreSubmission < StoreSubmission
 
   def on_start_cancellation!
     event_stamp!(reason: :cancelling, kind: :notice, data: stamp_data)
+    return if Seed.demo_mode?
     StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id)
   end
 
   def on_cancel!
     event_stamp!(reason: :cancelled, kind: :error, data: stamp_data)
+    return if Seed.demo_mode?
     StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id, false)
   end
 
