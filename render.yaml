@@ -19,6 +19,11 @@ services:
     buildCommand: ./bin/render.build
     startCommand: "bundle exec puma -C config/puma.rb"
     autoDeploy: false
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetCPUPercent: 80
+      targetMemoryPercent: 85
     envVars:
       - key: HOSTNAME
         fromService:
