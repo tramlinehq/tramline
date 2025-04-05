@@ -4,6 +4,7 @@
 #
 #  id                             :bigint           not null, primary key
 #  auto_promote                   :boolean          default(FALSE)
+#  automatic_rollout              :boolean          default(FALSE)
 #  finish_rollout_in_next_release :boolean          default(FALSE), not null
 #  integrable_type                :string
 #  number                         :integer          indexed, indexed => [release_step_config_id]
@@ -49,7 +50,8 @@ class Config::Submission < ApplicationRecord
       finish_rollout_in_next_release: finish_rollout_in_next_release,
       rollout_config: {
         enabled: rollout_enabled,
-        stages: rollout_stages
+        stages: rollout_stages,
+        automatic: automatic_rollout
       }
     }
   end
@@ -78,6 +80,7 @@ class Config::Submission < ApplicationRecord
     submission.submission_external = Config::SubmissionExternal.from_json(json["submission_config"])
     submission.rollout_stages = json.dig("rollout_config", "stages")
     submission.rollout_enabled = json.dig("rollout_config", "enabled")
+    submission.automatic_rollout = json.dig("rollout_config", "automatic")
     submission
   end
 
