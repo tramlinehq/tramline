@@ -12,8 +12,7 @@ class IncreaseHealthyReleaseRolloutJob < ApplicationJob
       Action.increase_the_store_rollout!(rollout)
       rollout.update!(automatic_rollout_updated_at: Time.current)
     end
-
-    # Enqueue self after 24 hours if not fully released
+  ensure
     IncreaseHealthyReleaseRolloutJob.perform_in(24.hours, play_store_rollout_id)
   end
 end
