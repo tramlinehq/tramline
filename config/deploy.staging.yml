@@ -2,7 +2,7 @@ service: tramline-staging-site
 image: tramline-staging-site
 registry:
   server: gcr.io
-  username: <your-gcp-service-account-email>
+  username: staging-sam-trial@decoded-theme-355014.iam.gserviceaccount.com
   password: "{{GCP_SERVICE_ACCOUNT_JSON}}" # TODO: add actual value to secrets file
 
 # DNS Configuration
@@ -33,15 +33,14 @@ dns:
 servers:
   web:
     hosts:
-      - 34.123.45.67 # TODO: add actual value of instance here
+      - 35.209.23.61 # NOTE: this is a permanent IP address for the staging site on GCP
     labels:
       traefik.http.routers.tramline-site.rule: Host(`staging.tramline.com`) # TODO: add actual value of staging domain
       traefik.http.services.tramline-site.loadbalancer.server.port: 3000
 
   worker:
     hosts:
-      - 34.123.45.67 # TODO: add actual value of instance here
-      # Same instance for worker, or use a different one
+      - 35.209.23.61 # NOTE: this is a permanent IP address for the staging site on GCP
 
 # Environment variables
 env:
