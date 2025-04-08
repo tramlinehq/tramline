@@ -38,8 +38,10 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
       end
 
       it "schedules rollout job after 24 hours" do
-        expect(described_class).to receive(:perform_in).with(24.hours, store_rollout.id)
-        described_class.new.perform(store_rollout.id)
+        expect {
+          described_class.new.perform(store_rollout.id)
+        }.to change(described_class.jobs, :size).by(1)
+        expect(described_class.jobs.first["at"] - Time.current.to_f).to be_within(1.minute).of(24.hours.to_i)
       end
     end
 
@@ -56,8 +58,10 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
       end
 
       it "schedules rollout job after 24 hours" do
-        expect(described_class).to receive(:perform_in).with(24.hours, store_rollout.id)
-        described_class.new.perform(store_rollout.id)
+        expect {
+          described_class.new.perform(store_rollout.id)
+        }.to change(described_class.jobs, :size).by(1)
+        expect(described_class.jobs.first["at"] - Time.current.to_f).to be_within(1.minute).of(24.hours.to_i)
       end
     end
   end
@@ -80,8 +84,9 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
     end
 
     it "does not schedule rollout job after 24 hours" do
-      expect(described_class).not_to receive(:perform_in).with(24.hours, store_rollout.id)
-      described_class.new.perform(store_rollout.id)
+      expect {
+        described_class.new.perform(store_rollout.id)
+      }.not_to change(described_class.jobs, :size)
     end
   end
 
@@ -94,8 +99,9 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
     end
 
     it "does not schedule rollout job after 24 hours" do
-      expect(described_class).not_to receive(:perform_in).with(24.hours, store_rollout.id)
-      described_class.new.perform(store_rollout.id)
+      expect {
+        described_class.new.perform(store_rollout.id)
+      }.not_to change(described_class.jobs, :size)
     end
   end
 
@@ -108,8 +114,9 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
     end
 
     it "does not schedule rollout job after 24 hours" do
-      expect(described_class).not_to receive(:perform_in).with(24.hours, store_rollout.id)
-      described_class.new.perform(store_rollout.id)
+      expect {
+        described_class.new.perform(store_rollout.id)
+      }.not_to change(described_class.jobs, :size)
     end
   end
 end
