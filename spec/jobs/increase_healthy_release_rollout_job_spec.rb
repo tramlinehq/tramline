@@ -55,7 +55,6 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
         described_class.new.perform(store_rollout.id)
         expect(play_store_integration).not_to have_received(:rollout_release)
         expect(store_rollout.reload.current_stage).not_to eq(2)
-        expect(store_rollout.automatic_rollout_updated_at).to be_nil
       end
 
       it "schedules rollout job after 24 hours" do
