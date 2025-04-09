@@ -6,7 +6,7 @@ schedule_train_releases:
   cron: "0 */1 * * *"
   class: "ScheduleTrainReleasesJob"
   active_job: false
-increase_healthy_release_rollouts:
-  cron: "0 12 * * *"
-  class: "IncreaseHealthyReleaseRolloutsJob"
+verify_automatic_rollout:
+  cron: "*/15 * * * *"
+  class: "VerifyAutomaticRolloutJob"
   active_job: false

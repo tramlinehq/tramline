@@ -2,19 +2,20 @@
 #
 # Table name: store_rollouts
 #
-#  id                           :uuid             not null, primary key
-#  automatic_rollout            :boolean          default(FALSE), not null
-#  automatic_rollout_updated_at :datetime
-#  completed_at                 :datetime
-#  config                       :decimal(8, 5)    default([]), not null, is an Array
-#  current_stage                :integer
-#  is_staged_rollout            :boolean          default(FALSE)
-#  status                       :string           not null
-#  type                         :string           not null
-#  created_at                   :datetime         not null
-#  updated_at                   :datetime         not null
-#  release_platform_run_id      :uuid             not null, indexed
-#  store_submission_id          :uuid             indexed
+#  id                               :uuid             not null, primary key
+#  automatic_rollout                :boolean          default(FALSE), not null
+#  automatic_rollout_next_update_at :datetime
+#  automatic_rollout_updated_at     :datetime
+#  completed_at                     :datetime
+#  config                           :decimal(8, 5)    default([]), not null, is an Array
+#  current_stage                    :integer
+#  is_staged_rollout                :boolean          default(FALSE)
+#  status                           :string           not null
+#  type                             :string           not null
+#  created_at                       :datetime         not null
+#  updated_at                       :datetime         not null
+#  release_platform_run_id          :uuid             not null, indexed
+#  store_submission_id              :uuid             indexed
 #
 class StoreRollout < ApplicationRecord
   has_paper_trail
@@ -49,7 +50,7 @@ class StoreRollout < ApplicationRecord
   delegate :stale?, :actionable?, to: :parent_release
 
   scope :production, -> { joins(store_submission: :production_release) }
-  scope :automatic_rollouts_enabled, -> { where(status: [:created, :started], is_staged_rollout: true, automatic_rollout: true) }
+  scope :automatic_rollouts, -> { where(status: [:started, :halted], is_staged_rollout: true, automatic_rollout: true) }
 
   def staged_rollout? = is_staged_rollout
 
