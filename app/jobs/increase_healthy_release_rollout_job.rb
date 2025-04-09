@@ -10,9 +10,14 @@ class IncreaseHealthyReleaseRolloutJob < ApplicationJob
 
     if release.healthy? && (rollout.started? || rollout.halted?)
       Action.increase_the_store_rollout!(rollout)
-      rollout.update!(automatic_rollout_updated_at: Time.current)
     end
 
-    IncreaseHealthyReleaseRolloutJob.perform_in(24.hours, play_store_rollout_id)
+    # This update is necessary so that our verify rollout job does not pick this up again
+    rollout.update!(
+      automatic_rollout_updated_at: Time.current,
+      automatic_rollout_next_update_at: Time.current + PlayStoreRollout::AUTO_ROLLOUT_RUN_INTERVAL
+    )
+
+    IncreaseHealthyReleaseRolloutJob.perform_in(PlayStoreRollout::AUTO_ROLLOUT_RUN_INTERVAL, play_store_rollout_id)
   end
 end

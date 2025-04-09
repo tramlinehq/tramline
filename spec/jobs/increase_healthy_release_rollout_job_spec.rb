@@ -34,6 +34,7 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
           expect(play_store_integration).to have_received(:rollout_release)
           expect(store_rollout.reload.current_stage).to eq(2)
           expect(store_rollout.automatic_rollout_updated_at).to eq(Time.current)
+          expect(store_rollout.automatic_rollout_next_update_at).to eq(24.hours.from_now)
         end
       end
 

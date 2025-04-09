@@ -2,19 +2,20 @@
 #
 # Table name: store_rollouts
 #
-#  id                           :uuid             not null, primary key
-#  automatic_rollout            :boolean          default(FALSE), not null
-#  automatic_rollout_updated_at :datetime
-#  completed_at                 :datetime
-#  config                       :decimal(8, 5)    default([]), not null, is an Array
-#  current_stage                :integer
-#  is_staged_rollout            :boolean          default(FALSE)
-#  status                       :string           not null
-#  type                         :string           not null
-#  created_at                   :datetime         not null
-#  updated_at                   :datetime         not null
-#  release_platform_run_id      :uuid             not null, indexed
-#  store_submission_id          :uuid             indexed
+#  id                               :uuid             not null, primary key
+#  automatic_rollout                :boolean          default(FALSE), not null
+#  automatic_rollout_next_update_at :datetime
+#  automatic_rollout_updated_at     :datetime
+#  completed_at                     :datetime
+#  config                           :decimal(8, 5)    default([]), not null, is an Array
+#  current_stage                    :integer
+#  is_staged_rollout                :boolean          default(FALSE)
+#  status                           :string           not null
+#  type                             :string           not null
+#  created_at                       :datetime         not null
+#  updated_at                       :datetime         not null
+#  release_platform_run_id          :uuid             not null, indexed
+#  store_submission_id              :uuid             indexed
 #
 class PlayStoreRollout < StoreRollout
   include Passportable
@@ -31,6 +32,8 @@ class PlayStoreRollout < StoreRollout
     failed
     fully_released
   ]
+
+  AUTO_ROLLOUT_RUN_INTERVAL = 24.hours
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
