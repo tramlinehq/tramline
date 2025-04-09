@@ -81,7 +81,7 @@ def populate_config(release_platform)
        submission_type: submission_type(deployment),
        submission_config: deployment.build_artifact_channel,
        rollout_config: {enabled: false},
-       auto_promote: index.zero? ? true : release_step.auto_deploy?,
+       auto_promote: index.zero? || release_step.auto_deploy?,
        integrable_id: release_platform.app.id,
        integrable_type: "App"}
     end

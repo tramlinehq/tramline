@@ -1,16 +1,4 @@
 namespace :db do
-  desc "Nuke everything except users, organizations and apps"
-  task nuke: [:destructive, :environment] do
-    BuildArtifact.delete_all
-    Commit.delete_all
-    ReleasePlatformRun.delete_all
-    ReleasePlatform.delete_all
-    Release.delete_all
-    Train.delete_all
-
-    puts "Data was nuked!"
-  end
-
   desc "Nuke the train and its entire tree"
   task :nuke_train, %i[train_id] => [:destructive, :environment] do |_, args|
     train_id = args[:train_id].to_s
@@ -35,6 +23,51 @@ namespace :db do
     end
 
     puts "App successfully deleted!"
+  end
+
+  desc "Clear all database tables"
+  task clear_db_tables: [:environment] do
+    clear_database_tables
+    puts "Database cleared for demo!"
+  end
+
+  def clear_database_tables
+    # Get tables from schema.rb
+    tables_to_clear = extract_tables_from_schema
+
+    # Disable referential integrity to allow deleting from all tables
+    ActiveRecord::Base.connection.execute("SET session_replication_role = 'replica';")
+
+    begin
+      ActiveRecord::Base.transaction do
+        tables_to_clear.each do |table|
+          clear_data_from_table(table)
+        end
+      end
+    ensure
+      # Re-enable referential integrity
+      ActiveRecord::Base.connection.execute("SET session_replication_role = 'origin';")
+    end
+  end
+
+  def extract_tables_from_schema
+    schema_file = Rails.root.join("db/schema.rb")
+    schema_content = File.read(schema_file)
+    tables = []
+
+    schema_content.scan(/create_table "([^"]+)"/) do |match|
+      tables << match[0]
+    end
+
+    tables
+  end
+
+  def clear_data_from_table(table_name)
+    sql = "DELETE FROM #{table_name}"
+    ActiveRecord::Base.connection.execute(sql)
+    puts "  Cleared table: #{table_name}"
+  rescue => e
+    puts "  Warning: Could not clear table #{table_name}: #{e.message}"
   end
 
   def nuke_app(app)

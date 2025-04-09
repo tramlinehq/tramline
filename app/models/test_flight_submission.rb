@@ -98,6 +98,7 @@ class TestFlightSubmission < StoreSubmission
   def start_release!
     return unless may_submit_for_review?
 
+    return if Seed.demo_mode?
     StoreSubmissions::TestFlight::UpdateBuildNotesJob.perform_async(id)
 
     if internal_channel?
@@ -118,6 +119,7 @@ class TestFlightSubmission < StoreSubmission
 
   def on_submit_for_review!
     event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
+    return if Seed.demo_mode?
     StoreSubmissions::TestFlight::UpdateExternalBuildJob.perform_async(id)
   end
 
@@ -170,6 +172,7 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def on_preprocess!
+    return if Seed.demo_mode?
     StoreSubmissions::TestFlight::FindBuildJob.perform_async(id)
   end
 
