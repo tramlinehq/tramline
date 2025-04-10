@@ -75,6 +75,7 @@ en:
       resumed_html: 'Resumed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
       completed_html: 'Completed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
       fully_released_html: 'Fully released <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track from <span class="emphasize">%{rollout_percentage}%</span>'
+      paused_html: 'Paused the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
       finished_manually_html: 'Marked the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track as finished manually'
       failed_html: 'Failed to rollout <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track'
     app_store_rollout:

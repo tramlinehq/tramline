@@ -26,6 +26,7 @@ class PlayStoreRollout < StoreRollout
   STAMPABLE_REASONS = %w[
     started
     updated
+    paused
     resumed
     halted
     completed
@@ -42,6 +43,15 @@ class PlayStoreRollout < StoreRollout
     event :start, after_commit: :on_start! do
       transitions from: :created, to: :started
       transitions from: :halted, to: :started
+      transitions from: :paused, to: :started
+    end
+
+    event :pause do
+      transitions from: :started, to: :paused
+    end
+
+    event :resume do
+      transitions from: :paused, to: :started
     end
 
     event :halt, after_commit: :on_halt! do
@@ -138,11 +148,25 @@ class PlayStoreRollout < StoreRollout
       result = rollout(last_rollout_percentage, retry_on_review_fail: true)
       if result.ok?
         start!
+        if release_platform_run.automatic_rollout?
+          update!(automatic_rollout: true)
+        end
         event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
         notify!("Rollout was resumed", :production_rollout_resumed, notification_params)
       else
         fail!(result.error)
       end
+    end
+  end
+
+  def pause_release!
+    with_lock do
+      return unless may_pause?
+
+      update!(automatic_rollout: false)
+      pause!
+      event_stamp!(reason: :paused, kind: :error, data: stamp_data)
+      notify!("Automatic rollout has been paused", :production_rollout_paused, notification_params)
     end
   end
 
