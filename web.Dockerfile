@@ -8,7 +8,9 @@ ENV RAILS_ENV=production \
     RAILS_LOG_TO_STDOUT=true \
     RAILS_SERVE_STATIC_FILES=true \
     BUNDLE_DEPLOYMENT=true \
-    BUNDLE_WITHOUT="development:test"
+    BUNDLE_WITHOUT="development:test" \
+    BUNDLE_JOBS=4 \
+    BUNDLE_PARALLEL_INSTALLATION=true
 
 RUN apt-get update -o Acquire::AllowInsecureRepositories=true && \
     apt-get install -y --no-install-recommends --allow-unauthenticated \

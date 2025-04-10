@@ -5,7 +5,9 @@ ARG BUNDLER_VERSION=2.6.7
 
 ENV RAILS_ENV=production \
     BUNDLE_DEPLOYMENT=true \
-    BUNDLE_WITHOUT="development:test"
+    BUNDLE_WITHOUT="development:test" \
+    BUNDLE_JOBS=4 \
+    BUNDLE_PARALLEL_INSTALLATION=true
 
 RUN apt-get update -o Acquire::AllowInsecureRepositories=true && \
     apt-get install -y --no-install-recommends --allow-unauthenticated \
