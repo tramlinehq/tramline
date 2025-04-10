@@ -315,7 +315,7 @@ class PlayStoreSubmission < StoreSubmission
   def on_prepare!
     event_stamp!(reason: :prepared, kind: :notice, data: stamp_data)
     config = conf.rollout_stages.presence || []
-    create_play_store_rollout!(release_platform_run:, config:, is_staged_rollout: staged_rollout?)
+    create_play_store_rollout!(release_platform_run:, config:, is_staged_rollout: staged_rollout?, automatic_rollout: auto_rollout?)
     play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_rollout?
   end
 
