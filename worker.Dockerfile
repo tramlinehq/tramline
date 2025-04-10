@@ -29,18 +29,21 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git pkg-config libpq-dev && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
+# Install specific bundler version to match Gemfile.lock
+RUN gem install bundler -v 2.5.16 --no-document
+
 # Install application gems
 COPY Gemfile Gemfile.lock .ruby-version ./
-RUN bundle config set --local without 'development test' && \
-    bundle install -j$(nproc) && \
+RUN bundle _2.5.16_ config set --local without 'development test' && \
+    bundle _2.5.16_ install -j$(nproc) && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
-    bundle exec bootsnap precompile --gemfile
+    bundle _2.5.16_ exec bootsnap precompile --gemfile
 
 # Copy application code
 COPY . .
 
 # Precompile bootsnap code for faster boot times
-RUN bundle exec bootsnap precompile app/ lib/
+RUN bundle _2.5.16_ exec bootsnap precompile app/ lib/
 
 # Final stage for app image
 FROM base
