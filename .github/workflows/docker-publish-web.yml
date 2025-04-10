@@ -22,10 +22,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up QEMU for multi-platform builds
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v3.6.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3.10.0
 
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'
@@ -44,11 +44,20 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=sha,format=long
 
+      - name: Set Ruby and Bundler versions
+        id: versions
+        run: |
+          echo "ruby_version=$(cat .ruby-version)" >> $GITHUB_OUTPUT
+          echo "bundler_version=$(grep -A 1 "BUNDLED WITH" Gemfile.lock | tail -n1 | xargs)" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile
+          file: web.Dockerfile
+          build-args: |
+            RUBY_VERSION=${{ steps.versions.outputs.ruby_version }}
+            BUNDLER_VERSION=${{ steps.versions.outputs.bundler_version }}
           push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
