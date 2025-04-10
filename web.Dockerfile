@@ -1,6 +1,7 @@
 ARG RUBY_VERSION=3.3.6
-
 FROM ruby:${RUBY_VERSION}-slim-bullseye
+
+ARG BUNDLER_VERSION=2.6.7
 
 ENV RAILS_ENV=production \
     NODE_ENV=production \
@@ -26,12 +27,9 @@ WORKDIR /app
 COPY .ruby-version .ruby-version
 COPY Gemfile Gemfile.lock ./
 
-RUN bundle install
+RUN gem install bundler -v "$BUNDLER_VERSION" && bundle _"$BUNDLER_VERSION"_ install
 
 COPY . .
-
-# NOTE: assets:precompile is not needed to be done in here, will be done in Kamal
-# RUN bundle exec rake assets:precompile
 
 ENTRYPOINT [ "bash", "-c" ]
 CMD ["bundle exec puma -C config/puma.rb"]

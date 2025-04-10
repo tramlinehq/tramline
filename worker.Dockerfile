@@ -1,6 +1,7 @@
 ARG RUBY_VERSION=3.3.6
-
 FROM ruby:${RUBY_VERSION}-slim-bullseye
+
+ARG BUNDLER_VERSION=2.6.7
 
 ENV RAILS_ENV=production \
     BUNDLE_DEPLOYMENT=true \
@@ -22,7 +23,7 @@ WORKDIR /app
 COPY .ruby-version .ruby-version
 COPY Gemfile Gemfile.lock ./
 
-RUN gem install bundler && bundle install
+RUN gem install bundler -v "$BUNDLER_VERSION" && bundle _"$BUNDLER_VERSION"_ install
 
 COPY . .
 
