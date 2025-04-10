@@ -14,7 +14,7 @@ ARG DISTRO_NAME
 WORKDIR /rails
 
 # Install the correct version of bundler
-RUN gem install bundler:2.5.16
+RUN gem install bundler
 
 # Install base packages
 RUN apt-get update -qq && \
@@ -28,10 +28,10 @@ RUN curl -sSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/postgres-archive-keyring.gpg] https://apt.postgresql.org/pub/repos/apt/" \
     $DISTRO_NAME-pgdg main $PG_MAJOR | tee /etc/apt/sources.list.d/postgres.list > /dev/null
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  --mount=type=tmpfs,target=/var/log \
-  apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=tmpfs,target=/var/log \
+    apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
     libpq-dev \
     postgresql-client-$PG_MAJOR
 
