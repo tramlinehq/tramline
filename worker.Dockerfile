@@ -1,33 +1,26 @@
 ARG RUBY_VERSION=3.3.6
-FROM ruby:${RUBY_VERSION}-slim-bullseye
+FROM ruby:${RUBY_VERSION}-alpine AS builder
 
 ARG BUNDLER_VERSION=2.6.7
+WORKDIR /app
+
+RUN apk add --no-cache build-base postgresql-dev
+
+COPY .ruby-version Gemfile Gemfile.lock ./
+RUN gem install bundler -v "$BUNDLER_VERSION" && \
+    bundle _"$BUNDLER_VERSION"_ install --jobs=4
+
+FROM ruby:${RUBY_VERSION}-alpine
 
 ENV RAILS_ENV=production \
     BUNDLE_DEPLOYMENT=true \
-    BUNDLE_WITHOUT="development:test" \
-    BUNDLE_JOBS=4 \
-    BUNDLE_PARALLEL_INSTALLATION=true
+    BUNDLE_WITHOUT="development:test"
 
-RUN apt-get update -o Acquire::AllowInsecureRepositories=true && \
-    apt-get install -y --no-install-recommends --allow-unauthenticated \
-    build-essential \
-    libpq-dev \
-    curl \
-    git \
-    libvips \
-    pkg-config \
-    tzdata \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache postgresql-dev
 
 WORKDIR /app
-
-COPY .ruby-version .ruby-version
-COPY Gemfile Gemfile.lock ./
-
-RUN gem install bundler -v "$BUNDLER_VERSION" && bundle _"$BUNDLER_VERSION"_ install
-
+COPY --from=builder /usr/local/bundle /usr/local/bundle
 COPY . .
 
-ENTRYPOINT [ "bash", "-c" ]
+ENTRYPOINT ["sh", "-c"]
 CMD ["bundle exec sidekiq"]
