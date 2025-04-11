@@ -58,7 +58,6 @@ jobs:
           build-args: |
             RUBY_VERSION=${{ steps.versions.outputs.ruby_version }}
             BUNDLER_VERSION=${{ steps.versions.outputs.bundler_version }}
-          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
