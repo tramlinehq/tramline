@@ -59,3 +59,8 @@ Brewfile.lock.json
 # Ignore temp project files
 coverage
 aasm-*.pdf
+
+# Ignore kamal folder and files
+.kamal/**
+config/key-*.json
+config/staging.sql

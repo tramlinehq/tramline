@@ -1,0 +1,68 @@
+service: tramline
+image: ghcr.io/tramlinehq/tramline-web
+
+servers:
+  web:
+    hosts:
+      - 35.209.23.61
+    options:
+      tty: true
+
+  worker:
+    hosts:
+      - 35.209.23.61
+    cmd: bundle exec sidekiq
+    image: ghcr.io/tramlinehq/tramline-worker
+
+registry:
+  server: ghcr.io
+  username: tramlinehq
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  secret:
+    - RAILS_MASTER_KEY
+    - DATABASE_URL
+    - REDIS_URL
+  clear:
+    RAILS_ENV: production
+    RACK_ENV: production
+
+volumes:
+  - name: db_data
+    external: false
+  - name: redis_data
+    external: false
+
+accessories:
+  db:
+    image: postgres:15
+    host: 35.209.23.61
+    port: 5432
+    env:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    host: 35.209.23.61
+    port: 6379
+    volumes:
+      - redis_data:/data
+
+traefik:
+  options:
+    publish:
+      - "80:80"
+
+hooks:
+  setup:
+    - kamal exec web bin/rails db:prepare
+    - kamal exec web bin/rails assets:precompile
+
+  seed_data:
+    - kamal exec web bin/rails db:migrate:with_data
+    - kamal exec web bin/rails db:seed
