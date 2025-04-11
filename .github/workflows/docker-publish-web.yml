@@ -64,4 +64,4 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
-          outputs: type=image,compression=zstd,compression-level=3
+          push: true
