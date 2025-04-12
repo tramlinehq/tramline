@@ -61,6 +61,8 @@ coverage
 aasm-*.pdf
 
 # Ignore kamal folder and files
-.kamal/**
 config/key-*.json
 config/staging.sql
+.kamal/secrets*
+
+/config/credentials/staging-gcp.key
