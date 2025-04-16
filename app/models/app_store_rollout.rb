@@ -126,6 +126,10 @@ class AppStoreRollout < StoreRollout
     end
   end
 
+  def disable_automatic_rollout!
+    # noop for app store
+  end
+
   def release_fully!
     with_lock do
       return unless may_fully_release?

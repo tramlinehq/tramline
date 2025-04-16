@@ -46,7 +46,7 @@ class StoreRolloutsController < SignedInApplicationController
   end
 
   def halt
-    if (res = Action.halt_the_store_rollout!(@store_rollout)).ok?
+    if (res = Action.halt_the_store_rollout!(@store_rollout, manually: true)).ok?
       redirect_back fallback_location: root_path, notice: t(".halt.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".halt.failure", errors: res.error.message)}

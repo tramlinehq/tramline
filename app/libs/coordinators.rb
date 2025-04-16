@@ -248,10 +248,15 @@ module Coordinators
       Res.new { true }
     end
 
-    def self.halt_the_store_rollout!(rollout)
+    def self.halt_the_store_rollout!(rollout, manually: false)
       return Res.new { raise "release is not actionable" } unless rollout.actionable?
       return Res.new { raise "rollout is not started" } unless rollout.started?
       rollout.halt_release!
+
+      if manually && rollout.automatic_rollout?
+        rollout.disable_automatic_rollout!
+      end
+
       return Res.new { raise rollout.errors.full_messages.to_sentence } if rollout.errors?
       Res.new { true }
     end
