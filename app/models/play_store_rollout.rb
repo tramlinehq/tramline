@@ -141,6 +141,12 @@ class PlayStoreRollout < StoreRollout
     end
   end
 
+  def disable_automatic_rollout!
+    with_lock do
+      update!(automatic_rollout: false)
+    end
+  end
+
   def resume_release!
     with_lock do
       return unless may_start?
@@ -163,7 +169,7 @@ class PlayStoreRollout < StoreRollout
     with_lock do
       return unless may_pause?
 
-      update!(automatic_rollout: false)
+      disable_automatic_rollout!
       pause!
       event_stamp!(reason: :paused, kind: :error, data: stamp_data)
       notify!("Automatic rollout has been paused", :production_rollout_paused, notification_params)
