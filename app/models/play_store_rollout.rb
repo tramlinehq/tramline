@@ -142,9 +142,7 @@ class PlayStoreRollout < StoreRollout
   end
 
   def disable_automatic_rollout!
-    with_lock do
-      update!(automatic_rollout: false)
-    end
+    update!(automatic_rollout: false)
   end
 
   def resume_release!
