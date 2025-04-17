@@ -53,8 +53,7 @@ accessories:
     volumes:
       - redis_data:/data
 
-deploy:
-  hooks:
-    setup:
-      - bin/rails db:prepare
-      - bin/rails assets:precompile
+hooks:
+  setup:
+    - bin/rails db:prepare
+    - bin/rails assets:precompile
