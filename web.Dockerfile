@@ -27,4 +27,6 @@ RUN gem install bundler -v "$BUNDLER_VERSION" && \
 
 COPY . .
 
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+ENTRYPOINT ["sh", "-c"]
+
+CMD ["if [ \"$KAMAL_ROLE\" = 'worker' ]; then bundle exec sidekiq; else bundle exec puma -C config/puma.rb; fi"]
