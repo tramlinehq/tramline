@@ -21,13 +21,10 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-COPY .ruby-version .ruby-version
-COPY Gemfile Gemfile.lock ./
-
+COPY .ruby-version Gemfile Gemfile.lock ./
 RUN gem install bundler -v "$BUNDLER_VERSION" && \
     bundle _"$BUNDLER_VERSION"_ install
 
 COPY . .
 
-ENTRYPOINT [ "sh", "-c" ]
-CMD ["bundle exec puma -C config/puma.rb"]
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
