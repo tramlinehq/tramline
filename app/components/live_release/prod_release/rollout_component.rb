@@ -29,8 +29,9 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
     :store_submission,
     :latest_events,
     :external_link,
-    :automatic_rollout?, :id, to: :store_rollout
+    :id, to: :store_rollout
   delegate :release, :platform, to: :release_platform_run
+  delegate :automatic_rollout?, to: :release_platform_run
 
   def decorated_status
     status_picker(STATUS, status)
@@ -119,7 +120,7 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
           confirm: "Are you sure you want to rollout to all users?"
         },
         {
-          text: "Pause rollout",
+          text: "Pause automatic rollout",
           path: pause_store_rollout_path(id),
           scheme: :danger,
           disabled: !automatic_rollout?,
