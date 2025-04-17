@@ -363,7 +363,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   def conf = Config::ReleasePlatform.from_json(config)
 
-  def automatic_rollout? = config.dig("production_release", "submissions", 0, "rollout_config", "automatic") || false
+  def automatic_rollout? = conf.production_release&.submissions&.first&.automatic_rollout || false
 
   private
 
