@@ -7,12 +7,16 @@ servers:
       - 35.209.23.61
     options:
       tty: true
+    roles:
+      - web
 
   worker:
     hosts:
       - 35.209.23.61
-    cmd: bundle exec sidekiq
-    image: ghcr.io/tramlinehq/tramline-worker
+    options:
+      tty: true
+    roles:
+      - worker
 
 proxy:
   app_port: 3000
@@ -38,6 +42,7 @@ accessories:
     env:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+      POSTGRES_DB: tramline_staging
     volumes:
       - db_data:/var/lib/postgresql/data
 
@@ -47,3 +52,9 @@ accessories:
     port: 6379
     volumes:
       - redis_data:/data
+
+deploy:
+  hooks:
+    setup:
+      - bin/rails db:prepare
+      - bin/rails assets:precompile
