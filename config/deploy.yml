@@ -3,6 +3,12 @@ image: ghcr.io/tramlinehq/tramline-web
 
 builder:
   arch: amd64
+  cache:
+    type: gha
+    options: mode=max
+    image: app-build-cache
+  secrets:
+    - RAILS_MASTER_KEY
 
 servers:
   web:
@@ -27,7 +33,7 @@ registry:
 
 ssh:
   user: sam-staging-local
-  keys: ["sam_staging_local_key"]
+  key_data: [$SSH_PRIVATE_KEY]
 
 proxy:
   app_port: 3000
