@@ -44,8 +44,8 @@ env:
     - DATABASE_URL
     - REDIS_URL
   clear:
-    RAILS_ENV: production
-    RACK_ENV: production
+    RAILS_ENV: staging-gcp
+    # RACK_ENV: staging-gcp
 
 volumes:
   - "db_data:/var/lib/postgresql/data"

@@ -53,14 +53,14 @@ jobs:
       - name: Expose GitHub Runtime for cache
         uses: crazy-max/ghaction-github-runtime@v3
 
-      - name: Set up SSH connection
-        run: |
-          # Create SSH directory and write the private key
-          mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
-          # Enable current SSH key
-          eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
-          # Add the server to known_hosts (use `-p 2222` for custom port if needed)
-          ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
+      #   - name: Set up SSH connection
+      #     run: |
+      #       # Create SSH directory and write the private key
+      #       mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+      #       # Enable current SSH key
+      #       eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
+      #       # Add the server to known_hosts (use `-p 2222` for custom port if needed)
+      #       ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
 
       - name: Deploy with Kamal
         run: cd deploy && bundle install && ./bin/kamal deploy
