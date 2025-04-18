@@ -1,22 +1,33 @@
 service: tramline
 image: ghcr.io/tramlinehq/tramline-web
 
+builder:
+  arch: amd64
+
 servers:
   web:
     hosts:
       - 35.209.23.61
+    labels:
+      traefik.http.routers.tramline.rule: "Host(`35.209.23.61`)"
     options:
       tty: true
-    roles:
-      - web
 
   worker:
     hosts:
       - 35.209.23.61
+    cmd: bundle exec sidekiq
     options:
       tty: true
-    roles:
-      - worker
+
+registry:
+  server: ghcr.io
+  username: tramlinehq
+  password: $KAMAL_REGISTRY_PASSWORD
+
+ssh:
+  user: sam-staging-local
+  keys: ["sam_staging_local_key"]
 
 proxy:
   app_port: 3000
@@ -52,8 +63,3 @@ accessories:
     port: 6379
     volumes:
       - redis_data:/data
-
-hooks:
-  setup:
-    - bin/rails db:prepare
-    - bin/rails assets:precompile
