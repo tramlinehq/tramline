@@ -65,3 +65,4 @@ config/key-*.json
 config/staging.sql
 
 /config/credentials/staging-gcp.key
+**sam_staging_local_key**
