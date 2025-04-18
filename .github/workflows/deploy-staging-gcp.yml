@@ -1,0 +1,71 @@
+name: Deploy to GCP Staging
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request: # TODO: Remove this once we are ready to merge
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  SERVER_ADDR: 35.209.23.61
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    env:
+      DOCKER_BUILDKIT: 1
+      RAILS_ENV: production
+      BUNDLE_WITHOUT: “default development test"
+      RAILS_MASTER_KEY: "3669146ac52dcbd6256de42f9388216f" # TODO: Remove this once we are ready to merge
+      SSH_PRIVATE_KEY: "-----BEGIN OPENSSH PRIVATE KEY-----b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQAAACBV4y7AWAS5IU5p2bcbcfLp6BBuiYKOyqEhUizhh45CKQAAAJjZVgo42VYKOAAAAAtzc2gtZWQyNTUxOQAAACBV4y7AWAS5IU5p2bcbcfLp6BBuiYKOyqEhUizhh45CKQAAAEAxIrmfrQSQVZVhqeFbwxxztZQwBXN3nPZ0odgV3KbO7VXjLsBYBLkhTmnZtxtx8unoEG6Jgo7KoSFSLOGHjkIpAAAAEXNhbS1zdGFnaW5nLWxvY2FsAQIDBA==-----END OPENSSH PRIVATE KEY-----" # TODO: Remove this once we are ready to merge
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+      REDIS_URL: "redis://localhost:6379/0"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.6
+          bundler-cache: true
+          cache-version: "tools-v1-${{ runner.os }}"
+
+      - name: Set up Docker Buildx for cache
+        uses: docker/setup-buildx-action@v3
+
+      - name: Expose GitHub Runtime for cache
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Set up SSH connection
+        run: |
+          # Create SSH directory and write the private key
+          mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+          # Enable current SSH key
+          eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
+          # Add the server to known_hosts (use `-p 2222` for custom port if needed)
+          ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
+
+      - name: Deploy with Kamal
+        run: cd deploy && bundle install && ./bin/kamal deploy
+        env:
+          SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+          KAMAL_REGISTRY_PASSWORD: $KAMAL_REGISTRY_PASSWORD
+          DATABASE_URL: $DATABASE_URL
+          REDIS_URL: $REDIS_URL
