@@ -64,9 +64,11 @@ jobs:
       #       eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
       #       # Add the server to known_hosts (use `-p 2222` for custom port if needed)
       #       ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
+      - name: Install Kamal
+        run: gem install kamal -v 2.5.3
 
       - name: Deploy with Kamal
-        run: cd deploy && bundle install && ./bin/kamal deploy
+        run: kamal deploy
         env:
           SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
           KAMAL_REGISTRY_PASSWORD: $KAMAL_REGISTRY_PASSWORD
