@@ -69,8 +69,3 @@ jobs:
 
       - name: Deploy with Kamal
         run: kamal deploy
-        env:
-          SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
-          KAMAL_REGISTRY_PASSWORD: $KAMAL_REGISTRY_PASSWORD
-          DATABASE_URL: $DATABASE_URL
-          REDIS_URL: $REDIS_URL
