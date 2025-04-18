@@ -13,9 +13,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-env:
-  SERVER_ADDR: 35.209.23.61
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -27,14 +24,17 @@ jobs:
       id-token: write
 
     env:
+      SERVER_ADDR: 35.209.23.61
       DOCKER_BUILDKIT: 1
       #   RAILS_ENV: production
       #   BUNDLE_WITHOUT: “default development test"
-      RAILS_MASTER_KEY: "3669146ac52dcbd6256de42f9388216f" # TODO: Remove this once we are ready to merge
-      SSH_PRIVATE_KEY: "-----BEGIN OPENSSH PRIVATE KEY-----b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQAAACBV4y7AWAS5IU5p2bcbcfLp6BBuiYKOyqEhUizhh45CKQAAAJjZVgo42VYKOAAAAAtzc2gtZWQyNTUxOQAAACBV4y7AWAS5IU5p2bcbcfLp6BBuiYKOyqEhUizhh45CKQAAAEAxIrmfrQSQVZVhqeFbwxxztZQwBXN3nPZ0odgV3KbO7VXjLsBYBLkhTmnZtxtx8unoEG6Jgo7KoSFSLOGHjkIpAAAAEXNhbS1zdGFnaW5nLWxvY2FsAQIDBA==-----END OPENSSH PRIVATE KEY-----" # TODO: Remove this once we are ready to merge
-      KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       DATABASE_URL: "postgresql://postgres:password@localhost:5432/tramline_staging"
       REDIS_URL: "redis://localhost:6379/0"
+      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY_STAGING_GCP }} # TODO: Remove this once we are ready to merge
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }}
+      DESCOPE_PROJECT_ID: ${{ secrets.DESCOPE_PROJECT_ID_STAGING_GCP }}
+      DESCOPE_MANAGEMENT_KEY: ${{ secrets.DESCOPE_MANAGEMENT_KEY_STAGING_GCP }}
 
     steps:
       - name: Checkout code

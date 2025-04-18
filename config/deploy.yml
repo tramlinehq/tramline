@@ -3,12 +3,19 @@ image: ghcr.io/tramlinehq/tramline-web
 
 builder:
   arch: amd64
+  dockerfile: web.Dockerfile
   cache:
     type: gha
     options: mode=max
     image: app-build-cache
+  remote: ssh://sam-staging-local@35.209.23.61:22
+  local: false
   secrets:
     - RAILS_MASTER_KEY
+    - SSH_PRIVATE_KEY
+    - KAMAL_REGISTRY_PASSWORD
+    - DESCOPE_PROJECT_ID
+    - DESCOPE_MANAGEMENT_KEY
 
 servers:
   web:
@@ -25,6 +32,8 @@ servers:
     cmd: bundle exec sidekiq
     options:
       tty: true
+    env:
+      KAMAL_ROLE: worker
 
 registry:
   server: ghcr.io
@@ -44,7 +53,7 @@ env:
     - DATABASE_URL
     - REDIS_URL
   clear:
-    RAILS_ENV: staging-gcp
+    RAILS_ENV: production
     # RACK_ENV: staging-gcp
 
 volumes:
