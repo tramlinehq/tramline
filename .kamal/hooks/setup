@@ -1,4 +1,0 @@
-# .kamal/hooks/setup
-#!/bin/bash
-kamal exec web bin/rails db:prepare
-kamal exec web bin/rails assets:precompile

@@ -1,4 +1,0 @@
-# .kamal/hooks/seed
-#!/bin/bash
-kamal exec web bin/rails db:migrate:with_data
-kamal exec web bin/rails db:seed
