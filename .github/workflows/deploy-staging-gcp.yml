@@ -1,0 +1,71 @@
+name: Deploy to GCP Staging
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request: # TODO: Remove this once we are ready to merge
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    env:
+      SERVER_ADDR: 35.209.23.61
+      DOCKER_BUILDKIT: 1
+      #   RAILS_ENV: production
+      #   BUNDLE_WITHOUT: “default development test"
+      DATABASE_URL: "postgresql://postgres:password@localhost:5432/tramline_staging"
+      REDIS_URL: "redis://localhost:6379/0"
+      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY_STAGING_GCP }} # TODO: Remove this once we are ready to merge
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }}
+      DESCOPE_PROJECT_ID: ${{ secrets.DESCOPE_PROJECT_ID_STAGING_GCP }}
+      DESCOPE_MANAGEMENT_KEY: ${{ secrets.DESCOPE_MANAGEMENT_KEY_STAGING_GCP }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.6
+          bundler-cache: true
+          cache-version: "tools-v1-${{ runner.os }}"
+        env:
+          BUNDLE_WITHOUT: "default development test"
+          RAILS_ENV: production
+
+      - name: Set up Docker Buildx for cache
+        uses: docker/setup-buildx-action@v3
+
+      - name: Expose GitHub Runtime for cache
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      #   - name: Set up SSH connection
+      #     run: |
+      #       # Create SSH directory and write the private key
+      #       mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+      #       # Enable current SSH key
+      #       eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
+      #       # Add the server to known_hosts (use `-p 2222` for custom port if needed)
+      #       ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
+      - name: Install Kamal
+        run: gem install kamal -v 2.5.3
+
+      - name: Deploy with Kamal
+        run: kamal deploy

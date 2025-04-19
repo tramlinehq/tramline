@@ -1,0 +1,80 @@
+service: tramline
+image: ghcr.io/tramlinehq/tramline-web
+
+builder:
+  arch: amd64
+  dockerfile: web.Dockerfile
+  cache:
+    type: gha
+    options: mode=max
+    image: app-build-cache
+  remote: ssh://sam-staging-local@35.209.23.61:22
+  local: false
+  secrets:
+    - RAILS_MASTER_KEY
+    - SSH_PRIVATE_KEY
+    - KAMAL_REGISTRY_PASSWORD
+    - DESCOPE_PROJECT_ID
+    - DESCOPE_MANAGEMENT_KEY
+
+servers:
+  web:
+    hosts:
+      - 35.209.23.61
+    labels:
+      traefik.http.routers.tramline.rule: "Host(`35.209.23.61`)"
+    options:
+      tty: true
+
+  worker:
+    hosts:
+      - 35.209.23.61
+    cmd: bundle exec sidekiq
+    options:
+      tty: true
+    env:
+      KAMAL_ROLE: worker
+
+registry:
+  server: ghcr.io
+  username: tramlinehq
+  password: $KAMAL_REGISTRY_PASSWORD
+
+ssh:
+  user: sam-staging-local
+  key_data: [$SSH_PRIVATE_KEY]
+
+proxy:
+  app_port: 3000
+
+env:
+  secret:
+    - RAILS_MASTER_KEY
+    - DATABASE_URL
+    - REDIS_URL
+  clear:
+    RAILS_ENV: production
+    # RACK_ENV: staging-gcp
+
+volumes:
+  - "db_data:/var/lib/postgresql/data"
+  - "redis_data:/data"
+
+accessories:
+  db:
+    image: postgres:14
+    host: 35.209.23.61
+    port: 5432
+    env:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: tramline_staging
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    host: 35.209.23.61
+    port: 6379
+    volumes:
+      - redis_data:/data
