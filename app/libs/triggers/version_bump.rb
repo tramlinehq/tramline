@@ -20,7 +20,7 @@ class Triggers::VersionBump
 
   attr_reader :release
   delegate :train, :release_version, to: :release
-  delegate :working_branch, :version_bump_file_paths, to: :train
+  delegate :working_branch, :version_bump_file_paths, :version_bump_branch_prefix, to: :train
   delegate :logger, to: Rails
 
   def create_branch
@@ -145,6 +145,6 @@ class Triggers::VersionBump
   end
 
   memoize def version_bump_branch
-    "version-bump-#{release_version}-#{release.slug}"
+    [version_bump_branch_prefix, "version-bump", release_version, release.slug].compact_blank.join("-")
   end
 end
