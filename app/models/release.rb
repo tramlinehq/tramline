@@ -130,7 +130,7 @@ class Release < ApplicationRecord
     state(*STATES.keys)
 
     event :start_pre_release_phase do
-      transitions from: [:created, :pre_release_failed], to: :pre_release_started
+      transitions from: [:created, :pre_release_failed, :pre_release_started], to: :pre_release_started
     end
 
     event :fail_pre_release_phase do

@@ -86,6 +86,7 @@ def nuke_train(train)
       commit.passports&.delete_all
     end
     run.all_commits&.delete_all
+    run.release_changelog&.commits&.delete_all
     run.release_changelog&.delete
     run.build_queues&.delete_all
     run.passports&.delete_all

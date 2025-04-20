@@ -27,7 +27,7 @@ class Triggers::PatchPullRequest
 
   delegate :logger, to: Rails
   delegate :train, to: :release
-  delegate :working_branch, to: :train
+  delegate :working_branch, :continuous_backmerge_branch_prefix, to: :train
   attr_reader :release, :commit
 
   def pr_title
@@ -44,6 +44,6 @@ class Triggers::PatchPullRequest
   end
 
   def patch_branch
-    "patch-#{working_branch}-#{commit.short_sha}"
+    [continuous_backmerge_branch_prefix, "patch", working_branch, commit.short_sha].compact_blank.join("-")
   end
 end
