@@ -25,9 +25,7 @@ class Coordinators::AttachBuildJob < ApplicationJob
     workflow_run = WorkflowRun.find(workflow_run_id)
     release_platform_run = workflow_run.release_platform_run
     return unless release_platform_run.on_track?
-
-    workflow_run.build.attach_artifact!
-
+    workflow_run.build.attach_artifact! # raises Installations::Error if artifact is not found
     Signal.build_is_available!(workflow_run_id)
   rescue => ex
     raise ex if artifact_not_found?(ex) # re-raise if artifact is not found so we can retry a few times
