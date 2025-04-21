@@ -11,6 +11,7 @@
 #  build_queue_size                   :integer
 #  build_queue_wait_time              :interval
 #  compact_build_notes                :boolean          default(FALSE)
+#  continuous_backmerge_branch_prefix :string
 #  copy_approvals                     :boolean          default(FALSE)
 #  description                        :string
 #  freeze_version                     :boolean          default(FALSE)
@@ -29,6 +30,7 @@
 #  tag_prefix                         :string
 #  tag_releases                       :boolean          default(TRUE)
 #  tag_suffix                         :string
+#  version_bump_branch_prefix         :string
 #  version_bump_enabled               :boolean          default(FALSE)
 #  version_bump_file_paths            :string           default([]), is an Array
 #  version_current                    :string

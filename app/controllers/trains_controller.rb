@@ -118,6 +118,7 @@ class TrainsController < SignedInApplicationController
       :release_schedule_enabled,
       :stop_automatic_releases_on_failure,
       :continuous_backmerge_enabled,
+      :continuous_backmerge_branch_prefix,
       :compact_build_notes,
       :tag_all_store_releases,
       :tag_platform_releases,
@@ -130,7 +131,8 @@ class TrainsController < SignedInApplicationController
       :copy_approvals,
       :auto_apply_patch_changes,
       :version_bump_enabled,
-      :version_bump_file_paths
+      :version_bump_file_paths,
+      :version_bump_branch_prefix
     )
   end
 
@@ -163,6 +165,7 @@ class TrainsController < SignedInApplicationController
       :release_schedule_enabled,
       :stop_automatic_releases_on_failure,
       :continuous_backmerge_enabled,
+      :continuous_backmerge_branch_prefix,
       :compact_build_notes,
       :tag_all_store_releases,
       :tag_platform_releases,
@@ -175,7 +178,8 @@ class TrainsController < SignedInApplicationController
       :copy_approvals,
       :auto_apply_patch_changes,
       :version_bump_enabled,
-      :version_bump_file_paths
+      :version_bump_file_paths,
+      :version_bump_branch_prefix
     )
   end
 

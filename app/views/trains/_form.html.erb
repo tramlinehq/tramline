@@ -220,7 +220,14 @@
                                            field_name: :continuous_backmerge_enabled,
                                            on_label: "Continuous Backmerge enabled",
                                            off_label: "Continuous Backmerge disabled",
-                                           html_options: {disabled: train.backmerge_disabled?}) %>
+                                           html_options: {disabled: train.backmerge_disabled?}) do |component| %>
+        <% component.with_child do %>
+          <%= section.F.labeled_text_field :continuous_backmerge_branch_prefix,
+                                           "Branch Prefix",
+                                           placeholder: "e.g., <your prefix>-patch-main-08bcbb",
+                                           help_text: "" %>
+        <% end %>
+      <% end %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Auto-apply patch changes") do |section| %>
@@ -298,10 +305,9 @@
     <% if train.vcs_provider.is_a?(GithubIntegration) %>
       <%= f.with_advanced_section(heading: "Automatic Version Bumps") do |section| %>
         <% section.with_description do %>
-          When enabled, Tramline will create and merge a Pull Request to update the version name (eg. 1.0.0) directly in
-          your configured build files before starting a new release or cutting a release branch. You can supply more
-          than
-          one path and Tramline will update all of them.
+          When enabled, Tramline will create and merge a Pull Request to update the version name (eg. 1.0.0) directly
+          in your configured build files before starting a new release or cutting a release branch. You can supply more
+          than one path and Tramline will update all of them.
         <% end %>
 
         <%= render Form::SwitchComponent.new(form: section.F,
@@ -321,6 +327,11 @@
                                              value: list_to_csv(section.F.object.version_bump_file_paths),
                                              placeholder: "e.g., pubspec.yaml, android/app/build.gradle (comma-separated)",
                                              help_text: "Comma-separated list of file paths to update versions in" %>
+
+            <%= section.F.labeled_text_field :version_bump_branch_prefix,
+                                             "Branch Prefix",
+                                             placeholder: "e.g. <your prefix>-version-bump-1.2.3-2025-04-02-quiet-snow",
+                                             help_text: "" %>
           <% end %>
         <% end %>
       <% end %>
