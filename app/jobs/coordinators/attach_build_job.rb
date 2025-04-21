@@ -25,17 +25,7 @@ class Coordinators::AttachBuildJob < ApplicationJob
     workflow_run = WorkflowRun.find(workflow_run_id)
     release_platform_run = workflow_run.release_platform_run
     return unless release_platform_run.on_track?
-
-    # Attempt to attach artifact only if platform is android
-    if release_platform_run.android?
-      # raises Installations::Error if artifact is not found
-      workflow_run.build.attach_artifact!
-    elsif release_platform_run.ios?
-      # There are only two cases for platform - android/ios, keeping it elsif for clarity
-      # We don't handle uploads for ios (yet?)
-      workflow_run.build.mark_available_without_artifact!
-    end
-
+    workflow_run.build.attach_artifact! # raises Installations::Error if artifact is not found
     Signal.build_is_available!(workflow_run_id)
   rescue => ex
     raise ex if artifact_not_found?(ex) # re-raise if artifact is not found so we can retry a few times
