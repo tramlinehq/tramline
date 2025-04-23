@@ -52,10 +52,13 @@ jobs:
       #   - name: Expose GitHub Runtime for cache
       #     uses: crazy-max/ghaction-github-runtime@v3
 
+      - name: Decode GCP Service Account Key
+        run: echo "$GCP_SERVICE_ACCOUNT_KEY" | base64 -d > ${{ github.workspace }}/gcp-key.json
+
       - name: Authenticate GCloud CLI
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: $GCP_SERVICE_ACCOUNT_KEY
+          credentials_json: ${{ github.workspace }}/gcp-key.json
 
       - name: Set up GCloud CLI
         uses: google-github-actions/setup-gcloud@v2
