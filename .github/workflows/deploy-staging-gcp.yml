@@ -26,15 +26,11 @@ jobs:
     env:
       SERVER_ADDR: 35.209.23.61
       DOCKER_BUILDKIT: 1
-      #   RAILS_ENV: production
-      #   BUNDLE_WITHOUT: “default development test"
-      DATABASE_URL: "postgresql://postgres:password@localhost:5432/tramline_staging"
-      REDIS_URL: "redis://localhost:6379/0"
-      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY_STAGING_GCP }} # TODO: Remove this once we are ready to merge
+      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY_STAGING_GCP }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }}
-      DESCOPE_PROJECT_ID: ${{ secrets.DESCOPE_PROJECT_ID_STAGING_GCP }}
-      DESCOPE_MANAGEMENT_KEY: ${{ secrets.DESCOPE_MANAGEMENT_KEY_STAGING_GCP }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID_STAGING_GCP }}
+      GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_STAGING_GCP }}
 
     steps:
       - name: Checkout code
@@ -50,20 +46,25 @@ jobs:
           BUNDLE_WITHOUT: "default development test"
           RAILS_ENV: production
 
-      - name: Set up Docker Buildx for cache
-        uses: docker/setup-buildx-action@v3
+      #   - name: Set up Docker Buildx for cache
+      #     uses: docker/setup-buildx-action@v3
 
-      - name: Expose GitHub Runtime for cache
-        uses: crazy-max/ghaction-github-runtime@v3
+      #   - name: Expose GitHub Runtime for cache
+      #     uses: crazy-max/ghaction-github-runtime@v3
 
-      #   - name: Set up SSH connection
-      #     run: |
-      #       # Create SSH directory and write the private key
-      #       mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
-      #       # Enable current SSH key
-      #       eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
-      #       # Add the server to known_hosts (use `-p 2222` for custom port if needed)
-      #       ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
+      - name: Authenticate GCloud CLI
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: $GCP_SERVICE_ACCOUNT_KEY
+
+      - name: Set up GCloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: $GCP_PROJECT_ID
+
+      - name: Check GCloud CLI auth
+        run: gcloud info
+
       - name: Install Kamal
         run: gem install kamal -v 2.5.3
 
