@@ -3,7 +3,17 @@
                                      on_label: "Notifications enabled",
                                      off_label: "Notifications disabled") do |component| %>
   <% component.with_child do %>
-    <%= render partial: "shared/notifications_form",
-               locals: {form:, app: @app, channels: @notification_channels, current: @current_notification_channel} %>
+
+    <%= render Form::SwitchComponent.new(form:, field_name: :notifications_default_channel,
+                                         hide_child: false,
+                                  on_label: "Select default channel for notifications",
+                                  off_label: "Send notifications to release specific channel") do |component1| %>
+
+      <% component1.with_child do %>
+        <%= render partial: "shared/notifications_form",
+                   locals: {form:, app: @app, channels: @notification_channels, current: @current_notification_channel} %>
+
+      <% end %>
+    <% end %>
   <% end %>
 <% end %>

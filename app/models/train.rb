@@ -18,6 +18,7 @@
 #  kickoff_at                         :datetime
 #  name                               :string           not null
 #  notification_channel               :jsonb
+#  notifications_default_channel      :boolean          default(TRUE)
 #  patch_version_bump_only            :boolean          default(FALSE), not null
 #  release_backmerge_branch           :string
 #  release_branch                     :string

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
+ActiveRecord::Schema[7.2].define(version: 2025_04_25_095631) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -952,6 +952,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.string "version_bump_file_paths", default: [], array: true
     t.string "version_bump_branch_prefix"
     t.string "continuous_backmerge_branch_prefix"
+    t.boolean "notifications_default_channel", default: true
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
