@@ -10,19 +10,27 @@
                                            switch_id: "active-switch-#{@setting.id}",
                                            on_label: "Notifications enabled",
                                            off_label: "Notifications disabled") do |switch| %>
-        <% switch.with_child do %>
-          <%= section.F.labeled_select :notification_channels,
-                "Channels",
-                @setting.channel_select_options,
-                {},
-                {multiple: true, data: {controller: "input-select"}} %>
+        <% if @train.notifications_default_channel? %>
+          <% switch.with_child do %>
+              <%= section.F.labeled_select :notification_channels,
+                                           "Channels",
+                                           @setting.channel_select_options,
+                                           {},
+                                           {multiple: true, data: {controller: "input-select"}} %>
+          <% end %>
+
+          <% if @setting.needs_invite? %>
+            <span class="text-secondary">To allow file uploads in channels, invite <strong>@Tramline</strong> into your channels.</span>
+          <% end %>
+          <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
+        <% else %>
+          <% switch.with_child do %>
+            <p class="text-slate-700 text-sm">
+              Turn off release-specific channels in train settings to customize channels per notification kind.
+            </p>
+          <% end %>
         <% end %>
       <% end %>
-
-      <% if @setting.needs_invite? %>
-        <span class="text-secondary">To allow file uploads in channels, invite <strong>@Tramline</strong> into your channels.</span>
-      <% end %>
-      <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
     <% end %>
 
     <% f.with_action do %>
