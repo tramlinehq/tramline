@@ -204,11 +204,6 @@ class Train < ApplicationRecord
     kickoff_at.present? && repeat_duration.present?
   end
 
-  def tag_platform_at_release_end?
-    return false unless app.cross_platform?
-    tag_platform_releases? && !tag_all_store_releases?
-  end
-
   def next_run_at
     return unless automatic?
 
