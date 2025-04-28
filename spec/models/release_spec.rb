@@ -457,7 +457,7 @@ describe Release do
 
     context "when tag suffix" do
       let(:suffix) { "nightly" }
-      let(:train) { create(:train, :active, tag_suffix: suffix) }
+      let(:train) { create(:train, :active, tag_end_of_release_suffix: suffix) }
 
       it "saves a new tag with the base name + suffix" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
@@ -489,7 +489,7 @@ describe Release do
 
     context "when tag prefix" do
       let(:prefix) { "foo" }
-      let(:train) { create(:train, :active, tag_prefix: prefix) }
+      let(:train) { create(:train, :active, tag_end_of_release_prefix: prefix) }
 
       it "saves a new tag with the prefix + base name" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
@@ -522,7 +522,7 @@ describe Release do
     context "when tag prefix and tag suffix" do
       let(:prefix) { "foo" }
       let(:suffix) { "nightly" }
-      let(:train) { create(:train, :active, tag_prefix: prefix, tag_suffix: suffix) }
+      let(:train) { create(:train, :active, tag_end_of_release_prefix: prefix, tag_end_of_release_suffix: suffix) }
 
       it "saves a new tag with the prefix + base name + suffix" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
@@ -553,7 +553,7 @@ describe Release do
     end
 
     context "when release tag disabled" do
-      let(:train) { create(:train, :active, tag_releases: false) }
+      let(:train) { create(:train, :active, tag_end_of_release: false) }
 
       it "does not create tag" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)

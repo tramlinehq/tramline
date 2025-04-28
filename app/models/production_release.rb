@@ -117,7 +117,7 @@ class ProductionRelease < ApplicationRecord
     update!(status: STATES[:active])
     notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
 
-    if train.tag_all_store_releases?
+    if train.tag_store_releases?
       ReleasePlatformRuns::CreateTagJob.perform_async(release_platform_run.id, commit.id)
     end
 

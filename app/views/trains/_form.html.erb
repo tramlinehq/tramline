@@ -218,8 +218,8 @@
 
       <%= render Form::SwitchComponent.new(form: section.F,
                                            field_name: :continuous_backmerge_enabled,
-                                           on_label: "Continuous Backmerge enabled",
-                                           off_label: "Continuous Backmerge disabled",
+                                           on_label: "Continuous backmerge enabled",
+                                           off_label: "Continuous backmerge disabled",
                                            html_options: {disabled: train.backmerge_disabled?}) do |component| %>
         <% component.with_child do %>
           <%= section.F.labeled_text_field :continuous_backmerge_branch_prefix,
@@ -249,8 +249,8 @@
 
       <%= render Form::SwitchComponent.new(form: section.F,
                                            field_name: :compact_build_notes,
-                                           on_label: "Compact Build Notes enabled",
-                                           off_label: "Compact Build Notes disabled") %>
+                                           on_label: "Compact build notes enabled",
+                                           off_label: "Compact build notes disabled") %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Tag Your Releases") do |section| %>
@@ -260,16 +260,6 @@
       <% end %>
 
       <%= render partial: "release_tag_form", locals: {form: section.F} %>
-    <% end %>
-
-    <% if @app.cross_platform? %>
-      <%= f.with_advanced_section(heading: "Platform Specific Tags", html_options: {data: {controller: "reveal"}}) do |section| %>
-        <% section.with_description do %>
-          Tag each platform release separately. By default, only one tag is created at the end of the release.
-        <% end %>
-
-        <%= render partial: "store_tags_form", locals: {form: section.F} %>
-      <% end %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Freeze release version") do |section| %>
@@ -312,8 +302,8 @@
 
         <%= render Form::SwitchComponent.new(form: section.F,
                                              field_name: :version_bump_enabled,
-                                             on_label: "Automatic Version Bump enabled",
-                                             off_label: "Automatic Version Bump disabled",
+                                             on_label: "Automatic version bumps enabled",
+                                             off_label: "Automatic version bump disabled",
                                              hide_child: !train.version_bump_enabled?) do |component| %>
 
           <% component.with_info_icon do %>

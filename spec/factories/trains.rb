@@ -9,11 +9,11 @@ FactoryBot.define do
     release_backmerge_branch { "main" }
     status { "draft" }
     build_queue_enabled { false }
-    tag_platform_releases { false }
-    tag_all_store_releases { false }
-    tag_releases { true }
-    tag_prefix { nil }
-    tag_suffix { nil }
+    tag_store_releases_with_platforms { false }
+    tag_store_releases { false }
+    tag_end_of_release { true }
+    tag_end_of_release_prefix { nil }
+    tag_end_of_release_suffix { nil }
     versioning_strategy { "semver" }
     approvals_enabled { true }
 
