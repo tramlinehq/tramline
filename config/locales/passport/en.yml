@@ -18,6 +18,7 @@ en:
       finished_html: 'Finished the platform release with version <span class="emphasize">%{version}</span>'
       stopped_html: 'Stopped the platform release with version <span class="emphasize">%{version}</span>'
       tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
+      vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
     commit:
       created_html: 'New commit <span class="emphasize">%{sha}</span> has landed'
     pull_request:

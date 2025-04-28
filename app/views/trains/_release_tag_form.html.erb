@@ -23,15 +23,6 @@
           <span class="font-mono" data-string-affix-target="helpText"></span>
         </div>
       </div>
-
-      <%= render Form::SwitchComponent.new(form:,
-                                           field_name: :tag_end_of_release_vcs_release,
-                                           on_label: "Create a release entry on VCS enabled",
-                                           off_label: "Create a release entry on VCS disabled") do |component| %>
-        <% component.with_info_icon do %>
-          Create a release entry on VCS platforms (currently only works GitHub releases)
-        <% end %>
-      <% end %>
     </div>
   <% end %>
 <% end %>

@@ -31,7 +31,7 @@ class Coordinators::FinalizeRelease::ParallelBranches
   end
 
   def create_tag
-    GitHub::Result.new { release.create_vcs_release! }
+    GitHub::Result.new { release.create_vcs_release!(release_branch, release.release_diff) }
   end
 
   def pr_title
