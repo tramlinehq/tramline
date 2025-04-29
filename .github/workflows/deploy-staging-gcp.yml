@@ -54,7 +54,10 @@ jobs:
 
       - name: Decode GCP Service Account Key
         run: |
-          echo $GCP_SERVICE_ACCOUNT_KEY && cat $GCP_SERVICE_ACCOUNT_KEY | base64 -d >> ${{ github.workspace }}/gcp-key.json && ls -la ${{ github.workspace }} && cat ${{ github.workspace }}/gcp-key.json
+          echo $GCP_SERVICE_ACCOUNT_KEY
+          cat $GCP_SERVICE_ACCOUNT_KEY | base64 -d > ${{ github.workspace }}/gcp-key.json
+          ls -la ${{ github.workspace }}
+          cat ${{ github.workspace }}/gcp-key.json
 
       - name: Authenticate GCloud CLI
         uses: google-github-actions/auth@v2
