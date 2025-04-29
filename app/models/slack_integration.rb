@@ -137,6 +137,12 @@ class SlackIntegration < ApplicationRecord
     elog(e, level: :warn)
   end
 
+  def create_channel!(name)
+    installation.create_channel(CHANNELS_TRANSFORMATIONS, name)
+  rescue => e
+    elog(e, level: :warn)
+  end
+
   def notifier(type, params)
     Notifiers::Slack::Builder.build(type, **params)
   end

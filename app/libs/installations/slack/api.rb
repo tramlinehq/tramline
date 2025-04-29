@@ -7,6 +7,7 @@ module Installations
 
     PUBLISH_CHAT_MESSAGE_URL = "https://slack.com/api/chat.postMessage"
     LIST_CHANNELS_URL = "https://slack.com/api/conversations.list"
+    CREATE_CHANNEL_URL = "https://slack.com/api/conversations.create"
     GET_TEAM_URL = "https://slack.com/api/team.info"
     START_FILE_UPLOAD_URL = "https://slack.com/api/files.getUploadURLExternal"
     COMPLETE_FILE_UPLOAD_URL = "https://slack.com/api/files.completeUploadExternal"
@@ -95,6 +96,19 @@ module Installations
       raise FailedToUploadFile, "could not upload file to Slack" unless resp.status.success?
 
       upload_response["file_id"]
+    end
+
+    def create_channel(transforms, name)
+      params = {
+        params: {
+          name:,
+          is_private: false
+        }
+      }
+
+      execute(:post, CREATE_CHANNEL_URL, params)
+        .then { |response| Installations::Response::Keys.transform([response["channel"]], transforms) }
+        .first
     end
 
     def list_channels(transforms, cursor = nil)
