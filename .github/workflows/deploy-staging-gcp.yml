@@ -53,7 +53,7 @@ jobs:
       #     uses: crazy-max/ghaction-github-runtime@v3
 
       - name: Decode GCP Service Account Key
-        run: echo "$GCP_SERVICE_ACCOUNT_KEY" | base64 -d > ${{ github.workspace }}/gcp-key.json
+        run: cat "$GCP_SERVICE_ACCOUNT_KEY" | base64 -d > ${{ github.workspace }}/gcp-key.json && ls -la ${{ github.workspace }}
 
       - name: Authenticate GCloud CLI
         uses: google-github-actions/auth@v2
