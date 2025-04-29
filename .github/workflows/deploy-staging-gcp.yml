@@ -68,7 +68,7 @@ jobs:
       - name: Set up GCloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: $GCP_PROJECT_ID
+          project_id: ${{ secrets.GCP_PROJECT_ID_STAGING_GCP }}
 
       - name: Check GCloud CLI auth
         run: gcloud info
