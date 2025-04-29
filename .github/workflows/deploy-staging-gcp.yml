@@ -29,6 +29,7 @@ jobs:
       RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY_STAGING_GCP }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }}
+      KAMAL_REGISTRY_USERNAME: tramlinehq
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID_STAGING_GCP }}
       GCP_SERVICE_ACCOUNT_KEY: ${{ vars.GCP_SERVICE_ACCOUNT_KEY_STAGING_GCP }}
 
@@ -72,6 +73,10 @@ jobs:
 
       - name: Check GCloud CLI auth
         run: gcloud info
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }} | docker login ghcr.io -u tramlinehq --password-stdin
 
       - name: Install Kamal
         run: gem install kamal -v 2.5.3
