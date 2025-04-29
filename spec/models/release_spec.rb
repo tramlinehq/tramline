@@ -396,9 +396,8 @@ describe Release do
 
       release = create(:release, train:)
 
-      # To simplify the test, verify private method
       release_channel_name = "release-#{app.name}-#{app.platform}-#{release.release_version}".downcase.gsub(/\W/, "-")
-      expect(release.send(:channel_name)).to eq(release_channel_name)
+      expect(release.channel_name).to eq(release_channel_name)
 
       expect(train.reload.notification_channel).to eq(slack_response.as_json)
     end

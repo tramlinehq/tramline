@@ -186,6 +186,19 @@ class Release < ApplicationRecord
     train.notification_settings.update(notification_channels: [notification_channel])
   end
 
+  def channel_name
+    name =
+      if app.cross_platform?
+        "release-#{app.name}-#{release_version}"
+      else
+        "release-#{app.name}-#{app.platform}-#{release_version}"
+      end
+
+    # Slack validation accepts only
+    # letters (lower case), numbers, hyphens and underscores
+    name.downcase.gsub(/\W/, "-")
+  end
+
   def pre_release_error_message
     last_error = passports.where(reason: :pre_release_failed, kind: :error).last
     last_error&.message
@@ -603,19 +616,6 @@ class Release < ApplicationRecord
   end
 
   private
-
-  def channel_name
-    name =
-      if app.cross_platform?
-        "release-#{app.name}-#{release_version}"
-      else
-        "release-#{app.name}-#{app.platform}-#{release_version}"
-      end
-
-    # Slack validation accepts only
-    # letters (lower case), numbers, hyphens and underscores
-    name.downcase.gsub(/\W/, "-")
-  end
 
   def base_tag_name
     tag = "v#{release_version}"
