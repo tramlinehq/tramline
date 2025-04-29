@@ -381,6 +381,27 @@ describe Release do
 
       expect(run.release_platform_runs.size).to eq(2)
     end
+
+    it "updates notification channel settings if per-release channel is enabled" do
+      app = create(:app, :android)
+      train = create(:train, app:, notifications_default_channel: false)
+
+      slack = instance_double(SlackIntegration)
+
+      allow(train).to receive(:send_notifications?).and_return(true)
+      allow_any_instance_of(App).to receive(:notification_provider).and_return(slack)
+
+      slack_response = {id: "ABCD", name: "dummy", is_private: false}
+      allow(slack).to receive(:create_channel!).and_return(slack_response)
+
+      release = create(:release, train:)
+
+      # To simplify the test, verify private method
+      release_channel_name = "release-#{app.name}-#{app.platform}-#{release.release_version}".downcase.gsub(/\W/, "-")
+      expect(release.send(:channel_name)).to eq(release_channel_name)
+
+      expect(train.reload.notification_channel).to eq(slack_response.as_json)
+    end
   end
 
   describe "#ready_to_be_finalized?" do

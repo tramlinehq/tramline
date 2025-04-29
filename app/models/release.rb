@@ -169,6 +169,7 @@ class Release < ApplicationRecord
   before_create :set_internal_notes
   after_create :create_platform_runs!
   after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
+  after_create :update_notification_channel!, if: -> { train.send_notifications? && !train.notifications_default_channel? }
   after_commit -> { Releases::CopyPreviousApprovalsJob.perform_async(id) }, on: :create, if: :copy_approvals_enabled?
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
@@ -177,7 +178,13 @@ class Release < ApplicationRecord
 
   delegate :versioning_strategy, :patch_version_bump_only, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
-  delegate :platform, :organization, to: :app
+  delegate :platform, :organization, :notification_provider, to: :app
+
+  def update_notification_channel!
+    notification_channel = notification_provider.create_channel!(channel_name)
+    train.update(notification_channel:)
+    train.notification_settings.update(notification_channels: [notification_channel])
+  end
 
   def pre_release_error_message
     last_error = passports.where(reason: :pre_release_failed, kind: :error).last
@@ -596,6 +603,19 @@ class Release < ApplicationRecord
   end
 
   private
+
+  def channel_name
+    name =
+      if app.cross_platform?
+        "release-#{app.name}-#{release_version}"
+      else
+        "release-#{app.name}-#{app.platform}-#{release_version}"
+      end
+
+    # Slack validation accepts only
+    # letters (lower case), numbers, hyphens and underscores
+    name.downcase.gsub(/\W/, "-")
+  end
 
   def base_tag_name
     tag = "v#{release_version}"
