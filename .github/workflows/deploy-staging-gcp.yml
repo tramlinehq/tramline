@@ -54,7 +54,8 @@ jobs:
 
       - name: Decode GCP Service Account Key
         run: |
-          cat $GCP_SERVICE_ACCOUNT_KEY
+          echo $GCP_SERVICE_ACCOUNT_KEY
+          echo $GCP_SERVICE_ACCOUNT_KEY | base64 -d
           echo "$GCP_SERVICE_ACCOUNT_KEY" | base64 -d > ${{ github.workspace }}/gcp-key.json
           ls -la ${{ github.workspace }}/gcp-key.json
           cat ${{ github.workspace }}/gcp-key.json
