@@ -6,13 +6,22 @@
 
     <%= render Form::SwitchComponent.new(form:, field_name: :notifications_default_channel,
                                          hide_child: false,
-                                  on_label: "Select default channel for notifications",
-                                  off_label: "Send notifications to release specific channel") do |component1| %>
+                                         on_label: "Select default channel for notifications",
+                                         off_label: "Send notifications to release specific channel") do |component1| %>
 
       <% component1.with_child do %>
         <%= render partial: "shared/notifications_form",
                    locals: {form:, app: @app, channels: @notification_channels, current: @current_notification_channel} %>
+      <% end %>
 
+      <% component1.with_info_icon do %>
+        <%
+          platform = @app.cross_platform? ? "" : "-#{@app.platform}"
+          channel_pattern = "#release-#{@app.name}#{platform}-{version}".downcase
+        %>
+
+        Release-specific channels are of the form <%= channel_pattern %>.
+        Notifications cannot be sent to other channels when release-specific channel is enabled.
       <% end %>
     <% end %>
   <% end %>

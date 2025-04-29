@@ -59,7 +59,7 @@ describe Installations::Slack::Api, type: :integration do
 
     it "returns transformed response" do
       response = described_class.new(access_token).create_channel(SlackIntegration::CHANNELS_TRANSFORMATIONS, channel_name)
-      expect(response).to include({id: "C08PWJT7YJ2", name: channel_name, is_private: false })
+      expect(response).to include({id: "C08PWJT7YJ2", name: channel_name, is_private: false})
     end
   end
 end
