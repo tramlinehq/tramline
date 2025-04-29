@@ -13,7 +13,6 @@
 ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
-  enable_extension "pg_trgm"
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
 
@@ -59,9 +58,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.jsonb "bugsnag_android_config"
     t.string "bitbucket_workspace"
     t.jsonb "ci_cd_workflows"
+    t.jsonb "jira_config", default: {}, null: false
     t.jsonb "firebase_crashlytics_ios_config"
     t.jsonb "firebase_crashlytics_android_config"
-    t.jsonb "jira_config", default: {}, null: false
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -217,7 +216,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.uuid "release_changelog_id"
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
     t.index ["commit_hash", "release_id", "release_changelog_id"], name: "idx_on_commit_hash_release_id_release_changelog_id_29200d00c2", unique: true
-    t.index ["message"], name: "index_commits_on_message", opclass: :gin_trgm_ops, using: :gin
     t.index ["release_changelog_id"], name: "index_commits_on_release_changelog_id"
     t.index ["release_id", "timestamp"], name: "index_commits_on_release_id_and_timestamp"
     t.index ["release_platform_id"], name: "index_commits_on_release_platform_id"
@@ -230,9 +228,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.string "project_number"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-  end
-
-  create_table "data_migrations", primary_key: "version", id: :string, force: :cascade do |t|
   end
 
   create_table "deployment_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -344,6 +339,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.text "value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["feature_key", "key", "value"], name: "index_flipper_gates_on_feature_key_and_key_and_value", unique: true
   end
 
   create_table "github_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -535,7 +531,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.jsonb "labels"
     t.tsvector "search_vector"
     t.string "merge_commit_sha"
-    t.index ["body"], name: "index_pull_requests_on_body", opclass: :gin_trgm_ops, using: :gin
     t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
@@ -546,7 +541,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.index ["source"], name: "index_pull_requests_on_source"
     t.index ["source_id"], name: "index_pull_requests_on_source_id"
     t.index ["state"], name: "index_pull_requests_on_state"
-    t.index ["title"], name: "index_pull_requests_on_title", opclass: :gin_trgm_ops, using: :gin
   end
 
   create_table "release_changelogs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -944,10 +938,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.boolean "stop_automatic_releases_on_failure", default: false, null: false
     t.boolean "patch_version_bump_only", default: false, null: false
     t.boolean "approvals_enabled", default: false, null: false
-    t.boolean "freeze_version", default: false
-    t.string "tag_prefix"
     t.boolean "copy_approvals", default: false
+    t.boolean "freeze_version", default: false
     t.boolean "auto_apply_patch_changes", default: true
+    t.string "tag_prefix"
     t.boolean "version_bump_enabled", default: false
     t.string "version_bump_file_paths", default: [], array: true
     t.string "version_bump_branch_prefix"

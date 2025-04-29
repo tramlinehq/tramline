@@ -213,7 +213,7 @@ class PlayStoreSubmission < StoreSubmission
   def provider = conf.integrable.android_store_provider
 
   def update_external_status
-    # return if sandbox_mode?
+    return if Seed.demo_mode?
     StoreSubmissions::PlayStore::UpdateExternalReleaseJob.perform_async(id)
   end
 
@@ -287,10 +287,12 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def on_preprocess!
+    return if Seed.demo_mode?
     StoreSubmissions::PlayStore::UploadJob.perform_async(id)
   end
 
   def on_start_prepare!
+    return if Seed.demo_mode?
     StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_async(id)
   end
 

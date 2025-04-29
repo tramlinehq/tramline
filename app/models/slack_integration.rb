@@ -93,6 +93,7 @@ class SlackIntegration < ApplicationRecord
   end
 
   def fetch_channels
+    return if Seed.demo_mode?
     RefreshSlackChannelsJob.perform_async(id)
   end
 

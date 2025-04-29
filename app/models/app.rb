@@ -130,7 +130,7 @@ class App < ApplicationRecord
   end
 
   def ready?
-    integrations.ready? and config&.ready?
+    Integration.ready? and config&.ready?
   end
 
   def guided_train_setup?
@@ -263,6 +263,7 @@ class App < ApplicationRecord
   end
 
   def refresh_external_app
+    return if Seed.demo_mode?
     RefreshExternalAppJob.perform_async(id)
   end
 

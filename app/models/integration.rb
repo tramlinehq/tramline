@@ -102,9 +102,13 @@ class Integration < ApplicationRecord
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
 
   before_create :set_connected
-  after_create_commit -> { IntegrationMetadataJob.perform_async(id) }
+  after_create_commit :enqueue_metadata_job, unless: -> { Seed.demo_mode? }
 
   class << self
+    def enqueue_metadata_job(id)
+      IntegrationMetadataJob.perform_async(id)
+    end
+
     def by_categories_for(app)
       existing_integrations = app.integrations.connected.includes(:providable)
       integrations = ALLOWED_INTEGRATIONS_FOR_APP[app.platform]
@@ -295,5 +299,10 @@ class Integration < ApplicationRecord
     if APP_VARIANT_PROVIDABLE_TYPES.exclude?(providable_type)
       errors.add(:providable_type, :not_allowed_for_app_variant)
     end
+  end
+
+  def enqueue_metadata_job
+    return if Seed.demo_mode?
+    IntegrationMetadataJob.perform_async(id)
   end
 end
