@@ -76,10 +76,13 @@ jobs:
 
       - name: Login to GitHub Container Registry
         run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u tramlinehq --password-stdin
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u tramlinehq -p ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Kamal
         run: gem install kamal -v 2.5.3
+
+      - name: Logout from docker
+        run: docker logout
 
       - name: Deploy with Kamal
         run: kamal deploy
