@@ -725,6 +725,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_25_095631) do
     t.string "slug"
     t.boolean "is_v2", default: false
     t.uuid "approval_overridden_by_id"
+    t.jsonb "notification_channel"
     t.index ["approval_overridden_by_id"], name: "index_releases_on_approval_overridden_by_id"
     t.index ["slug"], name: "index_releases_on_slug", unique: true
     t.index ["train_id"], name: "index_releases_on_train_id"

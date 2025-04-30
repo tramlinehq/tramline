@@ -10,6 +10,7 @@
 #  is_automatic              :boolean          default(FALSE)
 #  is_v2                     :boolean          default(FALSE)
 #  new_hotfix_branch         :boolean          default(FALSE)
+#  notification_channel      :jsonb
 #  original_release_version  :string
 #  release_type              :string           not null
 #  scheduled_at              :datetime
@@ -169,7 +170,6 @@ class Release < ApplicationRecord
   before_create :set_internal_notes
   after_create :create_platform_runs!
   after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
-  after_create :update_notification_channel!, if: -> { train.send_notifications? && !train.notifications_default_channel? }
   after_commit -> { Releases::CopyPreviousApprovalsJob.perform_async(id) }, on: :create, if: :copy_approvals_enabled?
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
@@ -180,23 +180,21 @@ class Release < ApplicationRecord
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
   delegate :platform, :organization, :notification_provider, to: :app
 
-  def update_notification_channel!
-    notification_channel = notification_provider.create_channel!(channel_name)
-    train.update(notification_channel:)
-    train.notification_settings.update(notification_channels: [notification_channel])
+  def set_notification_channel!(notification_channel)
+    self.notification_channel = {
+      id: notification_channel["id"],
+      name: notification_channel["name"]
+    }
+
+    save!
   end
 
-  def channel_name
-    name =
-      if app.cross_platform?
-        "release-#{app.name}-#{release_version}"
-      else
-        "release-#{app.name}-#{app.platform}-#{release_version}"
-      end
+  def release_specific_channel_name
+    notification_channel&.fetch("name")
+  end
 
-    # Slack validation accepts only
-    # letters (lower case), numbers, hyphens and underscores
-    name.downcase.gsub(/\W/, "-")
+  def release_specific_channel_id
+    notification_channel&.fetch("id")
   end
 
   def pre_release_error_message
@@ -485,7 +483,8 @@ class Release < ApplicationRecord
         release_completed_at: completed_at,
         release_started_at: scheduled_at,
         final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?),
-        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?)
+        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?),
+        release_specific_channel_id:
       }
     )
   end
