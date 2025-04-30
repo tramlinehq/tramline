@@ -50,7 +50,7 @@ RSpec.describe ProductionRelease do
   end
 
   describe "#rollout_started!" do
-    let(:train) { create(:train, tag_store_releases: true, tag_store_releases_with_platforms: true) }
+    let(:train) { create(:train, tag_store_releases: true, tag_store_releases_with_platform_names: true) }
     let(:release) { create(:release, train:) }
     let(:release_platform) { create(:release_platform, train:) }
     let(:release_platform_run) { create(:release_platform_run, release_platform:, release:) }
@@ -81,7 +81,7 @@ RSpec.describe ProductionRelease do
   end
 
   describe "#fetch_health_data!" do
-    let(:train) { create(:train, tag_store_releases: true, tag_store_releases_with_platforms: true) }
+    let(:train) { create(:train, tag_store_releases: true, tag_store_releases_with_platform_names: true) }
     let(:release_platform) { create(:release_platform, train:) }
     let(:monitoring_api_dbl) { instance_double(Installations::Crashlytics::Api) }
 

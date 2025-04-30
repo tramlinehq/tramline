@@ -29,7 +29,7 @@ describe Coordinators::FinishPlatformRun do
 
     it "schedules a platform-specific tag job if cross-platform app" do
       app = create(:app, :cross_platform)
-      train = create(:train, app:, tag_store_releases_with_platforms: true)
+      train = create(:train, app:, tag_store_releases_with_platform_names: true)
       release = create(:release, train:)
       release_platform = create(:release_platform, train:)
       release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)
@@ -44,7 +44,7 @@ describe Coordinators::FinishPlatformRun do
 
     it "does not schedule a platform-specific tag job if cross-platform app tagging all store releases" do
       app = create(:app, :cross_platform)
-      train = create(:train, app:, tag_store_releases_with_platforms: true, tag_store_releases: true)
+      train = create(:train, app:, tag_store_releases_with_platform_names: true, tag_store_releases: true)
       release = create(:release, train:)
       release_platform = create(:release_platform, train:)
       release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)

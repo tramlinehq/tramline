@@ -48,7 +48,7 @@ namespace :anonymize do
         primary_key "id"
         whitelist "name", "slug", "description", "status", "branching_strategy", "version_seeded_with", "version_current",
           "repeat_duration", "build_queue_wait_time", "build_queue_size", "backmerge_strategy", "manual_release",
-          "tag_store_releases_with_platforms", "tag_store_releases", "compact_build_notes", "tag_end_of_release", "build_queue_enabled",
+          "tag_store_releases_with_platform_names", "tag_store_releases", "compact_build_notes", "tag_end_of_release", "build_queue_enabled",
           "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_enabled", "tag_end_of_release_prefix", "tag_end_of_release_suffix"
         whitelist_timestamps
         anonymize("app_id") { |field| app.id }

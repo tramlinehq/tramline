@@ -9,7 +9,7 @@ FactoryBot.define do
     release_backmerge_branch { "main" }
     status { "draft" }
     build_queue_enabled { false }
-    tag_store_releases_with_platforms { false }
+    tag_store_releases_with_platform_names { false }
     tag_store_releases { false }
     tag_end_of_release { true }
     tag_end_of_release_prefix { nil }
