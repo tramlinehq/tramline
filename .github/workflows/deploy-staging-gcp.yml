@@ -83,3 +83,10 @@ jobs:
 
       - name: Deploy with Kamal
         run: kamal deploy
+        env:
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          KAMAL_REGISTRY_USERNAME: tramlinehq
+          SERVER_ADDR: 35.209.23.61
+          DOCKER_BUILDKIT: 1
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY_STAGING_GCP }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
