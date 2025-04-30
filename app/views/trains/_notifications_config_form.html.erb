@@ -10,7 +10,7 @@
                                            off_label: "Send notifications to default channel") do |component1| %>
 
         <% component1.with_info_icon do %>
-          Release-specific channels are of the form <%= release_specific_channel_pattern(@app) %>.
+          Notifications will be sent to channels like <%= release_specific_channel_pattern(@app) %>
         <% end %>
       <% end %>
     </div>
