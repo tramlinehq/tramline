@@ -952,7 +952,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_25_095631) do
     t.string "version_bump_file_paths", default: [], array: true
     t.string "version_bump_branch_prefix"
     t.string "continuous_backmerge_branch_prefix"
-    t.boolean "notifications_default_channel", default: true
+    t.boolean "notifications_release_specific_channel_enabled", default: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
