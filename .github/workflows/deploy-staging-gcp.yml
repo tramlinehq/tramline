@@ -66,16 +66,25 @@ jobs:
       - name: Install Kamal
         run: gem install kamal -v 2.5.3
 
-      - name: Set up SSH connection
+      - name: Set up SSH
         run: |
-          # Create SSH directory and write the private key
-          mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
-          # Enable current SSH key
-          eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
-          # Add the server to known_hosts (use `-p 2222` for custom port if needed)
-          ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Disable Git safe directory check
+        run: git config --global --add safe.directory '*'
+
+      # - name: Set up SSH connection
+      #   run: |
+      #     # Create SSH directory and write the private key
+      #     mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+      #     # Enable current SSH key
+      #     eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
+      #     # Add the server to known_hosts (use `-p 2222` for custom port if needed)
+      #     ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
+      #   env:
+      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
 
       - name: Deploy with Kamal
         run: |
