@@ -75,20 +75,15 @@ jobs:
       - name: Disable Git safe directory check
         run: git config --global --add safe.directory '*'
 
-        # Add debug step here
       - name: Debug Docker Login
         run: |
           echo "Testing direct Docker login..."
           docker login ghcr.io -u $KAMAL_REGISTRY_USERNAME -p $KAMAL_REGISTRY_PASSWORD
           echo "Docker login exit status: $?"
-          # Check if we're actually logged in
           docker logout ghcr.io
         env:
           KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           KAMAL_REGISTRY_USERNAME: tramlinehq
 
       - name: Deploy with Kamal
-        run: |
-          mkdir -p ~/.docker
-          echo '{"auths":{"ghcr.io":{"auth":"'$(echo -n "$KAMAL_REGISTRY_USERNAME:$KAMAL_REGISTRY_PASSWORD" | base64)'"}}}' > ~/.docker/config.json
-          kamal deploy
+        run: kamal deploy
