@@ -75,26 +75,20 @@ jobs:
       - name: Disable Git safe directory check
         run: git config --global --add safe.directory '*'
 
-      # - name: Set up SSH connection
-      #   run: |
-      #     # Create SSH directory and write the private key
-      #     mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
-      #     # Enable current SSH key
-      #     eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
-      #     # Add the server to known_hosts (use `-p 2222` for custom port if needed)
-      #     ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
-      #   env:
-      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
+        # Add debug step here
+      - name: Debug Docker Login
+        run: |
+          echo "Testing direct Docker login..."
+          docker login ghcr.io -u $KAMAL_REGISTRY_USERNAME -p $KAMAL_REGISTRY_PASSWORD
+          echo "Docker login exit status: $?"
+          # Check if we're actually logged in
+          docker logout ghcr.io
+        env:
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          KAMAL_REGISTRY_USERNAME: tramlinehq
 
       - name: Deploy with Kamal
         run: |
           mkdir -p ~/.docker
           echo '{"auths":{"ghcr.io":{"auth":"'$(echo -n "$KAMAL_REGISTRY_USERNAME:$KAMAL_REGISTRY_PASSWORD" | base64)'"}}}' > ~/.docker/config.json
           kamal deploy
-        env:
-          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-          KAMAL_REGISTRY_USERNAME: tramlinehq
-          SERVER_ADDR: 35.209.23.61
-          DOCKER_BUILDKIT: 1
-          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY_STAGING_GCP }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
