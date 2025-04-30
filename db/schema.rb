@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_04_28_103320) do
+ActiveRecord::Schema[7.2].define(version: 2025_04_30_150508) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -506,6 +506,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_28_103320) do
     t.string "status", default: "inflight", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "tag_name"
     t.index ["build_id"], name: "index_production_releases_on_build_id"
     t.index ["previous_id"], name: "index_production_releases_on_previous_id"
     t.index ["release_platform_run_id", "status"], name: "index_unique_active_production_release", unique: true, where: "((status)::text = 'active'::text)"

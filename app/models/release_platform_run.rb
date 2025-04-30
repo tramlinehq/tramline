@@ -297,10 +297,6 @@ class ReleasePlatformRun < ApplicationRecord
 
   alias_method :metadata_editable?, :production_release_in_pre_review?
 
-  def tag_url
-    train.vcs_provider&.tag_url(tag_name)
-  end
-
   # Play Store does not have constraints around version name
   # App Store requires a higher version name than that of the previously approved version name
   # and so a version bump is required for iOS once the build has been approved as well
@@ -353,13 +349,6 @@ class ReleasePlatformRun < ApplicationRecord
   def conf = Config::ReleasePlatform.from_json(config)
 
   private
-
-  def base_tag_name
-    tag = "v#{release_version}"
-    tag << "-hotfix" if hotfix?
-    tag << (train.tag_store_releases_with_platform_names ? "-#{platform}" : "")
-    tag
-  end
 
   def set_config
     self.config = release_platform.platform_config.as_json
