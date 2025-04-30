@@ -50,7 +50,6 @@ class NotificationSetting < ApplicationRecord
   }
 
   RELEASE_SPECIFIC_CHANNELS_ALLOWED_KINDS = [
-    :release_started,
     :release_stopped,
     :release_finalize_failed,
     :release_ended,
@@ -80,6 +79,7 @@ class NotificationSetting < ApplicationRecord
   ]
 
   scope :active, -> { where(active: true) }
+  scope :release_specific_channel_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNELS_ALLOWED_KINDS) }
   delegate :app, to: :train
   delegate :notification_provider, to: :app
   delegate :channels, to: :notification_provider
