@@ -8,8 +8,8 @@ builder:
     type: gha
     options: mode=max
     image: app-build-cache
-  remote: ssh://sam-staging-local@35.209.23.61:22
-  local: false
+  # remote: ssh://sam-staging-local@35.209.23.61:22
+  local: true
   secrets:
     - RAILS_MASTER_KEY
     - SSH_PRIVATE_KEY

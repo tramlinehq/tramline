@@ -47,8 +47,8 @@ jobs:
           BUNDLE_WITHOUT: "default development test"
           RAILS_ENV: production
 
-      #   - name: Set up Docker Buildx for cache
-      #     uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx for cache
+        uses: docker/setup-buildx-action@v3
 
       #   - name: Expose GitHub Runtime for cache
       #     uses: crazy-max/ghaction-github-runtime@v3
