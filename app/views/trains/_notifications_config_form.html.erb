@@ -9,14 +9,8 @@
                                            on_label: "Send notifications to release specific channel",
                                            off_label: "Send notifications to default channel") do |component1| %>
 
-        <%
-          platform = @app.cross_platform? ? "" : "-#{@app.platform}"
-          channel_pattern = "#release-#{@app.name}#{platform}-{version}".downcase
-
-          component1.with_info_icon do
-        %>
-
-          Release-specific channels are of the form <%= channel_pattern %>.
+        <% component1.with_info_icon do %>
+          Release-specific channels are of the form <%= release_specific_channel_pattern(@app) %>.
         <% end %>
       <% end %>
     </div>
