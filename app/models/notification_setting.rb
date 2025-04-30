@@ -49,6 +49,36 @@ class NotificationSetting < ApplicationRecord
     workflow_run_unavailable: "workflow_run_unavailable"
   }
 
+  RELEASE_SPECIFIC_CHANNELS_ALLOWED_KINDS = [
+    :release_started,
+    :release_stopped,
+    :release_finalize_failed,
+    :release_ended,
+    :release_health_events,
+    :backmerge_failed,
+    :build_available_v2,
+    :internal_release_finished,
+    :internal_release_failed,
+    :beta_release_failed,
+    :beta_submission_finished,
+    :internal_submission_finished,
+    :submission_failed,
+    :production_submission_started,
+    :production_submission_in_review,
+    :production_submission_approved,
+    :production_submission_rejected,
+    :production_submission_cancelled,
+    :production_rollout_started,
+    :production_rollout_paused,
+    :production_rollout_resumed,
+    :production_rollout_halted,
+    :production_rollout_updated,
+    :production_release_finished,
+    :workflow_run_failed,
+    :workflow_run_halted,
+    :workflow_run_unavailable
+  ]
+
   scope :active, -> { where(active: true) }
   delegate :app, to: :train
   delegate :notification_provider, to: :app
@@ -71,6 +101,10 @@ class NotificationSetting < ApplicationRecord
     notification_channels.each do |channel|
       notification_provider.notify_with_snippet!(channel["id"], message, kind, params, snippet_content, snippet_title)
     end
+  end
+
+  def release_specific_channel_allowed?
+    kind.to_sym.in?(RELEASE_SPECIFIC_CHANNELS_ALLOWED_KINDS)
   end
 
   def notification_channels_settings

@@ -155,7 +155,7 @@ class TrainsController < SignedInApplicationController
       :name,
       :description,
       :notification_channel,
-      :notifications_default_channel,
+      :notifications_release_specific_channel_enabled,
       :build_queue_enabled,
       :freeze_version,
       :build_queue_size,
