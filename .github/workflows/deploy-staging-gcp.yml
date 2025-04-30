@@ -78,7 +78,10 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
 
       - name: Deploy with Kamal
-        run: kamal deploy
+        run: |
+          mkdir -p ~/.docker
+          echo '{"auths":{"ghcr.io":{"auth":"'$(echo -n "$KAMAL_REGISTRY_USERNAME:$KAMAL_REGISTRY_PASSWORD" | base64)'"}}}' > ~/.docker/config.json
+          kamal deploy
         env:
           KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           KAMAL_REGISTRY_USERNAME: tramlinehq
