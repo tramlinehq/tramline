@@ -29,14 +29,14 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   end
 
   attr_reader :submission
-  delegate :id, :inflight?, :release_platform_run, :external_link, :provider, to: :submission
+  delegate :id, :release_platform_run, :external_link, :provider, :parent_release, to: :submission
   delegate :release, to: :release_platform_run
 
   def show_blocked_message?
     release_platform_run.play_store_blocked? && !submission.failed_with_action_required?
   end
 
-  def inflight? = submission.parent_release.inflight?
+  def inflight? = parent_release.inflight?
 
   def blocked?
     release.blocked_for_production_release?
