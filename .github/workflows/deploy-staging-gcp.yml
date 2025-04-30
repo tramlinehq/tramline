@@ -67,15 +67,15 @@ jobs:
       - name: Check GCloud CLI auth
         run: gcloud info
 
-      - name: Login to GitHub Container Registry
-        run: |
-          echo ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }} | docker login ghcr.io -u tramlinehq -p ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }}
+      # - name: Login to GitHub Container Registry
+      #   run: |
+      #     echo ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }} | docker login ghcr.io -u tramlinehq -p ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }}
 
       - name: Install Kamal
         run: gem install kamal -v 2.5.3
 
-      - name: Logout from docker
-        run: docker logout ghcr.io
+      # - name: Logout from docker
+      #   run: docker logout ghcr.io
 
       - name: Set up SSH connection
         run: |
