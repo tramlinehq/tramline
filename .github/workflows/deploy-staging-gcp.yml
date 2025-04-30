@@ -50,15 +50,8 @@ jobs:
       - name: Set up Docker Buildx for cache
         uses: docker/setup-buildx-action@v3
 
-      #   - name: Expose GitHub Runtime for cache
-      #     uses: crazy-max/ghaction-github-runtime@v3
-
-      # - name: Decode and validate GCP Service Account Key
-      #   run: |
-      #     echo $GCP_SERVICE_ACCOUNT_KEY
-      #     echo $GCP_SERVICE_ACCOUNT_KEY | base64 -d
-      #     echo "$GCP_SERVICE_ACCOUNT_KEY" | base64 -d >> ${{ github.workspace }}/gcp-key.json
-      #     ls -la ${{ github.workspace }}/gcp-key.json
+      - name: Expose GitHub Runtime for cache
+        uses: crazy-max/ghaction-github-runtime@v3
 
       - name: Authenticate GCloud CLI
         uses: google-github-actions/auth@v2
@@ -83,6 +76,17 @@ jobs:
 
       - name: Logout from docker
         run: docker logout ghcr.io
+
+      - name: Set up SSH connection
+        run: |
+          # Create SSH directory and write the private key
+          mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+          # Enable current SSH key
+          eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
+          # Add the server to known_hosts (use `-p 2222` for custom port if needed)
+          ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
 
       - name: Deploy with Kamal
         run: kamal deploy
