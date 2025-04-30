@@ -76,7 +76,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         run: |
-          echo ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }} | docker login ghcr.io -u tramlinehq --password-stdin
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u tramlinehq --password-stdin
 
       - name: Install Kamal
         run: gem install kamal -v 2.5.3

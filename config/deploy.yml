@@ -37,7 +37,7 @@ servers:
 
 registry:
   server: ghcr.io
-  username: tramlinehq
+  username: $KAMAL_REGISTRY_USERNAME
   password: $KAMAL_REGISTRY_PASSWORD
 
 ssh:
