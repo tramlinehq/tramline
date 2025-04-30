@@ -34,7 +34,7 @@ module Taggable
   # note: avoids appending increasing numbers to avoid keeping state
   # note: relies on a 'base_tag_name' method
   def unique_tag_name(currently, sha)
-    short_sha = sha[0,7]
+    short_sha = sha[0, 7]
     return [base_tag_name, "-", short_sha].join if currently.end_with?(base_tag_name)
     [base_tag_name, "-", short_sha, "-", Time.now.to_i].join
   end
