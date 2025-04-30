@@ -80,7 +80,6 @@ jobs:
           echo "Testing direct Docker login..."
           docker login ghcr.io -u $KAMAL_REGISTRY_USERNAME -p $KAMAL_REGISTRY_PASSWORD
           echo "Docker login exit status: $?"
-          docker logout ghcr.io
         env:
           KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           KAMAL_REGISTRY_USERNAME: tramlinehq
