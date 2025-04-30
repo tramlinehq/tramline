@@ -18,7 +18,6 @@ en:
       finished_html: 'Finished the platform release with version <span class="emphasize">%{version}</span>'
       stopped_html: 'Stopped the platform release with version <span class="emphasize">%{version}</span>'
       tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
-      vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
     commit:
       created_html: 'New commit <span class="emphasize">%{sha}</span> has landed'
     pull_request:
@@ -33,6 +32,7 @@ en:
       finished_html: 'Finished the beta release for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a>'
     production_release:
       finished_html: 'Finished the production release for <span class="emphasize">%{version} (%{build_number})</span>'
+      vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
     workflow_run:
       triggered_html: 'A new %{kind} workflow run was triggered for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name}</span>'
       retried_html: 'The workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> was retried for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
