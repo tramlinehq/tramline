@@ -71,6 +71,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
 
+      - name: Test SSH connection to VM
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p 2222 sam-staging-local@$SERVER_ADDR "exit"
+          echo "SSH connection successful"
+
       - name: Disable Git safe directory check
         run: git config --global --add safe.directory '*'
 
