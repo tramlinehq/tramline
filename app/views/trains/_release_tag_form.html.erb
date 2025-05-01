@@ -3,6 +3,11 @@
                                      on_label: "End-of-release tagging enabled",
                                      off_label: "End-of-release tagging disabled",
                                      hide_child: @train.tag_end_of_release?) do |component| %>
+  <% component.with_info_icon do %>
+    Tag at the end of the release, when everything is rolled out and Tramline is just wrapping up.
+    It will tag the last good commit released from the release branch.
+  <% end %>
+
   <% component.with_child do %>
     <div data-controller="help-text" class="flex flex-col item-gap-default">
       <div data-controller="string-affix"
