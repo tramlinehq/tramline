@@ -111,7 +111,7 @@ class TrainsController < SignedInApplicationController
       :repeat_duration_value,
       :repeat_duration_unit,
       :notification_channel,
-      :notifications_default_channel,
+      :notifications_release_specific_channel_enabled,
       :build_queue_enabled,
       :build_queue_size,
       :build_queue_wait_time_unit,
