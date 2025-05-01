@@ -67,10 +67,9 @@ jobs:
         run: gem install kamal -v 2.5.3
 
       - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
 
       - name: Disable Git safe directory check
         run: git config --global --add safe.directory '*'
