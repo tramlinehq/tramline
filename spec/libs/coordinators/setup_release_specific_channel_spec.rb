@@ -42,7 +42,7 @@ RSpec.describe Coordinators::SetupReleaseSpecificChannel do
 
     it "does not update notification channel notification settings for non-allowed kinds" do
       described_class.call(release)
-      notification_channels = train.notification_settings.where.not(kind: NotificationSetting::RELEASE_SPECIFIC_CHANNELS_ALLOWED_KINDS).pluck(:notification_channels)
+      notification_channels = train.notification_settings.release_specific_channel_not_allowed.pluck(:notification_channels)
       expect(notification_channels).to all(contain_exactly(default_notification_channel.as_json))
     end
   end
