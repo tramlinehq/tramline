@@ -65,8 +65,10 @@ servers:
 
 registry:
   server: ghcr.io
-  username: tramlinehq
-  password: $KAMAL_REGISTRY_PASSWORD
+  username:
+    - KAMAL_REGISTRY_USERNAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
 
 ssh:
   user: sam-staging-local
