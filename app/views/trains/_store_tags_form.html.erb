@@ -11,8 +11,8 @@
 
 
       <% component.with_child do %>
-        <% if @app.cross_platform? %>
-          <div data-controller="help-text" class="flex flex-col item-gap-default">
+        <div data-controller="help-text" class="flex flex-col item-gap-default">
+          <% if @app.cross_platform? %>
             <%= render Form::SwitchComponent.new(form:,
                                                  field_name: :tag_store_releases_with_platform_names,
                                                  on_label: "Add platform names to tags enabled",
@@ -21,16 +21,16 @@
                 Tag each platform release separately. By default, only one tag is created at the end of the release.
               <% end %>
             <% end %>
-        <% end %>
-
-        <%= render Form::SwitchComponent.new(form:,
-                                             field_name: :tag_store_releases_vcs_release,
-                                             on_label: "Create a release entry on VCS enabled",
-                                             off_label: "Create a release entry on VCS disabled") do |component| %>
-          <% component.with_info_icon do %>
-            Create a release entry on VCS platforms (currently only works GitHub releases)
           <% end %>
-        <% end %>
+
+          <%= render Form::SwitchComponent.new(form:,
+                                               field_name: :tag_store_releases_vcs_release,
+                                               on_label: "Create a release entry on VCS enabled",
+                                               off_label: "Create a release entry on VCS disabled") do |component| %>
+            <% component.with_info_icon do %>
+              Create a release entry on VCS platforms (currently only works GitHub releases)
+            <% end %>
+          <% end %>
         </div>
       <% end %>
     <% end %>
