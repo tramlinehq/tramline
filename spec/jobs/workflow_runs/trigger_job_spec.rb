@@ -2,30 +2,36 @@
 
 require "rails_helper"
 
-RSpec.describe WorkflowRuns::TriggerJob do
+describe WorkflowRuns::TriggerJob do
   let(:workflow_run) { create(:workflow_run, :triggering) }
 
   before do
-    allow(WorkflowRun).to receive(:find).and_return(workflow_run)
+    allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!)
   end
 
   context "when trigger does not cause error" do
-    before do
-      allow(workflow_run).to receive(:trigger!)
-    end
-
-    it "triggers successfully" do
+    it "initiates the workflow run" do
       described_class.new.perform(workflow_run.id)
-      expect(workflow_run).to have_received(:trigger!)
+
+      expect(workflow_run.reload.status).to eq("triggered")
     end
   end
 
   context "when trigger results in error" do
     let(:workflow_run) { create(:workflow_run, :triggering) }
 
+    it "marks the workflow run as trigger_failed when the external unique number is not found" do
+      workflow_run.app.update(build_number_managed_internally: false)
+      allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return({unique_number: nil})
+
+      described_class.new.perform(workflow_run.id)
+
+      expect(workflow_run.reload.status).to eq("unavailable")
+    end
+
     shared_examples "with known error" do |error|
       before do
-        allow(workflow_run).to receive(:trigger!).and_raise(error)
+        allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_raise(error)
       end
 
       context "when error is #{error.message}" do
@@ -36,12 +42,13 @@ RSpec.describe WorkflowRuns::TriggerJob do
       end
     end
 
-    include_examples "with known error", Installations::Github::Error.new(
+    it_behaves_like "with known error", Installations::Github::Error.new(
       OpenStruct.new(
         response_body: {message: "Workflow does not have 'workflow_dispatch' trigger"}.to_json
       )
     )
-    include_examples "with known error", Installations::Github::Error.new(
+
+    it_behaves_like "with known error", Installations::Github::Error.new(
       OpenStruct.new(
         response_body: {message: "Required input 'parameter_X' not provided"}.to_json
       )
@@ -50,7 +57,7 @@ RSpec.describe WorkflowRuns::TriggerJob do
     context "when error is unknown" do
       before do
         err = Installations::Error.new("Some Error", reason: :unknown_failure)
-        allow(workflow_run).to receive(:trigger!).and_raise(err)
+        allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_raise(err)
       end
 
       it "does not change state of workflow_run to trigger_failed" do
@@ -60,6 +67,7 @@ RSpec.describe WorkflowRuns::TriggerJob do
           nil
         end
 
+        expect(workflow_run.reload.status).to eq("triggering")
         expect(workflow_run.reload.status).not_to eq("trigger_failed")
       end
     end

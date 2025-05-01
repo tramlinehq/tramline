@@ -16,6 +16,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_queue_id          :uuid             indexed
+#  release_changelog_id    :uuid             indexed
 #  release_id              :uuid             indexed => [commit_hash], indexed => [timestamp]
 #  release_platform_id     :uuid             indexed
 #  release_platform_run_id :uuid             indexed
@@ -30,18 +31,21 @@ class Commit < ApplicationRecord
 
   has_many :release_platform_runs, dependent: :nullify, inverse_of: :last_commit
   belongs_to :release, inverse_of: :all_commits
+  belongs_to :release_changelog, inverse_of: :commits, optional: true
   belongs_to :build_queue, inverse_of: :commits, optional: true
   belongs_to :user, foreign_key: "author_login", primary_key: "github_login", optional: true, inverse_of: :commits, class_name: "Accounts::User"
   has_many :pull_requests, inverse_of: :commit, dependent: :nullify
 
   scope :sequential, -> { order(timestamp: :desc) }
+  scope :stability, -> { where(release_changelog: nil) }
+  scope :changelog, -> { where.not(stability.where_values_hash) }
 
   STAMPABLE_REASONS = ["created"]
 
-  validates :commit_hash, uniqueness: {scope: :release_id}
+  validates :commit_hash, uniqueness: {scope: [:release_id, :release_changelog_id]}
 
   before_save :generate_search_vector_data
-  after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
+  after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create, if: :stability?
 
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
 
@@ -115,10 +119,18 @@ class Commit < ApplicationRecord
         commit_author_email: author_email,
         # NOTE: Truncate the message to 200 characters to avoid Slack notifications from exceeding the 2000 character limit
         # and also to not pollute the notifications channel with too much information
-        commit_message: message.truncate(200),
+        commit_message: message&.truncate(200),
         commit_timestamp: timestamp
       }
     )
+  end
+
+  def changelog?
+    release_changelog_id.present?
+  end
+
+  def stability?
+    !changelog?
   end
 
   private

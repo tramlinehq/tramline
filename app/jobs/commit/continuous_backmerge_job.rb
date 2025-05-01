@@ -14,7 +14,7 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
 
     return unless result
     commit.reload # ensure the commit is updated with the latest data, and no stale state is associated with it
-    return handle_success(commit.pull_requests) if result.ok?
+    return if result.ok?
     return handle_retry(count, is_head_commit) if retryable?(result)
     handle_failure(result.error)
   end
@@ -47,15 +47,6 @@ class Commit::ContinuousBackmergeJob < ApplicationJob
 
   def retryable?(result)
     !result.ok? && result.error.is_a?(Triggers::PullRequest::RetryableMergeError)
-  end
-
-  def handle_success(prs)
-    return if prs.blank?
-
-    prs.each do |pr|
-      logger.debug { "Patch Pull Request: Created a patch PR successfully: #{pr}" }
-      release.event_stamp!(reason: :backmerge_pr_created, kind: :success, data: stamp_data(pr))
-    end
   end
 
   def stamp_data(pr = nil)

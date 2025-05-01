@@ -8,7 +8,7 @@ export default class extends Controller {
 
   connect() {
     this.select = new TomSelect(this.element, {
-      maxOptions: 5,
+      maxOptions: 100,
       addPrecedence: true,
       diacritics: true,
       onItemAdd: function () {

@@ -92,6 +92,7 @@ Rails.application.configure do
   # Avoid cache poisoning attack by users setting X-Forwarded-Host
   config.hosts << ENV["HOST_NAME"]
   config.hosts << ".#{ENV["HOST_NAME"]}"
+  config.hosts << /.*\.onrender\.com/  # Allow all Render preview environments
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false

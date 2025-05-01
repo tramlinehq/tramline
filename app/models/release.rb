@@ -49,25 +49,23 @@ class Release < ApplicationRecord
   STAMPABLE_REASONS = %w[
     created
     release_branch_created
-    kickoff_pr_succeeded
+    version_bump_branch_created
+    version_bump_no_changes
     version_changed
     approvals_overwritten
     finalizing
-    pre_release_pr_not_creatable
-    pull_request_not_mergeable
-    post_release_pr_succeeded
-    backmerge_pr_created
-    pr_merged
+    pre_release_failed
     backmerge_failure
     vcs_release_created
     finalize_failed
     stopped
     finished
   ]
-  # TODO: deprecate this
-  STAMPABLE_REASONS.concat(["status_changed"])
+  STAMPABLE_REASONS.concat(%w[status_changed backmerge_pr_created pr_merged pull_request_not_mergeable post_release_pr_succeeded kickoff_pr_succeeded]) # TODO: deprecate this
   STATES = {
     created: "created",
+    pre_release_started: "pre_release_started",
+    pre_release_failed: "pre_release_failed",
     on_track: "on_track",
     post_release: "post_release",
     post_release_started: "post_release_started",
@@ -105,7 +103,7 @@ class Release < ApplicationRecord
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
   has_many :release_metadata, through: :release_platform_runs
-  has_many :all_commits, dependent: :destroy, inverse_of: :release, class_name: "Commit"
+  has_many :all_commits, -> { stability }, dependent: :destroy, inverse_of: :release, class_name: "Commit"
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :builds, through: :release_platform_runs
   has_many :build_queues, dependent: :destroy
@@ -131,8 +129,16 @@ class Release < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
+    event :start_pre_release_phase do
+      transitions from: [:created, :pre_release_failed, :pre_release_started], to: :pre_release_started
+    end
+
+    event :fail_pre_release_phase do
+      transitions from: :pre_release_started, to: :pre_release_failed
+    end
+
     event :start do
-      transitions from: :created, to: :on_track
+      transitions from: [:created, :pre_release_started], to: :on_track
     end
 
     event :start_post_release_phase do
@@ -150,7 +156,7 @@ class Release < ApplicationRecord
     event :stop do
       before { self.stopped_at = Time.current }
       transitions from: :partially_finished, to: :stopped_after_partial_finish
-      transitions from: [:created, :on_track, :post_release_started, :post_release_failed], to: :stopped
+      transitions from: [:created, :on_track, :post_release_started, :post_release_failed, :pre_release_started, :pre_release_failed], to: :stopped
     end
 
     event :finish do
@@ -172,6 +178,11 @@ class Release < ApplicationRecord
   delegate :versioning_strategy, :patch_version_bump_only, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
   delegate :platform, :organization, to: :app
+
+  def pre_release_error_message
+    last_error = passports.where(reason: :pre_release_failed, kind: :error).last
+    last_error&.message
+  end
 
   def copy_previous_approvals
     previous_release = train.previously_finished_release
@@ -264,6 +275,10 @@ class Release < ApplicationRecord
     pull_requests.mid_release
   end
 
+  def pre_release?
+    pre_release_started? || pre_release_failed?
+  end
+
   def duration
     return unless finished?
     ActiveSupport::Duration.build(completed_at - scheduled_at)
@@ -301,7 +316,7 @@ class Release < ApplicationRecord
   end
 
   def committable?
-    created? || on_track? || partially_finished?
+    created? || pre_release_started? || on_track? || partially_finished?
   end
 
   def active?
@@ -321,8 +336,9 @@ class Release < ApplicationRecord
   end
 
   def fetch_commit_log
-    # release branch for a new release may not exist on vcs provider since pre release job runs in parallel to fetch commit log job
+    # release branch for a new release may not exist on vcs provider since pre-release job runs in parallel to fetch commit log job
     target_branch = train.working_branch
+
     if upcoming?
       ongoing_head = train.ongoing_release.first_commit
       source_commitish, from_ref = ongoing_head.commit_hash, ongoing_head.short_sha
@@ -336,10 +352,28 @@ class Release < ApplicationRecord
 
     return if source_commitish.blank?
 
-    create_release_changelog(
-      commits: vcs_provider.commit_log(source_commitish, target_branch),
-      from_ref:
-    )
+    transaction do
+      changelog = create_release_changelog!(from_ref:)
+      raw_commit_log = vcs_provider.commit_log(source_commitish, target_branch)
+      return if raw_commit_log.blank?
+      commits_to_create = raw_commit_log.map do |commit_attrs|
+        {
+          author_email: commit_attrs["author_email"],
+          author_login: commit_attrs["author_login"],
+          author_name: commit_attrs["author_name"],
+          commit_hash: commit_attrs["commit_hash"],
+          message: commit_attrs["message"],
+          parents: commit_attrs["parents"] || [],
+          timestamp: commit_attrs["timestamp"],
+          url: commit_attrs["url"],
+          release_id: id,
+          release_changelog_id: changelog.id
+        }
+      end
+      # rubocop:disable Rails/SkipsModelValidations
+      Commit.insert_all!(commits_to_create)
+      # rubocop:enable Rails/SkipsModelValidations
+    end
   end
 
   def end_ref
@@ -406,7 +440,7 @@ class Release < ApplicationRecord
       if created_pr[:state].in? %w[open opened]
         raise PreReleaseUnfinishedError, "Pre-release pull request is not merged yet."
       else
-        pr.close!
+        pr.safe_update!(created_pr)
       end
     end
   end
@@ -430,8 +464,8 @@ class Release < ApplicationRecord
         is_release_unhealthy: unhealthy?,
         release_completed_at: completed_at,
         release_started_at: scheduled_at,
-        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?),
-        final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?)
+        final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?),
+        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?)
       }
     )
   end
@@ -462,7 +496,11 @@ class Release < ApplicationRecord
     approvals_blocking?
   end
 
-  def retrigger_for_hotfix?
+  def hotfix_with_new_branch?
+    hotfix? && new_hotfix_branch?
+  end
+
+  def hotfix_with_existing_branch?
     hotfix? && !new_hotfix_branch?
   end
 

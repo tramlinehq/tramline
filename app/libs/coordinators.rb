@@ -56,7 +56,11 @@ module Coordinators
     end
 
     def self.workflow_run_finished!(workflow_run_id)
-      TriggerSubmissionsJob.perform_async(workflow_run_id)
+      Coordinators::AttachBuildJob.perform_async(workflow_run_id)
+    end
+
+    def self.build_is_available!(workflow_run_id)
+      Coordinators::TriggerSubmissionsJob.perform_async(workflow_run_id)
     end
 
     def self.internal_release_finished!(build)
@@ -83,6 +87,12 @@ module Coordinators
 
     def self.workflow_run_trigger_failed!(workflow_run)
       workflow_run.triggering_release.fail!
+    end
+
+    def self.pull_request_closed!(pr)
+      release = pr.release
+      Actions.complete_release!(release) if release.post_release_failed?
+      Releases::PreReleaseJob.perform_async(release.id) if release.pre_release? && pr.version_bump?
     end
   end
 

@@ -365,7 +365,7 @@ namespace :anonymize do
       end
     end
 
-    RefreshReldexJob.perform_later(train_id)
+    RefreshReldexJob.perform_async(train_id)
   end
 
   desc 'Anonymize release health metric data from source db into local db

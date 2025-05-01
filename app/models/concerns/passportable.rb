@@ -12,7 +12,7 @@ module Passportable
       {
         reason: reason.to_s,
         kind: kind.to_s,
-        message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
+        message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data.to_h.symbolize_keys),
         metadata: data,
         event_timestamp: ts.iso8601,
         automatic: automatic?,
@@ -29,7 +29,7 @@ module Passportable
       {
         reason: reason.to_s,
         kind: kind.to_s,
-        message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
+        message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data.to_h.symbolize_keys),
         metadata: data,
         event_timestamp: Time.current.iso8601,
         automatic: automatic?,

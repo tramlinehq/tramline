@@ -8,7 +8,7 @@ describe PreProdRelease do
     let(:workflow_run) { create(:workflow_run, triggering_release: pre_prod_release) }
 
     it "triggers the first submission" do
-      build = create(:build, workflow_run:)
+      build = create(:build, :with_artifact, workflow_run:)
       pre_prod_release.trigger_submissions!
       expect(pre_prod_release.store_submissions.count).to eq(1)
       expect(pre_prod_release.store_submissions.sole.build).to eq(build)
@@ -19,7 +19,7 @@ describe PreProdRelease do
   describe "#rollout_complete!" do
     let(:pre_prod_release) { create(:internal_release) }
     let(:workflow_run) { create(:workflow_run, triggering_release: pre_prod_release) }
-    let(:build) { create(:build, workflow_run:) }
+    let(:build) { create(:build, :with_artifact, workflow_run:) }
     let(:submission) { create(:play_store_submission, parent_release: pre_prod_release, build:, sequence_number: 1) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
@@ -81,10 +81,11 @@ describe PreProdRelease do
     let(:release) { create(:release, :with_no_platform_runs) }
     let(:release_platform_run) { create(:release_platform_run, release:) }
 
-    it "returns the release changelog when its the first pre prod release" do
+    it "returns the release changelog when its the first pre-prod release" do
       release_changelog = create(:release_changelog, release:)
       first_release = create(:beta_release, release_platform_run:)
       result = first_release.changes_since_previous
+      expect(result.size).to be > 0
       expect(result).to eq(release_changelog.commit_messages(true))
     end
 
@@ -94,17 +95,23 @@ describe PreProdRelease do
       _first_release = create(:beta_release, :stale, release_platform_run:, commit: first_commit)
       second_commit = create(:commit, release:)
       second_release = create(:beta_release, release_platform_run:, commit: second_commit)
+
       result = second_release.changes_since_previous
-      expect(result).to contain_exactly(first_commit.message, second_commit.message, *release_changelog.commit_messages(true))
+      expected_messages = (release_changelog.commits.pluck(:message) + [first_commit.message, second_commit.message]).uniq
+      expect(result.size).to be > 0
+      expect(result).to match_array(expected_messages)
     end
 
     it "returns the release changelog and all commits applied to the release branch when there are no previous releases" do
       release_changelog = create(:release_changelog, release:)
       first_commit = create(:commit, release:)
       second_commit = create(:commit, release:)
-      first_release = create(:beta_release, :stale, release_platform_run:, commit: second_commit)
-      result = first_release.changes_since_previous
-      expect(result).to contain_exactly(first_commit.message, second_commit.message, *release_changelog.commit_messages(true))
+      release = create(:beta_release, release_platform_run:, commit: second_commit)
+
+      result = release.changes_since_previous
+      expected_messages = (release_changelog.commits.pluck(:message) + [first_commit.message, second_commit.message]).uniq
+      expect(result.size).to be > 0
+      expect(result).to match_array(expected_messages)
     end
 
     it "returns the difference between the previously successful release and the current release" do
@@ -114,6 +121,7 @@ describe PreProdRelease do
       second_commit = create(:commit, release:)
       second_release = create(:beta_release, release_platform_run:, commit: second_commit, previous: first_release)
       result = second_release.changes_since_previous
+      expect(result.size).to be > 0
       expect(result).to contain_exactly(second_commit.message)
     end
 
@@ -126,6 +134,7 @@ describe PreProdRelease do
       third_commit = create(:commit, release:)
       third_release = create(:beta_release, release_platform_run:, commit: third_commit, previous: first_release)
       result = third_release.changes_since_previous
+      expect(result.size).to be > 0
       expect(result).to contain_exactly(second_commit.message, third_commit.message)
     end
   end

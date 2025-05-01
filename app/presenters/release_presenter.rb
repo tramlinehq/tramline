@@ -10,6 +10,8 @@ class ReleasePresenter < SimpleDelegator
     finished: {text: "Completed", status: :success},
     stopped: {text: "Stopped", status: :failure},
     created: {text: "Running", status: :ongoing},
+    pre_release_started: {text: "Preparing the release", status: :ongoing},
+    pre_release_failed: {text: "Could not prepare release", status: :failure},
     on_track: {text: "Running", status: :ongoing},
     upcoming: {text: "Upcoming", status: :inert},
     post_release: {text: "Finalizing", status: :neutral},

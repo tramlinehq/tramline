@@ -29,25 +29,16 @@ class Coordinators::FinalizeRelease::AlmostTrunk
   delegate :working_branch, to: :train
   delegate :release_branch, to: :release
 
-  def create_and_merge_pr(to_branch_ref)
+  def create_and_merge_pr
     Triggers::PullRequest.create_and_merge!(
       release: release,
-      new_pull_request: release.pull_requests.post_release.open.build,
-      to_branch_ref: to_branch_ref,
+      new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
+      to_branch_ref: working_branch,
       from_branch_ref: release_branch,
       title: pr_title,
       description: pr_description,
-      existing_pr: release.pull_requests.post_release.find_by(base_ref: to_branch_ref)
-    ).then do |value|
-      logger.info "AT: Create and merge PR result - #{value}"
-      stamp_pr_success(to_branch_ref)
-      GitHub::Result.new { value }
-    end
-  end
-
-  def stamp_pr_success(to_branch_ref)
-    pr = release.reload.pull_requests.post_release.find_by(base_ref: to_branch_ref)
-    release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number}) if pr
+      existing_pr: release.pull_requests.post_release.first
+    )
   end
 
   def create_tag

@@ -2,19 +2,20 @@
 #
 # Table name: apps
 #
-#  id                :uuid             not null, primary key
-#  build_number      :bigint           not null
-#  bundle_identifier :string           not null, indexed => [platform, organization_id]
-#  description       :string
-#  draft             :boolean
-#  name              :string           not null
-#  platform          :string           not null, indexed => [bundle_identifier, organization_id]
-#  slug              :string
-#  timezone          :string           not null
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  external_id       :string
-#  organization_id   :uuid             not null, indexed, indexed => [platform, bundle_identifier]
+#  id                              :uuid             not null, primary key
+#  build_number                    :bigint           not null
+#  build_number_managed_internally :boolean          default(TRUE), not null
+#  bundle_identifier               :string           not null, indexed => [platform, organization_id]
+#  description                     :string
+#  draft                           :boolean
+#  name                            :string           not null
+#  platform                        :string           not null, indexed => [bundle_identifier, organization_id]
+#  slug                            :string
+#  timezone                        :string           not null
+#  created_at                      :datetime         not null
+#  updated_at                      :datetime         not null
+#  external_id                     :string
+#  organization_id                 :uuid             not null, indexed, indexed => [platform, bundle_identifier]
 #
 class App < ApplicationRecord
   has_paper_trail
@@ -48,6 +49,12 @@ class App < ApplicationRecord
   after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
+  end
+
+  before_validation do
+    if new_record? && build_number_managed_externally?
+      self.build_number = 0
+    end
   end
 
   friendly_id :name, use: :slugged
@@ -89,6 +96,10 @@ class App < ApplicationRecord
     Flipper.enabled?(:monitoring_disabled, self)
   end
 
+  def custom_bitrise_pipelines?
+    Flipper.enabled?(:custom_bitrise_pipelines, self)
+  end
+
   def variant_options
     opts = {"Default (#{bundle_identifier})" => nil}
     opts.merge variants.map.to_h { |v| [v.display_text, v.id] }
@@ -99,7 +110,7 @@ class App < ApplicationRecord
   end
 
   def bitrise_connected?
-    integrations.bitrise_integrations.any?
+    integrations.connected.bitrise_integrations.any?
   end
 
   def bugsnag_connected?
@@ -130,20 +141,25 @@ class App < ApplicationRecord
     trains.first if trains.size == 1
   end
 
+  def build_number_managed_externally? = !build_number_managed_internally
+
   # NOTE: fetches and uses latest build numbers from the stores, if added,
   # to reduce build upload rejection probability
-  def bump_build_number!(release_version: nil)
-    store_build_number = latest_store_build_number
-
+  def bump_build_number!(release_version: nil, workflow_build_number: nil)
     with_lock do
-      self.build_number =
-        VersioningStrategies::Codes.bump(
-          {
-            value: [store_build_number, build_number].compact.max,
-            release_version: release_version
-          },
-          strategy: build_number_increment_strategy
-        )
+      if workflow_build_number.present?
+        self.build_number = workflow_build_number
+      else
+        store_build_number = latest_store_build_number
+        self.build_number =
+          VersioningStrategies::Codes.bump(
+            {
+              value: [store_build_number, build_number].compact.max,
+              release_version: release_version
+            },
+            strategy: build_number_increment_strategy
+          )
+      end
 
       save!
       build_number.to_s
@@ -270,6 +286,10 @@ class App < ApplicationRecord
   def build_number_increment_strategy
     return :semver_pairs_with_build_sequence if Flipper.enabled?(:build_number_increment_strategy, self)
     :increment
+  end
+
+  def skip_finding_builds_for_firebase?
+    Flipper.enabled?(:skip_finding_builds_for_firebase, self)
   end
 
   private

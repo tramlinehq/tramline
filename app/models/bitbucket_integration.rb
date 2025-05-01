@@ -120,7 +120,9 @@ class BitbucketIntegration < ApplicationRecord
     state: :state,
     head_ref: [:source, :branch, :name],
     base_ref: [:destination, :branch, :name],
-    opened_at: :created_on
+    opened_at: :created_on,
+    closed_at: :updated_on,
+    merge_commit_sha: :merge_commit
   }
 
   COMMITS_TRANSFORMATIONS = {
@@ -244,7 +246,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def merge_pr!(pr_number)
-    with_api_retries { installation.merge_pr!(code_repository_name, pr_number) }
+    with_api_retries { installation.merge_pr!(code_repository_name, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :bitbucket) }
   end
 
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title, pr_description)
@@ -268,7 +270,8 @@ class BitbucketIntegration < ApplicationRecord
 
   WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :uuid,
-    number: :build_number
+    number: :build_number,
+    unique_number: :build_number
   }
 
   ARTIFACTS_TRANSFORMATIONS = {
@@ -279,7 +282,9 @@ class BitbucketIntegration < ApplicationRecord
     generated_at: :created_on
   }
 
-  def workflows(branch_name)
+  def workflows(branch_name, bust_cache: false)
+    Rails.cache.delete(workflows_cache_key(branch_name)) if bust_cache
+
     cache.fetch(workflows_cache_key(branch_name), expires_in: 120.minutes) do
       with_api_retries { installation.list_pipeline_selectors(code_repository_name, branch_name) }
     end
@@ -331,6 +336,10 @@ class BitbucketIntegration < ApplicationRecord
 
   def artifact_url
     raise Integrations::UnsupportedAction
+  end
+
+  def bot_name
+    nil
   end
 
   private

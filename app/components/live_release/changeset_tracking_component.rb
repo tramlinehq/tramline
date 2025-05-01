@@ -8,9 +8,10 @@ class LiveRelease::ChangesetTrackingComponent < BaseComponent
     @mid_release_prs = release.mid_release_prs.open
     @open_backmerge_prs = release.pull_requests.ongoing.open
     @change_queue_commits = @build_queue&.commits&.sequential
+    @version_bump_prs = release.pull_requests.version_bump
   end
 
-  attr_reader :release, :build_queue, :applied_commits, :change_queue_commits, :mid_release_prs, :open_backmerge_prs
+  attr_reader :release, :build_queue, :applied_commits, :change_queue_commits, :mid_release_prs, :open_backmerge_prs, :version_bump_prs
 
   def change_queue_commits_count
     change_queue_commits&.size || 0
@@ -21,7 +22,7 @@ class LiveRelease::ChangesetTrackingComponent < BaseComponent
   end
 
   memoize def commits_since_last
-    @release.release_changelog&.normalized_commits
+    @release.release_changelog&.commits
   end
 
   def changelog_from

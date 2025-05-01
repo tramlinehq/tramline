@@ -1,36 +1,37 @@
 class Triggers::PullRequest
   include Memery
 
-  CreateError = Class.new(StandardError)
-  MergeError = Class.new(StandardError)
+  CreateError = Class.new(Triggers::Errors)
+  MergeError = Class.new(Triggers::Errors)
   RetryableMergeError = Class.new(MergeError)
 
   def self.create_and_merge!(**args)
     new(**args).create_and_merge!
   end
 
-  def initialize(release:, new_pull_request:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true, existing_pr: nil, patch_pr: false, patch_commit: nil)
+  def initialize(release:, new_pull_request_attrs:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true, existing_pr: nil, patch_pr: false, patch_commit: nil, error_result_on_auto_merge: false)
     @release = release
     @to_branch_ref = to_branch_ref
     @from_branch_ref = from_branch_ref
     @title = title
     @description = description
-    @new_pull_request = new_pull_request
+    @new_pull_request_attrs = new_pull_request_attrs
     @allow_without_diff = allow_without_diff
     @existing_pr = existing_pr
     @patch_pr = patch_pr
     @patch_commit = patch_commit
+    @error_result_on_auto_merge = error_result_on_auto_merge
   end
 
   delegate :train, to: :release
 
   def create_and_merge!
-    pr_in_work = existing_pr if existing_pr&.persisted?
+    pr_in_work = existing_pr
 
     if pr_in_work.present?
       pr_data = repo_integration.get_pr(pr_in_work.number)
       if repo_integration.pr_closed?(pr_data)
-        return GitHub::Result.new { pr_in_work.close! } # FIXME: update the PR details, not just state
+        return GitHub::Result.new { pr_in_work.safe_update!(pr_data) }
       end
     end
 
@@ -38,7 +39,9 @@ class Triggers::PullRequest
       result = create!
 
       if result.ok?
-        pr_in_work = @new_pull_request.update_or_insert!(result.value!)
+        pr_in_work = new_pull_request(result.value!)
+        pr_in_work.stamp_create!
+
       else
         # ignore the specific create error if PRs are allowed without diffs
         if @allow_without_diff && pr_without_commits_error?(result)
@@ -59,9 +62,11 @@ class Triggers::PullRequest
     # - or PR already exists and is _not_ already closed
     merge_result = merge!(pr_in_work)
     if merge_result.ok?
-      pr_in_work.close!
+      pr_in_work.safe_update!(merge_result.value!)
+      pr_in_work.stamp_merge!
     elsif enable_auto_merge? # enable auto-merge if possible
       repo_integration.enable_auto_merge!(pr_in_work.number)
+      return merge_result if @error_result_on_auto_merge
     else
       return merge_result
     end
@@ -87,10 +92,10 @@ class Triggers::PullRequest
       repo_integration.merge_pr!(pr.number)
     rescue Installations::Error => ex
       if ex.reason == :pull_request_not_mergeable
-        release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: {url: pr.url, number: pr.number})
-        raise MergeError, "Failed to merge the Pull Request"
+        pr.stamp_unmergeable!
+        raise MergeError, "Tramline was unable to merge the (#{pr.display_attr(:phase)}) PR"
       elsif ex.reason == :pull_request_failed_merge_check
-        raise RetryableMergeError, "Failed to merge the Pull Request because of merge checks."
+        raise RetryableMergeError, "Failed to merge the Pull Request because of merge checks"
       elsif ex.reason == :pull_request_closed
         true
       else
@@ -109,6 +114,11 @@ class Triggers::PullRequest
     else
       repo_integration.create_pr!(to_branch_ref, from_branch_ref, title, description)
     end
+  end
+
+  def new_pull_request(pr_data)
+    attrs = @new_pull_request_attrs.merge(pr_data)
+    PullRequest.update_or_insert!(attrs)
   end
 
   def enable_auto_merge?

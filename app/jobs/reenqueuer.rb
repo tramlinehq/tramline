@@ -4,7 +4,6 @@
 # This is a workaround to retry jobs with a large max number of retries
 # by re-enqueueing them with correct wait time SLO using custom retry metadata.
 # This still relies on default sidekiq retry exhausted flow to handle retry exhaustion.
-
 module Reenqueuer
   extend ActiveSupport::Concern
   include Backoffable

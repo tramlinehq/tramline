@@ -11,7 +11,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     release_finalize_failed: {icon: "alert_circle.svg", description: "The release finalization failed"},
     release_stopped: {icon: "stop_circle.svg", description: "The release was stopped before it finished"},
     release_health_events: {icon: "heart_pulse.svg", description: "A health event has occurred for the release"},
-    build_available_v2: {icon: "drill.svg", description: "A new build is available for a direct download"},
+    build_available_v2: {icon: "drill.svg", description: "A new build is available for download"},
     internal_release_finished: {icon: "sparkles.svg", description: "The release finished successfully"},
     internal_release_failed: {icon: "alert_circle.svg", description: "The internal build step failed"},
     beta_release_failed: {icon: "alert_circle.svg", description: "The release candidate step failed"},

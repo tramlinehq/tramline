@@ -8,12 +8,12 @@ class Triggers::PatchPullRequest
     @commit = commit
     @pull_request = Triggers::PullRequest.new(
       release: release,
-      new_pull_request: (commit.pull_requests.build(release:, phase: :ongoing) if commit.pull_requests.find_by(base_ref: working_branch).blank?),
+      new_pull_request_attrs: {phase: :ongoing, release_id: release.id, state: :open, commit_id: commit.id},
       to_branch_ref: working_branch,
       from_branch_ref: patch_branch,
       title: pr_title,
       description: pr_description,
-      existing_pr: commit.pull_requests.find_by(base_ref: working_branch),
+      existing_pr: commit.pull_request,
       patch_pr: true,
       patch_commit: commit
     )
@@ -42,7 +42,7 @@ class Triggers::PatchPullRequest
 
   delegate :logger, to: Rails
   delegate :train, to: :release
-  delegate :working_branch, to: :train
+  delegate :working_branch, :continuous_backmerge_branch_prefix, to: :train
   attr_reader :release, :commit
 
   def pr_title
@@ -58,11 +58,11 @@ class Triggers::PatchPullRequest
     TEXT
   end
 
-  def patch_branch(target_branch = working_branch)
-    "patch-#{target_branch}-#{commit.short_sha}"
-  end
-
   def bot_commit?
     commit.author_login == "tramline-github-dev[bot]"
+  end
+
+  def patch_branch(target_branch = working_branch)
+    [continuous_backmerge_branch_prefix, "patch", target_branch, commit.short_sha].compact_blank.join("-")
   end
 end

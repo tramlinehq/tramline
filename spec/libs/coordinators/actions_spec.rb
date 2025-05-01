@@ -146,14 +146,97 @@ describe Coordinators::Actions do
       expect(result.error.message).to eq("submission is not triggerable")
     end
 
-    it "triggers the submission" do
-      expect {
-        result = described_class.trigger_submission!(submission)
-        expect(result).to be_ok
-        expect(submission.reload.preprocessing?).to be(true)
-      }.to change(StoreSubmissions::PlayStore::UploadJob.jobs, :size).by(1)
+    context "when build artifact is available" do
+      let(:build) { create(:build, :with_artifact, release_platform_run:, workflow_run:) }
 
-      expect(StoreSubmissions::PlayStore::UploadJob.jobs.last["args"]).to eq([submission.id])
+      before do
+        allow(build).to receive(:attach_artifact!).and_return(true)
+      end
+
+      shared_examples "build upload" do |upload_klass|
+        it "uploads the build to store" do
+          expect {
+            result = described_class.trigger_submission!(submission)
+            expect(result).to be_ok
+            expect(submission.reload.preprocessing?).to be(true)
+          }.to change(upload_klass.jobs, :size).by(1)
+
+          expect(upload_klass.jobs.last["args"]).to eq([submission.id])
+        end
+      end
+
+      context "when submitting to play store" do
+        include_examples "build upload", StoreSubmissions::PlayStore::UploadJob
+      end
+
+      context "when submitting to firebase" do
+        let(:submission) { create(:google_firebase_submission, parent_release: beta_release, build:) }
+
+        include_examples "build upload", StoreSubmissions::GoogleFirebase::UploadJob
+      end
+    end
+
+    context "when build artifact is not available and submitting to play store" do
+      let(:store_provider) { instance_double(GooglePlayStoreIntegration) }
+
+      before do
+        allow(submission).to receive(:provider).and_return(store_provider)
+        allow(build).to receive(:attach_artifact!).and_raise(Installations::Error, reason: :artifact_not_found)
+      end
+
+      context "when build is externally uploaded to store" do
+        let(:release_info) {
+          OpenStruct.new(
+            {
+              sha1: "d783d3dfe0487d6389c68dafaee5147ad6516fa6",
+              sha256: "090301ce377d1e1b9a4d24af5f95b6f7d8c3ab984f0bd9d5b01461dfb8ac1984",
+              version_code: 903480238
+            }
+          )
+        }
+
+        before do
+          allow(store_provider).to receive(:find_build).and_return(GitHub::Result.new { release_info })
+        end
+
+        it "triggers submission" do
+          result = described_class.trigger_submission!(submission)
+          expect(result).to be_ok
+          expect(submission.reload.preparing?).to be(true)
+        end
+      end
+
+      context "when build is not externally uploaded to store" do
+        before do
+          allow(submission).to receive_message_chain(:notification_params, :notify!).and_return(true)
+          allow(store_provider).to receive_message_chain(:find_build, :present?).and_return(false)
+        end
+
+        it "does not trigger submission" do
+          described_class.trigger_submission!(submission)
+          expect(submission.reload.preparing?).to be(false)
+        end
+      end
+    end
+
+    context "when build artifact is not available and submitting to firebase" do
+      let(:submission) { create(:google_firebase_submission, parent_release: beta_release, build:) }
+      let(:store_provider) { instance_double(GoogleFirebaseIntegration) }
+
+      before do
+        allow(store_provider).to receive(:public_icon_img)
+        allow(store_provider).to receive(:project_link)
+        allow(submission).to receive(:provider).and_return(store_provider)
+        allow(build).to receive(:attach_artifact!).and_raise(Installations::Error, reason: :artifact_not_found)
+      end
+
+      it "moves submission to preprocessing" do
+        result = described_class.trigger_submission!(submission)
+
+        expect(result).to be_ok
+
+        expect(submission.reload.preprocessing?).to be(true)
+      end
     end
   end
 

@@ -35,7 +35,8 @@ class BitriseIntegration < ApplicationRecord
   WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :build_slug,
     ci_link: :build_url,
-    number: :build_number
+    number: :build_number,
+    unique_number: :build_number
   }
 
   ORGANIZATIONS_TRANSFORMATIONS = {
@@ -102,28 +103,43 @@ class BitriseIntegration < ApplicationRecord
     installation.list_organizations(ORGANIZATIONS_TRANSFORMATIONS)
   end
 
-  # CI/CD
-
-  def workflows(_ = nil)
-    cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
-      installation.list_workflows(project, WORKFLOWS_TRANSFORMATIONS)
+  def workflows(_ = nil, bust_cache: false)
+    if custom_pipelines?
+      load_custom_bitrise_pipelines
+    else
+      Rails.cache.delete(workflows_cache_key) if bust_cache
+      cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
+        installation.list_workflows(project, WORKFLOWS_TRANSFORMATIONS)
+      end
     end
   end
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
-    installation.run_workflow!(project, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
+    if custom_pipelines?
+      installation.run_workflow!(project, nil, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
+    else
+      installation.run_workflow!(project, ci_cd_channel, nil, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
+    end
   end
 
   def cancel_workflow_run!(ci_ref)
-    installation.cancel_workflow!(project, ci_ref)
+    if custom_pipelines?
+      installation.cancel_pipeline!(project, ci_ref)
+    else
+      installation.cancel_workflow!(project, ci_ref)
+    end
+  end
+
+  def get_workflow_run(workflow_run_id)
+    if custom_pipelines?
+      installation.get_pipeline_run(project, workflow_run_id)
+    else
+      installation.get_workflow_run(project, workflow_run_id)
+    end
   end
 
   def find_workflow_run(_workflow_id, _branch, _commit_sha)
     raise Integrations::UnsupportedAction
-  end
-
-  def get_workflow_run(workflow_run_id)
-    installation.get_workflow_run(project, workflow_run_id)
   end
 
   # NOTE: this is bitrise specific right now
@@ -155,6 +171,28 @@ class BitriseIntegration < ApplicationRecord
   end
 
   private
+
+  def custom_pipelines?
+    integrable.custom_bitrise_pipelines?
+  end
+
+  # Bitrise doesn't have a public API to get "pipelines", so we keep a flat-file of pipelines referenced by app_id
+  # The list returned by this file is what the user sees when they are configuring workflows
+  # New pipelines can be simply added to the file, and they will instantly reflect in the UI
+  def load_custom_bitrise_pipelines
+    raw_data = URI.open(
+      "https://storage.googleapis.com/tramline-public-assets/custom_bitrise_pipelines.yml?ignoreCache=0",
+      "Cache-Control" => "max-age=0",
+      :read_timeout => 10
+    ).read # ignoring caches ensures we don't have to wait for new changes in the file to propagate
+    app_id = integrable.id
+    parsed_content = YAML.safe_load(raw_data)
+    pipelines = parsed_content.dig("app_id", app_id).presence || []
+    pipelines.map(&:with_indifferent_access)
+  rescue OpenURI::HTTPError, SocketError => e
+    elog(e, level: :warn)
+    []
+  end
 
   def app_config
     integrable.config

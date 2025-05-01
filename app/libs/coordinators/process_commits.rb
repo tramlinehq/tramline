@@ -19,7 +19,7 @@ class Coordinators::ProcessCommits
       return unless release.committable?
 
       release.close_pre_release_prs
-      if release.created?
+      if release.may_start?
         release.start!
         release.release_platform_runs.each(&:start!)
       end
