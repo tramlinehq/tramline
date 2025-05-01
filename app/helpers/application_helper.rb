@@ -146,4 +146,10 @@ module ApplicationHelper
   def list_to_csv(list)
     list.map(&:to_s).join(",")
   end
+
+  def release_specific_channel_pattern(app)
+    platform = app.cross_platform? ? "" : "-#{app.platform}"
+    channel_pattern = "release-#{app.name}#{platform}".downcase.gsub(/\W/, "-")
+    "#{channel_pattern}-{version}"
+  end
 end
