@@ -49,38 +49,14 @@ class NotificationSetting < ApplicationRecord
     workflow_run_unavailable: "workflow_run_unavailable"
   }
 
-  RELEASE_SPECIFIC_CHANNELS_ALLOWED_KINDS = [
-    :release_stopped,
-    :release_finalize_failed,
-    :release_ended,
-    :release_health_events,
-    :backmerge_failed,
-    :build_available_v2,
-    :internal_release_finished,
-    :internal_release_failed,
-    :beta_release_failed,
-    :beta_submission_finished,
-    :internal_submission_finished,
-    :submission_failed,
-    :production_submission_started,
-    :production_submission_in_review,
-    :production_submission_approved,
-    :production_submission_rejected,
-    :production_submission_cancelled,
-    :production_rollout_started,
-    :production_rollout_paused,
-    :production_rollout_resumed,
-    :production_rollout_halted,
-    :production_rollout_updated,
-    :production_release_finished,
-    :workflow_run_failed,
-    :workflow_run_halted,
-    :workflow_run_unavailable
+  RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS = [
+    :release_started,
+    :release_scheduled
   ]
 
   scope :active, -> { where(active: true) }
-  scope :release_specific_channel_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNELS_ALLOWED_KINDS) }
-  scope :release_specific_channel_not_allowed, -> { where.not(kind: RELEASE_SPECIFIC_CHANNELS_ALLOWED_KINDS) }
+  scope :release_specific_channel_allowed, -> { where.not(kind: RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS) }
+  scope :release_specific_channel_not_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS) }
   delegate :app, to: :train
   delegate :notification_provider, to: :app
   delegate :channels, to: :notification_provider
@@ -105,7 +81,7 @@ class NotificationSetting < ApplicationRecord
   end
 
   def release_specific_channel_allowed?
-    kind.to_sym.in?(RELEASE_SPECIFIC_CHANNELS_ALLOWED_KINDS)
+    !kind.to_sym.in?(RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS)
   end
 
   def notification_channels_settings
