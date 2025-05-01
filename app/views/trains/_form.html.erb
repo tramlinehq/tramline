@@ -255,8 +255,18 @@
 
     <%= f.with_advanced_section(heading: "Tag Your Releases") do |section| %>
       <% section.with_description do %>
-        By default, a tag is created at the end of the release with the final version of the release.
-        You can turn off creation of tag. Or, you can add an optional prefix or suffix to your tags.
+        <div class="flex flex-col item-gap-default">
+          <p>
+            By default, a tag (as well as a VCS release) is created at the end of the release with the final version.
+            You can turn off creation of tag. Or, you can add an optional prefix or suffix to your tags.
+          </p>
+
+          <p>
+            In addition, you can also create tags (as well as VCS releases) for every commit that reaches production,
+            i.e. when the rollout begins. This is helpful when you want to tag as soon as something goes to production
+            instead of waiting till the end.
+          </p>
+        </div>
       <% end %>
 
       <%= render partial: "release_tag_form", locals: {form: section.F} %>
