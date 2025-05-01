@@ -237,9 +237,9 @@
       <% end %>
 
       <%= render Form::SwitchComponent.new(form: section.F,
-                                               field_name: :backmerge_to_upcoming_release,
-                                               on_label: "Backmerge to upcoming release enabled",
-                                               off_label: "Backmerge to upcoming release disabled") %>
+                                           field_name: :backmerge_to_upcoming_release,
+                                           on_label: "Backmerge to upcoming release enabled",
+                                           off_label: "Backmerge to upcoming release disabled") %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Auto-apply patch changes") do |section| %>
