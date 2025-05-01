@@ -3,21 +3,23 @@
 # Table name: commits
 #
 #  id                      :uuid             not null, primary key
+#  applied                 :boolean          default(FALSE), not null
 #  author_email            :string           not null
 #  author_login            :string
 #  author_name             :string           not null
 #  backmerge_failure       :boolean          default(FALSE)
-#  commit_hash             :string           not null, indexed => [release_id]
-#  message                 :string           indexed
+#  commit_hash             :string           not null, indexed => [release_id, release_changelog_id]
+#  message                 :string
 #  parents                 :jsonb
 #  search_vector           :tsvector         indexed
+#  tag_name                :string
 #  timestamp               :datetime         not null, indexed => [release_id]
 #  url                     :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_queue_id          :uuid             indexed
-#  release_changelog_id    :uuid             indexed
-#  release_id              :uuid             indexed => [commit_hash], indexed => [timestamp]
+#  release_changelog_id    :uuid             indexed => [commit_hash, release_id], indexed
+#  release_id              :uuid             indexed => [commit_hash, release_changelog_id], indexed => [timestamp]
 #  release_platform_id     :uuid             indexed
 #  release_platform_run_id :uuid             indexed
 #
