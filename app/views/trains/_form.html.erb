@@ -230,6 +230,18 @@
       <% end %>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Backmerge to Upcoming Release") do |section| %>
+      <% section.with_description do %>
+        When enabled, a PR with changes from the current release targeting the upcoming release branch will be created.
+        By default, changes are only merged into the working branch.
+      <% end %>
+
+      <%= render Form::SwitchComponent.new(form: section.F,
+                                           field_name: :backmerge_to_upcoming_release,
+                                           on_label: "Backmerge to upcoming release enabled",
+                                           off_label: "Backmerge to upcoming release disabled") %>
+    <% end %>
+
     <%= f.with_advanced_section(heading: "Auto-apply patch changes") do |section| %>
       <% section.with_description do %>
         Disable this if you want to manually apply the commits after the initial rollout has started.

@@ -8,12 +8,17 @@ class Coordinators::FinalizeRelease::AlmostTrunk
     @train = release.train
   end
 
-  # FIXME: Merge back to upcoming release branch also if it exists
   def call
     if release.continuous_backmerge?
       create_tag
     else
-      create_tag.then { create_and_merge_pr }
+      create_tag.then do
+        create_and_merge_pr(working_branch).then do
+          if train.backmerge_to_upcoming_release && train.upcoming_release
+            create_and_merge_pr(train.upcoming_release.branch_name)
+          end
+        end
+      end
     end
   end
 

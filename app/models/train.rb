@@ -6,6 +6,7 @@
 #  approvals_enabled                  :boolean          default(FALSE), not null
 #  auto_apply_patch_changes           :boolean          default(TRUE)
 #  backmerge_strategy                 :string           default("on_finalize"), not null
+#  backmerge_to_upcoming_release      :boolean          default(FALSE)
 #  branching_strategy                 :string           not null
 #  build_queue_enabled                :boolean          default(FALSE)
 #  build_queue_size                   :integer

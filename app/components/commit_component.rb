@@ -30,8 +30,8 @@ class CommitComponent < BaseComponent
 
   def show_avatar? = @avatar
 
-  def pull_request
-    @commit.pull_request
+  def pull_requests
+    @commit.pull_requests
   end
 
   def outer_classes

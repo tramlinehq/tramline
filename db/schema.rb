@@ -13,7 +13,6 @@
 ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
-  enable_extension "pg_trgm"
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
 
@@ -213,11 +212,12 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.boolean "backmerge_failure", default: false
     t.string "author_login"
     t.jsonb "parents"
+    t.string "tag_name"
+    t.boolean "applied", default: false, null: false
     t.tsvector "search_vector"
     t.uuid "release_changelog_id"
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
     t.index ["commit_hash", "release_id", "release_changelog_id"], name: "idx_on_commit_hash_release_id_release_changelog_id_29200d00c2", unique: true
-    t.index ["message"], name: "index_commits_on_message", opclass: :gin_trgm_ops, using: :gin
     t.index ["release_changelog_id"], name: "index_commits_on_release_changelog_id"
     t.index ["release_id", "timestamp"], name: "index_commits_on_release_id_and_timestamp"
     t.index ["release_platform_id"], name: "index_commits_on_release_platform_id"
@@ -535,7 +535,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.jsonb "labels"
     t.tsvector "search_vector"
     t.string "merge_commit_sha"
-    t.index ["body"], name: "index_pull_requests_on_body", opclass: :gin_trgm_ops, using: :gin
     t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
@@ -546,7 +545,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.index ["source"], name: "index_pull_requests_on_source"
     t.index ["source_id"], name: "index_pull_requests_on_source_id"
     t.index ["state"], name: "index_pull_requests_on_state"
-    t.index ["title"], name: "index_pull_requests_on_title", opclass: :gin_trgm_ops, using: :gin
   end
 
   create_table "release_changelogs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -950,6 +948,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.boolean "auto_apply_patch_changes", default: true
     t.boolean "version_bump_enabled", default: false
     t.string "version_bump_file_paths", default: [], array: true
+    t.boolean "backmerge_to_upcoming_release", default: false
     t.string "version_bump_branch_prefix"
     t.string "continuous_backmerge_branch_prefix"
     t.index ["app_id"], name: "index_trains_on_app_id"
