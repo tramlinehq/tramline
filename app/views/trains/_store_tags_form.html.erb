@@ -9,8 +9,9 @@
         There can be multiple such builds when there are release fixes during staged rollout.
       <% end %>
 
-      <% if @app.cross_platform? %>
-        <% component.with_child do %>
+
+      <% component.with_child do %>
+        <% if @app.cross_platform? %>
           <div data-controller="help-text" class="flex flex-col item-gap-default">
             <%= render Form::SwitchComponent.new(form:,
                                                  field_name: :tag_store_releases_with_platform_names,
@@ -20,17 +21,17 @@
                 Tag each platform release separately. By default, only one tag is created at the end of the release.
               <% end %>
             <% end %>
-
-            <%= render Form::SwitchComponent.new(form:,
-                                                 field_name: :tag_store_releases_vcs_release,
-                                                 on_label: "Create a release entry on VCS enabled",
-                                                 off_label: "Create a release entry on VCS disabled") do |component| %>
-              <% component.with_info_icon do %>
-                Create a release entry on VCS platforms (currently only works GitHub releases)
-              <% end %>
-            <% end %>
-          </div>
         <% end %>
+
+        <%= render Form::SwitchComponent.new(form:,
+                                             field_name: :tag_store_releases_vcs_release,
+                                             on_label: "Create a release entry on VCS enabled",
+                                             off_label: "Create a release entry on VCS disabled") do |component| %>
+          <% component.with_info_icon do %>
+            Create a release entry on VCS platforms (currently only works GitHub releases)
+          <% end %>
+        <% end %>
+        </div>
       <% end %>
     <% end %>
   </div>
