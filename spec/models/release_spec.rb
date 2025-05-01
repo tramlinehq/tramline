@@ -551,19 +551,6 @@ describe Release do
         end
       end
     end
-
-    context "when release tag disabled" do
-      let(:train) { create(:train, :active, tag_end_of_release: false) }
-
-      it "does not create tag" do
-        skip "MIGRATE ELSEWHERE"
-        allow_any_instance_of(GithubIntegration).to receive(:create_release!)
-
-        release.create_vcs_release!(anything, anything)
-        expect_any_instance_of(GithubIntegration).not_to receive(:create_release!)
-        expect(release.tag_name).to be_nil
-      end
-    end
   end
 
   describe "#finish_after_partial_finish!" do
