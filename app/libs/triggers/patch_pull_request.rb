@@ -13,29 +13,36 @@ class Triggers::PatchPullRequest
       from_branch_ref: patch_branch,
       title: pr_title,
       description: pr_description,
-      existing_pr: commit.pull_request,
+      existing_pr: commit.pull_requests.find_by(base_ref: train.working_branch),
       patch_pr: true,
       patch_commit: commit
     )
   end
 
   def call
-    @pull_request.create_and_merge!
+    return GitHub::Result.new if bot_commit?
 
-    if train.upcoming_release && train.backmerge_to_upcoming_release && !bot_commit?
-      upcoming_release_pr = Triggers::PullRequest.new(
-        release: release,
-        new_pull_request: (commit.pull_requests.build(release:, phase: :ongoing) if commit.pull_requests.find_by(base_ref: train.upcoming_release.branch_name).blank?),
-        to_branch_ref: train.upcoming_release.branch_name,
-        from_branch_ref: patch_branch(train.upcoming_release.branch_name),
-        title: pr_title,
-        description: pr_description,
-        existing_pr: commit.pull_requests.find_by(base_ref: train.upcoming_release.branch_name),
-        patch_pr: true,
-        patch_commit: commit
-      )
-      upcoming_release_pr.create_and_merge!
-    end
+    result = @pull_request.create_and_merge!
+
+    return result unless result.ok?
+    return result unless train.backmerge_to_upcoming_release
+
+    upcoming_release = train.upcoming_release
+    return result unless upcoming_release
+    return result if upcoming_release == release
+
+    upcoming_release_pr = Triggers::PullRequest.new(
+      release: release,
+      new_pull_request_attrs: {phase: :ongoing, release_id: release.id, state: :open, commit_id: commit.id},
+      to_branch_ref: upcoming_release.branch_name,
+      from_branch_ref: patch_branch(upcoming_release.branch_name),
+      title: pr_title,
+      description: pr_description,
+      existing_pr: commit.pull_requests.find_by(base_ref: upcoming_release.branch_name),
+      patch_pr: true,
+      patch_commit: commit
+    )
+    upcoming_release_pr.create_and_merge!
   end
 
   private
