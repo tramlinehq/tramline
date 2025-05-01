@@ -81,13 +81,13 @@ jobs:
           docker login ghcr.io -u $KAMAL_REGISTRY_USERNAME -p $KAMAL_REGISTRY_PASSWORD
           echo "Docker login exit status: $?"
         env:
-          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }}
           KAMAL_REGISTRY_USERNAME: tramlinehq
 
       - name: Login to registry
         run: kamal registry login
         env:
-          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }}
           KAMAL_REGISTRY_USERNAME: tramlinehq
 
       - name: Deploy with Kamal
