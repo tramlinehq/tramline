@@ -192,44 +192,6 @@ describe ReleasePlatformRun do
     end
   end
 
-  describe "#create_tag!" do
-    let(:release_platform) { create(:release_platform) }
-    let(:release) { create(:release) }
-    let(:release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform:) }
-    let(:tag_exists_error) { Installations::Error.new("Should not create a tag", reason: :tag_reference_already_exists) }
-
-    it "saves a new tag with the base name" do
-      allow_any_instance_of(GithubIntegration).to receive(:create_tag!)
-      commit = create(:commit, release:)
-      release_platform_run.update!(last_commit: commit)
-
-      release_platform_run.create_tag!(commit)
-      expect(release_platform_run.tag_name).to eq("v1.2.3-android")
-    end
-
-    it "saves base name + last commit sha" do
-      raise_times(GithubIntegration, tag_exists_error, :create_tag!, 1)
-      commit = create(:commit, release:)
-      release_platform_run.update!(last_commit: commit)
-
-      release_platform_run.create_tag!(commit)
-      expect(release_platform_run.tag_name).to eq("v1.2.3-android-#{commit.short_sha}")
-    end
-
-    it "saves base name + last commit sha + time" do
-      raise_times(GithubIntegration, tag_exists_error, :create_tag!, 2)
-
-      freeze_time do
-        now = Time.now.to_i
-        commit = create(:commit, release:)
-        release_platform_run.update!(last_commit: commit)
-
-        release_platform_run.create_tag!(commit)
-        expect(release_platform_run.tag_name).to eq("v1.2.3-android-#{commit.short_sha}-#{now}")
-      end
-    end
-  end
-
   describe ".previously_completed_rollout_run" do
     let(:train) { create(:train) }
 

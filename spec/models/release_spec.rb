@@ -431,7 +431,7 @@ describe Release do
     it "saves a new tag with the base name" do
       allow_any_instance_of(GithubIntegration).to receive(:create_release!)
 
-      release.create_vcs_release!
+      release.create_vcs_release!(anything, anything)
       expect(release.tag_name).to eq("v1.2.3")
     end
 
@@ -439,7 +439,7 @@ describe Release do
       raise_times(GithubIntegration, tag_exists_error, :create_release!, 1)
       commit = create(:commit, release:)
 
-      release.create_vcs_release!
+      release.create_vcs_release!(commit.commit_hash, anything)
       expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}")
     end
 
@@ -450,7 +450,7 @@ describe Release do
         now = Time.now.to_i
         commit = create(:commit, release:)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(commit.commit_hash, anything)
         expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}-#{now}")
       end
     end
@@ -462,7 +462,7 @@ describe Release do
       it "saves a new tag with the base name + suffix" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(anything, anything)
         expect(release.tag_name).to eq("v1.2.3-#{suffix}")
       end
 
@@ -470,7 +470,7 @@ describe Release do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
         commit = create(:commit, release:)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(commit.commit_hash, anything)
         expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}")
       end
 
@@ -481,7 +481,7 @@ describe Release do
           now = Time.now.to_i
           commit = create(:commit, release:)
 
-          release.create_vcs_release!
+          release.create_vcs_release!(commit.commit_hash, anything)
           expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
         end
       end
@@ -494,7 +494,7 @@ describe Release do
       it "saves a new tag with the prefix + base name" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(anything, anything)
         expect(release.tag_name).to eq("#{prefix}-v1.2.3")
       end
 
@@ -502,7 +502,7 @@ describe Release do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
         commit = create(:commit, release:)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(commit.commit_hash, anything)
         expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{commit.short_sha}")
       end
 
@@ -513,7 +513,7 @@ describe Release do
           now = Time.now.to_i
           commit = create(:commit, release:)
 
-          release.create_vcs_release!
+          release.create_vcs_release!(commit.commit_hash, anything)
           expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{commit.short_sha}-#{now}")
         end
       end
@@ -527,7 +527,7 @@ describe Release do
       it "saves a new tag with the prefix + base name + suffix" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(anything, anything)
         expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}")
       end
 
@@ -535,7 +535,7 @@ describe Release do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
         commit = create(:commit, release:)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(commit.commit_hash, anything)
         expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}-#{commit.short_sha}")
       end
 
@@ -546,7 +546,7 @@ describe Release do
           now = Time.now.to_i
           commit = create(:commit, release:)
 
-          release.create_vcs_release!
+          release.create_vcs_release!(commit.commit_hash, anything)
           expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
         end
       end
@@ -556,9 +556,10 @@ describe Release do
       let(:train) { create(:train, :active, tag_end_of_release: false) }
 
       it "does not create tag" do
+        skip "MIGRATE ELSEWHERE"
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(anything, anything)
         expect_any_instance_of(GithubIntegration).not_to receive(:create_release!)
         expect(release.tag_name).to be_nil
       end

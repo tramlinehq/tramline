@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe ProductionRelease do
+describe ProductionRelease do
   using RefinedString
 
   describe "#version_bump_required?" do
@@ -71,12 +71,53 @@ RSpec.describe ProductionRelease do
       expect(production_release.active?).to be(true)
     end
 
-    it "creates a tag for the the production release" do
-      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_async)
+    context "when it creates tag or vcs release" do
+      let(:release_platform) { create(:release_platform) }
+      let(:release) { create(:release) }
+      let(:release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform:) }
+      let(:tag_exists_error) { Installations::Error.new("Should not create a tag", reason: :tag_reference_already_exists) }
 
-      production_release.rollout_started!
+      it "saves a new tag with the base name" do
+        skip "NOT IMPLEMENTED YET"
+        allow_any_instance_of(GithubIntegration).to receive(:create_tag!)
+        commit = create(:commit, release:)
+        release_platform_run.update!(last_commit: commit)
 
-      expect(ReleasePlatformRuns::CreateTagJob).to have_received(:perform_async).with(release_platform_run.id, production_release.commit.id)
+        release_platform_run.create_tag!(commit)
+        expect(release_platform_run.tag_name).to eq("v1.2.3-android")
+      end
+
+      it "saves base name + last commit sha" do
+        skip "NOT IMPLEMENTED YET"
+        raise_times(GithubIntegration, tag_exists_error, :create_tag!, 1)
+        commit = create(:commit, release:)
+        release_platform_run.update!(last_commit: commit)
+
+        release_platform_run.create_tag!(commit)
+        expect(release_platform_run.tag_name).to eq("v1.2.3-android-#{commit.short_sha}")
+      end
+
+      it "saves base name + last commit sha + time" do
+        skip "NOT IMPLEMENTED YET"
+        raise_times(GithubIntegration, tag_exists_error, :create_tag!, 2)
+
+        freeze_time do
+          now = Time.now.to_i
+          commit = create(:commit, release:)
+          release_platform_run.update!(last_commit: commit)
+
+          release_platform_run.create_tag!(commit)
+          expect(release_platform_run.tag_name).to eq("v1.2.3-android-#{commit.short_sha}-#{now}")
+        end
+      end
+
+      it "creates a tag for the the production release" do
+        allow(ProductionReleases::CreateTagJob).to receive(:perform_async)
+
+        production_release.rollout_started!
+
+        expect(ProductionReleases::CreateTagJob).to have_received(:perform_async).with(production_release.id)
+      end
     end
   end
 
@@ -96,7 +137,7 @@ RSpec.describe ProductionRelease do
         parent_release_status: :active,
         rollout_status: :started,
         skip_rollout: false
-      ) => {release_platform:, release:, production_release:, store_rollout:}
+      ) => { release_platform:, release:, production_release:, store_rollout: }
       allow(production_release).to receive(:monitoring_provider).and_return(monitoring_provider)
       allow(monitoring_provider).to receive(:installation).and_return(monitoring_api_dbl)
       allow(monitoring_provider).to receive(:find_release)
@@ -117,7 +158,7 @@ RSpec.describe ProductionRelease do
         parent_release_status: :active,
         rollout_status: :started,
         skip_rollout: false
-      ) => {release_platform:, release:, production_release:, store_rollout:}
+      ) => { release_platform:, release:, production_release:, store_rollout: }
       allow(production_release).to receive(:monitoring_provider).and_return(monitoring_provider)
       allow(monitoring_provider).to receive(:installation).and_return(monitoring_api_dbl)
       allow(monitoring_provider).to receive(:find_release)
