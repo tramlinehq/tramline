@@ -10,8 +10,6 @@ builder:
     image: app-build-cache
   # remote: ssh://sam-staging-local@35.209.23.61:22
   local: true
-  args:
-    RAILS_MASTER_KEY: $RAILS_MASTER_KEY
   secrets:
     - RAILS_MASTER_KEY
     - SSH_PRIVATE_KEY
