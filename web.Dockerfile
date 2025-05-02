@@ -27,28 +27,27 @@ WORKDIR /app
 COPY .ruby-version Gemfile Gemfile.lock ./
 
 RUN gem install bundler -v "$BUNDLER_VERSION" && \
+    bundle _"$BUNDLER_VERSION"_ config set --local without development && \
     bundle _"$BUNDLER_VERSION"_ install && \
     find /usr/local/bundle -type f -name "*.c" -delete && \
     find /usr/local/bundle -type f -name "*.o" -delete
 
 COPY . .
 
-# Temporarily disable master key requirement and stub credentials for asset precompilation
 RUN cp config/environments/production.rb config/environments/production.rb.orig && \
     sed -i 's/config.require_master_key = true/config.require_master_key = false/' config/environments/production.rb || true && \
     sed -i "s/Rails.application.credentials.dependencies.postmark.api_token/'dummy_token_for_pre_compilation'/" config/environments/production.rb || true && \
-    bundle config set deployment true && \
     bundle exec rake assets:precompile --trace && \
     mv config/environments/production.rb.orig config/environments/production.rb && \
     rm -rf /app/tmp/cache node_modules
 
-# Final stage - only include what's needed for runtime
 FROM ruby:${RUBY_VERSION}-alpine
 
 ENV RAILS_ENV=production \
     NODE_ENV=production \
     RAILS_LOG_TO_STDOUT=true \
-    RAILS_SERVE_STATIC_FILES=true
+    RAILS_SERVE_STATIC_FILES=true \
+    BUNDLE_PATH="/usr/local/bundle"
 
 RUN apk add --no-cache \
     postgresql-client \
@@ -58,11 +57,11 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-# Copy gems from builder
 COPY --from=builder /usr/local/bundle /usr/local/bundle
 
-# Copy app with precompiled assets
 COPY --from=builder /app /app
+
+RUN bundle info puma
 
 ENTRYPOINT ["sh", "-c"]
 
