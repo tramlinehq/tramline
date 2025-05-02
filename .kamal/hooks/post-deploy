@@ -21,7 +21,7 @@ done
 echo "DB is ready. Running migrations and seeds..."
 
 echo "Running migrations..."
-bundle exec rake db:migrate:with_data
+bundle exec rake db:migrate
 
 echo "Seeding database..."
 bin/rails db:seed
