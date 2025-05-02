@@ -61,10 +61,6 @@ jobs:
       - name: Check GCloud CLI auth
         run: gcloud info
 
-      - name: Setup RAILS_MASTER_KEY
-        run: |
-          HEX_KEY=$(gcloud secrets versions access latest --secret=RAILS_MASTER_KEY_STAGING_GCP --project=946207521855 | tr -d '[:space:]')
-          echo "HEX_KEY=$HEX_KEY" >> $GITHUB_ENV
       - name: Install Kamal
         run: gem install kamal -v 2.5.3
 
@@ -90,6 +86,4 @@ jobs:
           ssh sam-staging-local@$SERVER_ADDR "df -h"
 
       - name: Deploy with Kamal
-        run: |
-          MASTER_KEY=$(echo -n "$HEX_KEY" | xxd -r -p | base64)
-          RAILS_MASTER_KEY=$MASTER_KEY kamal deploy --verbose
+        run: kamal deploy --verbose
