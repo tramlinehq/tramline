@@ -29,6 +29,27 @@ module Site
     config.active_storage.draw_routes = false
     config.lograge.enabled = false
 
+    # Debug the master key issue
+    begin
+      key_content = ENV["RAILS_MASTER_KEY"]
+      puts "DEBUG [application.rb]: Master key length: #{key_content ? key_content.length : 'nil'}"
+      puts "DEBUG [application.rb]: RAILS_PIPELINE_ENV: #{ENV["RAILS_PIPELINE_ENV"].inspect}"
+
+      creds_path = if ENV["RAILS_PIPELINE_ENV"].present?
+        path = Rails.root.join("config/credentials/#{ENV["RAILS_PIPELINE_ENV"]}.yml.enc").to_s
+        puts "DEBUG [application.rb]: Looking for credentials at: #{path}"
+        puts "DEBUG [application.rb]: File exists: #{File.exist?(path)}"
+        path
+      else
+        default_path = Rails.root.join("config/credentials.yml.enc").to_s
+        puts "DEBUG [application.rb]: Using default credentials path: #{default_path}"
+        puts "DEBUG [application.rb]: File exists: #{File.exist?(default_path)}"
+        default_path
+      end
+    rescue => e
+      puts "DEBUG [application.rb]: Error in key debugging: #{e.class} - #{e.message}"
+    end
+
     if ENV["RAILS_PIPELINE_ENV"].present?
       Rails.application.config.credentials.content_path =
         Rails.root.join("config/credentials/#{ENV["RAILS_PIPELINE_ENV"]}.yml.enc")
