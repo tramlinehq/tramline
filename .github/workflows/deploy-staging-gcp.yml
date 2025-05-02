@@ -82,10 +82,10 @@ jobs:
 
       - name: Clean up server disk space
         run: |
-          ssh $SERVER_ADDR "docker system prune -af --volumes || true"
-          ssh $SERVER_ADDR "docker container prune -f || true"
-          ssh $SERVER_ADDR "docker image prune -af || true"
-          ssh $SERVER_ADDR "df -h"
+          ssh sam-staging-local@$SERVER_ADDR "docker system prune -af --volumes || true"
+          ssh sam-staging-local@$SERVER_ADDR "docker container prune -f || true"
+          ssh sam-staging-local@$SERVER_ADDR "docker image prune -af || true"
+          ssh sam-staging-local@$SERVER_ADDR "df -h"
 
       - name: Login to registry
         run: kamal registry login
