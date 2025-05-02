@@ -22,7 +22,6 @@ jobs:
     env:
       SERVER_ADDR: 35.209.23.61
       DOCKER_BUILDKIT: 1
-      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY_STAGING_GCP }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       KAMAL_REGISTRY_USERNAME: tramlinehq
@@ -61,6 +60,11 @@ jobs:
 
       - name: Check GCloud CLI auth
         run: gcloud info
+
+      - name: Setup RAILS_MASTER_KEY
+        run: |
+          export RAILS_MASTER_KEY=$(gcloud secrets versions access latest --secret=RAILS_MASTER_KEY_STAGING_GCP --project=946207521855)
+          echo "RAILS_MASTER_KEY=$RAILS_MASTER_KEY" >> $GITHUB_ENV
 
       - name: Install Kamal
         run: gem install kamal -v 2.5.3

@@ -74,6 +74,7 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :postmark
   config.action_mailer.postmark_settings = {
     api_token: Rails.application.credentials.dependencies.postmark.api_token
+    # api_token: Rails.application.credentials.dig(:dependencies, :postmark, :api_token) - TODO: check the credentials
   }
   config.action_mailer.default_url_options = {host: ENV["HOST_NAME"]}
   Rails.application.routes.default_url_options[:host] = ENV["HOST_NAME"]
