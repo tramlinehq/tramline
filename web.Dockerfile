@@ -9,7 +9,8 @@ ENV RAILS_ENV=production \
     BUNDLE_WITHOUT="development:test" \
     DESCOPE_PROJECT_ID=dummy_project_id \
     DESCOPE_MANAGEMENT_KEY=dummy_management_key \
-    SECRET_KEY_BASE=dummy_key_for_precompilation
+    SECRET_KEY_BASE=dummy_key_for_precompilation \
+    RAILS_SERVE_STATIC_FILES=true
 
 RUN apk add --no-cache \
     build-base \
