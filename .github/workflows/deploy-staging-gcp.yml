@@ -74,6 +74,13 @@ jobs:
       - name: Disable Git safe directory check
         run: git config --global --add safe.directory '*'
 
+      - name: Clean up server disk space
+        run: |
+          ssh $SERVER_ADDR "docker system prune -af --volumes || true"
+          ssh $SERVER_ADDR "docker container prune -f || true"
+          ssh $SERVER_ADDR "docker image prune -af || true"
+          ssh $SERVER_ADDR "df -h"
+
       - name: Login to registry
         run: kamal registry login
         env:
