@@ -30,7 +30,7 @@ COPY . .
 # Temporarily disable master key requirement and stub credentials for asset precompilation
 RUN cp config/environments/production.rb config/environments/production.rb.orig && \
     sed -i 's/config.require_master_key = true/config.require_master_key = false/' config/environments/production.rb && \
-    sed -i "s/Rails.application.credentials.dependencies.postmark.api_token/'dummy_token_for_precompilation'/" config/environments/production.rb && \
+    sed -i "s/Rails.application.credentials.dependencies.postmark.api_token/'dummy_token_for_pre_compilation'/" config/environments/production.rb && \
     bundle config set deployment true && \
     DESCOPE_PROJECT_ID=dummy_project_id \
     DESCOPE_MANAGEMENT_KEY=dummy_management_key \
