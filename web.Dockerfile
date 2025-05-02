@@ -32,7 +32,10 @@ RUN cp config/environments/production.rb config/environments/production.rb.orig 
     sed -i 's/config.require_master_key = true/config.require_master_key = false/' config/environments/production.rb && \
     sed -i "s/Rails.application.credentials.dependencies.postmark.api_token/'dummy_token_for_precompilation'/" config/environments/production.rb && \
     bundle config set deployment true && \
-    SECRET_KEY_BASE=dummy_key_for_precompilation bundle exec rake assets:precompile && \
+    DESCOPE_PROJECT_ID=dummy_project_id \
+    DESCOPE_MANAGEMENT_KEY=dummy_management_key \
+    SECRET_KEY_BASE=dummy_key_for_precompilation \
+    bundle exec rake assets:precompile && \
     bundle exec rake assets:clean && \
     mv config/environments/production.rb.orig config/environments/production.rb
 
