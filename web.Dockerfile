@@ -27,9 +27,14 @@ RUN gem install bundler -v "$BUNDLER_VERSION" && \
 
 COPY . .
 
-RUN bundle config set deployment true && \
+# Temporarily disable master key requirement and stub credentials for asset precompilation
+RUN cp config/environments/production.rb config/environments/production.rb.orig && \
+    sed -i 's/config.require_master_key = true/config.require_master_key = false/' config/environments/production.rb && \
+    sed -i "s/Rails.application.credentials.dependencies.postmark.api_token/'dummy_token_for_precompilation'/" config/environments/production.rb && \
+    bundle config set deployment true && \
     SECRET_KEY_BASE=dummy_key_for_precompilation bundle exec rake assets:precompile && \
-    bundle exec rake assets:clean
+    bundle exec rake assets:clean && \
+    mv config/environments/production.rb.orig config/environments/production.rb
 
 ENTRYPOINT ["sh", "-c"]
 
