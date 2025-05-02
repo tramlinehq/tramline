@@ -2,8 +2,8 @@
   <section data-controller="domain--release-schedule-help">
     <%= render Form::SwitchComponent.new(form:,
                                          field_name: :release_schedule_enabled,
-                                         on_label: "Release Schedule enabled",
-                                         off_label: "Release Schedule disabled",
+                                         on_label: "Release scheduling enabled",
+                                         off_label: "Release scheduling disabled",
                                          hide_child: !@train.release_schedule_enabled,
                                          switch_data: {action: "domain--release-schedule-help#change",
                                                        domain__release_schedule_help_target: "checkbox"}) do |component| %>

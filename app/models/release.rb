@@ -408,19 +408,6 @@ class Release < ApplicationRecord
     branch_name
   end
 
-  # recursively attempt to create a release until a unique one gets created
-  # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
-  def create_vcs_release!(input_tag_name = base_tag_name)
-    return unless train.tag_releases?
-    return if tag_name.present?
-    train.create_vcs_release!(release_branch, input_tag_name, release_diff)
-    update!(tag_name: input_tag_name)
-    event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
-  rescue Installations::Error => ex
-    raise unless [:tag_reference_already_exists, :tagged_release_already_exists].include?(ex.reason)
-    create_vcs_release!(unique_tag_name(input_tag_name, last_commit.short_sha))
-  end
-
   def release_diff
     changes_since_last_release = release_changelog&.commit_messages(true)
     changes_since_last_run = all_commits.commit_messages(true)
@@ -618,9 +605,9 @@ class Release < ApplicationRecord
 
   def base_tag_name
     tag = "v#{release_version}"
-    tag = train.tag_prefix + "-" + tag if train.tag_prefix.present?
+    tag = train.tag_end_of_release_prefix + "-" + tag if train.tag_end_of_release_prefix.present?
     tag += "-hotfix" if hotfix?
-    tag += "-" + train.tag_suffix if train.tag_suffix.present?
+    tag += "-" + train.tag_end_of_release_suffix if train.tag_end_of_release_suffix.present?
     tag
   end
 

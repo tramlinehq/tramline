@@ -5,6 +5,7 @@
 #  id                      :uuid             not null, primary key
 #  config                  :jsonb            not null
 #  status                  :string           default("inflight"), not null, indexed => [release_platform_run_id], indexed => [release_platform_run_id], indexed => [release_platform_run_id]
+#  tag_name                :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
@@ -17,6 +18,7 @@ class ProductionRelease < ApplicationRecord
   # include Sandboxable
   include Loggable
   include Passportable
+  include Taggable
 
   belongs_to :release_platform_run
   belongs_to :build
@@ -28,7 +30,7 @@ class ProductionRelease < ApplicationRecord
 
   scope :sequential, -> { order(created_at: :desc) }
 
-  delegate :app, :train, :release, :platform, :release_platform, to: :release_platform_run
+  delegate :app, :train, :release, :platform, :release_platform, :hotfix?, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, :prepared_at, to: :store_submission
   delegate :notify!, to: :train
@@ -116,10 +118,7 @@ class ProductionRelease < ApplicationRecord
     previous&.mark_as_stale!
     update!(status: STATES[:active])
     notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
-
-    if train.tag_all_store_releases?
-      ReleasePlatformRuns::CreateTagJob.perform_async(release_platform_run.id, commit.id)
-    end
+    ProductionReleases::CreateTagJob.perform_async(id)
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
@@ -205,5 +204,14 @@ class ProductionRelease < ApplicationRecord
 
   def release_monitoring_period
     RELEASE_MONITORING_PERIOD_IN_DAYS[monitoring_provider.class].days.ago
+  end
+
+  private
+
+  def base_tag_name
+    tag = "v#{version_name}"
+    tag << "-hotfix" if hotfix?
+    tag << (train.tag_store_releases_with_platform_names ? "-#{platform}" : "")
+    tag
   end
 end
