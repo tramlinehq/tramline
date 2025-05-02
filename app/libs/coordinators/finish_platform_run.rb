@@ -20,7 +20,6 @@ class Coordinators::FinishPlatformRun
     end
 
     RefreshPlatformBreakdownJob.perform_async(release_platform_run.id)
-    ReleasePlatformRuns::CreateTagJob.perform_async(release_platform_run.id, last_commit.id) if train.tag_platform_at_release_end?
     release_platform_run.event_stamp!(reason: :finished, kind: :success, data: {version: release_platform_run.release_version})
     app.refresh_external_app
     FinalizeReleaseJob.perform_async(release.id)

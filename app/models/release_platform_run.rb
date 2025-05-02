@@ -54,7 +54,7 @@ class ReleasePlatformRun < ApplicationRecord
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_submitted_production, -> { on_track.reject(&:production_release_submitted?) }
 
-  STAMPABLE_REASONS = %w[version_changed tag_created version_corrected finished stopped]
+  STAMPABLE_REASONS = %w[version_changed tag_created vcs_release_created version_corrected finished stopped]
 
   STATES = {
     created: "created",
@@ -297,21 +297,6 @@ class ReleasePlatformRun < ApplicationRecord
 
   alias_method :metadata_editable?, :production_release_in_pre_review?
 
-  def tag_url
-    train.vcs_provider&.tag_url(tag_name)
-  end
-
-  # recursively attempt to create a release tag until a unique one gets created
-  # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
-  def create_tag!(commit, input_tag_name = base_tag_name)
-    train.create_tag!(input_tag_name, commit.commit_hash)
-    update!(tag_name: input_tag_name)
-    event_stamp!(reason: :tag_created, kind: :notice, data: {tag: tag_name})
-  rescue Installations::Error => ex
-    raise unless ex.reason == :tag_reference_already_exists
-    create_tag!(commit, unique_tag_name(input_tag_name, commit.short_sha))
-  end
-
   # Play Store does not have constraints around version name
   # App Store requires a higher version name than that of the previously approved version name
   # and so a version bump is required for iOS once the build has been approved as well
@@ -364,11 +349,6 @@ class ReleasePlatformRun < ApplicationRecord
   def conf = Config::ReleasePlatform.from_json(config)
 
   private
-
-  def base_tag_name
-    return "v#{release_version}-hotfix-#{platform}" if hotfix?
-    "v#{release_version}-#{platform}"
-  end
 
   def set_config
     self.config = release_platform.platform_config.as_json

@@ -26,11 +26,13 @@
 #  slug                                           :string
 #  status                                         :string           not null
 #  stop_automatic_releases_on_failure             :boolean          default(FALSE), not null
-#  tag_all_store_releases                         :boolean          default(FALSE)
-#  tag_platform_releases                          :boolean          default(FALSE)
-#  tag_prefix                                     :string
-#  tag_releases                                   :boolean          default(TRUE)
-#  tag_suffix                                     :string
+#  tag_end_of_release                             :boolean          default(TRUE)
+#  tag_end_of_release_prefix                      :string
+#  tag_end_of_release_suffix                      :string
+#  tag_end_of_release_vcs_release                 :boolean          default(FALSE)
+#  tag_store_releases                             :boolean          default(FALSE)
+#  tag_store_releases_vcs_release                 :boolean          default(FALSE)
+#  tag_store_releases_with_platform_names         :boolean          default(FALSE)
 #  version_bump_branch_prefix                     :string
 #  version_bump_enabled                           :boolean          default(FALSE)
 #  version_bump_file_paths                        :string           default([]), is an Array
@@ -105,7 +107,6 @@ class Train < ApplicationRecord
   validate :valid_schedule, if: -> { kickoff_at_changed? || repeat_duration_changed? }
   validate :build_queue_config
   validate :backmerge_config
-  validate :tag_release_config
   validate :working_branch_presence, on: :create
   validate :ci_cd_workflows_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
@@ -119,6 +120,7 @@ class Train < ApplicationRecord
   after_initialize :set_backmerge_config, if: :persisted?
   after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
+  before_validation :cleanse_tagging_configs
   before_create :fetch_ci_cd_workflows
   before_create :set_current_version
   before_create :set_default_status
@@ -204,11 +206,6 @@ class Train < ApplicationRecord
 
   def automatic?
     kickoff_at.present? && repeat_duration.present?
-  end
-
-  def tag_platform_at_release_end?
-    return false unless app.cross_platform?
-    tag_platform_releases? && !tag_all_store_releases?
   end
 
   def next_run_at
@@ -518,6 +515,23 @@ class Train < ApplicationRecord
     nil
   end
 
+  def cleanse_tagging_configs
+    unless tag_end_of_release?
+      self.tag_end_of_release_vcs_release = false
+      self.tag_end_of_release_suffix = nil
+      self.tag_end_of_release_prefix = nil
+    end
+
+    unless tag_store_releases?
+      self.tag_store_releases_vcs_release = false
+      self.tag_store_releases_with_platform_names = false
+    end
+
+    unless app.cross_platform?
+      self.tag_store_releases_with_platform_names = false
+    end
+  end
+
   def set_branching_strategy
     self.branching_strategy ||= "almost_trunk"
   end
@@ -544,10 +558,6 @@ class Train < ApplicationRecord
 
   def backmerge_config
     errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && continuous_backmerge?
-  end
-
-  def tag_release_config
-    errors.add(:tag_all_store_releases, :not_allowed) if tag_all_store_releases? && !tag_platform_releases?
   end
 
   def working_branch_presence

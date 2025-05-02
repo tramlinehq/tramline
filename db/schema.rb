@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_04_25_095631) do
+ActiveRecord::Schema[7.2].define(version: 2025_04_30_150508) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -506,6 +506,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_25_095631) do
     t.string "status", default: "inflight", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "tag_name"
     t.index ["build_id"], name: "index_production_releases_on_build_id"
     t.index ["previous_id"], name: "index_production_releases_on_previous_id"
     t.index ["release_platform_run_id", "status"], name: "index_unique_active_production_release", unique: true, where: "((status)::text = 'active'::text)"
@@ -936,23 +937,25 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_25_095631) do
     t.integer "build_queue_size", limit: 2
     t.string "backmerge_strategy", default: "on_finalize", null: false
     t.boolean "manual_release", default: false
-    t.boolean "tag_platform_releases", default: false
-    t.boolean "tag_all_store_releases", default: false
+    t.boolean "tag_store_releases_with_platform_names", default: false
+    t.boolean "tag_store_releases", default: false
     t.boolean "compact_build_notes", default: false
-    t.boolean "tag_releases", default: true
-    t.string "tag_suffix"
+    t.boolean "tag_end_of_release", default: true
+    t.string "tag_end_of_release_suffix"
     t.string "versioning_strategy", default: "semver"
     t.boolean "stop_automatic_releases_on_failure", default: false, null: false
     t.boolean "patch_version_bump_only", default: false, null: false
     t.boolean "approvals_enabled", default: false, null: false
     t.boolean "freeze_version", default: false
-    t.string "tag_prefix"
     t.boolean "copy_approvals", default: false
     t.boolean "auto_apply_patch_changes", default: true
+    t.string "tag_end_of_release_prefix"
     t.boolean "version_bump_enabled", default: false
     t.string "version_bump_file_paths", default: [], array: true
     t.string "version_bump_branch_prefix"
     t.string "continuous_backmerge_branch_prefix"
+    t.boolean "tag_end_of_release_vcs_release", default: false
+    t.boolean "tag_store_releases_vcs_release", default: false
     t.boolean "notifications_release_specific_channel_enabled", default: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
