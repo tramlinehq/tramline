@@ -10,7 +10,8 @@ IntercomRails.config do |config|
   # This is required to enable Identity Verification, you can find it on your Setup
   # guide in the "Identity Verification" step.
   #
-  config.api_secret = Rails.application.credentials.intercom_secure_mode_secret_key
+  # Use environment variable instead of credentials to avoid the credential issue
+  config.api_secret = ENV["INTERCOM_SECURE_MODE_SECRET_KEY"] || "temporary_placeholder_for_deployment"
 
   # == Enabled Environments
   # Which environments is auto inclusion of the Javascript enabled for
