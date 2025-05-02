@@ -93,6 +93,8 @@ class ProductionRelease < ApplicationRecord
       event_stamp!(reason: :finished, kind: :notice, data: stamp_data)
       notify!("Production release was finished!", :production_release_finished, notification_params)
     end
+
+    ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank?
     Signal.production_release_is_complete!(release_platform_run)
   end
 
@@ -118,7 +120,7 @@ class ProductionRelease < ApplicationRecord
     previous&.mark_as_stale!
     update!(status: STATES[:active])
     notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
-    ProductionReleases::CreateTagJob.perform_async(id)
+    ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank?
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?

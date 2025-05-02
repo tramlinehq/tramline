@@ -2,6 +2,7 @@ module Taggable
   # recursively attempt to create a release tag until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_tag!(commitish, input_tag_name = base_tag_name)
+    return if tag_name.present?
     train.create_tag!(input_tag_name, commitish)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :tag_created, kind: :notice, data: {tag: input_tag_name})

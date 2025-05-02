@@ -99,18 +99,64 @@ describe ProductionRelease do
       expect(train).to have_received(:create_tag!).with("v1.2.3-android", commit.commit_hash)
     end
 
-    it "creates a tag for the the production release" do
-      production_release = create(:production_release, :inflight, build:, release_platform_run:)
-      create(:store_rollout,
-        :play_store,
-        :started,
-        store_submission: create(:play_store_submission, :prepared, parent_release: production_release),
-        release_platform_run:)
-      allow(ProductionReleases::CreateTagJob).to receive(:perform_async)
+    context "when rollout completes" do
+      it "creates a tag for the production release" do
+        production_release = create(:production_release, :inflight, build:, release_platform_run:)
+        create(:store_rollout,
+          :play_store,
+          :started,
+          store_submission: create(:play_store_submission, :prepared, parent_release: production_release),
+          release_platform_run:)
+        allow(ProductionReleases::CreateTagJob).to receive(:perform_async)
 
-      production_release.rollout_started!
+        production_release.rollout_complete!(nil)
 
-      expect(ProductionReleases::CreateTagJob).to have_received(:perform_async).with(production_release.id)
+        expect(ProductionReleases::CreateTagJob).to have_received(:perform_async).with(production_release.id)
+      end
+
+      it "does not create a tag for the production release if tag name is already set" do
+        production_release = create(:production_release, :inflight, build:, release_platform_run:, tag_name: "v1")
+        create(:store_rollout,
+          :play_store,
+          :started,
+          store_submission: create(:play_store_submission, :prepared, parent_release: production_release),
+          release_platform_run:)
+        allow(ProductionReleases::CreateTagJob).to receive(:perform_async)
+
+        production_release.rollout_complete!(nil)
+
+        expect(ProductionReleases::CreateTagJob).not_to have_received(:perform_async)
+      end
+    end
+
+    context "when rollout starts" do
+      it "creates a tag for the production release when rollout starts" do
+        production_release = create(:production_release, :inflight, build:, release_platform_run:)
+        create(:store_rollout,
+          :play_store,
+          :started,
+          store_submission: create(:play_store_submission, :prepared, parent_release: production_release),
+          release_platform_run:)
+        allow(ProductionReleases::CreateTagJob).to receive(:perform_async)
+
+        production_release.rollout_started!
+
+        expect(ProductionReleases::CreateTagJob).to have_received(:perform_async).with(production_release.id)
+      end
+
+      it "does not create a tag for the production release if tag name is already set" do
+        production_release = create(:production_release, :inflight, build:, release_platform_run:, tag_name: "v1")
+        create(:store_rollout,
+          :play_store,
+          :started,
+          store_submission: create(:play_store_submission, :prepared, parent_release: production_release),
+          release_platform_run:)
+        allow(ProductionReleases::CreateTagJob).to receive(:perform_async)
+
+        production_release.rollout_started!
+
+        expect(ProductionReleases::CreateTagJob).not_to have_received(:perform_async)
+      end
     end
   end
 
