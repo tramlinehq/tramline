@@ -16,7 +16,12 @@
               <% setting.notification_channels&.each do |channel| %>
                 <div class="inline-flex items-center">
                   <%= render IconComponent.new("integrations/logo_#{setting.notification_provider}.png", size: :md, classes: "mr-1") %>
-                  <%= channel["name"] %>
+
+                  <% if @train.notifications_release_specific_channel_enabled? && setting.release_specific_channel_allowed? %>
+                    <%= helpers.release_specific_channel_pattern(app) %>
+                  <% else %>
+                    <%= channel["name"] %>
+                  <% end %>
                 </div>
               <% end %>
             </div>

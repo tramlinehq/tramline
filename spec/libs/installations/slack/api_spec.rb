@@ -40,4 +40,26 @@ describe Installations::Slack::Api, type: :integration do
       expect(result[:next_cursor]).to eq("dGVhbTpDMDYxRkE1UEI=")
     end
   end
+
+  describe "#create_channel" do
+    let(:channel_name) { Faker::Alphanumeric.alphanumeric(number: 10) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:execute).and_return(
+        {
+          "ok" => true,
+          "channel" => {
+            "id" => "C08PWJT7YJ2",
+            "name" => channel_name,
+            "is_private" => false
+          }
+        }
+      )
+    end
+
+    it "returns transformed response" do
+      response = described_class.new(access_token).create_channel(SlackIntegration::CHANNELS_TRANSFORMATIONS, channel_name)
+      expect(response).to include({id: "C08PWJT7YJ2", name: channel_name, is_private: false})
+    end
+  end
 end

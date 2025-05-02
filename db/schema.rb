@@ -955,6 +955,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_30_150508) do
     t.string "continuous_backmerge_branch_prefix"
     t.boolean "tag_end_of_release_vcs_release", default: false
     t.boolean "tag_store_releases_vcs_release", default: false
+    t.boolean "notifications_release_specific_channel_enabled", default: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

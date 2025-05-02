@@ -10,6 +10,7 @@
 #  is_automatic              :boolean          default(FALSE)
 #  is_v2                     :boolean          default(FALSE)
 #  new_hotfix_branch         :boolean          default(FALSE)
+#  notification_channel      :jsonb
 #  original_release_version  :string
 #  release_type              :string           not null
 #  scheduled_at              :datetime
@@ -177,7 +178,24 @@ class Release < ApplicationRecord
 
   delegate :versioning_strategy, :patch_version_bump_only, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
-  delegate :platform, :organization, to: :app
+  delegate :platform, :organization, :notification_provider, to: :app
+
+  def set_notification_channel!(notification_channel)
+    self.notification_channel = {
+      id: notification_channel["id"],
+      name: notification_channel["name"]
+    }
+
+    save!
+  end
+
+  def release_specific_channel_name
+    notification_channel&.fetch("name")
+  end
+
+  def release_specific_channel_id
+    notification_channel&.fetch("id")
+  end
 
   def pre_release_error_message
     last_error = passports.where(reason: :pre_release_failed, kind: :error).last
@@ -452,7 +470,8 @@ class Release < ApplicationRecord
         release_completed_at: completed_at,
         release_started_at: scheduled_at,
         final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?),
-        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?)
+        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?),
+        release_specific_channel_id:
       }
     )
   end

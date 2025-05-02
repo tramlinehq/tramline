@@ -2,47 +2,48 @@
 #
 # Table name: trains
 #
-#  id                                     :uuid             not null, primary key
-#  approvals_enabled                      :boolean          default(FALSE), not null
-#  auto_apply_patch_changes               :boolean          default(TRUE)
-#  backmerge_strategy                     :string           default("on_finalize"), not null
-#  branching_strategy                     :string           not null
-#  build_queue_enabled                    :boolean          default(FALSE)
-#  build_queue_size                       :integer
-#  build_queue_wait_time                  :interval
-#  compact_build_notes                    :boolean          default(FALSE)
-#  continuous_backmerge_branch_prefix     :string
-#  copy_approvals                         :boolean          default(FALSE)
-#  description                            :string
-#  freeze_version                         :boolean          default(FALSE)
-#  kickoff_at                             :datetime
-#  name                                   :string           not null
-#  notification_channel                   :jsonb
-#  patch_version_bump_only                :boolean          default(FALSE), not null
-#  release_backmerge_branch               :string
-#  release_branch                         :string
-#  repeat_duration                        :interval
-#  slug                                   :string
-#  status                                 :string           not null
-#  stop_automatic_releases_on_failure     :boolean          default(FALSE), not null
-#  tag_end_of_release                     :boolean          default(TRUE)
-#  tag_end_of_release_prefix              :string
-#  tag_end_of_release_suffix              :string
-#  tag_end_of_release_vcs_release         :boolean          default(FALSE)
-#  tag_store_releases                     :boolean          default(FALSE)
-#  tag_store_releases_vcs_release         :boolean          default(FALSE)
-#  tag_store_releases_with_platform_names :boolean          default(FALSE)
-#  version_bump_branch_prefix             :string
-#  version_bump_enabled                   :boolean          default(FALSE)
-#  version_bump_file_paths                :string           default([]), is an Array
-#  version_current                        :string
-#  version_seeded_with                    :string
-#  versioning_strategy                    :string           default("semver")
-#  working_branch                         :string
-#  created_at                             :datetime         not null
-#  updated_at                             :datetime         not null
-#  app_id                                 :uuid             not null, indexed
-#  vcs_webhook_id                         :string
+#  id                                             :uuid             not null, primary key
+#  approvals_enabled                              :boolean          default(FALSE), not null
+#  auto_apply_patch_changes                       :boolean          default(TRUE)
+#  backmerge_strategy                             :string           default("on_finalize"), not null
+#  branching_strategy                             :string           not null
+#  build_queue_enabled                            :boolean          default(FALSE)
+#  build_queue_size                               :integer
+#  build_queue_wait_time                          :interval
+#  compact_build_notes                            :boolean          default(FALSE)
+#  continuous_backmerge_branch_prefix             :string
+#  copy_approvals                                 :boolean          default(FALSE)
+#  description                                    :string
+#  freeze_version                                 :boolean          default(FALSE)
+#  kickoff_at                                     :datetime
+#  name                                           :string           not null
+#  notification_channel                           :jsonb
+#  notifications_release_specific_channel_enabled :boolean          default(FALSE)
+#  patch_version_bump_only                        :boolean          default(FALSE), not null
+#  release_backmerge_branch                       :string
+#  release_branch                                 :string
+#  repeat_duration                                :interval
+#  slug                                           :string
+#  status                                         :string           not null
+#  stop_automatic_releases_on_failure             :boolean          default(FALSE), not null
+#  tag_end_of_release                             :boolean          default(TRUE)
+#  tag_end_of_release_prefix                      :string
+#  tag_end_of_release_suffix                      :string
+#  tag_end_of_release_vcs_release                 :boolean          default(FALSE)
+#  tag_store_releases                             :boolean          default(FALSE)
+#  tag_store_releases_vcs_release                 :boolean          default(FALSE)
+#  tag_store_releases_with_platform_names         :boolean          default(FALSE)
+#  version_bump_branch_prefix                     :string
+#  version_bump_enabled                           :boolean          default(FALSE)
+#  version_bump_file_paths                        :string           default([]), is an Array
+#  version_current                                :string
+#  version_seeded_with                            :string
+#  versioning_strategy                            :string           default("semver")
+#  working_branch                                 :string
+#  created_at                                     :datetime         not null
+#  updated_at                                     :datetime         not null
+#  app_id                                         :uuid             not null, indexed
+#  vcs_webhook_id                                 :string
 #
 class Train < ApplicationRecord
   has_paper_trail
@@ -129,6 +130,7 @@ class Train < ApplicationRecord
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
+  after_update :restore_default_notification_settings, if: -> { notification_channel.present? && notifications_release_specific_channel_enabled_previously_was }
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -281,8 +283,13 @@ class Train < ApplicationRecord
     end
     NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
-
   # rubocop:enable Rails/SkipsModelValidations
+
+  def restore_default_notification_settings
+    return if notification_channel.blank? || notifications_release_specific_channel_enabled?
+
+    notification_settings.release_specific_channel_allowed.update(notification_channels: [notification_channel])
+  end
 
   def display_name
     name&.parameterize
