@@ -49,7 +49,14 @@ class NotificationSetting < ApplicationRecord
     workflow_run_unavailable: "workflow_run_unavailable"
   }
 
+  RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS = [
+    :release_started,
+    :release_scheduled
+  ]
+
   scope :active, -> { where(active: true) }
+  scope :release_specific_channel_allowed, -> { where.not(kind: RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS) }
+  scope :release_specific_channel_not_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS) }
   delegate :app, to: :train
   delegate :notification_provider, to: :app
   delegate :channels, to: :notification_provider
@@ -71,6 +78,10 @@ class NotificationSetting < ApplicationRecord
     notification_channels.each do |channel|
       notification_provider.notify_with_snippet!(channel["id"], message, kind, params, snippet_content, snippet_title)
     end
+  end
+
+  def release_specific_channel_allowed?
+    !kind.to_sym.in?(RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS)
   end
 
   def notification_channels_settings

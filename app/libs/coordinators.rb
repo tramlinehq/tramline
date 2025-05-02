@@ -41,6 +41,7 @@
 module Coordinators
   module Signals
     def self.release_has_started!(release)
+      Coordinators::SetupReleaseSpecificChannel.call(release)
       release.notify!("New release has commenced!", :release_started, release.notification_params)
       Releases::PreReleaseJob.perform_async(release.id)
       Releases::FetchCommitLogJob.perform_async(release.id)

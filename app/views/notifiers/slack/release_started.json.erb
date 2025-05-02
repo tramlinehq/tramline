@@ -7,5 +7,15 @@
         "text": ":rocket: *New release <%= @release_version %>* has kicked off!"
       }
     }
+    <% if @release_specific_channel_id.present? %>
+    ,
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Join <#<%= @release_specific_channel_id %>> for updates"
+      }
+    }
+    <% end %>
   ]
 }

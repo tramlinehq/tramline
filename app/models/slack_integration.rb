@@ -30,6 +30,12 @@ class SlackIntegration < ApplicationRecord
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://slack.com/oauth/v2/authorize{?params*}")
 
+  CREATE_CHANNEL_TRANSFORMATIONS = {
+    id: :id,
+    name: :name,
+    is_private: :is_private
+  }
+
   CHANNELS_TRANSFORMATIONS = {
     id: :id,
     name: :name,
@@ -133,6 +139,12 @@ class SlackIntegration < ApplicationRecord
 
   def upload_file!(file, file_name)
     installation.upload_file(file, file_name)
+  rescue => e
+    elog(e, level: :warn)
+  end
+
+  def create_channel!(name)
+    installation.create_channel(CREATE_CHANNEL_TRANSFORMATIONS, name)
   rescue => e
     elog(e, level: :warn)
   end

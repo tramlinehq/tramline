@@ -75,7 +75,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     end
 
     attr_reader :setting
-    delegate :id, :active?, :notification_channels, :notification_provider, to: :setting
+    delegate :id, :active?, :notification_channels, :notification_provider, :release_specific_channel_allowed?, to: :setting
 
     def edit_path
       edit_app_train_notification_setting_path(@app, @train, setting)
