@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "boot"
 require "rails/all"
 
@@ -34,6 +36,14 @@ module Site
       key_content = ENV["RAILS_MASTER_KEY"]
       puts "DEBUG [application.rb]: Master key length: #{key_content ? key_content.length : 'nil'}"
       puts "DEBUG [application.rb]: RAILS_PIPELINE_ENV: #{ENV["RAILS_PIPELINE_ENV"].inspect}"
+
+      # Fix the key length issue - derive a 16-byte key using digest
+      if key_content && key_content.length != 16
+        require 'digest/sha1'
+        derived_key = Digest::SHA1.digest(key_content)[0...16]
+        ENV["RAILS_MASTER_KEY"] = derived_key
+        puts "DEBUG [application.rb]: Derived a 16-byte key from master key"
+      end
 
       creds_path = if ENV["RAILS_PIPELINE_ENV"].present?
         path = Rails.root.join("config/credentials/#{ENV["RAILS_PIPELINE_ENV"]}.yml.enc").to_s

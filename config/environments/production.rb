@@ -73,7 +73,7 @@ Rails.application.configure do
   config.action_mailer.perform_caching = false
   config.action_mailer.delivery_method = :postmark
 
-  # Temporarily bypass credentials to debug the key issue
+  # Use the derived key from application.rb, don't try to modify it again here
   begin
     key_base = Rails.application.secret_key_base rescue nil
     key_content = ENV["RAILS_MASTER_KEY"]
