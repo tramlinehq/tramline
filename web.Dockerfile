@@ -3,10 +3,11 @@ FROM ruby:${RUBY_VERSION}-alpine AS builder
 
 ARG BUNDLER_VERSION=2.4.22
 
-ENV RAILS_ENV=production \
+ENV RAILS_ENV="production" \
     NODE_ENV=production \
-    BUNDLE_DEPLOYMENT=true \
-    BUNDLE_WITHOUT="development:test" \
+    BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_PATH="/usr/local/bundle" \
+    BUNDLE_WITHOUT="development" \
     DESCOPE_PROJECT_ID=dummy_project_id \
     DESCOPE_MANAGEMENT_KEY=dummy_management_key \
     SECRET_KEY_BASE=dummy_key_for_precompilation \

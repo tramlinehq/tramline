@@ -40,7 +40,6 @@ jobs:
           bundler-cache: true
           cache-version: "tools-v1-${{ runner.os }}"
         env:
-          BUNDLE_WITHOUT: "default development test"
           RAILS_ENV: production
 
       - name: Set up Docker Buildx for cache
