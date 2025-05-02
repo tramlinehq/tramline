@@ -80,10 +80,10 @@ jobs:
 
       - name: Clean up server disk space
         run: |
-          ssh sam-staging-local@$SERVER_ADDR "docker system prune -af --volumes || true"
-          ssh sam-staging-local@$SERVER_ADDR "docker container prune -f || true"
-          ssh sam-staging-local@$SERVER_ADDR "docker image prune -af || true"
-          ssh sam-staging-local@$SERVER_ADDR "df -h"
+          ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "docker system prune -af --volumes || true"
+          ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "docker container prune -f || true"
+          ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "docker image prune -af || true"
+          ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "df -h"
 
       - name: Deploy with Kamal
         run: kamal deploy --verbose
