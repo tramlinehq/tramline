@@ -74,15 +74,6 @@ jobs:
       - name: Disable Git safe directory check
         run: git config --global --add safe.directory '*'
 
-      # - name: Debug Docker Login
-      #   run: |
-      #     echo "Testing direct Docker login..."
-      #     docker login ghcr.io -u $KAMAL_REGISTRY_USERNAME -p $KAMAL_REGISTRY_PASSWORD
-      #     echo "Docker login exit status: $?"
-      #   env:
-      #     KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD_STAGING_GCP }}
-      #     KAMAL_REGISTRY_USERNAME: tramlinehq
-
       - name: Login to registry
         run: kamal registry login
         env:
@@ -90,4 +81,4 @@ jobs:
           KAMAL_REGISTRY_USERNAME: tramlinehq
 
       - name: Deploy with Kamal
-        run: kamal deploy
+        run: kamal deploy --build-arg RAILS_MASTER_KEY=$RAILS_MASTER_KEY
