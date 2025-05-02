@@ -63,7 +63,9 @@ jobs:
 
       - name: Setup RAILS_MASTER_KEY
         run: |
-          export RAILS_MASTER_KEY=$(gcloud secrets versions access latest --secret=RAILS_MASTER_KEY_STAGING_GCP --project=946207521855)
+          RAILS_MASTER_KEY=$(gcloud secrets versions access latest --secret=RAILS_MASTER_KEY_STAGING_GCP --project=946207521855 | tr -d '[:space:]')
+          echo "Length of RAILS_MASTER_KEY: ${#RAILS_MASTER_KEY}"
+          echo "Key format: $(echo -n $RAILS_MASTER_KEY | xxd -p)"
           echo "RAILS_MASTER_KEY=$RAILS_MASTER_KEY" >> $GITHUB_ENV
 
       - name: Install Kamal
