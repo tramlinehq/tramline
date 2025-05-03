@@ -85,7 +85,10 @@ class NotificationSetting < ApplicationRecord
   end
 
   def notification_channels_settings
-    errors.add(:notification_channels, :at_least_one) if active? && notification_channels.blank?
+    if active? && notification_channels.blank? &&
+        !(train.notifications_release_specific_channel_enabled? && release_specific_channel_allowed?)
+      errors.add(:notification_channels, :at_least_one)
+    end
   end
 
   # rubocop:disable Rails/SkipsModelValidations
