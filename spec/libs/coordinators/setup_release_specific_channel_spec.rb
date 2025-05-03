@@ -45,6 +45,12 @@ RSpec.describe Coordinators::SetupReleaseSpecificChannel do
       notification_channels = train.notification_settings.release_specific_channel_not_allowed.pluck(:notification_channels)
       expect(notification_channels).to all(contain_exactly(default_notification_channel.as_json))
     end
+
+    it "updates notification channel to default channel if create channel fails" do
+      allow(slack).to receive(:create_channel!).and_return(nil)
+      described_class.call(release)
+      expect(release.reload.release_specific_channel_name).to eq(default_notification_channel[:name])
+    end
   end
 
   context "when train is not configured with release specific channels" do

@@ -106,9 +106,13 @@ module Installations
         }
       }
 
-      execute(:post, CREATE_CHANNEL_URL, params)
-        .then { |response| Installations::Response::Keys.transform([response["channel"]], transforms) }
-        .first
+      execute(:post, CREATE_CHANNEL_URL, params).then do |response|
+        if response["ok"]
+          Installations::Response::Keys.transform([response["channel"]], transforms)
+        else
+          raise Error.new("Slack API - Error creating channel", reason: response["error"])
+        end
+      end.first
     end
 
     def list_channels(transforms, cursor = nil)
