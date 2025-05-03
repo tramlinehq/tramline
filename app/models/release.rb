@@ -57,6 +57,7 @@ class Release < ApplicationRecord
     finalizing
     pre_release_failed
     backmerge_failure
+    tag_created
     vcs_release_created
     finalize_failed
     stopped
