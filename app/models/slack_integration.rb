@@ -58,6 +58,8 @@ class SlackIntegration < ApplicationRecord
   CACHE_EXPIRY = 1.month
   CODE_SNIPPET_CHARACTER_LIMIT = 3500
 
+  HANDLED_SLACK_ERRORS = ["name_taken"]
+
   def controllable_rollout?
     false
   end
@@ -145,6 +147,12 @@ class SlackIntegration < ApplicationRecord
 
   def create_channel!(name)
     installation.create_channel(CREATE_CHANNEL_TRANSFORMATIONS, name)
+  rescue Installations::Error => e
+    if e.reason.in?(HANDLED_SLACK_ERRORS)
+      raise
+    else
+      elog(e, level: :warn)
+    end
   rescue => e
     elog(e, level: :warn)
   end
