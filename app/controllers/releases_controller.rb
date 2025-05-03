@@ -5,7 +5,7 @@ class ReleasesController < SignedInApplicationController
   include Pagy::Backend
 
   before_action :require_write_access!, only: %i[create destroy update override_approvals copy_approvals post_release finish_release]
-  before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals post_release finish_release]
+  before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals post_release skip_release finish_release]
   before_action :set_train_and_app, only: %i[destroy timeline]
   before_action :ensure_approval_items_exist, only: %i[copy_approvals]
   before_action :ensure_approval_items_copyable, only: %i[copy_approvals]
@@ -140,6 +140,14 @@ class ReleasesController < SignedInApplicationController
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
       redirect_back fallback_location: root_path, notice: "Train could not be finalized."
+    end
+  end
+
+  def skip_release
+    if Action.skip_release!(@release).ok?
+      redirect_back fallback_location: root_path, notice: "The release was skipped."
+    else
+      redirect_back fallback_location: root_path, notice: "Release could not be skipped. Please try again."
     end
   end
 

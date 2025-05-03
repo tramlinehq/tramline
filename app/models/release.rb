@@ -159,6 +159,11 @@ class Release < ApplicationRecord
       transitions from: :partially_finished, to: :stopped_after_partial_finish
       transitions from: [:created, :on_track, :post_release_started, :post_release_failed, :pre_release_started, :pre_release_failed], to: :stopped
     end
+    
+    event :skip do
+      before { self.completed_at = Time.current }
+      transitions from: [:on_track, :post_release_started, :partially_finished], to: :finished
+    end
 
     event :finish do
       before { self.completed_at = Time.current }
@@ -335,6 +340,10 @@ class Release < ApplicationRecord
 
   def committable?
     created? || pre_release_started? || on_track? || partially_finished?
+  end
+
+  def skippable?
+    on_track? || pre_release_started? || partially_finished?
   end
 
   def active?

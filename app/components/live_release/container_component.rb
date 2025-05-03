@@ -37,6 +37,7 @@ class LiveRelease::ContainerComponent < BaseComponent
     :finished?,
     :active?,
     :partially_finished?,
+           :skippable?,
     :release_branch,
     :reldex,
     :tag_name,

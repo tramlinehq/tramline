@@ -130,6 +130,7 @@ Rails.application.routes.draw do
           get :timeline
           post :post_release
           post :finish_release
+          post :skip_release
         end
       end
     end

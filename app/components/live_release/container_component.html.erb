@@ -127,6 +127,19 @@
       </div>
 
       <div class="self-end mt-10 flex flex-col gap-2 items-end <%= RIGHT_GUTTER %>">
+        <% if skippable? %>
+          <%= render ButtonComponent.new(
+            scheme: :light,
+            type: :link,
+            size: :xxs,
+            options: skip_release_release_path(release),
+            label: "Skip release",
+            html_options: html_opts(:post, "This will mark the release as finished and stop any further work on the release. Are you sure?")
+          ) do |b|
+            b.with_icon("forward_step.svg")
+          end %>
+        <% end %>
+
         <% if partially_finished? %>
           <%= render ButtonComponent.new(
                 scheme: :light,
@@ -139,6 +152,7 @@
                 b.with_icon("list_checks.svg")
               end %>
         <% end %>
+
         <% if active? %>
           <%= render ButtonComponent.new(
                 scheme: :danger,

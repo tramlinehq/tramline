@@ -277,6 +277,16 @@ module Coordinators
       end
     end
 
+    def self.skip_release!(release)
+      Res.new do
+        release.with_lock do
+          raise "release cannot be skipped yet" unless release.skippable?
+          release.release_platform_runs.pending_release.map(&:stop!)
+          release.skip!
+        end
+      end
+    end
+
     def self.mark_release_as_finished!(release)
       Res.new do
         release.with_lock do
