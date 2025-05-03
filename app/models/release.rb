@@ -189,6 +189,10 @@ class Release < ApplicationRecord
     save!
   end
 
+  def release_specific_channel_deep_link
+    notification_provider.channel_deep_link(release_specific_channel_id) if release_specific_channel_id.present?
+  end
+
   def release_specific_channel_name
     notification_channel&.fetch("name")
   end

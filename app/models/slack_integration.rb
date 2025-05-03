@@ -193,6 +193,10 @@ class SlackIntegration < ApplicationRecord
     nil
   end
 
+  def channel_deep_link(channel_id)
+    "slack://channel?team=#{integration.metadata["id"]}&id=#{channel_id}"
+  end
+
   private
 
   def get_all_channels(cursor = nil, channels = [])

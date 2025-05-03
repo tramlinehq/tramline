@@ -58,6 +58,16 @@
                 <%= render Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
               <% end %>
             <% end %>
+            <% if release.release_specific_channel_name.present? %>
+              <% component.with_data_set(title: "Notification channel") do %>
+                <div class="inline-flex items-center">
+                  <a href="<%= release.release_specific_channel_deep_link %>">
+                    <%= render IconComponent.new("integrations/logo_#{release.notification_provider}.png", size: :md, classes: "mr-1") %>
+                    <%= release.release_specific_channel_name %>
+                  </a>
+                </div>
+              <% end %>
+            <% end %>
           <% end %>
         </div>
       </div>
