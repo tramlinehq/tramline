@@ -12,6 +12,7 @@ en:
       stopped_html: 'Stopped the release <span class="emphasize">%{version}</span>'
       finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>'
       approvals_overwritten_html: 'Approval items were force-approved by the release captain'
+      tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
     release_platform_run:
       version_changed_html: 'Updated the release version to <span class="emphasize">%{version}</span>'
       version_corrected_html: 'Updated the release version to <span class="emphasize">%{version}</span> since the ongoing release has moved on to <span class="emphasize">%{ongoing_version}</span>'
@@ -33,6 +34,7 @@ en:
     production_release:
       finished_html: 'Finished the production release for <span class="emphasize">%{version} (%{build_number})</span>'
       vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
+      tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
     workflow_run:
       triggered_html: 'A new %{kind} workflow run was triggered for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name}</span>'
       retried_html: 'The workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> was retried for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
