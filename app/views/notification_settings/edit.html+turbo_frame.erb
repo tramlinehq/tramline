@@ -10,7 +10,7 @@
                                            switch_id: "active-switch-#{@setting.id}",
                                            on_label: "Notifications enabled",
                                            off_label: "Notifications disabled") do |switch| %>
-        <% if @train.notifications_release_specific_channel_enabled? && @setting.release_specific_channel_allowed? %>
+        <% if @setting.release_specific_channel_allowed? %>
           <% switch.with_child do %>
             <p class="text-slate-700 text-sm">
               Turn off release-specific channels in train settings to customize channels per notification kind.

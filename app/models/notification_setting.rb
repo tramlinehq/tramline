@@ -81,12 +81,12 @@ class NotificationSetting < ApplicationRecord
   end
 
   def release_specific_channel_allowed?
-    !kind.to_sym.in?(RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS)
+    train.notifications_release_specific_channel_enabled? &&
+      !kind.to_sym.in?(RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS)
   end
 
   def notification_channels_settings
-    if active? && notification_channels.blank? &&
-        !(train.notifications_release_specific_channel_enabled? && release_specific_channel_allowed?)
+    if active? && notification_channels.blank? && !release_specific_channel_allowed?
       errors.add(:notification_channels, :at_least_one)
     end
   end
