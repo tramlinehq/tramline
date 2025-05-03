@@ -76,7 +76,7 @@ describe Installations::Slack::Api, type: :integration do
 
       it "raises error" do
         expect { described_class.new(access_token).create_channel(SlackIntegration::CREATE_CHANNEL_TRANSFORMATIONS, channel_name) }
-          .to raise_error (Installations::Error) { |error|
+          .to raise_error(Installations::Error) { |error|
             expect(error.reason).to eq("name_taken")
           }
       end
