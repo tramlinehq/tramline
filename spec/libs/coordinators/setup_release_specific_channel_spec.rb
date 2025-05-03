@@ -28,22 +28,6 @@ RSpec.describe Coordinators::SetupReleaseSpecificChannel do
       expect(slack).to have_received(:create_channel!).with(release_channel_name)
     end
 
-    context "when slack integration raises name_taken error" do
-      before do
-        allow(slack).to receive(:create_channel!).and_raise(Installations::Error.new("Name taken error", reason: "name_taken"))
-      end
-
-      it "attempts to create channel again" do
-        described_class.call(release)
-        expect(slack).to have_received(:create_channel!).with(release_channel_name.concat("-1"))
-      end
-
-      it "updates notification channel to default channel" do
-        described_class.call(release)
-        expect(release.reload.release_specific_channel_name).to eq(default_notification_channel[:name])
-      end
-    end
-
     it "updates notification channel in release" do
       described_class.call(release)
       expect(release.reload.release_specific_channel_name).to eq(release_channel_name)
@@ -60,6 +44,12 @@ RSpec.describe Coordinators::SetupReleaseSpecificChannel do
       described_class.call(release)
       notification_channels = train.notification_settings.release_specific_channel_not_allowed.pluck(:notification_channels)
       expect(notification_channels).to all(contain_exactly(default_notification_channel.as_json))
+    end
+
+    it "updates notification channel to default channel if create channel fails" do
+      allow(slack).to receive(:create_channel!).and_return(nil)
+      described_class.call(release)
+      expect(release.reload.release_specific_channel_name).to eq(default_notification_channel[:name])
     end
   end
 
