@@ -1,0 +1,6 @@
+<%# locals: (release:) %>
+
+<%= link_to_external release.release_specific_channel_deep_link, class: "underline" do %>
+  <%= render IconComponent.new("integrations/logo_#{release.notification_provider}.png", size: :md, classes: "mr-1") %>
+  <%= release.release_specific_channel_name + " ↗" %>
+<% end %>
