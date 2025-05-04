@@ -148,7 +148,7 @@ class SlackIntegration < ApplicationRecord
   def create_channel!(name)
     execute_with_retry do |attempt|
       channel_name = name
-      channel_name = "#{name}-#{attempt}" if attempt > 0
+      channel_name = [name, attempt].join("_") if attempt > 0
       installation.create_channel(CREATE_CHANNEL_TRANSFORMATIONS, channel_name)
     end
   end

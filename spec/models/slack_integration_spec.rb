@@ -67,8 +67,8 @@ describe SlackIntegration do
       it "attempts to create channel again with an appended name" do
         slack_integration.create_channel!(channel_name)
         expect(api_double).to have_received(:create_channel).with(SlackIntegration::CREATE_CHANNEL_TRANSFORMATIONS, channel_name).once
-        expect(api_double).to have_received(:create_channel).with(SlackIntegration::CREATE_CHANNEL_TRANSFORMATIONS, "#{channel_name}-1").once
-        expect(api_double).to have_received(:create_channel).with(SlackIntegration::CREATE_CHANNEL_TRANSFORMATIONS, "#{channel_name}-2").once
+        expect(api_double).to have_received(:create_channel).with(SlackIntegration::CREATE_CHANNEL_TRANSFORMATIONS, "#{channel_name}_1").once
+        expect(api_double).to have_received(:create_channel).with(SlackIntegration::CREATE_CHANNEL_TRANSFORMATIONS, "#{channel_name}_2").once
       end
 
       it "returns nil when no channel is created" do
