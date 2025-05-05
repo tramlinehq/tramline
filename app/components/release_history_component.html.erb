@@ -52,4 +52,7 @@
     <% end %>
   <% end %>
 <% end %>
-<%= render PaginationComponent.new(results: paginator, turbo_frame: "previous_releases", info: true) %>
+
+<% if show_previous_releases_paginator? %>
+  <%= render PaginationComponent.new(results: paginator, turbo_frame: "previous_releases", info: true) %>
+<% end %>
