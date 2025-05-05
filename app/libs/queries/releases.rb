@@ -203,6 +203,10 @@ class Queries::Releases
       false
     end
 
+    def short_sha
+      commit_hash[0, 7]
+    end
+
     def inspect
       format(
         "#<Queries::Commit %{attributes} >",
