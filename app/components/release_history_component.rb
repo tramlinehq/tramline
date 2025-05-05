@@ -23,8 +23,4 @@ class ReleaseHistoryComponent < BaseComponent
   def reldex_defined?
     train.release_index.present?
   end
-
-  def show_previous_releases_paginator?
-    train.previous_releases.size > Pagy::DEFAULT[:gearbox_items].first
-  end
 end
