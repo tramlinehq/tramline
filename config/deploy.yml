@@ -12,7 +12,7 @@ builder:
   local: true
   secrets:
     - RAILS_MASTER_KEY
-}
+
 servers:
   web:
     hosts:
@@ -39,7 +39,7 @@ registry:
 
 ssh:
   user: sam-staging-local
-  key_data: [$SSH_PRIVATE_KEY]
+  key_data: [ $SSH_PRIVATE_KEY ]
 
 proxy:
   app_port: 3000
