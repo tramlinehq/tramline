@@ -1,3 +1,5 @@
+# syntax = docker/dockerfile:1
+
 ARG RUBY_VERSION=3.3.6
 ARG BUNDLER_VERSION=2.4.22
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
@@ -15,7 +17,6 @@ ENV RAILS_ENV="production" \
     BUNDLE_WITHOUT="development" \
     DESCOPE_PROJECT_ID=dummy_project_id \
     DESCOPE_MANAGEMENT_KEY=dummy_management_key \
-    SECRET_KEY_BASE=dummy_key_for_precompilation \
     RAILS_SERVE_STATIC_FILES=true
 
 # Throw-away build stage to reduce size of final image
