@@ -57,4 +57,4 @@ COPY --from=builder /app /app
 
 RUN bundle info puma
 
-ENTRYPOINT ["/rails/bin/setup.docker.prod"]
+ENTRYPOINT ["bin/setup.docker.prod"]
