@@ -58,4 +58,4 @@ RUN apk add --no-cache \
 COPY --from=builder "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=builder /rails /rails
 
-ENTRYPOINT ["/app/bin/setup.docker.prod"]
+ENTRYPOINT ["/rails/bin/setup.docker.prod"]
