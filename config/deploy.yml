@@ -13,6 +13,8 @@ builder:
   secrets:
     - SSH_PRIVATE_KEY
     - RAILS_MASTER_KEY
+    - KAMAL_REGISTRY_USERNAME
+    - KAMAL_REGISTRY_PASSWORD
 
 servers:
   web:
