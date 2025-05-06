@@ -11,6 +11,7 @@ builder:
   # remote: ssh://sam-staging-local@35.209.23.61:22
   local: true
   secrets:
+    - SSH_PRIVATE_KEY
     - RAILS_MASTER_KEY
 
 servers:
@@ -39,7 +40,7 @@ registry:
 
 ssh:
   user: sam-staging-local
-  key_data: [ $SSH_PRIVATE_KEY ]
+  key_data: [$SSH_PRIVATE_KEY]
 
 proxy:
   app_port: 3000
