@@ -96,7 +96,6 @@ env:
     - SIDEKIQ_REDIS_URL
     - APP_REDIRECT_MAPPING_JSON
     - HOST_NAME
-    - RAILS_PIPELINE_ENV
     - SESSION_TIMEOUT_IN_MINUTES
     - SIDEKIQ_CONCURRENCY
     - SIDEKIQ_TIMEOUT
@@ -114,7 +113,7 @@ env:
     - DESCOPE_PROJECT_ID
   clear:
     RAILS_ENV: production
-    # RACK_ENV: staging-gcp
+    RAILS_PIPELINE_ENV: staging
 
 volumes:
   - "db_data:/var/lib/postgresql/data"
