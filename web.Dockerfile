@@ -3,30 +3,13 @@
 ARG RUBY_VERSION=3.3.6
 ARG DISTRO_NAME=bookworm
 FROM ruby:$RUBY_VERSION-slim-$DISTRO_NAME AS base
+ARG DISTRO_NAME
 
 WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
-
-ENV RAILS_ENV="production" \
-    BUNDLE_DEPLOYMENT="1" \
-    BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development" \
-    DESCOPE_PROJECT_ID=dummy_project_id \
-    DESCOPE_MANAGEMENT_KEY=dummy_management_key \
-    RAILS_SERVE_STATIC_FILES=true
-
-# Throw-away build stage to reduce size of final image
-FROM base AS build
-ARG BUNDLER_VERSION=2.4.22
-ARG DISTRO_NAME
-
-# Install packages needed to build gems and node modules
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git pkg-config libyaml-dev gnupg2 libnss3-tools && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 libnss3-tools && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install PostgreSQL dependencies
@@ -42,6 +25,23 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
     libpq-dev \
     postgresql-client-$PG_MAJOR
+
+ENV RAILS_ENV="production" \
+    BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_PATH="/usr/local/bundle" \
+    BUNDLE_WITHOUT="development" \
+    DESCOPE_PROJECT_ID=dummy_project_id \
+    DESCOPE_MANAGEMENT_KEY=dummy_management_key \
+    RAILS_SERVE_STATIC_FILES=true
+
+# Throw-away build stage to reduce size of final image
+FROM base AS build
+ARG BUNDLER_VERSION=2.4.22
+
+# Install packages needed to build gems
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential git pkg-config libyaml-dev && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
 COPY .ruby-version Gemfile Gemfile.lock ./
