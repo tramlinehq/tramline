@@ -1,11 +1,15 @@
 ARG RUBY_VERSION=3.3.6
 ARG BUNDLER_VERSION=2.4.22
-FROM ruby:${RUBY_VERSION}-alpine AS builder
+FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 WORKDIR /rails
 
+# Install base packages
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y git tzdata curl libjemalloc2 libvips sqlite3 && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
 ENV RAILS_ENV="production" \
-    NODE_ENV=production \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
@@ -14,20 +18,10 @@ ENV RAILS_ENV="production" \
     SECRET_KEY_BASE=dummy_key_for_precompilation \
     RAILS_SERVE_STATIC_FILES=true
 
-RUN apk add --no-cache \
-    build-base \
-    curl \
-    git \
-    postgresql-dev \
-    nodejs \
-    tzdata \
-    vips
-
 # Throw-away build stage to reduce size of final image
-FROM builder AS build
+FROM base AS build
 
 COPY .ruby-version Gemfile Gemfile.lock ./
-
 RUN gem install bundler -v "$BUNDLER_VERSION" && \
     bundle _"$BUNDLER_VERSION"_ config set --local without development && \
     bundle _"$BUNDLER_VERSION"_ install && \
@@ -37,25 +31,24 @@ RUN gem install bundler -v "$BUNDLER_VERSION" && \
 # Copy application code
 COPY . .
 
+# Precompile bootsnap code for faster boot times
+# RUN bundle exec bootsnap precompile app/ lib/
+
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
-FROM builder
-
-ENV RAILS_ENV=production \
-    NODE_ENV=production \
-    RAILS_LOG_TO_STDOUT=true \
-    RAILS_SERVE_STATIC_FILES=true \
-    BUNDLE_PATH="/usr/local/bundle"
-
-RUN apk add --no-cache \
-    postgresql-client \
-    tzdata \
-    vips \
-    nodejs
+# Final stage for app image
+FROM base
 
 # Copy built artifacts: gems, application
-COPY --from=builder "${BUNDLE_PATH}" "${BUNDLE_PATH}"
-COPY --from=builder /rails /rails
+COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
+COPY --from=build /rails /rails
 
+# Run and own only the runtime files as a non-root user for security
+RUN groupadd --system --gid 1000 rails && \
+    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
+    chown -R rails:rails db log storage tmp
+USER 1000:1000
+
+# Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/setup.docker.prod"]
