@@ -34,12 +34,7 @@ RUN gem install bundler -v "$BUNDLER_VERSION" && \
 
 COPY . .
 
-RUN cp config/environments/production.rb config/environments/production.rb.orig && \
-    sed -i 's/config.require_master_key = true/config.require_master_key = false/' config/environments/production.rb || true && \
-    sed -i "s/Rails.application.credentials.dependencies.postmark.api_token/'dummy_token_for_pre_compilation'/" config/environments/production.rb || true && \
-    bundle exec rake assets:precompile --trace && \
-    mv config/environments/production.rb.orig config/environments/production.rb && \
-    rm -rf /app/tmp/cache node_modules
+RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 FROM ruby:${RUBY_VERSION}-alpine
 
@@ -58,11 +53,8 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 COPY --from=builder /usr/local/bundle /usr/local/bundle
-
 COPY --from=builder /app /app
 
 RUN bundle info puma
 
-ENTRYPOINT ["sh", "-c"]
-
-CMD ["if [ \"$KAMAL_ROLE\" = 'worker' ]; then bundle exec sidekiq; else bundle exec puma -C config/puma.rb; fi"]
+ENTRYPOINT ["/rails/bin/setup.docker.prod"]
