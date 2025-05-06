@@ -23,6 +23,9 @@ RUN apk add --no-cache \
     tzdata \
     vips
 
+# Throw-away build stage to reduce size of final image
+FROM base AS build
+
 COPY .ruby-version Gemfile Gemfile.lock ./
 
 RUN gem install bundler -v "$BUNDLER_VERSION" && \
@@ -37,7 +40,7 @@ COPY . .
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
-FROM ruby:${RUBY_VERSION}-alpine
+FROM base
 
 ENV RAILS_ENV=production \
     NODE_ENV=production \
@@ -52,7 +55,7 @@ RUN apk add --no-cache \
     nodejs
 
 # Copy built artifacts: gems, application
-COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
-COPY --from=build /rails /rails
+COPY --from=builder "${BUNDLE_PATH}" "${BUNDLE_PATH}"
+COPY --from=builder /rails /rails
 
 ENTRYPOINT ["/app/bin/setup.docker.prod"]
