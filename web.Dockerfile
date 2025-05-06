@@ -9,7 +9,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 libnss3-tools && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 libnss3-tools git && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install PostgreSQL dependencies
@@ -40,7 +40,7 @@ ARG BUNDLER_VERSION=2.4.22
 
 # Install packages needed to build gems
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git pkg-config libyaml-dev && \
+    apt-get install --no-install-recommends -y build-essential pkg-config libyaml-dev && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
