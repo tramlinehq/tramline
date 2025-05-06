@@ -22,6 +22,7 @@ ENV RAILS_ENV="production" \
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 ARG BUNDLER_VERSION=2.4.22
+ARG DISTRO_NAME
 
 # Install packages needed to build gems and node modules
 RUN apt-get update -qq && \
