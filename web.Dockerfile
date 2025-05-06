@@ -24,7 +24,7 @@ RUN apk add --no-cache \
     vips
 
 # Throw-away build stage to reduce size of final image
-FROM base AS build
+FROM builder AS build
 
 COPY .ruby-version Gemfile Gemfile.lock ./
 
@@ -40,7 +40,7 @@ COPY . .
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
-FROM base
+FROM builder
 
 ENV RAILS_ENV=production \
     NODE_ENV=production \
