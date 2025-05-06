@@ -1,7 +1,8 @@
 ARG RUBY_VERSION=3.3.6
+ARG BUNDLER_VERSION=2.4.22
 FROM ruby:${RUBY_VERSION}-alpine AS builder
 
-ARG BUNDLER_VERSION=2.4.22
+WORKDIR /rails
 
 ENV RAILS_ENV="production" \
     NODE_ENV=production \
@@ -22,8 +23,6 @@ RUN apk add --no-cache \
     tzdata \
     vips
 
-WORKDIR /app
-
 COPY .ruby-version Gemfile Gemfile.lock ./
 
 RUN gem install bundler -v "$BUNDLER_VERSION" && \
@@ -32,8 +31,10 @@ RUN gem install bundler -v "$BUNDLER_VERSION" && \
     find /usr/local/bundle -type f -name "*.c" -delete && \
     find /usr/local/bundle -type f -name "*.o" -delete
 
+# Copy application code
 COPY . .
 
+# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 FROM ruby:${RUBY_VERSION}-alpine
@@ -50,11 +51,8 @@ RUN apk add --no-cache \
     vips \
     nodejs
 
-WORKDIR /app
+# Copy built artifacts: gems, application
+COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
+COPY --from=build /rails /rails
 
-COPY --from=builder /usr/local/bundle /usr/local/bundle
-COPY --from=builder /app /app
-
-RUN bundle info puma
-
-ENTRYPOINT ["bin/setup.docker.prod"]
+ENTRYPOINT ["/app/bin/setup.docker.prod"]

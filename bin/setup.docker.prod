@@ -8,6 +8,7 @@ fi
 
 # If running the rails server then create or migrate existing database
 if [ "${1}" == "bundle" ] && [ "${2}" == "exec" ] && [ "${3}" == "puma" ] && [ "${4}" == "-C" ] && [ "${5}" == "config/puma.rb" ]; then
+  bundle info puma
   ./bin/rails db:prepare
 fi
 
