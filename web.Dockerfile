@@ -56,6 +56,8 @@ RUN gem install bundler -v "$BUNDLER_VERSION" && \
 # Copy application code
 COPY . .
 
+RUN git init
+
 # Precompile bootsnap code for faster boot times
 # RUN bundle exec bootsnap precompile app/ lib/
 

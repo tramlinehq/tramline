@@ -84,7 +84,7 @@ env:
   clear:
     RAILS_ENV: production
     RAILS_PIPELINE_ENV: staging
-    DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}
 
 accessories:
   db:
