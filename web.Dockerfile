@@ -69,6 +69,11 @@ FROM base
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
+# Ensure consistent ownership of the /rails directory and its contents
+RUN groupadd --system --gid 1000 rails && \
+    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
+    chown -R rails:rails /rails
+
 RUN git init
 RUN git config --global --add safe.directory '*'
 
