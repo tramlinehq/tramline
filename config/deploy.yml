@@ -1,6 +1,10 @@
 service: tramline
 image: ghcr.io/tramlinehq/tramline-web
 
+# Add deploy timeout configuration
+deploy_timeout: 80
+readiness_delay: 45
+
 builder:
   arch: amd64
   dockerfile: web.Dockerfile
@@ -45,12 +49,17 @@ ssh:
   key_data: [$SSH_PRIVATE_KEY]
 
 proxy:
-  app_port: 1000
+  app_port: 3000
+  healthcheck:
+    path: /up
+    port: 3000
+    interval: 5
+    timeout: 3
+    max_attempts: 5
 
 env:
   secret:
     - RAILS_MASTER_KEY
-    - DATABASE_URL
     - REDIS_URL
     - SSH_PRIVATE_KEY
     - KAMAL_REGISTRY_PASSWORD
@@ -84,6 +93,7 @@ env:
   clear:
     RAILS_ENV: production
     RAILS_PIPELINE_ENV: staging
+    DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
 
 accessories:
   db:
