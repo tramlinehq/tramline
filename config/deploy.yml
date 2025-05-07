@@ -85,15 +85,11 @@ env:
     RAILS_ENV: production
     RAILS_PIPELINE_ENV: staging
 
-volumes:
-  - "db_data:/var/lib/postgresql/data"
-  - "redis_data:/data"
-
 accessories:
   db:
     image: postgres:14
-    host: 127.0.0.1
-    port: "127.0.0.1:5432"
+    host: 35.209.23.61
+    port: "5432:5432"
     env:
       secret:
         - ANONYMIZE_SOURCE_DB_PASSWORD
@@ -102,12 +98,16 @@ accessories:
         - POSTGRES_USER
         - POSTGRES_PASSWORD
         - POSTGRES_DB
-    volumes:
-      - db_data:/var/lib/postgresql/data
+    directories:
+      - data:/var/lib/postgresql/data
+    options:
+      restart: always
 
   redis:
     image: redis:7
     host: 35.209.23.61
-    port: 6379
-    volumes:
-      - redis_data:/data
+    port: "6379:6379"
+    directories:
+      - data:/data
+    options:
+      restart: always

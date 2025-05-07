@@ -86,6 +86,9 @@ jobs:
           ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "docker image prune -af || true"
           ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "df -h"
 
+      - name: Install netcat on VM
+        run: ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "sudo apt-get update && sudo apt-get install -y netcat"
+
       - name: Check if accessories are running
         run: |
           echo "Checking PostgreSQL service on VM (port 5432)..."
