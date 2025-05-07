@@ -46,7 +46,8 @@ class NotificationSetting < ApplicationRecord
     production_release_finished: "production_release_finished",
     workflow_run_failed: "workflow_run_failed",
     workflow_run_halted: "workflow_run_halted",
-    workflow_run_unavailable: "workflow_run_unavailable"
+    workflow_run_unavailable: "workflow_run_unavailable",
+    workflow_trigger_failed: "workflow_trigger_failed"
   }
 
   RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS = [
