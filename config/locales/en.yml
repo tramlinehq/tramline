@@ -78,6 +78,7 @@ en:
           show: "Submission Details"
           new: "Submission New"
           edit: "Submission Edit"
+
   config:
     release_platforms:
       success: "Platform configuration was successfully updated."
@@ -223,6 +224,7 @@ en:
     skip:
       fail: "Could not skip the scheduled release."
       success: "Done. The next scheduled release will be skipped."
+
   activerecord:
     models:
       slack_integration: "Slack"
