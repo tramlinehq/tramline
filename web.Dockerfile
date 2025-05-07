@@ -70,17 +70,13 @@ COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
 # Ensure consistent ownership of the /rails directory and its contents
-RUN groupadd --system --gid 1000 rails && \
-    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    chown -R rails:rails /rails
-
 RUN git init
 RUN git config --global --add safe.directory '*'
 
 # Run and own only the runtime files as a non-root user for security
-RUN groupadd --system --gid 1000 rails && \
-    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    chown -R rails:rails /rails
+RUN groupadd --system --gid 1000 rails || true && \
+    useradd --system --uid 1000 --gid 1000 --create-home --shell /bin/bash rails || true && \
+    chown -R 1000:1000 /rails
 
 USER 1000:1000
 
