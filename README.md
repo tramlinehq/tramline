@@ -383,6 +383,6 @@ All feature-flags are managed through flipper. The UI can be viewed [here](https
 
 We are still in the early stages and would <3 any feedback you have to offer. You can get in touch with us in several ways:
 
-- Join our [Discord](https://discord.com/invite/u7VwyvBV2Z) server to ask us questions or share your thoughts
+- Join our [Discord](https://go.tramline.app/discord) server to ask us questions or share your thoughts
 - Submit a [feature request or bug report](https://github.com/tramlinehq/tramline/issues/new/choose)
 - Open a pull request (see instructions for local setup [here](#local-development-%EF%B8%8F))
