@@ -50,6 +50,10 @@ ssh:
 
 proxy:
   app_port: 3000
+  healthcheck:
+    path: /up
+    interval: 10
+    timeout: 3
 
 env:
   secret:
