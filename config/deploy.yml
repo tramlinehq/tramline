@@ -48,6 +48,9 @@ ssh:
   user: sam-staging-local
   key_data: [$SSH_PRIVATE_KEY]
 
+proxy:
+  app_port: 3000
+
 env:
   secret:
     - RAILS_MASTER_KEY
