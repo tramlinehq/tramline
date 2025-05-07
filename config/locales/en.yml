@@ -78,7 +78,6 @@ en:
           show: "Submission Details"
           new: "Submission New"
           edit: "Submission Edit"
-
   config:
     release_platforms:
       success: "Platform configuration was successfully updated."
@@ -217,6 +216,11 @@ en:
       failure: "Could not update approval item status. Please try again."
     create:
       success: "Approval item was successfully created."
+  scheduled_releases:
+    resume:
+      success: "Done. The next scheduled release will continue as expected."
+    skip:
+      success: "Done. The next scheduled release will be skipped."
 
   activerecord:
     models:

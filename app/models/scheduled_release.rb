@@ -2,14 +2,15 @@
 #
 # Table name: scheduled_releases
 #
-#  id             :uuid             not null, primary key
-#  failure_reason :string
-#  is_success     :boolean          default(FALSE)
-#  scheduled_at   :datetime         not null
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  release_id     :uuid
-#  train_id       :uuid             not null, indexed
+#  id               :uuid             not null, primary key
+#  failure_reason   :string
+#  is_success       :boolean          default(FALSE)
+#  manually_skipped :boolean          default(FALSE)
+#  scheduled_at     :datetime         not null
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  release_id       :uuid
+#  train_id         :uuid             not null, indexed
 #
 class ScheduledRelease < ApplicationRecord
   has_paper_trail
@@ -31,6 +32,18 @@ class ScheduledRelease < ApplicationRecord
     ScheduledReleaseNotificationJob.set(wait_until: scheduled_at - NOTIFICATION_WINDOW).perform_async(id)
   end
 
+  def manually_skip
+    update(manually_skipped: true) if skip_or_resume?
+  end
+
+  def manually_resume
+    update(manually_skipped: false) if skip_or_resume?
+  end
+
+  def skip_or_resume?
+    !is_success? && train.active? && to_be_scheduled?
+  end
+
   def notification_params
     train.notification_params.merge(
       {
@@ -39,7 +52,11 @@ class ScheduledRelease < ApplicationRecord
     )
   end
 
-  def pending?
+  def to_be_scheduled?
     scheduled_at > Time.current
+  end
+
+  def pending?
+    to_be_scheduled? && !manually_skipped?
   end
 end

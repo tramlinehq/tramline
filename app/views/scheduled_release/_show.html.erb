@@ -1,11 +1,18 @@
-<div class="h-20 sm:h-28 lg:h-32 box-padding <%= box_classes %> text-main-600">
+<%# locals: (skip_or_resume_button: nil, header:, title: nil, status: nil, box_classes: nil, empty_icon:, footer: nil) %>
+
+<div class="h-24 sm:h-28 lg:h-40 box-padding <%= box_classes %> text-main-600">
   <div class="h-full flex flex-col justify-between">
-    <div class="grow flex flex-col gap-y-1 overflow-hidden">
+    <div class="grow flex flex-col gap-2 overflow-hidden">
       <div class="text-secondary font-normal text-sm"><%= header %></div>
+
       <% if title %>
         <div class="heading-2"><%= title %></div>
       <% else %>
         <%= render IconComponent.new(empty_icon, size: :lg, rounded: false, classes: "mt-1") %>
+      <% end %>
+
+      <% if skip_or_resume_button %>
+        <%= render skip_or_resume_button %>
       <% end %>
     </div>
 
