@@ -92,19 +92,18 @@ volumes:
 accessories:
   db:
     image: postgres:14
-    host: $ANONYMIZE_SOURCE_DB_HOST
-    port: 5432
+    host: 127.0.0.1
+    port: "127.0.0.1:5432"
     env:
+      secret:
+        - ANONYMIZE_SOURCE_DB_PASSWORD
+        - ANONYMIZE_SOURCE_DB_USER
+        - ANONYMIZE_SOURCE_DB_NAME
       POSTGRES_USER: $ANONYMIZE_SOURCE_DB_USER
       POSTGRES_PASSWORD: $ANONYMIZE_SOURCE_DB_PASSWORD
       POSTGRES_DB: $ANONYMIZE_SOURCE_DB_NAME
     volumes:
       - db_data:/var/lib/postgresql/data
-    secrets:
-      - ANONYMIZE_SOURCE_DB_PASSWORD
-      - ANONYMIZE_SOURCE_DB_USER
-      - ANONYMIZE_SOURCE_DB_NAME
-      - ANONYMIZE_SOURCE_DB_HOST
 
   redis:
     image: redis:7
