@@ -218,10 +218,11 @@ en:
       success: "Approval item was successfully created."
   scheduled_releases:
     resume:
+      fail: "Could not resume the skipped scheduled release."
       success: "Done. The next scheduled release will continue as expected."
     skip:
+      fail: "Could not skip the scheduled release."
       success: "Done. The next scheduled release will be skipped."
-
   activerecord:
     models:
       slack_integration: "Slack"

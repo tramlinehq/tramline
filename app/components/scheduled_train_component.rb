@@ -59,8 +59,7 @@ class ScheduledTrainComponent < BaseComponent
       type: :button,
       html_options: {
         method: :patch,
-        data: {turbo_method: :patch,
-               turbo_confirm: confirmation_message}
+        data: {turbo_method: :patch, turbo_confirm: confirmation_message}
       }
     )
 

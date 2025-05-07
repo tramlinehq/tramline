@@ -9,7 +9,7 @@ class ScheduledReleasesController < SignedInApplicationController
     if @scheduled_release.manually_skip
       redirect_to train_path, notice: t(".success")
     else
-      train_redirect_back("Could not skip the scheduled release. #{@scheduled_release.errors.full_messages.to_sentence}.")
+      train_redirect_back(t(".fail"))
     end
   end
 
@@ -17,7 +17,7 @@ class ScheduledReleasesController < SignedInApplicationController
     if @scheduled_release.manually_resume
       redirect_to train_path, notice: t(".success")
     else
-      train_redirect_back("Could not resume the skipped scheduled release. #{@scheduled_release.errors.full_messages.to_sentence}.")
+      train_redirect_back(t(".fail"))
     end
   end
 
@@ -33,5 +33,9 @@ class ScheduledReleasesController < SignedInApplicationController
 
   def train_path
     app_train_releases_path(@app, @train)
+  end
+
+  def train_redirect_back(message)
+    redirect_back fallback_location: train_path, flash: {error: message}
   end
 end
