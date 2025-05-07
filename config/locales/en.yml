@@ -277,6 +277,7 @@ en:
           workflow_run_failed: "Workflow run failed"
           workflow_run_halted: "Workflow run halted"
           workflow_run_unavailable: "Workflow run unavailable"
+          workflow_trigger_failed: "Workflow trigger failed"
       release_platform_run:
         platform:
           ios: "iOS"
