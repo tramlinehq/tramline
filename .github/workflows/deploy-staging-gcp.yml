@@ -76,9 +76,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
 
-      - name: Disable Git safe directory check
-        run: git config --global --add safe.directory '*'
-
       - name: Clean up server disk space
         run: |
           ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "docker system prune -af --volumes || true"
