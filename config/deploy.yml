@@ -24,17 +24,10 @@ servers:
   web:
     hosts:
       - 35.209.23.61
-    labels:
-      traefik.http.routers.tramline.rule: "Host(`35.209.23.61`)"
-    options:
-      tty: true
     cmd: bundle exec puma -C config/puma.rb
-
   worker:
     hosts:
       - 35.209.23.61
-    options:
-      tty: true
     cmd: bundle exec sidekiq
 
 registry:
