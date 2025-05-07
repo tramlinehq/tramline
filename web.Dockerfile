@@ -36,6 +36,7 @@ ENV RAILS_ENV="production" \
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
+
 ARG BUNDLER_VERSION=2.4.22
 
 # Install packages needed to build gems
@@ -45,6 +46,7 @@ RUN apt-get update -qq && \
 
 # Install application gems
 COPY .ruby-version Gemfile Gemfile.lock ./
+
 RUN gem install bundler -v "$BUNDLER_VERSION" && \
     bundle _"$BUNDLER_VERSION"_ config set --local without development && \
     bundle _"$BUNDLER_VERSION"_ install && \
@@ -71,6 +73,7 @@ COPY --from=build /rails /rails
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
     chown -R rails:rails db log storage tmp
+
 USER 1000:1000
 
 # Entrypoint prepares the database.

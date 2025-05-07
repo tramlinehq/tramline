@@ -45,7 +45,7 @@ ssh:
   key_data: [$SSH_PRIVATE_KEY]
 
 proxy:
-  app_port: 3000
+  app_port: 1000
 
 env:
   secret:
@@ -92,12 +92,12 @@ volumes:
 accessories:
   db:
     image: postgres:14
-    host: 35.209.23.61
+    host: $ANONYMIZE_SOURCE_DB_HOST
     port: 5432
     env:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: tramline_staging
+      POSTGRES_USER: $ANONYMIZE_SOURCE_DB_USER
+      POSTGRES_PASSWORD: $ANONYMIZE_SOURCE_DB_PASSWORD
+      POSTGRES_DB: $ANONYMIZE_SOURCE_DB_NAME
     volumes:
       - db_data:/var/lib/postgresql/data
 

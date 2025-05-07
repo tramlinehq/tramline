@@ -64,12 +64,12 @@ jobs:
       - name: Install Kamal
         run: gem install kamal -v 2.5.3
 
-#      - name: Add SSH known hosts
-#        run: |
-#          mkdir -p ~/.ssh
-#          ssh-keyscan -H $SERVER_ADDR >> ~/.ssh/known_hosts
-#          chmod 600 ~/.ssh/known_hosts
-#          cat ~/.ssh/known_hosts
+      #      - name: Add SSH known hosts
+      #        run: |
+      #          mkdir -p ~/.ssh
+      #          ssh-keyscan -H $SERVER_ADDR >> ~/.ssh/known_hosts
+      #          chmod 600 ~/.ssh/known_hosts
+      #          cat ~/.ssh/known_hosts
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -85,6 +85,22 @@ jobs:
           ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "docker container prune -f || true"
           ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "docker image prune -af || true"
           ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "df -h"
+
+      - name: Check if accessories are running
+        run: |
+          echo "Checking PostgreSQL service on VM (port 5432)..."
+          if ! ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "nc -z -w 30 localhost 5432"; then
+            echo "WARNING: PostgreSQL is not running on port 5432"
+            kamal accessory boot db
+          fi
+
+          echo "Checking Redis service on VM (port 6379)..."
+          if ! ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "nc -z -w 30 localhost 6379"; then
+            echo "WARNING: Redis is not running on port 6379"
+            kamal accessory boot redis
+          fi
+
+          echo "All required accessories are running"
 
       - name: Deploy with Kamal
         run: kamal deploy --verbose
