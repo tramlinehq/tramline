@@ -287,7 +287,6 @@ class Train < ApplicationRecord
 
   def restore_default_notification_settings
     return if notification_channel.blank? || notifications_release_specific_channel_enabled?
-
     notification_settings.release_specific_channel_allowed.update(notification_channels: [notification_channel])
   end
 
