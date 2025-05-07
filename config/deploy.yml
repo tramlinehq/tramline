@@ -81,10 +81,13 @@ env:
     - CSP_CONNECT_SRC_URIS
     - DESCOPE_MANAGEMENT_KEY
     - DESCOPE_PROJECT_ID
+    - POSTGRES_USER
+    - POSTGRES_PASSWORD
+    - POSTGRES_DB
+    - DATABASE_URL
   clear:
     RAILS_ENV: production
     RAILS_PIPELINE_ENV: staging
-    DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@tramline-db:5432/${POSTGRES_DB}
 
 accessories:
   db:
