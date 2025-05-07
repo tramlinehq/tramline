@@ -48,15 +48,6 @@ ssh:
   user: sam-staging-local
   key_data: [$SSH_PRIVATE_KEY]
 
-proxy:
-  app_port: 3000
-  healthcheck:
-    path: /up
-    port: 3000
-    interval: 5
-    timeout: 3
-    max_attempts: 5
-
 env:
   secret:
     - RAILS_MASTER_KEY
