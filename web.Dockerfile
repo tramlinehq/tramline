@@ -56,10 +56,6 @@ RUN gem install bundler -v "$BUNDLER_VERSION" && \
 # Copy application code
 COPY . .
 
-RUN git init
-
-RUN git config --global --add safe.directory '*'
-
 # Precompile bootsnap code for faster boot times
 # RUN bundle exec bootsnap precompile app/ lib/
 
@@ -72,6 +68,9 @@ FROM base
 # Copy built artifacts: gems, application
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
+
+RUN git init
+RUN git config --global --add safe.directory '*'
 
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
