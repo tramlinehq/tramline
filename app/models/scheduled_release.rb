@@ -33,15 +33,21 @@ class ScheduledRelease < ApplicationRecord
   end
 
   def manually_skip
-    update(manually_skipped: true) if skip_or_resume?
+    return if manually_skipped == true
+    return unless skip_or_resume?
+
+    update(manually_skipped: true)
   end
 
   def manually_resume
-    update(manually_skipped: false) if skip_or_resume?
+    return if manually_skipped == false
+    return unless skip_or_resume?
+
+    update(manually_skipped: false)
   end
 
   def skip_or_resume?
-    !is_success? && train.active? && to_be_scheduled?
+    train.active? && to_be_scheduled?
   end
 
   def notification_params
