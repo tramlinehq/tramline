@@ -87,7 +87,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "df -h"
 
       - name: Install netcat on VM
-        run: ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "sudo apt-get update && sudo apt-get install -y netcat"
+        run: ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "sudo apt-get update && sudo apt-get install -y netcat-openbsd"
 
       - name: Check if accessories are running
         run: |
