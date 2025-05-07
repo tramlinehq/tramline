@@ -66,6 +66,8 @@ class PullRequest < ApplicationRecord
     against: [:title, :body, :number],
     **search_config
 
+  delegate :platform, to: :release
+
   class << self
     # rubocop:disable Rails/SkipsModelValidations
 
