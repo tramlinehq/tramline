@@ -57,6 +57,8 @@ class SlackIntegration < ApplicationRecord
   DEPLOY_MESSAGE = "A wild new release has appeared!"
   CACHE_EXPIRY = 1.month
   CODE_SNIPPET_CHARACTER_LIMIT = 3500
+  MAX_RETRY_ATTEMPTS = 3
+  RETRYABLE_ERRORS = ["name_taken"]
 
   def controllable_rollout?
     false
@@ -144,9 +146,11 @@ class SlackIntegration < ApplicationRecord
   end
 
   def create_channel!(name)
-    installation.create_channel(CREATE_CHANNEL_TRANSFORMATIONS, name)
-  rescue => e
-    elog(e, level: :warn)
+    execute_with_retry do |attempt|
+      channel_name = name
+      channel_name = [name, attempt].join("_") if attempt > 0
+      installation.create_channel(CREATE_CHANNEL_TRANSFORMATIONS, channel_name)
+    end
   end
 
   def notifier(type, params)
@@ -185,7 +189,25 @@ class SlackIntegration < ApplicationRecord
     nil
   end
 
+  def channel_deep_link(channel_id)
+    "slack://channel?team=#{integration.metadata["id"]}&id=#{channel_id}"
+  end
+
   private
+
+  def execute_with_retry(attempt: 0, &)
+    yield(attempt)
+  rescue Installations::Error => ex
+    elog(ex, level: :warn)
+    return if attempt >= MAX_RETRY_ATTEMPTS
+    next_attempt = attempt + 1
+
+    if RETRYABLE_ERRORS.include?(ex.reason)
+      execute_with_retry(attempt: next_attempt, &)
+    end
+  rescue => ex
+    elog(ex, level: :warn)
+  end
 
   def get_all_channels(cursor = nil, channels = [])
     resp = installation.list_channels(CHANNELS_TRANSFORMATIONS, cursor)

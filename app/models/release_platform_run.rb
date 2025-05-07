@@ -54,7 +54,7 @@ class ReleasePlatformRun < ApplicationRecord
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_submitted_production, -> { on_track.reject(&:production_release_submitted?) }
 
-  STAMPABLE_REASONS = %w[version_changed tag_created vcs_release_created version_corrected finished stopped]
+  STAMPABLE_REASONS = %w[version_changed tag_created version_corrected finished stopped]
 
   STATES = {
     created: "created",

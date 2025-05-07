@@ -80,6 +80,13 @@ Rails.application.routes.draw do
         patch :deactivate
       end
 
+      resources :scheduled_releases do
+        member do
+          patch :skip
+          patch :resume
+        end
+      end
+
       resource :release_index, only: %i[edit update]
       resources :notification_settings, only: %i[index update edit]
 

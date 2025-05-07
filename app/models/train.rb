@@ -287,7 +287,6 @@ class Train < ApplicationRecord
 
   def restore_default_notification_settings
     return if notification_channel.blank? || notifications_release_specific_channel_enabled?
-
     notification_settings.release_specific_channel_allowed.update(notification_channels: [notification_channel])
   end
 
@@ -516,6 +515,12 @@ class Train < ApplicationRecord
   end
 
   def cleanse_tagging_configs
+    # we're currently not using tag_end_of_release_vcs_release
+    # so for now, when end-of-release tagging is on, we assume that we must cut the VCS release
+    if tag_end_of_release?
+      self.tag_end_of_release_vcs_release = true
+    end
+
     unless tag_end_of_release?
       self.tag_end_of_release_vcs_release = false
       self.tag_end_of_release_suffix = nil

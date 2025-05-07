@@ -10,4 +10,8 @@ class PaginationComponent < ViewComponent::Base
   end
 
   def info? = @info
+
+  def show_paginator?
+    results.count > Pagy::DEFAULT[:gearbox_items].first
+  end
 end

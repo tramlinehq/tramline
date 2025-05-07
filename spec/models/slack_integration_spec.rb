@@ -42,4 +42,38 @@ describe SlackIntegration do
       expect(Rails.cache.read(slack_integration.channels_cache_key)).to contain_exactly("channel-1", "channel-2", "channel-3")
     end
   end
+
+  describe "#create_channel" do
+    let(:integration) { create(:integration, :with_slack) }
+    let(:slack_integration) { integration.providable }
+    let(:api_double) { instance_double(Installations::Slack::Api) }
+    let(:channel_name) { Faker::Lorem.word }
+
+    before do
+      allow(slack_integration).to receive(:installation).and_return(api_double)
+      allow(api_double).to receive(:create_channel)
+    end
+
+    it "creates the channel with the name" do
+      slack_integration.create_channel!(channel_name)
+      expect(api_double).to have_received(:create_channel).with(SlackIntegration::CREATE_CHANNEL_TRANSFORMATIONS, channel_name)
+    end
+
+    context "when slack api raises name_taken error" do
+      before do
+        allow(api_double).to receive(:create_channel).and_raise(Installations::Error.new("Name taken error", reason: "name_taken"))
+      end
+
+      it "attempts to create channel again with an appended name" do
+        slack_integration.create_channel!(channel_name)
+        expect(api_double).to have_received(:create_channel).with(SlackIntegration::CREATE_CHANNEL_TRANSFORMATIONS, channel_name).once
+        expect(api_double).to have_received(:create_channel).with(SlackIntegration::CREATE_CHANNEL_TRANSFORMATIONS, "#{channel_name}_1").once
+        expect(api_double).to have_received(:create_channel).with(SlackIntegration::CREATE_CHANNEL_TRANSFORMATIONS, "#{channel_name}_2").once
+      end
+
+      it "returns nil when no channel is created" do
+        expect(slack_integration.create_channel!(channel_name)).to be_nil
+      end
+    end
+  end
 end

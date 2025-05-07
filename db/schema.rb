@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_04_30_150508) do
+ActiveRecord::Schema[7.2].define(version: 2025_05_07_091951) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -753,6 +753,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_30_150508) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "release_id"
+    t.boolean "manually_skipped", default: false
     t.index ["train_id"], name: "index_scheduled_releases_on_train_id"
   end
 

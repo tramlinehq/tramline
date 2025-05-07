@@ -109,7 +109,7 @@ describe GoogleFirebaseSubmission do
             create_time: "2024-07-05T23:51:56.539088Z",
             display_version: "10.31.0",
             firebase_console_uri: Faker::Internet.url,
-            name: Faker::String.random(length: 10),
+            name: Faker::Lorem.word,
             release_notes: {text: "NOTES"}
           },
           GoogleFirebaseIntegration::BUILD_TRANSFORMATIONS

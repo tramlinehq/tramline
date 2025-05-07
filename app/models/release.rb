@@ -57,6 +57,7 @@ class Release < ApplicationRecord
     finalizing
     pre_release_failed
     backmerge_failure
+    tag_created
     vcs_release_created
     finalize_failed
     stopped
@@ -187,6 +188,10 @@ class Release < ApplicationRecord
     }
 
     save!
+  end
+
+  def release_specific_channel_deep_link
+    notification_provider.channel_deep_link(release_specific_channel_id) if release_specific_channel_id.present?
   end
 
   def release_specific_channel_name

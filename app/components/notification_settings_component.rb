@@ -31,7 +31,8 @@ class NotificationSettingsComponent < ViewComponent::Base
     production_release_finished: {icon: "sparkles.svg", description: "A production release finished"},
     workflow_run_failed: {icon: "alert_circle.svg", description: "A workflow run failed"},
     workflow_run_halted: {icon: "stop_circle.svg", description: "A workflow run was halted"},
-    workflow_run_unavailable: {icon: "alert_circle.svg", description: "A workflow run was not found"}
+    workflow_run_unavailable: {icon: "alert_circle.svg", description: "A workflow run was not found"},
+    workflow_trigger_failed: {icon: "stop_circle.svg", description: "A workflow trigger failed"}
   }.map
     .with_index { |(key, value), index| [key, value.merge(number: index.succ)] }
     .to_h
