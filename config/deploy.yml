@@ -40,6 +40,7 @@ ssh:
 proxy:
   app_port: 3000
   healthcheck:
+    path: /healthz
     interval: 5
     timeout: 5
 

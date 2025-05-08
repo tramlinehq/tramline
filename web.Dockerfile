@@ -82,5 +82,4 @@ USER 1000:1000
 
 EXPOSE 3000
 
-# Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/setup.docker.prod"]
