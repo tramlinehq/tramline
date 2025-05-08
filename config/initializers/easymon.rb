@@ -21,7 +21,7 @@ Easymon::Repository.add(
 )
 
 Easymon.authorize_with = proc { |request|
-  if request.path =~ HEADER_CHECK_PATHS[:db] && request.get? || request.path == HEADER_CHECK_PATHS[:redis] && request.get?
+  if request.path =~ HEADER_CHECK_PATHS[:db] && request.get? || request.path =~ HEADER_CHECK_PATHS[:redis] && request.get?
     request.headers["X-Monitor-Allowed"] == ENV["X_MONITOR_ALLOWED"]
   end
 }

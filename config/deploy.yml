@@ -38,7 +38,7 @@ ssh:
   key_data: [$SSH_PRIVATE_KEY]
 
 proxy:
-  app_port: 3000
+#  app_port: 3000
   healthcheck:
     interval: 5
     timeout: 5
