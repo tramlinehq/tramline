@@ -114,7 +114,8 @@ class StoreSubmission < ApplicationRecord
       submission_asset_link: provider&.public_icon_img,
       project_link: external_link,
       deep_link: deep_link,
-      submission_requires_manual_action: requires_manual_action
+      submission_requires_manual_action: requires_manual_action,
+      app_variant: (conf.app_variant? ? conf.integrable : nil)
     )
   end
 
