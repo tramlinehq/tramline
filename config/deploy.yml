@@ -40,11 +40,11 @@ ssh:
 proxy:
   app_port: 3000
   healthcheck:
-    path: /up
+    path: /up-check
     interval: 5
     timeout: 5
 
-deploy_timeout: 300
+deploy_timeout: 150
 readiness_delay: 15
 
 env:
