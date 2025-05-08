@@ -65,15 +65,11 @@ RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 # Final stage for app image
 FROM base
 
-# Copy built artifacts: gems, application
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
-# Ensure consistent ownership of the /rails directory and its contents
-RUN git init
 RUN git config --global --add safe.directory '*'
 
-# Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails || true && \
     useradd --system --uid 1000 --gid 1000 --create-home --shell /bin/bash rails || true && \
     chown -R 1000:1000 /rails
