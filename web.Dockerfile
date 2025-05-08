@@ -38,7 +38,6 @@ ENV RAILS_ENV="production" \
 FROM base AS build
 
 ARG BUNDLER_VERSION=2.4.22
-ARG RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
 
 # Install packages needed to build gems
 RUN apt-get update -qq && \
@@ -60,8 +59,8 @@ COPY . .
 # Precompile bootsnap code for faster boot times
 # RUN bundle exec bootsnap precompile app/ lib/
 
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN RAILS_MASTER_KEY=${RAILS_MASTER_KEY} ./bin/rails assets:precompile
+RUN --mount=type=secret,id=RAILS_MASTER_KEY \
+    RAILS_MASTER_KEY=$(cat /run/secrets/RAILS_MASTER_KEY) ./bin/rails assets:precompile
 
 # Final stage for app image
 FROM base

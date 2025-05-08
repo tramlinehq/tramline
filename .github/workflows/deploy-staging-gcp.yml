@@ -103,7 +103,4 @@ jobs:
           echo "All required accessories are running"
 
       - name: Deploy with Kamal
-        run: |
-          export RAILS_MASTER_KEY=$(gcloud secrets versions access latest --secret=RAILS_MASTER_KEY_STAGING_GCP --project=decoded-theme-355014) 
-          echo "RAILS_MASTER_KEY is set"
-          kamal deploy --verbose
+        run: kamal deploy --verbose
