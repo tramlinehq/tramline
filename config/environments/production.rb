@@ -49,7 +49,8 @@ Rails.application.configure do
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
-  config.ssl_options = {hsts: {subdomains: true, preload: true}}
+  config.ssl_options = {hsts: {subdomains: true, preload: true}, redirect: { exclude: ->(request) { request.headers["X-Forwarded-Proto"] == "https" } }}
+  config.assume_ssl = true
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
