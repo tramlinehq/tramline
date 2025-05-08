@@ -18,7 +18,7 @@ Rails.application.configure do
 
   # Ensures that a master key has been made available in either ENV["RAILS_MASTER_KEY"]
   # or in config/master.key. This key is used to decrypt credentials (and other encrypted files).
-  # config.require_master_key = true
+  config.require_master_key = true
 
   # Disable serving static files from the `/public` folder by default since
   # Apache or NGINX already handles this.
@@ -49,8 +49,7 @@ Rails.application.configure do
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
-  config.ssl_options = {hsts: {subdomains: true, preload: true}, redirect: { exclude: ->(request) { request.headers["X-Forwarded-Proto"] == "https" } }}
-  config.assume_ssl = true
+  config.ssl_options = {hsts: {subdomains: true, preload: true}}
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
@@ -73,22 +72,9 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
   config.action_mailer.delivery_method = :postmark
-
-  # Handle credentials safely with our fallback system
-  begin
-    key_base = Rails.application.secret_key_base rescue nil
-    key_content = ENV["RAILS_MASTER_KEY"]
-    puts "DEBUG: Master key length: #{key_content ? key_content.length : 'nil'}"
-    puts "DEBUG: Secret key base length: #{key_base ? key_base.length : 'nil'}"
-
-    # Use environment variables directly with fallbacks
-    postmark_token = ENV["POSTMARK_API_TOKEN"] || "dummy_token_for_deployment"
-    config.action_mailer.postmark_settings = { api_token: postmark_token }
-  rescue => e
-    puts "DEBUG: Credential error: #{e.class} - #{e.message}"
-    config.action_mailer.postmark_settings = { api_token: ENV["POSTMARK_API_TOKEN"] || "dummy_token_for_deployment" }
-  end
-
+  config.action_mailer.postmark_settings = {
+    api_token: Rails.application.credentials.dependencies.postmark.api_token
+  }
   config.action_mailer.default_url_options = {host: ENV["HOST_NAME"]}
   Rails.application.routes.default_url_options[:host] = ENV["HOST_NAME"]
 
