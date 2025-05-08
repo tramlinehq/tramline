@@ -9,7 +9,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 libnss3-tools git && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 libnss3-tools git netcat-openbsd && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install PostgreSQL dependencies
