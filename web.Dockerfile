@@ -59,8 +59,12 @@ COPY . .
 # Precompile bootsnap code for faster boot times
 # RUN bundle exec bootsnap precompile app/ lib/
 
-RUN --mount=type=secret,id=RAILS_MASTER_KEY \
-    RAILS_MASTER_KEY=$(cat /run/secrets/RAILS_MASTER_KEY) ./bin/rails assets:precompile
+# RUN --mount=type=secret,id=RAILS_MASTER_KEY \
+#     echo "Secret exists: $(test -f /run/secrets/RAILS_MASTER_KEY && echo yes || echo no)" && \
+#     echo "Secret length: $(cat /run/secrets/RAILS_MASTER_KEY | wc -c)" && \
+#     RAILS_MASTER_KEY=$(cat /run/secrets/RAILS_MASTER_KEY) ./bin/rails assets:precompile
+
+RUN RAILS_PIPELINE_ENV=staging SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 # Final stage for app image
 FROM base
