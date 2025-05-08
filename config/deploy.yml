@@ -1,10 +1,6 @@
 service: tramline
 image: ghcr.io/tramlinehq/tramline-web
 
-# Add deploy timeout configuration
-deploy_timeout: 80
-readiness_delay: 45
-
 builder:
   arch: amd64
   dockerfile: web.Dockerfile
@@ -45,8 +41,13 @@ proxy:
   app_port: 3000
   healthcheck:
     path: /up
-    interval: 10
-    timeout: 3
+    port: 3000
+    interval: 5
+    timeout: 5
+    max_attempts: 10
+
+deploy_timeout: 600
+readiness_delay: 15
 
 env:
   secret:
