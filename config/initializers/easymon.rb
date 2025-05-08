@@ -15,4 +15,4 @@ Easymon::Repository.add(
   :critical
 )
 
-Easymon.authorize_with = proc { |request| request.headers["X-Monitor-Allowed"] == ENV["X_MONITOR_ALLOWED"] }
+# Easymon.authorize_with = proc { |request| request.headers["X-Monitor-Allowed"] == ENV["X_MONITOR_ALLOWED"] }
