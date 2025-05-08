@@ -9,7 +9,7 @@ fi
 
 wait_for_db() {
     echo "Waiting for database..."
-    while ! nc -z "${DATABASE_HOST:-db}" "${DATABASE_PORT:-5432}"; do
+    while ! nc -z "${DATABASE_HOST:-tramline-db}" "${DATABASE_PORT:-5432}"; do
         sleep 1
     done
     echo "Database is ready!"
