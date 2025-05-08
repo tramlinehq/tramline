@@ -44,7 +44,7 @@ proxy:
     interval: 5
     timeout: 5
 
-deploy_timeout: 150
+deploy_timeout: 300
 readiness_delay: 15
 
 env:
