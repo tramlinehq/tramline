@@ -6,6 +6,7 @@ en:
       created_html: 'Started a new release <span class="emphasize">%{version}</span>'
       release_branch_created_html: 'Created a release branch <span class="emphasize">%{release_branch}</span> from <span class="emphasize">%{working_branch}</span>'
       version_bump_branch_created_html: 'Created a branch <span class="emphasize">%{version_bump_branch}</span> to bump the version to <span class="emphasize">%{release_version}</span>'
+      version_bump_no_changes_html: 'The version <span class="emphasize">%{release_version}</span> is already updated, no version bump necessary.'
       finalizing_html: 'Finalizing the release with version <span class="emphasize">%{version}</span>'
       finalize_failed_html: 'Failed to finalize the release with version <span class="emphasize">%{version}</span>'
       vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
