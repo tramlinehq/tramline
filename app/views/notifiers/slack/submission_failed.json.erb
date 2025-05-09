@@ -35,15 +35,14 @@
       }
     }
     <% end %>
-    <% if @app_variant.present? %>
     ,
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "Variant: <%= @app_variant.name %> *(<%= @app_variant.bundle_identifier %>)*"
+        "text": "App: <%= @app_name %> *(<%= @app_bundle_identifier %>)*",
+        "verbatim": true
       }
     }
-    <% end %>
   ]
 }
