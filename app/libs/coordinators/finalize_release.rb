@@ -19,7 +19,7 @@ class Coordinators::FinalizeRelease
   def call
     release.with_lock do
       return unless release.post_release_started?
-      open_pull_requests = release.pull_requests.automatic.open
+      open_pull_requests = release.pull_requests.back_merge_type.open
 
       if open_pull_requests.exists? || (release.unmerged_commits.exists? && !force_finalize)
         release.fail_post_release_phase!
@@ -29,7 +29,7 @@ class Coordinators::FinalizeRelease
         result = HANDLERS[train.branching_strategy].call(release)
         release.reload
 
-        if result.ok? && release.pull_requests.automatic.open.none?
+        if result.ok? && release.pull_requests.back_merge_type.open.none?
           release.finish!
           on_finish!
         else

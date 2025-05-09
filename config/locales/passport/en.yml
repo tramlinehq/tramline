@@ -22,8 +22,8 @@ en:
     commit:
       created_html: 'New commit <span class="emphasize">%{sha}</span> has landed'
     pull_request:
-      created_html: 'PR created (%{phase}) <a class="emphasize-link" href="%{url}">#%{number}</a> from <span class="emphasize">%{head_ref}</span> to <span class="emphasize">%{base_ref}</span>'
-      merged_html: 'PR merged (%{phase}) <a class="emphasize-link" href="%{url}">#%{number}</a> from <span class="emphasize">%{head_ref}</span> to <span class="emphasize">%{base_ref}</span>'
+      created_html: 'PR created (%{kind}) <a class="emphasize-link" href="%{url}">#%{number}</a> from <span class="emphasize">%{head_ref}</span> to <span class="emphasize">%{base_ref}</span>'
+      merged_html: 'PR merged (%{kind}) <a class="emphasize-link" href="%{url}">#%{number}</a> from <span class="emphasize">%{head_ref}</span> to <span class="emphasize">%{base_ref}</span>'
       unmergeable_html: 'The PR <a class="emphasize-link" href="%{url}">#%{number}</a> cannot be merged. Please check for any merge conflicts and/or branch protection rules.'
     internal_release:
       created_html: 'Started a new internal build step for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a>'

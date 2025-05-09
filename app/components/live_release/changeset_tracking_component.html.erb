@@ -28,16 +28,16 @@
     <% end %>
   <% end %>
 
-  <%= render CardComponent.new(title: "Ongoing work (#{mid_release_prs.count})",
+  <%= render CardComponent.new(title: "Ongoing work (#{mid_release_stability_prs.count})",
                                fold: true,
                                size: :base,
                                separator: true,
-                               emptiness: mid_release_prs.empty?) do |card| %>
+                               emptiness: mid_release_stability_prs.empty?) do |card| %>
     <% card.with_empty_state(text: "There are no more pull requests targeting your release branch.",
                              banner_image: "check.svg") %>
 
     <%= render partial: "shared/divide_collection",
-               locals: {collection: render(PullRequestComponent.with_collection(mid_release_prs))} %>
+               locals: {collection: render(PullRequestComponent.with_collection(mid_release_stability_prs))} %>
   <% end %>
 
   <%= render CardComponent.new(title: "Change queue (#{change_queue_commits_count})",

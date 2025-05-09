@@ -39,11 +39,18 @@ class PullRequest < ApplicationRecord
 
   enum :phase, {
     pre_release: "pre_release",
-    version_bump: "version_bump",
+    version_bump: "version_bump", # TODO: deprecate
     mid_release: "mid_release",
-    ongoing: "ongoing",
+    ongoing: "ongoing", # TODO: deprecate
     post_release: "post_release"
   }
+
+  enum :kind, {
+    stability: "stability",
+    forward_merge: "forward_merge",
+    back_merge: "back_merge",
+    version_bump: "version_bump"
+  }, suffix: :type
 
   enum :state, {
     open: "open",
@@ -56,9 +63,9 @@ class PullRequest < ApplicationRecord
     bitbucket: "bitbucket"
   }
 
-  scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
-
-  validates :phase, uniqueness: {scope: :release_id, conditions: -> { open.version_bump }}
+  # scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
+  validates :phase, uniqueness: {scope: :release_id, conditions: -> { open.version_bump_type }}
+  # validates :phase, uniqueness: {scope: :release_id, conditions: -> { pre_release.version_bump }}
 
   before_save :generate_search_vector_data
 
@@ -133,6 +140,10 @@ class PullRequest < ApplicationRecord
     event_stamp_now!(reason: :unmergeable, kind: :error, data: stamp_data)
   end
 
+  def pre_release_version_bump?
+    pre_release? && version_bump_type?
+  end
+
   private
 
   def generate_search_vector_data
@@ -141,6 +152,6 @@ class PullRequest < ApplicationRecord
   end
 
   def stamp_data
-    slice(:url, :number, :base_ref, :head_ref).merge(phase: display_attr(:phase))
+    slice(:url, :number, :base_ref, :head_ref).merge(phase: display_attr(:phase), kind: display_attr(:kind))
   end
 end
