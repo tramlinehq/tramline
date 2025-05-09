@@ -48,11 +48,29 @@ Rails.application.configure do
   # config.action_cable.allowed_request_origins = [ "http://example.com", /http:\/\/example.*/ ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
-  config.ssl_options = {
-    hsts: {subdomains: true, preload: true},
-    redirect: { exclude: ->(request) { request.path =~ /\/(up|healthz)/ } }
-  }
+  # Only force SSL if explicitly enabled
+  config.force_ssl = ENV["FORCE_SSL"] == "true"
+
+  # Configure SSL options only if SSL is forced
+  if config.force_ssl
+    config.ssl_options = {
+      hsts: {subdomains: true, preload: true},
+      redirect: {
+        exclude: ->(request) {
+          # Don't redirect health check endpoints
+          request.path =~ /\/(up|healthz)/ ||
+          # Don't redirect if SSL is not configured
+          ENV["ENABLE_SSL"] != "true"
+        }
+      },
+      secure_cookies: {
+        exclude: ->(request) {
+          request.path =~ /\/(up|healthz)/ ||
+          ENV["ENABLE_SSL"] != "true"
+        }
+      }
+    }
+  end
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
