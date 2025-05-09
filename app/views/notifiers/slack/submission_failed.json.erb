@@ -4,8 +4,47 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "<%= submission_failure_text %>"
+        "text": ":octagonal_sign: The submission to *<%= @submission_channel %>* failed for *<%= @release_version %> (<%=@build_number%>)* for <<%=@commit_url%>|<%=@commit_sha%>>"
       }
     }
+    <% if @submission_requires_manual_action %>
+    ,
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "This requires manual intervention."
+      }
+    }
+    <% end %>
+    ,
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Please check the release page for more details."
+      }
+    }
+    <% if @submission_failure_reason.present? %>
+    ,
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Error:* ```<%= @submission_failure_reason %>```"
+      }
+    }
+    <% end %>
+    <% if @app.present? %>
+    ,
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "App: <%= @app[:name] %> *(<%= @app[:bundle_identifier] %>)*",
+        "verbatim": true
+      }
+    }
+    <% end %>
   ]
 }
