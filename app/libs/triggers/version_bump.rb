@@ -63,8 +63,8 @@ class Triggers::VersionBump
     BODY
     Triggers::PullRequest.create_and_merge!(
       release: release,
-      new_pull_request_attrs: {phase: :version_bump, release_id: release.id, state: :open},
-      existing_pr: release.pull_requests.version_bump.open.first,
+      new_pull_request_attrs: {phase: :pre_release, kind: :version_bump, release_id: release.id, state: :open},
+      existing_pr: release.pull_requests.pre_release.version_bump_type.open.first,
       to_branch_ref: working_branch,
       from_branch_ref: version_bump_branch,
       title: pr_title,

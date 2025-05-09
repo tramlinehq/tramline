@@ -5,16 +5,13 @@ class LiveRelease::FinalizeComponent < BaseComponent
 
   def initialize(release)
     @release = release
+    @mid_release_backmerge_prs = release.mid_release_back_merge_prs
+    @post_release_backmerge_prs = release.post_release_back_merge_prs
+    @unmerged_commits = release.unmerged_commits
   end
 
-  attr_reader :release
-  delegate :post_release_prs,
-    :train,
-    :backmerge_prs,
-    :unmerged_commits,
-    :finished?,
-    :post_release_started?,
-    :post_release_failed?, to: :release
+  attr_reader :release, :unmerged_commits
+  delegate :train, :finished?, :post_release_started?, :post_release_failed?, to: :release
 
   def strikethrough
     "line-through" if strikethrough?
@@ -33,23 +30,27 @@ class LiveRelease::FinalizeComponent < BaseComponent
   end
 
   def wrap_up?
-    post_release_failed? && !unmerged_changes?
-  end
-
-  memoize def unmerged_changes
-    unmerged_commits
+    post_release_failed? && !unmerged_commits?
   end
 
   memoize def open_backmerge_prs
-    backmerge_prs.open
+    @mid_release_backmerge_prs.open
   end
 
   memoize def open_post_release_prs
-    post_release_prs.open
+    @post_release_backmerge_prs.open
   end
 
-  def unmerged_changes?
-    unmerged_changes.present?
+  memoize def closed_backmerge_prs
+    @mid_release_backmerge_prs.closed
+  end
+
+  memoize def closed_post_release_prs
+    @post_release_backmerge_prs.closed
+  end
+
+  def unmerged_commits?
+    @unmerged_commits.present?
   end
 
   def open_backmerge_prs?
@@ -58,14 +59,6 @@ class LiveRelease::FinalizeComponent < BaseComponent
 
   def open_post_release_prs?
     open_post_release_prs.present?
-  end
-
-  def closed_backmerge_prs
-    release.backmerge_prs.closed
-  end
-
-  def closed_post_release_prs
-    release.post_release_prs.closed
   end
 
   def title

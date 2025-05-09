@@ -65,18 +65,18 @@
           <%= render(PullRequestComponent.with_collection(open_post_release_prs, simple: true)) %>
         <% end %>
 
-        <% if unmerged_changes? %>
+        <% if unmerged_commits? %>
           <h3 class="heading-5">Unmerged Changes</h3>
 
           <div class="text-sm text-secondary">
-            <p>There are <%= unmerged_changes.size %> commit(s) that were not automatically merged by
+            <p>There are <%= unmerged_commits.size %> commit(s) that were not automatically merged by
               Tramline. You can find the current diff between the
               branches <%= link_to_external "here", release.compare_url, class: "underline" %>.</p>
             <p>Please ensure that these changes have been manually merged back on
               <code><%= release.train.working_branch %></code> before wrapping up this release.</p>
             <div class="mt-2">
               <%= render partial: "shared/divide_collection",
-                         locals: {collection: render(CommitComponent.with_collection(unmerged_changes))} %>
+                         locals: {collection: render(CommitComponent.with_collection(unmerged_commits))} %>
             </div>
           </div>
 

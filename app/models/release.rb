@@ -277,25 +277,25 @@ class Release < ApplicationRecord
     release_platform_runs.all? { |rpr| rpr.latest_production_release.present? }
   end
 
-  def backmerge_failure_count
+  def mid_release_backmerge_failure_count
     return 0 unless continuous_backmerge?
-    all_commits.size - backmerge_prs.size - 1
+    all_commits.size - mid_release_back_merge_prs.size - 1
   end
 
-  def backmerge_prs
-    pull_requests.ongoing
+  def mid_release_back_merge_prs
+    pull_requests.mid_release.back_merge_type
   end
 
-  def post_release_prs
-    pull_requests.post_release
+  def post_release_back_merge_prs
+    pull_requests.post_release.back_merge_type
   end
 
-  def pre_release_prs
-    pull_requests.pre_release
+  def pre_release_forward_merge_prs
+    pull_requests.pre_release.forward_merge_type
   end
 
-  def mid_release_prs
-    pull_requests.mid_release
+  def mid_release_stability_prs
+    pull_requests.mid_release.stability_type
   end
 
   def pre_release?
@@ -437,22 +437,6 @@ class Release < ApplicationRecord
 
   def pull_requests_url(open = false)
     train.vcs_provider&.pull_requests_url(branch_name, open:)
-  end
-
-  class PreReleaseUnfinishedError < StandardError; end
-
-  def close_pre_release_prs
-    return if pull_requests.pre_release.blank?
-
-    pull_requests.pre_release.each do |pr|
-      created_pr = train.vcs_provider.get_pr(pr.number)
-
-      if created_pr[:state].in? %w[open opened]
-        raise PreReleaseUnfinishedError, "Pre-release pull request is not merged yet."
-      else
-        pr.safe_update!(created_pr)
-      end
-    end
   end
 
   def ready_to_be_finalized?
