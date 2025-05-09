@@ -7,15 +7,17 @@
         "text": ":sparkles: The RC build *<%= @release_version %> (<%= @build_number %>)* for commit <<%= @commit_url %>|<%= @commit_sha %>> has been sent to <%= @submission_channel %>."
       }
     }
+    <% if @app.present? %>
     ,
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "App: <%= @app_name %> *(<%= @app_bundle_identifier %>)*",
+        "text": "App: <%= @app[:name] %> *(<%= @app[:bundle_identifier] %>)*",
         "verbatim": true
       }
     }
+    <% end %>
     ,
     {
       "type": "context",

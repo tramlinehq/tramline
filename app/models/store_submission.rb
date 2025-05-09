@@ -115,8 +115,14 @@ class StoreSubmission < ApplicationRecord
       project_link: external_link,
       deep_link: deep_link,
       submission_requires_manual_action: requires_manual_action,
-      app_name: conf.integrable.name,
-      app_bundle_identifier: conf.integrable.bundle_identifier
+      app: (
+        if conf.integrable.present?
+          {
+            name: conf.integrable.name,
+            bundle_identifier: conf.integrable.bundle_identifier
+          }
+        end
+      )
     )
   end
 
