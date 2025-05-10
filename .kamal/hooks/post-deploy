@@ -3,27 +3,27 @@
 
 set -e
 
-DB_HOST=${DB_HOST:-localhost}
-DB_PORT=${DB_PORT:-5432}
-WAIT_RETRIES=${WAIT_RETRIES:-30}
+# DB_HOST=${DB_HOST:-localhost}
+# DB_PORT=${DB_PORT:-5432}
+# WAIT_RETRIES=${WAIT_RETRIES:-30}
 
-echo "Waiting for DB to be ready at ${DB_HOST}:${DB_PORT}..."
+# echo "Waiting for DB to be ready at ${DB_HOST}:${DB_PORT}..."
 
-until curl --output /dev/null --silent --head --fail "postgresql://postgres:postgres@${DB_HOST}:${DB_PORT}/tramline_staging"; do
-  WAIT_RETRIES=$((WAIT_RETRIES - 1))
-  if [ "$WAIT_RETRIES" -le 0 ]; then
-    echo "Database not reachable after waiting. Exiting."
-    exit 1
-  fi
-  sleep 1
-done
+# until curl --output /dev/null --silent --head --fail "postgresql://postgres:postgres@${DB_HOST}:${DB_PORT}/tramline_staging"; do
+#   WAIT_RETRIES=$((WAIT_RETRIES - 1))
+#   if [ "$WAIT_RETRIES" -le 0 ]; then
+#     echo "Database not reachable after waiting. Exiting."
+#     exit 1
+#   fi
+#   sleep 1
+# done
 
-echo "DB is ready. Running migrations and seeds..."
+# echo "DB is ready. Running migrations and seeds..."
 
-echo "Running migrations..."
-bundle exec rake db:migrate:with_data
+# echo "Running migrations..."
+# bundle exec rake db:migrate:with_data
 
-echo "Seeding database..."
-bin/rails db:seed
+# echo "Seeding database..."
+# bin/rails db:seed
 
 exit 0
