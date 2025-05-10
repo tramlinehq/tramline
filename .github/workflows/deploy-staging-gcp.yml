@@ -1,0 +1,106 @@
+name: Deploy to GCP Staging
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request: # TODO: Remove this once we are ready to merge
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+
+    env:
+      SERVER_ADDR: 35.209.23.61
+      DOCKER_BUILDKIT: 1
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      KAMAL_REGISTRY_USERNAME: tramlinehq
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID_STAGING_GCP }}
+      GCP_SERVICE_ACCOUNT_KEY: ${{ vars.GCP_SERVICE_ACCOUNT_KEY_STAGING_GCP }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.6
+          bundler-cache: true
+          cache-version: "tools-v1-${{ runner.os }}"
+        env:
+          RAILS_ENV: production
+
+      - name: Set up Docker Buildx for cache
+        uses: docker/setup-buildx-action@v3
+
+      - name: Expose GitHub Runtime for cache
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Authenticate GCloud CLI
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/${{ secrets.GCP_PROJECT_ID_STAGING_GCP }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-actions@decoded-theme-355014.iam.gserviceaccount.com
+
+      - name: Set up GCloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID_STAGING_GCP }}
+
+      - name: Check GCloud CLI auth
+        run: gcloud info
+
+      - name: Install Kamal
+        run: gem install kamal -v 2.5.3
+
+      #      - name: Add SSH known hosts
+      #        run: |
+      #          mkdir -p ~/.ssh
+      #          ssh-keyscan -H $SERVER_ADDR >> ~/.ssh/known_hosts
+      #          chmod 600 ~/.ssh/known_hosts
+      #          cat ~/.ssh/known_hosts
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_STAGING_GCP }}
+
+      - name: Clean up server disk space
+        run: |
+          ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "docker system prune -af --volumes || true"
+          ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "docker container prune -f || true"
+          ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "docker image prune -af || true"
+          ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "df -h"
+
+      - name: Install netcat on VM
+        run: ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "sudo apt-get update && sudo apt-get install -y netcat-openbsd"
+
+      - name: Check if accessories are running
+        run: |
+          echo "Checking PostgreSQL service on VM (port 5432)..."
+          if ! ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "nc -z -w 30 localhost 5432"; then
+            echo "WARNING: PostgreSQL is not running on port 5432"
+            kamal accessory boot db
+          fi
+
+          echo "Checking Redis service on VM (port 6379)..."
+          if ! ssh -o StrictHostKeyChecking=no sam-staging-local@$SERVER_ADDR "nc -z -w 30 localhost 6379"; then
+            echo "WARNING: Redis is not running on port 6379"
+            kamal accessory boot redis
+          fi
+
+          echo "All required accessories are running"
+
+      - name: Deploy with Kamal
+        run: kamal deploy --verbose
