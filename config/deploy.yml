@@ -45,7 +45,7 @@ proxy:
     timeout: 5
   ssl: false
 
-deploy_timeout: 600
+deploy_timeout: 800
 readiness_delay: 15
 
 env:
