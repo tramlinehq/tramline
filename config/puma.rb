@@ -15,19 +15,8 @@ worker_timeout 3600 if ENV.fetch("RAILS_ENV", "development") == "development"
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 #
-if ENV["ENABLE_SSL"] == "true"
-  ssl_key = ENV["SSL_KEY_PATH"] || File.join("config", "certs", "localhost-key.pem").to_s
-  ssl_cert = ENV["SSL_CERT_PATH"] || File.join("config", "certs", "localhost.pem").to_s
 
-  ssl_bind "0.0.0.0", ENV.fetch("SSL_PORT", 3000), {
-    key: ssl_key,
-    cert: ssl_cert,
-    verify_mode: ENV["SSL_VERIFY_MODE"] || "none"
-  }
-else
-  # Regular HTTP port
-  port ENV.fetch("PORT", 3000)
-end
+port ENV.fetch("PORT", 3000)
 
 # Specifies the `environment` that Puma will run in.
 #
@@ -55,14 +44,14 @@ preload_app!
 plugin :tmp_restart
 
 # # Use SSL with localhost
-# if ENV["RAILS_ENV"] == "development"
-#   localhost_key = File.join("config", "certs", "localhost-key.pem").to_s
-#   localhost_crt = File.join("config", "certs", "localhost.pem").to_s
+if ENV["RAILS_ENV"] == "development"
+  localhost_key = File.join("config", "certs", "localhost-key.pem").to_s
+  localhost_crt = File.join("config", "certs", "localhost.pem").to_s
 
-#   # To be able to use rake etc
-#   ssl_bind "0.0.0.0", 3000, {
-#     key: localhost_key,
-#     cert: localhost_crt,
-#     verify_mode: "none"
-#   }
-# end
+  # To be able to use rake etc
+  ssl_bind "0.0.0.0", 3000, {
+    key: localhost_key,
+    cert: localhost_crt,
+    verify_mode: "none"
+  }
+end
