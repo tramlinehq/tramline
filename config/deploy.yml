@@ -43,7 +43,7 @@ proxy:
     path: /healthz
     interval: 5
     timeout: 5
-  ssl: true
+  ssl: false
 
 deploy_timeout: 600
 readiness_delay: 15
