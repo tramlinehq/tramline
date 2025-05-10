@@ -104,6 +104,7 @@ Rails.application.configure do
   config.hosts << /.*tramline-web.*/  # Allow Kamal container hostnames
   config.hosts << /^[a-f0-9]{12}$/  # Allow container IDs (12 character hex)
   config.hosts << "localhost"  # Allow localhost for health checks
+  config.hosts << /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/  # Allow IP addresses
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
