@@ -101,6 +101,8 @@ Rails.application.configure do
   config.hosts << ENV["HOST_NAME"]
   config.hosts << ".#{ENV["HOST_NAME"]}"
   config.hosts << /.*\.onrender\.com/  # Allow all Render preview environments
+  config.hosts << /.*tramline-web.*/  # Allow Kamal container hostnames
+  config.hosts << "localhost"  # Allow localhost for health checks
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
