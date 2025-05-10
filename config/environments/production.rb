@@ -102,7 +102,7 @@ Rails.application.configure do
   config.hosts << ".#{ENV["HOST_NAME"]}"
   config.hosts << /.*\.onrender\.com/  # Allow all Render preview environments
   config.hosts << /.*tramline-web.*/  # Allow Kamal container hostnames
-  config.hosts << /^[a-f0-9]{12}$/  # Allow container IDs (12 character hex)
+  config.hosts << /^[a-f0-9]+(:\d+)?$/  # Allow any Docker container ID format with optional port
   config.hosts << "localhost"  # Allow localhost for health checks
   config.hosts << /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/  # Allow IP addresses
 
