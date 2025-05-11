@@ -94,7 +94,7 @@ class ProductionRelease < ApplicationRecord
       notify!("Production release was finished!", :production_release_finished, notification_params)
     end
 
-    ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank?
+    ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank? && !store_rollout.staged_rollout?
     Signal.production_release_is_complete!(release_platform_run)
   end
 
