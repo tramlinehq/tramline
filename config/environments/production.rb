@@ -51,7 +51,7 @@ Rails.application.configure do
   config.force_ssl = true
   config.ssl_options = {
     hsts: {subdomains: true, preload: true},
-    redirect: { exclude: ->(request) { request.path =~ /\/(up|healthz)/ } }
+    redirect: {exclude: ->(request) { request.path =~ /\/(up|healthz)/ }}
   }
   config.assume_ssl = true
 
