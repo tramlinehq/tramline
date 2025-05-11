@@ -51,7 +51,7 @@ describe Triggers::PreRelease::AlmostTrunk do
       it "triggers version bump if its enabled" do
         allow(Triggers::VersionBump).to receive(:call).and_return(GitHub::Result.new)
         allow(Triggers::Branch).to receive(:call).and_return(GitHub::Result.new)
-        create(:pull_request, release:, commit:, phase: :version_bump)
+        create(:pull_request, release:, commit:, phase: :pre_release, kind: :version_bump)
 
         described_class.call(release, release_branch)
 
@@ -61,7 +61,7 @@ describe Triggers::PreRelease::AlmostTrunk do
       it "creates a new release branch from the version bump commit" do
         allow(Triggers::VersionBump).to receive(:call).and_return(GitHub::Result.new)
         allow(Triggers::Branch).to receive(:call).and_return(GitHub::Result.new)
-        create(:pull_request, release:, commit:, phase: :version_bump, merge_commit_sha: commit.commit_hash)
+        create(:pull_request, release:, commit:, kind: :version_bump, phase: :pre_release, merge_commit_sha: commit.commit_hash)
 
         described_class.call(release, release_branch)
 
@@ -71,7 +71,7 @@ describe Triggers::PreRelease::AlmostTrunk do
       it "defaults to the working branch if no version bump commit is found" do
         allow(Triggers::VersionBump).to receive(:call).and_return(GitHub::Result.new)
         allow(Triggers::Branch).to receive(:call).and_return(GitHub::Result.new)
-        create(:pull_request, release:, commit:, phase: :version_bump, merge_commit_sha: nil)
+        create(:pull_request, release:, commit:, phase: :pre_release, kind: :version_bump merge_commit_sha: nil)
 
         described_class.call(release, release_branch)
 

@@ -39,9 +39,9 @@ class PullRequest < ApplicationRecord
 
   enum :phase, {
     pre_release: "pre_release",
-    version_bump: "version_bump", # TODO: deprecate
+    version_bump: "version_bump", # TODO: deprecate (this is now pre_release + version_bump)
     mid_release: "mid_release",
-    ongoing: "ongoing", # TODO: deprecate
+    ongoing: "ongoing", # TODO: deprecate (this is now mid-release + back_merge)
     post_release: "post_release"
   }
 

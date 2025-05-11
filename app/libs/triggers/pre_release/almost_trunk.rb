@@ -46,9 +46,9 @@ class Triggers::PreRelease
       stamp_type = :release_branch_created
       Triggers::Branch.call(release, source[:ref], release_branch, source[:type], stamp_data, stamp_type)
     end
-  end
 
-  def version_bump_required?
-    version_bump_enabled? && !hotfix? && @pre_release_version_bump_pr.blank?
+    def version_bump_required?
+      version_bump_enabled? && !hotfix? && @pre_release_version_bump_pr.blank?
+    end
   end
 end
