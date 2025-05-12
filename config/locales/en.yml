@@ -243,6 +243,11 @@ en:
       crashlytics_integration: "Firebase Crashlytics"
     values:
       pull_request:
+        kind:
+          version_bump: "version bump"
+          stability: "unmerged work"
+          forward_merge: "forward-merge"
+          back_merge: "back-merge"
         phase:
           version_bump: "version bump"
           pre_release: "pre-release"
