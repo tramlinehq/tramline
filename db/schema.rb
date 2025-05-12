@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_05_07_091951) do
+ActiveRecord::Schema[7.2].define(version: 2025_05_12_121521) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -438,6 +438,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_07_091951) do
     t.jsonb "user_groups"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "release_specific_channel"
+    t.boolean "release_specific_enabled", default: false
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
   end
