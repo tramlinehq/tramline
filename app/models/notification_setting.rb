@@ -2,14 +2,16 @@
 #
 # Table name: notification_settings
 #
-#  id                    :uuid             not null, primary key
-#  active                :boolean          default(TRUE), not null
-#  kind                  :string           not null, indexed => [train_id]
-#  notification_channels :jsonb
-#  user_groups           :jsonb
-#  created_at            :datetime         not null
-#  updated_at            :datetime         not null
-#  train_id              :uuid             not null, indexed, indexed => [kind]
+#  id                       :uuid             not null, primary key
+#  active                   :boolean          default(TRUE), not null
+#  kind                     :string           not null, indexed => [train_id]
+#  notification_channels    :jsonb
+#  release_specific_channel :jsonb
+#  release_specific_enabled :boolean          default(FALSE)
+#  user_groups              :jsonb
+#  created_at               :datetime         not null
+#  updated_at               :datetime         not null
+#  train_id                 :uuid             not null, indexed, indexed => [kind]
 #
 class NotificationSetting < ApplicationRecord
   has_paper_trail
