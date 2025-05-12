@@ -74,13 +74,11 @@ class ReleasesController < SignedInApplicationController
   def overview
     live_release!
     set_train_and_app
-    set_pull_requests
   end
 
   def changeset_tracking
     live_release!
     set_train_and_app
-    set_pull_requests
   end
 
   def regression_testing
@@ -173,13 +171,6 @@ class ReleasesController < SignedInApplicationController
         .joins(train: :app)
         .where(apps: {organization: current_organization})
         .friendly.find(params[:id])
-  end
-
-  def set_pull_requests
-    @pre_release_prs = @release.pre_release_prs
-    @post_release_prs = @release.post_release_prs
-    @ongoing_open_release_prs = @release.backmerge_prs.open
-    @mid_release_prs = @release.mid_release_prs
   end
 
   def current_release_path(current_release)

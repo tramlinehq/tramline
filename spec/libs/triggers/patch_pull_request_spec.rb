@@ -74,7 +74,7 @@ describe Triggers::PatchPullRequest do
   end
 
   it "updates the existing PR if it already exists" do
-    existing_pr = create(:pull_request, release:, commit:, phase: :ongoing)
+    existing_pr = create(:pull_request, release:, commit:, phase: :mid_release)
 
     described_class.call(release, commit)
 
@@ -96,11 +96,11 @@ describe Triggers::PatchPullRequest do
     expect(repo_integration).to have_received(:find_pr)
   end
 
-  it "creates an ongoing PR for the release" do
+  it "creates an mid release back merge PR for the release" do
     described_class.call(release, commit)
 
-    expect(release.pull_requests.ongoing.size).to eq(1)
-    persisted_pr = release.pull_requests.ongoing.sole
+    expect(release.pull_requests.mid_release.back_merge_type.size).to eq(1)
+    persisted_pr = release.pull_requests.mid_release.back_merge_type.sole
     expect(persisted_pr.title).to eq(expected_title)
     expect(persisted_pr.body).to eq(expected_description)
     expect(persisted_pr.head_ref).to eq(expected_patch_branch)

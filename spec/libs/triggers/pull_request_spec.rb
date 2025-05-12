@@ -45,7 +45,7 @@ describe Triggers::PullRequest do
 
       result = described_class.create_and_merge!(
         release: release,
-        new_pull_request_attrs: {phase: :ongoing, release_id: release.id, state: :open, commit_id: commit.id},
+        new_pull_request_attrs: {phase: :mid_release, kind: :back_merge, release_id: release.id, state: :open, commit_id: commit.id},
         to_branch_ref: working_branch,
         from_branch_ref: patch_branch,
         title: pr_title,
@@ -83,7 +83,7 @@ describe Triggers::PullRequest do
 
       result = described_class.create_and_merge!(
         release: release,
-        new_pull_request_attrs: {phase: :ongoing, release_id: release.id, state: :open, commit_id: commit.id},
+        new_pull_request_attrs: {phase: :mid_release, kind: :back_merge, release_id: release.id, state: :open, commit_id: commit.id},
         to_branch_ref: working_branch,
         from_branch_ref: patch_branch,
         title: pr_title,
