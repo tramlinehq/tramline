@@ -75,7 +75,7 @@ class NotificationSettingsComponent < ViewComponent::Base
       @setting = setting
     end
 
-    attr_reader :setting
+    attr_reader :setting, :app
     delegate :id, :active?, :notification_channels, :notification_provider, :release_specific_channel_allowed?, to: :setting
 
     def edit_path
@@ -114,18 +114,26 @@ class NotificationSettingsComponent < ViewComponent::Base
       NOTIFICATIONS[setting.kind][:icon] || "aerial_lift.svg"
     end
 
-    def status_text
-      return "Enabled" if setting.active?
+    def status_text(flag)
+      return "Enabled" if flag
       "Disabled"
     end
 
-    def status_type
-      return :success if setting.active?
+    def status_type(flag)
+      return :success if flag
       :neutral
     end
 
     def status_pill
-      BadgeComponent.new(text: status_text, status: status_type)
+      BadgeComponent.new(text: status_text(setting.active?), status: status_type(setting.active?))
+    end
+
+    def release_specific_status_pill
+      if setting.release_specific_channel_allowed?
+        BadgeComponent.new(text: status_text(setting.release_specific_enabled?), status: status_type(setting.active?))
+      else
+        BadgeComponent.new(text: "Not Applicable", status: :neutral)
+      end
     end
 
     def default_channels

@@ -10,13 +10,6 @@
                                            switch_id: "active-switch-#{@setting.id}",
                                            on_label: "Notifications enabled",
                                            off_label: "Notifications disabled") do |switch| %>
-        <% if @setting.release_specific_channel_allowed? %>
-          <% switch.with_child do %>
-            <p class="text-slate-700 text-sm">
-              Turn off release-specific channels in train settings to customize channels per notification kind.
-            </p>
-          <% end %>
-        <% else %>
           <% switch.with_child do %>
             <%= section.F.labeled_select :notification_channels,
                                          "Channels",
@@ -29,6 +22,25 @@
             <span class="text-secondary">To allow file uploads in channels, invite <strong>@Tramline</strong> into your channels.</span>
           <% end %>
           <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
+      <% end %>
+    <% end %>
+
+    <% if @setting.release_specific_channel_allowed? %>
+      <% f.with_section(heading: "Release Specific") do |section| %>
+        <% section.with_description do %>
+          <div>Enable to receive notifications in release specific channels</div>
+        <% end %>
+
+        <%= render Form::SwitchComponent.new(form: section.F,
+                                             field_name: :release_specific_channel_enabled,
+                                             switch_id: "release-specific-channel-enabled-#{@setting.id}",
+                                             on_label: "Notifications enabled",
+                                             off_label: "Notifications disabled") do |switch| %>
+          <% switch.with_child do %>
+            <%= section.F.label_only :release_specific_channel_enabled,
+                                     "Channel like #{release_specific_channel_pattern(@setting.app)} will be created for each release"
+            %>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>

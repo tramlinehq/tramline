@@ -1,5 +1,5 @@
 <% if enabled? %>
-  <%= render TableComponent.new(columns: ["kind", "channels", "status", ""]) do |table| %>
+  <%= render TableComponent.new(columns: ["kind", "channels", "status", "status (release-specific)"]) do |table| %>
     <% display_settings.each do |setting| %>
       <% setting = notification_setting_component(setting) %>
       <% table.with_row do |row| %>
@@ -13,18 +13,11 @@
         <% row.with_cell do %>
           <% if setting.active? %>
             <div class="flex overflow-x-hidden hover:overflow-x-auto gap-x-3">
-              <% if setting.release_specific_channel_allowed? %>
+              <% setting.notification_channels(include_release_specific: false)&.each do |channel| %>
                 <div class="inline-flex items-center">
                   <%= render IconComponent.new("integrations/logo_#{setting.notification_provider}.png", size: :md, classes: "mr-1") %>
-                  <%= helpers.release_specific_channel_pattern(app) %>
+                  <%= channel["name"] %>
                 </div>
-              <% else %>
-                <% setting.notification_channels&.each do |channel| %>
-                  <div class="inline-flex items-center">
-                    <%= render IconComponent.new("integrations/logo_#{setting.notification_provider}.png", size: :md, classes: "mr-1") %>
-                    <%= channel["name"] %>
-                  </div>
-                <% end %>
               <% end %>
             </div>
           <% end %>
@@ -32,6 +25,10 @@
 
         <% row.with_cell do %>
           <%= render setting.status_pill %>
+        <% end %>
+
+        <% row.with_cell do %>
+          <%= render setting.release_specific_status_pill %>
         <% end %>
 
         <% row.with_cell(wrap: true) do %>
