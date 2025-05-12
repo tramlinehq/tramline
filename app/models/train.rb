@@ -130,7 +130,6 @@ class Train < ApplicationRecord
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
-  after_update :restore_default_notification_settings, if: -> { notification_channel.present? && notifications_release_specific_channel_enabled_previously_was }
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -278,17 +277,13 @@ class Train < ApplicationRecord
         train_id: id,
         kind:,
         active: true,
-        notification_channels: [notification_channel]
+        notification_channels: [notification_channel],
+        release_specific_enabled: notifications_release_specific_channel_enabled
       }
     end
     NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
   # rubocop:enable Rails/SkipsModelValidations
-
-  def restore_default_notification_settings
-    return if notification_channel.blank? || notifications_release_specific_channel_enabled?
-    notification_settings.release_specific_channel_allowed.update(notification_channels: [notification_channel])
-  end
 
   def display_name
     name&.parameterize
