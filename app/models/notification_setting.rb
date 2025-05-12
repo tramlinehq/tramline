@@ -52,14 +52,14 @@ class NotificationSetting < ApplicationRecord
     workflow_trigger_failed: "workflow_trigger_failed"
   }
 
-  RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS = [
+  RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS = [
     :release_started,
     :release_scheduled
   ]
 
   scope :active, -> { where(active: true) }
-  scope :release_specific_channel_allowed, -> { where.not(kind: RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS) }
-  scope :release_specific_channel_not_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNELS_NOT_ALLOWED_KINDS) }
+  scope :release_specific_channel_allowed, -> { where.not(kind: RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS) }
+  scope :release_specific_channel_not_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS) }
   delegate :app, to: :train
   delegate :notification_provider, to: :app
   delegate :channels, to: :notification_provider
