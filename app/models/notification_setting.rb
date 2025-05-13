@@ -95,6 +95,10 @@ class NotificationSetting < ApplicationRecord
     channels.compact.uniq { |c| c["id"] }
   end
 
+  def release_specific_enabled?
+    train.notifications_release_specific_channel_enabled && super
+  end
+
   def release_specific_channel_allowed?
     !kind.to_sym.in?(RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS)
   end
