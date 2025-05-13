@@ -130,7 +130,7 @@ class Train < ApplicationRecord
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
-  after_update :update_release_specific_notification_settings, if: -> { notifications_release_specific_channel_enabled != notifications_release_specific_channel_enabled_previously_was }
+  after_update :enable_release_specific_flag_in_notification_settings, if: -> { notifications_release_specific_channel_enabled? && !notifications_release_specific_channel_enabled_previously_was }
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -294,8 +294,12 @@ class Train < ApplicationRecord
   end
   # rubocop:enable Rails/SkipsModelValidations
 
-  def update_release_specific_notification_settings
-    NotificationSetting.release_specific_channel_allowed.update(release_specific_enabled: notifications_release_specific_channel_enabled?)
+  def enable_release_specific_flag_in_notification_settings
+    # Enable all of them only if it wasn't previously customized
+    # Since the default value of the flag is false, if any of them is true we know it was customized
+    unless notification_settings.release_specific_channel_allowed.exists?(release_specific_enabled: true)
+      notification_settings.release_specific_channel_allowed.update(release_specific_enabled: notifications_release_specific_channel_enabled?)
+    end
   end
 
   def display_name
