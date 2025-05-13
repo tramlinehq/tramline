@@ -277,7 +277,6 @@ class Train < ApplicationRecord
         kind:,
         active: true,
         notification_channels: notification_channel.present? ? [notification_channel] : nil,
-        release_specific_channel: notification_channel.presence,
         release_specific_enabled:
       }
     }
