@@ -408,8 +408,10 @@ class Train < ApplicationRecord
   end
 
   def send_notifications?
-    app.notifications_set_up? &&
-      (notification_channel.present? || notifications_release_specific_channel_enabled?)
+    # Release-specific notifications and general notifications are not exclusive.
+    # Some notifications are not supported (do not make sense) in release-specific mode.
+    # So, this does not check for the release-specific flag.
+    app.notifications_set_up? && notification_channel.present?
   end
 
   def schedule_editable?
