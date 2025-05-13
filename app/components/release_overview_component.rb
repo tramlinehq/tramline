@@ -8,8 +8,6 @@ class ReleaseOverviewComponent < BaseComponent
     :hotfixed_from,
     :team_stability_commits,
     :team_release_commits,
-    :backmerge_pr_count,
-    :backmerge_failure_count,
     :display_start_time,
     :display_end_time,
     :duration,

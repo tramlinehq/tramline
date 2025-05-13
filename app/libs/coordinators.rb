@@ -93,7 +93,7 @@ module Coordinators
     def self.pull_request_closed!(pr)
       release = pr.release
       Actions.complete_release!(release) if release.post_release_failed?
-      Releases::PreReleaseJob.perform_async(release.id) if release.pre_release? && pr.version_bump?
+      Releases::PreReleaseJob.perform_async(release.id) if release.pre_release? && pr.pre_release_version_bump?
     end
   end
 

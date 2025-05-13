@@ -3,6 +3,7 @@ module Installations
 
   class Github::Api
     include Vaultable
+    include Loggable
     attr_reader :app_name, :installation_id, :jwt, :client
 
     WEBHOOK_NAME = "web"
@@ -318,8 +319,8 @@ module Installations
       # create cherry picked commit - 1 api call
       # force update ref of patch branch - 1 api call
       # create a PR - 1 api call
-
       # TOTAL - 7 api calls
+      #
       execute do
         branch_head = @client.branch(repo, branch)[:commit]
         branch_tree_sha = branch_head[:commit][:tree][:sha]
@@ -337,11 +338,18 @@ module Installations
         cherry_commit = @client.create_commit(repo, commit_to_pick_msg, merge_tree, branch_head[:sha], cherry_commit_authors)[:sha]
         @client.update_ref(repo, "heads/#{patch_branch_name}", cherry_commit, true)
 
-        @client
+        pr = @client
           .create_pull_request(repo, branch, patch_branch_name, patch_pr_title, patch_pr_description)
           .then { |response| Installations::Response::Keys.transform([response], transforms) }
           .first
-          .tap { |pr| assign_pr(repo, pr[:number], commit_to_pick_login) }
+
+        begin
+          assign_pr(repo, pr[:number], commit_to_pick_login)
+        rescue => e
+          elog(e, level: :warn)
+        end
+
+        pr
       end
     rescue Installations::Error => e
       @client.delete_branch(repo, patch_branch_name) if e.reason == :merge_conflict

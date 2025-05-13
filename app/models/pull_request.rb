@@ -7,6 +7,7 @@
 #  body                    :text             indexed
 #  closed_at               :datetime
 #  head_ref                :string           not null, indexed => [release_id]
+#  kind                    :string           indexed => [release_id]
 #  labels                  :jsonb
 #  merge_commit_sha        :string
 #  number                  :bigint           not null, indexed => [release_id, phase], indexed
@@ -20,7 +21,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             indexed
-#  release_id              :uuid             indexed => [phase, number], indexed => [head_ref], indexed => [phase]
+#  release_id              :uuid             indexed => [phase, number], indexed => [head_ref], indexed => [kind], indexed => [phase]
 #  release_platform_run_id :uuid
 #  source_id               :string           not null, indexed
 #
@@ -39,11 +40,16 @@ class PullRequest < ApplicationRecord
 
   enum :phase, {
     pre_release: "pre_release",
-    version_bump: "version_bump",
     mid_release: "mid_release",
-    ongoing: "ongoing",
     post_release: "post_release"
   }
+
+  enum :kind, {
+    stability: "stability",
+    forward_merge: "forward_merge",
+    back_merge: "back_merge",
+    version_bump: "version_bump"
+  }, suffix: :type
 
   enum :state, {
     open: "open",
@@ -56,9 +62,8 @@ class PullRequest < ApplicationRecord
     bitbucket: "bitbucket"
   }
 
-  scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
-
-  validates :phase, uniqueness: {scope: :release_id, conditions: -> { open.version_bump }}
+  validates :kind, uniqueness: {scope: :release_id, conditions: -> { version_bump_type.open }}
+  validates :phase, uniqueness: {scope: :release_id, conditions: -> { pre_release.version_bump_type }}
 
   before_save :generate_search_vector_data
 
@@ -133,6 +138,10 @@ class PullRequest < ApplicationRecord
     event_stamp_now!(reason: :unmergeable, kind: :error, data: stamp_data)
   end
 
+  def pre_release_version_bump?
+    pre_release? && version_bump_type?
+  end
+
   private
 
   def generate_search_vector_data
@@ -141,6 +150,6 @@ class PullRequest < ApplicationRecord
   end
 
   def stamp_data
-    slice(:url, :number, :base_ref, :head_ref).merge(phase: display_attr(:phase))
+    slice(:url, :number, :base_ref, :head_ref).merge(phase: display_attr(:phase), kind: display_attr(:kind))
   end
 end
