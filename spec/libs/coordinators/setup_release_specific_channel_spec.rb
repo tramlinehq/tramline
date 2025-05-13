@@ -62,7 +62,7 @@ RSpec.describe Coordinators::SetupReleaseSpecificChannel do
     it "does not update notification channel settings" do
       described_class.call(release)
       notification_channels = train.notification_settings.pluck(:release_specific_channel)
-      expect(notification_channels).to all(eq(default_notification_channel.as_json))
+      expect(notification_channels).to all(be_nil)
     end
   end
 end

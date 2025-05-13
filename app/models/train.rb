@@ -408,7 +408,8 @@ class Train < ApplicationRecord
   end
 
   def send_notifications?
-    app.notifications_set_up? && notification_channel.present?
+    app.notifications_set_up? &&
+      (notification_channel.present? || notifications_release_specific_channel_enabled?)
   end
 
   def schedule_editable?
