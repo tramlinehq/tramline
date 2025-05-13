@@ -121,7 +121,7 @@ class NotificationSettingsComponent < ViewComponent::Base
 
     def status_type(flag)
       return :success if flag
-      :neutral
+      :failure
     end
 
     def status_pill
@@ -130,7 +130,7 @@ class NotificationSettingsComponent < ViewComponent::Base
 
     def release_specific_status_pill
       if setting.release_specific_channel_allowed?
-        BadgeComponent.new(text: status_text(setting.release_specific_enabled?), status: status_type(setting.active?))
+        BadgeComponent.new(text: status_text(setting.release_specific_enabled?), status: status_type(setting.release_specific_enabled?))
       else
         BadgeComponent.new(text: "Not Applicable", status: :neutral)
       end

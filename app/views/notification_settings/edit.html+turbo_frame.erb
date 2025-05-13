@@ -32,12 +32,12 @@
         <% end %>
 
         <%= render Form::SwitchComponent.new(form: section.F,
-                                             field_name: :release_specific_channel_enabled,
-                                             switch_id: "release-specific-channel-enabled-#{@setting.id}",
+                                             field_name: :release_specific_enabled,
+                                             switch_id: "release-specific-enabled-#{@setting.id}",
                                              on_label: "Notifications enabled",
                                              off_label: "Notifications disabled") do |switch| %>
           <% switch.with_child do %>
-            <%= section.F.label_only :release_specific_channel_enabled,
+            <%= section.F.label_only :release_specific_enabled,
                                      "Channel like #{release_specific_channel_pattern(@setting.app)} will be created for each release"
             %>
           <% end %>
