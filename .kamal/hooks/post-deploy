@@ -3,27 +3,30 @@
 
 set -e
 
-# DB_HOST=${DB_HOST:-localhost}
-# DB_PORT=${DB_PORT:-5432}
-# WAIT_RETRIES=${WAIT_RETRIES:-30}
+DB_HOST=${DB_HOST:-localhost}
+DB_PORT=${DB_PORT:-5432}
+WAIT_RETRIES=${WAIT_RETRIES:-30}
 
-# echo "Waiting for DB to be ready at ${DB_HOST}:${DB_PORT}..."
+echo "Waiting for DB to be ready at ${DB_HOST}:${DB_PORT}..."
 
-# until curl --output /dev/null --silent --head --fail "postgresql://postgres:postgres@${DB_HOST}:${DB_PORT}/tramline_staging"; do
-#   WAIT_RETRIES=$((WAIT_RETRIES - 1))
-#   if [ "$WAIT_RETRIES" -le 0 ]; then
-#     echo "Database not reachable after waiting. Exiting."
-#     exit 1
-#   fi
-#   sleep 1
-# done
+if ! command -v pg_isready &> /dev/null; then
+    echo "pg_isready not found. Installing..."
+    if [ "$EUID" -ne 0 ]; then
+        echo "This script must be run as root to install pg_isready."
+        exit 1
+    fi
+    apt-get update && apt-get install -y postgresql-client
+fi
 
-# echo "DB is ready. Running migrations and seeds..."
+until pg_isready -h "${DB_HOST}" -p "${DB_PORT}" -d "tramline_staging" -U "postgres"; do
+    WAIT_RETRIES=$((WAIT_RETRIES - 1))
+    if [ "$WAIT_RETRIES" -le 0 ]; then
+        echo "Database not reachable after waiting. Exiting."
+        exit 1
+    fi
+    sleep 1
+done
 
-# echo "Running migrations..."
-# bundle exec rake db:migrate:with_data
-
-# echo "Seeding database..."
-# bin/rails db:seed
+echo "DB is ready."
 
 exit 0
