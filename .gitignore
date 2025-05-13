@@ -59,12 +59,3 @@ Brewfile.lock.json
 # Ignore temp project files
 coverage
 aasm-*.pdf
-
-# Ignore kamal folder and files
-config/key-*.json
-config/staging.sql
-
-/config/credentials/staging-gcp.key
-**sam_staging_local_key**
-
-logs
