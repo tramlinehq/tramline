@@ -34,16 +34,10 @@ RSpec.describe Coordinators::SetupReleaseSpecificChannel do
       expect(release.release_specific_channel_id).to eq(slack_response[:id])
     end
 
-    it "updates notification channel in notifications settings in allowed kinds" do
+    it "updates release specific channel in notifications settings in allowed kinds" do
       described_class.call(release)
-      notification_channels = train.notification_settings.release_specific_channel_allowed.pluck(:notification_channels)
-      expect(notification_channels).to all(contain_exactly(slack_response.as_json))
-    end
-
-    it "does not update notification channel notification settings for non-allowed kinds" do
-      described_class.call(release)
-      notification_channels = train.notification_settings.release_specific_channel_not_allowed.pluck(:notification_channels)
-      expect(notification_channels).to all(contain_exactly(default_notification_channel.as_json))
+      notification_channels = train.notification_settings.release_specific_channel_allowed.pluck(:release_specific_channel)
+      expect(notification_channels).to all(eq(slack_response.as_json))
     end
 
     it "updates notification channel to default channel if create channel fails" do
@@ -67,8 +61,8 @@ RSpec.describe Coordinators::SetupReleaseSpecificChannel do
 
     it "does not update notification channel settings" do
       described_class.call(release)
-      notification_channels = train.notification_settings.pluck(:notification_channels)
-      expect(notification_channels).to all(contain_exactly(default_notification_channel.as_json))
+      notification_channels = train.notification_settings.pluck(:release_specific_channel)
+      expect(notification_channels).to all(eq(default_notification_channel.as_json))
     end
   end
 end
