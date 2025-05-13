@@ -18,7 +18,7 @@ if ! command -v pg_isready &> /dev/null; then
     apt-get update && apt-get install -y postgresql-client
 fi
 
-until pg_isready -h "${DB_HOST}" -p "${DB_PORT}" -d "tramline_staging" -U "postgres"; do
+until pg_isready -h "${DB_HOST}" -p "${DB_PORT}" -d "tramline_staging" -U "postgres" | grep -q "accepting connections"; do
     WAIT_RETRIES=$((WAIT_RETRIES - 1))
     if [ "$WAIT_RETRIES" -le 0 ]; then
         echo "Database not reachable after waiting. Exiting."
