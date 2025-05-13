@@ -104,8 +104,12 @@ class NotificationSetting < ApplicationRecord
       errors.add(:notification_channels, :at_least_one)
     end
 
-    if release_specific_enabled? && !release_specific_channel_allowed?
-      errors.add(:release_specific_enabled, :invalid_configuration_for_release_specific_channel)
+    if release_specific_enabled?
+      if !release_specific_channel_allowed?
+        errors.add(:release_specific_enabled, :release_specific_channel_not_allowed_for_this_kind)
+      elsif !train.notifications_release_specific_channel_enabled?
+        errors.add(:release_specific_enabled, :release_specific_not_enabled_in_train)
+      end
     end
   end
 
