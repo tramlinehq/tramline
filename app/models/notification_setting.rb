@@ -57,8 +57,10 @@ class NotificationSetting < ApplicationRecord
     :release_scheduled
   ]
 
+  RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS = NotificationSetting.kinds.keys.map(&:to_sym) - RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS
+
   scope :active, -> { where(active: true) }
-  scope :release_specific_channel_allowed, -> { where.not(kind: RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS) }
+  scope :release_specific_channel_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS) }
   scope :release_specific_channel_not_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS) }
   delegate :app, to: :train
   delegate :notification_provider, to: :app
@@ -85,9 +87,13 @@ class NotificationSetting < ApplicationRecord
 
   def notification_channels(include_release_specific: true)
     channels = []
-    channels.concat(super()) if active?
-    channels.concat(release_specific_channel) if include_release_specific && release_specific_enabled?
-    channels.compact
+    channels.concat(super().presence || []) if active?
+
+    if include_release_specific && release_specific_channel_allowed?
+      channels.append(release_specific_channel)
+    end
+
+    channels.compact.uniq { |c| c["id"] }
   end
 
   def release_specific_channel_allowed?

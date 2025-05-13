@@ -271,16 +271,25 @@ class Train < ApplicationRecord
 
   # rubocop:disable Rails/SkipsModelValidations
   def create_default_notification_settings
-    return if notification_channel.blank?
-    vals = NotificationSetting.kinds.map do |_, kind|
+    notif_setting = ->(kind, release_specific_enabled) {
       {
         train_id: id,
         kind:,
         active: true,
-        notification_channels: [notification_channel],
-        release_specific_enabled: notifications_release_specific_channel_enabled
+        notification_channels: notification_channel.present? ? [notification_channel] : nil,
+        release_specific_channel: notification_channel.presence,
+        release_specific_enabled:
       }
-    end
+    }
+
+    vals = NotificationSetting::RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS.map { |kind|
+      notif_setting.call(kind, notifications_release_specific_channel_enabled)
+    }
+
+    vals += NotificationSetting::RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS.map { |kind|
+      notif_setting.call(kind, false)
+    }
+
     NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
   # rubocop:enable Rails/SkipsModelValidations
