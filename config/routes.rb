@@ -7,7 +7,7 @@ Rails.application.routes.draw do
   mount ActionCable.server => "/cable"
   mount Easymon::Engine => "/up"
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
-  get "healthz" => "health#show"
+  get "healthz" => "rails/health#show", as: :rails_health_check
 
   root "authentication/sessions#root"
   get "/admin", to: "admin/settings#index", as: :authenticated_admin_root
