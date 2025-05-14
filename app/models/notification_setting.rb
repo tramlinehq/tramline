@@ -88,19 +88,19 @@ class NotificationSetting < ApplicationRecord
       channels.concat(notification_channels)
     end
 
-    if release_specific_enabled? && release_specific_channel.present?
+    if release_specific_notifiable? && release_specific_channel.present?
       channels.append(release_specific_channel)
     end
 
     channels.compact.uniq { |c| c["id"] }
   end
 
-  def release_specific_enabled?
-    train.notifications_release_specific_channel_enabled? && super
+  def release_specific_notifiable?
+    train.notifications_release_specific_channel_enabled? && release_specific_enabled?
   end
 
   def release_specific_channel_allowed?
-    !kind.to_sym.in?(RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS)
+    kind.to_sym.in?(RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS)
   end
 
   def notification_channels_settings
