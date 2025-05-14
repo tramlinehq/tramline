@@ -1,5 +1,5 @@
 <% if enabled? %>
-  <%= render TableComponent.new(columns: ["kind", "channels", "status", "status (release-specific)"]) do |table| %>
+  <%= render TableComponent.new(columns: header_columns) do |table| %>
     <% display_settings.each do |setting| %>
       <% setting = notification_setting_component(setting) %>
       <% table.with_row do |row| %>
@@ -23,12 +23,14 @@
           <% end %>
         <% end %>
 
-        <% row.with_cell do %>
-          <%= render setting.status_pill %>
+        <% if @train.notifications_release_specific_channel_enabled? %>
+          <% row.with_cell do %>
+            <%= render setting.release_specific_status_pill %>
+          <% end %>
         <% end %>
 
         <% row.with_cell do %>
-          <%= render setting.release_specific_status_pill %>
+          <%= render setting.status_pill %>
         <% end %>
 
         <% row.with_cell(wrap: true) do %>

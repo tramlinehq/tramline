@@ -55,6 +55,14 @@ class NotificationSettingsComponent < ViewComponent::Base
     NotificationSettingComponent.new(app, train, setting)
   end
 
+  def header_columns
+    if @train.notifications_release_specific_channel_enabled?
+      ["kind", "default channels", "release specific channel", "status"]
+    else
+      %w[kind channels status]
+    end
+  end
+
   def display_settings
     settings.sort_by { |setting| NOTIFICATIONS[setting.kind][:number] }
   end
