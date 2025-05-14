@@ -128,9 +128,10 @@ class Train < ApplicationRecord
   after_create :create_default_notification_settings
   after_create :create_release_index
   before_update :disable_copy_approvals, unless: :approvals_enabled?
+  before_update :create_default_notification_settings, if: -> do
+    notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
+  end
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
-  after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
-  after_update :enable_release_specific_flag_in_notification_settings, if: -> { notifications_release_specific_channel_enabled? && !notifications_release_specific_channel_enabled_previously_was }
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -281,17 +282,14 @@ class Train < ApplicationRecord
       }
     }
 
-    NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
-  end
-  # rubocop:enable Rails/SkipsModelValidations
-
-  def enable_release_specific_flag_in_notification_settings
-    # Enable all of them only if it wasn't previously customized
-    # Since the default value of the flag is false, if any of them is true we know it was customized
-    unless notification_settings.release_specific_channel_allowed.exists?(release_specific_enabled: true)
-      notification_settings.release_specific_channel_allowed.update(release_specific_enabled: notifications_release_specific_channel_enabled?)
+    NotificationSetting.transaction do
+      NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
+      notification_settings
+        .release_specific_channel_allowed
+        .update_all(release_specific_enabled: notifications_release_specific_channel_enabled?)
     end
   end
+  # rubocop:enable Rails/SkipsModelValidations
 
   def display_name
     name&.parameterize
