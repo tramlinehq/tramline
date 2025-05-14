@@ -96,7 +96,7 @@ class NotificationSetting < ApplicationRecord
   end
 
   def release_specific_enabled?
-    train.notifications_release_specific_channel_enabled && super
+    train.notifications_release_specific_channel_enabled? && super
   end
 
   def release_specific_channel_allowed?
