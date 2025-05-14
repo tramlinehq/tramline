@@ -1,0 +1,13 @@
+<%# locals: (taggable: nil) %>
+
+<% if taggable.tag_name.present? %>
+  <%= render ButtonComponent.new(label: taggable.tag_name,
+                                 scheme: :link,
+                                 type: :link_external,
+                                 options: taggable.tag_url,
+                                 authz: false,
+                                 size: :xxs,
+                                 arrow: :none) do |b|
+    b.with_icon(vcs_provider_logo, size: :sm)
+  end %>
+<% end %>
