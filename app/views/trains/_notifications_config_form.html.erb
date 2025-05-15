@@ -23,9 +23,8 @@
                  current: @current_notification_channel.to_json,
                  multiple: false,
                  field_name: :notification_channel,
-                 field_title: "Default Notification Channel",
-               }
-    %>
+                 field_title: "Default Notification Channel"
+               } %>
 
     <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
   <% end %>
