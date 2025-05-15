@@ -11,21 +11,41 @@
         <% end %>
       <% end %>
 
-      <%= render Form::SwitchComponent.new(form: section.F,
-                                           field_name: :active,
-                                           switch_id: "active-switch-#{@setting.id}",
-                                           on_label: "Default notifications enabled",
-                                           off_label: "Default notifications disabled") do |switch| %>
-        <% switch.with_child do %>
-          <div class="flex flex-col gap-1">
-            <div>
-              <%= section.F.labeled_select :notification_channels,
-                                           "Channels",
-                                           @setting.channel_select_options,
-                                           {},
-                                           {multiple: true, data: {controller: "input-select"}} %>
+      <% if @train.notifications_release_specific_channel_enabled? %>
+        <%= render Form::SwitchComponent.new(form: section.F,
+                                             field_name: :active,
+                                             switch_id: "active-switch-#{@setting.id}",
+                                             on_label: "Core notifications enabled",
+                                             off_label: "Core notifications disabled") do |switch| %>
+          <% switch.with_child do %>
+            <div class="flex flex-col gap-1">
+              <div>
+                <%= section.F.labeled_select :notification_channels,
+                                             "Core Channels",
+                                             @setting.channel_select_options,
+                                             {},
+                                             {multiple: true, data: {controller: "input-select"}} %>
+              </div>
             </div>
-          </div>
+          <% end %>
+        <% end %>
+      <% else %>
+        <%= render Form::SwitchComponent.new(form: section.F,
+                                             field_name: :active,
+                                             switch_id: "active-switch-#{@setting.id}",
+                                             on_label: "Notifications enabled",
+                                             off_label: "Notifications disabled") do |switch| %>
+          <% switch.with_child do %>
+            <div class="flex flex-col gap-1">
+              <div>
+                <%= section.F.labeled_select :notification_channels,
+                                             "Channels",
+                                             @setting.channel_select_options,
+                                             {},
+                                             {multiple: true, data: {controller: "input-select"}} %>
+              </div>
+            </div>
+          <% end %>
         <% end %>
       <% end %>
 
@@ -37,7 +57,7 @@
                                              off_label: "Release-specific channel disabled") do |switch| %>
           <% switch.with_info_icon do %>
             <span class="text-secondary">
-              Channel like <%= release_specific_channel_pattern(@setting.app) %> will be created for each release
+              Channels like <strong><%= release_specific_channel_pattern(@setting.app) %></strong> will be automatically created for each release.
             </span>
           <% end %>
         <% end %>

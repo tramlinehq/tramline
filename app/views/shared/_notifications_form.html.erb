@@ -1,5 +1,5 @@
 <div>
-  <%= form.labeled_select :notification_channel, "Notification Channel",
+  <%= form.labeled_select :notification_channel, field_title,
         options_for_select(
           display_channels(channels) { |chan| "#" + chan[:name] },
           current.to_json

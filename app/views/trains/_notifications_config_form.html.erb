@@ -6,16 +6,17 @@
     <div class="mb-2">
       <%= render Form::SwitchComponent.new(form:, field_name: :notifications_release_specific_channel_enabled,
                                            hide_child: false,
-                                           on_label: "Send notifications to release specific channel as well",
-                                           off_label: "Send notifications only to default and/or custom channels") do |component1| %>
+                                           on_label: "Send notifications to core and release specific channel(s)",
+                                           off_label: "Send notifications core channel(s)") do |component1| %>
 
         <% component1.with_info_icon do %>
-          When enabled, notifications will be sent to channels like <%= release_specific_channel_pattern(@app) %> in addition to custom/default channels as configured in advanced notification settings.
+         <p>Core channel(s) consist of the default notification channel and any overrides configured in advanced settings.</p>
+         <p>When release-specific channels are enabled, notifications can be sent to core channel(s) in addition to automatically created channels like <strong><%= release_specific_channel_pattern(@app) %></strong> for each release.</p>
         <% end %>
     <% end %>
     </div>
 
     <%= render partial: "shared/notifications_form",
-               locals: {form:, app: @app, channels: @notification_channels, current: @current_notification_channel} %>
+               locals: {form:, app: @app, channels: @notification_channels, current: @current_notification_channel, field_title: "Default Notification Channel"} %>
   <% end %>
 <% end %>

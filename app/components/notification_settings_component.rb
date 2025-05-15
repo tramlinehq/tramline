@@ -57,7 +57,7 @@ class NotificationSettingsComponent < ViewComponent::Base
 
   def header_columns
     if @train.notifications_release_specific_channel_enabled?
-      ["kind", "default channels", "release specific channel", "status"]
+      ["kind", "core channels", "release specific channel", "status"]
     else
       %w[kind channels status]
     end
