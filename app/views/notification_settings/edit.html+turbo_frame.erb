@@ -19,13 +19,16 @@
                                              off_label: "Core notifications disabled") do |switch| %>
           <% switch.with_child do %>
             <div class="flex flex-col gap-1">
-              <div>
-                <%= section.F.labeled_select :notification_channels,
-                                             "Core Channels",
-                                             @setting.channel_select_options,
-                                             {},
-                                             {multiple: true, data: {controller: "input-select"}} %>
-              </div>
+              <%= render partial: "shared/notifications_form",
+                         locals: {
+                           form: section.F,
+                           channels: @setting.channels,
+                           current: @setting.default_channels,
+                           multiple: true,
+                           field_name: :notification_channels,
+                           field_title: "Core Channels"
+                         }
+              %>
             </div>
           <% end %>
         <% end %>
@@ -37,13 +40,16 @@
                                              off_label: "Notifications disabled") do |switch| %>
           <% switch.with_child do %>
             <div class="flex flex-col gap-1">
-              <div>
-                <%= section.F.labeled_select :notification_channels,
-                                             "Channels",
-                                             @setting.channel_select_options,
-                                             {},
-                                             {multiple: true, data: {controller: "input-select"}} %>
-              </div>
+              <%= render partial: "shared/notifications_form",
+                         locals: {
+                           form: section.F,
+                           channels: @setting.channels,
+                           current: @setting.default_channels,
+                           multiple: true,
+                           field_name: :notification_channels,
+                           field_title: "Channels"
+                         }
+              %>
             </div>
           <% end %>
         <% end %>

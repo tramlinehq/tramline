@@ -17,6 +17,16 @@
     </div>
 
     <%= render partial: "shared/notifications_form",
-               locals: {form:, app: @app, channels: @notification_channels, current: @current_notification_channel, field_title: "Default Notification Channel"} %>
+               locals: {
+                 form:,
+                 channels: @notification_channels,
+                 current: @current_notification_channel.to_json,
+                 multiple: false,
+                 field_name: :notification_channel,
+                 field_title: "Default Notification Channel",
+               }
+    %>
+
+    <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
   <% end %>
 <% end %>

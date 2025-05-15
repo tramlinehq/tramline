@@ -1,11 +1,9 @@
 <div>
-  <%= form.labeled_select :notification_channel, field_title,
+  <%= form.labeled_select field_name, field_title,
         options_for_select(
           display_channels(channels) { |chan| "#" + chan[:name] },
-          current.to_json
+          current
         ),
         {},
-        {data: {controller: "input-select"}} %>
-
-  <%= render partial: "shared/notifications_refresh", locals: {app: app} %>
+        {multiple:, data: {controller: "input-select"}} %>
 </div>
