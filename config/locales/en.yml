@@ -502,6 +502,9 @@ en:
           attributes:
             notification_channels:
               at_least_one: "there should be at least one channel selected for an enabled notification"
+            release_specific_enabled:
+              release_specific_channel_not_allowed_for_this_kind: "Release specific channel is not allowed for this kind of notification"
+              release_specific_not_enabled_in_train: "Release specific channels are not enabled in train settings"
         release_metadata:
           attributes:
             release_notes:
