@@ -10,6 +10,7 @@ module Installations
     WEBHOOK_EVENTS = %w[push pull_request]
     LIST_WORKFLOWS_LIMIT = 99
     RERUN_FAILED_JOBS_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/actions/runs/{run_id}/rerun-failed-jobs"
+    GENERATE_RELEASE_NOTES_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/releases/generate-notes"
 
     def initialize(installation_id)
       @app_name = creds.integrations.github.app_name
@@ -204,12 +205,13 @@ module Installations
     end
 
     # creates a lightweight tag and a GitHub release simultaneously
-    def create_release!(repo, tag_name, branch_name, release_notes = nil)
+    def create_release!(repo, tag_name, branch_name, previous_tag_name, release_notes = nil)
+      generated_release_notes = generate_release_notes(repo, tag_name, previous_tag_name, branch_name)
       options = {
         target_commitish: branch_name,
         name: tag_name,
-        body: release_notes.presence,
-        generate_release_notes: release_notes.blank?
+        body: generated_release_notes.presence || release_notes.presence,
+        generate_release_notes: false
       }.compact
       execute do
         raise Installations::Error.new("Should not create a tag", reason: :tag_reference_already_exists) if tag_exists?(repo, tag_name)
@@ -444,6 +446,31 @@ module Installations
       end
     end
 
+    private
+
+    def generate_release_notes(repo, tag_name, previous_tag_name, branch)
+      params = {
+        json: {
+          tag_name:,
+          previous_tag_name:,
+          target_commitish: branch
+        }
+      }
+      resp_body = execute_custom do |custom_client|
+        custom_client.post(
+          GENERATE_RELEASE_NOTES_URL
+            .expand(repo:)
+            .to_s
+            .then { |url| URI.decode_www_form_component(url) },
+          params
+        )
+      end
+      JSON.parse(resp_body).dig("body")
+    rescue => e
+      elog(e, level: :warn)
+      nil
+    end
+
     def execute
       yield
     rescue Octokit::Unauthorized
@@ -472,6 +499,8 @@ module Installations
         if (error = Octokit::Error.from_response(response_params))
           raise error
         end
+
+        response_params[:body]
       end
     end
 

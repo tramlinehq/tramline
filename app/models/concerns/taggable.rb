@@ -15,7 +15,7 @@ module Taggable
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_vcs_release!(commitish, release_diff, input_tag_name = base_tag_name)
     return if tag_name.present?
-    train.create_vcs_release!(commitish, input_tag_name, release_diff)
+    train.create_vcs_release!(commitish, input_tag_name, previous_tag_name, release_diff)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: train.vcs_provider.display, tag: input_tag_name})
   rescue Installations::Error => ex

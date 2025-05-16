@@ -37,7 +37,7 @@ class ProductionRelease < ApplicationRecord
   delegate :commit, :version_name, :build_number, to: :build
   delegate :release_health_rules, to: :release_platform
 
-  STAMPABLE_REASONS = %w[created active finished tag_created]
+  STAMPABLE_REASONS = %w[created active finished tag_created vcs_release_created]
 
   STATES = {
     inflight: "inflight",
@@ -215,5 +215,11 @@ class ProductionRelease < ApplicationRecord
     tag << "-hotfix" if hotfix?
     tag << (train.tag_store_releases_with_platform_names ? "-#{platform}" : "")
     tag
+  end
+
+  # either the previous production release tag, or
+  # it's the release's previous tag
+  def previous_tag_name
+    previous&.tag_name.presence || release.previous_tag_name
   end
 end

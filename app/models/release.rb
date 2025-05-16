@@ -590,6 +590,15 @@ class Release < ApplicationRecord
     train.previously_finished_release.present? && !hotfix?
   end
 
+  # either the previous release's end-of-release tag, or
+  # it's the previous release's rollout tag
+  def previous_tag_name
+    prev = previous_release
+    return if prev.blank?
+
+    prev.tag_name.presence || prev.production_releases.last&.tag_name
+  end
+
   private
 
   def base_tag_name

@@ -188,18 +188,7 @@
                                                    show_activity: false,
                                                    show_commit: false,
                                                    show_compact_metadata: true) %>
-
-        <% if parent_release.tag_name.present? %>
-          <%= render ButtonComponent.new(label: parent_release.tag_name,
-                                         scheme: :link,
-                                         type: :link_external,
-                                         options: parent_release.tag_url,
-                                         authz: false,
-                                         size: :xxs,
-                                         arrow: :none) do |b|
-                b.with_icon(vcs_provider_logo, size: :sm)
-              end %>
-        <% end %>
+        <%= render partial: "shared/tag_link", locals: {taggable: parent_release} %>
       </div>
 
       <div class="flex flex-row gap-2 items-center">

@@ -177,7 +177,17 @@ describe ProductionRelease do
 
       production_release.create_vcs_release!(commit.commit_hash, anything)
 
-      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", anything)
+      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", anything, anything)
+    end
+
+    it "uses a previous tag name" do
+      previous_prod_release = create(:production_release, :finished, build:, release_platform_run:, tag_name: "v1.2.0")
+      production_release = create(:production_release, :inflight, build:, release_platform_run:, previous: previous_prod_release)
+      allow(train).to receive(:create_vcs_release!)
+
+      production_release.create_vcs_release!(commit.commit_hash, anything)
+
+      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", "v1.2.0", anything)
     end
   end
 
