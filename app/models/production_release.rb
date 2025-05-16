@@ -217,6 +217,8 @@ class ProductionRelease < ApplicationRecord
     tag
   end
 
+  # either the previous production release tag, or
+  # it's the release's previous tag
   def previous_tag_name
     previous&.tag_name.presence || release.previous_tag_name
   end
