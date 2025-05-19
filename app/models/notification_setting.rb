@@ -4,6 +4,7 @@
 #
 #  id                       :uuid             not null, primary key
 #  active                   :boolean          default(TRUE), not null
+#  core_enabled             :boolean          default(FALSE), not null
 #  kind                     :string           not null, indexed => [train_id]
 #  notification_channels    :jsonb
 #  release_specific_channel :jsonb
