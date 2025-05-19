@@ -490,16 +490,18 @@ module Installations
 
         response = yield(new_client)
 
+        response_headers = response.headers.to_h.with_indifferent_access
         response_params = {
           status: response.status,
           body: response.body,
-          response_headers: response.headers.to_h.with_indifferent_access
+          response_headers: response_headers
         }
 
         if (error = Octokit::Error.from_response(response_params))
           raise error
         end
 
+        Rails.logger.info "GitHub API (execute_custom): #{response_headers}"
         response_params[:body]
       end
     end

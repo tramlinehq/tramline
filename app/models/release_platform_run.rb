@@ -23,12 +23,11 @@ class ReleasePlatformRun < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
-  include Taggable
   include ActionView::Helpers::DateHelper
   include Displayable
   using RefinedString
 
-  self.ignored_columns += %w[branch_name commit_sha original_release_version]
+  self.ignored_columns += %w[branch_name commit_sha original_release_version tag_name]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :release_platform
