@@ -69,23 +69,29 @@ class NotificationSetting < ApplicationRecord
   validate :notification_channels_settings
 
   def notify!(message, params, file_id = nil, file_title = nil)
+    return unless send_notifications?
+
     notifiable_channels.each do |channel|
       notification_provider.notify!(channel["id"], message, kind, params, file_id, file_title)
     end
   end
 
   def notify_with_snippet!(message, params, snippet_content, snippet_title)
+    return unless send_notifications?
+
     notifiable_channels.each do |channel|
       notification_provider.notify_with_snippet!(channel["id"], message, kind, params, snippet_content, snippet_title)
     end
   end
 
-  def notifiable_channels
-    return unless app.notifications_set_up?
+  def send_notifications?
+    app.notifications_set_up? && active?
+  end
 
+  def notifiable_channels
     channels = []
 
-    if active? && notification_channels.present?
+    if core_enabled? && notification_channels.present?
       channels.concat(notification_channels)
     end
 
