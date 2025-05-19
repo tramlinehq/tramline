@@ -29,7 +29,9 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
     :store_submission,
     :latest_events,
     :external_link,
-    :automatic_rollout?, :id, to: :store_rollout
+    :automatic_rollout?,
+    :id,
+    :parent_release, to: :store_rollout
   delegate :release, :platform, to: :release_platform_run
 
   def decorated_status

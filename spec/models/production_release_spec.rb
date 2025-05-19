@@ -177,7 +177,29 @@ describe ProductionRelease do
 
       production_release.create_vcs_release!(commit.commit_hash, anything)
 
-      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", anything)
+      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", anything, anything)
+    end
+
+    it "uses a tag name from previous prod release" do
+      previous_prod_release = create(:production_release, :finished, build:, release_platform_run:, tag_name: "v1.2.0")
+      production_release = create(:production_release, :inflight, build:, release_platform_run:, previous: previous_prod_release)
+      allow(train).to receive(:create_vcs_release!)
+
+      production_release.create_vcs_release!(commit.commit_hash, anything)
+
+      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", "v1.2.0", anything)
+    end
+
+    it "uses a tag name from the previous end-of-release tag" do
+      previous_release = create(:release, :finished, train:, tag_name: "v1.2.2")
+      previous_rpr = create(:release_platform_run, release_platform:, release: previous_release)
+      previous_prod_release = create(:production_release, :finished, build:, release_platform_run: previous_rpr, tag_name: nil)
+      production_release = create(:production_release, :inflight, build:, release_platform_run:, previous: previous_prod_release)
+      allow(train).to receive(:create_vcs_release!)
+
+      production_release.create_vcs_release!(commit.commit_hash, anything)
+
+      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", "v1.2.2", anything)
     end
   end
 
