@@ -133,12 +133,12 @@ class NotificationSettingsComponent < ViewComponent::Base
     end
 
     def status_pill
-      BadgeComponent.new(text: status_text(setting.active?), status: status_type(setting.active?))
+      BadgeComponent.new(text: status_text(setting.active? && setting.core_enabled?), status: status_type(setting.active? && setting.core_enabled?))
     end
 
     def release_specific_status_pill
       if setting.release_specific_channel_allowed?
-        BadgeComponent.new(text: status_text(setting.release_specific_enabled?), status: status_type(setting.release_specific_enabled?))
+        BadgeComponent.new(text: status_text(setting.active? && setting.release_specific_enabled?), status: status_type(setting.active? && setting.release_specific_enabled?))
       else
         BadgeComponent.new(text: "Not Applicable", status: :neutral)
       end
