@@ -74,7 +74,7 @@
 
     <% if @setting.release_specific_channel_allowed? && @train.notifications_release_specific_channel_enabled? %>
       <% f.with_action do %>
-          <% f.F.authz_submit "Disable", "archive.svg", size: :xs, scheme: :danger, name: f.F.field_name(:active), value: false %>
+          <% f.F.authz_submit "Disable", "archive_x.svg", size: :xs, scheme: :danger, name: f.F.field_name(:active), value: false %>
       <% end %>
     <% end %>
   <% end %>

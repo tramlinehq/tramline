@@ -35,7 +35,8 @@
           <% end %>
         </div>
       <% elsif actions.size > 1 %>
-        <div class="grid grid-flow-col auto-cols-2 place-items-center xl:space-x-20 p-2">
+        <div class="grid grid-flow-col place-items-center xl:space-x-20 p-2">
+          <div class="col-span-1 mr-2"></div>
           <% actions.each_with_index do |action, index| %>
             <div class="place-self-<%= index.even? ? "end" : "start" %> mt-2">
               <%= action %>
