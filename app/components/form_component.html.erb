@@ -27,23 +27,16 @@
         </div>
       <% end %>
 
-      <% if actions.size == 1 %>
+      <% if actions.present? %>
         <div class="grid grid-cols-3 items-start xl:space-x-20 p-2">
           <div class="col-span-1"></div>
-          <% actions.each do |action| %>
-            <div class="col-span-2 justify-start mt-2"><%= action %></div>
-          <% end %>
-        </div>
-      <% elsif actions.size > 1 %>
-        <div class="grid grid-flow-col place-items-center xl:space-x-20 p-2">
-          <div class="col-span-1 mr-2"></div>
-          <% actions.each_with_index do |action, index| %>
-            <div class="place-self-<%= index.even? ? "end" : "start" %> mt-2">
+          <div class="col-span-2 justify-start mt-2">
+            <% actions.each do |action| %>
               <%= action %>
-            </div>
-          <% end %>
+            <% end %>
+          </div>
         </div>
-    <% end %>
+      <% end %>
     </div>
   <% end %>
 <% end %>
