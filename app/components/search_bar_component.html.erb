@@ -1,7 +1,12 @@
 <div data-controller="search-form" data-search-form-query-value="<%= QUERY_FIELD %>">
   <div class="flex flex-col item-gap-default">
     <div class="flex flex-row justify-between">
-      <div class="flex flex-row items-end">
+      <div class="flex flex-row items-end gap-2">
+        <%= link_to :back, class: "flex items-center justify-center w-8 h-8 rounded-full bg-white hover:bg-gray-50 border border-gray-200" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L4.414 9H17a1 1 0 110 2H4.414l5.293 5.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+          </svg>
+        <% end %>
         <%= text_field_tag search_name, search_value, {
               placeholder: search_placeholder.presence || "Search",
               class: "form-input inline-flex w-full",
