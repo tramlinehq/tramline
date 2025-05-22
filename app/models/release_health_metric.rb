@@ -6,7 +6,7 @@
 #  daily_users                :bigint
 #  daily_users_with_errors    :bigint
 #  errors_count               :bigint
-#  fetched_at                 :datetime         not null, indexed
+#  fetched_at                 :datetime         not null, indexed => [production_release_id], indexed
 #  new_errors_count           :bigint
 #  sessions                   :bigint
 #  sessions_in_last_day       :bigint
@@ -15,7 +15,7 @@
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
 #  external_release_id        :string
-#  production_release_id      :uuid             indexed
+#  production_release_id      :uuid             indexed => [fetched_at], indexed
 #
 class ReleaseHealthMetric < ApplicationRecord
   self.ignored_columns += ["deployment_run_id"]
