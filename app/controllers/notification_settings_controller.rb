@@ -45,6 +45,7 @@ class NotificationSettingsController < SignedInApplicationController
   def notif_setting_params
     params.require(:notification_setting).permit(
       :active,
+      :core_enabled,
       :release_specific_enabled,
       notification_channels: []
     )

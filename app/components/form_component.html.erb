@@ -2,9 +2,11 @@
   <% set_form(form) %>
   <% if free_form? %>
     <%= content %>
-    <% if action? %>
+    <% if actions.present? %>
       <div class="flex justify-end mt-6">
-        <%= action %>
+        <% actions.each do |action| %>
+          <%= action %>
+        <% end %>
       </div>
     <% end %>
   <% else %>
@@ -25,10 +27,16 @@
         </div>
       <% end %>
 
-      <div class="grid grid-cols-3 items-start xl:space-x-20 p-2">
-        <div class="col-span-1"></div>
-        <div class="col-span-2 justify-start mt-2"><%= action %></div>
-      </div>
+      <% if actions.present? %>
+        <div class="grid grid-cols-3 items-start xl:space-x-20 p-2">
+          <div class="col-span-1"></div>
+          <div class="col-span-2 justify-start mt-2">
+            <% actions.each do |action| %>
+              <%= action %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
     </div>
   <% end %>
 <% end %>

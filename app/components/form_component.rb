@@ -1,5 +1,5 @@
 class FormComponent < BaseComponent
-  renders_one :action
+  renders_many :actions
   renders_many :sections, ->(**args) { Form::SectionComponent.new(form: @form, **args) }
   renders_many :advanced_sections, ->(**args) { Form::SectionComponent.new(form: @form, **args) }
 

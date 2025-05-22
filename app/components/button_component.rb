@@ -40,7 +40,7 @@ class ButtonComponent < BaseComponent
   renders_one :icon, IconComponent
   renders_one :tooltip, ->(text, **args) { TooltipComponent.new(text, **args.merge(cursor: false)) }
 
-  def initialize(label: nil, scheme: :switcher, type: :button, size: :xxs, options: nil, html_options: nil, arrow: :none, authz: true, turbo: true, disabled: false, auto_label_case: true)
+  def initialize(label: nil, scheme: :switcher, type: :button, size: :xxs, options: nil, html_options: nil, arrow: :none, authz: true, turbo: true, disabled: false, auto_label_case: true, name: nil, value: nil)
     arrow = (scheme == :switcher) ? :double : arrow
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
@@ -58,6 +58,8 @@ class ButtonComponent < BaseComponent
     @disabled = disabled
     @turbo = turbo
     @auto_label_case = auto_label_case
+    @button_name = name
+    @button_value = value
   end
 
   def before_render
@@ -109,12 +111,12 @@ class ButtonComponent < BaseComponent
   end
 
   def button_component
-    return button_tag(@options, @html_options) { render(icon) } if icon_only?
+    return button_tag(@html_options) { render(icon) } if icon_only?
 
     classname = icon? ? "ml-1.5" : ""
     classname += " group-disabled:hidden" unless disabled?
 
-    button_tag(@options, @html_options) do
+    button_tag(@html_options) do
       concat(icon) if icon?
 
       if title_text?
@@ -141,6 +143,8 @@ class ButtonComponent < BaseComponent
     options[:class] << " #{DISABLED_STYLE}" if disabled?
     options[:class] = options[:class].squish
     options[:disabled] = true if disabled?
+    options[:name] = @button_name unless @button_name.nil?
+    options[:value] = @button_value unless @button_value.nil?
 
     options[:data] ||= {}
     options[:data][:turbo] = @turbo

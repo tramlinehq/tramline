@@ -13,8 +13,8 @@
 
       <% if @train.notifications_release_specific_channel_enabled? %>
         <%= render Form::SwitchComponent.new(form: section.F,
-                                             field_name: :active,
-                                             switch_id: "active-switch-#{@setting.id}",
+                                             field_name: :core_enabled,
+                                             switch_id: "core-switch-#{@setting.id}",
                                              on_label: "Core notifications enabled",
                                              off_label: "Core notifications disabled") do |switch| %>
           <% switch.with_child do %>
@@ -31,10 +31,24 @@
             </div>
           <% end %>
         <% end %>
+
+        <% if @setting.release_specific_channel_allowed? %>
+          <%= render Form::SwitchComponent.new(form: section.F,
+                                               field_name: :release_specific_enabled,
+                                               switch_id: "release-specific-enabled-#{@setting.id}",
+                                               on_label: "Release-specific channel enabled",
+                                               off_label: "Release-specific channel disabled") do |switch| %>
+            <% switch.with_info_icon do %>
+              <span class="text-secondary">
+              Channels like <strong><%= release_specific_channel_pattern(@setting.app) %></strong> will be automatically created for each release.
+            </span>
+            <% end %>
+          <% end %>
+        <% end %>
       <% else %>
         <%= render Form::SwitchComponent.new(form: section.F,
-                                             field_name: :active,
-                                             switch_id: "active-switch-#{@setting.id}",
+                                             field_name: :core_enabled,
+                                             switch_id: "core-switch-#{@setting.id}",
                                              on_label: "Notifications enabled",
                                              off_label: "Notifications disabled") do |switch| %>
           <% switch.with_child do %>
@@ -52,24 +66,16 @@
           <% end %>
         <% end %>
       <% end %>
-
-      <% if @setting.release_specific_channel_allowed? && @train.notifications_release_specific_channel_enabled? %>
-        <%= render Form::SwitchComponent.new(form: section.F,
-                                             field_name: :release_specific_enabled,
-                                             switch_id: "release-specific-enabled-#{@setting.id}",
-                                             on_label: "Release-specific channel enabled",
-                                             off_label: "Release-specific channel disabled") do |switch| %>
-          <% switch.with_info_icon do %>
-            <span class="text-secondary">
-              Channels like <strong><%= release_specific_channel_pattern(@setting.app) %></strong> will be automatically created for each release.
-            </span>
-          <% end %>
-        <% end %>
-      <% end %>
     <% end %>
 
     <% f.with_action do %>
-      <% f.F.authz_submit "Save", "archive.svg", size: :xs %>
+      <% f.F.authz_submit @setting.active? ? "Save" : "Enable", "archive.svg", size: :xs, name: f.F.field_name(:active), value: true %>
+    <% end %>
+
+    <% if @setting.release_specific_channel_allowed? && @train.notifications_release_specific_channel_enabled? && @setting.active? %>
+      <% f.with_action do %>
+          <% f.F.authz_submit "Disable", "archive_x.svg", size: :xs, scheme: :danger, name: f.F.field_name(:active), value: false %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>
