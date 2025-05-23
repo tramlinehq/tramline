@@ -12,7 +12,6 @@
 #  scheduled_at          :datetime         not null
 #  status                :string           not null
 #  stopped_at            :datetime
-#  tag_name              :string
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
 #  last_commit_id        :uuid             indexed
