@@ -159,16 +159,20 @@
             </div>
           <% end %>
 
-          <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
-            <% group.with_item(link: {path: edit_accounts_user_path, "data-turbo": false}) do %>
-              Settings
+          <% unless current_user.demo? %>
+            <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
+              <% group.with_item(link: {path: edit_accounts_user_path, "data-turbo": false}) do %>
+                Settings
+              <% end %>
             <% end %>
           <% end %>
 
-          <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
-            <% if billing? %>
-              <% group.with_item(link: {path: billing_link, external: true}) do %>
-                Go to billing ↗
+          <% unless current_user.demo? %>
+            <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
+              <% if billing? %>
+                <% group.with_item(link: {path: billing_link, external: true}) do %>
+                  Go to billing ↗
+                <% end %>
               <% end %>
             <% end %>
 
@@ -177,9 +181,11 @@
             <% end %>
           <% end %>
 
-          <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
-            <% group.with_item(link: {path: logout_path, "data-turbo": false}) do %>
-              Sign out
+          <% unless current_user.demo? %>
+            <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
+              <% group.with_item(link: {path: logout_path, "data-turbo": false}) do %>
+                Sign out
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
