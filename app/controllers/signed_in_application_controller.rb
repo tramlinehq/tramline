@@ -11,7 +11,7 @@ class SignedInApplicationController < ApplicationController
   before_action :turbo_frame_request_variant
   before_action :set_currents
   before_action :set_paper_trail_whodunnit
-  before_action :require_login, unless: :authentication_controllers?
+  before_action :require_login, unless: -> { authentication_controllers? || demo_org? }
   before_action :require_organization!
   before_action :track_behaviour
   before_action :set_app
