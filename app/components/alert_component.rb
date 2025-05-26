@@ -3,6 +3,7 @@ class AlertComponent < BaseComponent
     notice: "text-blue-900 bg-blue-50 dark:bg-main-800 dark:text-blue-400",
     error: "text-red-800 bg-red-50 dark:bg-main-800 dark:text-red-400",
     alert: "text-red-800 bg-red-50 dark:bg-main-800 dark:text-red-400",
+    timedout: "text-red-800 bg-red-50 dark:bg-main-800 dark:text-red-400",
     success: "text-green-800 bg-green-50 dark:bg-main-800 dark:text-green-400",
     info: "text-main-800 bg-main-50 dark:bg-main-800 dark:text-main-400",
     announce: "text-amber-800 bg-amber-50 dark:bg-amber-800 dark:text-amber-400"
@@ -12,6 +13,7 @@ class AlertComponent < BaseComponent
     notice: "border border-blue-300 dark:border-blue-800 " + COLORS[:notice],
     error: "border border-red-300 dark:border-red-800 " + COLORS[:error],
     alert: "border border-red-300 dark:border-red-800 " + COLORS[:alert],
+    timedout: "border border-red-300 dark:border-red-800 " + COLORS[:alert],
     success: "border border-green-300 dark:border-green-800 " + COLORS[:success],
     info: "border border-main-300 dark:border-main-800 " + COLORS[:info],
     announce: "border border-amber-300 dark:border-amber-800 " + COLORS[:announce]
