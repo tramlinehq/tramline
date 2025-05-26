@@ -31,8 +31,9 @@ class ApplicationController < ActionController::Base
         rescue ActiveRecord::RecordNotFound
           current_user&.organizations&.first
         end
-      else
-        current_user&.organizations&.first
+      elsif current_user.present?
+        current_user.organizations.find_by(name: cookies["current_organization"]) ||
+          current_user.organizations.first
       end
   end
 
