@@ -1,0 +1,51 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":sparkles: New RC deployed for *<%= @release_version %> (<%= @build_number %>)*"
+      }
+    }
+    <% @submissions.each do |submission| %>
+    ,
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        <% if submission.deep_link.present? %>
+          "text": "Submitted to <<%= submission.deep_link %>|*<%= submission.display %>*>"
+        <% else %>
+          "text": "Submitted to *<%= submission.display %>*"
+        <% end %>
+      }
+    }
+    <% end %>
+    <% if @changes_since_last_run.present? %>
+    ,
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Changes since last RC"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<%= @changes_since_last_run %>"
+        }
+      ]
+    }
+    <% end %>
+    ,
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "- Changes since the last release are sent within this message thread."
+        }
+      ]
+    }
+  ]
+}
