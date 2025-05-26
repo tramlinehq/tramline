@@ -120,6 +120,16 @@ class PreProdRelease < ApplicationRecord
     ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq
   end
 
+  def changes_since_last_run
+    last_successful_run = previous_successful
+    changes_since_last_run = release
+      .all_commits
+      .between_commits(last_successful_run&.commit, commit)
+      &.commit_messages(true)
+
+    changes_since_last_run || [] if last_successful_run.present?
+  end
+
   # NOTES: This logic should simplify once we allow users to edit the tester notes
   def set_default_tester_notes
     self.tester_notes = changes_since_previous
@@ -159,7 +169,9 @@ class PreProdRelease < ApplicationRecord
       commit_url: commit.url,
       build_number: build.build_number,
       release_version: release.release_version,
-      submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", ")
+      submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", "),
+      submissions: store_submissions,
+      changes_since_last_run: changes_since_last_run.join("\n")
     )
   end
 
