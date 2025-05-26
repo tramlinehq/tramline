@@ -22,7 +22,7 @@ class Triggers::PreRelease
 
     attr_reader :release, :release_branch
     delegate :train, :hotfix?, :hotfix_with_new_branch?, to: :release
-    delegate :working_branch, :version_bump_enabled?, to: :train
+    delegate :working_branch, :version_bump_enabled?, :current_version_before_release_branch?, to: :train
 
     def create_default_release_branch
       source =
@@ -48,7 +48,10 @@ class Triggers::PreRelease
     end
 
     def version_bump_required?
-      version_bump_enabled? && !hotfix? && @pre_release_version_bump_pr.blank?
+      version_bump_enabled? &&
+        current_version_before_release_branch? &&
+        !hotfix? &&
+        @pre_release_version_bump_pr.blank?
     end
   end
 end

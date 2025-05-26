@@ -36,6 +36,7 @@
 #  version_bump_branch_prefix                     :string
 #  version_bump_enabled                           :boolean          default(FALSE)
 #  version_bump_file_paths                        :string           default([]), is an Array
+#  version_bump_strategy                          :string
 #  version_current                                :string
 #  version_seeded_with                            :string
 #  versioning_strategy                            :string           default("semver")
@@ -68,6 +69,10 @@ class Train < ApplicationRecord
     pbxproj: ".pbxproj",
     yaml: ".yaml"
   }.freeze
+  VERSION_BUMP_STRATEGIES = {
+    current_version_before_release_branch: "Current Version Before Release Branch Cuts",
+    next_version_after_release_branch: "Next Version After Release Branch Cuts"
+  }.freeze
 
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
@@ -89,6 +94,7 @@ class Train < ApplicationRecord
   enum :status, {draft: "draft", active: "active", inactive: "inactive"}
   enum :backmerge_strategy, {continuous: "continuous", on_finalize: "on_finalize"}
   enum :versioning_strategy, VersioningStrategies::Semverish::STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
+  enum :version_bump_strategy, VERSION_BUMP_STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
 
   friendly_id :name, use: :slugged
   normalizes :name, with: ->(name) { name.squish }
@@ -112,6 +118,7 @@ class Train < ApplicationRecord
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
   validate :version_config_constraints
   validate :version_bump_config
+  validates :version_bump_strategy, inclusion: {in: VERSION_BUMP_STRATEGIES.keys.map(&:to_s)}, if: -> { version_bump_enabled? }
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -596,6 +603,11 @@ class Train < ApplicationRecord
 
   def version_bump_config
     if version_bump_enabled?
+      if version_bump_strategy.blank?
+        errors.add(:version_bump_strategy, :blank)
+        return
+      end
+
       if version_bump_file_paths.blank?
         errors.add(:version_bump_file_paths, :blank)
         return

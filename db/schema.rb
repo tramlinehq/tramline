@@ -963,6 +963,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_22_160156) do
     t.boolean "tag_end_of_release_vcs_release", default: false
     t.boolean "tag_store_releases_vcs_release", default: false
     t.boolean "notifications_release_specific_channel_enabled", default: false
+    t.string "version_bump_strategy"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

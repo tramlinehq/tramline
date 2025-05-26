@@ -49,6 +49,7 @@ module Coordinators
     end
 
     def self.commits_have_landed!(release, head_commit, rest_commits)
+      Triggers::VersionBump.call(release)
       Coordinators::ProcessCommits.call(release, head_commit, rest_commits)
     end
 
