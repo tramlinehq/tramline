@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_05_19_092146) do
+ActiveRecord::Schema[7.2].define(version: 2025_05_22_160156) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -601,6 +601,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_19_092146) do
     t.uuid "production_release_id"
     t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
     t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
+    t.index ["production_release_id", "fetched_at"], name: "idx_on_production_release_id_fetched_at_0e35dbfce7", order: { fetched_at: :desc }
     t.index ["production_release_id"], name: "index_release_health_metrics_on_production_release_id"
   end
 
