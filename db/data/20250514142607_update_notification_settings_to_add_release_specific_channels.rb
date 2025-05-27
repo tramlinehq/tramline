@@ -2,6 +2,7 @@
 
 class UpdateNotificationSettingsToAddReleaseSpecificChannels < ActiveRecord::Migration[7.2]
   def up
+    return
     # find all trains with release-specific channels enabled
     Train.where(notifications_release_specific_channel_enabled: true).find_each do |train|
       notification_settings = train.notification_settings.release_specific_channel_allowed
