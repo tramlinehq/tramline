@@ -285,6 +285,7 @@ class Train < ApplicationRecord
         train_id: id,
         kind:,
         active: true,
+        core_enabled: true,
         notification_channels: notification_channel.present? ? [notification_channel] : nil
       }
     }

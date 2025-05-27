@@ -440,6 +440,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_22_160156) do
     t.datetime "updated_at", null: false
     t.jsonb "release_specific_channel"
     t.boolean "release_specific_enabled", default: false
+    t.boolean "core_enabled", default: false, null: false
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
   end
