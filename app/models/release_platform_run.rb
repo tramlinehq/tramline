@@ -12,7 +12,6 @@
 #  scheduled_at          :datetime         not null
 #  status                :string           not null
 #  stopped_at            :datetime
-#  tag_name              :string
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
 #  last_commit_id        :uuid             indexed
@@ -23,12 +22,11 @@ class ReleasePlatformRun < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
-  include Taggable
   include ActionView::Helpers::DateHelper
   include Displayable
   using RefinedString
 
-  self.ignored_columns += %w[branch_name commit_sha original_release_version]
+  self.ignored_columns += %w[branch_name commit_sha original_release_version tag_name]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :release_platform

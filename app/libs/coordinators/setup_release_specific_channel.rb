@@ -18,7 +18,7 @@ class Coordinators::SetupReleaseSpecificChannel
     # Use the default notification channel if we did not receive a new channel
     notification_channel = notification_provider.create_channel!(channel_name) || train.notification_channel
     release.set_notification_channel!(notification_channel)
-    notification_settings.release_specific_channel_allowed.update(notification_channels: [notification_channel])
+    notification_settings.release_specific_channel_allowed.update(release_specific_channel: notification_channel)
   end
 
   def channel_name

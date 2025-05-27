@@ -55,6 +55,14 @@ class NotificationSettingsComponent < ViewComponent::Base
     NotificationSettingComponent.new(app, train, setting)
   end
 
+  def header_columns
+    if @train.notifications_release_specific_channel_enabled?
+      ["kind", "core channels", "release specific channel"]
+    else
+      %w[kind channels status]
+    end
+  end
+
   def display_settings
     settings.sort_by { |setting| NOTIFICATIONS[setting.kind][:number] }
   end
@@ -75,8 +83,8 @@ class NotificationSettingsComponent < ViewComponent::Base
       @setting = setting
     end
 
-    attr_reader :setting
-    delegate :id, :active?, :notification_channels, :notification_provider, :release_specific_channel_allowed?, to: :setting
+    attr_reader :setting, :app
+    delegate :id, :active?, :notification_channels, :notification_provider, :release_specific_channel_allowed?, :channels, to: :setting
 
     def edit_path
       edit_app_train_notification_setting_path(@app, @train, setting)
@@ -91,7 +99,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     end
 
     def needs_invite?
-      setting.kind == NotificationSetting.kinds[:build_available]
+      setting.kind == NotificationSetting.kinds[:build_available_v2]
     end
 
     def edit_frame_id
@@ -114,18 +122,26 @@ class NotificationSettingsComponent < ViewComponent::Base
       NOTIFICATIONS[setting.kind][:icon] || "aerial_lift.svg"
     end
 
-    def status_text
-      return "Enabled" if setting.active?
+    def status_text(flag)
+      return "Enabled" if flag
       "Disabled"
     end
 
-    def status_type
-      return :success if setting.active?
-      :neutral
+    def status_type(flag)
+      return :success if flag
+      :failure
     end
 
     def status_pill
-      BadgeComponent.new(text: status_text, status: status_type)
+      BadgeComponent.new(text: status_text(setting.active?), status: status_type(setting.active?))
+    end
+
+    def release_specific_status_pill
+      if setting.release_specific_channel_allowed?
+        BadgeComponent.new(text: status_text(setting.release_specific_enabled?), status: status_type(setting.release_specific_enabled?))
+      else
+        BadgeComponent.new(text: "Not Applicable", status: :neutral)
+      end
     end
 
     def default_channels
