@@ -49,7 +49,7 @@ module Coordinators
     end
 
     def self.commits_have_landed!(release, head_commit, rest_commits)
-      Triggers::VersionBump.call(release)
+      Coordinators::VersionBumpJob.perform_async(release.id)
       Coordinators::ProcessCommits.call(release, head_commit, rest_commits)
     end
 
@@ -93,8 +93,14 @@ module Coordinators
 
     def self.pull_request_closed!(pr)
       release = pr.release
-      Actions.complete_release!(release) if release.post_release_failed?
-      Releases::PreReleaseJob.perform_async(release.id) if release.pre_release? && pr.pre_release_version_bump?
+
+      if release.post_release_failed?
+        Actions.complete_release!(release)
+      end
+
+      if release.pre_release? && pr.pre_release_version_bump?
+        Releases::PreReleaseJob.perform_async(release.id)
+      end
     end
   end
 
