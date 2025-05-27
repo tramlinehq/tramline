@@ -32,7 +32,7 @@ class ApplicationController < ActionController::Base
           current_user&.organizations&.first
         end
       elsif current_user.present?
-        current_user.organizations.find_by(name: cookies["current_organization"]) ||
+        current_user.organizations.find_by(slug: cookies["current_organization"]) ||
           current_user.organizations.first
       end
   end
