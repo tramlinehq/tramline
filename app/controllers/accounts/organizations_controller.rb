@@ -28,6 +28,7 @@ class Accounts::OrganizationsController < SignedInApplicationController
   end
 
   def switch
+    cookies["current_organization"] = {value: params[:id], expires: 30.days}
     session[:active_organization] = params[:id]
     redirect_to :root
   end
