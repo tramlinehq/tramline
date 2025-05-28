@@ -167,8 +167,8 @@
             <% end %>
           <% end %>
 
-          <% unless current_user.demo? %>
-            <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
+          <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
+            <% unless current_user.demo? %>
               <% if billing? %>
                 <% group.with_item(link: {path: billing_link, external: true}) do %>
                   Go to billing ↗
