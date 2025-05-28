@@ -95,44 +95,48 @@ namespace :anonymize do
       end
 
       table "release_platform_configs" do
-        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && !Config::ReleasePlatform.exists?(record["id"]) }
+        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && !Config::ReleasePlatform.exists?(jump_id(record["id"])) }
 
-        primary_key "id"
+        anonymize("id") { |field| jump_id(field.value) }
         whitelist "release_platform_id"
         whitelist_timestamps
       end
 
       table "workflow_configs" do
-        continue { |index, record| Config::ReleasePlatform.exists?(record["release_platform_config_id"]) && !Config::Workflow.exists?(record["id"]) }
+        continue { |index, record| Config::ReleasePlatform.exists?(jump_id(record["release_platform_config_id"])) && !Config::Workflow.exists?(jump_id(record["id"])) }
 
-        primary_key "id"
-        whitelist "artifact_name_pattern", "identifier", "kind", "name", "release_platform_config_id"
+        anonymize("id") { |field| jump_id(field.value) }
+        anonymize("release_platform_config_id") { |field| jump_id(field.value) }
+        whitelist "artifact_name_pattern", "identifier", "kind", "name"
         whitelist_timestamps
       end
 
       table "release_step_configs" do
-        continue { |index, record| Config::ReleasePlatform.exists?(record["release_platform_config_id"]) && !Config::ReleaseStep.exists?(record["id"]) }
+        continue { |index, record| Config::ReleasePlatform.exists?(jump_id(record["release_platform_config_id"])) && !Config::ReleaseStep.exists?(jump_id(record["id"])) }
 
-        primary_key "id"
-        whitelist "auto_promote", "kind", "release_platform_config_id"
+        anonymize("id") { |field| jump_id(field.value) }
+        anonymize("release_platform_config_id") { |field| jump_id(field.value) }
+        whitelist "auto_promote", "kind"
         whitelist_timestamps
       end
 
       table "submission_configs" do
-        continue { |index, record| Config::ReleaseStep.exists?(record["release_step_config_id"]) && !Config::Submission.exists?(record["id"]) }
+        continue { |index, record| Config::ReleaseStep.exists?(jump_id(record["release_step_config_id"])) && !Config::Submission.exists?(jump_id(record["id"])) }
 
-        primary_key "id"
-        whitelist "submission_type", "number", "auto_promote", "finish_rollout_in_next_release", "rollout_enabled", "rollout_stages", "release_step_config_id"
+        anonymize("id") { |field| jump_id(field.value) }
+        anonymize("release_step_config_id") { |field| jump_id(field.value) }
+        whitelist "submission_type", "number", "auto_promote", "finish_rollout_in_next_release", "rollout_enabled", "rollout_stages"
         whitelist_timestamps
         anonymize("integrable_id") { |_| app.id }
         anonymize("integrable_type") { |_| "App" }
       end
 
       table "submission_external_configs" do
-        continue { |index, record| Config::Submission.exists?(record["submission_config_id"]) && !Config::SubmissionExternal.exists?(record["id"]) }
+        continue { |index, record| Config::Submission.exists?(jump_id(record["submission_config_id"])) && !Config::SubmissionExternal.exists?(jump_id(record["id"])) }
 
-        primary_key "id"
-        whitelist "identifier", "name", "internal", "submission_config_id"
+        anonymize("id") { |field| jump_id(field.value) }
+        anonymize("submission_config_id") { |field| jump_id(field.value) }
+        whitelist "identifier", "name", "internal"
         whitelist_timestamps
       end
 
@@ -438,5 +442,9 @@ namespace :anonymize do
 
   def whitelist_timestamps
     whitelist "created_at", "updated_at"
+  end
+
+  def jump_id(id)
+    id.to_i + 1000000
   end
 end
