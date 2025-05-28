@@ -24,17 +24,18 @@
     <% if @changes_since_last_run.present? %>
     ,
     {
-      "type": "context",
-      "elements": [
-        {
+      "type": "section",
+      "text": {
           "type": "mrkdwn",
           "text": "Changes since last RC"
-        },
-        {
+      }
+    },
+    {
+      "type": "section",
+      "text": {
           "type": "mrkdwn",
-          "text": "<%= @changes_since_last_run %>"
-        }
-      ]
+          "text": <%= @changes_since_last_run.to_json %>
+      }
     }
     <% end %>
     ,
