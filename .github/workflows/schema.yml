@@ -20,7 +20,7 @@ jobs:
           gh pr view ${{ github.event.pull_request.number }} --json body -q '.body'
 
       - name: Run schema dependency check
-        run: ruby bin/schema_lint ${{ github.base_ref }}
         env:
           GH_TOKEN: ${{ github.token }}
-          GITHUB_REF_NAME: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: ruby bin/schema_lint ${{ github.base_ref }}
