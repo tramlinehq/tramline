@@ -1,11 +1,11 @@
-name: Lint Schema-Dependent Changes
+name: Lint
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  schema-dependency-check:
+  schema-deps:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,6 +17,6 @@ jobs:
         uses: cli/cli-action@v2
 
       - name: Run schema dependency check
-        run: .github/workflows/scripts/schema_lint.sh ${{ github.base_ref }}
+        run: ruby bin/schema_lint ${{ github.base_ref }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
