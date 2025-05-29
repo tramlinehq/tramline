@@ -67,6 +67,10 @@ class Accounts::User < ApplicationRecord
 
   def email = unique_authn_id
 
+  def demo?
+    slug == ENV["DEMO_USER_SLUG"]
+  end
+
   class << self
     def find_via_email(email)
       joins(:email_authentications).find_by(email_authentications: {email: email})
