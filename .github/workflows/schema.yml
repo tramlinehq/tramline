@@ -13,6 +13,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Test GitHub CLI
+        run: |
+          gh pr view chore/schema-lint --json body -q '.body'
+
       - name: Run schema dependency check
         run: ruby bin/schema_lint ${{ github.base_ref }}
         env:
