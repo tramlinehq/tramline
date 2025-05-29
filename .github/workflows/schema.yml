@@ -17,11 +17,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr view chore/schema-lint --json body -q '.body'
+          gh pr view ${{ github.head_ref }} --json body -q '.body'
 
       - name: Run schema dependency check
         run: ruby bin/schema_lint ${{ github.base_ref }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REF_NAME: ${{ github.head_ref }}
           GH_TOKEN: ${{ github.token }}
+          GITHUB_REF_NAME: ${{ github.head_ref }}
