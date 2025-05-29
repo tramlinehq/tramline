@@ -1,61 +1,75 @@
 #!/usr/bin/env ruby
 
-require "open3"
+base_ref = ARGV[0] || abort("Usage: ruby #{__FILE__} <base_ref>")
+error = false
+def w(message) = warn("⚠️ #{message}")
+def i(message) = message.is_a?(String) ? puts("ℹ️ #{message}") : puts(message)
 
-BASE_REF = ARGV[0] || abort("Usage: ruby #{__FILE__} <base_ref>")
-
-def w(message)
-  puts "\n"
-  warn "⚠️ #{message}"
-end
-
-def i(message)
-  puts "\n"
-  if message.is_a?(String)
-    puts "ℹ️ #{message}"
-  else
-    puts message
-  end
-end
-
-# Get PR body for skip flag
+# Skip lint check if PR body contains '#skip-schema-lint'
+i "Checking if schema linting should be skipped..."
 pr_body = `gh pr view #{ENV['GITHUB_REF_NAME']} --json body -q '.body' 2>/dev/null`
 if pr_body&.include?('#skip-schema-lint')
   i "Skipping schema lint due to '#skip-schema-lint' in PR body"
   exit 0
 end
 
-# Get list of changed files
-changed_files_output, _ = Open3.capture2("git diff --name-only origin/#{BASE_REF}...HEAD")
+# Show list of changed files
+changed_files_output = `git diff --name-only origin/#{base_ref}...HEAD`
 changed_files = changed_files_output.split("\n")
 i "Changed files:\n#{changed_files.join("\n")}" if changed_files.any?
 
-error = false
-
-# 1. schema.rb => check for change in lib/anonymize/
+# == Schema Linting ==
+# 1. schema.rb => check for change in lib/tasks/anonymize.rake
+commit_shas = `git rev-list --reverse origin/#{base_ref}..HEAD`.split("\n")
+schema_commits = []
+anonymize_commits = []
 expected_change_in = "lib/tasks/anonymize.rake"
-if changed_files.include?("db/schema.rb")
-  unless changed_files.any? { |f| f.start_with?(expected_change_in) }
-    w "file=db/schema.rb changed — expected a corresponding change in #{expected_change_in}"
+
+commit_shas.each do |sha|
+  files = `git diff-tree --no-commit-id --name-only -r #{sha}`.split("\n")
+  schema_commits << sha if files.include?("db/schema.rb")
+  anonymize_commits << sha if files.any? { |f| f.start_with?(expected_change_in) }
+end
+
+# For each schema.rb-changing commit, check if there's a later commit in lib/tasks/anonymize.rake
+schema_commits.each do |schema_sha|
+  schema_index = commit_shas.index(schema_sha)
+  later_anonymize = anonymize_commits.find do |anon_sha|
+    commit_shas.index(anon_sha) >= schema_index
+  end
+
+  unless later_anonymize
+    w "file=db/schema.rb – changed in commit #{schema_sha} without an update in #{expected_change_in} afterward"
     error = true
   end
 end
 
+# == Data Migration Linting ==
 # 2. data_schema.rb => ensure older migrations have a safe return
 if changed_files.include?("db/data_schema.rb")
-  i "data_schema.rb changed — checking previous data migrations for safe return..."
+  i "data_schema.rb changed — checking that all but the latest data migrations have a safe return..."
 
-  migrations = Dir["db/data_migrate/*.rb"].sort
+  migrations = Dir["db/data/*.rb"].sort
   if migrations.size < 2
     i "Not enough data migrations to validate safe return logic"
   else
     latest = migrations.last
-    i "Latest migration: #{File.basename(latest)}"
+    i "Latest migration: #{latest}"
+
     previous_migrations = migrations[0...-1] || []
     previous_migrations.each do |file|
-      contents = File.read(file)
-      unless contents.match?(/return if|#\s*safe return/i)
-        w "file=#{file} – missing 'safe return' in #{File.basename(file)}"
+      lines = File.readlines(file).map(&:strip)
+      def_up_index = lines.find_index { |line| line.match?(/^def\s+up\b/) }
+
+      if def_up_index.nil?
+        w "file=#{file} – no `def up` found in #{File.basename(file)}"
+        error = true
+        next
+      end
+
+      next_line = lines[def_up_index + 1]
+      unless next_line == "return"
+        w "file=#{file} – first line inside `def up` must be `return`, but found: #{next_line.inspect}"
         error = true
       end
     end
