@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_05_22_160156) do
+ActiveRecord::Schema[7.2].define(version: 2025_05_29_114812) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -964,6 +964,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_22_160156) do
     t.boolean "tag_end_of_release_vcs_release", default: false
     t.boolean "tag_store_releases_vcs_release", default: false
     t.boolean "notifications_release_specific_channel_enabled", default: false
+    t.string "delete_me"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
