@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_05_29_022631) do
+ActiveRecord::Schema[7.2].define(version: 2025_05_22_160156) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -216,7 +216,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_29_022631) do
     t.tsvector "search_vector"
     t.uuid "release_changelog_id"
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
-    t.index ["commit_hash", "release_id"], name: "index_commits_on_commit_hash_and_release_id", unique: true
+    t.index ["commit_hash", "release_id", "release_changelog_id"], name: "idx_on_commit_hash_release_id_release_changelog_id_29200d00c2", unique: true
     t.index ["message"], name: "index_commits_on_message", opclass: :gin_trgm_ops, using: :gin
     t.index ["release_changelog_id"], name: "index_commits_on_release_changelog_id"
     t.index ["release_id", "timestamp"], name: "index_commits_on_release_id_and_timestamp"
@@ -443,7 +443,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_29_022631) do
     t.boolean "core_enabled", default: false, null: false
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
-    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))", validate: false
   end
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
