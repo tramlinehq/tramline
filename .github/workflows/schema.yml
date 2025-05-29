@@ -13,14 +13,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Test GitHub CLI
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh pr view ${{ github.head_ref }} --json body -q '.body'
-
       - name: Run schema dependency check
         run: ruby bin/schema_lint ${{ github.base_ref }}
         env:
           GH_TOKEN: ${{ github.token }}
-          GITHUB_REF_NAME: ${{ github.head_ref }}
+          GITHUB_REF_NAME: ${{ github.event.pull_request.number }}
