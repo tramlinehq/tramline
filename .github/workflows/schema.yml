@@ -13,9 +13,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install GitHub CLI
-        uses: cli/cli-action@v2
-
       - name: Run schema dependency check
         run: ruby bin/schema_lint ${{ github.base_ref }}
         env:
