@@ -68,13 +68,22 @@
       <% end %>
     <% end %>
 
-    <% f.with_action do %>
-      <% f.F.authz_submit @setting.active? ? "Save" : "Enable", "archive.svg", size: :xs, name: f.F.field_name(:active), value: true %>
-    <% end %>
-
-    <% if @setting.release_specific_channel_allowed? && @train.notifications_release_specific_channel_enabled? && @setting.active? %>
-      <% f.with_action do %>
+    <% if @setting.release_specific_channel_allowed? && @train.notifications_release_specific_channel_enabled? %>
+      <% if @setting.active? %>
+        <% f.with_action do %>
+          <% f.F.authz_submit "Save", "archive.svg", size: :xs, name: f.F.field_name(:active), value: true %>
+        <% end %>
+        <% f.with_action do %>
           <% f.F.authz_submit "Disable", "archive_x.svg", size: :xs, scheme: :danger, name: f.F.field_name(:active), value: false %>
+        <% end %>
+      <% else %>
+        <% f.with_action do %>
+          <% f.F.authz_submit "Enable", "archive.svg", size: :xs, name: f.F.field_name(:active), value: true %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <% f.with_action do %>
+        <% f.F.authz_submit "Save", "archive.svg", size: :xs, name: f.F.field_name(:active), value: true %>
       <% end %>
     <% end %>
   <% end %>
