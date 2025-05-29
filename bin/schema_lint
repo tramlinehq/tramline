@@ -8,9 +8,7 @@ def i(message) = message.is_a?(String) ? puts("ℹ️ #{message}") : puts(messag
 # Skip lint check if the PR body contains '#skip-schema-lint'
 i "Checking if schema linting should be skipped..."
 bypass = "#skip-schema-lint"
-puts "command to run: gh pr view #{ENV['PR_NUMBER']} --json body -q '.body' 2>/dev/null"
 pr_body = `gh pr view #{ENV["PR_NUMBER"]} --json body -q '.body' 2>/dev/null`
-puts pr_body
 if pr_body&.include?(bypass)
   i "Skipping schema lint due to '#{bypass}' in PR body"
   exit 0
