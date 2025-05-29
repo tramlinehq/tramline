@@ -92,7 +92,7 @@ class Triggers::PullRequest
       repo_integration.merge_pr!(pr.number)
     rescue Installations::Error => ex
       case ex.reason
-      when :pull_request_already_exists, :merge_commits_not_allowed
+      when :pull_request_not_mergeable, :merge_commits_not_allowed
         pr.stamp_unmergeable!
         raise MergeError, "Tramline was unable to merge the (#{pr.display_attr(:phase)}) PR"
       when :pull_request_failed_merge_check
