@@ -13,7 +13,6 @@
 #  compact_build_notes                            :boolean          default(FALSE)
 #  continuous_backmerge_branch_prefix             :string
 #  copy_approvals                                 :boolean          default(FALSE)
-#  delete_me                                      :string
 #  description                                    :string
 #  freeze_version                                 :boolean          default(FALSE)
 #  kickoff_at                                     :datetime
