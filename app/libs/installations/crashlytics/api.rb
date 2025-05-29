@@ -23,14 +23,19 @@ module Installations
     def datasets
       execute do
         target_datasets = {}
+
+        # datasets will appear sorted by time
         bigquery_client.datasets.each do |dataset|
           case dataset.dataset_id
-          when /^analytics_\d+$/ then target_datasets[:ga4] = dataset_pattern(dataset)
-          when /crashlytics/i then target_datasets[:crashlytics] = dataset_pattern(dataset)
+          when /^analytics_\d+$/
+            target_datasets[:ga4] ||= dataset_pattern(dataset)
+          when /crashlytics/i
+            target_datasets[:crashlytics] ||= dataset_pattern(dataset)
           else
             Rails.logger.warn("Dataset ID does not match expected datasets: #{dataset.dataset_id}")
           end
         end
+
         target_datasets
       end
     end
