@@ -14,6 +14,8 @@ jobs:
           fetch-depth: 0
 
       - name: Test GitHub CLI
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh pr view chore/schema-lint --json body -q '.body'
 
@@ -22,3 +24,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ github.head_ref }}
+          GH_TOKEN: ${{ github.token }}
