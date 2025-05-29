@@ -66,7 +66,21 @@ class NotificationSetting < ApplicationRecord
   delegate :app, to: :train
   delegate :notification_provider, to: :app
   delegate :channels, to: :notification_provider
+  before_validation :handle_active_flag
   validate :notification_channels_settings
+
+  def handle_active_flag
+    if release_specific_notifiable?
+      unless active?
+        self.core_enabled = false
+        self.release_specific_enabled = false
+      end
+    else
+      unless core_enabled?
+        self.active = false
+      end
+    end
+  end
 
   def notify!(message, params, file_id = nil, file_title = nil)
     return unless send_notifications?
