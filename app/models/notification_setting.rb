@@ -122,6 +122,10 @@ class NotificationSetting < ApplicationRecord
         errors.add(:release_specific_enabled, :release_specific_not_enabled_in_train)
       end
     end
+
+    if active? && ![core_enabled, release_specific_enabled].any?
+      errors.add(:active, :at_least_one)
+    end
   end
 
   # rubocop:disable Rails/SkipsModelValidations
