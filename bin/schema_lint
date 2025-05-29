@@ -5,7 +5,7 @@ error = false
 def w(message) = warn("⚠️ #{message}")
 def i(message) = message.is_a?(String) ? puts("ℹ️ #{message}") : puts(message)
 
-# Skip lint check if PR body contains '#skip-schema-lint'
+# Skip lint check if the PR body contains '#skip-schema-lint'
 i "Checking if schema linting should be skipped..."
 pr_body = `gh pr view #{ENV['GITHUB_REF_NAME']} --json body -q '.body' 2>/dev/null`
 if pr_body&.include?('#skip-schema-lint')
