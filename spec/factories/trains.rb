@@ -59,6 +59,12 @@ FactoryBot.define do
       build_queue_wait_time { 1.hour }
     end
 
+    trait :with_version_bump do
+      version_bump_enabled { true }
+      version_bump_file_paths { ["pubspec.yaml"] }
+      version_bump_strategy { :current_version_before_release_branch }
+    end
+
     after(:build) do |train|
       def train.working_branch_presence = true
 

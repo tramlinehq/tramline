@@ -2,6 +2,7 @@
 
 class UpdatePullRequestsToNormalizeKindsAndPhases < ActiveRecord::Migration[7.2]
   def up
+    return
     PullRequest.transaction do
       PullRequest.find_each do |pull_request|
         if pull_request.phase == "version_bump"

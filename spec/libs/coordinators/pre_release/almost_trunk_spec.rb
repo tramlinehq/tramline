@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-describe Triggers::PreRelease::AlmostTrunk do
+describe Coordinators::PreRelease::AlmostTrunk do
   describe ".call" do
     let(:working_branch) { "main" }
     let(:release_tag_name) { Faker::Lorem.word }
@@ -41,7 +41,7 @@ describe Triggers::PreRelease::AlmostTrunk do
     end
 
     context "when version bump is enabled" do
-      let(:train) { create(:train, working_branch: working_branch, version_bump_enabled: true, version_bump_file_paths: ["pubspec.yaml"]) }
+      let(:train) { create(:train, :with_version_bump, working_branch: working_branch) }
       let(:release) { create(:release, train: train, tag_name: release_tag_name) }
       let(:commit) { create(:commit, release:) }
       let(:release_branch) { release.release_branch }

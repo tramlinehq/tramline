@@ -322,6 +322,12 @@
           <% end %>
 
           <% component.with_child do %>
+            <%= section.F.labeled_select :version_bump_strategy,
+                                         "Version Bump Strategy",
+                                         options_for_select(Train::VERSION_BUMP_STRATEGIES.invert, train.version_bump_strategy),
+                                         {disabled: !train.version_bump_enabled?},
+                                         {} %>
+
             <%= section.F.labeled_text_field :version_bump_file_paths,
                                              "Build File Paths",
                                              value: list_to_csv(section.F.object.version_bump_file_paths),
