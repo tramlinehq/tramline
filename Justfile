@@ -15,30 +15,30 @@ spec file="":
   fi
 
 lint:
-  docker exec -it tramline-web-1 bin/rubocop --autocorrect
-  docker exec -it tramline-web-1 bin/erb_lint --format compact --lint-all --autocorrect
+  docker compose exec web bin/rubocop --autocorrect
+  docker compose exec web bin/erb_lint --format compact --lint-all --autocorrect
 
 pre-setup:
   docker compose run --rm pre-setup
 
 rails +command="console":
-  docker exec -it tramline-web-1 bundle exec rails {{ command }}
+  docker compose exec web bundle exec rails {{ command }}
 
 rake +command:
-  docker exec -it tramline-web-1 bundle exec rake {{ command }}
+  docker compose exec web bundle exec rake {{ command }}
 
 bundle +command:
-  docker exec -it tramline-web-1 bundle {{ command }}
+  docker compose exec web bundle {{ command }}
 
 devlog log_lines="1000":
   tail -f -n {{ log_lines }} log/development.log
 
 bglog log_lines="20":
   @ echo "=====\nNOTE:\n=====\nWorker logs are STDOUT only.\nThis command tails and pull logs from the worker container.\nThis is in-line with how daemons should log: https://github.com/sidekiq/sidekiq/wiki/Logging#logger.\n↓"
-  docker-compose logs -f --no-log-prefix --tail={{ log_lines }} worker
+  docker compose logs -f --no-log-prefix --tail={{ log_lines }} worker
 
-attach container="web":
-  docker attach --detach-keys "ctrl-d" tramline-{{ container }}-1
+attach service="web":
+  docker compose attach --detach-keys "ctrl-d" {{ service }}
 
-shell container="web":
-  docker exec -it tramline-{{ container }}-1 /bin/bash
+shell service="web":
+  docker compose exec {{ service }} /bin/bash
