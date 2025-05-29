@@ -18,8 +18,8 @@ changed_files_output = `git diff --name-only origin/#{base_ref}...HEAD`
 changed_files = changed_files_output.split("\n")
 i "Changed files:\n#{changed_files.join("\n")}" if changed_files.any?
 
-# == Schema Linting ==
-# 1. schema.rb => check for change in lib/tasks/anonymize.rake
+# == Schema Linting (db/schema.rb) ==
+# Check for change in lib/tasks/anonymize.rake
 commit_shas = `git rev-list --reverse origin/#{base_ref}..HEAD`.split("\n")
 schema_commits = []
 anonymize_commits = []
@@ -31,21 +31,28 @@ commit_shas.each do |sha|
   anonymize_commits << sha if files.any? { |f| f.start_with?(expected_change_in) }
 end
 
-# For each schema.rb-changing commit, check if there's a later commit in lib/tasks/anonymize.rake
-schema_commits.each do |schema_sha|
-  schema_index = commit_shas.index(schema_sha)
-  later_anonymize = anonymize_commits.find do |anon_sha|
-    commit_shas.index(anon_sha) >= schema_index
-  end
+# Check if schema changes are still present in the current branch
+# They could have been reverted or modified in a later commit
+_diff_output = `git diff origin/#{base_ref} HEAD db/schema.rb | git apply --reverse --check 2>&1`
+diff_still_exists = $?&.success?
 
-  unless later_anonymize
-    w "file=db/schema.rb – changed in commit #{schema_sha} without an update in #{expected_change_in} afterward"
-    error = true
+# For each schema.rb-changing commit, check if there's a later commit to update lib/tasks/anonymize.rake
+if diff_still_exists
+  schema_commits.each do |schema_sha|
+    schema_index = commit_shas.index(schema_sha)
+    later_anonymize = anonymize_commits.find { |anon_sha| commit_shas.index(anon_sha) >= schema_index }
+
+    unless later_anonymize
+      w "file=db/schema.rb – changed in commit #{schema_sha} without an update in #{expected_change_in} afterward"
+      error = true
+    end
   end
+else
+  i "No changes in db/schema.rb since base branch #{base_ref} — skipping schema linting"
 end
 
-# == Data Migration Linting ==
-# 2. data_schema.rb => ensure older migrations have a safe return
+# == Data Migration Linting (db/data_schema.rb) ==
+# Ensure older migrations have a safe return
 if changed_files.include?("db/data_schema.rb")
   i "data_schema.rb changed — checking that all but the latest data migrations have a safe return..."
 

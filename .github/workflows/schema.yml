@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  schema-deps:
+  schema_deps:
     runs-on: ubuntu-latest
 
     steps:
