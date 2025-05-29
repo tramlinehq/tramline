@@ -95,7 +95,7 @@ class NotificationSetting < ApplicationRecord
       channels.concat(notification_channels)
     end
 
-    if release_specific_notifiable? && release_specific_channel.present?
+    if release_specific_notifiable? && release_specific_enabled? && release_specific_channel.present?
       channels.append(release_specific_channel)
     end
 
@@ -103,7 +103,7 @@ class NotificationSetting < ApplicationRecord
   end
 
   def release_specific_notifiable?
-    train.notifications_release_specific_channel_enabled? && release_specific_enabled?
+    train.notifications_release_specific_channel_enabled? && release_specific_channel_allowed?
   end
 
   def release_specific_channel_allowed?
