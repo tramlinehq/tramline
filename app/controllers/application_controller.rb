@@ -38,7 +38,17 @@ class ApplicationController < ActionController::Base
   end
 
   def current_user
-    @current_user ||= current_email_authentication&.user || @current_sso_user
+    @current_user ||= current_email_authentication&.user || @current_sso_user || demo_user
+  end
+
+  def demo_user
+    return if session[:active_organization].blank?
+    org = Accounts::Organization.find_by(slug: session[:active_organization])
+    return unless org&.demo?
+
+    demo_user_slug = ENV.fetch("DEMO_USER_SLUG", nil)
+    return if demo_user_slug.blank?
+    Accounts::User.find_by(slug: demo_user_slug)
   end
 
   protected

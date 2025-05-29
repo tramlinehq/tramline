@@ -49,7 +49,8 @@ namespace :anonymize do
         whitelist "name", "slug", "description", "status", "branching_strategy", "version_seeded_with", "version_current",
           "repeat_duration", "build_queue_wait_time", "build_queue_size", "backmerge_strategy", "manual_release",
           "tag_store_releases_with_platform_names", "tag_store_releases", "compact_build_notes", "tag_end_of_release", "build_queue_enabled",
-          "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_enabled", "tag_end_of_release_prefix", "tag_end_of_release_suffix"
+          "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_release_specific_channel_enabled",
+          "tag_end_of_release_prefix", "tag_end_of_release_suffix"
         whitelist_timestamps
         anonymize("app_id") { |field| app.id }
         anonymize("notification_channel") { |field| {"id" => "dummy", "name" => "test", "is_private" => false} }
@@ -57,7 +58,7 @@ namespace :anonymize do
       end
 
       table "release_indices" do
-        continue { |index, record| Train.exists?(record["train_id"]) && !ReleaseIndex.exists?(record["id"]) }
+        continue { |index, record| record["train_id"] == train_id && !ReleaseIndex.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "tolerable_range", "train_id"
@@ -73,10 +74,10 @@ namespace :anonymize do
       end
 
       table "notification_settings" do
-        continue { |index, record| Train.exists?(record["train_id"]) && !NotificationSetting.exists?(record["id"]) }
+        continue { |index, record| record["train_id"] == train_id && !NotificationSetting.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "train_id", "kind", "active", "user_groups"
+        whitelist "train_id", "kind", "active", "user_groups", "release_specific_enabled", "release_specific_channel"
         whitelist_timestamps
         anonymize("notification_channels") do |field|
           [{"id" => "dummy", "name" => "test", "is_private" => false}]
@@ -84,7 +85,7 @@ namespace :anonymize do
       end
 
       table "release_platforms" do
-        continue { |index, record| (record["platform"] == platform || platform == "cross_platform") && Train.exists?(record["train_id"]) && !ReleasePlatform.exists?(record["id"]) }
+        continue { |index, record| (record["platform"] == platform || platform == "cross_platform") && record["train_id"] == train_id && !ReleasePlatform.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "status", "name", "version_seeded_with", "version_current", "slug", "working_branch", "branching_strategy",
@@ -94,44 +95,48 @@ namespace :anonymize do
       end
 
       table "release_platform_configs" do
-        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && !Config::ReleasePlatform.exists?(record["id"]) }
+        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && !Config::ReleasePlatform.exists?(jump_id(record["id"])) }
 
-        primary_key "id"
+        anonymize("id") { |field| jump_id(field.value) }
         whitelist "release_platform_id"
         whitelist_timestamps
       end
 
       table "workflow_configs" do
-        continue { |index, record| Config::ReleasePlatform.exists?(record["release_platform_config_id"]) && !Config::Workflow.exists?(record["id"]) }
+        continue { |index, record| Config::ReleasePlatform.exists?(jump_id(record["release_platform_config_id"])) && !Config::Workflow.exists?(jump_id(record["id"])) }
 
-        primary_key "id"
-        whitelist "artifact_name_pattern", "identifier", "kind", "name", "release_platform_config_id"
+        anonymize("id") { |field| jump_id(field.value) }
+        anonymize("release_platform_config_id") { |field| jump_id(field.value) }
+        whitelist "artifact_name_pattern", "identifier", "kind", "name"
         whitelist_timestamps
       end
 
       table "release_step_configs" do
-        continue { |index, record| Config::ReleasePlatform.exists?(record["release_platform_config_id"]) && !Config::ReleaseStep.exists?(record["id"]) }
+        continue { |index, record| Config::ReleasePlatform.exists?(jump_id(record["release_platform_config_id"])) && !Config::ReleaseStep.exists?(jump_id(record["id"])) }
 
-        primary_key "id"
-        whitelist "auto_promote", "kind", "release_platform_config_id"
+        anonymize("id") { |field| jump_id(field.value) }
+        anonymize("release_platform_config_id") { |field| jump_id(field.value) }
+        whitelist "auto_promote", "kind"
         whitelist_timestamps
       end
 
       table "submission_configs" do
-        continue { |index, record| Config::ReleaseStep.exists?(record["release_step_config_id"]) && !Config::Submission.exists?(record["id"]) }
+        continue { |index, record| Config::ReleaseStep.exists?(jump_id(record["release_step_config_id"])) && !Config::Submission.exists?(jump_id(record["id"])) }
 
-        primary_key "id"
-        whitelist "submission_type", "number", "auto_promote", "finish_rollout_in_next_release", "rollout_enabled", "rollout_stages", "release_step_config_id"
+        anonymize("id") { |field| jump_id(field.value) }
+        anonymize("release_step_config_id") { |field| jump_id(field.value) }
+        whitelist "submission_type", "number", "auto_promote", "finish_rollout_in_next_release", "rollout_enabled", "rollout_stages"
         whitelist_timestamps
         anonymize("integrable_id") { |_| app.id }
         anonymize("integrable_type") { |_| "App" }
       end
 
       table "submission_external_configs" do
-        continue { |index, record| Config::Submission.exists?(record["submission_config_id"]) && !Config::SubmissionExternal.exists?(record["id"]) }
+        continue { |index, record| Config::Submission.exists?(jump_id(record["submission_config_id"])) && !Config::SubmissionExternal.exists?(jump_id(record["id"])) }
 
-        primary_key "id"
-        whitelist "identifier", "name", "internal", "submission_config_id"
+        anonymize("id") { |field| jump_id(field.value) }
+        anonymize("submission_config_id") { |field| jump_id(field.value) }
+        whitelist "identifier", "name", "internal"
         whitelist_timestamps
       end
 
@@ -165,11 +170,14 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "train_id", "branch_name", "status", "original_release_version", "release_version", "scheduled_at",
-          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch", "is_v2"
+          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch",
+          "is_v2"
         whitelist_timestamps
 
         anonymize("release_pilot_id").using FieldStrategy::SelectFromList.new(user_ids)
         anonymize("internal_notes") { |_| Release::DEFAULT_INTERNAL_NOTES }
+        anonymize("notification_channel") { |_| {"id" => "dummy", "name" => "release-specific-channel", "is_private" => false} }
+        anonymize("slug") { |_| Haikunator.haikunate }
       end
 
       table "build_queues" do
@@ -208,7 +216,7 @@ namespace :anonymize do
         continue { |index, record| Release.exists?(record["release_id"]) && !Commit.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "release_platform_id", "timestamp", "release_platform_run_id", "release_id", "build_queue_id", "backmerge_failure", "parents"
+        whitelist "release_platform_id", "timestamp", "release_platform_run_id", "release_id", "build_queue_id", "backmerge_failure", "parents", "release_changelog_id"
         whitelist_timestamps
         anonymize("commit_hash") { |field| SecureRandom.uuid.split("-").join }
         anonymize("message") { |field| Faker::Lorem.paragraph_by_chars(number: field.value.size) }
@@ -223,7 +231,7 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "release_platform_run_id", "number", "state", "phase", "source", "head_ref", "base_ref", "opened_at",
-          "closed_at", "release_id", "commit_id", "source_id", "labels"
+          "closed_at", "release_id", "commit_id", "source_id", "labels", "kind", "merge_commit_sha"
         whitelist_timestamps
         anonymize("title") { |field| Faker::Lorem.paragraph_by_chars(number: field.value.size) }
         anonymize("body") { |field| Faker::Lorem.paragraph_by_chars(number: field.value.size) }
@@ -242,12 +250,15 @@ namespace :anonymize do
           c = field.value
           c.dig("beta_release", "submissions")&.each do |submission|
             submission["integrable_id"] = app.id
+            submission["integrable_type"] = "App"
           end
           c.dig("internal_release", "submissions")&.each do |submission|
             submission["integrable_id"] = app.id
+            submission["integrable_type"] = "App"
           end
           c.dig("production_release", "submissions")&.each do |submission|
             submission["integrable_id"] = app.id
+            submission["integrable_type"] = "App"
           end
           c
         end
@@ -257,7 +268,7 @@ namespace :anonymize do
         continue { |index, record| Release.exists?(record["release_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !ReleaseMetadata.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "release_platform_run_id", "locale", "created_at", "updated_at", "release_id"
+        whitelist "release_platform_run_id", "locale", "created_at", "updated_at", "release_id", "default_locale"
         whitelist_timestamps
         anonymize("release_notes").using FieldStrategy::LoremIpsum.new
         anonymize("promo_text").using FieldStrategy::LoremIpsum.new
@@ -273,6 +284,7 @@ namespace :anonymize do
           c = field.value
           c.dig("submissions")&.each do |submission|
             submission["integrable_id"] = app.id
+            submission["integrable_type"] = "App"
           end
           c
         end
@@ -306,13 +318,14 @@ namespace :anonymize do
       table "production_releases" do
         continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !ProductionRelease.exists?(record["id"]) }
         primary_key "id"
-        whitelist "release_platform_run_id", "status", "commit_id", "build_id"
+        whitelist "release_platform_run_id", "status", "commit_id", "build_id", "tag_name"
         whitelist_timestamps
         anonymize("previous_id") { |_| nil }
         anonymize("config") do |field|
           c = field.value
           c.dig("submissions")&.each do |submission|
             submission["integrable_id"] = app.id
+            submission["integrable_type"] = "App"
           end
           c
         end
@@ -322,11 +335,12 @@ namespace :anonymize do
         continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !StoreSubmission.exists?(record["id"]) }
         primary_key "id"
         whitelist "approved_at", "failure_reason", "name", "parent_release_type", "prepared_at", "rejected_at", "sequence_number", "status",
-          "store_release", "store_status", "submitted_at", "type", "build_id", "parent_release_id", "release_platform_run_id"
+          "store_release", "store_status", "submitted_at", "type", "build_id", "parent_release_id", "release_platform_run_id", "last_stable_status"
         whitelist_timestamps
         anonymize("config") do |field|
           c = field.value
           c["integrable_id"] = app.id
+          c["integrable_type"] = "App"
           c
         end
       end
@@ -428,5 +442,9 @@ namespace :anonymize do
 
   def whitelist_timestamps
     whitelist "created_at", "updated_at"
+  end
+
+  def jump_id(id)
+    id.to_i + 1000000
   end
 end
