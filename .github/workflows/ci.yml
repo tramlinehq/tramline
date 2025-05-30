@@ -121,4 +121,4 @@ jobs:
         run: bundle exec rake db:parallel:create db:parallel:prepare
 
       - name: Run tests
-        run: bundle exec parallel_rspec
+        run: bundle exec rake parallel_rspec
