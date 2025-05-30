@@ -52,7 +52,7 @@ module Installations
         decorated_reason: :pull_request_not_mergeable
       },
       {
-        message_matcher: /At least 1 approving review is required by reviewers/i,
+        message_matcher: /approving review is required by reviewers/i,
         decorated_reason: :pull_request_not_mergeable
       },
       {

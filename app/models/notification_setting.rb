@@ -67,7 +67,21 @@ class NotificationSetting < ApplicationRecord
   delegate :app, to: :train
   delegate :notification_provider, to: :app
   delegate :channels, to: :notification_provider
+  before_validation :handle_active_flag
   validate :notification_channels_settings
+
+  def handle_active_flag
+    if release_specific_notifiable?
+      unless active?
+        self.core_enabled = false
+        self.release_specific_enabled = false
+      end
+    else
+      unless core_enabled?
+        self.active = false
+      end
+    end
+  end
 
   def notify!(message, params, file_id = nil, file_title = nil)
     return unless send_notifications?
@@ -96,7 +110,7 @@ class NotificationSetting < ApplicationRecord
       channels.concat(notification_channels)
     end
 
-    if release_specific_notifiable? && release_specific_channel.present?
+    if release_specific_notifiable? && release_specific_enabled? && release_specific_channel.present?
       channels.append(release_specific_channel)
     end
 
@@ -104,7 +118,7 @@ class NotificationSetting < ApplicationRecord
   end
 
   def release_specific_notifiable?
-    train.notifications_release_specific_channel_enabled? && release_specific_enabled?
+    train.notifications_release_specific_channel_enabled? && release_specific_channel_allowed?
   end
 
   def release_specific_channel_allowed?
@@ -112,7 +126,7 @@ class NotificationSetting < ApplicationRecord
   end
 
   def notification_channels_settings
-    if active? && notification_channels.blank?
+    if core_enabled? && notification_channels.blank?
       errors.add(:notification_channels, :at_least_one)
     end
 
@@ -122,6 +136,10 @@ class NotificationSetting < ApplicationRecord
       elsif !train.notifications_release_specific_channel_enabled?
         errors.add(:release_specific_enabled, :release_specific_not_enabled_in_train)
       end
+    end
+
+    if active? && ![core_enabled, release_specific_enabled].any?
+      errors.add(:active, :at_least_one)
     end
   end
 
