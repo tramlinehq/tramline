@@ -121,3 +121,5 @@ group :test do
   gem "webdrivers"
   gem "selenium-webdriver"
 end
+
+gem "parallel_rspec", "~> 2.4"
