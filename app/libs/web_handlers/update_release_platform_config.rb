@@ -1,5 +1,6 @@
 # TODO: ensure the maps are consistently mutated or copied
 # TODO: write tests for this service
+# TODO: list down scenarios this doesn't solve for
 class WebHandlers::UpdateReleasePlatformConfig
   using RefinedString
 
