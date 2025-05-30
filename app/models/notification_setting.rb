@@ -125,7 +125,7 @@ class NotificationSetting < ApplicationRecord
   end
 
   def notification_channels_settings
-    if active? && notification_channels.blank?
+    if core_enabled? && notification_channels.blank?
       errors.add(:notification_channels, :at_least_one)
     end
 
