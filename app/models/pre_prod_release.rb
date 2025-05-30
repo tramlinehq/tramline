@@ -108,22 +108,25 @@ class PreProdRelease < ApplicationRecord
     ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq { |c| c.commit_hash }
   end
 
-  def changes_since_previous
-    changes_since_last_release = release.release_changelog&.commit_messages(true)
-    last_successful_run = previous_successful
-    changes_since_last_run = release
-      .all_commits
-      .between_commits(last_successful_run&.commit, commit)
-      &.commit_messages(true)
-
-    return changes_since_last_run || [] if last_successful_run.present?
-    ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq
+  def changes_since_last_release
+    release.release_changelog&.commit_messages(true) || []
   end
 
-  # NOTES: This logic should simplify once we allow users to edit the tester notes
-  def set_default_tester_notes
-    self.tester_notes = changes_since_previous
-      .map { |str| str&.strip }
+  def changes_since_previous
+    previous_successful.present? ? changes_since_last_run : (changes_since_last_run + changes_since_last_release).uniq
+  end
+
+  def changes_since_last_run
+    last_successful_run = previous_successful
+
+    release
+      .all_commits
+      .between_commits(last_successful_run&.commit, commit)
+      &.commit_messages(true) || []
+  end
+
+  def generate_tester_notes(changes)
+    changes.map { |str| str&.strip }
       .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
       .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
       .map { |line| line.gsub('"', "\\\"") }
@@ -132,6 +135,11 @@ class PreProdRelease < ApplicationRecord
       .uniq
       .map { |str| "• #{str}" }
       .join("\n").presence || "Nothing new"
+  end
+
+  # NOTES: This logic should simplify once we allow users to edit the tester notes
+  def set_default_tester_notes
+    self.tester_notes = generate_tester_notes(changes_since_previous)
   end
 
   def previous_successful
@@ -159,7 +167,10 @@ class PreProdRelease < ApplicationRecord
       commit_url: commit.url,
       build_number: build.build_number,
       release_version: release.release_version,
-      submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", ")
+      submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", "),
+      submissions: store_submissions,
+      changes_since_last_run: (changes_since_last_run if previous_successful.present?),
+      tester_notes:
     )
   end
 

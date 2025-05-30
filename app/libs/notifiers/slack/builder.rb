@@ -32,7 +32,8 @@ module Notifiers
         workflow_run_failed: Renderers::WorkflowRunFailed,
         workflow_run_halted: Renderers::WorkflowRunHalted,
         workflow_run_unavailable: Renderers::WorkflowRunUnavailable,
-        workflow_trigger_failed: Renderers::WorkflowTriggerFailed
+        workflow_trigger_failed: Renderers::WorkflowTriggerFailed,
+        rc_finished: Renderers::RcFinished
       }.with_indifferent_access
 
       MissingSlackRenderer = Class.new(StandardError)
