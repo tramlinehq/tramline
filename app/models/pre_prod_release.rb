@@ -169,7 +169,8 @@ class PreProdRelease < ApplicationRecord
       release_version: release.release_version,
       submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", "),
       submissions: store_submissions,
-      changes_since_last_run: (generate_tester_notes(changes_since_last_run) if changes_since_last_run.present?)
+      changes_since_last_run: (changes_since_last_run if previous_successful.present?),
+      tester_notes:
     )
   end
 

@@ -27,16 +27,21 @@
       "type": "section",
       "text": {
           "type": "mrkdwn",
-          "text": "Changes since last RC"
-      }
-    },
-    {
-      "type": "section",
-      "text": {
-          "type": "mrkdwn",
-          "text": <%= @changes_since_last_run.to_json %>
+          "text": ":pushpin: Changes since last RC"
       }
     }
+    <% @changes_since_last_run.each do |change| %>
+    ,
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": <%= change.to_json %>
+        }
+      ]
+    }
+    <% end %>
     <% end %>
     ,
     {
