@@ -109,7 +109,7 @@ class PreProdRelease < ApplicationRecord
   end
 
   def changes_since_last_release
-    release.release_changelog&.commit_messages(true).presence || []
+    release.release_changelog&.commit_messages(true) || []
   end
 
   def changes_since_previous
@@ -118,12 +118,11 @@ class PreProdRelease < ApplicationRecord
 
   def changes_since_last_run
     last_successful_run = previous_successful
-    return [] if last_successful_run.blank?
 
     release
       .all_commits
       .between_commits(last_successful_run&.commit, commit)
-      &.commit_messages(true)
+      &.commit_messages(true) || []
   end
 
   def generate_tester_notes(changes)
