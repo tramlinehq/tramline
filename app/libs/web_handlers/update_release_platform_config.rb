@@ -1,3 +1,4 @@
+# TODO: ensure the maps are consistently mutated or copied
 class WebHandlers::UpdateReleasePlatformConfig
   using RefinedString
 
