@@ -10,6 +10,7 @@
 #  is_automatic              :boolean          default(FALSE)
 #  is_v2                     :boolean          default(FALSE)
 #  new_hotfix_branch         :boolean          default(FALSE)
+#  notification_channel      :jsonb
 #  original_release_version  :string
 #  release_type              :string           not null
 #  scheduled_at              :datetime
@@ -56,6 +57,7 @@ class Release < ApplicationRecord
     finalizing
     pre_release_failed
     backmerge_failure
+    tag_created
     vcs_release_created
     finalize_failed
     stopped
@@ -177,7 +179,28 @@ class Release < ApplicationRecord
 
   delegate :versioning_strategy, :patch_version_bump_only, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
-  delegate :platform, :organization, to: :app
+  delegate :platform, :organization, :notification_provider, to: :app
+
+  def set_notification_channel!(notification_channel)
+    self.notification_channel = {
+      id: notification_channel["id"],
+      name: notification_channel["name"]
+    }
+
+    save!
+  end
+
+  def release_specific_channel_deep_link
+    notification_provider.channel_deep_link(release_specific_channel_id) if release_specific_channel_id.present?
+  end
+
+  def release_specific_channel_name
+    notification_channel&.fetch("name")
+  end
+
+  def release_specific_channel_id
+    notification_channel&.fetch("id")
+  end
 
   def pre_release_error_message
     last_error = passports.where(reason: :pre_release_failed, kind: :error).last
@@ -254,25 +277,25 @@ class Release < ApplicationRecord
     release_platform_runs.all? { |rpr| rpr.latest_production_release.present? }
   end
 
-  def backmerge_failure_count
+  def mid_release_backmerge_failure_count
     return 0 unless continuous_backmerge?
-    all_commits.size - backmerge_prs.size - 1
+    all_commits.size - mid_release_back_merge_prs.size - 1
   end
 
-  def backmerge_prs
-    pull_requests.ongoing
+  def mid_release_back_merge_prs
+    pull_requests.mid_release.back_merge_type
   end
 
-  def post_release_prs
-    pull_requests.post_release
+  def post_release_back_merge_prs
+    pull_requests.post_release.back_merge_type
   end
 
-  def pre_release_prs
-    pull_requests.pre_release
+  def pre_release_forward_merge_prs
+    pull_requests.pre_release.forward_merge_type
   end
 
-  def mid_release_prs
-    pull_requests.mid_release
+  def mid_release_stability_prs
+    pull_requests.mid_release.stability_type
   end
 
   def pre_release?
@@ -390,19 +413,6 @@ class Release < ApplicationRecord
     branch_name
   end
 
-  # recursively attempt to create a release until a unique one gets created
-  # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
-  def create_vcs_release!(input_tag_name = base_tag_name)
-    return unless train.tag_releases?
-    return if tag_name.present?
-    train.create_vcs_release!(release_branch, input_tag_name, release_diff)
-    update!(tag_name: input_tag_name)
-    event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
-  rescue Installations::Error => ex
-    raise unless [:tag_reference_already_exists, :tagged_release_already_exists].include?(ex.reason)
-    create_vcs_release!(unique_tag_name(input_tag_name, last_commit.short_sha))
-  end
-
   def release_diff
     changes_since_last_release = release_changelog&.commit_messages(true)
     changes_since_last_run = all_commits.commit_messages(true)
@@ -429,22 +439,6 @@ class Release < ApplicationRecord
     train.vcs_provider&.pull_requests_url(branch_name, open:)
   end
 
-  class PreReleaseUnfinishedError < StandardError; end
-
-  def close_pre_release_prs
-    return if pull_requests.pre_release.blank?
-
-    pull_requests.pre_release.each do |pr|
-      created_pr = train.vcs_provider.get_pr(pr.number)
-
-      if created_pr[:state].in? %w[open opened]
-        raise PreReleaseUnfinishedError, "Pre-release pull request is not merged yet."
-      else
-        pr.safe_update!(created_pr)
-      end
-    end
-  end
-
   def ready_to_be_finalized?
     release_platform_runs.all? { |prun| prun.finished? || prun.stopped? }
   end
@@ -465,7 +459,8 @@ class Release < ApplicationRecord
         release_completed_at: completed_at,
         release_started_at: scheduled_at,
         final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?),
-        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?)
+        final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?),
+        release_specific_channel_id:
       }
     )
   end
@@ -595,13 +590,22 @@ class Release < ApplicationRecord
     train.previously_finished_release.present? && !hotfix?
   end
 
+  # either the previous release's end-of-release tag, or
+  # it's the previous release's rollout tag
+  def previous_tag_name
+    prev = previous_release
+    return if prev.blank?
+
+    prev.tag_name.presence || prev.production_releases.last&.tag_name
+  end
+
   private
 
   def base_tag_name
     tag = "v#{release_version}"
-    tag = train.tag_prefix + "-" + tag if train.tag_prefix.present?
+    tag = train.tag_end_of_release_prefix + "-" + tag if train.tag_end_of_release_prefix.present?
     tag += "-hotfix" if hotfix?
-    tag += "-" + train.tag_suffix if train.tag_suffix.present?
+    tag += "-" + train.tag_end_of_release_suffix if train.tag_end_of_release_suffix.present?
     tag
   end
 

@@ -52,7 +52,7 @@ module Installations
         decorated_reason: :pull_request_not_mergeable
       },
       {
-        message_matcher: /At least 1 approving review is required by reviewers/i,
+        message_matcher: /approving review is required by reviewers/i,
         decorated_reason: :pull_request_not_mergeable
       },
       {
@@ -74,6 +74,10 @@ module Installations
       {
         message_matcher: /Unexpected inputs provided/i,
         decorated_reason: :workflow_parameter_invalid
+      },
+      {
+        message_matcher: /Merge commits are not allowed on this repository/i,
+        decorated_reason: :merge_commits_not_allowed
       }
     ]
 

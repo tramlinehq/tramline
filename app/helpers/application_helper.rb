@@ -140,10 +140,16 @@ module ApplicationHelper
     middle_section = app&.name || current_organization&.name
     prefix = release&.release_version.presence || page_name || middle_section
 
-    [prefix&.titleize, middle_section&.titleize, suffix&.titleize].compact.join(" | ")
+    [prefix&.titleize, middle_section, suffix&.titleize].compact.join(" | ")
   end
 
   def list_to_csv(list)
     list.map(&:to_s).join(",")
+  end
+
+  def release_specific_channel_pattern(app)
+    platform = app.cross_platform? ? "" : "-#{app.platform}"
+    channel_pattern = "release-#{app.name}#{platform}".downcase.gsub(/\W/, "-")
+    "#{channel_pattern}-{version}"
   end
 end

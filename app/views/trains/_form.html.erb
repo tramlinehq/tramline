@@ -218,8 +218,8 @@
 
       <%= render Form::SwitchComponent.new(form: section.F,
                                            field_name: :continuous_backmerge_enabled,
-                                           on_label: "Continuous Backmerge enabled",
-                                           off_label: "Continuous Backmerge disabled",
+                                           on_label: "Continuous backmerge enabled",
+                                           off_label: "Continuous backmerge disabled",
                                            html_options: {disabled: train.backmerge_disabled?}) do |component| %>
         <% component.with_child do %>
           <%= section.F.labeled_text_field :continuous_backmerge_branch_prefix,
@@ -249,27 +249,27 @@
 
       <%= render Form::SwitchComponent.new(form: section.F,
                                            field_name: :compact_build_notes,
-                                           on_label: "Compact Build Notes enabled",
-                                           off_label: "Compact Build Notes disabled") %>
+                                           on_label: "Compact build notes enabled",
+                                           off_label: "Compact build notes disabled") %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Tag Your Releases") do |section| %>
       <% section.with_description do %>
-        By default, a tag is created at the end of the release with the final version of the release.
-        You can turn off creation of tag. Or, you can add an optional prefix or suffix to your tags.
+        <div class="flex flex-col item-gap-default">
+          <p>
+            By default, a tag (as well as a VCS release) is created at the end of the release with the final version.
+            You can turn off creation of tag. Or, you can add an optional prefix or suffix to your tags.
+          </p>
+
+          <p>
+            In addition, you can also create tags (as well as VCS releases) for every commit that reaches production,
+            i.e. when the rollout begins. This is helpful when you want to tag as soon as something goes to production
+            instead of waiting till the end.
+          </p>
+        </div>
       <% end %>
 
       <%= render partial: "release_tag_form", locals: {form: section.F} %>
-    <% end %>
-
-    <% if @app.cross_platform? %>
-      <%= f.with_advanced_section(heading: "Platform Specific Tags", html_options: {data: {controller: "reveal"}}) do |section| %>
-        <% section.with_description do %>
-          Tag each platform release separately. By default, only one tag is created at the end of the release.
-        <% end %>
-
-        <%= render partial: "store_tags_form", locals: {form: section.F} %>
-      <% end %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Freeze release version") do |section| %>
@@ -312,8 +312,8 @@
 
         <%= render Form::SwitchComponent.new(form: section.F,
                                              field_name: :version_bump_enabled,
-                                             on_label: "Automatic Version Bump enabled",
-                                             off_label: "Automatic Version Bump disabled",
+                                             on_label: "Automatic version bumps enabled",
+                                             off_label: "Automatic version bump disabled",
                                              hide_child: !train.version_bump_enabled?) do |component| %>
 
           <% component.with_info_icon do %>
@@ -322,6 +322,12 @@
           <% end %>
 
           <% component.with_child do %>
+            <%= section.F.labeled_select :version_bump_strategy,
+                                         "Version Bump Strategy",
+                                         options_for_select(Train::VERSION_BUMP_STRATEGIES.invert, train.version_bump_strategy),
+                                         {disabled: !train.version_bump_enabled?},
+                                         {} %>
+
             <%= section.F.labeled_text_field :version_bump_file_paths,
                                              "Build File Paths",
                                              value: list_to_csv(section.F.object.version_bump_file_paths),

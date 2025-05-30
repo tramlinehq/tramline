@@ -5,6 +5,7 @@
 #  id                      :uuid             not null, primary key
 #  config                  :jsonb            not null
 #  status                  :string           default("inflight"), not null, indexed => [release_platform_run_id], indexed => [release_platform_run_id], indexed => [release_platform_run_id]
+#  tag_name                :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
@@ -17,6 +18,7 @@ class ProductionRelease < ApplicationRecord
   # include Sandboxable
   include Loggable
   include Passportable
+  include Taggable
 
   belongs_to :release_platform_run
   belongs_to :build
@@ -28,14 +30,14 @@ class ProductionRelease < ApplicationRecord
 
   scope :sequential, -> { order(created_at: :desc) }
 
-  delegate :app, :train, :release, :platform, :release_platform, to: :release_platform_run
+  delegate :app, :train, :release, :platform, :release_platform, :hotfix?, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, :prepared_at, to: :store_submission
   delegate :notify!, to: :train
   delegate :commit, :version_name, :build_number, to: :build
   delegate :release_health_rules, to: :release_platform
 
-  STAMPABLE_REASONS = %w[created active finished]
+  STAMPABLE_REASONS = %w[created active finished tag_created vcs_release_created]
 
   STATES = {
     inflight: "inflight",
@@ -91,6 +93,8 @@ class ProductionRelease < ApplicationRecord
       event_stamp!(reason: :finished, kind: :notice, data: stamp_data)
       notify!("Production release was finished!", :production_release_finished, notification_params)
     end
+
+    ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank? && !store_rollout.staged_rollout?
     Signal.production_release_is_complete!(release_platform_run)
   end
 
@@ -116,10 +120,7 @@ class ProductionRelease < ApplicationRecord
     previous&.mark_as_stale!
     update!(status: STATES[:active])
     notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
-
-    if train.tag_all_store_releases?
-      ReleasePlatformRuns::CreateTagJob.perform_async(release_platform_run.id, commit.id)
-    end
+    ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank?
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
@@ -205,5 +206,20 @@ class ProductionRelease < ApplicationRecord
 
   def release_monitoring_period
     RELEASE_MONITORING_PERIOD_IN_DAYS[monitoring_provider.class].days.ago
+  end
+
+  private
+
+  def base_tag_name
+    tag = "v#{version_name}"
+    tag << "-hotfix" if hotfix?
+    tag << (train.tag_store_releases_with_platform_names ? "-#{platform}" : "")
+    tag
+  end
+
+  # either the previous production release tag, or
+  # it's the release's previous tag
+  def previous_tag_name
+    previous&.tag_name.presence || release.previous_tag_name
   end
 end

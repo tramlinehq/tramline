@@ -171,7 +171,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def find_build(build_number, raise_on_lock_error:)
-    result = execute_with_retry(raise_on_lock_error:) { installation.find_build(build_number) }
+    apk = Flipper.enabled?(:apk_on_play_store, integrable)
+    result = execute_with_retry(raise_on_lock_error:) { installation.find_build(build_number, apk:) }
     result.ok? ? result.value! : nil
   end
 
@@ -223,7 +224,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def latest_build_number
-    result = execute_with_retry(raise_on_lock_error: false) { installation.find_latest_build_number }
+    apk = Flipper.enabled?(:apk_on_play_store, integrable)
+    result = execute_with_retry(raise_on_lock_error: false) { installation.find_latest_build_number(apk:) }
     result.ok? ? result.value! : nil
   end
 

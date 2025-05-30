@@ -9,11 +9,11 @@ FactoryBot.define do
     release_backmerge_branch { "main" }
     status { "draft" }
     build_queue_enabled { false }
-    tag_platform_releases { false }
-    tag_all_store_releases { false }
-    tag_releases { true }
-    tag_prefix { nil }
-    tag_suffix { nil }
+    tag_store_releases_with_platform_names { false }
+    tag_store_releases { false }
+    tag_end_of_release { true }
+    tag_end_of_release_prefix { nil }
+    tag_end_of_release_suffix { nil }
     versioning_strategy { "semver" }
     approvals_enabled { true }
 
@@ -57,6 +57,12 @@ FactoryBot.define do
       build_queue_enabled { true }
       build_queue_size { 2 }
       build_queue_wait_time { 1.hour }
+    end
+
+    trait :with_version_bump do
+      version_bump_enabled { true }
+      version_bump_file_paths { ["pubspec.yaml"] }
+      version_bump_strategy { :current_version_before_release_branch }
     end
 
     after(:build) do |train|

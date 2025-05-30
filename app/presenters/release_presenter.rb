@@ -80,8 +80,8 @@ class ReleasePresenter < SimpleDelegator
     badge
   end
 
-  def backmerge_pr_count
-    backmerge_prs.size
+  def mid_release_backmerge_pr_count
+    mid_release_back_merge_prs.size
   end
 
   def commit_count

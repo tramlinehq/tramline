@@ -1,21 +1,37 @@
-<%= render Form::SwitchComponent.new(form:,
-                                     field_name: :tag_platform_releases,
-                                     on_label: "Platform Specific Tags enabled",
-                                     off_label: "Platform Specific Tags disabled",
-                                     hide_child: !@train.tag_platform_releases?) do |component| %>
-  <% component.with_child do %>
+<section class="border-default-t pt-4">
+  <div class="flex flex-col item-gap-default">
     <%= render Form::SwitchComponent.new(form:,
-                                         field_name: :tag_all_store_releases,
-                                         on_label: "Tag All Store Releases enabled",
-                                         off_label: "Tag All Store Releases disabled") do |sub_component| %>
-      <% sub_component.with_heading do %>
-        Tag All Store Releases
-      <% end %>
-      <% sub_component.with_description do %>
+                                         field_name: :tag_store_releases,
+                                         on_label: "Tag all store (production) releases enabled",
+                                         off_label: "Tag all store (production) releases disabled") do |component| %>
+      <% component.with_info_icon do %>
         Always tag a build that reaches the store production channel.
-        <br />There can be multiple such builds when there are release fixes during staged rollout.
-        <br />By default, only the final build of the release is tagged.
+        There can be multiple such builds when there are release fixes during staged rollout.
+      <% end %>
+
+      <% component.with_child do %>
+        <div data-controller="help-text" class="flex flex-col item-gap-default">
+          <% if @app.cross_platform? %>
+            <%= render Form::SwitchComponent.new(form:,
+                                                 field_name: :tag_store_releases_with_platform_names,
+                                                 on_label: "Add platform names to tags enabled",
+                                                 off_label: "Add platform names to tags disabled") do |component| %>
+              <% component.with_info_icon do %>
+                Tag each platform release separately. By default, only one tag is created at the end of the release.
+              <% end %>
+            <% end %>
+          <% end %>
+
+          <%= render Form::SwitchComponent.new(form:,
+                                               field_name: :tag_store_releases_vcs_release,
+                                               on_label: "Create a release entry on VCS enabled",
+                                               off_label: "Create a release entry on VCS disabled") do |component| %>
+            <% component.with_info_icon do %>
+              Create a release entry on VCS platforms (currently only works GitHub releases)
+            <% end %>
+          <% end %>
+        </div>
       <% end %>
     <% end %>
-  <% end %>
-<% end %>
+  </div>
+</section>

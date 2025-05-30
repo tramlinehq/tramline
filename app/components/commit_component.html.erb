@@ -22,16 +22,17 @@
           <% end %>
         <% end %>
 
-        <span class="text-xs text-neutral-500 dark:text-white">
-        <span class="font-semibold">
-          <%= render(ButtonComponent.new(scheme: :link,
-                                         label: author_info,
-                                         options: author_link,
-                                         type: :link_external,
-                                         size: :none,
-                                         authz: false)) %>
-        </span>
-        committed on <%= time_format(timestamp, only_day: true) %></span>
+        <div class="text-xs text-neutral-500 dark:text-white">
+          <span class="font-semibold">
+            <%= render(ButtonComponent.new(scheme: :link,
+                                           label: author_info,
+                                           options: author_link,
+                                           type: :link_external,
+                                           size: :none,
+                                           authz: false)) %>
+          </span>
+          committed <%= link_to_external short_sha, url, class: "font-mono underline" %> on <%= time_format(timestamp, with_time: true) %>
+        </div>
       </div>
     </div>
 

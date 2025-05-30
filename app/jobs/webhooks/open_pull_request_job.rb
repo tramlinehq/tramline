@@ -12,6 +12,7 @@ class Webhooks::OpenPullRequestJob < ApplicationJob
 
     pr_attributes[:release_id] = release.id
     pr_attributes[:phase] = :mid_release
+    pr_attributes[:kind] = :stability
     pr_attributes[:state] = :open
     PullRequest.update_or_insert!(pr_attributes)
   end

@@ -6,11 +6,15 @@ class Triggers::VersionBump
   DEFAULT_PR_AUTHOR_EMAIL = "tramline-bot@tramline.app"
 
   def self.call(release)
+    return unless release.train.version_bump_enabled?
     new(release).call
   end
 
   def initialize(release)
     @release = release
+    @train = release.train
+    raise ArgumentError, "Version bumping is not enabled" unless @train.version_bump_enabled?
+    @strategy = @train.version_bump_strategy.to_sym
   end
 
   def call
@@ -18,8 +22,7 @@ class Triggers::VersionBump
     create_branch.then { update_files_and_create_pr }
   end
 
-  attr_reader :release
-  delegate :train, :release_version, to: :release
+  attr_reader :release, :train, :strategy
   delegate :working_branch, :version_bump_file_paths, :version_bump_branch_prefix, to: :train
   delegate :logger, to: Rails
 
@@ -53,24 +56,7 @@ class Triggers::VersionBump
     end
 
     # create (and merge) PR
-    pr_title = "Bump version to #{release_version}"
-    pr_body = <<~BODY
-      🎉 A new release #{release_version} has kicked off!
-
-      This PR updates the version number in `#{updated_files.join(", ")}` to prepare for our #{release_version} release.
-
-      All aboard the release train!
-    BODY
-    Triggers::PullRequest.create_and_merge!(
-      release: release,
-      new_pull_request_attrs: {phase: :version_bump, release_id: release.id, state: :open},
-      existing_pr: release.pull_requests.version_bump.open.first,
-      to_branch_ref: working_branch,
-      from_branch_ref: version_bump_branch,
-      title: pr_title,
-      description: pr_body,
-      error_result_on_auto_merge: true
-    )
+    Triggers::PullRequest.create_and_merge!(**pr_attributes(pr_title, pr_body(updated_files)))
   end
 
   # The matchers will update all instances of matches in the file (can be more than 1)
@@ -123,7 +109,7 @@ class Triggers::VersionBump
   def update_gradle_version(content)
     content
       .then { |c| c.gsub(/versionName\s+"[^"]*"/, "versionName \"#{release_version}\"") } # direct declaration
-      .then { |c| c.gsub(/("versionName"\s*:\s*)"[^"]*"/, "\\1\"#{release_version}\"") }  # dictionary declaration
+      .then { |c| c.gsub(/("versionName"\s*:\s*)"[^"]*"/, "\\1\"#{release_version}\"") } # dictionary declaration
   end
 
   # The version line typically looks like: versionName = "1.0.0"
@@ -146,5 +132,67 @@ class Triggers::VersionBump
 
   memoize def version_bump_branch
     [version_bump_branch_prefix, "version-bump", release_version, release.slug].compact_blank.join("-")
+  end
+
+  memoize def release_version
+    case strategy
+    when :current_version_before_release_branch
+      release.release_version
+    when :next_version_after_release_branch
+      release.next_version
+    end
+  end
+
+  def pr_title
+    case strategy
+    when :current_version_before_release_branch
+      "Bump version to #{release_version}"
+    when :next_version_after_release_branch
+      "Update next version to #{release_version}"
+    end
+  end
+
+  def pr_body(updated_files)
+    case strategy
+    when :current_version_before_release_branch
+      <<~BODY
+        🎉 A new release #{release_version} has kicked off!
+
+        This PR updates the version number in `#{updated_files.join(", ")}` to prepare for our #{release_version} release.
+
+        All aboard the release train!
+      BODY
+    when :next_version_after_release_branch
+      <<~BODY
+        This PR updates the next version number in `#{updated_files.join(", ")}` to prepare for future releases.
+
+        All aboard the release train!
+      BODY
+    end
+  end
+
+  def pr_attributes(title, description)
+    base = {release:, title:, description:, error_result_on_auto_merge: true}
+    new =
+      case strategy
+      when :current_version_before_release_branch
+        {
+          new_pull_request_attrs: {phase: :pre_release, kind: :version_bump, release_id: release.id, state: :open},
+          existing_pr: release.pull_requests.pre_release.version_bump_type.open.first,
+          to_branch_ref: working_branch,
+          from_branch_ref: version_bump_branch
+        }
+      when :next_version_after_release_branch
+        {
+          new_pull_request_attrs: {phase: :mid_release, kind: :version_bump, release_id: release.id, state: :open},
+          existing_pr: release.pull_requests.mid_release.version_bump_type.open.first,
+          to_branch_ref: working_branch,
+          from_branch_ref: version_bump_branch
+        }
+      else
+        {}
+      end
+
+    base.merge(new)
   end
 end

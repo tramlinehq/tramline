@@ -33,14 +33,17 @@
       <div class="flex flex-col justify-between gap-1 h-full">
         <div class="grid grid-cols-12">
           <div class="col-span-5 flex flex-col gap-2">
-            <%= render LiveRelease::BuildComponent.new(
-                  build,
-                  show_metadata: false,
-                  show_ci: false,
-                  show_activity: false,
-                  show_commit: false,
-                  show_compact_metadata: true
-                ) %>
+            <div class="flex flex-row items-center">
+              <%= render LiveRelease::BuildComponent.new(
+                    build,
+                show_metadata: false,
+                show_ci: false,
+                show_activity: false,
+                show_commit: false,
+                show_compact_metadata: true
+                  ) %>
+              <%= render partial: "shared/tag_link", locals: {taggable: parent_release} %>
+            </div>
 
             <div class="flex items-baseline gap-2">
               <%= render IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>

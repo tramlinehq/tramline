@@ -8,7 +8,8 @@ FactoryBot.define do
     body { Faker::Lorem.paragraph }
     state { "open" }
     source { "github" }
-    phase { "ongoing" }
+    phase { "mid_release" }
+    kind { "back_merge" }
     head_ref { Faker::Lorem.word }
     base_ref { Faker::Lorem.word }
     opened_at { Time.current }

@@ -80,6 +80,7 @@
     <!-- future -->
     <% if future_release.present? %>
       <%= render partial: "scheduled_release/show", locals: {
+            skip_or_resume_button: skip_or_resume_button(future_release),
             header: time_text(future_release),
             title: next_version,
             empty_icon: "calendar.svg",
@@ -88,10 +89,11 @@
             footer: time_format(future_release.scheduled_at, only_day: true)
           } %>
       <%= render partial: "scheduled_release/show", locals: {
+            skip_or_resume_button: nil,
             header: time_text(future_release),
             title: next_next_version,
             empty_icon: "calendar.svg",
-            status: scheduled_release_status(future_release),
+            status: future_release_status,
             box_classes: "opacity-50",
             footer: time_format(next_to_next_run_at, only_day: true)
           } %>

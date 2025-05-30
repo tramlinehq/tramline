@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-describe Triggers::PreRelease::AlmostTrunk do
+describe Coordinators::PreRelease::AlmostTrunk do
   describe ".call" do
     let(:working_branch) { "main" }
     let(:release_tag_name) { Faker::Lorem.word }
@@ -41,7 +41,7 @@ describe Triggers::PreRelease::AlmostTrunk do
     end
 
     context "when version bump is enabled" do
-      let(:train) { create(:train, working_branch: working_branch, version_bump_enabled: true, version_bump_file_paths: ["pubspec.yaml"]) }
+      let(:train) { create(:train, :with_version_bump, working_branch: working_branch) }
       let(:release) { create(:release, train: train, tag_name: release_tag_name) }
       let(:commit) { create(:commit, release:) }
       let(:release_branch) { release.release_branch }
@@ -51,7 +51,6 @@ describe Triggers::PreRelease::AlmostTrunk do
       it "triggers version bump if its enabled" do
         allow(Triggers::VersionBump).to receive(:call).and_return(GitHub::Result.new)
         allow(Triggers::Branch).to receive(:call).and_return(GitHub::Result.new)
-        create(:pull_request, release:, commit:, phase: :version_bump)
 
         described_class.call(release, release_branch)
 
@@ -61,7 +60,7 @@ describe Triggers::PreRelease::AlmostTrunk do
       it "creates a new release branch from the version bump commit" do
         allow(Triggers::VersionBump).to receive(:call).and_return(GitHub::Result.new)
         allow(Triggers::Branch).to receive(:call).and_return(GitHub::Result.new)
-        create(:pull_request, release:, commit:, phase: :version_bump, merge_commit_sha: commit.commit_hash)
+        create(:pull_request, release:, commit:, kind: :version_bump, phase: :pre_release, merge_commit_sha: commit.commit_hash)
 
         described_class.call(release, release_branch)
 
@@ -71,7 +70,7 @@ describe Triggers::PreRelease::AlmostTrunk do
       it "defaults to the working branch if no version bump commit is found" do
         allow(Triggers::VersionBump).to receive(:call).and_return(GitHub::Result.new)
         allow(Triggers::Branch).to receive(:call).and_return(GitHub::Result.new)
-        create(:pull_request, release:, commit:, phase: :version_bump, merge_commit_sha: nil)
+        create(:pull_request, release:, commit:, phase: :pre_release, kind: :version_bump, merge_commit_sha: nil)
 
         described_class.call(release, release_branch)
 
@@ -88,6 +87,16 @@ describe Triggers::PreRelease::AlmostTrunk do
 
         expect(Triggers::VersionBump).not_to have_received(:call)
         expect(Triggers::Branch).to have_received(:call).with(hotfix_release, release_tag_name, hotfix_release_branch, :tag, anything, anything)
+      end
+
+      it "only allows one pre release version bump per release" do
+        allow(Triggers::VersionBump).to receive(:call)
+        allow(Triggers::Branch).to receive(:call)
+        _existing_pr = create(:pull_request, release:, commit:, phase: :pre_release, kind: :version_bump, merge_commit_sha: nil)
+
+        described_class.call(release, release_branch)
+
+        expect(Triggers::VersionBump).not_to have_received(:call)
       end
     end
   end

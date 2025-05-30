@@ -99,4 +99,32 @@ describe Coordinators::Signals do
       expect(Coordinators::TriggerSubmissionsJob).to have_received(:perform_async).with(workflow_run.id).once
     end
   end
+
+  describe ".commits_have_landed!" do
+    before do
+      allow(Coordinators::VersionBumpJob).to receive(:perform_async)
+    end
+
+    context "with version bump job" do
+      it "triggers when bump version strategy is next_version_after_release_branch" do
+        train = create(:train, :with_version_bump, version_bump_strategy: :next_version_after_release_branch)
+        release = create(:release, train:)
+        allow(Coordinators::ProcessCommits).to receive(:call)
+
+        described_class.commits_have_landed!(release, anything, anything)
+
+        expect(Coordinators::VersionBumpJob).to have_received(:perform_async).with(release.id).once
+      end
+
+      it "does not trigger for any other strategy" do
+        train = create(:train, :with_version_bump)
+        release = create(:release, train:)
+        allow(Coordinators::ProcessCommits).to receive(:call)
+
+        described_class.commits_have_landed!(release, anything, anything)
+
+        expect(Coordinators::VersionBumpJob).not_to have_received(:perform_async)
+      end
+    end
+  end
 end

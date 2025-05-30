@@ -41,9 +41,17 @@ module Installations
       end
     end
 
-    def find_latest_build_number
+    def find_latest_build_number(apk: false)
       execute do
         edit = client.insert_edit(package_name)
+
+        if apk
+          return client.list_edit_apks(package_name, edit.id)
+              &.apks
+              &.max_by(&:version_code)
+              &.version_code
+        end
+
         client.list_edit_bundles(package_name, edit.id)
           &.bundles
           &.max_by(&:version_code)
@@ -51,9 +59,17 @@ module Installations
       end
     end
 
-    def find_build(build_number)
+    def find_build(build_number, apk: false)
       execute do
         edit = client.insert_edit(package_name)
+
+        if apk
+          return client.list_edit_apks(package_name, edit.id)
+              &.apks
+              &.find { |b| b.version_code.to_s == build_number.to_s }
+              &.to_h
+        end
+
         client.list_edit_bundles(package_name, edit.id)
           &.bundles
           &.find { |b| b.version_code.to_s == build_number.to_s }

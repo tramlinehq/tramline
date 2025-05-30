@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
+ActiveRecord::Schema[7.2].define(version: 2025_05_29_022631) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -438,8 +438,12 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.jsonb "user_groups"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "release_specific_channel"
+    t.boolean "release_specific_enabled", default: false
+    t.boolean "core_enabled", default: false, null: false
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
+    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))", validate: false
   end
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -506,6 +510,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.string "status", default: "inflight", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "tag_name"
     t.index ["build_id"], name: "index_production_releases_on_build_id"
     t.index ["previous_id"], name: "index_production_releases_on_previous_id"
     t.index ["release_platform_run_id", "status"], name: "index_unique_active_production_release", unique: true, where: "((status)::text = 'active'::text)"
@@ -535,13 +540,15 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.jsonb "labels"
     t.tsvector "search_vector"
     t.string "merge_commit_sha"
+    t.string "kind"
     t.index ["body"], name: "index_pull_requests_on_body", opclass: :gin_trgm_ops, using: :gin
     t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
     t.index ["release_id", "head_ref"], name: "index_pull_requests_on_release_id_and_head_ref"
+    t.index ["release_id", "kind"], name: "index_pull_requests_on_release_id_and_kind", unique: true, where: "(((kind)::text = 'version_bump'::text) AND ((state)::text = 'open'::text))"
     t.index ["release_id", "phase", "number"], name: "idx_prs_on_release_id_and_phase_and_number", unique: true
-    t.index ["release_id", "phase"], name: "index_pull_requests_on_release_id_and_phase", unique: true, where: "(((phase)::text = 'version_bump'::text) AND ((state)::text = 'open'::text))"
+    t.index ["release_id", "phase"], name: "index_pull_requests_on_release_id_and_phase", unique: true, where: "(((phase)::text = 'pre_release'::text) AND ((kind)::text = 'version_bump'::text))"
     t.index ["search_vector"], name: "index_pull_requests_on_search_vector", using: :gin
     t.index ["source"], name: "index_pull_requests_on_source"
     t.index ["source_id"], name: "index_pull_requests_on_source_id"
@@ -595,6 +602,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.uuid "production_release_id"
     t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
     t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
+    t.index ["production_release_id", "fetched_at"], name: "idx_on_production_release_id_fetched_at_0e35dbfce7", order: { fetched_at: :desc }
     t.index ["production_release_id"], name: "index_release_health_metrics_on_production_release_id"
   end
 
@@ -725,6 +733,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.string "slug"
     t.boolean "is_v2", default: false
     t.uuid "approval_overridden_by_id"
+    t.jsonb "notification_channel"
     t.index ["approval_overridden_by_id"], name: "index_releases_on_approval_overridden_by_id"
     t.index ["slug"], name: "index_releases_on_slug", unique: true
     t.index ["train_id"], name: "index_releases_on_train_id"
@@ -751,6 +760,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "release_id"
+    t.boolean "manually_skipped", default: false
     t.index ["train_id"], name: "index_scheduled_releases_on_train_id"
   end
 
@@ -935,23 +945,27 @@ ActiveRecord::Schema[7.2].define(version: 2025_04_19_082238) do
     t.integer "build_queue_size", limit: 2
     t.string "backmerge_strategy", default: "on_finalize", null: false
     t.boolean "manual_release", default: false
-    t.boolean "tag_platform_releases", default: false
-    t.boolean "tag_all_store_releases", default: false
+    t.boolean "tag_store_releases_with_platform_names", default: false
+    t.boolean "tag_store_releases", default: false
     t.boolean "compact_build_notes", default: false
-    t.boolean "tag_releases", default: true
-    t.string "tag_suffix"
+    t.boolean "tag_end_of_release", default: true
+    t.string "tag_end_of_release_suffix"
     t.string "versioning_strategy", default: "semver"
     t.boolean "stop_automatic_releases_on_failure", default: false, null: false
     t.boolean "patch_version_bump_only", default: false, null: false
     t.boolean "approvals_enabled", default: false, null: false
     t.boolean "freeze_version", default: false
-    t.string "tag_prefix"
     t.boolean "copy_approvals", default: false
     t.boolean "auto_apply_patch_changes", default: true
+    t.string "tag_end_of_release_prefix"
     t.boolean "version_bump_enabled", default: false
     t.string "version_bump_file_paths", default: [], array: true
     t.string "version_bump_branch_prefix"
     t.string "continuous_backmerge_branch_prefix"
+    t.boolean "tag_end_of_release_vcs_release", default: false
+    t.boolean "tag_store_releases_vcs_release", default: false
+    t.boolean "notifications_release_specific_channel_enabled", default: false
+    t.string "version_bump_strategy"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

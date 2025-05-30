@@ -2,45 +2,49 @@
 #
 # Table name: trains
 #
-#  id                                 :uuid             not null, primary key
-#  approvals_enabled                  :boolean          default(FALSE), not null
-#  auto_apply_patch_changes           :boolean          default(TRUE)
-#  backmerge_strategy                 :string           default("on_finalize"), not null
-#  branching_strategy                 :string           not null
-#  build_queue_enabled                :boolean          default(FALSE)
-#  build_queue_size                   :integer
-#  build_queue_wait_time              :interval
-#  compact_build_notes                :boolean          default(FALSE)
-#  continuous_backmerge_branch_prefix :string
-#  copy_approvals                     :boolean          default(FALSE)
-#  description                        :string
-#  freeze_version                     :boolean          default(FALSE)
-#  kickoff_at                         :datetime
-#  name                               :string           not null
-#  notification_channel               :jsonb
-#  patch_version_bump_only            :boolean          default(FALSE), not null
-#  release_backmerge_branch           :string
-#  release_branch                     :string
-#  repeat_duration                    :interval
-#  slug                               :string
-#  status                             :string           not null
-#  stop_automatic_releases_on_failure :boolean          default(FALSE), not null
-#  tag_all_store_releases             :boolean          default(FALSE)
-#  tag_platform_releases              :boolean          default(FALSE)
-#  tag_prefix                         :string
-#  tag_releases                       :boolean          default(TRUE)
-#  tag_suffix                         :string
-#  version_bump_branch_prefix         :string
-#  version_bump_enabled               :boolean          default(FALSE)
-#  version_bump_file_paths            :string           default([]), is an Array
-#  version_current                    :string
-#  version_seeded_with                :string
-#  versioning_strategy                :string           default("semver")
-#  working_branch                     :string
-#  created_at                         :datetime         not null
-#  updated_at                         :datetime         not null
-#  app_id                             :uuid             not null, indexed
-#  vcs_webhook_id                     :string
+#  id                                             :uuid             not null, primary key
+#  approvals_enabled                              :boolean          default(FALSE), not null
+#  auto_apply_patch_changes                       :boolean          default(TRUE)
+#  backmerge_strategy                             :string           default("on_finalize"), not null
+#  branching_strategy                             :string           not null
+#  build_queue_enabled                            :boolean          default(FALSE)
+#  build_queue_size                               :integer
+#  build_queue_wait_time                          :interval
+#  compact_build_notes                            :boolean          default(FALSE)
+#  continuous_backmerge_branch_prefix             :string
+#  copy_approvals                                 :boolean          default(FALSE)
+#  description                                    :string
+#  freeze_version                                 :boolean          default(FALSE)
+#  kickoff_at                                     :datetime
+#  name                                           :string           not null
+#  notification_channel                           :jsonb
+#  notifications_release_specific_channel_enabled :boolean          default(FALSE)
+#  patch_version_bump_only                        :boolean          default(FALSE), not null
+#  release_backmerge_branch                       :string
+#  release_branch                                 :string
+#  repeat_duration                                :interval
+#  slug                                           :string
+#  status                                         :string           not null
+#  stop_automatic_releases_on_failure             :boolean          default(FALSE), not null
+#  tag_end_of_release                             :boolean          default(TRUE)
+#  tag_end_of_release_prefix                      :string
+#  tag_end_of_release_suffix                      :string
+#  tag_end_of_release_vcs_release                 :boolean          default(FALSE)
+#  tag_store_releases                             :boolean          default(FALSE)
+#  tag_store_releases_vcs_release                 :boolean          default(FALSE)
+#  tag_store_releases_with_platform_names         :boolean          default(FALSE)
+#  version_bump_branch_prefix                     :string
+#  version_bump_enabled                           :boolean          default(FALSE)
+#  version_bump_file_paths                        :string           default([]), is an Array
+#  version_bump_strategy                          :string
+#  version_current                                :string
+#  version_seeded_with                            :string
+#  versioning_strategy                            :string           default("semver")
+#  working_branch                                 :string
+#  created_at                                     :datetime         not null
+#  updated_at                                     :datetime         not null
+#  app_id                                         :uuid             not null, indexed
+#  vcs_webhook_id                                 :string
 #
 class Train < ApplicationRecord
   has_paper_trail
@@ -65,6 +69,10 @@ class Train < ApplicationRecord
     pbxproj: ".pbxproj",
     yaml: ".yaml"
   }.freeze
+  VERSION_BUMP_STRATEGIES = {
+    current_version_before_release_branch: "Current Version Before Release Branch Cuts",
+    next_version_after_release_branch: "Next Version After Release Branch Cuts"
+  }.freeze
 
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
@@ -86,6 +94,7 @@ class Train < ApplicationRecord
   enum :status, {draft: "draft", active: "active", inactive: "inactive"}
   enum :backmerge_strategy, {continuous: "continuous", on_finalize: "on_finalize"}
   enum :versioning_strategy, VersioningStrategies::Semverish::STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
+  enum :version_bump_strategy, VERSION_BUMP_STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
 
   friendly_id :name, use: :slugged
   normalizes :name, with: ->(name) { name.squish }
@@ -104,12 +113,12 @@ class Train < ApplicationRecord
   validate :valid_schedule, if: -> { kickoff_at_changed? || repeat_duration_changed? }
   validate :build_queue_config
   validate :backmerge_config
-  validate :tag_release_config
   validate :working_branch_presence, on: :create
   validate :ci_cd_workflows_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
   validate :version_config_constraints
   validate :version_bump_config
+  validates :version_bump_strategy, inclusion: {in: VERSION_BUMP_STRATEGIES.keys.map(&:to_s)}, if: -> { version_bump_enabled? }
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -118,6 +127,7 @@ class Train < ApplicationRecord
   after_initialize :set_backmerge_config, if: :persisted?
   after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
+  before_validation :cleanse_tagging_configs
   before_create :fetch_ci_cd_workflows
   before_create :set_current_version
   before_create :set_default_status
@@ -125,8 +135,10 @@ class Train < ApplicationRecord
   after_create :create_default_notification_settings
   after_create :create_release_index
   before_update :disable_copy_approvals, unless: :approvals_enabled?
+  before_update :create_default_notification_settings, if: -> do
+    notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
+  end
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
-  after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -204,11 +216,6 @@ class Train < ApplicationRecord
     kickoff_at.present? && repeat_duration.present?
   end
 
-  def tag_platform_at_release_end?
-    return false unless app.cross_platform?
-    tag_platform_releases? && !tag_all_store_releases?
-  end
-
   def next_run_at
     return unless automatic?
 
@@ -273,18 +280,23 @@ class Train < ApplicationRecord
 
   # rubocop:disable Rails/SkipsModelValidations
   def create_default_notification_settings
-    return if notification_channel.blank?
-    vals = NotificationSetting.kinds.map do |_, kind|
+    vals = NotificationSetting.kinds.keys.map { |kind|
       {
         train_id: id,
         kind:,
         active: true,
-        notification_channels: [notification_channel]
+        core_enabled: true,
+        notification_channels: notification_channel.present? ? [notification_channel] : nil
       }
-    end
-    NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
-  end
+    }
 
+    NotificationSetting.transaction do
+      NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
+      notification_settings
+        .release_specific_channel_allowed
+        .update_all(release_specific_enabled: notifications_release_specific_channel_enabled?)
+    end
+  end
   # rubocop:enable Rails/SkipsModelValidations
 
   def display_name
@@ -359,9 +371,9 @@ class Train < ApplicationRecord
     !almost_trunk?
   end
 
-  def create_vcs_release!(branch_name, tag_name, release_diff = nil)
+  def create_vcs_release!(branch_name, tag_name, previous_tag_name, release_diff = nil)
     return false unless active?
-    vcs_provider.create_release!(tag_name, branch_name, release_diff)
+    vcs_provider.create_release!(tag_name, branch_name, previous_tag_name, release_diff)
   end
 
   delegate :create_tag!, to: :vcs_provider
@@ -402,6 +414,9 @@ class Train < ApplicationRecord
   end
 
   def send_notifications?
+    # Release-specific notifications and general notifications are not exclusive.
+    # Some notifications are not supported (do not make sense) in release-specific mode.
+    # So, this does not check for the release-specific flag.
     app.notifications_set_up? && notification_channel.present?
   end
 
@@ -511,6 +526,29 @@ class Train < ApplicationRecord
     nil
   end
 
+  def cleanse_tagging_configs
+    # we're currently not using tag_end_of_release_vcs_release
+    # so for now, when end-of-release tagging is on, we assume that we must cut the VCS release
+    if tag_end_of_release?
+      self.tag_end_of_release_vcs_release = true
+    end
+
+    unless tag_end_of_release?
+      self.tag_end_of_release_vcs_release = false
+      self.tag_end_of_release_suffix = nil
+      self.tag_end_of_release_prefix = nil
+    end
+
+    unless tag_store_releases?
+      self.tag_store_releases_vcs_release = false
+      self.tag_store_releases_with_platform_names = false
+    end
+
+    unless app.cross_platform?
+      self.tag_store_releases_with_platform_names = false
+    end
+  end
+
   def set_branching_strategy
     self.branching_strategy ||= "almost_trunk"
   end
@@ -537,10 +575,6 @@ class Train < ApplicationRecord
 
   def backmerge_config
     errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && continuous_backmerge?
-  end
-
-  def tag_release_config
-    errors.add(:tag_all_store_releases, :not_allowed) if tag_all_store_releases? && !tag_platform_releases?
   end
 
   def working_branch_presence
@@ -570,6 +604,11 @@ class Train < ApplicationRecord
 
   def version_bump_config
     if version_bump_enabled?
+      if version_bump_strategy.blank?
+        errors.add(:version_bump_strategy, :blank)
+        return
+      end
+
       if version_bump_file_paths.blank?
         errors.add(:version_bump_file_paths, :blank)
         return

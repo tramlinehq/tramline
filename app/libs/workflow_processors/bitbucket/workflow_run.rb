@@ -13,7 +13,12 @@ class WorkflowProcessors::Bitbucket::WorkflowRun
   end
 
   def failed?
+    # if it still appears like its in progress, but one of the stages is halted, then it's a failure
+    return true if pipeline_stage_halted? && pipeline_in_progress?
+
+    # it can't be failed if it's not yet complete
     return false unless pipeline_completed?
+
     status == "FAILED" && status_type == "pipeline_state_completed_failed"
   end
 
@@ -47,6 +52,15 @@ class WorkflowProcessors::Bitbucket::WorkflowRun
     pipeline_status_type == "pipeline_state_completed" && pipeline_status == "COMPLETED"
   end
 
+  def pipeline_in_progress?
+    pipeline_status_type == "pipeline_state_in_progress" && pipeline_status == "IN_PROGRESS"
+  end
+
+  def pipeline_stage_halted?
+    pipeline_stage&.fetch(:name, nil) == "HALTED" &&
+      pipeline_stage&.fetch(:type, nil) == "pipeline_state_in_progress_halted"
+  end
+
   def status
     workflow_payload[:state][:result][:name]
   end
@@ -61,5 +75,9 @@ class WorkflowProcessors::Bitbucket::WorkflowRun
 
   def pipeline_status_type
     workflow_payload[:state][:type]
+  end
+
+  def pipeline_stage
+    workflow_payload.dig(:state, :stage)
   end
 end

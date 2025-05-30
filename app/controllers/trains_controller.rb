@@ -111,6 +111,7 @@ class TrainsController < SignedInApplicationController
       :repeat_duration_value,
       :repeat_duration_unit,
       :notification_channel,
+      :notifications_release_specific_channel_enabled,
       :build_queue_enabled,
       :build_queue_size,
       :build_queue_wait_time_unit,
@@ -120,19 +121,22 @@ class TrainsController < SignedInApplicationController
       :continuous_backmerge_enabled,
       :continuous_backmerge_branch_prefix,
       :compact_build_notes,
-      :tag_all_store_releases,
-      :tag_platform_releases,
+      :tag_store_releases,
+      :tag_store_releases_vcs_release,
+      :tag_store_releases_with_platform_names,
       :notifications_enabled,
-      :tag_releases,
-      :tag_prefix,
-      :tag_suffix,
+      :tag_end_of_release,
+      :tag_end_of_release_prefix,
+      :tag_end_of_release_suffix,
+      :tag_end_of_release_vcs_release,
       :patch_version_bump_only,
       :approvals_enabled,
       :copy_approvals,
       :auto_apply_patch_changes,
       :version_bump_enabled,
       :version_bump_file_paths,
-      :version_bump_branch_prefix
+      :version_bump_branch_prefix,
+      :version_bump_strategy
     )
   end
 
@@ -154,6 +158,7 @@ class TrainsController < SignedInApplicationController
       :name,
       :description,
       :notification_channel,
+      :notifications_release_specific_channel_enabled,
       :build_queue_enabled,
       :freeze_version,
       :build_queue_size,
@@ -167,19 +172,22 @@ class TrainsController < SignedInApplicationController
       :continuous_backmerge_enabled,
       :continuous_backmerge_branch_prefix,
       :compact_build_notes,
-      :tag_all_store_releases,
-      :tag_platform_releases,
+      :tag_store_releases,
+      :tag_store_releases_vcs_release,
+      :tag_store_releases_with_platform_names,
       :notifications_enabled,
-      :tag_releases,
-      :tag_prefix,
-      :tag_suffix,
+      :tag_end_of_release,
+      :tag_end_of_release_prefix,
+      :tag_end_of_release_suffix,
+      :tag_end_of_release_vcs_release,
       :patch_version_bump_only,
       :approvals_enabled,
       :copy_approvals,
       :auto_apply_patch_changes,
       :version_bump_enabled,
       :version_bump_file_paths,
-      :version_bump_branch_prefix
+      :version_bump_branch_prefix,
+      :version_bump_strategy
     )
   end
 
