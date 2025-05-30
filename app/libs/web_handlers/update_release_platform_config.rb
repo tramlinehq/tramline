@@ -1,4 +1,5 @@
 # TODO: ensure the maps are consistently mutated or copied
+# TODO: write tests for this service
 class WebHandlers::UpdateReleasePlatformConfig
   using RefinedString
 
