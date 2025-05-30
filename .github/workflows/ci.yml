@@ -83,7 +83,7 @@ jobs:
         run: bundle exec rails zeitwerk:check
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-arm64-8x
     services:
       postgres:
         image: postgres:14-alpine
