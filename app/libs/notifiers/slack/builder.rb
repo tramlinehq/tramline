@@ -33,12 +33,13 @@ module Notifiers
         workflow_run_halted: Renderers::WorkflowRunHalted,
         workflow_run_unavailable: Renderers::WorkflowRunUnavailable,
         workflow_trigger_failed: Renderers::WorkflowTriggerFailed,
-        rc_finished: Renderers::RcFinished
+        rc_finished: Renderers::RcFinished,
+        changelog: Renderers::Changelog
       }.with_indifferent_access
 
       MissingSlackRenderer = Class.new(StandardError)
 
-      unless Set.new(RENDERERS.keys).eql?(Set.new(NotificationSetting.kinds.keys))
+      unless Set.new(RENDERERS.keys).superset?(Set.new(NotificationSetting.kinds.keys))
         raise MissingSlackRenderer
       end
 

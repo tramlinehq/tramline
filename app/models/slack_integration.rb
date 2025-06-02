@@ -119,7 +119,30 @@ class SlackIntegration < ApplicationRecord
   end
 
   def notify!(channel, message, type, params, file_id = nil, file_title = nil)
-    installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
+    response = installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
+
+    if type.to_sym == :rc_finished
+      thread_id = response.dig("message", "ts")
+      notify_changelog_in_thread!(channel, thread_id, params[:changes_since_last_run])
+      notify_changelog_in_thread!(channel, thread_id, params[:changes_since_last_release], true)
+    end
+  rescue => e
+    elog(e, level: :warn)
+  end
+
+  def notify_changelog_in_thread!(channel, thread_id, changes, release_changelog_header = false)
+    changelog =
+      if release_changelog_header
+        changes
+      else
+        changes[Notifiers::Slack::Renderers::Changelog.changes_limit..]
+      end
+    return if changelog.blank?
+
+    changelog.in_groups_of(Notifiers::Slack::Renderers::Changelog.changes_limit, false).each_with_index do |changegroup, index|
+      payload = notifier(:changelog, {changes: changegroup, release_changelog_header: release_changelog_header && index.zero?})
+      installation.message(channel, "Changelog", block: payload, thread_id:)
+    end
   rescue => e
     elog(e, level: :warn)
   end
