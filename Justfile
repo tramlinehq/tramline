@@ -18,6 +18,11 @@ spec file="":
     docker compose run -e RAILS_ENV=test --rm spec bundle exec rspec {{ file }}; \
   fi
 
+# run all specs in parallel with configurable workers
+pspec workers="4":
+  docker compose run -e RAILS_ENV=test -e WORKERS={{ workers }} --rm spec bundle exec rake db:parallel:create db:parallel:prepare
+  docker compose run -e RAILS_ENV=test -e WORKERS={{ workers }} --rm spec bundle exec rake parallel_rspec
+
 # run lint for code and erb files
 lint:
   docker compose exec web bin/rubocop --autocorrect
