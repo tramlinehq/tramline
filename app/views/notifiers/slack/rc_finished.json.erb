@@ -1,10 +1,10 @@
 {
   "blocks": [
     {
-      "type": "section",
+      "type": "header",
       "text": {
-        "type": "mrkdwn",
-        "text": ":sparkles: New RC deployed for *<%= @release_version %> (<%= @build_number %>)*"
+        "type": "plain_text",
+        "text": ":sparkles: New RC deployed for <%= @release_version %> (<%= @build_number %>)"
       }
     }
     <% @submissions.each do |submission| %>
@@ -24,24 +24,46 @@
     <% if @changes_since_last_run.present? %>
     ,
     {
-      "type": "section",
+      "type": "header",
       "text": {
-          "type": "mrkdwn",
-          "text": ":pushpin: Changes since last RC"
+        "type": "plain_text",
+        "text": ":pushpin: Changes since last RC"
       }
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_list",
+          "style": "bullet",
+          "elements": [
+            <% @changes_since_last_run[0..changes_limit].each_with_index do |change, i| %>
+            <%= i.zero? ? "," : "" %>
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": <%= change.truncate(commit_truncate_length).to_json %>
+                }
+              ]
+            }
+            <% end %>
+          ]
+        }
+      ]
     }
-    <% @changes_since_last_run.each do |change| %>
+    <% if @changes_since_last_run.size > changes_limit %>
     ,
     {
       "type": "context",
       "elements": [
         {
-          "type": "plain_text",
-          "text": <%= change.to_json %>
+          "type": "mrkdwn",
+          "text": "RC changelog continued in thread :thread:"
         }
       ]
     }
-    <% end %>
     <% end %>
     ,
     {
@@ -49,9 +71,54 @@
       "elements": [
         {
           "type": "mrkdwn",
-          "text": "- Changes since the last release are sent within this message thread."
+          "text": "Full release changelog in :thread:"
         }
       ]
     }
+    <% elsif @changes_since_last_release.present? %>
+    ,
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": ":pushpin: Changes since last release"
+      }
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_list",
+          "style": "ordered",
+          "elements": [
+            <% @changes_since_last_release[0..changes_limit].each_with_index do |change, i| %>
+            <%= i.zero? ? "," : "" %>
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": <%= change.truncate(commit_truncate_length).to_json %>
+                }
+              ]
+            }
+            <% end %>
+          ]
+        }
+      ]
+    }
+    <% if @changes_since_last_release.size > changes_limit %>
+    ,
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Changelog continued in thread :thread:"
+        }
+      ]
+    }
+    <% end %>
+    <% end %>
   ]
 }

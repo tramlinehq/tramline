@@ -162,16 +162,21 @@ class PreProdRelease < ApplicationRecord
   end
 
   def notification_params
-    release_platform_run.notification_params.merge(
+    params = release_platform_run.notification_params.merge(
       commit_sha: commit.short_sha,
       commit_url: commit.url,
       build_number: build.build_number,
       release_version: release.release_version,
       submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", "),
       submissions: store_submissions,
-      changes_since_last_run: (changes_since_last_run if previous_successful.present?),
-      tester_notes:
+      changes_since_last_release:
     )
+
+    if previous_successful.present?
+      params[:changes_since_last_run] = changes_since_last_run
+    end
+
+    params
   end
 
   def latest_events(n = nil)
