@@ -100,12 +100,12 @@ class PreProdRelease < ApplicationRecord
   def conf = Config::ReleaseStep.from_json(config)
 
   def commits_since_previous
-    changes_since_last_release = release.release_changelog&.commits
+    commits_since_last_release = release.release_changelog&.commits
     last_successful_run = previous_successful
-    changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)
+    commits_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)
 
-    return changes_since_last_run if last_successful_run.present?
-    ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq { |c| c.commit_hash }
+    return commits_since_last_run if last_successful_run.present?
+    ((commits_since_last_run || []) + (commits_since_last_release || [])).uniq { |c| c.commit_hash }
   end
 
   def changes_since_last_release
