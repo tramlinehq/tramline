@@ -92,7 +92,7 @@
           "style": "ordered",
           "elements": [
             <% @changes_since_last_release[0..changes_limit].each_with_index do |change, i| %>
-            <%= i.zero? ? "," : "" %>
+            <%= i.zero? ? "" : "," %>
             {
               "type": "rich_text_section",
               "elements": [

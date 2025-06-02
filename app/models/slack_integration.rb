@@ -135,7 +135,7 @@ class SlackIntegration < ApplicationRecord
       if release_changelog_header
         changes
       else
-        changes[Notifiers::Slack::Renderers::Changelog.changes_limit..]
+        changes&.[](Notifiers::Slack::Renderers::Changelog.changes_limit..)
       end
     return if changelog.blank?
 
