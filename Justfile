@@ -13,7 +13,7 @@ restart container="web":
 # run individual specs or all specs if no file is specified
 spec file="":
   if [ -z {{ file }} ]; then \
-    docker compose run -e RAILS_ENV=test --rm spec; \
+    docker compose run -e RAILS_ENV=test --rm spec bundle exec rspec; \
   else \
     docker compose run -e RAILS_ENV=test --rm spec bundle exec rspec {{ file }}; \
   fi
