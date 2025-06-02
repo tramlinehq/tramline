@@ -308,7 +308,7 @@ Below are some common commands you can use via `just`:
 - `just bglog` – Tails the background worker log
 - `just shell` – Opens a shell in any docker container
 
-In case the above list is stale, run `just --summary` to see the full list.
+In case the above list is stale, run `just --list` to see the full list.
 
 ### Integrations
 

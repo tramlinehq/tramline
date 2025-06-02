@@ -102,6 +102,7 @@ group :development, :test do
   gem "stateoscope"
   gem "error_highlight"
   gem "erb_lint", require: false
+  gem "parallel_rspec", "~> 2.4"
 end
 
 group :development do
