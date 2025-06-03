@@ -123,8 +123,12 @@ class SlackIntegration < ApplicationRecord
 
     if type.to_sym == :rc_finished
       thread_id = response.dig("message", "ts")
-      notify_changelog_in_thread!(channel, thread_id, params[:changes_since_last_run])
-      notify_changelog_in_thread!(channel, thread_id, params[:changes_since_last_release], true)
+      changes_since_last_run = params[:changes_since_last_run]
+      notify_changelog_in_thread!(channel, thread_id, changes_since_last_run)
+
+      # Changelog header to be shown in thread only when main message is about changes since last run
+      # When changes_since_last_run is empty, header is not required as it may be a simple spillover
+      notify_changelog_in_thread!(channel, thread_id, params[:changes_since_last_release], changes_since_last_run.present?)
     end
   rescue => e
     elog(e, level: :warn)
