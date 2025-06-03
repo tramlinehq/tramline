@@ -24,8 +24,8 @@ class Queries::Builds
 
   def initialize(app:, params:)
     @app = app
-    @params = params
-    params.sort_column ||= DEFAULT_SORT_COLUMN
+    @params = params.dup
+    @params.sort_column ||= DEFAULT_SORT_COLUMN
   end
 
   attr_reader :app, :sort_column, :sort_direction, :params
