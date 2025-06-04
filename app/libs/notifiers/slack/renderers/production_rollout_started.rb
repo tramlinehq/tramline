@@ -3,6 +3,8 @@ module Notifiers
     class Renderers::ProductionRolloutStarted < Renderers::Base
       TEMPLATE_FILE = "production_rollout_started.json.erb".freeze
 
+      delegate :commit_truncate_length, :changes_limit, to: Renderers::Changelog
+
       def staged_rollout_started_text
         if @requires_review
           "The rollout for release *#{@release_version} (#{@build_number})* has *started*."

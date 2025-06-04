@@ -28,5 +28,48 @@
       ]
     }
     <% end %>
+    <% if @changes_since_last_run.present? %>,
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": ":pushpin: Changelog"
+      }
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_list",
+          "style": "bullet",
+          "elements": [
+            <% @changes_since_last_run[0..changes_limit].each_with_index do |change, i| %>
+            <%= i.zero? ? "" : "," %>
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": <%= change.truncate(commit_truncate_length).to_json %>
+                }
+              ]
+            }
+            <% end %>
+          ]
+        }
+      ]
+    }
+    <% if @changes_since_last_run.size > changes_limit %>,
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Changelog continued in thread :thread:"
+        }
+      ]
+    }
+    <% end %>
+    <% end %>
   ]
 }

@@ -121,7 +121,9 @@ class SlackIntegration < ApplicationRecord
   def notify!(channel, message, type, params, file_id = nil, file_title = nil)
     response = installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
 
-    if type.to_sym == :rc_finished
+    changelog_notifications = [:rc_finished, :production_rollout_started]
+
+    if type.to_sym.in?(changelog_notifications) && response.present?
       thread_id = response.dig("message", "ts")
       changes_since_last_run = params[:changes_since_last_run]
       notify_changelog_in_thread!(channel, thread_id, changes_since_last_run)

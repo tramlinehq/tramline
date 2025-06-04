@@ -119,7 +119,9 @@ class ProductionRelease < ApplicationRecord
 
     previous&.mark_as_stale!
     update!(status: STATES[:active])
-    notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
+
+    notify!("Production release was started!", :production_rollout_started, rollout_started_notification_params)
+
     ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank?
 
     return if beyond_monitoring_period?
@@ -190,6 +192,12 @@ class ProductionRelease < ApplicationRecord
       commit_url: commit.url,
       build_number: build_number,
       release_version: version_name
+    )
+  end
+
+  def rollout_started_notification_params
+    store_rollout.notification_params.merge(
+      changes_since_last_run: commits_since_previous.pluck(:message)
     )
   end
 
