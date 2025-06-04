@@ -5,15 +5,11 @@ module Notifiers
     class Renderers::Changelog < Renderers::Base
       TEMPLATE_FILE = "changelog.json.erb"
 
-      delegate :changes_limit, :commit_truncate_length, to: :class
+      delegate :changes_limit, to: :class
 
       class << self
         def changes_limit
           20
-        end
-
-        def commit_truncate_length
-          70
         end
       end
 
