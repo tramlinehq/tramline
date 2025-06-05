@@ -105,22 +105,34 @@ class NotificationSetting < ApplicationRecord
 
     notifiable_channels.each do |channel|
       if rc_finished?
+        ####### Changes since last run (dual-set) #######
+
         changes = params[:changes_since_last_run]
-        first = changes.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false).first
-        rest = changes[1..]
-        params[:changes_since_last_run] = first
+        change_groups = changes.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
+        part1 = change_groups.first
+
+        params[:changes_since_last_run] = part1
         thread_id = notification_provider.notify!(channel["id"], message, kind, params)
-        rest&.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)&.each_with_index do |change_group, index|
-          notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header: nil)
+
+        rest = change_groups[1..]
+        rest&.each_with_index do |change_group, index|
+          header = ":memo: Part #{index + 2}/#{rest.size + 1}"
+          notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header:)
         end
 
+        ####### Changes since last release (dual-set) #######
+
         changes = params[:changes_since_last_release]
-        first = changes.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false).first
-        rest = changes[1..]
-        header = "Changes since last release"
-        notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, first, header: header)
-        rest&.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)&.each_with_index do |change_group, index|
-          notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header: nil)
+        change_groups = changes.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
+        part1 = change_groups.first
+
+        header = ":pushpin: Changes since last release"
+        notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, part1, header:)
+
+        rest = change_groups[1..]
+        rest&.each_with_index do |change_group, index|
+          header = ":memo: Part #{index + 2}/#{rest.size + 1}"
+          notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header:)
         end
       end
     end
