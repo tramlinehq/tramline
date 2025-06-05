@@ -7,8 +7,7 @@
         "text": ":sparkles: *New RC deployed for <%= @release_version %> (<%= @build_number %>)*"
       }
     }
-    <% @submissions.each do |submission| %>
-    ,
+    <% @submissions.each do |submission| %>,
     {
       "type": "section",
       "text": {
@@ -17,8 +16,7 @@
       }
     }
     <% end %>
-    <% if @changes_since_last_run.present? %>
-    ,
+    <% if @changes_since_last_run.present? %>,
     {
       "type": "section",
       "text": {
@@ -49,8 +47,7 @@
         }
       ]
     }
-    <% if changes_spillover?(@changes_since_last_run) %>
-    ,
+    <% if changes_spillover?(@changes_since_last_run) %>,
     {
       "type": "context",
       "elements": [
@@ -71,8 +68,7 @@
         }
       ]
     }
-    <% elsif @changes_since_last_release.present? %>
-    ,
+    <% elsif @changes_since_last_release.present? %>,
     {
       "type": "header",
       "text": {
@@ -103,8 +99,7 @@
         }
       ]
     }
-    <% if changes_spillover?(@changes_since_last_release) %>
-    ,
+    <% if changes_spillover?(@changes_since_last_release) %>,
     {
       "type": "context",
       "elements": [

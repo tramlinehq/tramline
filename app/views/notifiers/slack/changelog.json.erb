@@ -1,11 +1,11 @@
 {
   "blocks": [
-    <% if @release_changelog_header.present? %>
+    <% if @header.present? %>
     {
-      "type": "header",
+      "type": "section",
       "text": {
-        "type": "plain_text",
-        "text": ":pushpin: Changes since last release"
+        "type": "mrkdwn",
+        "text": ":pushpin: *<%= @header %>*"
       }
     },
     <% end %>

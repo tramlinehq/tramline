@@ -134,7 +134,7 @@ class SlackIntegration < ApplicationRecord
 
   def notify_changelog_in_thread2!(channel, message, thread_id, changelog, header: nil)
     return if changelog.blank?
-    payload = notifier(:changelog, { changes: changelog, header: header })
+    payload = notifier(:changelog, {changes: changelog, header: header})
     installation.message(channel, message, block: payload, thread_id:)
   rescue => e
     elog(e, level: :debug)
