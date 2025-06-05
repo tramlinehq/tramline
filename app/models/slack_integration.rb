@@ -60,7 +60,7 @@ class SlackIntegration < ApplicationRecord
   MAX_RETRY_ATTEMPTS = 3
   RETRYABLE_ERRORS = ["name_taken"]
 
-  NOTIFICATION_KINDS_CONTAINING_CHANGELOG = [:rc_finished]
+  NOTIFICATION_KINDS_CONTAINING_CHANGELOG = [:rc_finished, :production_rollout_started]
 
   def needs_changelog_threading?(type)
     type.to_sym.in?(NOTIFICATION_KINDS_CONTAINING_CHANGELOG)
