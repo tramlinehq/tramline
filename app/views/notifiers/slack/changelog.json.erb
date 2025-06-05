@@ -5,7 +5,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": ":pushpin: *<%= @header %>*"
+        "text": "*<%= @header %>*"
       }
     },
     <% end %>
@@ -23,30 +23,7 @@
               "elements": [
                 {
                   "type": "text",
-                  "text": "<%= change %>"
-                }
-              ]
-            }
-            <% end %>
-          ]
-        }
-      ]
-    },
-    {
-      "type": "rich_text",
-      "elements": [
-        {
-          "type": "rich_text_list",
-          "style": "bullet",
-          "elements": [
-            <% changes_in_message(@changes) do |change, i| %>
-            <%= i.zero? ? "" : "," %>
-            {
-              "type": "rich_text_section",
-              "elements": [
-                {
-                  "type": "text",
-                  "text": "<%= change %>"
+                  "text": "<%= safe_string(change) %>"
                 }
               ]
             }
