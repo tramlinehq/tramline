@@ -18,7 +18,7 @@ This system has worked well so far, because we're a very tiny team (2-person eng
 
 ### Applelink
 
-[Applelink](https://github.com/tramlinehq/applelink) is a sidecar service that handles all our App Store Connect related integration. This is special in a way, because all other integrations so far are a native part of the monolith, but this one has been extracted out. The service is designed in a way where it's entirely independent of Tramline and can be used statelessly from other projects.
+[Applelink](https://github.com/tramlinehq/applelink) is a sidecar service that we built to handle our App Store Connect integration. This is special in a way, because all other integrations so far are a native part of the monolith, but this one has been extracted out. The service is designed in a way where it's entirely independent of Tramline and can be used statelessly from other projects.
 
 The reason for extracting this was a purely technically one initially, we use Fastlane's internal APIs to interact with ASC (since Fastlane is a CLI), and this avoids the potential dependency conflicts with Fastlane's versioning needs with Ruby and its gems and also avoids polluting the Tramline app with a mammoth dependency.
 
@@ -27,10 +27,9 @@ This service also adds recipes as API endpoints that abstract **a ton of** thing
 > [!NOTE]
 > We run a tiny project called [App Store Slackbot](https://appstoreslackbot.com) that is a wrapper over Applelink to execute some basic ASC-related commands from Slack directly; like current status or pausing the rollout.
 
-
 ### Task Queues
 
-Tramline uses [Sidekiq](https://sidekiq.org) for all its task-queueing needs (using a persistent Redis instance) and a custom job-orchestration framework built on top of it, Coordinators.
+Tramline uses [Sidekiq](https://sidekiq.org) for all its task-queueing needs (using a persistent Redis instance) and a tiny job-orchestration system built on top of it, [Coordinators](https://github.com/tramlinehq/tramline/blob/main/app/libs/coordinators.rb).
 
 ### Data
 
@@ -47,6 +46,10 @@ We always use the official APIs for all our integrations, and we constantly keep
 ### Observability
 
 We use Sentry for error reporting and APM. [Axiom](https://axiom.co) for log streaming, and [PgHero](https://github.com/ankane/pghero) for database monitoring.
+
+### Store Sweeper
+
+[Store Sweeper](https://github.com/tramlinehq/store-sweeper) is a new independent service that we've built to allow users to search for their app from Tramline directly to enhance the onboarding experience. It's a stateless Node.js service that combines and interleaves the results from both App Store and Play Store and returns an enriched paginated response of the result.
 
 ## Development
 
