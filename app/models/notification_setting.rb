@@ -61,6 +61,8 @@ class NotificationSetting < ApplicationRecord
 
   RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS = NotificationSetting.kinds.keys.map(&:to_sym) - RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS
 
+  SLACK_CHANGELOG_THREAD_NOTIFICATION_KINDS = [:rc_finished]
+
   scope :active, -> { where(active: true) }
   scope :release_specific_channel_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS) }
   scope :release_specific_channel_not_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS) }
@@ -101,6 +103,10 @@ class NotificationSetting < ApplicationRecord
 
   def send_notifications?
     app.notifications_set_up? && active?
+  end
+
+  def needs_slack_changelog_thread_notification?
+    kind.to_sym.in?(SLACK_CHANGELOG_THREAD_NOTIFICATION_KINDS)
   end
 
   def notifiable_channels

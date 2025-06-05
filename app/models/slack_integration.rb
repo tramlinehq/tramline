@@ -60,6 +60,12 @@ class SlackIntegration < ApplicationRecord
   MAX_RETRY_ATTEMPTS = 3
   RETRYABLE_ERRORS = ["name_taken"]
 
+  NOTIFICATION_KINDS_CONTAINING_CHANGELOG = [:rc_finished]
+
+  def needs_changelog_threading?(type)
+    type.to_sym.in?(NOTIFICATION_KINDS_CONTAINING_CHANGELOG)
+  end
+
   def controllable_rollout?
     false
   end
@@ -120,37 +126,44 @@ class SlackIntegration < ApplicationRecord
 
   def notify!(channel, message, type, params, file_id = nil, file_title = nil)
     response = installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
+    return if response.blank?
 
-    changelog_notifications = [:rc_finished, :production_rollout_started]
+    handle_changelog_thread(response, channel, params) if needs_changelog_threading?(type)
+  rescue => e
+    elog(e, level: :warn)
+  end
 
-    if type.to_sym.in?(changelog_notifications) && response.present?
-      thread_id = response.dig("message", "ts")
-      changes_since_last_run = params[:changes_since_last_run]
-      notify_changelog_in_thread!(channel, thread_id, changes_since_last_run)
+  def notify_changelog_in_thread!(channel, thread_id, changelog, show_changelog_header:)
+    # If we are showing the header, we must show the full changelog.
+    # If not, we show only the spillover from the main message.
 
-      # Changelog header to be shown in thread only when main message is about changes since last run
-      # When changes_since_last_run is empty, header is not required as it may be a simple spillover
-      notify_changelog_in_thread!(channel, thread_id, params[:changes_since_last_release], changes_since_last_run.present?)
+    notifiable_changes = show_changelog_header ? changelog : changelog&.[](Notifiers::Slack::Renderers::Changelog.changes_limit..)
+    return if notifiable_changes.blank?
+
+    notifiable_changes.in_groups_of(Notifiers::Slack::Renderers::Changelog.changes_limit, false).each_with_index do |notifiable_change_group, index|
+      payload = notifier(:changelog, {
+        changes: notifiable_change_group,
+
+        # index.zero? is checked to show header only before first message in thread
+        release_changelog_header: show_changelog_header && index.zero?
+      })
+      installation.message(channel, "Changelog", block: payload, thread_id:)
     end
   rescue => e
     elog(e, level: :warn)
   end
 
-  def notify_changelog_in_thread!(channel, thread_id, changes, release_changelog_header = false)
-    changelog =
-      if release_changelog_header
-        changes
-      else
-        changes&.[](Notifiers::Slack::Renderers::Changelog.changes_limit..)
-      end
-    return if changelog.blank?
+  def handle_changelog_thread(response, channel, params)
+    thread_id = response.dig("message", "ts")
+    changes_since_last_run = params[:changes_since_last_run]
 
-    changelog.in_groups_of(Notifiers::Slack::Renderers::Changelog.changes_limit, false).each_with_index do |changegroup, index|
-      payload = notifier(:changelog, {changes: changegroup, release_changelog_header: release_changelog_header && index.zero?})
-      installation.message(channel, "Changelog", block: payload, thread_id:)
-    end
-  rescue => e
-    elog(e, level: :warn)
+    # No need to show the header here because we have already shown it in main message.
+    # Just a spillover of changes from main message to thread.
+    notify_changelog_in_thread!(channel, thread_id, changes_since_last_run, show_changelog_header: false)
+
+    # Here we are showing changes since last release.
+    # Header is to be shown if we previously have displayed changes_since_last_run.
+    notify_changelog_in_thread!(channel, thread_id, params[:changes_since_last_release], show_changelog_header: changes_since_last_run.present?)
   end
 
   def notify_with_snippet!(channel, message, type, params, snippet_content, snippet_title)
