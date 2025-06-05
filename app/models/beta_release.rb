@@ -39,7 +39,7 @@ class BetaRelease < PreProdRelease
       Signal.beta_release_is_finished!(build)
     end
 
-    notify!("RC Finished", :rc_finished, notification_params)
+    notify_with_changelog!("RC Finished", :rc_finished, notification_params)
   end
 
   def on_fail!

@@ -34,6 +34,7 @@ class NotificationSetting < ApplicationRecord
     internal_release_failed: "internal_release_failed",
     beta_release_failed: "beta_release_failed",
     beta_submission_finished: "beta_submission_finished",
+    rc_finished: "rc_finished",
     internal_submission_finished: "internal_submission_finished",
     submission_failed: "submission_failed",
     production_submission_started: "production_submission_started",
@@ -51,17 +52,14 @@ class NotificationSetting < ApplicationRecord
     workflow_run_halted: "workflow_run_halted",
     workflow_run_unavailable: "workflow_run_unavailable",
     workflow_trigger_failed: "workflow_trigger_failed",
-    rc_finished: "rc_finished"
   }
-
   RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS = [
     :release_started,
     :release_scheduled
   ]
-
   RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS = NotificationSetting.kinds.keys.map(&:to_sym) - RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS
-
   SLACK_CHANGELOG_THREAD_NOTIFICATION_KINDS = [:rc_finished]
+  CHANGELOG_PER_MESSAGE_LIMIT = 20
 
   scope :active, -> { where(active: true) }
   scope :release_specific_channel_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS) }
@@ -98,6 +96,33 @@ class NotificationSetting < ApplicationRecord
 
     notifiable_channels.each do |channel|
       notification_provider.notify_with_snippet!(channel["id"], message, kind, params, snippet_content, snippet_title)
+    end
+  end
+
+  def notify_with_changelog!(message, params)
+    return unless send_notifications?
+    return unless rc_finished? || production_rollout_started?
+
+    notifiable_channels.each do |channel|
+      if rc_finished?
+        changes = params[:changes_since_last_run]
+        first = changes.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false).first
+        rest = changes[1..]
+        params[:changes_since_last_run] = first
+        thread_id = notification_provider.notify!(channel["id"], message, kind, params)
+        rest.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false).each_with_index do |change_group, index|
+          notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header: nil)
+        end
+
+        changes = params[:changes_since_last_release]
+        first = changes.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false).first
+        rest = changes[1..]
+        header = "Changes since last release"
+        notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, first, header: header)
+        rest.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false).each_with_index do |change_group, index|
+          notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header: nil)
+        end
+      end
     end
   end
 
@@ -154,5 +179,6 @@ class NotificationSetting < ApplicationRecord
     vals = all.map { _1.attributes.with_indifferent_access.except(:id).update_key(:train_id) { new_train.id } }
     NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
+
   # rubocop:enable Rails/SkipsModelValidations
 end

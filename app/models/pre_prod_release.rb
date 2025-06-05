@@ -36,7 +36,7 @@ class PreProdRelease < ApplicationRecord
   after_create_commit -> { create_stamp!(data: stamp_data) }
 
   delegate :release, :train, :platform, to: :release_platform_run
-  delegate :notify!, :notify_with_snippet!, to: :train
+  delegate :notify!, :notify_with_snippet!, :notify_with_changelog!, to: :train
 
   alias_method :workflow_run, :triggered_workflow_run
 
