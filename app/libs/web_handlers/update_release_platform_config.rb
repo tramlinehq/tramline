@@ -168,17 +168,16 @@ class WebHandlers::UpdateReleasePlatformConfig
   def reorder_submissions(existing_submissions_relation, release_attrs)
     return release_attrs if existing_submissions_relation.blank? || release_attrs.blank?
 
-    # Sort submissions by number
-    sorted_submissions = release_attrs[:submissions_attributes]
-      .to_h
+    # Sort submissions by their current number order
+    sorted_submissions = release_attrs[:submissions_attributes].to_h
       .reject { |_, attrs| attrs["_destroy"] == "1" }
       .sort_by { |_, attrs| attrs["number"].to_i }
 
-    # Temporarily update existing submissions
+    # Temporarily update existing submission numbers to negative values to avoid conflicts
     existing_submissions = existing_submissions_relation.index_by(&:id)
     existing_submissions.each { |_, sub| sub.update!(number: -sub.number) }
 
-    # Create new attributes with updated numbers
+    # Re-assign numbers based on sorted order (starting from 1, 2, 3, ...)
     new_release_attrs = release_attrs.deep_dup
     sorted_submissions.each_with_index do |(id, submission_attrs), index|
       new_number = index + 1
