@@ -14,7 +14,7 @@ module Notifiers
       end
 
       def changes_in_main_message(changes, &)
-        changes[0...changes_limit].each_with_index do |change, i|
+        changes[0, changes_limit].each_with_index do |change, i|
           yield change, i
         end
       end
