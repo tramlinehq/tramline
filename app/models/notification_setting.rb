@@ -110,7 +110,7 @@ class NotificationSetting < ApplicationRecord
         rest = changes[1..]
         params[:changes_since_last_run] = first
         thread_id = notification_provider.notify!(channel["id"], message, kind, params)
-        rest.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false).each_with_index do |change_group, index|
+        rest&.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)&.each_with_index do |change_group, index|
           notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header: nil)
         end
 
@@ -119,7 +119,7 @@ class NotificationSetting < ApplicationRecord
         rest = changes[1..]
         header = "Changes since last release"
         notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, first, header: header)
-        rest.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false).each_with_index do |change_group, index|
+        rest&.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)&.each_with_index do |change_group, index|
           notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header: nil)
         end
       end
