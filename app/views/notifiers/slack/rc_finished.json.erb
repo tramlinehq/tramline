@@ -1,10 +1,10 @@
 {
   "blocks": [
     {
-      "type": "header",
+      "type": "section",
       "text": {
-        "type": "plain_text",
-        "text": ":sparkles: New RC deployed for <%= @release_version %> (<%= @build_number %>)"
+        "type": "mrkdwn",
+        "text": ":sparkles: *New RC deployed for <%= @release_version %> (<%= @build_number %>)*"
       }
     }
     <% @submissions.each do |submission| %>
@@ -13,21 +13,17 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        <% if submission.deep_link.present? %>
-          "text": "Submitted to <<%= submission.deep_link %>|*<%= submission.display %>*>"
-        <% else %>
-          "text": "Submitted to *<%= submission.display %>*"
-        <% end %>
+        "text": "<%= submission_text(submission) %>"
       }
     }
     <% end %>
     <% if @changes_since_last_run.present? %>
     ,
     {
-      "type": "header",
+      "type": "section",
       "text": {
-        "type": "plain_text",
-        "text": ":pushpin: Changes since last RC"
+        "type": "mrkdwn",
+        "text": ":pushpin: *Changes since last RC*"
       }
     },
     {
@@ -37,14 +33,14 @@
           "type": "rich_text_list",
           "style": "bullet",
           "elements": [
-            <% @changes_since_last_run[0..changes_limit].each_with_index do |change, i| %>
+            <% changes_in_main_message(@changes_since_last_run) do |change, i| %>
             <%= i.zero? ? "" : "," %>
             {
               "type": "rich_text_section",
               "elements": [
                 {
                   "type": "text",
-                  "text": <%= change.to_json %>
+                  "text": "<%= change %>"
                 }
               ]
             }
@@ -53,7 +49,7 @@
         }
       ]
     }
-    <% if @changes_since_last_run.size > changes_limit %>
+    <% if changes_spillover?(@changes_since_last_run) %>
     ,
     {
       "type": "context",
@@ -80,8 +76,8 @@
     {
       "type": "header",
       "text": {
-        "type": "plain_text",
-        "text": ":pushpin: Changes since last release"
+        "type": "mrkdwn",
+        "text": ":pushpin: *Changes since last release*"
       }
     },
     {
@@ -91,14 +87,14 @@
           "type": "rich_text_list",
           "style": "bullet",
           "elements": [
-            <% @changes_since_last_release[0..changes_limit].each_with_index do |change, i| %>
+            <% changes_in_main_message(@changes_since_last_release) do |change, i| %>
             <%= i.zero? ? "" : "," %>
             {
               "type": "rich_text_section",
               "elements": [
                 {
                   "type": "text",
-                  "text": <%= change.to_json %>
+                  "text": "<%= change %>"
                 }
               ]
             }
@@ -107,7 +103,7 @@
         }
       ]
     }
-    <% if @changes_since_last_release.size > changes_limit %>
+    <% if changes_spillover?(@changes_since_last_release) %>
     ,
     {
       "type": "context",

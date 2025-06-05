@@ -20,6 +20,12 @@ module Notifiers
       def render_footer
         {blocks: []}.to_json
       end
+
+      def changes_in_message(changes, &)
+        changes[0...changes_limit].each_with_index do |change, i|
+          yield change, i
+        end
+      end
     end
   end
 end
