@@ -12,9 +12,10 @@ class NotificationSettingsComponent < ViewComponent::Base
     release_stopped: {icon: "stop_circle.svg", description: "The release was stopped before it finished"},
     release_health_events: {icon: "heart_pulse.svg", description: "A health event has occurred for the release"},
     build_available_v2: {icon: "drill.svg", description: "A new build is available for download"},
-    internal_release_finished: {icon: "sparkles.svg", description: "The release finished successfully"},
+    internal_release_finished: {icon: "sparkles.svg", description: "The internal release finished successfully"},
     internal_release_failed: {icon: "alert_circle.svg", description: "The internal build step failed"},
     beta_release_failed: {icon: "alert_circle.svg", description: "The release candidate step failed"},
+    rc_finished: {icon: "sparkles.svg", description: "The RC release finished"},
     beta_submission_finished: {icon: "sparkles.svg", description: "The beta submission finished successfully"},
     internal_submission_finished: {icon: "sparkles.svg", description: "The internal submission finished successfully"},
     submission_failed: {icon: "alert_circle.svg", description: "The submission failed"},
@@ -32,8 +33,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     workflow_run_failed: {icon: "alert_circle.svg", description: "A workflow run failed"},
     workflow_run_halted: {icon: "stop_circle.svg", description: "A workflow run was halted"},
     workflow_run_unavailable: {icon: "alert_circle.svg", description: "A workflow run was not found"},
-    workflow_trigger_failed: {icon: "stop_circle.svg", description: "A workflow trigger failed"},
-    rc_finished: {icon: "sparkles.svg", description: "RC finished"}
+    workflow_trigger_failed: {icon: "stop_circle.svg", description: "A workflow trigger failed"}
   }.map
     .with_index { |(key, value), index| [key, value.merge(number: index.succ)] }
     .to_h

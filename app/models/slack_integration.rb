@@ -60,12 +60,6 @@ class SlackIntegration < ApplicationRecord
   MAX_RETRY_ATTEMPTS = 3
   RETRYABLE_ERRORS = ["name_taken"]
 
-  NOTIFICATION_KINDS_CONTAINING_CHANGELOG = [:rc_finished, :production_rollout_started]
-
-  def needs_changelog_threading?(type)
-    type.to_sym.in?(NOTIFICATION_KINDS_CONTAINING_CHANGELOG)
-  end
-
   def controllable_rollout?
     false
   end
@@ -127,23 +121,28 @@ class SlackIntegration < ApplicationRecord
   def notify!(channel, message, type, params, file_id = nil, file_title = nil)
     response = installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
     return if response.blank?
-
-    handle_changelog_thread(response, channel, params) if needs_changelog_threading?(type)
+    response.dig("message", "ts")
   rescue => e
-    elog(e, level: :warn)
+    elog(e, level: :debug)
+  end
+
+  def notify_changelog_in_thread2!(channel, message, thread_id, changelog, header: nil)
+    return if changelog.blank?
+    payload = notifier(:changelog, {changes: changelog, header: header})
+    installation.message(channel, message, block: payload, thread_id:)
+  rescue => e
+    elog(e, level: :debug)
   end
 
   def notify_changelog_in_thread!(channel, thread_id, changelog, show_changelog_header:)
     # If we are showing the header, we must show the full changelog.
     # If not, we show only the spillover from the main message.
-
-    notifiable_changes = show_changelog_header ? changelog : changelog&.[](Notifiers::Slack::Renderers::Changelog.changes_limit..)
+    notifiable_changes = show_changelog_header ? changelog : changelog&.[](10..)
     return if notifiable_changes.blank?
 
-    notifiable_changes.in_groups_of(Notifiers::Slack::Renderers::Changelog.changes_limit, false).each_with_index do |notifiable_change_group, index|
+    notifiable_changes.in_groups_of(10, false).each_with_index do |change_group, index|
       payload = notifier(:changelog, {
-        changes: notifiable_change_group,
-
+        changes: change_group,
         # index.zero? is checked to show header only before first message in thread
         release_changelog_header: show_changelog_header && index.zero?
       })
@@ -167,10 +166,9 @@ class SlackIntegration < ApplicationRecord
   end
 
   def notify_with_snippet!(channel, message, type, params, snippet_content, snippet_title)
-    message_response = notify!(channel, message, type, params)
-    return unless message_response
+    thread_id = notify!(channel, message, type, params)
+    return unless thread_id
 
-    thread_id = message_response.dig("message", "ts")
     messages = snippet_content.break_into_chunks(CODE_SNIPPET_CHARACTER_LIMIT)
     messages.each_with_index.map do |msg, idx|
       msg = "```#{msg}```"
