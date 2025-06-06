@@ -16,7 +16,7 @@
           "type": "rich_text_list",
           "style": "bullet",
           "elements": [
-            <% changes_in_message(@changes) do |change, i| %>
+            <% changes.each_with_index do |change, i| %>
             <%= i.zero? ? "" : "," %>
             {
               "type": "rich_text_section",
