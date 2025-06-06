@@ -394,7 +394,7 @@ class Train < ApplicationRecord
     return unless send_notifications?
     notification_settings.where(kind: type).sole.notify_with_snippet!(message, params, snippet_content, snippet_title)
   end
-  
+
   def notify_with_changelog!(message, type, params)
     return unless active?
     return unless send_notifications?
