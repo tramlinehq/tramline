@@ -101,7 +101,7 @@ class NotificationSetting < ApplicationRecord
 
   def notify_with_changelog!(message, params)
     return unless send_notifications?
-    return unless rc_finished? || production_rollout_started?
+    return unless rc_finished?
 
     notifiable_channels.each do |channel|
       if rc_finished?
@@ -155,10 +155,6 @@ class NotificationSetting < ApplicationRecord
 
   def send_notifications?
     app.notifications_set_up? && active?
-  end
-
-  def needs_slack_changelog_thread_notification?
-    kind.to_sym.in?(SLACK_CHANGELOG_THREAD_NOTIFICATION_KINDS)
   end
 
   def notifiable_channels
