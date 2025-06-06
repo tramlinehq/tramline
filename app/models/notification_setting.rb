@@ -113,9 +113,12 @@ class NotificationSetting < ApplicationRecord
         last_release_change_groups = changes_since_last_release.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
         last_release_part_count = last_release_change_groups.size
 
-        changes = params[:changes_since_last_run]
-        change_groups = changes.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
-        part1 = change_groups.first
+        params[:changelog] = {
+          last_run: last_run_change_groups[0],
+          last_run_part_count:,
+          last_release: last_release_change_groups[0],
+          last_release_part_count:
+        }
 
         params[:changes_since_last_run] = part1
         thread_id = notification_provider.notify!(channel["id"], message, kind, params)
