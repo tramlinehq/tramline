@@ -28,5 +28,48 @@
       ]
     }
     <% end %>
+    <% if changelog[:last_run].present? %>,
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*:pushpin: Changelog*"
+      }
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_list",
+          "style": "bullet",
+          "elements": [
+            <% changelog[:last_run].each_with_index do |change, i| %>
+            <%= i.zero? ? "" : "," %>
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "<%= safe_string(change) %>"
+                }
+              ]
+            }
+            <% end %>
+          ]
+        }
+      ]
+    }
+    <% if changelog[:last_run_part_count] > 1 %>,
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Changelog part 1/<%= changelog[:last_run_part_count] %>, continued in thread :thread:"
+        }
+      ]
+    }
+    <% end %>
+    <% end %>
   ]
 }
