@@ -15,7 +15,7 @@
             data-activation-active-value="<%= SELECTED_TAB_STYLE %>"
             data-activation-inactive-value="<%= TAB_STYLE %>">
 
-          <% sorted_configs.each do |(_position, name, path, icon)| %>
+          <% sorted_configs.each do |(_position, name, path, count, icon)| %>
             <li class="flex items-center justify-center w-full gap-2">
               <div data-turbo-prefetch="false" class="w-full mr-2">
                 <a href="<%= path %>"
@@ -26,7 +26,14 @@
                    class="<%= style(path) %>">
 
                   <div class="flex gap-2 items-center">
-                    <span class="text-sm font-normal py-1.5 dark:bg-gray-200"><%= name %></span>
+                    <span class="text-sm font-normal py-1.5 dark:bg-gray-200">
+                      <%= name %>
+                    </span>
+                    <% if count.present? %>
+                      <span class="inline-flex items-center justify-center px-2 py-0.5 ml-1 text-xs font-bold leading-none text-white bg-gray-500 rounded-full min-w-[1.5em] h-[1.5em]">
+                        <%= count %>
+                      </span>
+                    <% end %>
                   </div>
 
                   <%= render IconComponent.new(icon, size: :md) %>
