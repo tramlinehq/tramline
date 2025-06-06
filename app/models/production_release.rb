@@ -33,7 +33,7 @@ class ProductionRelease < ApplicationRecord
   delegate :app, :train, :release, :platform, :release_platform, :hotfix?, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, :prepared_at, to: :store_submission
-  delegate :notify!, to: :train
+  delegate :notify!, :notify_with_changelog!, to: :train
   delegate :commit, :version_name, :build_number, to: :build
   delegate :release_health_rules, to: :release_platform
 
@@ -120,7 +120,7 @@ class ProductionRelease < ApplicationRecord
     previous&.mark_as_stale!
     update!(status: STATES[:active])
 
-    notify!("Production release was started!", :production_rollout_started, rollout_started_notification_params)
+    notify_with_changelog!("Production release was started!", :production_rollout_started, rollout_started_notification_params)
 
     ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank?
 

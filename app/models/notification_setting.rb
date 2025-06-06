@@ -58,7 +58,7 @@ class NotificationSetting < ApplicationRecord
     :release_scheduled
   ]
   RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS = NotificationSetting.kinds.keys.map(&:to_sym) - RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS
-  SLACK_CHANGELOG_THREAD_NOTIFICATION_KINDS = [:rc_finished]
+  SLACK_CHANGELOG_THREAD_NOTIFICATION_KINDS = [:rc_finished, :production_rollout_started]
   CHANGELOG_PER_MESSAGE_LIMIT = 20
 
   scope :active, -> { where(active: true) }
