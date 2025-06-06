@@ -120,28 +120,34 @@ class NotificationSetting < ApplicationRecord
           last_release_part_count:
         }
 
-        params[:changes_since_last_run] = part1
+        ####### Changes since last run (dual-set) #######
+
+        # Send the main message notification
+        # This will contain either RC changelog, or the full changelog depending on what is available
         thread_id = notification_provider.notify!(channel["id"], message, kind, params)
 
-        rest = change_groups[1..]
-        rest&.each_with_index do |change_group, index|
-          header = ":memo: Part #{index + 2}/#{rest.size + 1}"
-          notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header:)
+        if last_run_part_count > 1
+          last_run_change_groups[1..].each.with_index(2) do |change_group, index|
+            header = ":memo: Part #{index}/#{last_run_part_count}"
+            notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header:)
+          end
         end
 
         ####### Changes since last release (dual-set) #######
 
-        changes = params[:changes_since_last_release]
-        change_groups = changes.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
-        part1 = change_groups.first
+        if last_run_part_count > 0
+          ### The notification template shows the full release changelog part 1 if last_run_part_count is 0
+          # So header is needed only when the full changelog is posted in thread
 
-        header = ":pushpin: Changes since last release"
-        notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, part1, header:)
+          header = ":pushpin: Changes since last release (part 1/#{last_release_part_count})"
+          notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, last_release_change_groups[0], header:)
+        end
 
-        rest = change_groups[1..]
-        rest&.each_with_index do |change_group, index|
-          header = ":memo: Part #{index + 2}/#{rest.size + 1}"
-          notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header:)
+        if last_release_part_count > 1
+          last_release_change_groups[1..].each.with_index(2) do |change_group, index|
+            header = ":memo: Part #{index}/#{last_release_part_count}"
+            notification_provider.notify_changelog_in_thread2!(channel["id"], message, thread_id, change_group, header:)
+          end
         end
       end
     end
