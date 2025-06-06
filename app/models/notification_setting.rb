@@ -156,10 +156,6 @@ class NotificationSetting < ApplicationRecord
     app.notifications_set_up? && active?
   end
 
-  def needs_slack_changelog_thread_notification?
-    kind.to_sym.in?(SLACK_CHANGELOG_THREAD_NOTIFICATION_KINDS)
-  end
-
   def notifiable_channels
     channels = []
 
