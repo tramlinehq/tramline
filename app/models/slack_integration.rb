@@ -119,16 +119,25 @@ class SlackIntegration < ApplicationRecord
   end
 
   def notify!(channel, message, type, params, file_id = nil, file_title = nil)
-    installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
+    response = installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
+    return if response.blank?
+    response.dig("message", "ts")
   rescue => e
-    elog(e, level: :warn)
+    elog(e, level: :debug)
+  end
+
+  def notify_changelog_in_thread!(channel, message, thread_id, changelog, header: nil)
+    return if changelog.blank?
+    payload = notifier(:changelog, {changes: changelog, header: header})
+    installation.message(channel, message, block: payload, thread_id:)
+  rescue => e
+    elog(e, level: :debug)
   end
 
   def notify_with_snippet!(channel, message, type, params, snippet_content, snippet_title)
-    message_response = notify!(channel, message, type, params)
-    return unless message_response
+    thread_id = notify!(channel, message, type, params)
+    return unless thread_id
 
-    thread_id = message_response.dig("message", "ts")
     messages = snippet_content.break_into_chunks(CODE_SNIPPET_CHARACTER_LIMIT)
     messages.each_with_index.map do |msg, idx|
       msg = "```#{msg}```"

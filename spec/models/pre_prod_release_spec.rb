@@ -138,4 +138,29 @@ describe PreProdRelease do
       expect(result).to contain_exactly(second_commit.message, third_commit.message)
     end
   end
+
+  describe "#changes_since_last_release" do
+    let(:release) { create(:release, :with_no_platform_runs) }
+    let(:release_platform_run) { create(:release_platform_run, release:) }
+
+    it "returns the release changelog when its the first pre-prod release" do
+      release_changelog = create(:release_changelog, release:)
+      first_release = create(:beta_release, release_platform_run:)
+      result = first_release.changes_since_last_release
+      expect(result.size).to be > 0
+      expect(result).to eq(release_changelog.commit_messages(true))
+    end
+
+    it "returns the release changelog" do
+      release_changelog = create(:release_changelog, release:)
+      first_commit = create(:commit, release:)
+      _first_release = create(:beta_release, :stale, release_platform_run:, commit: first_commit)
+      second_commit = create(:commit, release:)
+      second_release = create(:beta_release, release_platform_run:, commit: second_commit)
+
+      result = second_release.changes_since_last_release
+      expect(result.size).to be > 0
+      expect(result).to eq(release_changelog.commit_messages(true))
+    end
+  end
 end
