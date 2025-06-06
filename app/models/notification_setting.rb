@@ -105,7 +105,13 @@ class NotificationSetting < ApplicationRecord
 
     notifiable_channels.each do |channel|
       if rc_finished?
-        ####### Changes since last run (dual-set) #######
+        changes_since_last_run = params[:changes_since_last_run]
+        last_run_change_groups = changes_since_last_run.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
+        last_run_part_count = last_run_change_groups.size
+
+        changes_since_last_release = params[:changes_since_last_release]
+        last_release_change_groups = changes_since_last_release.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
+        last_release_part_count = last_release_change_groups.size
 
         changes = params[:changes_since_last_run]
         change_groups = changes.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
