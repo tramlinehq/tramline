@@ -126,43 +126,12 @@ class SlackIntegration < ApplicationRecord
     elog(e, level: :debug)
   end
 
-  def notify_changelog_in_thread2!(channel, message, thread_id, changelog, header: nil)
+  def notify_changelog_in_thread!(channel, message, thread_id, changelog, header: nil)
     return if changelog.blank?
     payload = notifier(:changelog, {changes: changelog, header: header})
     installation.message(channel, message, block: payload, thread_id:)
   rescue => e
     elog(e, level: :debug)
-  end
-
-  def notify_changelog_in_thread!(channel, thread_id, changelog, show_changelog_header:)
-    # If we are showing the header, we must show the full changelog.
-    # If not, we show only the spillover from the main message.
-    notifiable_changes = show_changelog_header ? changelog : changelog&.[](10..)
-    return if notifiable_changes.blank?
-
-    notifiable_changes.in_groups_of(10, false).each_with_index do |change_group, index|
-      payload = notifier(:changelog, {
-        changes: change_group,
-        # index.zero? is checked to show header only before first message in thread
-        release_changelog_header: show_changelog_header && index.zero?
-      })
-      installation.message(channel, "Changelog", block: payload, thread_id:)
-    end
-  rescue => e
-    elog(e, level: :warn)
-  end
-
-  def handle_changelog_thread(response, channel, params)
-    thread_id = response.dig("message", "ts")
-    changes_since_last_run = params[:changes_since_last_run]
-
-    # No need to show the header here because we have already shown it in main message.
-    # Just a spillover of changes from main message to thread.
-    notify_changelog_in_thread!(channel, thread_id, changes_since_last_run, show_changelog_header: false)
-
-    # Here we are showing changes since last release.
-    # Header is to be shown if we previously have displayed changes_since_last_run.
-    notify_changelog_in_thread!(channel, thread_id, params[:changes_since_last_release], show_changelog_header: changes_since_last_run.present?)
   end
 
   def notify_with_snippet!(channel, message, type, params, snippet_content, snippet_title)
