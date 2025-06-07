@@ -38,7 +38,7 @@
             <%= link_to_external "SemVer", "https://semver.org", class: "underline" %>-like scheme, for eg.
             <code>X.Y.Z</code> and <code>X.Y</code>. Or a CalVer scheme, for eg. <code>YYYY.0M.0D</code>.
             Refer to the
-            <%= link_to_external "docs", "https://docs.tramline.app/automations#version-name", class: "underline" %>
+            <%= link_to_external "docs", "https://docs.tramline.app/automations#bumping-versions-and-build-numbers", class: "underline" %>
             to learn more about versioning.
           </span>
       <% end %>
@@ -126,7 +126,7 @@
     <%= f.with_section(heading: "Branching strategy") do |section| %>
       <% section.with_description do %>
         Refer to
-        the <%= link_to_external "docs", "https://docs.tramline.app/branching-strategies", class: "underline" %>
+        the <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/release-management/branching-strategies", class: "underline" %>
         to learn more about our supported branching strategies.
       <% end %>
       <div class="grid gap-x-5 md:grid-cols-2">
