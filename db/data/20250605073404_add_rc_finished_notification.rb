@@ -7,8 +7,8 @@ class AddRcFinishedNotification < ActiveRecord::Migration[7.2]
 
       train.notification_settings.create!(
         kind: NotificationSetting.kinds[:rc_finished],
-        active: true,
-        core_enabled: true,
+        active: false,
+        core_enabled: false,
         release_specific_enabled: false,
         notification_channels: [train.notification_channel]
       )
