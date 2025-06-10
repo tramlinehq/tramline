@@ -128,7 +128,7 @@ class NotificationSetting < ApplicationRecord
 
         if last_run_part_count > 1
           last_run_change_groups[1..].each.with_index(2) do |change_group, index|
-            header = ":memo: Changes since last RC part #{index}/#{last_run_part_count}"
+            header = "Changes since last RC part #{index}/#{last_run_part_count}"
             notification_provider.notify_changelog_in_thread!(channel["id"], message, thread_id, change_group, header:)
           end
         end
@@ -139,13 +139,13 @@ class NotificationSetting < ApplicationRecord
           ### The notification template shows the full release changelog part 1 if last_run_part_count is 0
           # So header is needed only when the full changelog is posted in thread
 
-          header = ":pushpin: Changes since last release (part 1/#{last_release_part_count})"
+          header = "Changes since last release (part 1/#{last_release_part_count})"
           notification_provider.notify_changelog_in_thread!(channel["id"], message, thread_id, last_release_change_groups[0], header:)
         end
 
         if last_release_part_count > 1
           last_release_change_groups[1..].each.with_index(2) do |change_group, index|
-            header = ":memo: Changes since last release part #{index}/#{last_release_part_count}"
+            header = "Changes since last release part #{index}/#{last_release_part_count}"
             notification_provider.notify_changelog_in_thread!(channel["id"], message, thread_id, change_group, header:)
           end
         end
