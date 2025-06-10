@@ -128,7 +128,7 @@ class NotificationSetting < ApplicationRecord
 
       if last_run_part_count > 1
         last_run_change_groups[1..].each.with_index(2) do |change_group, index|
-          header = "Changes since last RC part #{index}/#{last_run_part_count}"
+          header = "Changelog part #{index}/#{last_run_part_count}"
           notification_provider.notify_changelog_in_thread!(channel["id"], message, thread_id, change_group, header:)
         end
       end
