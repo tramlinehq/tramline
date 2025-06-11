@@ -209,18 +209,20 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def build_channels(with_production: false)
-    default_channels = CHANNELS.map(&:with_indifferent_access)
+    all_channels = cache.fetch(tracks_cache_key, skip_nil: true, expires_in: CACHE_EXPIRY) do
+      default_channels = CHANNELS.map(&:with_indifferent_access)
 
-    cache.fetch(tracks_cache_key, skip_nil: true, expires_in: CACHE_EXPIRY) do
       channel_data&.each do |chan|
         next if default_channels.pluck(:id).map(&:to_s).include?(chan[:name])
         new_chan = {id: chan[:name], name: "Closed testing - #{chan[:name]}", is_production: false}.with_indifferent_access
         default_channels << new_chan
       end
+
+      default_channels
     end
 
-    return default_channels if with_production
-    default_channels.reject { |channel| channel[:is_production] }
+    return all_channels if with_production
+    all_channels.reject { |channel| channel[:is_production] }
   end
 
   def latest_build_number
