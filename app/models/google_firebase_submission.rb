@@ -181,6 +181,12 @@ class GoogleFirebaseSubmission < StoreSubmission
     super.merge(submission_channel: "#{display} - #{submission_channel.name}")
   end
 
+  def deep_link
+    return if external_id.blank?
+    parsed_external_id = external_id.split("apps/").last
+    DEEP_LINK + parsed_external_id
+  end
+
   private
 
   def tester_notes
@@ -226,12 +232,6 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def external_id
     store_release.try(:[], "id")
-  end
-
-  def deep_link
-    return if external_id.blank?
-    parsed_external_id = external_id.split("apps/").last
-    DEEP_LINK + parsed_external_id
   end
 
   def stamp_data(failure_message: nil)

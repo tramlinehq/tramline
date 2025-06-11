@@ -34,6 +34,7 @@ class NotificationSetting < ApplicationRecord
     internal_release_failed: "internal_release_failed",
     beta_release_failed: "beta_release_failed",
     beta_submission_finished: "beta_submission_finished",
+    rc_finished: "rc_finished",
     internal_submission_finished: "internal_submission_finished",
     submission_failed: "submission_failed",
     production_submission_started: "production_submission_started",
@@ -52,13 +53,13 @@ class NotificationSetting < ApplicationRecord
     workflow_run_unavailable: "workflow_run_unavailable",
     workflow_trigger_failed: "workflow_trigger_failed"
   }
-
   RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS = [
     :release_started,
     :release_scheduled
   ]
-
   RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS = NotificationSetting.kinds.keys.map(&:to_sym) - RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS
+  SLACK_CHANGELOG_THREAD_NOTIFICATION_KINDS = [:rc_finished]
+  CHANGELOG_PER_MESSAGE_LIMIT = 20
 
   scope :active, -> { where(active: true) }
   scope :release_specific_channel_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS) }
@@ -95,6 +96,57 @@ class NotificationSetting < ApplicationRecord
 
     notifiable_channels.each do |channel|
       notification_provider.notify_with_snippet!(channel["id"], message, kind, params, snippet_content, snippet_title)
+    end
+  end
+
+  def notify_with_changelog!(message, params)
+    return unless send_notifications?
+    return unless rc_finished?
+
+    notifiable_channels.each do |channel|
+      if rc_finished?
+        changes_since_last_run = params[:changes_since_last_run]
+        last_run_change_groups = changes_since_last_run.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
+        last_run_part_count = last_run_change_groups.size
+
+        changes_since_last_release = params[:changes_since_last_release]
+        last_release_change_groups = changes_since_last_release.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
+        last_release_part_count = last_release_change_groups.size
+
+        params[:changelog] = {
+          last_run: last_run_change_groups[0],
+          last_run_part_count:,
+          last_release: last_release_change_groups[0],
+          last_release_part_count:
+        }
+
+        ####### Changes since last run (dual-set) #######
+        # Send the main message notification
+        # This will contain either RC changelog, or the full changelog depending on what is available
+        thread_id = notification_provider.notify!(channel["id"], message, kind, params)
+
+        if last_run_part_count > 1
+          last_run_change_groups[1..].each.with_index(2) do |change_group, index|
+            header = "Changelog part #{index}/#{last_run_part_count}"
+            notification_provider.notify_changelog_in_thread!(channel["id"], message, thread_id, change_group, header:)
+          end
+        end
+
+        ####### Changes since last release (dual-set) #######
+        if last_run_part_count > 0
+          # The notification template shows the full release changelog part 1 if last_run_part_count is 0
+          # So header is needed only when the full changelog is posted in thread
+          header = "Changes since last release (part 1/#{last_release_part_count})"
+          notification_provider.notify_changelog_in_thread!(channel["id"], message, thread_id, last_release_change_groups[0], header:)
+        end
+
+        if last_release_part_count > 1
+          last_release_change_groups[1..].each.with_index(2) do |change_group, index|
+            header = "Changes since last release part #{index}/#{last_release_part_count}"
+            notification_provider.notify_changelog_in_thread!(channel["id"], message, thread_id, change_group, header:)
+          end
+        end
+      end
     end
   end
 
@@ -147,5 +199,6 @@ class NotificationSetting < ApplicationRecord
     vals = all.map { _1.attributes.with_indifferent_access.except(:id).update_key(:train_id) { new_train.id } }
     NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
+
   # rubocop:enable Rails/SkipsModelValidations
 end
