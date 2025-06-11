@@ -121,7 +121,6 @@ class NotificationSetting < ApplicationRecord
         }
 
         ####### Changes since last run (dual-set) #######
-
         # Send the main message notification
         # This will contain either RC changelog, or the full changelog depending on what is available
         thread_id = notification_provider.notify!(channel["id"], message, kind, params)
@@ -134,11 +133,9 @@ class NotificationSetting < ApplicationRecord
         end
 
         ####### Changes since last release (dual-set) #######
-
         if last_run_part_count > 0
-          ### The notification template shows the full release changelog part 1 if last_run_part_count is 0
+          # The notification template shows the full release changelog part 1 if last_run_part_count is 0
           # So header is needed only when the full changelog is posted in thread
-
           header = "Changes since last release (part 1/#{last_release_part_count})"
           notification_provider.notify_changelog_in_thread!(channel["id"], message, thread_id, last_release_change_groups[0], header:)
         end
