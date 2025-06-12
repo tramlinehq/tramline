@@ -9,7 +9,7 @@ module Notifiers
         if submission.deep_link.present?
           ":white_check_mark: Submitted to <#{submission.deep_link}|*#{submission.display}*>"
         else
-          ":white_check_mark: Submitted to *<#{submission.display}>"
+          ":white_check_mark: Submitted to *<#{submission.display}>*"
         end
       end
     end
