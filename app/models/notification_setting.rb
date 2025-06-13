@@ -58,7 +58,7 @@ class NotificationSetting < ApplicationRecord
     :release_scheduled
   ]
   RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS = NotificationSetting.kinds.keys.map(&:to_sym) - RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS
-  SLACK_CHANGELOG_THREAD_NOTIFICATION_KINDS = [:rc_finished, :production_rollout_started]
+  THREADED_CHANGELOG_NOTIFICATION_KINDS = [:rc_finished, :production_rollout_started]
   CHANGELOG_PER_MESSAGE_LIMIT = 20
 
   scope :active, -> { where(active: true) }
@@ -101,7 +101,7 @@ class NotificationSetting < ApplicationRecord
 
   def notify_with_changelog!(message, params)
     return unless send_notifications?
-    return unless kind.to_sym.in?(SLACK_CHANGELOG_THREAD_NOTIFICATION_KINDS)
+    return unless kind.to_sym.in?(THREADED_CHANGELOG_NOTIFICATION_KINDS)
 
     notifiable_channels.each do |channel|
       changes_since_last_run = params[:changes_since_last_run]
