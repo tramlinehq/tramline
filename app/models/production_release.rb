@@ -119,7 +119,6 @@ class ProductionRelease < ApplicationRecord
 
     previous&.mark_as_stale!
     update!(status: STATES[:active])
-
     notify_with_changelog!("Production release was started!", :production_rollout_started, rollout_started_notification_params)
 
     ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank?
@@ -202,13 +201,15 @@ class ProductionRelease < ApplicationRecord
   end
 
   def commits_since_previous
-    changes_since_last_release = release.release_changelog&.commits || []
-    changes_since_last_run = release.all_commits.between_commits(previous&.commit, commit) || []
+    commits_since_last_release = release.release_changelog&.commits || []
+    commits_since_last_run = release.all_commits.between_commits(previous&.commit, commit) || []
 
     if previous
-      changes_since_last_run
+      # if it's a patch-fix, only return the delta of changes
+      commits_since_last_run
     else
-      changes_since_last_release
+      # if it's the first rollout, return all the changes in the release
+      (commits_since_last_run + commits_since_last_release).uniq { |c| c.commit_hash }
     end
   end
 
