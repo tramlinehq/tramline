@@ -407,6 +407,10 @@ class Release < ApplicationRecord
     release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
 
+  def build_number
+    builds.order(created_at: :desc).select(:build_number).first&.build_number
+  end
+
   alias_method :version_current, :release_version
 
   def release_branch
