@@ -26,7 +26,7 @@ module Installations
     def generate
       case model
       when "gemini"
-        Google::VertexAi::Gemini.new(project_id, prompt, model, key_file, response_type).generate
+        Google::VertexAi::Gemini.new(project_id, prompt, key_file, response_type).generate
       when "llama"
         Google::VertexAi::Llama.new(project_id, prompt, key_file, response_type).generate
       end
