@@ -58,6 +58,14 @@ class ReleasePresenter < SimpleDelegator
     release_version
   end
 
+  def has_builds?
+    display_build_number.present?
+  end
+
+  memoize def display_build_number
+    build_number
+  end
+
   delegate :team_release_commits, :team_stability_commits, :reldex, to: :breakdown
 
   def hotfix_badge
