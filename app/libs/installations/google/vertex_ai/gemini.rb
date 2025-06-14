@@ -1,17 +1,17 @@
 module Installations
   class Google::VertexAi::Gemini < Google::VertexAi::Api
-    extend Forwardable
-
     LOCATION = "us-central1"
     ENDPOINT_URL = Addressable::Template.new(
       "https://{location}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{location}/publishers/google/models/{model}:generateContent"
     )
 
-    attr_reader :api
-    def_delegators :api, :key_file, :prompt, :response_type, :project_id
+    attr_reader :key_file, :prompt, :response_type, :project_id
 
-    def initialize(api)
-      @api = api
+    def initialize(project_id, prompt, key_file, response_type)
+      @project_id = project_id
+      @key_file = key_file
+      @prompt = prompt
+      @response_type = response_type
     end
 
     def generate
