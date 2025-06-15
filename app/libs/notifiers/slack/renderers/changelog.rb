@@ -12,6 +12,14 @@ module Notifiers
       def render_footer
         {blocks: []}.to_json
       end
+
+      def changelog_header
+        if @continuation
+          "…_#{@header}_"
+        else
+          ":book: *#{@header}*"
+        end
+      end
     end
   end
 end

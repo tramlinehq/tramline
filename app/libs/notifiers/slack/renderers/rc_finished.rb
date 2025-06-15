@@ -12,6 +12,10 @@ module Notifiers
           ":white_check_mark: Submitted to *#{submission.display}*"
         end
       end
+
+      def changelog_header
+        ":memo: *#{@changelog[:header]}*"
+      end
     end
   end
 end
