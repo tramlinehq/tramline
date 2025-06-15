@@ -160,9 +160,9 @@ class NotificationSetting < ApplicationRecord
     notifiable_channels.each do |channel|
       thread_id =
         notification_provider.notify_with_threaded_changelog!(channel, message, kind, params,
-                                                              changelog_key: :diff_changelog,
-                                                              changelog_partitions: CHANGELOG_PER_MESSAGE_LIMIT,
-                                                              header_affix: "Changes in this build")
+          changelog_key: :diff_changelog,
+          changelog_partitions: CHANGELOG_PER_MESSAGE_LIMIT,
+          header_affix: "Changes in this build")
 
       # show full changelog when necessary
       # todo: we can probably also encapsulate this nicely like we do for notify_with_threaded_changelog!
@@ -175,15 +175,15 @@ class NotificationSetting < ApplicationRecord
         # first send the initial part of the changelog
         header_affix = "Full release changelog"
         notification_provider.notify_changelog!(channel["id"], message, thread_id, full_parts[0],
-                                                header_affix: header_affix,
-                                                continuation: false)
+          header_affix: header_affix,
+          continuation: false)
 
         # send the rest of the parts as "continuations"
         full_parts[1..].each.with_index(2) do |change_group, index|
           continuation_header_affix = "#{header_affix} (#{index}/#{full_parts.size})"
           notification_provider.notify_changelog!(channel["id"], message, thread_id, change_group,
-                                                  header_affix: continuation_header_affix,
-                                                  continuation: true)
+            header_affix: continuation_header_affix,
+            continuation: true)
         end
       end
     end
@@ -192,9 +192,9 @@ class NotificationSetting < ApplicationRecord
   def notify_production_rollout_started!(message, params)
     notifiable_channels.each do |channel|
       notification_provider.notify_with_threaded_changelog!(channel, message, kind, params,
-                                                            changelog_key: :diff_changelog,
-                                                            changelog_partitions: CHANGELOG_PER_MESSAGE_LIMIT,
-                                                            header_affix: "Changes in release")
+        changelog_key: :diff_changelog,
+        changelog_partitions: CHANGELOG_PER_MESSAGE_LIMIT,
+        header_affix: "Changes in release")
     end
   end
 end
