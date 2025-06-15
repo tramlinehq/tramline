@@ -196,7 +196,7 @@ class ProductionRelease < ApplicationRecord
 
   def rollout_started_notification_params
     store_rollout.notification_params.merge(
-      changes_since_last_run: commits_since_previous.pluck(:message)
+      diff_changelog: changes_since_previous
     )
   end
 
@@ -205,11 +205,24 @@ class ProductionRelease < ApplicationRecord
     commits_since_last_run = release.all_commits.between_commits(previous&.commit, commit) || []
 
     if previous
+      # if it's a patch-fix, only return the delta of commits
+      commits_since_last_run
+    else
+      # if it's the first rollout, return all the commits in the release
+      (commits_since_last_run + commits_since_last_release).uniq { |c| c.commit_hash }
+    end
+  end
+
+  def changes_since_previous
+    commits_since_last_release = release.release_changelog&.commits&.commit_messages(true) || []
+    commits_since_last_run = release.all_commits.between_commits(previous&.commit, commit).commit_messages(true) || []
+
+    if previous
       # if it's a patch-fix, only return the delta of changes
       commits_since_last_run
     else
       # if it's the first rollout, return all the changes in the release
-      (commits_since_last_run + commits_since_last_release).uniq { |c| c.commit_hash }
+      (commits_since_last_run + commits_since_last_release).uniq
     end
   end
 

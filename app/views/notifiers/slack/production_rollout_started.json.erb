@@ -26,14 +26,13 @@
           "emoji": false
         }
       ]
-    }
+    },
     <% end %>
-    <% if changelog[:last_run].present? %>,
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*:book: Changes in release*"
+        "text": "<%= changelog_header %>"
       }
     },
     {
@@ -43,7 +42,7 @@
           "type": "rich_text_list",
           "style": "bullet",
           "elements": [
-            <% changelog[:last_run].each_with_index do |change, i| %>
+            <% @changelog[:first_part].each_with_index do |change, i| %>
             <%= i.zero? ? "" : "," %>
             {
               "type": "rich_text_section",
@@ -59,17 +58,16 @@
         }
       ]
     }
-    <% if changelog[:last_run_part_count] > 1 %>,
+    <% if @changelog[:total_parts] > 1 %>,
     {
       "type": "context",
       "elements": [
         {
           "type": "mrkdwn",
-          "text": "Changes in release – part 1/<%= changelog[:last_run_part_count] %>, continued in thread :thread:"
+          "text": "Changes in release, continued in thread :thread:"
         }
       ]
     }
-    <% end %>
     <% end %>
   ]
 }
