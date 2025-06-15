@@ -167,8 +167,8 @@ class NotificationSetting < ApplicationRecord
       # show full changelog when necessary
       # todo: we can probably also encapsulate this nicely like we do for notify_with_threaded_changelog!
       # todo: but in the interest of time, this is sort of manually hand-constructed
-      single_changelog_set = params[:first_pre_prod_release] || false
-      unless single_changelog_set
+      show_full_changelog = !params[:first_pre_prod_release] || false
+      if show_full_changelog
         full = params[:full_changelog]
         full_parts = full.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
 

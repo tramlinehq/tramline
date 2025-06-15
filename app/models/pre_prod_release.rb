@@ -112,12 +112,13 @@ class PreProdRelease < ApplicationRecord
   end
 
   def changes_since_previous(skip_delta: false)
-    changes_since_last_release = release.release_changelog&.commit_messages(true) || []
+    changes_since_last_release = release.release_changelog&.commits&.commit_messages(true) || []
     last_successful_run = previous_successful
     changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)&.commit_messages(true) || []
 
+    # always return the changelog + all changes until now
     if skip_delta
-      new_changes_till_now = release.all_commits.between_commits(nil, commit)&.commit_messages(true)
+      new_changes_till_now = release.all_commits.between_commits(nil, commit)&.commit_messages(true) || []
       return (new_changes_till_now + changes_since_last_release).uniq
     end
 
@@ -170,7 +171,6 @@ class PreProdRelease < ApplicationRecord
       commit_url: commit.url,
       build_number: build.build_number,
       release_version: release.release_version,
-      submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", "),
       submissions: store_submissions,
       first_pre_prod_release: previous_successful.blank?,
       diff_changelog: changes_since_previous,

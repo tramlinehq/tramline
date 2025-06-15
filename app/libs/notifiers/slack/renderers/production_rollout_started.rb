@@ -16,7 +16,7 @@ module Notifiers
       end
 
       def changelog_header
-        ":memo: *#{@changelog[:header]}*"
+        ":memo: *#{@changelog[:header_affix]}*"
       end
     end
   end

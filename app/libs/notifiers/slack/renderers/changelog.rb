@@ -15,9 +15,9 @@ module Notifiers
 
       def changelog_header
         if @continuation
-          "…_#{@header}_"
+          "…_#{@header_affix}_"
         else
-          ":book: *#{@header}*"
+          ":book: *#{@header_affix}*"
         end
       end
     end
