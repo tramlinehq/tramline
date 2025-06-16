@@ -2,6 +2,7 @@
 
 class NotificationsCopyActiveFlagToCoreEnabled < ActiveRecord::Migration[7.2]
   def up
+    return
     # Update core_enabled flag for notifications which are currently active
     NotificationSetting.where(active: true).update_all(core_enabled: true)
 

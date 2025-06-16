@@ -39,14 +39,14 @@ module Installations
       end
     end
 
-    def message(channel, text, thread_id: nil)
+    def message(channel, text, block: {}, thread_id: nil)
       json_params = {
         json: {
           channel: channel,
           text: text,
           unfurl_links: false,
           thread_ts: thread_id
-        }
+        }.merge(block)
       }
 
       execute(:post, PUBLISH_CHAT_MESSAGE_URL, json_params)

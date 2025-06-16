@@ -4,28 +4,16 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "<%= staged_rollout_started_text %>"
+        "text": ":sparkles: *New RC deployed for <%= @release_version %> (<%= @build_number %>)*"
       }
-    }
-    <% unless @requires_review %>,
+    },
+    <% @submissions.each do |submission| %>
     {
-      "type": "context",
-      "elements": [
-        {
-          "type": "mrkdwn",
-          "text": "<%= initial_rollout_percentage_text %>"
-        },
-        {
-          "type": "plain_text",
-          "text": "<%= google_managed_publishing_text %>",
-          "emoji": false
-        },
-        {
-          "type": "plain_text",
-          "text": "<%= google_unmanaged_publishing_text %>",
-          "emoji": false
-        }
-      ]
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<%= submission_text(submission) %>"
+      }
     },
     <% end %>
     {
@@ -64,7 +52,18 @@
       "elements": [
         {
           "type": "mrkdwn",
-          "text": "Changes in release, continued in thread :thread:"
+          "text": "Changes in this build, continued in thread :thread:"
+        }
+      ]
+    }
+    <% end %>
+    <% unless @first_pre_prod_release %>,
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Full release changelog in :thread:"
         }
       ]
     }
