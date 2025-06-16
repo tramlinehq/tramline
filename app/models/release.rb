@@ -408,7 +408,7 @@ class Release < ApplicationRecord
   end
 
   def build_number
-    builds.order(created_at: :desc).select(:build_number).first&.build_number
+    builds.order(created_at: :desc).limit(1).pick(:build_number)
   end
 
   alias_method :version_current, :release_version

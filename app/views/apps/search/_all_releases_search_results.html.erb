@@ -17,7 +17,7 @@
           <div class="flex justify-start item-gap-default">
             <h2 class="heading-2 text-main dark:text-white font-normal">
               Release <%= release.display_release_version %>
-              <% if release.has_builds? %>
+              <% if release.has_build_number? %>
                 (<%= release.display_build_number %>)
               <% end %>
             </h2>
