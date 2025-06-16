@@ -58,7 +58,7 @@ class ReleasePresenter < SimpleDelegator
     release_version
   end
 
-  def has_builds?
+  def has_build_number?
     display_build_number.present?
   end
 
