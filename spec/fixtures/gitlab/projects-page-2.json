@@ -1,0 +1,326 @@
+[
+  {
+    "id": 21,
+    "description": null,
+    "name": "Diaspora Client 21",
+    "name_with_namespace": "Diaspora / Diaspora Client 21",
+    "path": "diaspora-client-1-21",
+    "path_with_namespace": "diaspora/diaspora-client-21",
+    "created_at": "2013-09-30T13:46:02Z",
+    "default_branch": "main",
+    "tag_list": [
+      "example",
+      "disapora client"
+    ],
+    "topics": [
+      "example",
+      "disapora client"
+    ],
+    "ssh_url_to_repo": "git@gitlab.example.com:diaspora/diaspora-client-21.git",
+    "http_url_to_repo": "https://gitlab.example.com/diaspora/diaspora-client-21.git",
+    "web_url": "https://gitlab.example.com/diaspora/diaspora-client-21",
+    "readme_url": "https://gitlab.example.com/diaspora/diaspora-client-21/blob/master/README.md",
+    "avatar_url": "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png",
+    "forks_count": 0,
+    "star_count": 0,
+    "last_activity_at": "2013-09-30T13:46:02Z",
+    "namespace": {
+      "id": 2,
+      "name": "Diaspora",
+      "path": "diaspora",
+      "kind": "group",
+      "full_path": "diaspora",
+      "parent_id": null,
+      "avatar_url": null,
+      "web_url": "https://gitlab.example.com/diaspora"
+    }
+  },
+  {
+    "id": 22,
+    "description": null,
+    "name": "Diaspora Client 22",
+    "name_with_namespace": "Diaspora / Diaspora Client 22",
+    "path": "diaspora-client-1-22",
+    "path_with_namespace": "diaspora/diaspora-client-22",
+    "created_at": "2013-09-30T13:46:02Z",
+    "default_branch": "main",
+    "tag_list": [
+      "example",
+      "disapora client"
+    ],
+    "topics": [
+      "example",
+      "disapora client"
+    ],
+    "ssh_url_to_repo": "git@gitlab.example.com:diaspora/diaspora-client-22.git",
+    "http_url_to_repo": "https://gitlab.example.com/diaspora/diaspora-client-22.git",
+    "web_url": "https://gitlab.example.com/diaspora/diaspora-client-22",
+    "readme_url": "https://gitlab.example.com/diaspora/diaspora-client-22/blob/master/README.md",
+    "avatar_url": "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png",
+    "forks_count": 0,
+    "star_count": 0,
+    "last_activity_at": "2013-09-30T13:46:02Z",
+    "namespace": {
+      "id": 2,
+      "name": "Diaspora",
+      "path": "diaspora",
+      "kind": "group",
+      "full_path": "diaspora",
+      "parent_id": null,
+      "avatar_url": null,
+      "web_url": "https://gitlab.example.com/diaspora"
+    }
+  },
+  {
+    "id": 23,
+    "description": null,
+    "name": "Diaspora Client 23",
+    "name_with_namespace": "Diaspora / Diaspora Client 23",
+    "path": "diaspora-client-1-23",
+    "path_with_namespace": "diaspora/diaspora-client-23",
+    "created_at": "2013-09-30T13:46:02Z",
+    "default_branch": "main",
+    "tag_list": [
+      "example",
+      "disapora client"
+    ],
+    "topics": [
+      "example",
+      "disapora client"
+    ],
+    "ssh_url_to_repo": "git@gitlab.example.com:diaspora/diaspora-client-23.git",
+    "http_url_to_repo": "https://gitlab.example.com/diaspora/diaspora-client-23.git",
+    "web_url": "https://gitlab.example.com/diaspora/diaspora-client-23",
+    "readme_url": "https://gitlab.example.com/diaspora/diaspora-client-23/blob/master/README.md",
+    "avatar_url": "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png",
+    "forks_count": 0,
+    "star_count": 0,
+    "last_activity_at": "2013-09-30T13:46:02Z",
+    "namespace": {
+      "id": 2,
+      "name": "Diaspora",
+      "path": "diaspora",
+      "kind": "group",
+      "full_path": "diaspora",
+      "parent_id": null,
+      "avatar_url": null,
+      "web_url": "https://gitlab.example.com/diaspora"
+    }
+  },
+  {
+    "id": 24,
+    "description": null,
+    "name": "Diaspora Client 24",
+    "name_with_namespace": "Diaspora / Diaspora Client 24",
+    "path": "diaspora-client-1-24",
+    "path_with_namespace": "diaspora/diaspora-client-24",
+    "created_at": "2013-09-30T13:46:02Z",
+    "default_branch": "main",
+    "tag_list": [
+      "example",
+      "disapora client"
+    ],
+    "topics": [
+      "example",
+      "disapora client"
+    ],
+    "ssh_url_to_repo": "git@gitlab.example.com:diaspora/diaspora-client-24.git",
+    "http_url_to_repo": "https://gitlab.example.com/diaspora/diaspora-client-24.git",
+    "web_url": "https://gitlab.example.com/diaspora/diaspora-client-24",
+    "readme_url": "https://gitlab.example.com/diaspora/diaspora-client-24/blob/master/README.md",
+    "avatar_url": "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png",
+    "forks_count": 0,
+    "star_count": 0,
+    "last_activity_at": "2013-09-30T13:46:02Z",
+    "namespace": {
+      "id": 2,
+      "name": "Diaspora",
+      "path": "diaspora",
+      "kind": "group",
+      "full_path": "diaspora",
+      "parent_id": null,
+      "avatar_url": null,
+      "web_url": "https://gitlab.example.com/diaspora"
+    }
+  },
+  {
+    "id": 25,
+    "description": null,
+    "name": "Diaspora Client 25",
+    "name_with_namespace": "Diaspora / Diaspora Client 25",
+    "path": "diaspora-client-1-25",
+    "path_with_namespace": "diaspora/diaspora-client-25",
+    "created_at": "2013-09-30T13:46:02Z",
+    "default_branch": "main",
+    "tag_list": [
+      "example",
+      "disapora client"
+    ],
+    "topics": [
+      "example",
+      "disapora client"
+    ],
+    "ssh_url_to_repo": "git@gitlab.example.com:diaspora/diaspora-client-25.git",
+    "http_url_to_repo": "https://gitlab.example.com/diaspora/diaspora-client-25.git",
+    "web_url": "https://gitlab.example.com/diaspora/diaspora-client-25",
+    "readme_url": "https://gitlab.example.com/diaspora/diaspora-client-25/blob/master/README.md",
+    "avatar_url": "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png",
+    "forks_count": 0,
+    "star_count": 0,
+    "last_activity_at": "2013-09-30T13:46:02Z",
+    "namespace": {
+      "id": 2,
+      "name": "Diaspora",
+      "path": "diaspora",
+      "kind": "group",
+      "full_path": "diaspora",
+      "parent_id": null,
+      "avatar_url": null,
+      "web_url": "https://gitlab.example.com/diaspora"
+    }
+  },
+  {
+    "id": 26,
+    "description": null,
+    "name": "Diaspora Client 26",
+    "name_with_namespace": "Diaspora / Diaspora Client 26",
+    "path": "diaspora-client-1-26",
+    "path_with_namespace": "diaspora/diaspora-client-26",
+    "created_at": "2013-09-30T13:46:02Z",
+    "default_branch": "main",
+    "tag_list": [
+      "example",
+      "disapora client"
+    ],
+    "topics": [
+      "example",
+      "disapora client"
+    ],
+    "ssh_url_to_repo": "git@gitlab.example.com:diaspora/diaspora-client-26.git",
+    "http_url_to_repo": "https://gitlab.example.com/diaspora/diaspora-client-26.git",
+    "web_url": "https://gitlab.example.com/diaspora/diaspora-client-26",
+    "readme_url": "https://gitlab.example.com/diaspora/diaspora-client-26/blob/master/README.md",
+    "avatar_url": "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png",
+    "forks_count": 0,
+    "star_count": 0,
+    "last_activity_at": "2013-09-30T13:46:02Z",
+    "namespace": {
+      "id": 2,
+      "name": "Diaspora",
+      "path": "diaspora",
+      "kind": "group",
+      "full_path": "diaspora",
+      "parent_id": null,
+      "avatar_url": null,
+      "web_url": "https://gitlab.example.com/diaspora"
+    }
+  },
+  {
+    "id": 27,
+    "description": null,
+    "name": "Diaspora Client 27",
+    "name_with_namespace": "Diaspora / Diaspora Client 27",
+    "path": "diaspora-client-1-27",
+    "path_with_namespace": "diaspora/diaspora-client-27",
+    "created_at": "2013-09-30T13:46:02Z",
+    "default_branch": "main",
+    "tag_list": [
+      "example",
+      "disapora client"
+    ],
+    "topics": [
+      "example",
+      "disapora client"
+    ],
+    "ssh_url_to_repo": "git@gitlab.example.com:diaspora/diaspora-client-27.git",
+    "http_url_to_repo": "https://gitlab.example.com/diaspora/diaspora-client-27.git",
+    "web_url": "https://gitlab.example.com/diaspora/diaspora-client-27",
+    "readme_url": "https://gitlab.example.com/diaspora/diaspora-client-27/blob/master/README.md",
+    "avatar_url": "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png",
+    "forks_count": 0,
+    "star_count": 0,
+    "last_activity_at": "2013-09-30T13:46:02Z",
+    "namespace": {
+      "id": 2,
+      "name": "Diaspora",
+      "path": "diaspora",
+      "kind": "group",
+      "full_path": "diaspora",
+      "parent_id": null,
+      "avatar_url": null,
+      "web_url": "https://gitlab.example.com/diaspora"
+    }
+  },
+  {
+    "id": 28,
+    "description": null,
+    "name": "Diaspora Client 28",
+    "name_with_namespace": "Diaspora / Diaspora Client 28",
+    "path": "diaspora-client-1-28",
+    "path_with_namespace": "diaspora/diaspora-client-28",
+    "created_at": "2013-09-30T13:46:02Z",
+    "default_branch": "main",
+    "tag_list": [
+      "example",
+      "disapora client"
+    ],
+    "topics": [
+      "example",
+      "disapora client"
+    ],
+    "ssh_url_to_repo": "git@gitlab.example.com:diaspora/diaspora-client-28.git",
+    "http_url_to_repo": "https://gitlab.example.com/diaspora/diaspora-client-28.git",
+    "web_url": "https://gitlab.example.com/diaspora/diaspora-client-28",
+    "readme_url": "https://gitlab.example.com/diaspora/diaspora-client-28/blob/master/README.md",
+    "avatar_url": "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png",
+    "forks_count": 0,
+    "star_count": 0,
+    "last_activity_at": "2013-09-30T13:46:02Z",
+    "namespace": {
+      "id": 2,
+      "name": "Diaspora",
+      "path": "diaspora",
+      "kind": "group",
+      "full_path": "diaspora",
+      "parent_id": null,
+      "avatar_url": null,
+      "web_url": "https://gitlab.example.com/diaspora"
+    }
+  },
+  {
+    "id": 29,
+    "description": null,
+    "name": "Diaspora Client 29",
+    "name_with_namespace": "Diaspora / Diaspora Client 29",
+    "path": "diaspora-client-1-29",
+    "path_with_namespace": "diaspora/diaspora-client-29",
+    "created_at": "2013-09-30T13:46:02Z",
+    "default_branch": "main",
+    "tag_list": [
+      "example",
+      "disapora client"
+    ],
+    "topics": [
+      "example",
+      "disapora client"
+    ],
+    "ssh_url_to_repo": "git@gitlab.example.com:diaspora/diaspora-client-29.git",
+    "http_url_to_repo": "https://gitlab.example.com/diaspora/diaspora-client-29.git",
+    "web_url": "https://gitlab.example.com/diaspora/diaspora-client-29",
+    "readme_url": "https://gitlab.example.com/diaspora/diaspora-client-29/blob/master/README.md",
+    "avatar_url": "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png",
+    "forks_count": 0,
+    "star_count": 0,
+    "last_activity_at": "2013-09-30T13:46:02Z",
+    "namespace": {
+      "id": 2,
+      "name": "Diaspora",
+      "path": "diaspora",
+      "kind": "group",
+      "full_path": "diaspora",
+      "parent_id": null,
+      "avatar_url": null,
+      "web_url": "https://gitlab.example.com/diaspora"
+    }
+  }
+]
