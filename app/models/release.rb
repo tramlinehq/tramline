@@ -376,11 +376,11 @@ class Release < ApplicationRecord
     return if source_commitish.blank?
 
     # get all PR merge commit SHAs for recent releases
-    recent_releases = release.train.releases.first(2)
-    merge_commit_shas = PullRequest
-      .where(release: recent_releases)
-      .where.not(merge_commit_sha: nil)
-      .pluck(:merge_commit_sha)
+    merge_commit_shas =
+      PullRequest
+        .where(release: previous_release)
+        .where.not(merge_commit_sha: nil)
+        .pluck(:merge_commit_sha)
 
     transaction do
       changelog = create_release_changelog!(from_ref:)
