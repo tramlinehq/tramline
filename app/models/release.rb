@@ -375,10 +375,18 @@ class Release < ApplicationRecord
 
     return if source_commitish.blank?
 
+    # get all PR merge commit SHAs for recent releases
+    recent_releases = release.train.releases.first(2)
+    merge_commit_shas = PullRequest
+      .where(release: recent_releases)
+      .where.not(merge_commit_sha: nil)
+      .pluck(:merge_commit_sha)
+
     transaction do
       changelog = create_release_changelog!(from_ref:)
       raw_commit_log = vcs_provider.commit_log(source_commitish, target_branch)
       return if raw_commit_log.blank?
+
       commits_to_create = raw_commit_log.map do |commit_attrs|
         {
           author_email: commit_attrs["author_email"],
@@ -392,7 +400,10 @@ class Release < ApplicationRecord
           release_id: id,
           release_changelog_id: changelog.id
         }
+      end.reject do |commit_attrs|
+        merge_commit_shas.include?(commit_attrs[:commit_hash])
       end
+
       # rubocop:disable Rails/SkipsModelValidations
       Commit.insert_all!(commits_to_create)
       # rubocop:enable Rails/SkipsModelValidations
@@ -414,7 +425,7 @@ class Release < ApplicationRecord
   end
 
   def release_diff
-    changes_since_last_release = release_changelog&.commit_messages(true)
+    changes_since_last_release = release_changelog&.commits&.commit_messages(true)
     changes_since_last_run = all_commits.commit_messages(true)
 
     ((changes_since_last_run || []) + (changes_since_last_release || []))
