@@ -1,4 +1,5 @@
 <%= render ContainerComponent.new(title: "Search Tramline", subtitle: "Search through releases, commits, pull requests, and builds") do |container| %>
+  <% container.with_back_button %>
   <% container.with_body do %>
     <%= render SearchBarComponent.new(search_name: :search, search_value: params[:search_pattern], search_placeholder: "commits, PRs, versions") do |search| %>
       <% search.with_notice do %>
