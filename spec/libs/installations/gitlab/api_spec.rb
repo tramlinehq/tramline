@@ -21,6 +21,41 @@ describe Installations::Gitlab::Api, type: :integration do
       expect(result.count).to eq(71)
     end
   end
+
+  context "when there are more than 200 results" do
+    before do
+      stub_request(:get, "https://gitlab.com/api/v4/projects")
+        .with(query: {membership: true, per_page: 50})
+        .to_return_json(body: fake_response(id_range: 1..50), headers: {"X-Next-Page": 2})
+
+      stub_request(:get, "https://gitlab.com/api/v4/projects")
+        .with(query: {membership: true, per_page: 50, page: 2})
+        .to_return_json(body: fake_response(id_range: 51..100), headers: {"X-Next-Page": 3})
+
+      stub_request(:get, "https://gitlab.com/api/v4/projects")
+        .with(query: {membership: true, per_page: 50, page: 3})
+        .to_return_json(body: fake_response(id_range: 101..150), headers: {"X-Next-Page": 4})
+
+      stub_request(:get, "https://gitlab.com/api/v4/projects")
+        .with(query: {membership: true, per_page: 50, page: 4})
+        .to_return_json(body: fake_response(id_range: 151..200), headers: {"X-Next-Page": 5})
+
+      fifth_page_stub
+    end
+
+    let(:fifth_page_stub) do
+      stub_request(:get, "https://gitlab.com/api/v4/projects")
+        .with(query: {membership: true, per_page: 50, page: 5})
+        .to_return_json(body: fake_response(id_range: 201..250), headers: {"X-Next-Page": nil})
+    end
+
+    it "stops after fetching 200 results" do
+      result = described_class.new(access_token).list_projects(GitlabIntegration::REPOS_TRANSFORMATIONS)
+
+      expect(result.count).to eq(200)
+      expect(fifth_page_stub).not_to have_been_requested
+    end
+  end
 end
 
 def fake_response(id_range:)
