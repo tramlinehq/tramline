@@ -6,14 +6,36 @@ FactoryBot.define do
     core_enabled { true }
     release_specific_enabled { false }
     kind { NotificationSetting::RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS.sample }
-    notification_channels { [{id: Faker::Alphanumeric.alphanumeric(number: 10), name: Faker::Lorem.word, is_private: false}] }
+    notification_channels {
+      Array.new(Random.rand(1..3)) {
+        {
+          id: Faker::Alphanumeric.alphanumeric(number: 10),
+          name: Faker::Lorem.word, is_private: false
+        }
+      }
+    }
     release_specific_channel { nil }
     user_groups { nil }
+
+    trait :inactive do
+      active { false }
+      core_enabled { false }
+      release_specific_enabled { false }
+    end
 
     trait :release_specific do
       release_specific_enabled { true }
       kind { NotificationSetting::RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS.sample }
       release_specific_channel { {id: Faker::Alphanumeric.alphanumeric(number: 10), name: Faker::Lorem.word, is_private: false} }
+
+      after(:build) do |notification_setting|
+        notification_setting.train.update(notifications_release_specific_channel_enabled: true)
+      end
+    end
+
+    trait :only_release_specific do
+      release_specific
+      core_enabled { false }
     end
 
     trait :threaded_changelog do
