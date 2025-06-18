@@ -94,7 +94,7 @@ module Installations
         }
       }
 
-      paginated_execute(:get, LIST_PROJECTS_URL, params)
+      paginated_execute(:get, LIST_PROJECTS_URL, params: params)
         .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
@@ -252,8 +252,8 @@ module Installations
       raise Installations::Gitlab::Error.new(JSON.parse(response.body))
     end
 
-    def paginated_execute(verb, base_url, params = {}, values = [], page = nil)
-      url = URI(base_url)
+    def paginated_execute(verb, url, params: {}, values: [], page: nil)
+      url = URI(url)
       url.query = "page=#{page}" if page.present?
 
       response = raw_execute(verb, url, params)
@@ -262,7 +262,7 @@ module Installations
       next_page = response.headers["x-next-page"]
       return values if next_page.blank?
 
-      paginated_execute(verb, base_url, params, values, next_page)
+      paginated_execute(verb, url, params: params, values: values, page: next_page)
     end
 
     def error?(code)
