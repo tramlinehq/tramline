@@ -174,5 +174,29 @@ RSpec.describe NotificationSetting do
         end
       end
     end
+
+    context "when kind is production_rollout_started" do
+      let(:setting) { create(:notification_setting, kind: :production_rollout_started) }
+
+      let(:params) {
+        {
+          diff_changelog: Array.new(Random.rand(1..10)) { Faker::Lorem.sentence }
+        }
+      }
+
+      it "sends notification with threaded changelog" do
+        setting.notify_with_changelog!("Some Message", params)
+        expect(notification_provider).to have_received(:notify_with_threaded_changelog!)
+          .with(
+            setting.notification_channels.first,
+            "Some Message",
+            "production_rollout_started",
+            params,
+            changelog_key: :diff_changelog,
+            changelog_partitions: 20,
+            header_affix: "Changes in release"
+          )
+      end
+    end
   end
 end
