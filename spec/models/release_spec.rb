@@ -682,6 +682,35 @@ describe Release do
         expect(hotfix_release.release_changelog).to be_nil
       end
     end
+
+    it "filters out backmerge commits from before" do
+      diff = [{url: "https://sample.com",
+               message: "commit message",
+               timestamp: "2024-01-10T18:38:06.000Z",
+               author_url: "https://sample.com",
+               author_name: "Jon Doe",
+               commit_hash: "123",
+               author_email: "jon@doe.com",
+               author_login: "jon-doe"}.with_indifferent_access,
+        {url: "https://sample.com",
+         message: "commit message",
+         timestamp: "2024-01-10T18:38:06.000Z",
+         author_url: "https://sample.com",
+         author_name: "Jon Doe",
+         commit_hash: "456",
+         author_email: "jon@doe.com",
+         author_login: "jon-doe"}.with_indifferent_access]
+      allow(vcs_mock_provider).to receive(:commit_log).and_return(diff)
+
+      finished_release = create(:release, :finished, train:, completed_at: 2.days.ago, tag_name: "foo")
+      _older_finished_release = create(:release, :finished, train:, completed_at: 4.days.ago, tag_name: "bar")
+      create(:pull_request, release: finished_release, merge_commit_sha: "456")
+
+      release.fetch_commit_log
+
+      expect(vcs_mock_provider).to have_received(:commit_log).with(finished_release.tag_name, train.working_branch).once
+      expect(commit_attributes(release.release_changelog.reload.commits)).to eq([diff[0]])
+    end
   end
 
   describe "#stability_commits" do
