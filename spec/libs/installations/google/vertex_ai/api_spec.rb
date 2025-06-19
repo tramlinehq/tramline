@@ -13,7 +13,7 @@ describe Installations::Google::VertexAi::Api, type: :integration do
 
     it "return response for the prompt" do
       stub_vertex_ai_llama_api(project_id, prompt, llama_text_response)
-      response = described_class.new(project_id, key_file).ask(prompt, use: :llama)
+      response = described_class.new(project_id, key_file).ask(prompt, llm: :llama)
 
       expect(response).to eq("The capital of France is Paris.")
     end
@@ -26,7 +26,7 @@ describe Installations::Google::VertexAi::Api, type: :integration do
 
     it "raises an error for an invalid llm" do
       expect {
-        described_class.new(project_id, key_file).ask(prompt, use: :invalid)
+        described_class.new(project_id, key_file).ask(prompt, llm: :invalid)
       }.to raise_error(ArgumentError, /Invalid LLM: invalid/)
     end
   end

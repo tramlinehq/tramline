@@ -16,11 +16,11 @@ module Installations
       @llm_instances = {}
     end
 
-    def ask(prompt, use: :gemini, response_type: :text)
+    def ask(prompt, llm: :gemini, response_type: :text)
       raise ArgumentError, "Invalid response_type: #{response_type}" unless SUPPORTED_RESPONSE_TYPES.include?(response_type.to_s)
-      raise ArgumentError, "Invalid LLM: #{use}" unless SUPPORTED_LLMS.include?(use)
+      raise ArgumentError, "Invalid LLM: #{llm}" unless SUPPORTED_LLMS.include?(llm)
 
-      model_for(use).generate(prompt, response_type.to_s)
+      model_for(llm).generate(prompt, response_type.to_s)
     end
 
     private
