@@ -7,20 +7,16 @@ describe Installations::Google::VertexAi::Llama, type: :integration do
   let(:prompt) { "What is the capital of France?" }
 
   describe "#generate" do
-    it "returns text response" do
-      stub_vertex_ai_llama_api(project_id, prompt, llama_text_response)
+    before do
       stub_google_service_account_auth
-
-      api = described_class.new(project_id, key_file)
-
-      response = api.generate(prompt)
-      expect(response).to eq("The capital of France is Paris.")
     end
 
-    it "raises an error for an invalid response type" do
-      expect {
-        described_class.new(project_id, key_file, "invalid_response_type")
-      }.to raise_error(ArgumentError, /Invalid response_type: invalid_response_type/)
+    it "returns text response" do
+      stub_vertex_ai_llama_api(project_id, prompt, llama_text_response)
+      api = described_class.new(project_id, key_file)
+
+      response = api.generate(prompt, "text")
+      expect(response).to eq("The capital of France is Paris.")
     end
   end
 end

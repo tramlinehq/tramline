@@ -1,44 +1,41 @@
 module Installations
-  class Google::VertexAi::Llama < Google::VertexAi::Base
-    SUPPORTED_RESPONSE_TYPES = %w[text json].freeze
+  class Google::VertexAi::Llama
+    include Google::VertexAi::Auth
+
     LOCATION = "us-east5"
     ENDPOINT_URL = Addressable::Template.new(
       "https://{location}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{location}/endpoints/openapi/chat/completions"
     )
 
-    attr_reader :key_file, :response_type, :project_id
-
-    def initialize(project_id, key_file, response_type = "text")
-      raise ArgumentError, "Invalid response_type: #{response_type}" unless SUPPORTED_RESPONSE_TYPES.include?(response_type)
-
-      @key_file = key_file
+    attr_reader :key_file, :project_id
+    def initialize(project_id, key_file)
       @project_id = project_id
-      @response_type = response_type
+      @key_file = key_file
     end
 
-    def generate(prompt)
-      perform_request(prompt)
+    def generate(prompt, response_type)
+      perform_request(prompt, response_type)
     end
 
     private
 
-    def perform_request(prompt)
+    def perform_request(prompt, response_type)
       response = HTTP
         .auth("Bearer #{access_token}")
         .headers("Content-Type" => "application/json")
         .post(ENDPOINT_URL.expand(
           location: LOCATION,
           project_id: project_id
-        ).to_s, json: request_body(prompt))
+        ).to_s, json: request_body(prompt, response_type))
 
       raise Installations::Google::VertexAi::Error.new(JSON.parse(response)) unless response.status.success?
 
-      parse_response(JSON.parse(response.body))
+      parse_response(JSON.parse(response.body), response_type)
     end
 
-    def request_body(prompt)
+    def request_body(prompt, response_type)
       {
-        model:,
+        model: model,
         stream: false,
         messages: [
           {
@@ -62,7 +59,7 @@ module Installations
       "meta/llama-4-maverick-17b-128e-instruct-maas"
     end
 
-    def parse_response(data)
+    def parse_response(data, response_type)
       result = data.dig("choices", 0, "message", "content")
       (response_type == "json") ? JSON.parse(result) : result
     end
