@@ -13,7 +13,7 @@ module Installations
     def initialize(project_id, key_file)
       @project_id = project_id
       @key_file = key_file
-      @model_instances = {}
+      @llm_instances = {}
     end
 
     def ask(prompt, use: :gemini, response_type: :text)
@@ -26,7 +26,7 @@ module Installations
     private
 
     def model_for(name)
-      @model_instances[name] ||= SUPPORTED_LLMS.fetch(name).new(project_id, key_file)
+      @llm_instances[name] ||= SUPPORTED_LLMS.fetch(name).new(project_id, key_file)
     end
   end
 end
