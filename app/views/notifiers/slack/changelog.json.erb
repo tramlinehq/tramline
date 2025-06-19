@@ -1,14 +1,12 @@
 {
   "blocks": [
-    <% if @header.present? %>
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": ":pushpin: *<%= @header %>*"
+        "text": "<%= changelog_header %>"
       }
     },
-    <% end %>
     {
       "type": "rich_text",
       "elements": [
