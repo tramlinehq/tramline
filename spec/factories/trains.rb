@@ -78,5 +78,11 @@ FactoryBot.define do
         def train.create_release_platforms = true
       end
     end
+
+    trait :without_notification_settings do
+      after(:build) do |train|
+        def train.create_default_notification_settings = true
+      end
+    end
   end
 end
