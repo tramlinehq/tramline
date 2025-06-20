@@ -85,7 +85,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     end
 
     attr_reader :setting, :app
-    delegate :id, :active?, :notification_channels, :notification_provider, :release_specific_channel_allowed?, :channels, to: :setting
+    delegate :id, :active?, :notification_channels, :notification_provider, :channels, to: :setting
 
     def edit_path
       edit_app_train_notification_setting_path(@app, @train, setting)
@@ -151,6 +151,14 @@ class NotificationSettingsComponent < ViewComponent::Base
 
     def channel_select_options
       options_for_select(display_channels(setting.channels) { |chan| "#" + chan[:name] }, default_channels)
+    end
+
+    def core_prefix_text
+      release_specific_channel_allowed? ? "Core " : ""
+    end
+
+    def release_specific_channel_allowed?
+      setting.release_specific_channel_allowed? && @train.notifications_release_specific_channel_enabled?
     end
   end
 end
