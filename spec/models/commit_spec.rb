@@ -49,5 +49,9 @@ describe Commit do
 
       expect(release.all_commits.commit_messages).to contain_exactly(commit1.message, commit2.message, commit3.message, commit4.message)
     end
+
+    it "filters out commits matching tramline-created pull requests" do
+
+    end
   end
 end

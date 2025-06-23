@@ -375,13 +375,6 @@ class Release < ApplicationRecord
 
     return if source_commitish.blank?
 
-    # get all PR merge commit SHAs for recent releases
-    merge_commit_shas =
-      PullRequest
-        .where(release: previous_release)
-        .where.not(merge_commit_sha: nil)
-        .pluck(:merge_commit_sha)
-
     transaction do
       changelog = create_release_changelog!(from_ref:)
       raw_commit_log = vcs_provider.commit_log(source_commitish, target_branch)
@@ -400,8 +393,6 @@ class Release < ApplicationRecord
           release_id: id,
           release_changelog_id: changelog.id
         }
-      end.reject do |commit_attrs|
-        merge_commit_shas.include?(commit_attrs[:commit_hash])
       end
 
       # rubocop:disable Rails/SkipsModelValidations
