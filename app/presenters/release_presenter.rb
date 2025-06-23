@@ -58,12 +58,9 @@ class ReleasePresenter < SimpleDelegator
     release_version
   end
 
-  def has_build_number?
-    display_build_number.present?
-  end
-
-  memoize def display_build_number
-    build_number
+  def display_build_number
+    build_number = self.build_number
+    build_number.present? ? "(#{build_number})" : nil
   end
 
   delegate :team_release_commits, :team_stability_commits, :reldex, to: :breakdown

@@ -16,10 +16,7 @@
         <div class="flex items-center justify-between border-default-b px-1 py-1 mb-3">
           <div class="flex justify-start item-gap-default">
             <h2 class="heading-2 text-main dark:text-white font-normal">
-              Release <%= release.display_release_version %>
-              <% if release.has_build_number? %>
-                (<%= release.display_build_number %>)
-              <% end %>
+              Release <%= release.display_release_version %> <%= release.display_build_number %>
             </h2>
             <div class="flex items-center gap-1">
               <%= render BadgeComponent.new(**release.release_status) %>
