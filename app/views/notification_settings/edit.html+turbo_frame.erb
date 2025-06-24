@@ -46,7 +46,7 @@
         <% end %>
       <% end %>
 
-    <% if @setting.release_specific_channel_allowed? && @train.notifications_release_specific_channel_enabled? %>
+    <% if @setting.release_specific_channel_allowed? %>
       <% if @setting.active? %>
         <% f.with_action do %>
           <% f.F.authz_submit "Save", "archive.svg", size: :xs, name: f.F.field_name(:active), value: true %>
