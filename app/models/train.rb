@@ -450,7 +450,7 @@ class Train < ApplicationRecord
 
   def has_restricted_public_channels?
     return false if app.ios?
-    release_platforms.any(&:has_restricted_public_channels?)
+    release_platforms.any?(&:has_restricted_public_channels?)
   end
 
   def stop_failed_ongoing_release!
