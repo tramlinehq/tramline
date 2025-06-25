@@ -74,10 +74,9 @@ class AppsController < SignedInApplicationController
     gen_query_filters(:release_status, Release.statuses[:finished])
     set_query_helpers
     @query_params.add_search_query(params[:search_pattern]) if params[:search_pattern].present?
-    set_query_pagination(Queries::Releases.count(app: @app, params: @query_params))
-    @releases = Queries::Releases.all(app: @app, params: @query_params)
-    @builds = Queries::Builds.all(app: @app, params: @query_params)
     set_search_result_counts
+    set_query_pagination(@releases_count.presence || 0)
+    @releases = Queries::Releases.all(app: @app, params: @query_params)
     set_search_tab_config
   end
 
@@ -87,10 +86,9 @@ class AppsController < SignedInApplicationController
     gen_query_filters(:release_status, ReleasePlatformRun.statuses[:finished])
     set_query_helpers
     @query_params.add_search_query(params[:search_pattern]) if params[:search_pattern].present?
-    set_query_pagination(Queries::Builds.count(app: @app, params: @query_params))
-    @releases = Queries::Releases.all(app: @app, params: @query_params)
-    @builds = Queries::Builds.all(app: @app, params: @query_params)
     set_search_result_counts
+    set_query_pagination(@builds_count.presence || 0)
+    @builds = Queries::Builds.all(app: @app, params: @query_params)
     set_search_tab_config
   end
 
@@ -103,8 +101,8 @@ class AppsController < SignedInApplicationController
 
   def set_search_result_counts
     if @query_params.search_query.present?
-      @releases_count = @releases.count
-      @builds_count = @builds.count
+      @releases_count = Queries::Releases.count(app: @app, params: @query_params)
+      @builds_count = Queries::Builds.count(app: @app, params: @query_params)
     end
   end
 
