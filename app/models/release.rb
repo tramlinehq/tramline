@@ -379,6 +379,7 @@ class Release < ApplicationRecord
       changelog = create_release_changelog!(from_ref:)
       raw_commit_log = vcs_provider.commit_log(source_commitish, target_branch)
       return if raw_commit_log.blank?
+
       commits_to_create = raw_commit_log.map do |commit_attrs|
         {
           author_email: commit_attrs["author_email"],
@@ -393,6 +394,7 @@ class Release < ApplicationRecord
           release_changelog_id: changelog.id
         }
       end
+
       # rubocop:disable Rails/SkipsModelValidations
       Commit.insert_all!(commits_to_create)
       # rubocop:enable Rails/SkipsModelValidations
@@ -414,7 +416,7 @@ class Release < ApplicationRecord
   end
 
   def release_diff
-    changes_since_last_release = release_changelog&.commit_messages(true)
+    changes_since_last_release = release_changelog&.commits&.commit_messages(true)
     changes_since_last_run = all_commits.commit_messages(true)
 
     ((changes_since_last_run || []) + (changes_since_last_release || []))

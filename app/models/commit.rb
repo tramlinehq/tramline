@@ -42,32 +42,35 @@ class Commit < ApplicationRecord
 
   STAMPABLE_REASONS = ["created"]
 
-  validates :commit_hash, uniqueness: {scope: [:release_id, :release_changelog_id]}
+  validates :commit_hash, uniqueness: { scope: [:release_id, :release_changelog_id] }
 
   before_save :generate_search_vector_data
-  after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create, if: :stability?
+  after_commit -> { create_stamp!(data: { sha: short_sha }) }, on: :create, if: :stability?
 
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
 
   pg_search_scope :search_by_message,
-    against: :message,
-    **search_config
+                  against: :message,
+                  **search_config
 
-  def self.commit_messages(first_parent_only = false)
-    Commit.commit_log(reorder("timestamp DESC"), first_parent_only)&.map(&:message)
+  def self.commit_messages(previous_releases = Release.none, first_parent_only = false)
+    Commit
+      .commit_log(reorder("timestamp DESC"), first_parent_only)
+      .filter_out_pull_requests(previous_releases)
+      .map(&:message)
   end
 
   def self.count_by_team(org)
     return unless org.teams.exists?
 
     res = reorder("")
-      .left_outer_joins(user: [memberships: :team])
-      .where("memberships.organization_id = ? OR memberships.organization_id IS NULL", org.id)
-      .group("COALESCE(teams.name, '#{Accounts::Team::UNKNOWN_TEAM_NAME}')")
-      .count("commits.id")
-      .sort_by(&:last)
-      .reverse
-      .to_h
+            .left_outer_joins(user: [memberships: :team])
+            .where("memberships.organization_id = ? OR memberships.organization_id IS NULL", org.id)
+            .group("COALESCE(teams.name, '#{Accounts::Team::UNKNOWN_TEAM_NAME}')")
+            .count("commits.id")
+            .sort_by(&:last)
+            .reverse
+            .to_h
 
     org.team_names.each { |team_name| res[team_name] ||= 0 }
     res
@@ -86,6 +89,17 @@ class Commit < ApplicationRecord
       base_condition
         .where(timestamp: ..head_commit.timestamp)
     end
+  end
+
+  # remove all PR merge commit SHAs for recent releases
+  def self.filter_out_pull_requests(previous_releases)
+    recent_pr_merge_commit_shas =
+      PullRequest
+        .where(release: previous_releases)
+        .where.not(merge_commit_sha: nil)
+        .pluck(:merge_commit_sha)
+
+    where.not(commit_hash: recent_pr_merge_commit_shas)
   end
 
   def team
