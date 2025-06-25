@@ -1,5 +1,5 @@
 module Mobile
-  class ReleasesController < ::SignedInApplicationController
+  class ReleasesController < SignedInApplicationController
     def index
     end
   end

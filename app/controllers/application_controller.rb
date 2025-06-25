@@ -20,7 +20,11 @@ class ApplicationController < ActionController::Base
   end
 
   def authenticated_root_path
-    apps_path
+    if mobile_device?
+      mobile_releases_path
+    else
+      apps_path
+    end
   end
 
   def current_organization
