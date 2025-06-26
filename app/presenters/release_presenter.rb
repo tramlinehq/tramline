@@ -58,6 +58,11 @@ class ReleasePresenter < SimpleDelegator
     release_version
   end
 
+  def display_build_number
+    build_number = self.build_number
+    build_number.present? ? "(#{build_number})" : nil
+  end
+
   delegate :team_release_commits, :team_stability_commits, :reldex, to: :breakdown
 
   def hotfix_badge
