@@ -242,7 +242,8 @@ module Installations
     private
 
     def execute(verb, url, params)
-      raw_execute(verb, url, params).body
+      response = raw_execute(verb, url, params)
+      JSON.parse(response.body.to_s)
     end
 
     def raw_execute(verb, url, params)
