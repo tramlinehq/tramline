@@ -196,7 +196,7 @@ class ProductionRelease < ApplicationRecord
 
   def rollout_started_notification_params
     store_rollout.notification_params.merge(
-      diff_changelog: changes_since_previous
+      diff_changelog: sanitize_commit_messages(changes_since_previous)
     )
   end
 
@@ -243,5 +243,17 @@ class ProductionRelease < ApplicationRecord
   # it's the release's previous tag
   def previous_tag_name
     previous&.tag_name.presence || release.previous_tag_name
+  end
+
+  # todo: move to generic location and also sanitize pre-prod tester notes + notification changelogs via this
+  def sanitize_commit_messages(array_of_commit_messages)
+    array_of_commit_messages
+      .map { |str| str&.strip }
+      .flat_map { |line| line.split("\n").first }
+      .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
+      .map { |line| line.gsub('"', "\\\"") }
+      .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
+      .compact_blank
+      .uniq
   end
 end
