@@ -265,7 +265,7 @@ class PlayStoreSubmission < StoreSubmission
     return if previous_run.blank?
 
     previous_rollout = previous_run.finished_production_release.store_rollout
-    previous_rollout.release_fully! if previous_rollout.rollout_in_progress?
+    previous_rollout.release_fully! if previous_rollout.rollout_active?
     previous_rollout
   end
 
