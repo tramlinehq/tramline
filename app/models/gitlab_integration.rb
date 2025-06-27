@@ -130,8 +130,60 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.list_projects(REPOS_TRANSFORMATIONS) }
   end
 
+  WORKFLOW_RUN_TRANSFORMATIONS = {
+    ci_ref: :id,
+    ci_link: :web_url,
+    number: :id,
+    unique_number: :id
+  }
+
   def workflows(_)
     nil
+  end
+
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
+    with_api_retries do
+      installation.run_pipeline!(code_repository_name, branch_name, inputs, WORKFLOW_RUN_TRANSFORMATIONS)
+    end
+  end
+
+  def cancel_workflow_run!(ci_ref)
+    with_api_retries { installation.cancel_pipeline!(code_repository_name, ci_ref) }
+  end
+
+  def retry_workflow_run!(ci_ref)
+    with_api_retries { installation.retry_pipeline!(code_repository_name, ci_ref) }
+  end
+
+  def find_workflow_run(workflow_id, branch, commit_sha)
+    # GitLab does not have a direct equivalent to finding a workflow run by workflow_id, branch, and commit_sha.
+    # It's more common to list pipelines and filter them.
+    # For now, we'll raise an unsupported action.
+    raise Integrations::UnsupportedAction
+  end
+
+  def get_workflow_run(pipeline_id)
+    with_api_retries { installation.get_pipeline(code_repository_name, pipeline_id, WORKFLOW_RUN_TRANSFORMATIONS) }
+  end
+
+  ARTIFACTS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name,
+    size_in_bytes: :size,
+    archive_download_url: :file_location,
+    generated_at: :created_at
+  }
+
+  def get_artifact(_, _, external_workflow_run_id:)
+    raise Integrations::UnsupportedAction
+  end
+
+  def artifact_url
+    raise Integrations::UnsupportedAction
+  end
+
+  def workflow_retriable?
+    false
   end
 
   def further_setup?
@@ -168,7 +220,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def create_tag!(tag_name, sha)
-    # FIXME
+    with_api_retries { installation.create_tag!(code_repository_name, tag_name, sha) }
   end
 
   def create_branch!(from, to, source_type: :branch)
@@ -253,12 +305,15 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
-    # FIXME
-    {}.merge_if_present(source: :gitlab)
+    with_api_retries do
+      installation
+        .cherry_pick_pr(code_repository_name, to_branch, patch_branch, commit_hash, pr_title_prefix, PR_TRANSFORMATIONS)
+        .merge_if_present(source: :gitlab)
+    end
   end
 
   def enable_auto_merge!(pr_number)
-    # FIXME
+    with_api_retries { installation.enable_auto_merge(code_repository_name, pr_number) }
   end
 
   def public_icon_img
@@ -267,6 +322,14 @@ class GitlabIntegration < ApplicationRecord
 
   def branch_head_sha(branch, sha_only: true)
     with_api_retries { installation.head(code_repository_name, branch, sha_only:, commit_transforms: COMMITS_TRANSFORMATIONS) }
+  end
+
+  def get_file_content(branch_name, file_path)
+    with_api_retries { installation.get_file_content(code_repository_name, branch_name, file_path) }
+  end
+
+  def update_file!(branch_name, file_path, content, commit_message, author_name: nil, author_email: nil)
+    with_api_retries { installation.update_file!(code_repository_name, branch_name, file_path, content, commit_message, author_name:, author_email:) }
   end
 
   def branch_exists?(branch)
@@ -284,7 +347,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def bot_name
-    nil
+    "gitlab-bot"
   end
 
   def pr_closed?(pr)

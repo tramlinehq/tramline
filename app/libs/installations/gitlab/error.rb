@@ -41,6 +41,10 @@ module Installations
       {
         message_matcher: /405 Method Not Allowed/i,
         decorated_reason: :pull_request_not_mergeable
+      },
+      {
+        message_matcher: /404 File Not Found/i,
+        decorated_reason: :file_not_found
       }
     ]
 
