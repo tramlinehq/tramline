@@ -47,7 +47,7 @@ module Installations
     def initialize(response_body)
       Rails.logger.debug { "GitLab error: #{response_body}" }
       @response_body = response_body
-      super(message, reason: handle)
+      super(error_message, reason: handle)
     end
 
     def handle
@@ -65,7 +65,7 @@ module Installations
     end
 
     def matched_message
-      MESSAGES.find { |known_error_message| known_error_message[:message_matcher] =~ message }
+      MESSAGES.find { |known_error_message| known_error_message[:message_matcher] =~ error_message }
     end
 
     def matched_error
@@ -76,7 +76,7 @@ module Installations
       body["error"]
     end
 
-    def message
+    def error_message
       [*body["message"]].first
     end
   end

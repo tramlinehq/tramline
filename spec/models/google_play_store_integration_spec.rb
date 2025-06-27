@@ -223,7 +223,7 @@ describe GooglePlayStoreIntegration do
       ["track", 1, "1.0.0", 0.01]
   end
 
-  describe "#build_in_progress?" do
+  describe "#build_active?" do
     let(:app) { create(:app, platform: :android) }
     let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
     let(:google_integration) { integration.providable }
@@ -257,6 +257,20 @@ describe GooglePlayStoreIntegration do
         ]
       }
     }
+    let(:halted_track_data) {
+      {
+        name: :track,
+        releases: [
+          {
+            localizations: [{release_notes: {language: "en-US", text: "text"}}],
+            version_string: "1.0.0",
+            status: "halted",
+            user_fraction: 1.0,
+            build_number: "1"
+          }
+        ]
+      }
+    }
     let(:raise_on_lock_error) { true }
 
     before do
@@ -266,17 +280,22 @@ describe GooglePlayStoreIntegration do
 
     it "returns true when the release is in progress" do
       allow(api_double).to receive(:get_track).and_return(in_progress_track_data)
-      expect(google_integration.build_in_progress?("track", 1, raise_on_lock_error:)).to be true
+      expect(google_integration.build_active?("track", 1, raise_on_lock_error:)).to be true
     end
 
-    it "returns false when the release is not in progress" do
+    it "returns true when the release is compeleted" do
       allow(api_double).to receive(:get_track).and_return(completed_track_data)
-      expect(google_integration.build_in_progress?("track", 1, raise_on_lock_error:)).to be false
+      expect(google_integration.build_active?("track", 1, raise_on_lock_error:)).to be true
+    end
+
+    it "returns false when the release is some other status" do
+      allow(api_double).to receive(:get_track).and_return(halted_track_data)
+      expect(google_integration.build_active?("track", 1, raise_on_lock_error:)).to be false
     end
 
     it_behaves_like "when raise on lock error is true",
       :get_track,
-      :build_in_progress?,
+      :build_active?,
       ["track", 1]
   end
 
