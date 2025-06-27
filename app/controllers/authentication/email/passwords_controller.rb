@@ -2,6 +2,7 @@ class Authentication::Email::PasswordsController < Devise::PasswordsController
   EmailAuth = Accounts::EmailAuthentication
   include Exceptionable
   include Authenticatable
+  include MobileDeviceAllowable
 
   before_action :skip_authentication, only: [:new, :create]
   before_action :ensure_valid_token, only: [:edit]

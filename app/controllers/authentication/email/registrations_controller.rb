@@ -1,6 +1,7 @@
 class Authentication::Email::RegistrationsController < Devise::RegistrationsController
   include Exceptionable
   include Authenticatable
+  include MobileDeviceAllowable
 
   invisible_captcha only: [:create], on_spam: :act_as_spam, on_timestamp_spam: :act_as_spam
   before_action :skip_authentication, only: [:new, :create]

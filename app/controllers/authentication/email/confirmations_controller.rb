@@ -1,4 +1,6 @@
 class Authentication::Email::ConfirmationsController < Devise::ConfirmationsController
+  include MobileDeviceAllowable
+
   def show
     self.resource = resource_class.confirm_by_token(params[:confirmation_token])
 

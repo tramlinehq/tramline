@@ -1,5 +1,7 @@
 class Authentication::SessionsController < ApplicationController
   include Authenticatable
+  include MobileDeviceAllowable
+
   before_action :authenticate_sso_request!, if: :sso_authentication_signed_in?
 
   def root
