@@ -3,6 +3,10 @@ class NotificationSettingsComponent < ViewComponent::Base
 
   InvalidNotificationSettings = Class.new(StandardError)
 
+  STATUS_PILL_ENABLED = BadgeComponent.new(text: "Enabled", status: :success)
+  STATUS_PILL_DISABLED = BadgeComponent.new(text: "Disabled", status: :failure)
+  STATUS_PILL_NEUTRAL = BadgeComponent.new(text: "Not Applicable", status: :neutral)
+
   NOTIFICATIONS = {
     release_scheduled: {icon: "clock.svg", description: "Your scheduled release will run in a few hours"},
     release_started: {icon: "zap.svg", description: "A new release was started for the release train"},
@@ -85,7 +89,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     end
 
     attr_reader :setting, :app
-    delegate :id, :active?, :notification_channels, :notification_provider, :release_specific_channel_allowed?, :channels, to: :setting
+    delegate :id, :active?, :notification_channels, :notification_provider, :channels, to: :setting
 
     def edit_path
       edit_app_train_notification_setting_path(@app, @train, setting)
@@ -123,26 +127,22 @@ class NotificationSettingsComponent < ViewComponent::Base
       NOTIFICATIONS[setting.kind][:icon] || "aerial_lift.svg"
     end
 
-    def status_text(flag)
-      return "Enabled" if flag
-      "Disabled"
-    end
-
-    def status_type(flag)
-      return :success if flag
-      :failure
-    end
-
     def status_pill
-      BadgeComponent.new(text: status_text(setting.active? && setting.core_enabled?), status: status_type(setting.active? && setting.core_enabled?))
+      if setting.active? && setting.core_enabled?
+        return STATUS_PILL_ENABLED
+      end
+
+      STATUS_PILL_DISABLED
     end
 
     def release_specific_status_pill
-      if setting.release_specific_channel_allowed?
-        BadgeComponent.new(text: status_text(setting.active? && setting.release_specific_enabled?), status: status_type(setting.active? && setting.release_specific_enabled?))
-      else
-        BadgeComponent.new(text: "Not Applicable", status: :neutral)
+      return STATUS_PILL_NEUTRAL unless release_specific_channel_allowed?
+
+      if setting.active? && setting.release_specific_enabled?
+        return STATUS_PILL_ENABLED
       end
+
+      STATUS_PILL_DISABLED
     end
 
     def default_channels
@@ -151,6 +151,14 @@ class NotificationSettingsComponent < ViewComponent::Base
 
     def channel_select_options
       options_for_select(display_channels(setting.channels) { |chan| "#" + chan[:name] }, default_channels)
+    end
+
+    def core_prefix_text
+      release_specific_channel_allowed? ? "Core " : ""
+    end
+
+    def release_specific_channel_allowed?
+      setting.release_specific_channel_allowed? && @train.notifications_release_specific_channel_enabled?
     end
   end
 end
