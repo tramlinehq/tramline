@@ -51,7 +51,6 @@ describe Commit do
     end
 
     it "filters out commits matching tramline-created pull requests" do
-
     end
   end
 end
