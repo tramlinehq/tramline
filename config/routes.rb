@@ -265,7 +265,7 @@ Rails.application.routes.draw do
   end
 
   namespace :mobile do
-    resources :releases, only: %i[index]
+    resources :releases, only: %i[index show]
   end
 
   scope :github do

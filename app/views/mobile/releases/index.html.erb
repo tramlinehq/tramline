@@ -1,7 +1,7 @@
 <div class="px-4 py-6 max-w-md mx-auto">
   <div class="mb-6">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Releases</h1>
-    <p class="text-sm text-gray-600 dark:text-gray-400">All releases across your apps</p>
+    <p class="text-sm text-gray-600 dark:text-gray-400">Latest 5 releases per app</p>
   </div>
 
   <% if @apps_with_releases.any? %>
@@ -20,7 +20,7 @@
           <div class="divide-y divide-gray-200 dark:divide-gray-700">
             <% app.releases.order(scheduled_at: :desc).limit(5).each do |release| %>
               <% release_presenter = ReleasePresenter.new(release, self) %>
-              <div class="px-4 py-3">
+              <a href="<%= mobile_release_path(release) %>" class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
                 <div class="flex items-center justify-between mb-2">
                   <div class="flex items-center space-x-2">
                     <span class="text-sm font-medium text-gray-900 dark:text-white">
@@ -48,12 +48,9 @@
                     <%= release_presenter.release_status[:text] %>
                   </span>
                 </div>
-                
-                <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+
+                <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
                   <span>Started <%= release_presenter.display_start_time %></span>
-                  <% if release_presenter.release_pilot_name != "Tramline" %>
-                    <span>by <%= release_presenter.release_pilot_name %></span>
-                  <% end %>
                 </div>
 
                 <% if release.hotfix? %>
@@ -63,17 +60,9 @@
                     </span>
                   </div>
                 <% end %>
-              </div>
+              </a>
             <% end %>
           </div>
-
-          <% if app.releases.count > 5 %>
-            <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-b-lg">
-              <a href="<%= app_path(app) %>" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                View all <%= app.releases.count %> releases →
-              </a>
-            </div>
-          <% end %>
         </div>
       <% end %>
     </div>

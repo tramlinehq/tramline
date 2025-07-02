@@ -5,5 +5,10 @@ module Mobile
         .where.not(releases: {id: nil})
         .order(:name)
     end
+
+    def show
+      @release = Release.find(params[:id])
+      @release_presenter = ReleasePresenter.new(@release, self)
+    end
   end
 end

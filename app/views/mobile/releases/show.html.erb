@@ -1,0 +1,55 @@
+<div class="px-4 py-6 max-w-md mx-auto">
+  <div class="mb-4">
+    <a href="<%= mobile_releases_path %>" class="text-blue-600 dark:text-blue-400 text-sm">← Back to Releases</a>
+  </div>
+  
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div class="mb-4">
+      <h1 class="text-xl font-bold text-gray-900 dark:text-white">
+        <%= @release_presenter.display_release_version %>
+      </h1>
+      <% if @release_presenter.display_build_number %>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Build <%= @release_presenter.display_build_number %>
+        </p>
+      <% end %>
+    </div>
+    
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+          <% case @release_presenter.release_status[:status] %>
+          <% when :success %>
+            bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+          <% when :failure %>
+            bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+          <% when :ongoing %>
+            bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+          <% when :neutral %>
+            bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+          <% else %>
+            bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200
+          <% end %>">
+          <%= @release_presenter.release_status[:text] %>
+        </span>
+      </div>
+      
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-600 dark:text-gray-400">Started</span>
+        <span class="text-sm text-gray-900 dark:text-white">
+          <%= @release_presenter.display_start_time %>
+        </span>
+      </div>
+      
+      <% if @release.hotfix? %>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-600 dark:text-gray-400">Type</span>
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+            🩹 Hotfix
+          </span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
