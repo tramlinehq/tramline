@@ -2,9 +2,10 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
   include Memery
   CASCADING_ROLLOUTS_NOTICE = "Since cascading rollouts are enabled, this release will not fully rollout to 100% until rollout for the next release starts."
 
-  def initialize(store_rollout, title: "Rollout Status")
+  def initialize(store_rollout, title: "Rollout Status", mobile: false)
     @store_rollout = store_rollout
     @title = title
+    @mobile = mobile
   end
 
   STATUS = {
@@ -168,5 +169,9 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
 
   def border_style
     :dashed if created?
+  end
+  
+  def mobile?
+    @mobile
   end
 end

@@ -98,7 +98,7 @@
       </div>
     <% end %>
 
-    <% unless created? %>
+    <% if !created? || !mobile? %>
       <%= render ReleaseMonitoringComponent.new(store_rollout:, size: monitoring_size) %>
     <% end %>
   </div>

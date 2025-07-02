@@ -21,8 +21,8 @@
             <% app.releases.order(scheduled_at: :desc).limit(5).each do |release| %>
               <% release_presenter = ReleasePresenter.new(release, self) %>
               <a href="<%= mobile_release_path(release) %>" class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="flex items-center space-x-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-0.5">
                     <span class="text-sm font-medium text-gray-900 dark:text-white">
                       <%= release_presenter.display_release_version %>
                     </span>
@@ -32,34 +32,17 @@
                       </span>
                     <% end %>
                   </div>
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                    <% case release_presenter.release_status[:status] %>
-                    <% when :success %>
-                      bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
-                    <% when :failure %>
-                      bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
-                    <% when :ongoing %>
-                      bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
-                    <% when :neutral %>
-                      bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
-                    <% else %>
-                      bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200
-                    <% end %>">
-                    <%= release_presenter.release_status[:text] %>
-                  </span>
+
+                  <% if release.hotfix? %>
+                    <%= render BadgeComponent.new(text: "🩹 Hotfix", kind: :badge) %>
+                  <% end %>
                 </div>
 
                 <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
                   <span>Started <%= release_presenter.display_start_time %></span>
                 </div>
 
-                <% if release.hotfix? %>
-                  <div class="mt-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                      🩹 Hotfix
-                    </span>
-                  </div>
-                <% end %>
+                <%= render BadgeComponent.new(text: release_presenter.release_status[:text], status: release_presenter.release_status[:status]) %>
               </a>
             <% end %>
           </div>
