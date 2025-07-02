@@ -380,7 +380,10 @@ class Release < ApplicationRecord
       raw_commit_log = vcs_provider.commit_log(source_commitish, target_branch)
       return if raw_commit_log.blank?
 
-      commits_to_create = raw_commit_log.map do |commit_attrs|
+      # Filter out commits that match pull requests from previous releases
+      filtered_commit_log = filter_raw_commits_by_previous_prs(raw_commit_log)
+
+      commits_to_create = filtered_commit_log.map do |commit_attrs|
         {
           author_email: commit_attrs["author_email"],
           author_login: commit_attrs["author_login"],
@@ -606,6 +609,27 @@ class Release < ApplicationRecord
   end
 
   private
+
+  def filter_raw_commits_by_previous_prs(raw_commit_log)
+    # Get all completed releases from the same train (excluding current release)
+    previous_releases = train.releases
+      .completed
+      .where.not(id: id)
+      .order(completed_at: :desc, scheduled_at: :desc)
+
+    return raw_commit_log if previous_releases.empty?
+
+    # Get merge commit SHAs from pull requests in previous releases
+    recent_pr_merge_commit_shas = PullRequest
+      .where(release: previous_releases)
+      .where.not(merge_commit_sha: nil)
+      .pluck(:merge_commit_sha)
+
+    return raw_commit_log if recent_pr_merge_commit_shas.empty?
+
+    # Filter out commits that match PR merge commit SHAs
+    raw_commit_log.reject { |commit| recent_pr_merge_commit_shas.include?(commit["commit_hash"]) }
+  end
 
   def base_tag_name
     tag = "v#{release_version}"
