@@ -79,7 +79,7 @@ describe Commit do
 
       expect(result).to contain_exactly(commit1.message, commit2.message)
     end
-    
+
     it "returns all commits when previous releases have no pull requests" do
       train = create(:train)
       current_release = create(:release, train: train)
@@ -92,7 +92,7 @@ describe Commit do
 
       expect(result).to contain_exactly(commit1.message, commit2.message)
     end
-    
+
     it "returns all commits when pull requests have nil merge_commit_sha" do
       train = create(:train)
       current_release = create(:release, train: train)
@@ -108,7 +108,7 @@ describe Commit do
 
       expect(result).to contain_exactly(commit1.message, commit2.message)
     end
-    
+
     it "filters commits from multiple previous releases" do
       train = create(:train)
       current_release = create(:release, train: train)
@@ -128,7 +128,7 @@ describe Commit do
       expect(result).to contain_exactly(commit1.message, commit4.message)
       expect(result).not_to include(commit2.message, commit3.message)
     end
-    
+
     it "works with first_parent_only parameter" do
       train = create(:train)
       current_release = create(:release, train: train)
