@@ -2,7 +2,6 @@
   <div class="mb-4">
     <a href="<%= mobile_releases_path %>" class="text-blue-600 dark:text-blue-400 text-sm">← Back to Releases</a>
   </div>
-  
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
     <div class="mb-4">
       <h1 class="text-xl font-bold text-gray-900 dark:text-white">
@@ -14,7 +13,6 @@
         </p>
       <% end %>
     </div>
-    
     <div class="space-y-3">
       <div class="flex items-center justify-between">
         <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
@@ -34,14 +32,13 @@
           <%= @release_presenter.release_status[:text] %>
         </span>
       </div>
-      
       <div class="flex items-center justify-between">
         <span class="text-sm text-gray-600 dark:text-gray-400">Started</span>
         <span class="text-sm text-gray-900 dark:text-white">
           <%= @release_presenter.display_start_time %>
         </span>
       </div>
-      
+
       <% if @release.hotfix? %>
         <div class="flex items-center justify-between">
           <span class="text-sm text-gray-600 dark:text-gray-400">Type</span>
