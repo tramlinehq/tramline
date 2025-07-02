@@ -187,9 +187,9 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
-  def build_in_progress?(channel, build_number, raise_on_lock_error:)
+  def build_active?(channel, build_number, raise_on_lock_error:)
     response = find_build_in_track(channel, build_number, raise_on_lock_error:)
-    response.present? && GooglePlayStoreIntegration::IN_PROGRESS_STORE_STATUS.include?(response[:status])
+    response.present? && GooglePlayStoreIntegration::ACTIVE_STORE_STATUSES.include?(response[:status])
   end
 
   def find_app

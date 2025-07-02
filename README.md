@@ -243,6 +243,18 @@ That should be it! You can use the default DNS from `site-web` to launch Tramlin
 
 ## Local development 🛠️
 
+### Applelink
+
+[Applelink](https://github.com/tramlinehq/applelink) is a separate service that you will need to run Tramline locally. You must clone the Applelink repository into the same parent directory as Tramline. For example, your directory structure could look like this:
+
+```
+./tramline-local
+  ↳ applelink/
+  ↳ tramline/
+```
+
+If you clone Applelink _inside_ the Tramline directory, things will not work.
+
 ### Env vars
 
 First copy the sample env file,

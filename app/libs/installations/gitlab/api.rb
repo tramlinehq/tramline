@@ -89,11 +89,12 @@ module Installations
     def list_projects(transforms)
       params = {
         params: {
-          membership: true
+          membership: true,
+          per_page: 50
         }
       }
 
-      execute(:get, LIST_PROJECTS_URL, params)
+      paginated_execute(:get, LIST_PROJECTS_URL, params: params, max_results: 200)
         .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
@@ -241,10 +242,29 @@ module Installations
     private
 
     def execute(verb, url, params)
+      response = raw_execute(verb, url, params)
+      JSON.parse(response.body.to_s)
+    end
+
+    def raw_execute(verb, url, params)
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
-      body = JSON.parse(response.body.to_s)
-      return body unless error?(response.status)
-      raise Installations::Gitlab::Error.new(body)
+
+      return response unless error?(response.status)
+      raise Installations::Gitlab::Error.new(JSON.parse(response.body))
+    end
+
+    def paginated_execute(verb, url, params: {}, values: [], page: nil, max_results: nil)
+      url = URI(url)
+      url.query = "page=#{page}" if page.present?
+
+      response = raw_execute(verb, url, params)
+      values.concat(JSON.parse(response.body))
+
+      next_page = response.headers["x-next-page"]
+      return values if next_page.blank?
+      return values if max_results && values.length >= max_results
+
+      paginated_execute(verb, url, params: params, values: values, page: next_page, max_results: max_results)
     end
 
     def error?(code)

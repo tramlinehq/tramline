@@ -8,7 +8,7 @@ class VerticalTabComponent < BaseComponent
 
   def initialize(turbo_frame:, sidebar_header:, tab_config: [], error_resource: nil)
     raise ArgumentError, "tab_config must be an array" unless tab_config.is_a?(Array)
-    raise ArgumentError, "tab_config must be an array of arrays" unless tab_config.all? { _1.length == 4 }
+    raise ArgumentError, "tab_config must be an array of arrays" unless tab_config.all? { _1.length == 5 }
 
     @tab_config = tab_config
     @turbo_frame = turbo_frame
