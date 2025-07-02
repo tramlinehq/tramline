@@ -83,7 +83,7 @@ describe Commit do
     it "returns all commits when previous releases have no pull requests" do
       train = create(:train)
       current_release = create(:release, train: train)
-      previous_release = create(:release, :finished, train: train)
+      create(:release, :finished, train: train)
 
       commit1 = create(:commit, release: current_release, message: "commit1")
       commit2 = create(:commit, release: current_release, message: "commit2")
