@@ -49,5 +49,104 @@ describe Commit do
 
       expect(release.all_commits.commit_messages).to contain_exactly(commit1.message, commit2.message, commit3.message, commit4.message)
     end
+
+    it "filters out commits matching tramline-created pull requests" do
+      train = create(:train)
+      current_release = create(:release, train: train)
+      previous_release = create(:release, :finished, train: train)
+
+      # Create commits for current release
+      commit1 = create(:commit, release: current_release, message: "regular commit", commit_hash: "abc123")
+      commit2 = create(:commit, release: current_release, message: "pr merge commit", commit_hash: "def456")
+      commit3 = create(:commit, release: current_release, message: "another regular commit", commit_hash: "ghi789")
+
+      # Create a pull request in previous release with merge_commit_sha matching commit2
+      create(:pull_request, release: previous_release, merge_commit_sha: "def456")
+
+      # Test filtering with previous releases (now automatic)
+      result = current_release.all_commits.commit_messages(false)
+
+      expect(result).to contain_exactly(commit1.message, commit3.message)
+      expect(result).not_to include(commit2.message)
+    end
+
+    it "returns all commits when no previous releases provided" do
+      release = create(:release)
+      commit1 = create(:commit, release: release, message: "commit1")
+      commit2 = create(:commit, release: release, message: "commit2")
+
+      result = release.all_commits.commit_messages(false)
+
+      expect(result).to contain_exactly(commit1.message, commit2.message)
+    end
+
+    it "returns all commits when previous releases have no pull requests" do
+      train = create(:train)
+      current_release = create(:release, train: train)
+      create(:release, :finished, train: train)
+
+      commit1 = create(:commit, release: current_release, message: "commit1")
+      commit2 = create(:commit, release: current_release, message: "commit2")
+
+      result = current_release.all_commits.commit_messages(false)
+
+      expect(result).to contain_exactly(commit1.message, commit2.message)
+    end
+
+    it "returns all commits when pull requests have nil merge_commit_sha" do
+      train = create(:train)
+      current_release = create(:release, train: train)
+      previous_release = create(:release, :finished, train: train)
+
+      commit1 = create(:commit, release: current_release, message: "commit1")
+      commit2 = create(:commit, release: current_release, message: "commit2")
+
+      # Create PR with nil merge_commit_sha
+      create(:pull_request, release: previous_release, merge_commit_sha: nil)
+
+      result = current_release.all_commits.commit_messages(false)
+
+      expect(result).to contain_exactly(commit1.message, commit2.message)
+    end
+
+    it "filters commits from multiple previous releases" do
+      train = create(:train)
+      current_release = create(:release, train: train)
+      previous_release1 = create(:release, :finished, train: train)
+      previous_release2 = create(:release, :finished, train: train)
+
+      commit1 = create(:commit, release: current_release, message: "regular commit", commit_hash: "abc123")
+      commit2 = create(:commit, release: current_release, message: "pr merge 1", commit_hash: "def456")
+      commit3 = create(:commit, release: current_release, message: "pr merge 2", commit_hash: "ghi789")
+      commit4 = create(:commit, release: current_release, message: "another regular", commit_hash: "jkl012")
+
+      create(:pull_request, release: previous_release1, merge_commit_sha: "def456")
+      create(:pull_request, release: previous_release2, merge_commit_sha: "ghi789")
+
+      result = current_release.all_commits.commit_messages(false)
+
+      expect(result).to contain_exactly(commit1.message, commit4.message)
+      expect(result).not_to include(commit2.message, commit3.message)
+    end
+
+    it "works with first_parent_only parameter" do
+      train = create(:train)
+      current_release = create(:release, train: train)
+      previous_release = create(:release, :finished, train: train)
+
+      # Create proper git history: commit1 is on main, commit2 is feature branch, commit3 merges feature to main
+      commit1 = create(:commit, release: current_release, message: "regular commit", commit_hash: "abc123", parents: [{sha: "parent_sha"}])
+      commit2 = create(:commit, release: current_release, message: "feature commit", commit_hash: "def456", parents: [{sha: commit1.commit_hash}])
+      commit3 = create(:commit, release: current_release, message: "pr merge commit", commit_hash: "ghi789", parents: [{sha: commit1.commit_hash}, {sha: commit2.commit_hash}])
+
+      create(:pull_request, release: previous_release, merge_commit_sha: "ghi789")
+
+      result = current_release.all_commits.commit_messages(true)
+
+      # First-parent chain should be: commit3 → commit1 (skipping commit2 which is on feature branch)
+      # After PR filtering, commit3 should be removed, leaving only commit1
+      expect(result).to contain_exactly(commit1.message)
+      expect(result).not_to include(commit2.message, commit3.message)
+    end
   end
 end
