@@ -33,11 +33,11 @@ class ProductionRelease < ApplicationRecord
   delegate :app, :train, :release, :platform, :release_platform, :hotfix?, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, :prepared_at, to: :store_submission
-  delegate :notify!, to: :train
+  delegate :notify!, :notify_with_changelog!, to: :train
   delegate :commit, :version_name, :build_number, to: :build
   delegate :release_health_rules, to: :release_platform
 
-  STAMPABLE_REASONS = %w[created active finished tag_created]
+  STAMPABLE_REASONS = %w[created active finished tag_created vcs_release_created]
 
   STATES = {
     inflight: "inflight",
@@ -119,7 +119,8 @@ class ProductionRelease < ApplicationRecord
 
     previous&.mark_as_stale!
     update!(status: STATES[:active])
-    notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
+    notify_with_changelog!("Production release was started!", :production_rollout_started, rollout_started_notification_params)
+
     ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank?
 
     return if beyond_monitoring_period?
@@ -193,14 +194,35 @@ class ProductionRelease < ApplicationRecord
     )
   end
 
+  def rollout_started_notification_params
+    store_rollout.notification_params.merge(
+      diff_changelog: sanitize_commit_messages(changes_since_previous)
+    )
+  end
+
   def commits_since_previous
-    changes_since_last_release = release.release_changelog&.commits || []
-    changes_since_last_run = release.all_commits.between_commits(previous&.commit, commit) || []
+    commits_since_last_release = release.release_changelog&.commits || []
+    commits_since_last_run = release.all_commits.between_commits(previous&.commit, commit) || []
 
     if previous
-      changes_since_last_run
+      # if it's a patch-fix, only return the delta of commits
+      commits_since_last_run
     else
-      changes_since_last_release
+      # if it's the first rollout, return all the commits in the release
+      (commits_since_last_run + commits_since_last_release).uniq { |c| c.commit_hash }
+    end
+  end
+
+  def changes_since_previous
+    commits_since_last_release = release.release_changelog&.commits&.commit_messages(true) || []
+    commits_since_last_run = release.all_commits.between_commits(previous&.commit, commit).commit_messages(true) || []
+
+    if previous
+      # if it's a patch-fix, only return the delta of changes
+      commits_since_last_run
+    else
+      # if it's the first rollout, return all the changes in the release
+      (commits_since_last_run + commits_since_last_release).uniq
     end
   end
 
@@ -215,5 +237,23 @@ class ProductionRelease < ApplicationRecord
     tag << "-hotfix" if hotfix?
     tag << (train.tag_store_releases_with_platform_names ? "-#{platform}" : "")
     tag
+  end
+
+  # either the previous production release tag, or
+  # it's the release's previous tag
+  def previous_tag_name
+    previous&.tag_name.presence || release.previous_tag_name
+  end
+
+  # todo: move to generic location and also sanitize pre-prod tester notes + notification changelogs via this
+  def sanitize_commit_messages(array_of_commit_messages)
+    array_of_commit_messages
+      .map { |str| str&.strip }
+      .flat_map { |line| line.split("\n").first }
+      .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
+      .map { |line| line.gsub('"', "\\\"") }
+      .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
+      .compact_blank
+      .uniq
   end
 end

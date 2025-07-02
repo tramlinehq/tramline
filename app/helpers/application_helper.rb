@@ -140,7 +140,7 @@ module ApplicationHelper
     middle_section = app&.name || current_organization&.name
     prefix = release&.release_version.presence || page_name || middle_section
 
-    [prefix&.titleize, middle_section&.titleize, suffix&.titleize].compact.join(" | ")
+    [prefix&.titleize, middle_section, suffix&.titleize].compact.join(" | ")
   end
 
   def list_to_csv(list)

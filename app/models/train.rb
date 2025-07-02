@@ -36,6 +36,7 @@
 #  version_bump_branch_prefix                     :string
 #  version_bump_enabled                           :boolean          default(FALSE)
 #  version_bump_file_paths                        :string           default([]), is an Array
+#  version_bump_strategy                          :string
 #  version_current                                :string
 #  version_seeded_with                            :string
 #  versioning_strategy                            :string           default("semver")
@@ -68,6 +69,10 @@ class Train < ApplicationRecord
     pbxproj: ".pbxproj",
     yaml: ".yaml"
   }.freeze
+  VERSION_BUMP_STRATEGIES = {
+    current_version_before_release_branch: "Current Version Before Release Branch Cuts",
+    next_version_after_release_branch: "Next Version After Release Branch Cuts"
+  }.freeze
 
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
@@ -89,6 +94,7 @@ class Train < ApplicationRecord
   enum :status, {draft: "draft", active: "active", inactive: "inactive"}
   enum :backmerge_strategy, {continuous: "continuous", on_finalize: "on_finalize"}
   enum :versioning_strategy, VersioningStrategies::Semverish::STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
+  enum :version_bump_strategy, VERSION_BUMP_STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
 
   friendly_id :name, use: :slugged
   normalizes :name, with: ->(name) { name.squish }
@@ -112,6 +118,7 @@ class Train < ApplicationRecord
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
   validate :version_config_constraints
   validate :version_bump_config
+  validates :version_bump_strategy, inclusion: {in: VERSION_BUMP_STRATEGIES.keys.map(&:to_s)}, if: -> { version_bump_enabled? }
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -128,9 +135,10 @@ class Train < ApplicationRecord
   after_create :create_default_notification_settings
   after_create :create_release_index
   before_update :disable_copy_approvals, unless: :approvals_enabled?
+  before_update :create_default_notification_settings, if: -> do
+    notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
+  end
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
-  after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
-  after_update :restore_default_notification_settings, if: -> { notification_channel.present? && notifications_release_specific_channel_enabled_previously_was }
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -272,23 +280,24 @@ class Train < ApplicationRecord
 
   # rubocop:disable Rails/SkipsModelValidations
   def create_default_notification_settings
-    return if notification_channel.blank?
-    vals = NotificationSetting.kinds.map do |_, kind|
+    vals = NotificationSetting.kinds.keys.map { |kind|
       {
         train_id: id,
         kind:,
         active: true,
-        notification_channels: [notification_channel]
+        core_enabled: true,
+        notification_channels: notification_channel.present? ? [notification_channel] : nil
       }
+    }
+
+    NotificationSetting.transaction do
+      NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
+      notification_settings
+        .release_specific_channel_allowed
+        .update_all(release_specific_enabled: notifications_release_specific_channel_enabled?)
     end
-    NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
   # rubocop:enable Rails/SkipsModelValidations
-
-  def restore_default_notification_settings
-    return if notification_channel.blank? || notifications_release_specific_channel_enabled?
-    notification_settings.release_specific_channel_allowed.update(notification_channels: [notification_channel])
-  end
 
   def display_name
     name&.parameterize
@@ -362,9 +371,9 @@ class Train < ApplicationRecord
     !almost_trunk?
   end
 
-  def create_vcs_release!(branch_name, tag_name, release_diff = nil)
+  def create_vcs_release!(branch_name, tag_name, previous_tag_name, release_diff = nil)
     return false unless active?
-    vcs_provider.create_release!(tag_name, branch_name, release_diff)
+    vcs_provider.create_release!(tag_name, branch_name, previous_tag_name, release_diff)
   end
 
   delegate :create_tag!, to: :vcs_provider
@@ -386,6 +395,12 @@ class Train < ApplicationRecord
     notification_settings.where(kind: type).sole.notify_with_snippet!(message, params, snippet_content, snippet_title)
   end
 
+  def notify_with_changelog!(message, type, params)
+    return unless active?
+    return unless send_notifications?
+    notification_settings.where(kind: type).sole.notify_with_changelog!(message, params)
+  end
+
   def upload_file_for_notifications!(file, file_name)
     return unless active?
     return unless send_notifications?
@@ -405,6 +420,9 @@ class Train < ApplicationRecord
   end
 
   def send_notifications?
+    # Release-specific notifications and general notifications are not exclusive.
+    # Some notifications are not supported (do not make sense) in release-specific mode.
+    # So, this does not check for the release-specific flag.
     app.notifications_set_up? && notification_channel.present?
   end
 
@@ -432,7 +450,7 @@ class Train < ApplicationRecord
 
   def has_restricted_public_channels?
     return false if app.ios?
-    release_platforms.any(&:has_restricted_public_channels?)
+    release_platforms.any?(&:has_restricted_public_channels?)
   end
 
   def stop_failed_ongoing_release!
@@ -592,6 +610,11 @@ class Train < ApplicationRecord
 
   def version_bump_config
     if version_bump_enabled?
+      if version_bump_strategy.blank?
+        errors.add(:version_bump_strategy, :blank)
+        return
+      end
+
       if version_bump_file_paths.blank?
         errors.add(:version_bump_file_paths, :blank)
         return

@@ -177,7 +177,29 @@ describe ProductionRelease do
 
       production_release.create_vcs_release!(commit.commit_hash, anything)
 
-      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", anything)
+      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", anything, anything)
+    end
+
+    it "uses a tag name from previous prod release" do
+      previous_prod_release = create(:production_release, :finished, build:, release_platform_run:, tag_name: "v1.2.0")
+      production_release = create(:production_release, :inflight, build:, release_platform_run:, previous: previous_prod_release)
+      allow(train).to receive(:create_vcs_release!)
+
+      production_release.create_vcs_release!(commit.commit_hash, anything)
+
+      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", "v1.2.0", anything)
+    end
+
+    it "uses a tag name from the previous end-of-release tag" do
+      previous_release = create(:release, :finished, train:, tag_name: "v1.2.2")
+      previous_rpr = create(:release_platform_run, release_platform:, release: previous_release)
+      previous_prod_release = create(:production_release, :finished, build:, release_platform_run: previous_rpr, tag_name: nil)
+      production_release = create(:production_release, :inflight, build:, release_platform_run:, previous: previous_prod_release)
+      allow(train).to receive(:create_vcs_release!)
+
+      production_release.create_vcs_release!(commit.commit_hash, anything)
+
+      expect(train).to have_received(:create_vcs_release!).with(commit.commit_hash, "v1.2.3", "v1.2.2", anything)
     end
   end
 
@@ -251,6 +273,61 @@ describe ProductionRelease do
       production_release.fetch_health_data!
 
       expect(monitoring_provider).not_to have_received(:find_release).with(release_platform.platform, release.release_version, production_release.build.build_number, store_rollout.created_at)
+    end
+  end
+
+  describe "#commits_since_previous" do
+    let(:train) { create(:train) }
+    let(:release) { create(:release, train:) }
+    let(:release_platform) { create(:release_platform, train:) }
+    let(:release_platform_run) { create(:release_platform_run, release_platform:, release:) }
+    let(:build) { create(:build, release_platform_run:) }
+    let(:release_changelog) { create(:release_changelog, release:) }
+    let(:release_changelog_commits) {
+      [
+        create(:commit, release:, release_changelog:, message: "1st changelog commit"),
+        create(:commit, release:, release_changelog:, message: "2nd changelog commit"),
+        create(:commit, release:, release_changelog:, message: "3rd changelog commit")
+      ]
+    }
+    let(:fix_commits) {
+      [
+        create(:commit, release:, message: "1st fix commit"),
+        create(:commit, release:, message: "2nd fix commit"),
+        create(:commit, release:, message: "3rd fix commit")
+      ]
+    }
+
+    context "when there is a previous production release" do
+      let(:previous_release) { create(:production_release, :finished, build:, release_platform_run:) }
+      let(:production_release) { create(:production_release, :inflight, build:, release_platform_run:, previous: previous_release) }
+
+      it "returns only the delta of changes (commits since last run)" do
+        allow(production_release.release).to(
+          receive_message_chain(:all_commits, :between_commits)
+            .with(previous_release.commit, production_release.commit)
+            .and_return(fix_commits)
+        )
+
+        expect(production_release.commits_since_previous).to eq(fix_commits)
+      end
+    end
+
+    context "when there is no previous production release (first rollout)" do
+      let(:production_release) { create(:production_release, :inflight, build:, release_platform_run:, previous: nil) }
+
+      it "returns all changes in the release, deduplicated by commit hash" do
+        allow(production_release.release).to(
+          receive_message_chain(:release_changelog, :commits)
+            .and_return(release_changelog_commits)
+        )
+        allow(production_release.release).to(
+          receive_message_chain(:all_commits, :between_commits)
+            .with(nil, production_release.commit).and_return(fix_commits)
+        )
+
+        expect(production_release.commits_since_previous).to match_array(release_changelog_commits + fix_commits)
+      end
     end
   end
 end

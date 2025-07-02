@@ -36,7 +36,7 @@ class PreProdRelease < ApplicationRecord
   after_create_commit -> { create_stamp!(data: stamp_data) }
 
   delegate :release, :train, :platform, to: :release_platform_run
-  delegate :notify!, :notify_with_snippet!, to: :train
+  delegate :notify!, :notify_with_snippet!, :notify_with_changelog!, to: :train
 
   alias_method :workflow_run, :triggered_workflow_run
 
@@ -100,30 +100,38 @@ class PreProdRelease < ApplicationRecord
   def conf = Config::ReleaseStep.from_json(config)
 
   def commits_since_previous
-    changes_since_last_release = release.release_changelog&.commits
+    commits_since_last_release = release.release_changelog&.commits || []
     last_successful_run = previous_successful
-    changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)
+    commits_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit) || []
 
-    return changes_since_last_run if last_successful_run.present?
-    ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq { |c| c.commit_hash }
+    if last_successful_run
+      commits_since_last_run
+    else
+      (commits_since_last_run + commits_since_last_release).uniq { |c| c.commit_hash }
+    end
   end
 
-  def changes_since_previous
-    changes_since_last_release = release.release_changelog&.commit_messages(true)
+  def changes_since_previous(skip_delta: false)
+    changes_since_last_release = release.release_changelog&.commits&.commit_messages(true) || []
     last_successful_run = previous_successful
-    changes_since_last_run = release
-      .all_commits
-      .between_commits(last_successful_run&.commit, commit)
-      &.commit_messages(true)
+    changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)&.commit_messages(true) || []
 
-    return changes_since_last_run || [] if last_successful_run.present?
-    ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq
+    # always return the changelog + all changes until now
+    if skip_delta
+      new_changes_till_now = release.all_commits.between_commits(nil, commit)&.commit_messages(true) || []
+      return (new_changes_till_now + changes_since_last_release).uniq
+    end
+
+    if last_successful_run
+      changes_since_last_run
+    else
+      (changes_since_last_run + changes_since_last_release).uniq
+    end
   end
 
   # NOTES: This logic should simplify once we allow users to edit the tester notes
-  def set_default_tester_notes
-    self.tester_notes = changes_since_previous
-      .map { |str| str&.strip }
+  def generate_tester_notes(changes)
+    changes.map { |str| str&.strip }
       .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
       .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
       .map { |line| line.gsub('"', "\\\"") }
@@ -132,6 +140,10 @@ class PreProdRelease < ApplicationRecord
       .uniq
       .map { |str| "• #{str}" }
       .join("\n").presence || "Nothing new"
+  end
+
+  def set_default_tester_notes
+    self.tester_notes = generate_tester_notes(changes_since_previous)
   end
 
   def previous_successful
@@ -159,7 +171,10 @@ class PreProdRelease < ApplicationRecord
       commit_url: commit.url,
       build_number: build.build_number,
       release_version: release.release_version,
-      submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", ")
+      submissions: store_submissions,
+      first_pre_prod_release: previous_successful.blank?,
+      diff_changelog: changes_since_previous,
+      full_changelog: changes_since_previous(skip_delta: true)
     )
   end
 

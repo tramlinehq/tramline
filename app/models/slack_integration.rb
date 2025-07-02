@@ -119,16 +119,18 @@ class SlackIntegration < ApplicationRecord
   end
 
   def notify!(channel, message, type, params, file_id = nil, file_title = nil)
-    installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
+    response = installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
+    return if response.blank?
+    response.dig("message", "ts")
   rescue => e
-    elog(e, level: :warn)
+    Rails.logger.error("Error sending message to Slack: #{e.message}")
+    elog(e, level: :debug)
   end
 
   def notify_with_snippet!(channel, message, type, params, snippet_content, snippet_title)
-    message_response = notify!(channel, message, type, params)
-    return unless message_response
+    thread_id = notify!(channel, message, type, params)
+    return unless thread_id
 
-    thread_id = message_response.dig("message", "ts")
     messages = snippet_content.break_into_chunks(CODE_SNIPPET_CHARACTER_LIMIT)
     messages.each_with_index.map do |msg, idx|
       msg = "```#{msg}```"
@@ -137,6 +139,40 @@ class SlackIntegration < ApplicationRecord
     end
   rescue => e
     elog(e, level: :warn)
+  end
+
+  # renders the changelog exclusively in a thread
+  def notify_changelog!(channel, message, thread_id, changelog, header_affix: nil, continuation: false)
+    return if changelog.blank?
+    payload = notifier(:changelog, {changes: changelog, header_affix:, continuation:})
+    installation.message(channel, message, block: payload, thread_id:)
+  rescue => e
+    elog(e, level: :debug)
+  end
+
+  # renders the primary notification and then threads a changelog as necessary
+  def notify_with_threaded_changelog!(channel, message, type, params, changelog_key:, changelog_partitions:, header_affix:)
+    changelog = params[changelog_key]
+    return if changelog.blank?
+
+    changelog_parts = changelog.in_groups_of(changelog_partitions, false)
+    params[:changelog] = {first_part: changelog_parts[0], total_parts: changelog_parts.size, header_affix:}
+
+    # send the initial part of the notification
+    thread_id = notify!(channel["id"], message, type, params)
+    return unless thread_id
+
+    # thread the changelog if necessary
+    if changelog_parts.size > 1
+      changelog_parts[1..].each.with_index(2) do |change_group, index|
+        continuation_header_affix = "#{header_affix} (#{index}/#{changelog_parts.size})"
+        notify_changelog!(channel["id"], message, thread_id, change_group,
+          header_affix: continuation_header_affix,
+          continuation: true)
+      end
+    end
+
+    thread_id
   end
 
   def upload_file!(file, file_name)

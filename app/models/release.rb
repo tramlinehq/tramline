@@ -407,6 +407,10 @@ class Release < ApplicationRecord
     release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
 
+  def build_number
+    builds.order(created_at: :desc).pick(:build_number)
+  end
+
   alias_method :version_current, :release_version
 
   def release_branch
@@ -588,6 +592,15 @@ class Release < ApplicationRecord
 
   def copy_approvals_allowed?
     train.previously_finished_release.present? && !hotfix?
+  end
+
+  # either the previous release's end-of-release tag, or
+  # it's the previous release's rollout tag
+  def previous_tag_name
+    prev = previous_release
+    return if prev.blank?
+
+    prev.tag_name.presence || prev.production_releases.last&.tag_name
   end
 
   private

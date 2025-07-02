@@ -135,7 +135,8 @@ class TrainsController < SignedInApplicationController
       :auto_apply_patch_changes,
       :version_bump_enabled,
       :version_bump_file_paths,
-      :version_bump_branch_prefix
+      :version_bump_branch_prefix,
+      :version_bump_strategy
     )
   end
 
@@ -185,7 +186,8 @@ class TrainsController < SignedInApplicationController
       :auto_apply_patch_changes,
       :version_bump_enabled,
       :version_bump_file_paths,
-      :version_bump_branch_prefix
+      :version_bump_branch_prefix,
+      :version_bump_strategy
     )
   end
 

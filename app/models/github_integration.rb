@@ -147,11 +147,8 @@ class GithubIntegration < ApplicationRecord
     end
   end
 
-  def create_release!(tag_name, branch, release_notes)
-    installation.create_release!(code_repository_name, tag_name, branch)
-  rescue Installations::Error => ex
-    raise ex unless ex.reason == :release_notes_too_long
-    installation.create_release!(code_repository_name, tag_name, branch, release_notes)
+  def create_release!(tag_name, branch, previous_tag_name, release_notes)
+    installation.create_release!(code_repository_name, tag_name, branch, previous_tag_name, release_notes)
   end
 
   def create_tag!(tag_name, sha)

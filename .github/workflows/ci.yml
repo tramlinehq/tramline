@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scan_js:
     runs-on: ubuntu-latest
@@ -83,7 +87,7 @@ jobs:
         run: bundle exec rails zeitwerk:check
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.ref != 'refs/heads/main' && 'warp-ubuntu-latest-x64-16x' || 'ubuntu-latest' }}
     services:
       postgres:
         image: postgres:14-alpine
@@ -100,6 +104,7 @@ jobs:
     env:
       RAILS_ENV: test
       DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
+      WORKERS: ${{ github.ref != 'refs/heads/main' && '8' || '4' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -116,5 +121,8 @@ jobs:
       - name: Run asset pre compilation
         run: bundle exec rails assets:precompile
 
+      - name: Setup Parallel Rspec DBs
+        run: bundle exec rake db:parallel:create db:parallel:prepare
+
       - name: Run tests
-        run: bundle exec rspec
+        run: bundle exec rake parallel_rspec

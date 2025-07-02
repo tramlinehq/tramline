@@ -290,6 +290,7 @@ en:
           workflow_run_halted: "Workflow run halted"
           workflow_run_unavailable: "Workflow run unavailable"
           workflow_trigger_failed: "Workflow trigger failed"
+          rc_finished: "RC finished"
       release_platform_run:
         platform:
           ios: "iOS"
@@ -493,6 +494,8 @@ en:
             backmerge_strategy:
               continuous_not_allowed: "continuous backmerge only allowed for Almost Trunk branching strategy"
               disabled_for_bitbucket: "continuous backmerge is not allowed for Bitbucket at the moment"
+            version_bump_strategy:
+              blank: "must be picked"
             version_bump_file_paths:
               blank: "must have at least one file path"
               blank_file: "it should be a valid comma-separated list of files"
@@ -502,6 +505,11 @@ en:
           attributes:
             notification_channels:
               at_least_one: "there should be at least one channel selected for an enabled notification"
+            release_specific_enabled:
+              release_specific_channel_not_allowed_for_this_kind: "Release specific channel is not allowed for this kind of notification"
+              release_specific_not_enabled_in_train: "Release specific channels are not enabled in train settings"
+            active:
+              at_least_one: "at least one type of notification delivery must be enabled"
         release_metadata:
           attributes:
             release_notes:

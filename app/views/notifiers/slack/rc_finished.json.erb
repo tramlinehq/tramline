@@ -1,0 +1,72 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":sparkles: *New RC deployed for <%= @release_version %> (<%= @build_number %>)*"
+      }
+    },
+    <% @submissions.each do |submission| %>
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<%= submission_text(submission) %>"
+      }
+    },
+    <% end %>
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<%= changelog_header %>"
+      }
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_list",
+          "style": "bullet",
+          "elements": [
+            <% @changelog[:first_part].each_with_index do |change, i| %>
+            <%= i.zero? ? "" : "," %>
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "<%= safe_string(change) %>"
+                }
+              ]
+            }
+            <% end %>
+          ]
+        }
+      ]
+    }
+    <% if @changelog[:total_parts] > 1 %>,
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Changes in this build, continued in thread :thread:"
+        }
+      ]
+    }
+    <% end %>
+    <% unless @first_pre_prod_release %>,
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Full release changelog in :thread:"
+        }
+      ]
+    }
+    <% end %>
+  ]
+}

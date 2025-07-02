@@ -8,6 +8,8 @@ Rails.application.routes.draw do
   mount Easymon::Engine => "/up"
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
   get "healthz" => "rails/health#show", :as => :rails_health_check
+  get "demo", to: "demo#index" if Rails.env.development? || ENV["RAILS_PIPELINE_ENV"].eql?("staging")
+  # get "up" => "rails/health#show", as: :rails_health_check
 
   root "authentication/sessions#root"
   get "/admin", to: "admin/settings#index", as: :authenticated_admin_root

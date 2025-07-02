@@ -55,6 +55,7 @@ class PlayStoreSubmission < StoreSubmission
   PRE_PREPARE_STATES = %w[created preprocessing review_failed failed]
   CHANGEABLE_STATES = %w[created preprocessing failed prepared]
   MAX_NOTES_LENGTH = 500
+  DEEP_LINK_BASE = "https://play.google.com/store/apps/details?id="
 
   enum :failure_reason, {
     unknown_failure: "unknown_failure"
@@ -264,8 +265,12 @@ class PlayStoreSubmission < StoreSubmission
     return if previous_run.blank?
 
     previous_rollout = previous_run.finished_production_release.store_rollout
-    previous_rollout.release_fully! if previous_rollout.rollout_in_progress?
+    previous_rollout.release_fully! if previous_rollout.rollout_active?
     previous_rollout
+  end
+
+  def deep_link
+    DEEP_LINK_BASE + app.bundle_identifier
   end
 
   private
