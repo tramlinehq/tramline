@@ -54,18 +54,18 @@ describe Commit do
       train = create(:train)
       current_release = create(:release, train: train)
       previous_release = create(:release, :finished, train: train)
-      
+
       # Create commits for current release
       commit1 = create(:commit, release: current_release, message: "regular commit", commit_hash: "abc123")
       commit2 = create(:commit, release: current_release, message: "pr merge commit", commit_hash: "def456")
       commit3 = create(:commit, release: current_release, message: "another regular commit", commit_hash: "ghi789")
-      
+
       # Create a pull request in previous release with merge_commit_sha matching commit2
       create(:pull_request, release: previous_release, merge_commit_sha: "def456")
-      
+
       # Test filtering with previous releases
-      result = current_release.all_commits.commit_messages([previous_release])
-      
+      result = current_release.all_commits.commit_messages(Release.where(id: previous_release.id))
+
       expect(result).to contain_exactly(commit1.message, commit3.message)
       expect(result).not_to include(commit2.message)
     end
@@ -74,9 +74,9 @@ describe Commit do
       release = create(:release)
       commit1 = create(:commit, release: release, message: "commit1")
       commit2 = create(:commit, release: release, message: "commit2")
-      
-      result = release.all_commits.commit_messages([])
-      
+
+      result = release.all_commits.commit_messages(Release.none)
+
       expect(result).to contain_exactly(commit1.message, commit2.message)
     end
     
@@ -84,12 +84,12 @@ describe Commit do
       train = create(:train)
       current_release = create(:release, train: train)
       previous_release = create(:release, :finished, train: train)
-      
+
       commit1 = create(:commit, release: current_release, message: "commit1")
       commit2 = create(:commit, release: current_release, message: "commit2")
-      
-      result = current_release.all_commits.commit_messages([previous_release])
-      
+
+      result = current_release.all_commits.commit_messages(Release.where(id: previous_release.id))
+
       expect(result).to contain_exactly(commit1.message, commit2.message)
     end
     
@@ -97,15 +97,15 @@ describe Commit do
       train = create(:train)
       current_release = create(:release, train: train)
       previous_release = create(:release, :finished, train: train)
-      
+
       commit1 = create(:commit, release: current_release, message: "commit1")
       commit2 = create(:commit, release: current_release, message: "commit2")
-      
+
       # Create PR with nil merge_commit_sha
       create(:pull_request, release: previous_release, merge_commit_sha: nil)
-      
-      result = current_release.all_commits.commit_messages([previous_release])
-      
+
+      result = current_release.all_commits.commit_messages(Release.where(id: previous_release.id))
+
       expect(result).to contain_exactly(commit1.message, commit2.message)
     end
     
@@ -114,17 +114,17 @@ describe Commit do
       current_release = create(:release, train: train)
       previous_release1 = create(:release, :finished, train: train)
       previous_release2 = create(:release, :finished, train: train)
-      
+
       commit1 = create(:commit, release: current_release, message: "regular commit", commit_hash: "abc123")
       commit2 = create(:commit, release: current_release, message: "pr merge 1", commit_hash: "def456")
       commit3 = create(:commit, release: current_release, message: "pr merge 2", commit_hash: "ghi789")
       commit4 = create(:commit, release: current_release, message: "another regular", commit_hash: "jkl012")
-      
+
       create(:pull_request, release: previous_release1, merge_commit_sha: "def456")
       create(:pull_request, release: previous_release2, merge_commit_sha: "ghi789")
-      
-      result = current_release.all_commits.commit_messages([previous_release1, previous_release2])
-      
+
+      result = current_release.all_commits.commit_messages(Release.where(id: [previous_release1.id, previous_release2.id]))
+
       expect(result).to contain_exactly(commit1.message, commit4.message)
       expect(result).not_to include(commit2.message, commit3.message)
     end
@@ -133,14 +133,14 @@ describe Commit do
       train = create(:train)
       current_release = create(:release, train: train)
       previous_release = create(:release, :finished, train: train)
-      
+
       commit1 = create(:commit, release: current_release, message: "regular commit", commit_hash: "abc123", parents: [{sha: "parent1"}])
       commit2 = create(:commit, release: current_release, message: "pr merge commit", commit_hash: "def456", parents: [{sha: "parent2"}])
-      
+
       create(:pull_request, release: previous_release, merge_commit_sha: "def456")
-      
-      result = current_release.all_commits.commit_messages([previous_release], true)
-      
+
+      result = current_release.all_commits.commit_messages(Release.where(id: previous_release.id), true)
+
       expect(result).to contain_exactly(commit1.message)
       expect(result).not_to include(commit2.message)
     end
