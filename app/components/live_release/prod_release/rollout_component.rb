@@ -170,7 +170,7 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
   def border_style
     :dashed if created?
   end
-  
+
   def mobile?
     @mobile
   end
