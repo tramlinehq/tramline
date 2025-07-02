@@ -3,7 +3,7 @@ module Commitable
 
   class_methods do
     def commit_log(commits, first_parent_only = false)
-      return commits.none if commits.empty?
+      return if commits.empty?
       return commits unless first_parent_only
       return commits if commits.any? { |c| c.parents.blank? }
 
@@ -18,9 +18,7 @@ module Commitable
         parent_commits << commit if commit
       end
 
-      # Return as ActiveRecord relation instead of Array
-      parent_commit_ids = parent_commits.compact.map(&:id)
-      commits.where(id: parent_commit_ids)
+      parent_commits
     end
   end
 end

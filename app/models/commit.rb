@@ -53,11 +53,21 @@ class Commit < ApplicationRecord
     against: :message,
     **search_config
 
-  def self.commit_messages(previous_releases = Release.none, first_parent_only = false)
-    Commit
-      .commit_log(reorder("timestamp DESC"), first_parent_only)
-      .filter_out_pull_requests(previous_releases)
-      .map(&:message)
+  def self.commit_messages(first_parent_only = false)
+    commits = commit_log(reorder("timestamp DESC"), first_parent_only)
+    
+    # Handle both Array (from first_parent_only=true) and ActiveRecord relation
+    if commits.is_a?(Array)
+      # For Array results from first_parent_only, filter manually
+      commit_ids = commits.compact.map(&:id)
+      filtered_commits = where(id: commit_ids).filter_out_recent_pull_requests
+      # Return messages from the filtered commits, maintaining order
+      filtered_commit_ids = filtered_commits.pluck(:id)
+      commits.compact.select { |c| filtered_commit_ids.include?(c.id) }.map(&:message)
+    else
+      # For ActiveRecord relations, use the existing filtering
+      commits.filter_out_recent_pull_requests.map(&:message)
+    end
   end
 
   def self.count_by_team(org)
@@ -100,6 +110,25 @@ class Commit < ApplicationRecord
         .pluck(:merge_commit_sha)
 
     where.not(commit_hash: recent_pr_merge_commit_shas)
+  end
+
+  # automatically filter out PRs from recent releases based on current release context
+  def self.filter_out_recent_pull_requests
+    # Get the current release from the commits in this scope
+    # Remove ORDER BY before using DISTINCT to avoid PostgreSQL error
+    current_release_id = reorder("").distinct.pluck(:release_id).first
+    return self unless current_release_id
+
+    release = Release.find(current_release_id)
+    
+    # Get all completed releases from the same train (excluding current release)
+    # This includes the last finished release, unlike Train#previous_releases
+    previous_releases = release.train.releases
+      .completed
+      .where.not(id: current_release_id)
+      .order(completed_at: :desc, scheduled_at: :desc)
+    
+    filter_out_pull_requests(previous_releases)
   end
 
   def team

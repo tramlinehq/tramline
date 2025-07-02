@@ -63,8 +63,8 @@ describe Commit do
       # Create a pull request in previous release with merge_commit_sha matching commit2
       create(:pull_request, release: previous_release, merge_commit_sha: "def456")
 
-      # Test filtering with previous releases
-      result = current_release.all_commits.commit_messages(Release.where(id: previous_release.id))
+      # Test filtering with previous releases (now automatic)
+      result = current_release.all_commits.commit_messages(false)
 
       expect(result).to contain_exactly(commit1.message, commit3.message)
       expect(result).not_to include(commit2.message)
@@ -75,7 +75,7 @@ describe Commit do
       commit1 = create(:commit, release: release, message: "commit1")
       commit2 = create(:commit, release: release, message: "commit2")
 
-      result = release.all_commits.commit_messages(Release.none)
+      result = release.all_commits.commit_messages(false)
 
       expect(result).to contain_exactly(commit1.message, commit2.message)
     end
@@ -88,7 +88,7 @@ describe Commit do
       commit1 = create(:commit, release: current_release, message: "commit1")
       commit2 = create(:commit, release: current_release, message: "commit2")
 
-      result = current_release.all_commits.commit_messages(Release.where(id: previous_release.id))
+      result = current_release.all_commits.commit_messages(false)
 
       expect(result).to contain_exactly(commit1.message, commit2.message)
     end
@@ -104,7 +104,7 @@ describe Commit do
       # Create PR with nil merge_commit_sha
       create(:pull_request, release: previous_release, merge_commit_sha: nil)
 
-      result = current_release.all_commits.commit_messages(Release.where(id: previous_release.id))
+      result = current_release.all_commits.commit_messages(false)
 
       expect(result).to contain_exactly(commit1.message, commit2.message)
     end
@@ -123,7 +123,7 @@ describe Commit do
       create(:pull_request, release: previous_release1, merge_commit_sha: "def456")
       create(:pull_request, release: previous_release2, merge_commit_sha: "ghi789")
 
-      result = current_release.all_commits.commit_messages(Release.where(id: [previous_release1.id, previous_release2.id]))
+      result = current_release.all_commits.commit_messages(false)
 
       expect(result).to contain_exactly(commit1.message, commit4.message)
       expect(result).not_to include(commit2.message, commit3.message)
@@ -134,15 +134,19 @@ describe Commit do
       current_release = create(:release, train: train)
       previous_release = create(:release, :finished, train: train)
 
-      commit1 = create(:commit, release: current_release, message: "regular commit", commit_hash: "abc123", parents: [{sha: "parent1"}])
-      commit2 = create(:commit, release: current_release, message: "pr merge commit", commit_hash: "def456", parents: [{sha: "parent2"}])
+      # Create proper git history: commit1 is on main, commit2 is feature branch, commit3 merges feature to main
+      commit1 = create(:commit, release: current_release, message: "regular commit", commit_hash: "abc123", parents: [{sha: "parent_sha"}])
+      commit2 = create(:commit, release: current_release, message: "feature commit", commit_hash: "def456", parents: [{sha: commit1.commit_hash}])
+      commit3 = create(:commit, release: current_release, message: "pr merge commit", commit_hash: "ghi789", parents: [{sha: commit1.commit_hash}, {sha: commit2.commit_hash}])
 
-      create(:pull_request, release: previous_release, merge_commit_sha: "def456")
+      create(:pull_request, release: previous_release, merge_commit_sha: "ghi789")
 
-      result = current_release.all_commits.commit_messages(Release.where(id: previous_release.id), true)
+      result = current_release.all_commits.commit_messages(true)
 
+      # First-parent chain should be: commit3 → commit1 (skipping commit2 which is on feature branch)
+      # After PR filtering, commit3 should be removed, leaving only commit1
       expect(result).to contain_exactly(commit1.message)
-      expect(result).not_to include(commit2.message)
+      expect(result).not_to include(commit2.message, commit3.message)
     end
   end
 end
