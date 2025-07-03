@@ -358,6 +358,10 @@ class BitbucketIntegration < ApplicationRecord
       return with_api_retries(attempt: next_attempt, &)
     end
 
+    if ex.reason == :refresh_token_invalid
+      raise Installations::Error.new("Refresh token is invalid or expired. Please re-authenticate with Bitbucket.", reason: :refresh_token_invalid)
+    end
+
     if RETRYABLE_ERRORS.include?(ex.reason)
       return with_api_retries(attempt: next_attempt, &)
     end

@@ -62,14 +62,27 @@ module Installations
       end
 
       def get_oauth_token(params)
-        HTTP
+        response = HTTP
           .basic_auth(user: creds.integrations.bitbucket.client_id, pass: creds.integrations.bitbucket.client_secret)
           .post(OAUTH_ACCESS_TOKEN_URL, params)
-          .then { |response| response.body.to_s }
-          .then { |body| JSON.parse(body) }
-          .then { |json| json.slice("access_token", "refresh_token") }
-          .then.detect(&:present?)
-          .then { |tokens| OpenStruct.new tokens }
+
+        raise Installations::Bitbucket::Error.new({"error" => {"message" => "Service Unavailable"}}) if response.status.server_error?
+
+        body = response.body.to_s
+        parsed_body = JSON.parse(body)
+        
+        if response.status.client_error?
+          raise Installations::Bitbucket::Error.new(parsed_body)
+        end
+
+        tokens = parsed_body.slice("access_token", "refresh_token")
+        
+        if tokens["access_token"].blank? || tokens["refresh_token"].blank?
+          error_message = parsed_body.dig("error", "message") || "Failed to obtain valid OAuth tokens"
+          raise Installations::Bitbucket::Error.new({"error" => {"message" => error_message}})
+        end
+
+        OpenStruct.new(tokens)
       end
 
       def parse_author_info(commit)
