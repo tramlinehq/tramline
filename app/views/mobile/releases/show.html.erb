@@ -44,14 +44,14 @@
         <% @inflight_rollouts.each do |platform, rollouts| %>
           <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300"><%= platform.humanize %></h3>
           <% rollouts.each do |rollout| %>
-            <%= render LiveRelease::ProdRelease::RolloutComponent.new(rollout, title: "Inflight Rollout", mobile: true) %>
+            <%= render LiveRelease::ProdRelease::RolloutComponent.new(rollout, title: "Inflight Rollout", show_monitoring: false) %>
           <% end %>
         <% end %>
 
         <% @active_rollouts.each do |platform, rollouts| %>
           <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300"><%= platform.humanize %></h3>
           <% rollouts.each do |rollout| %>
-            <%= render LiveRelease::ProdRelease::RolloutComponent.new(rollout, title: "Active Rollout", mobile: true) %>
+            <%= render LiveRelease::ProdRelease::RolloutComponent.new(rollout, title: "Active Rollout", show_monitoring: false) %>
           <% end %>
         <% end %>
       </div>
