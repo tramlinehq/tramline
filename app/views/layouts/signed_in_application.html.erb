@@ -24,6 +24,7 @@
 <div class=" flex h-screen overflow-hidden">
   <div class="relative flex flex-col flex-1 overflow-y-scroll overflow-x-hidden h-full">
     <%= render HeaderComponent.new %>
+    <%= render MobileHeaderComponent.new %>
 
     <main class="mb-20 2xl:mb-10">
       <%= yield :sticky_top_message %>

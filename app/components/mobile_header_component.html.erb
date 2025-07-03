@@ -1,7 +1,29 @@
-<header class="bg-white dark:bg-main-900 border-b border-gray-200 dark:border-gray-700">
-  <div class="flex px-4 py-2">
-    <a href="/mobile/releases">
-      <%= inline_svg("tramline.svg", classname: "inline-flex w-12") %>
-    </a>
-  </div>
+<header class="antialiased mt-1 header-shadow z-40 md:hidden">
+  <nav class="bg-white p-2 dark:bg-main-900">
+    <div class="flex justify-between items-center">
+      <div class="flex justify-start items-center">
+        <a href="/" class="flex mr-6">
+          <%= inline_svg("tramline.svg", classname: "inline-flex w-12") %>
+        </a>
+      </div>
+
+      <div class="flex justify-end items-center gap-x-2 lg:order-2">
+        <%= render DropdownComponent.new(authz: false) do |dropdown| %>
+          <% dropdown.with_button(size: :xs, label: "🏢", scheme: :light) %>
+          <% dropdown.with_item_group do |group| %>
+            <% current_user.organizations.each do |organization| %>
+              <% group.with_item(link: {path: switch_accounts_organization_path(organization), "data-turbo": false},
+                                 selected: organization.id == current_organization.id) do %>
+                <%= organization.name %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <%= render ButtonComponent.new(scheme: :light, options: logout_path, type: :link, size: :xs, html_options: {"data-turbo": false}) do |b| %>
+          <% b.with_icon("logout.svg", size: :md) %>
+        <% end %>
+      </div>
+    </div>
+  </nav>
 </header>

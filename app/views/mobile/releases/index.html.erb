@@ -1,16 +1,21 @@
 <div class="px-4 py-6 max-w-md mx-auto">
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Releases</h1>
-    <p class="text-sm text-gray-600 dark:text-gray-400">Latest 5 releases per app</p>
-  </div>
+  <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2"><%= current_organization.name %></h1>
 
   <% if @apps_with_releases.any? %>
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Releases</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Showing the last 3 releases per app</p>
+    </div>
+
     <div class="space-y-6">
       <% @apps_with_releases.each do |app| %>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white"><%= app.name %></h2>
+              <div class="flex flex-col justify-start">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white"><%= app.name %></h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400"><%= app.bundle_identifier %></p>
+              </div>
               <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
                 <%= app.platform.humanize %>
               </span>
@@ -18,7 +23,7 @@
           </div>
 
           <div class="divide-y divide-gray-200 dark:divide-gray-700">
-            <% app.releases.order(scheduled_at: :desc).limit(5).each do |release| %>
+            <% app.releases.order(scheduled_at: :desc).limit(3).each do |release| %>
               <% release_presenter = ReleasePresenter.new(release, self) %>
               <a href="<%= mobile_release_path(release) %>" class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
                 <div class="flex items-center justify-between">
@@ -50,17 +55,11 @@
       <% end %>
     </div>
   <% else %>
-    <div class="text-center py-12">
-      <div class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600 mb-4">
-        🚀
-      </div>
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No releases yet</h3>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-        Start your first release to see it here
-      </p>
-      <a href="<%= apps_path %>" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
-        Go to Apps
-      </a>
-    </div>
+    <%= render EmptyStateComponent.new(
+          title: "No releases yet",
+          text: "Setup or start your first release from a desktop browser to see them here.",
+          banner_image: "rocket.svg",
+          type: :subdued
+        ) %>
   <% end %>
 </div>

@@ -37,14 +37,31 @@
     </div>
   </div>
 
-  <% if @production_rollouts.any? %>
+  <% if @inflight_rollouts.any? || @active_rollouts.any? %>
     <div class="mt-6">
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Production Rollouts</h2>
       <div class="space-y-4">
-        <% @production_rollouts.each do |rollout| %>
-          <%= render LiveRelease::ProdRelease::RolloutComponent.new(rollout, mobile: true) %>
+        <% @inflight_rollouts.each do |platform, rollouts| %>
+          <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300"><%= platform.humanize %></h3>
+          <% rollouts.each do |rollout| %>
+            <%= render LiveRelease::ProdRelease::RolloutComponent.new(rollout, title: "Inflight Rollout", mobile: true) %>
+          <% end %>
+        <% end %>
+
+        <% @active_rollouts.each do |platform, rollouts| %>
+          <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300"><%= platform.humanize %></h3>
+          <% rollouts.each do |rollout| %>
+            <%= render LiveRelease::ProdRelease::RolloutComponent.new(rollout, title: "Active Rollout", mobile: true) %>
+          <% end %>
         <% end %>
       </div>
     </div>
+  <% else %>
+    <%= render EmptyStateComponent.new(
+          title: "No active production rollouts",
+          text: "You can see and manage active production rollouts for this release when they are available.",
+          banner_image: "chart_column_increasing.svg",
+          type: :subdued
+        ) %>
   <% end %>
 </div>

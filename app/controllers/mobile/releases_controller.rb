@@ -11,9 +11,10 @@ module Mobile
     def show
       @release = current_organization.releases.friendly.find(params[:id])
       @release_presenter = ReleasePresenter.new(@release, view_context)
-      @production_rollouts = @release.release_platform_runs.flat_map do |rpr|
-        [rpr.inflight_store_rollout, rpr.active_store_rollout].compact
-      end
+      @inflight_rollouts = @release.release_platform_runs.filter_map(&:inflight_store_rollout).group_by(&:platform)
+      @active_rollouts = @release.release_platform_runs.filter_map(&:active_store_rollout).group_by(&:platform)
+    rescue ActiveRecord::RecordNotFound
+      redirect_to mobile_releases_path, alert: t(".not_found")
     end
   end
 end

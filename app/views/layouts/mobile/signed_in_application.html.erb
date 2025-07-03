@@ -30,6 +30,7 @@
       <div class="mx-auto">
         <div id="flash_stream"><%= render FlashComponent.new(flash) %></div>
         <div id="error_stream"><%= yield :error_resource %></div>
+        <%= render AlertComponent.new(type: :info, title: "Tramline is best used on desktop browsers. This is a limited mobile experience that lists the current releases across all your apps and allows you to control active production rollouts.", full_screen: true) %>
         <%= yield %>
       </div>
     </main>
