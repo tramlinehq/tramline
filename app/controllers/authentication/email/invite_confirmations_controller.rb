@@ -1,4 +1,6 @@
 class Authentication::Email::InviteConfirmationsController < ApplicationController
+  include MobileDeviceAllowable
+
   before_action :set_invite_token, only: [:new, :create]
   before_action :set_invite, only: [:new, :create]
   before_action :check_valid_invitation, only: [:new]

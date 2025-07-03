@@ -264,6 +264,10 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :mobile do
+    resources :releases, only: %i[index show]
+  end
+
   scope :github do
     get :callback, controller: "integration_listeners/github", as: :github_callback
     post "/events/:train_id", to: "integration_listeners/github#events", as: :github_events
