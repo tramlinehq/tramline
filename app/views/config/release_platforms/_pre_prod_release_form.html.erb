@@ -20,13 +20,15 @@
             end %>
       </div>
 
+      <% current_submissions = rr.object.submissions %>
+
       <ul data-controller="sortable-list-ext list-position"
           data-sortable-list-ext-handle-value=".handle"
           data-sortable-list-ext-list-position-outlet="#<%= release_type %>_submissions"
-          data-list-position-initial-value=1
+          data-list-position-initial-value="<%= current_submissions[0]&.number || 1 %>"
           class="flex flex-col item-gap-default"
           id="<%= release_type %>_submissions">
-        <% rr.object.submissions.each_with_index do |submission, _index| %>
+        <% current_submissions.each_with_index do |submission, _index| %>
           <li class="nested-form-wrapper" data-new-record="false">
             <% rr.fields_for :submissions, submission do |submission_form| %>
               <%= render "submissions_form", form: submission_form, submission_types: submission_types %>
