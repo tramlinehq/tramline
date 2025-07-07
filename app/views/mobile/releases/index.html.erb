@@ -1,0 +1,79 @@
+<div class="px-4 py-6 max-w-md mx-auto">
+  <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2"><%= current_organization.name %></h1>
+
+  <div class="mb-2 border-default-b"></div>
+
+  <% if @apps_with_releases.any? %>
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Releases</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Showing the last 3 releases per app</p>
+    </div>
+
+    <div class="space-y-6">
+      <% @apps_with_releases.each do |app| %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col justify-start">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white"><%= app.name %></h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400"><%= app.bundle_identifier %></p>
+              </div>
+              <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                <%= app.platform.humanize %>
+              </span>
+            </div>
+          </div>
+
+          <div class="divide-y divide-gray-200 dark:divide-gray-700">
+            <% app.trains.each do |train| %>
+              <% if train.releases.any? %>
+                <div class="px-4 py-3">
+                  <h3 class="font-semibold text-gray-500 dark:text-gray-300"><%= train.name %></h3>
+                </div>
+                <% train.releases.order(scheduled_at: :desc).limit(3).each do |release| %>
+                  <% release_presenter = ReleasePresenter.new(release, self) %>
+                  <a href="<%= mobile_release_path(release) %>" class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center space-x-0.5">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                          <%= release_presenter.display_release_version %>
+                        </div>
+                        <% if release_presenter.display_build_number %>
+                          <div class="text-xs text-gray-500 dark:text-gray-400">
+                            <%= release_presenter.display_build_number %>
+                          </div>
+                        <% end %>
+                      </div>
+
+                      <% if release.hotfix? %>
+                        <%= render BadgeComponent.new(text: "🩹 Hotfix", kind: :badge) %>
+                      <% end %>
+                    </div>
+
+                    <div class="flex flex-col justify-start text-xs text-gray-500 dark:text-gray-400">
+                      <div>
+                        <span class="font-semibold">Started</span> <%= release_presenter.display_start_time %>
+                      </div>
+                      <div>
+                        <span class="font-semibold">Released / Ended</span> <%= release_presenter.display_end_time %>
+                      </div>
+                    </div>
+
+                    <%= render BadgeComponent.new(text: release_presenter.release_status[:text], status: release_presenter.release_status[:status]) %>
+                  </a>
+                <% end %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render EmptyStateComponent.new(
+          title: "No releases yet",
+          text: "Setup or start your first release from a desktop browser to see them here.",
+          banner_image: "rocket.svg",
+          type: :subdued
+        ) %>
+  <% end %>
+</div>
