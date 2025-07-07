@@ -28,6 +28,13 @@
         </span>
       </div>
 
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-600 dark:text-gray-400">Released / Ended</span>
+        <span class="text-sm text-gray-900 dark:text-white">
+          <%= @release_presenter.display_end_time %>
+        </span>
+      </div>
+
       <% if @release.hotfix? %>
         <div class="flex items-center justify-between">
           <span class="text-sm text-gray-600 dark:text-gray-400">Type</span>

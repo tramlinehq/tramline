@@ -35,13 +35,13 @@
                   <a href="<%= mobile_release_path(release) %>" class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center space-x-0.5">
-                      <span class="text-sm font-medium text-gray-900 dark:text-white">
-                        <%= release_presenter.display_release_version %>
-                      </span>
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                          <%= release_presenter.display_release_version %>
+                        </div>
                         <% if release_presenter.display_build_number %>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">
-                          <%= release_presenter.display_build_number %>
-                        </span>
+                          <div class="text-xs text-gray-500 dark:text-gray-400">
+                            <%= release_presenter.display_build_number %>
+                          </div>
                         <% end %>
                       </div>
 
@@ -50,8 +50,13 @@
                       <% end %>
                     </div>
 
-                    <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                      <span>Started <%= release_presenter.display_start_time %></span>
+                    <div class="flex flex-col justify-start text-xs text-gray-500 dark:text-gray-400">
+                      <div>
+                        <span class="font-semibold">Started</span> <%= release_presenter.display_start_time %>
+                      </div>
+                      <div>
+                        <span class="font-semibold">Released / Ended</span> <%= release_presenter.display_end_time %>
+                      </div>
                     </div>
 
                     <%= render BadgeComponent.new(text: release_presenter.release_status[:text], status: release_presenter.release_status[:status]) %>

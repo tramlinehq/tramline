@@ -9,19 +9,19 @@
 
       <div class="flex justify-end items-center gap-x-2 lg:order-2">
         <%= render DropdownComponent.new(authz: false) do |dropdown| %>
-          <% dropdown.with_button(size: :xs, label: "🏢", scheme: :light) %>
+          <% button = dropdown.with_button(size: :xs, scheme: :light) %>
+          <% button.with_icon("building.svg") %>
           <% dropdown.with_item_group do |group| %>
             <% current_user.organizations.each do |organization| %>
-              <% group.with_item(link: {path: switch_accounts_organization_path(organization), "data-turbo": false},
-                                 selected: organization.id == current_organization.id) do %>
+              <% group.with_item(link: {path: switch_accounts_organization_path(organization), "data-turbo": false}, selected: organization.id == current_organization.id) do %>
                 <%= organization.name %>
               <% end %>
             <% end %>
           <% end %>
         <% end %>
 
-        <%= render ButtonComponent.new(scheme: :light, options: logout_path, type: :link, size: :xs, html_options: {"data-turbo": false}) do |b| %>
-          <% b.with_icon("logout.svg", size: :md) %>
+        <%= render ButtonComponent.new(scheme: :light, options: logout_path, type: :link, size: :xs, html_options: {"data-turbo": false}, authz: false) do |b| %>
+          <% b.with_icon("logout.svg") %>
         <% end %>
       </div>
     </div>
