@@ -1,0 +1,67 @@
+<div class="px-4 py-6 max-w-md mx-auto">
+  <div class="mb-4">
+    <%= render BackButtonComponent.new(path: mobile_releases_path) %>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <div class="mb-4">
+      <h1 class="text-xl font-bold text-gray-900 dark:text-white">
+        <%= @release_presenter.display_release_version %>
+      </h1>
+      <% if @release_presenter.display_build_number %>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Build <%= @release_presenter.display_build_number %>
+        </p>
+      <% end %>
+    </div>
+
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
+        <%= render BadgeComponent.new(text: @release_presenter.release_status[:text], status: @release_presenter.release_status[:status]) %>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-600 dark:text-gray-400">Started</span>
+        <span class="text-sm text-gray-900 dark:text-white">
+          <%= @release_presenter.display_start_time %>
+        </span>
+      </div>
+
+      <% if @release.hotfix? %>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-600 dark:text-gray-400">Type</span>
+          <%= render BadgeComponent.new(text: "🩹 Hotfix", kind: :badge) %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @inflight_rollouts.any? || @active_rollouts.any? %>
+    <div class="mt-6">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Production Rollouts</h2>
+      <div class="space-y-4">
+        <% @inflight_rollouts.each do |platform, rollouts| %>
+          <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300"><%= platform.humanize %></h3>
+          <% rollouts.each do |rollout| %>
+            <%= render LiveRelease::ProdRelease::RolloutComponent.new(rollout, title: "Inflight Rollout", show_monitoring: false) %>
+          <% end %>
+        <% end %>
+
+        <% @active_rollouts.each do |platform, rollouts| %>
+          <h3 class="text-md font-semibold text-gray-700 dark:text-gray-300"><%= platform.humanize %></h3>
+          <% rollouts.each do |rollout| %>
+            <%= render LiveRelease::ProdRelease::RolloutComponent.new(rollout, title: "Active Rollout", show_monitoring: false) %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <%= render EmptyStateComponent.new(
+          title: "No active production rollouts",
+          text: "You can see and manage active production rollouts for this release when they are available.",
+          banner_image: "chart_column_increasing.svg",
+          type: :subdued
+        ) %>
+  <% end %>
+</div>
