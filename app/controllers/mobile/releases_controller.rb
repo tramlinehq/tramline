@@ -10,6 +10,7 @@ module Mobile
 
     def show
       @release = current_organization.releases.friendly.find(params[:id])
+      @app = @release.app
       @release_presenter = ReleasePresenter.new(@release, view_context)
       platform_runs = @release.release_platform_runs
       @inflight_rollouts = platform_runs.filter_map(&:inflight_store_rollout).group_by(&:platform)
