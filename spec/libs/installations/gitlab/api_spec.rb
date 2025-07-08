@@ -83,6 +83,28 @@ RSpec.describe Installations::Gitlab::Api do
     end
   end
 
+  describe "#user_info" do
+    before do
+      stub_request(:get, "https://gitlab.com/api/v4/user")
+        .to_return_json(body: {
+          id: 317941,
+          username: "example-user",
+          name: "Example User",
+          avatar_url: "https://gitlab.com/uploads/-/system/user/avatar/317941/avatar.png"
+        })
+    end
+
+    it "returns the transformed user info" do
+      result = described_class.new(access_token).user_info(GitlabIntegration::USER_INFO_TRANSFORMATIONS)
+      expect(result).to eq({
+        "avatar_url" => "https://gitlab.com/uploads/-/system/user/avatar/317941/avatar.png",
+        "id" => "317941",
+        "name" => "Example User",
+        "username" => "example-user"
+      })
+    end
+  end
+
   describe "#list_projects" do
     let(:url) { "https://gitlab.com/api/v4/projects?membership=true&per_page=50" }
     let(:projects) { [{ id: "1", name: "Project 1" }, { id: "2", name: "Project 2" }] }

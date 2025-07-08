@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html class="light">
+<head>
+  <%= render partial: "shared/favicon" %>
+  <title><%= page_title(@page_name, current_organization, @app, @release) %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+  <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+  <meta name="environment" content="<%= Rails.env %>" />
+  <meta name="sentryDSNUrl" content="<%= ENV["FRONTEND_SENTRY_DSN"] %>" />
+  <meta name="currentAppId" content="<%= @app&.slug %>" />
+  <!-- current deploy: <%= Site.git_ref %> at <%= Site.git_ref_at %> -->
+</head>
+
+<body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white subpixel-antialiased dark:antialiased">
+<div class=" flex h-screen overflow-hidden">
+  <div class="relative flex flex-col flex-1 overflow-y-scroll overflow-x-hidden h-full">
+    <%= render Mobile::HeaderComponent.new %>
+
+    <main class="mb-20 2xl:mb-10">
+      <%= yield :sticky_top_message %>
+      <div class="mx-auto">
+        <div id="flash_stream"><%= render FlashComponent.new(flash) %></div>
+        <div id="error_stream"><%= yield :error_resource %></div>
+        <%= render AlertComponent.new(type: :info, title: default_mobile_alert, full_screen: true) %>
+        <%= yield %>
+      </div>
+    </main>
+
+    <%= render partial: "shared/footer" %>
+  </div>
+</div>
+</body>
+</html>

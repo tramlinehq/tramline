@@ -55,7 +55,7 @@ module Installations
     end
 
     def model
-      "gemini-2.5-flash-preview-05-20"
+      "gemini-2.5-flash"
     end
 
     def format_response(response_json, response_type)

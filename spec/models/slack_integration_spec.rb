@@ -76,4 +76,36 @@ describe SlackIntegration do
       end
     end
   end
+
+  describe "#notify_with_threaded_changelog!" do
+    let(:integration) { create(:integration, :with_slack) }
+    let(:slack_integration) { integration.providable }
+
+    let(:thread_id) { Faker::Number.number(digits: 10).to_s }
+    let(:changelog) { Array.new(20) { Faker::Lorem.sentence } }
+    let(:first_part_of_changelog) { changelog[0, 5] }
+    let(:channel) { {id: Faker::Alphanumeric.alphanumeric(number: 10)}.with_indifferent_access }
+
+    before do
+      allow(slack_integration).to receive(:notify!).and_return(thread_id)
+      allow(slack_integration).to receive(:notify_changelog!)
+    end
+
+    it "notifies with the first part of the changelog" do
+      slack_integration.notify_with_threaded_changelog!(channel, "some message", "notif_type", {diff_changelog: changelog}, changelog_key: :diff_changelog, changelog_partitions: 5, header_affix: "affix")
+      expect(slack_integration).to have_received(:notify!).with(channel[:id], "some message", "notif_type", {diff_changelog: changelog, changelog: {first_part: first_part_of_changelog, total_parts: 4, header_affix: "affix"}})
+    end
+
+    it "notifies rest of the parts of the changelog" do
+      slack_integration.notify_with_threaded_changelog!(channel, "some message", "notif_type", {diff_changelog: changelog}, changelog_key: :diff_changelog, changelog_partitions: 5, header_affix: "affix")
+
+      changelog_part2 = changelog[5, 5]
+      changelog_part3 = changelog[10, 5]
+      changelog_part4 = changelog[15, 5]
+
+      expect(slack_integration).to have_received(:notify_changelog!).with(channel[:id], "some message", thread_id, changelog_part2, header_affix: "affix (2/4)", continuation: true)
+      expect(slack_integration).to have_received(:notify_changelog!).with(channel[:id], "some message", thread_id, changelog_part3, header_affix: "affix (3/4)", continuation: true)
+      expect(slack_integration).to have_received(:notify_changelog!).with(channel[:id], "some message", thread_id, changelog_part4, header_affix: "affix (4/4)", continuation: true)
+    end
+  end
 end
