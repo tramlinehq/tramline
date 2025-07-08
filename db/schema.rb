@@ -550,6 +550,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_08_052234) do
     t.string "kind"
     t.index ["body"], name: "index_pull_requests_on_body", opclass: :gin_trgm_ops, using: :gin
     t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
+    t.index ["merge_commit_sha"], name: "index_pull_requests_on_merge_commit_sha", where: "(merge_commit_sha IS NOT NULL)"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
     t.index ["release_id", "head_ref"], name: "index_pull_requests_on_release_id_and_head_ref"
