@@ -25,6 +25,7 @@ module Installations
     CANCEL_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/cancel"
     RETRY_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/retry"
     GET_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}"
+    LIST_PIPELINES_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines"
     CHERRY_PICK_PR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}/cherry_pick"
     CHERRY_PICK_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/commits/{sha}/cherry_pick"
 
@@ -341,6 +342,12 @@ module Installations
       execute(:get, GET_PIPELINE_URL.expand(project_id:, pipeline_id:).to_s, {})
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
+    end
+
+    # https://docs.gitlab.com/ee/api/pipelines.html#list-project-pipelines
+    def list_pipelines(project_id, transforms)
+      response = execute(:get, LIST_PIPELINES_URL.expand(project_id:).to_s, {})
+      Installations::Response::Keys.transform(response, transforms)
     end
 
     def create_annotated_tag!(project_id, tag_name, branch_name, message)

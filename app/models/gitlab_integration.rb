@@ -24,6 +24,7 @@ class GitlabIntegration < ApplicationRecord
   attr_accessor :code
   before_create :complete_access
   delegate :code_repository_name, :code_repo_namespace, :working_branch, to: :app_config
+  delegate :cache, to: Rails
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
@@ -137,8 +138,19 @@ class GitlabIntegration < ApplicationRecord
     unique_number: :id
   }
 
-  def workflows(_)
-    nil
+  WORKFLOWS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name
+  }
+
+  def workflows(_, bust_cache: false)
+    Rails.cache.delete(workflows_cache_key) if bust_cache
+
+    cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
+      with_api_retries { installation.list_pipelines(code_repository_name, WORKFLOWS_TRANSFORMATIONS) }
+    end
+  rescue Installations::Error
+    []
   end
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
@@ -409,5 +421,9 @@ class GitlabIntegration < ApplicationRecord
     else
       gitlab_events_url(host: ENV["HOST_NAME"], protocol: "https", **params)
     end
+  end
+
+  def workflows_cache_key
+    "app/#{integrable.id}/gitlab_integration/#{id}/workflows"
   end
 end
