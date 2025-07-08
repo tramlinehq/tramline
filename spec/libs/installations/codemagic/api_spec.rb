@@ -71,15 +71,15 @@ describe Installations::Codemagic::Api, type: :integration do
         parameters: {}
       }
       commit_hash = Faker::Crypto.sha1
-      
+
       trigger_url = "https://api.codemagic.io/builds"
       get_build_url = "https://api.codemagic.io/builds/5fabc6414c483700143f4f92"
-      
+
       # Mock the trigger build call
       allow_any_instance_of(described_class).to receive(:execute).with(:post, trigger_url, anything).and_return(trigger_payload)
       # Mock the get build details call
       allow_any_instance_of(described_class).to receive(:execute).with(:get, get_build_url, {}).and_return({"build" => build_payload})
-      
+
       result = described_class.new(access_token).run_workflow!(app_id, workflow_id, branch, inputs, commit_hash, CodemagicIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
 
       expected = {

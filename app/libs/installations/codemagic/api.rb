@@ -91,7 +91,7 @@ module Installations
 
       execute(:post, TRIGGER_BUILD_URL, params)
         .tap { |response| raise Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed) if response.blank? }
-        .then { |response| 
+        .then { |response|
           # Get the full build details to construct the proper response
           build_id = response["buildId"]
           build_details = get_workflow_run(build_id)
@@ -99,7 +99,7 @@ module Installations
           Installations::Response::Keys.transform([build_details], transforms)
         }
         .first
-        .tap { |result| 
+        .tap { |result|
           # Construct the ci_link URL after transformation
           if result[:ci_link] && result[:ci_ref]
             result[:ci_link] = "https://codemagic.io/app/#{app_id}/build/#{result[:ci_ref]}"
