@@ -9,7 +9,7 @@ RSpec.describe Installations::Gitlab::Api do
     let(:file_path) { "path/to/file.txt" }
     let(:file_content) { "This is the file content." }
     let(:encoded_content) { Base64.encode64(file_content) }
-    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/files/#{ERB::Util.url_encode(file_path)}?ref=#{branch_name}" }
+    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/files/path%2Fto%2Ffile.txt?ref=#{branch_name}" }
 
     it "returns the file content" do
       stub_request(:get, url)
@@ -36,7 +36,7 @@ RSpec.describe Installations::Gitlab::Api do
     let(:file_path) { "path/to/file.txt" }
     let(:file_content) { "This is the new file content." }
     let(:commit_message) { "Update file.txt" }
-    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/files/#{ERB::Util.url_encode(file_path)}" }
+    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/files/path%252Fto%252Ffile.txt" }
 
     it "updates the file content" do
       stub_request(:put, url)
@@ -143,7 +143,7 @@ RSpec.describe Installations::Gitlab::Api do
     it "enables auto-merge for a pull request" do
       stub_request(:put, url)
         .with(
-          body: { "should_remove_source_branch" => true, "merge_when_pipeline_succeeds" => true }.to_json,
+          body: {"should_remove_source_branch" => true, "merge_when_pipeline_succeeds" => true}.to_json,
           headers: {
             "Authorization" => "Bearer access_token",
             "Content-Type" => "application/json; charset=utf-8"
@@ -151,20 +151,20 @@ RSpec.describe Installations::Gitlab::Api do
         )
         .to_return(status: 200, body: "", headers: {})
 
-      api.enable_auto_merge(project_id, pr_number)
+      expect(api.enable_auto_merge(project_id, pr_number)).to be_truthy
     end
   end
 
   describe "#run_pipeline!" do
     let(:project_id) { "123" }
     let(:branch_name) { "main" }
-    let(:inputs) { { "foo" => "bar" } }
+    let(:inputs) { {"foo" => "bar"} }
     let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/pipeline?ref=#{branch_name}" }
 
     it "runs a pipeline" do
       stub_request(:post, url)
         .with(
-          body: { variables: [{ key: "foo", value: "bar" }] }.to_json,
+          body: {variables: [{key: "foo", value: "bar"}]}.to_json,
           headers: {
             "Authorization" => "Bearer access_token",
             "Content-Type" => "application/json; charset=utf-8"
@@ -172,7 +172,7 @@ RSpec.describe Installations::Gitlab::Api do
         )
         .to_return(status: 201, body: {id: 1}.to_json, headers: {"Content-Type" => "application/json"})
 
-      api.run_pipeline!(project_id, branch_name, inputs, { id: :id })
+      api.run_pipeline!(project_id, branch_name, inputs, {id: :id})
     end
   end
 
@@ -208,14 +208,14 @@ RSpec.describe Installations::Gitlab::Api do
     let(:project_id) { "123" }
     let(:pipeline_id) { "456" }
     let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/pipelines/#{pipeline_id}" }
-    let(:pipeline) { { id: pipeline_id, status: "success" } }
+    let(:pipeline) { {id: pipeline_id, status: "success"} }
 
     it "returns a pipeline" do
       stub_request(:get, url)
         .with(headers: {"Authorization" => "Bearer access_token"})
         .to_return(status: 200, body: pipeline.to_json, headers: {"Content-Type" => "application/json"})
 
-      expect(api.get_pipeline(project_id, pipeline_id, { id: :id, status: :status })).to eq(pipeline.with_indifferent_access)
+      expect(api.get_pipeline(project_id, pipeline_id, {id: :id, status: :status})).to eq(pipeline.with_indifferent_access)
     end
   end
 
@@ -229,7 +229,7 @@ RSpec.describe Installations::Gitlab::Api do
     it "creates an annotated tag" do
       stub_request(:post, url)
         .with(
-          body: { tag_name: tag_name, ref: branch_name, message: message }.to_json,
+          body: {tag_name: tag_name, ref: branch_name, message: message}.to_json,
           headers: {
             "Authorization" => "Bearer access_token",
             "Content-Type" => "application/json; charset=utf-8"
@@ -237,7 +237,7 @@ RSpec.describe Installations::Gitlab::Api do
         )
         .to_return(status: 201, body: "", headers: {})
 
-      api.create_annotated_tag!(project_id, tag_name, branch_name, message)
+      expect(api.create_annotated_tag!(project_id, tag_name, branch_name, message)).to be_truthy
     end
   end
 
@@ -250,7 +250,7 @@ RSpec.describe Installations::Gitlab::Api do
     it "assigns a pull request to a user" do
       stub_request(:put, url)
         .with(
-          body: { assignee_ids: [assignee_id] }.to_json,
+          body: {assignee_ids: [assignee_id]}.to_json,
           headers: {
             "Authorization" => "Bearer access_token",
             "Content-Type" => "application/json; charset=utf-8"
@@ -275,7 +275,7 @@ RSpec.describe Installations::Gitlab::Api do
     it "cherry-picks a pull request" do
       stub_request(:post, create_branch_url)
         .with(
-          body: { branch: patch_branch_name, ref: branch_name }.to_json,
+          body: {branch: patch_branch_name, ref: branch_name}.to_json,
           headers: {
             "Authorization" => "Bearer access_token",
             "Content-Type" => "application/json; charset=utf-8"
@@ -285,7 +285,7 @@ RSpec.describe Installations::Gitlab::Api do
 
       stub_request(:post, cherry_pick_url)
         .with(
-          body: { branch: patch_branch_name }.to_json,
+          body: {branch: patch_branch_name}.to_json,
           headers: {
             "Authorization" => "Bearer access_token",
             "Content-Type" => "application/json; charset=utf-8"
@@ -295,7 +295,7 @@ RSpec.describe Installations::Gitlab::Api do
 
       stub_request(:post, create_pr_url)
         .with(
-          body: { source_branch: patch_branch_name, target_branch: branch_name, title: "Cherry-pick #{commit_sha}", description: "" }.to_json,
+          body: {source_branch: patch_branch_name, target_branch: branch_name, title: "Cherry-pick #{commit_sha}", description: ""}.to_json,
           headers: {
             "Authorization" => "Bearer access_token",
             "Content-Type" => "application/json; charset=utf-8"
@@ -307,7 +307,7 @@ RSpec.describe Installations::Gitlab::Api do
         .with(headers: {"Authorization" => "Bearer access_token"})
         .to_return(status: 200, body: {diffs: [{}]}.to_json, headers: {"Content-Type" => "application/json"})
 
-      api.cherry_pick_pr(project_id, pr_number, branch_name, patch_branch_name, commit_sha, { id: :id })
+      api.cherry_pick_pr(project_id, pr_number, branch_name, patch_branch_name, commit_sha, {id: :id})
     end
   end
 end
