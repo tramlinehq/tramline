@@ -10,7 +10,7 @@ RSpec.describe Installations::Linear::Api do
 
     before do
       allow(described_class).to receive(:creds).and_return(
-        double(integrations: double(linear: double(client_id: "client_id", client_secret: "client_secret")))
+        double(integrations: double(linear: double(client_id: "client_id", client_secret: "client_secret"))) # rubocop:disable RSpec/VerifiedDoubles
       )
     end
 

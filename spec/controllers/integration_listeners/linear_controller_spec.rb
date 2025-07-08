@@ -66,13 +66,15 @@ describe IntegrationListeners::LinearController do
     let(:controller_instance) { described_class.new }
 
     before do
-      allow(controller_instance).to receive_messages(params: ActionController::Parameters.new(code: "test_code", organization_id: "test_org"), code: "test_code", super: {})
+      allow(controller_instance).to receive_messages(
+        params: ActionController::Parameters.new(code: "test_code", organization_id: "test_org"),
+        code: "test_code"
+      )
     end
 
     it "includes code and organization_id" do
       result = controller_instance.send(:providable_params)
-      expect(result[:code]).to eq("test_code")
-      expect(result[:organization_id]).to eq("test_org")
+      expect(result).to eq({code: "test_code", integration: nil, organization_id: "test_org"})
     end
   end
 end

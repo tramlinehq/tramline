@@ -16,14 +16,15 @@ RSpec.describe LinearIntegration do
     let(:linear_integration) { integration.providable }
 
     before do
-      allow(linear_integration).to receive_messages(creds: double(integrations: double(linear: double(client_id: "test_client_id"))), redirect_uri: "http://test.com/callback")
+      linear_integration.integration = integration
+      allow(linear_integration).to receive_messages(creds: double(integrations: double(linear: double(client_id: "test_client_id"))), redirect_uri: "http://test.com/callback") # rubocop:disable RSpec/VerifiedDoubles
       allow(integration).to receive(:installation_state).and_return("test_state")
     end
 
     it "returns the correct OAuth URL" do
       expect(linear_integration.install_path).to include("https://linear.app/oauth/authorize")
       expect(linear_integration.install_path).to include("client_id=test_client_id")
-      expect(linear_integration.install_path).to include("redirect_uri=http://test.com/callback")
+      expect(linear_integration.install_path).to include("redirect_uri=http%3A%2F%2Ftest.com%2Fcallback")
       expect(linear_integration.install_path).to include("state=test_state")
     end
   end
