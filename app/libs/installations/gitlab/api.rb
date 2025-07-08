@@ -285,7 +285,7 @@ module Installations
         }.compact
       }
 
-      execute(:put, GET_FILE_URL.expand(project_id:, file_path: ERB::Util.url_encode(file_path)).to_s, params)
+      raw_execute(:put, GET_FILE_URL.expand(project_id:, file_path: ERB::Util.url_encode(file_path)).to_s, params)
     end
 
     # https://docs.gitlab.com/ee/api/releases.html#create-a-release

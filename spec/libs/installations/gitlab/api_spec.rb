@@ -172,7 +172,7 @@ RSpec.describe Installations::Gitlab::Api do
         )
         .to_return(status: 201, body: {id: 1}.to_json, headers: {"Content-Type" => "application/json"})
 
-      api.run_pipeline!(project_id, branch_name, inputs, {id: :id})
+      expect(api.run_pipeline!(project_id, branch_name, inputs, {id: :id})).to be_truthy
     end
   end
 
@@ -186,7 +186,7 @@ RSpec.describe Installations::Gitlab::Api do
         .with(headers: {"Authorization" => "Bearer access_token"})
         .to_return(status: 200, body: "", headers: {})
 
-      api.cancel_pipeline!(project_id, pipeline_id)
+      expect(api.cancel_pipeline!(project_id, pipeline_id)).to be_truthy
     end
   end
 
@@ -200,7 +200,7 @@ RSpec.describe Installations::Gitlab::Api do
         .with(headers: {"Authorization" => "Bearer access_token"})
         .to_return(status: 201, body: "", headers: {})
 
-      api.retry_pipeline!(project_id, pipeline_id)
+      expect(api.retry_pipeline!(project_id, pipeline_id)).to be_truthy
     end
   end
 
@@ -258,7 +258,7 @@ RSpec.describe Installations::Gitlab::Api do
         )
         .to_return(status: 200, body: "", headers: {})
 
-      api.assign_pr(project_id, pr_number, assignee_id)
+      expect(api.assign_pr(project_id, pr_number, assignee_id)).to be_truthy
     end
   end
 
@@ -307,7 +307,7 @@ RSpec.describe Installations::Gitlab::Api do
         .with(headers: {"Authorization" => "Bearer access_token"})
         .to_return(status: 200, body: {diffs: [{}]}.to_json, headers: {"Content-Type" => "application/json"})
 
-      api.cherry_pick_pr(project_id, pr_number, branch_name, patch_branch_name, commit_sha, {id: :id})
+      expect(api.cherry_pick_pr(project_id, pr_number, branch_name, patch_branch_name, commit_sha, {id: :id})).to be_truthy
     end
   end
 end
