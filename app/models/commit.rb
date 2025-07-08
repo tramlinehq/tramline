@@ -53,14 +53,14 @@ class Commit < ApplicationRecord
     against: :message,
     **search_config
 
-  def self.commit_messages(first_parent_only = false, exclude_mid_release_prs = true)
+  def self.commit_messages(first_parent_only = false, exclude_irrelevant_prs = true)
     commits = commit_log(reorder("timestamp DESC"), first_parent_only)
     return [] if commits.blank?
 
     release = commits.first.release
     recent_pr_merge_commit_shas = []
 
-    if exclude_mid_release_prs && release
+    if exclude_irrelevant_prs && release
       num_of_previous_releases_to_exclude = 2
       last_few_releases = release.previous_releases(num_of_previous_releases_to_exclude).pluck(:id)
       recent_pr_merge_commit_shas =

@@ -85,7 +85,7 @@ describe Commit do
         expect(current_release.all_commits.commit_messages).to contain_exactly(commit1.message, commit2.message)
       end
 
-      it "includes mid_release PR merge commits when exclude_mid_release_prs is false" do
+      it "includes mid_release PR merge commits when exclude_irrelevant_prs is false" do
         train = create(:train)
 
         # Create previous releases
