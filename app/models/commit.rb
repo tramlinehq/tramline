@@ -62,7 +62,11 @@ class Commit < ApplicationRecord
 
     if exclude_irrelevant_prs && release
       num_of_previous_releases_to_exclude = 2
-      last_few_releases = release.previous_releases(num_of_previous_releases_to_exclude).pluck(:id)
+      last_few_releases =
+        release
+          .previous_finished_releases(num_of_previous_releases_to_exclude)
+          .limit(num_of_previous_releases_to_exclude)
+          .pluck(:id)
       recent_pr_merge_commit_shas =
         PullRequest
           .mid_release

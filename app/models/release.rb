@@ -542,16 +542,12 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:failure?)
   end
 
-  def previous_releases(n = 2)
-    train.releases.where.not(id: id).reorder(scheduled_at: :desc).limit(n)
+  def previous_finished_releases
+    train.releases.where(status: "finished").where.not(id: id).reorder(completed_at: :desc)
   end
 
   def previous_release
-    base_conditions = train.releases
-      .where(status: "finished")
-      .where.not(id: id)
-      .reorder(completed_at: :desc)
-
+    base_conditions = previous_finished_releases
     return base_conditions.first if completed_at.blank?
 
     base_conditions
