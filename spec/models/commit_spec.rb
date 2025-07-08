@@ -14,6 +14,18 @@ describe Commit do
       expect(release.all_commits.commit_messages).to contain_exactly(commit1.message, commit2.message)
     end
 
+    it "scopes to release correctly" do
+      release1 = create(:release)
+      release2 = create(:release)
+      commit1 = create(:commit, release: release1, message: "commit1")
+      commit2 = create(:commit, release: release1, message: "commit2")
+      commit3 = create(:commit, release: release2, message: "commit2")
+      commit4 = create(:commit, release: release2, message: "commit2")
+
+      expect(release1.all_commits.commit_messages).to contain_exactly(commit1.message, commit2.message)
+      expect(release2.all_commits.commit_messages).to contain_exactly(commit3.message, commit4.message)
+    end
+
     it "returns first parent commit messages when no parent defined" do
       release = create(:release)
       commit1 = create(:commit, release:, message: "commit1")
