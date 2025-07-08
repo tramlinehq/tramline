@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Installations::Gitlab::Api do
+describe Installations::Gitlab::Api do
   let(:api) { described_class.new("access_token") }
 
   describe "#get_file_content" do
@@ -264,10 +264,12 @@ RSpec.describe Installations::Gitlab::Api do
 
   describe "#cherry_pick_pr" do
     let(:project_id) { "123" }
-    let(:pr_number) { "456" }
     let(:branch_name) { "main" }
     let(:patch_branch_name) { "cherry-pick-branch" }
     let(:commit_sha) { "abc1234" }
+    let(:pr_title_prefix) { "Cherry-pick" }
+    let(:pr_description) { "Description" }
+    let(:transforms) { {id: :id} }
     let(:cherry_pick_url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/commits/#{commit_sha}/cherry_pick" }
     let(:create_branch_url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/branches" }
     let(:create_pr_url) { "https://gitlab.com/api/v4/projects/#{project_id}/merge_requests" }
@@ -295,7 +297,7 @@ RSpec.describe Installations::Gitlab::Api do
 
       stub_request(:post, create_pr_url)
         .with(
-          body: {source_branch: patch_branch_name, target_branch: branch_name, title: "Cherry-pick #{commit_sha}", description: ""}.to_json,
+          body: {source_branch: patch_branch_name, target_branch: branch_name, title: "#{pr_title_prefix} #{commit_sha}", description: pr_description}.to_json,
           headers: {
             "Authorization" => "Bearer access_token",
             "Content-Type" => "application/json; charset=utf-8"
@@ -307,7 +309,7 @@ RSpec.describe Installations::Gitlab::Api do
         .with(headers: {"Authorization" => "Bearer access_token"})
         .to_return(status: 200, body: {diffs: [{}]}.to_json, headers: {"Content-Type" => "application/json"})
 
-      expect(api.cherry_pick_pr(project_id, pr_number, branch_name, patch_branch_name, commit_sha, {id: :id})).to be_truthy
+      expect(api.cherry_pick_pr(project_id, branch_name, commit_sha, patch_branch_name, pr_title_prefix, pr_description, transforms)).to be_truthy
     end
   end
 end

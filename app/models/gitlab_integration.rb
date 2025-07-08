@@ -304,10 +304,10 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.diff?(code_repository_name, from_branch, to_branch) }
   end
 
-  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
+  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix, pr_description = "")
     with_api_retries do
       installation
-        .cherry_pick_pr(code_repository_name, to_branch, patch_branch, commit_hash, pr_title_prefix, PR_TRANSFORMATIONS)
+        .cherry_pick_pr(code_repository_name, working_branch, commit_hash, patch_branch, pr_title_prefix, pr_description, PR_TRANSFORMATIONS)
         .merge_if_present(source: :gitlab)
     end
   end

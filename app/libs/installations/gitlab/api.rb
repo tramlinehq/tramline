@@ -365,15 +365,15 @@ module Installations
       raw_execute(:put, GET_MR_URL.expand(project_id:, merge_request_iid: pr_number).to_s, params)
     end
 
-    def cherry_pick_pr(project_id, pr_number, branch_name, patch_branch_name, commit_sha, transforms)
-      create_branch!(project_id, branch_name, patch_branch_name)
+    def cherry_pick_pr(project_id, branch, commit_sha, patch_branch_name, pr_title_prefix, pr_description, transforms)
+      create_branch!(project_id, branch, patch_branch_name)
       params = {
         json: {
           branch: patch_branch_name
         }
       }
       execute(:post, CHERRY_PICK_URL.expand(project_id:, sha: commit_sha).to_s, params)
-      create_pr!(project_id, branch_name, patch_branch_name, "Cherry-pick #{commit_sha}", "", transforms)
+      create_pr!(project_id, branch, patch_branch_name, "#{pr_title_prefix} #{commit_sha}", pr_description, transforms)
     end
 
     private
