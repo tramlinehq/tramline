@@ -105,6 +105,7 @@ jobs:
       RAILS_ENV: test
       DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
       WORKERS: ${{ github.ref != 'refs/heads/main' && '8' || '4' }}
+      DEFAULT_REDIS_URL: redis://localhost:6379
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
