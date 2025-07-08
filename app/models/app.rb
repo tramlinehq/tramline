@@ -113,6 +113,10 @@ class App < ApplicationRecord
     integrations.connected.bitrise_integrations.any?
   end
 
+  def codemagic_connected?
+    integrations.connected.codemagic_integrations.any?
+  end
+
   def bugsnag_connected?
     integrations.bugsnag_integrations.any?
   end

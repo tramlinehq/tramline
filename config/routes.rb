@@ -155,6 +155,10 @@ Rails.application.routes.draw do
           controller: "integrations/bitrise",
           as: :bitrise_integration
 
+        resource :codemagic, only: [:create],
+          controller: "integrations/codemagic",
+          as: :codemagic_integration
+
         resource :bugsnag, only: [:create],
           controller: "integrations/bugsnag",
           as: :bugsnag_integration

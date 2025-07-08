@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_05_29_022631) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_08_052234) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -62,6 +62,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_29_022631) do
     t.jsonb "firebase_crashlytics_ios_config"
     t.jsonb "firebase_crashlytics_android_config"
     t.jsonb "jira_config", default: {}, null: false
+    t.jsonb "codemagic_project_id"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -186,6 +187,12 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_29_022631) do
     t.index ["release_platform_run_id"], name: "index_builds_on_release_platform_run_id"
     t.index ["sequence_number"], name: "index_builds_on_sequence_number"
     t.index ["workflow_run_id"], name: "index_builds_on_workflow_run_id"
+  end
+
+  create_table "codemagic_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "access_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -443,7 +450,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_05_29_022631) do
     t.boolean "core_enabled", default: false, null: false
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
-    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))", validate: false
+    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))"
   end
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

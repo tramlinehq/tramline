@@ -24,7 +24,7 @@ class Integration < ApplicationRecord
 
   belongs_to :app, optional: true
 
-  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration CrashlyticsIntegration JiraIntegration]
+  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration CodemagicIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration CrashlyticsIntegration JiraIntegration]
   delegated_type :providable, types: PROVIDER_TYPES, autosave: true, validate: false
   delegated_type :integrable, types: INTEGRABLE_TYPES, autosave: true, validate: false
 
@@ -36,7 +36,7 @@ class Integration < ApplicationRecord
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration CodemagicIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
@@ -44,7 +44,7 @@ class Integration < ApplicationRecord
     },
     android: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration CodemagicIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
@@ -52,7 +52,7 @@ class Integration < ApplicationRecord
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration CodemagicIntegration GithubIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],

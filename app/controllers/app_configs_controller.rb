@@ -79,6 +79,7 @@ class AppConfigsController < SignedInApplicationController
       .permit(
         :code_repository,
         :bitrise_project_id,
+        :codemagic_project_id,
         :firebase_android_config,
         :firebase_ios_config,
         :bugsnag_ios_release_stage,
@@ -99,6 +100,7 @@ class AppConfigsController < SignedInApplicationController
     app_config_params
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
       .merge(bitrise_project_id: app_config_params[:bitrise_project_id]&.safe_json_parse)
+      .merge(codemagic_project_id: app_config_params[:codemagic_project_id]&.safe_json_parse)
       .merge(bugsnag_config(app_config_params.slice(*BUGSNAG_CONFIG_PARAMS)))
       .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
       .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)

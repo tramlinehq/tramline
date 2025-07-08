@@ -28,9 +28,8 @@
   <% end %>
 <% end %>
 <%= render SectionComponent.new(style: :titled, title: "Coming Soon") do %>
-  <div class="grid grid-cols-4 place-items-center justify-center text-slate-400 mt-12">
+  <div class="grid grid-cols-3 place-items-center justify-center text-slate-400 mt-12">
     <div><%= image_tag "integrations/logo_gitlab.png", title: "GitLab", width: 70, class: "opacity-30" %></div>
-    <div><%= image_tag "integrations/logo_codemagic.png", title: "Codemagic", width: 80, class: "opacity-30" %></div>
     <div><%= image_tag "integrations/logo_sentry.png", title: "Sentry", width: 90, class: "opacity-30" %></div>
     <div><%= image_tag "integrations/logo_crashlytics.png", title: "Crashlytics", width: 85, class: "opacity-30" %></div>
   </div>

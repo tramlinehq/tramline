@@ -1,0 +1,14 @@
+[
+  {
+    "id": "default-workflow",
+    "name": "default-workflow"
+  },
+  {
+    "id": "release",
+    "name": "release"
+  },
+  {
+    "id": "debug",
+    "name": "debug"
+  }
+]
