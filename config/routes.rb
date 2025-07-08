@@ -293,6 +293,12 @@ Rails.application.routes.draw do
     get :select_organization, to: "integration_listeners/jira#select_organization", as: :jira_select_organization
   end
 
+  scope :linear do
+    get :callback, controller: "integration_listeners/linear", as: :linear_callback
+    post :callback, controller: "integration_listeners/linear", as: :resend_linear_callback
+    get :select_organization, to: "integration_listeners/linear#select_organization", as: :linear_select_organization
+  end
+
   get "/rails/active_storage/blobs/redirect/:signed_id/*filename",
     to: "authorized_blob_redirect#show", as: "blob_redirect"
   match "/", via: %i[post put patch delete], to: "application#raise_not_found", format: false

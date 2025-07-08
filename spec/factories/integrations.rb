@@ -42,6 +42,11 @@ FactoryBot.define do
       providable factory: :jira_integration
     end
 
+    trait :linear do
+      category { "project_management" }
+      providable { association :linear_integration }
+    end
+
     trait :with_jira do
       category { "project_management" }
       providable factory: %i[jira_integration with_app_config]

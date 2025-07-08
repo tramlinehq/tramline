@@ -10,6 +10,7 @@
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
 #  jira_config             :jsonb            not null
+#  linear_config           :jsonb            not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
@@ -34,6 +35,7 @@ class AppConfig < ApplicationRecord
     allow_blank: true,
     json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
   validate :jira_release_filters, if: -> { jira_config&.dig("release_filters").present? }
+  validate :linear_release_filters, if: -> { linear_config&.dig("release_filters").present? }
 
   after_initialize :set_bugsnag_config, if: :persisted?
 
@@ -172,18 +174,37 @@ class AppConfig < ApplicationRecord
     return false if app.integrations.project_management.blank?
 
     jira = app.integrations.project_management.find(&:jira_integration?)&.providable
-    return false unless jira
+    linear = app.integrations.project_management.find(&:linear_integration?)&.providable
 
-    jira_config.present? &&
-      jira_config["selected_projects"].present? &&
-      jira_config["selected_projects"].any? &&
-      jira_config["project_configs"].present?
+    if jira
+      return jira_config.present? &&
+          jira_config["selected_projects"].present? &&
+          jira_config["selected_projects"].any? &&
+          jira_config["project_configs"].present?
+    end
+
+    if linear
+      return linear_config.present? &&
+          linear_config["selected_teams"].present? &&
+          linear_config["selected_teams"].any? &&
+          linear_config["team_configs"].present?
+    end
+
+    false
   end
 
   def jira_release_filters
     jira_config["release_filters"].each do |filter|
       unless filter.is_a?(Hash) && JiraIntegration::VALID_FILTER_TYPES.include?(filter["type"]) && filter["value"].present?
         errors.add(:jira_config, "release filters must contain valid type and value")
+      end
+    end
+  end
+
+  def linear_release_filters
+    linear_config["release_filters"].each do |filter|
+      unless filter.is_a?(Hash) && LinearIntegration::VALID_FILTER_TYPES.include?(filter["type"]) && filter["value"].present?
+        errors.add(:linear_config, "release filters must contain valid type and value")
       end
     end
   end

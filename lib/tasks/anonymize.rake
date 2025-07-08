@@ -377,6 +377,24 @@ namespace :anonymize do
           end
         end
       end
+
+      table "integrations" do
+        continue { |index, record| !Integration.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "integrable_id", "integrable_type", "category", "providable_id", "providable_type"
+        whitelist_timestamps
+      end
+
+      table "linear_integrations" do
+        continue { |index, record| !LinearIntegration.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "organization_id"
+        whitelist_timestamps
+        anonymize("oauth_access_token") { |_| "anonymized_token" }
+        anonymize("oauth_refresh_token") { |_| "anonymized_refresh_token" }
+      end
     end
 
     RefreshReldexJob.perform_async(train_id)

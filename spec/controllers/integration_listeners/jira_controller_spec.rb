@@ -39,7 +39,7 @@ describe IntegrationListeners::JiraController do
         it "creates integration and redirects to app" do
           expect(response).to redirect_to(app_path(app))
           expect(flash[:alert]).to be_nil
-          expect(flash[:notice]).to eq("Integration was successfully created.")
+          expect(flash[:notice]).to eq("Jira integration created successfully")
         end
       end
 
@@ -94,7 +94,7 @@ describe IntegrationListeners::JiraController do
 
       it "creates integration and redirects to app integrations" do
         expect(response).to redirect_to(app_path(app))
-        expect(flash[:notice]).to eq("Integration was successfully created.")
+        expect(flash[:notice]).to eq("Jira integration created successfully")
       end
     end
   end
