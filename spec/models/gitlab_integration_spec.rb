@@ -1,24 +1,26 @@
 require "rails_helper"
 
 RSpec.describe GitlabIntegration do
-  let(:app) { create(:app) }
+  let(:app) { create(:app, :android) }
   let(:integration) { create(:integration, integrable: app) }
   let(:gitlab_integration) { create(:gitlab_integration, :without_callbacks_and_validations, integration: integration) }
   let(:app_config) { app.config }
-  let(:installation) { double("installation") }
+  let(:installation) { instance_double("Installations::Gitlab::Api") }
 
   before do
     allow(gitlab_integration).to receive(:app_config).and_return(app_config)
     allow(gitlab_integration).to receive(:installation).and_return(installation)
-    allow(installation).to receive(:get_file_content)
-    allow(installation).to receive(:update_file!)
-    allow(installation).to receive(:run_pipeline!)
-    allow(installation).to receive(:cancel_pipeline!)
-    allow(installation).to receive(:retry_pipeline!)
-    allow(installation).to receive(:get_pipeline)
-    allow(installation).to receive(:create_tag!)
-    allow(installation).to receive(:cherry_pick_pr)
-    allow(installation).to receive(:enable_auto_merge)
+    allow(installation).to receive_messages(
+      get_file_content: nil,
+      update_file!: nil,
+      run_pipeline!: nil,
+      cancel_pipeline!: nil,
+      retry_pipeline!: nil,
+      get_pipeline: nil,
+      create_tag!: nil,
+      cherry_pick_pr: nil,
+      enable_auto_merge: nil
+    )
   end
 
   describe "#get_file_content" do
