@@ -8,8 +8,6 @@ RSpec.describe GitlabIntegration do
   let(:installation) { instance_double(Installations::Gitlab::Api) }
 
   before do
-    allow(gitlab_integration).to receive(:app_config).and_return(app_config)
-    allow(gitlab_integration).to receive(:installation).and_return(installation)
     allow(installation).to receive_messages(
       get_file_content: nil,
       update_file!: nil,
@@ -18,8 +16,12 @@ RSpec.describe GitlabIntegration do
       retry_pipeline!: nil,
       get_pipeline: nil,
       create_tag!: nil,
-      cherry_pick_pr: double("pr_result", merge_if_present: {}),
+      cherry_pick_pr: instance_double("PRResult", merge_if_present: {}),
       enable_auto_merge: nil
+    )
+    allow(gitlab_integration).to receive_messages(
+      app_config: app_config,
+      installation: installation
     )
   end
 
