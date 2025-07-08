@@ -33,6 +33,7 @@ class Release < ApplicationRecord
   include Versionable
   include Displayable
   include Linkable
+  include Sanitizable
 
   using RefinedString
 
@@ -418,15 +419,10 @@ class Release < ApplicationRecord
   end
 
   def release_diff
-    changes_since_last_release = release_changelog&.commit_messages(true)
+    changes_since_last_release = release_changelog&.commits&.commit_messages(true)
     changes_since_last_run = all_commits.commit_messages(true)
-
-    ((changes_since_last_run || []) + (changes_since_last_release || []))
-      .map { |str| str&.strip }
-      .flat_map { |line| line.split("\n").first }
-      .map { |line| line.gsub('"', "\\\"") }
-      .compact_blank
-      .uniq
+    combined = ((changes_since_last_run || []) + (changes_since_last_release || []))
+    sanitize_commit_messages(combined)
       .map { |str| "- #{str}" }
       .join("\n")
   end
@@ -544,6 +540,10 @@ class Release < ApplicationRecord
 
   def failure_anywhere?
     release_platform_runs.any?(&:failure?)
+  end
+
+  def previous_releases(n = 2)
+    train.releases.where.not(id: id).reorder(completed_at: :desc).limit(n)
   end
 
   def previous_release

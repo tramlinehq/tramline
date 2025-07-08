@@ -20,6 +20,7 @@ class PreProdRelease < ApplicationRecord
   include Loggable
   include Displayable
   include Passportable
+  include Sanitizable
 
   belongs_to :release_platform_run
   belongs_to :previous, class_name: "PreProdRelease", inverse_of: :next, optional: true
@@ -131,13 +132,8 @@ class PreProdRelease < ApplicationRecord
 
   # NOTES: This logic should simplify once we allow users to edit the tester notes
   def generate_tester_notes(changes)
-    changes.map { |str| str&.strip }
-      .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
-      .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
-      .map { |line| line.gsub('"', "\\\"") }
-      .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
-      .compact_blank
-      .uniq
+    sanitized_messages = sanitize_commit_messages(changes, compact_messages: train.compact_build_notes?)
+    sanitized_messages
       .map { |str| "• #{str}" }
       .join("\n").presence || "Nothing new"
   end
@@ -173,8 +169,8 @@ class PreProdRelease < ApplicationRecord
       release_version: release.release_version,
       submissions: store_submissions,
       first_pre_prod_release: previous_successful.blank?,
-      diff_changelog: changes_since_previous,
-      full_changelog: changes_since_previous(skip_delta: true)
+      diff_changelog: sanitize_commit_messages(changes_since_previous, compact_messages: train.compact_build_notes?),
+      full_changelog: sanitize_commit_messages(changes_since_previous(skip_delta: true), compact_messages: train.compact_build_notes?)
     )
   end
 

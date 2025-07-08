@@ -53,8 +53,25 @@ class Commit < ApplicationRecord
     against: :message,
     **search_config
 
-  def self.commit_messages(first_parent_only = false)
-    Commit.commit_log(reorder("timestamp DESC"), first_parent_only)&.map(&:message)
+  def self.commit_messages(first_parent_only = false, exclude_mid_release_prs = true)
+    commits = commit_log(reorder("timestamp DESC"), first_parent_only)
+    release = commits.first&.release
+
+    recent_pr_merge_commit_shas = []
+    if exclude_mid_release_prs && commits.any? && release
+      last_few_releases = release.previous_releases(2).pluck(:id)
+      recent_pr_merge_commit_shas =
+        PullRequest.mid_release
+          .where(release: last_few_releases)
+          .where.not(merge_commit_sha: nil)
+          .pluck(:merge_commit_sha)
+    end
+
+    if recent_pr_merge_commit_shas.any?
+      commits = commits.reject { |commit| recent_pr_merge_commit_shas.include?(commit.commit_hash) }
+    end
+
+    commits.map(&:message)
   end
 
   def self.count_by_team(org)
