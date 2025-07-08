@@ -543,7 +543,7 @@ class Release < ApplicationRecord
   end
 
   def previous_releases(n = 2)
-    train.releases.where.not(id: id).reorder(completed_at: :desc).limit(n)
+    train.releases.where.not(id: id).reorder(scheduled_at: :desc).limit(n)
   end
 
   def previous_release
