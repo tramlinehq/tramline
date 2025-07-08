@@ -55,13 +55,17 @@ class Commit < ApplicationRecord
 
   def self.commit_messages(first_parent_only = false, exclude_mid_release_prs = true)
     commits = commit_log(reorder("timestamp DESC"), first_parent_only)
-    release = commits.first&.release
+    return [] if commits.blank?
 
+    release = commits.first.release
     recent_pr_merge_commit_shas = []
-    if exclude_mid_release_prs && commits.any? && release
-      last_few_releases = release.previous_releases(2).pluck(:id)
+
+    if exclude_mid_release_prs && release
+      num_of_previous_releases_to_exclude = 2
+      last_few_releases = release.previous_releases(num_of_previous_releases_to_exclude).pluck(:id)
       recent_pr_merge_commit_shas =
-        PullRequest.mid_release
+        PullRequest
+          .mid_release
           .where(release: last_few_releases)
           .where.not(merge_commit_sha: nil)
           .pluck(:merge_commit_sha)
