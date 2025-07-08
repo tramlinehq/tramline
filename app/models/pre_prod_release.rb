@@ -169,8 +169,8 @@ class PreProdRelease < ApplicationRecord
       release_version: release.release_version,
       submissions: store_submissions,
       first_pre_prod_release: previous_successful.blank?,
-      diff_changelog: sanitize_commit_messages(changes_since_previous, compact_messages: train.compact_build_notes?),
-      full_changelog: sanitize_commit_messages(changes_since_previous(skip_delta: true), compact_messages: train.compact_build_notes?)
+      diff_changelog: sanitize_commit_messages(changes_since_previous),
+      full_changelog: sanitize_commit_messages(changes_since_previous(skip_delta: true))
     )
   end
 
