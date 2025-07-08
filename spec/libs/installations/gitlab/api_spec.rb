@@ -9,12 +9,12 @@ RSpec.describe Installations::Gitlab::Api do
     let(:file_path) { "path/to/file.txt" }
     let(:file_content) { "This is the file content." }
     let(:encoded_content) { Base64.encode64(file_content) }
-    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/files/#{ERB::Util.url_encode(file_path)}?ref=#{branch_name}" }
+    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/files/path%252Fto%252Ffile.txt?ref=#{branch_name}" }
 
     it "returns the file content" do
       stub_request(:get, url)
-        .with(headers: { "Authorization" => "Bearer access_token" })
-        .to_return(status: 200, body: { "content" => encoded_content }.to_json, headers: { "Content-Type" => "application/json" })
+        .with(headers: {"Authorization" => "Bearer access_token"})
+        .to_return(status: 200, body: {"content" => encoded_content}.to_json, headers: {"Content-Type" => "application/json"})
 
       expect(api.get_file_content(project_id, branch_name, file_path)).to eq(file_content)
     end
@@ -22,8 +22,8 @@ RSpec.describe Installations::Gitlab::Api do
     context "when the file is not found" do
       it "raises an error" do
         stub_request(:get, url)
-          .with(headers: { "Authorization" => "Bearer access_token" })
-          .to_return(status: 404, body: { "message" => "404 File Not Found" }.to_json, headers: { "Content-Type" => "application/json" })
+          .with(headers: {"Authorization" => "Bearer access_token"})
+          .to_return(status: 404, body: {"message" => "404 File Not Found"}.to_json, headers: {"Content-Type" => "application/json"})
 
         expect { api.get_file_content(project_id, branch_name, file_path) }.to raise_error(Installations::Gitlab::Error)
       end
@@ -111,8 +111,8 @@ RSpec.describe Installations::Gitlab::Api do
 
     it "returns a list of projects" do
       stub_request(:get, url)
-        .with(headers: { "Authorization" => "Bearer access_token" })
-        .to_return(status: 200, body: projects.to_json, headers: { "Content-Type" => "application/json" })
+        .with(headers: {"Authorization" => "Bearer access_token"})
+        .to_return(status: 200, body: projects.to_json, headers: {"Content-Type" => "application/json"})
 
       expect(api.list_projects({ id: :id, name: :name })).to eq(projects.map(&:with_indifferent_access))
     end
@@ -123,12 +123,12 @@ RSpec.describe Installations::Gitlab::Api do
 
       it "returns all projects" do
         stub_request(:get, url)
-          .with(headers: { "Authorization" => "Bearer access_token" })
-          .to_return(status: 200, body: projects.to_json, headers: { "Content-Type" => "application/json", "x-next-page" => "2" })
+          .with(headers: {"Authorization" => "Bearer access_token"})
+          .to_return(status: 200, body: projects.to_json, headers: {"Content-Type" => "application/json", "x-next-page" => "2"})
 
         stub_request(:get, url2)
-          .with(headers: { "Authorization" => "Bearer access_token" })
-          .to_return(status: 200, body: projects2.to_json, headers: { "Content-Type" => "application/json", "x-next-page" => "" })
+          .with(headers: {"Authorization" => "Bearer access_token"})
+          .to_return(status: 200, body: projects2.to_json, headers: {"Content-Type" => "application/json", "x-next-page" => ""})
 
         expect(api.list_projects({ id: :id, name: :name })).to eq((projects + projects2).map(&:with_indifferent_access))
       end
@@ -170,7 +170,7 @@ RSpec.describe Installations::Gitlab::Api do
             "Content-Type" => "application/json; charset=utf-8"
           }
         )
-        .to_return(status: 201, body: { id: 1 }.to_json, headers: { "Content-Type" => "application/json" })
+        .to_return(status: 201, body: {id: 1}.to_json, headers: {"Content-Type" => "application/json"})
 
       api.run_pipeline!(project_id, branch_name, inputs, { id: :id })
     end
@@ -183,7 +183,7 @@ RSpec.describe Installations::Gitlab::Api do
 
     it "cancels a pipeline" do
       stub_request(:post, url)
-        .with(headers: { "Authorization" => "Bearer access_token" })
+        .with(headers: {"Authorization" => "Bearer access_token"})
         .to_return(status: 200, body: "", headers: {})
 
       api.cancel_pipeline!(project_id, pipeline_id)
@@ -197,7 +197,7 @@ RSpec.describe Installations::Gitlab::Api do
 
     it "retries a pipeline" do
       stub_request(:post, url)
-        .with(headers: { "Authorization" => "Bearer access_token" })
+        .with(headers: {"Authorization" => "Bearer access_token"})
         .to_return(status: 201, body: "", headers: {})
 
       api.retry_pipeline!(project_id, pipeline_id)
@@ -212,8 +212,8 @@ RSpec.describe Installations::Gitlab::Api do
 
     it "returns a pipeline" do
       stub_request(:get, url)
-        .with(headers: { "Authorization" => "Bearer access_token" })
-        .to_return(status: 200, body: pipeline.to_json, headers: { "Content-Type" => "application/json" })
+        .with(headers: {"Authorization" => "Bearer access_token"})
+        .to_return(status: 200, body: pipeline.to_json, headers: {"Content-Type" => "application/json"})
 
       expect(api.get_pipeline(project_id, pipeline_id, { id: :id, status: :status })).to eq(pipeline.with_indifferent_access)
     end
@@ -291,7 +291,7 @@ RSpec.describe Installations::Gitlab::Api do
             "Content-Type" => "application/json; charset=utf-8"
           }
         )
-        .to_return(status: 201, body: { id: 1 }.to_json, headers: { "Content-Type" => "application/json" })
+        .to_return(status: 201, body: {id: 1}.to_json, headers: {"Content-Type" => "application/json"})
 
       stub_request(:post, create_pr_url)
         .with(
@@ -301,11 +301,11 @@ RSpec.describe Installations::Gitlab::Api do
             "Content-Type" => "application/json; charset=utf-8"
           }
         )
-        .to_return(status: 201, body: { id: 1 }.to_json, headers: { "Content-Type" => "application/json" })
+        .to_return(status: 201, body: {id: 1}.to_json, headers: {"Content-Type" => "application/json"})
 
       stub_request(:get, "https://gitlab.com/api/v4/projects/#{project_id}/repository/compare?from=#{branch_name}&straight=false&to=#{patch_branch_name}")
-        .with(headers: { "Authorization" => "Bearer access_token" })
-        .to_return(status: 200, body: { diffs: [{}] }.to_json, headers: { "Content-Type" => "application/json" })
+        .with(headers: {"Authorization" => "Bearer access_token"})
+        .to_return(status: 200, body: {diffs: [{}]}.to_json, headers: {"Content-Type" => "application/json"})
 
       api.cherry_pick_pr(project_id, pr_number, branch_name, patch_branch_name, commit_sha, { id: :id })
     end

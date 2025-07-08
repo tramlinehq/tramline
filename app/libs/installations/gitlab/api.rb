@@ -269,7 +269,7 @@ module Installations
       response = execute(:get, GET_FILE_URL.expand(project_id:, file_path: file_path, ref: branch_name).to_s, {})
       return nil if response.nil? || response["content"].nil?
       Base64.decode64(response["content"])
-    rescue ArgumentError => e
+    rescue ArgumentError
       raise Installations::Gitlab::Error.new("Invalid Base64 content in file", reason: :invalid_file_content)
     end
 
@@ -366,18 +366,14 @@ module Installations
     end
 
     def cherry_pick_pr(project_id, pr_number, branch_name, patch_branch_name, commit_sha, transforms)
-      begin
-        create_branch!(project_id, branch_name, patch_branch_name)
-        params = {
-          json: {
-            branch: patch_branch_name
-          }
+      create_branch!(project_id, branch_name, patch_branch_name)
+      params = {
+        json: {
+          branch: patch_branch_name
         }
-        execute(:post, CHERRY_PICK_URL.expand(project_id:, sha: commit_sha).to_s, params)
-        create_pr!(project_id, branch_name, patch_branch_name, "Cherry-pick #{commit_sha}", "", transforms)
-      rescue => e
-        raise e
-      end
+      }
+      execute(:post, CHERRY_PICK_URL.expand(project_id:, sha: commit_sha).to_s, params)
+      create_pr!(project_id, branch_name, patch_branch_name, "Cherry-pick #{commit_sha}", "", transforms)
     end
 
     private
