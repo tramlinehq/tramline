@@ -36,8 +36,8 @@ namespace :anonymize do
     user_ids = app.organization.users.pluck(:id)
     user_github_logins = app.organization.users.pluck(:github_login)
     ignored_stampable_types = %w[StepRun DeploymentRun StagedRollout]
-    # Integration tables (bitrise_integrations, google_play_store_integrations, app_store_integrations, 
-    # github_integrations, codemagic_integrations) are excluded from anonymization as they contain 
+    # Integration tables (bitrise_integrations, google_play_store_integrations, app_store_integrations,
+    # github_integrations, codemagic_integrations) are excluded from anonymization as they contain
     # only configuration data, not sensitive user data
 
     database "TramlineDatabase" do
