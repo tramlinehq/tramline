@@ -5,7 +5,7 @@ RSpec.describe GitlabIntegration do
   let(:integration) { create(:integration, integrable: app) }
   let(:gitlab_integration) { create(:gitlab_integration, :without_callbacks_and_validations, integration: integration) }
   let(:app_config) { app.config }
-  let(:installation) { instance_double("Installations::Gitlab::Api") }
+  let(:installation) { instance_double(Installations::Gitlab::Api) }
 
   before do
     allow(gitlab_integration).to receive(:app_config).and_return(app_config)
@@ -18,7 +18,7 @@ RSpec.describe GitlabIntegration do
       retry_pipeline!: nil,
       get_pipeline: nil,
       create_tag!: nil,
-      cherry_pick_pr: nil,
+      cherry_pick_pr: double("pr_result", merge_if_present: {}),
       enable_auto_merge: nil
     )
   end
