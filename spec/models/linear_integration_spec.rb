@@ -50,7 +50,7 @@ RSpec.describe LinearIntegration do
         linear_integration.organization_id = "existing_org_id"
 
         allow(Installations::Linear::Api).to receive(:get_access_token).and_return(
-          double(access_token: "token", refresh_token: "refresh")
+          double(access_token: "token", refresh_token: "refresh") # rubocop:disable RSpec/VerifiedDoubles
         )
 
         expect(linear_integration.complete_access).to be true
