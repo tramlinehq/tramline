@@ -11,14 +11,16 @@ def stub_vertex_ai_gemini_api(project_id, prompt, parsed_response, response_type
       }
     ]
   }
+
   if response_type == "json"
     body[:generationConfig] = {
       responseMimeType: "application/json"
     }
   end
+
   stub_request(
     :post,
-    "https://us-central1-aiplatform.googleapis.com/v1/projects/#{project_id}/locations/us-central1/publishers/google/models/gemini-2.5-flash-preview-05-20:generateContent"
+    "https://us-central1-aiplatform.googleapis.com/v1/projects/#{project_id}/locations/us-central1/publishers/google/models/gemini-2.5-flash:generateContent"
   ).with(
     headers: {
       "Authorization" => "Bearer dummy-token",
