@@ -1,0 +1,30 @@
+<%# locals: (form:, filter: nil, index:) %>
+
+<div class="flex items-center gap-2 p-3 border border-gray-200 rounded-md">
+  <%= form.fields_for :linear_config do |sf| %>
+    <%= sf.fields_for :release_filters, index: index do |rf| %>
+      <div class="flex items-center gap-2 flex-1">
+        <%= rf.select :type,
+              options_for_select([
+                ["Label", "label"],
+                ["State", "state"]
+              ], filter&.dig("type")),
+              {prompt: "Select filter type"},
+              {class: "form-select text-sm"} %>
+
+        <%= rf.text_field :value,
+              value: filter&.dig("value"),
+              placeholder: "Filter value",
+              class: "form-input text-sm flex-1" %>
+      </div>
+
+      <button type="button" 
+              class="text-red-600 hover:text-red-800"
+              data-action="nested-form-ext#remove">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    <% end %>
+  <% end %>
+</div>

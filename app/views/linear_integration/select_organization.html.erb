@@ -1,0 +1,26 @@
+<%= render PageComponent.new(title: "Select Linear Organization") do %>
+  <%= render FormComponent.new(model: @integration,
+                               url: linear_callback_path,
+                               method: :post,
+                               builder: EnhancedFormHelper::AuthzForm) do |f| %>
+    <%= render CardComponent.new(title: "Select Organization",
+                                 subtitle: "Choose the Linear organization to connect with",
+                                 separator: false,
+                                 size: :full) do %>
+      <div class="flex flex-col gap-4">
+        <% @organizations.each do |org| %>
+          <div class="flex items-center">
+            <%= f.F.radio_button :organization_id, org["id"], id: "org_#{org["id"]}" %>
+            <label for="org_<%= org["id"] %>" class="ml-2 text-sm font-medium text-gray-900">
+              <%= org["name"] %>
+            </label>
+          </div>
+        <% end %>
+      </div>
+
+      <% f.with_action do %>
+        <%= f.F.authz_submit "Connect", "plus.svg", size: :sm %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
