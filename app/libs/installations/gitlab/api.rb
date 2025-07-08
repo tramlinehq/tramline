@@ -267,7 +267,10 @@ module Installations
     # https://docs.gitlab.com/ee/api/repository_files.html#get-file-from-repository
     def get_file_content(project_id, branch_name, file_path)
       response = execute(:get, GET_FILE_URL.expand(project_id:, file_path: file_path, ref: branch_name).to_s, {})
+      return nil if response.nil? || response["content"].nil?
       Base64.decode64(response["content"])
+    rescue ArgumentError => e
+      raise Installations::Gitlab::Error.new("Invalid Base64 content in file", reason: :invalid_file_content)
     end
 
     # https://docs.gitlab.com/ee/api/repository_files.html#update-existing-file-in-repository
@@ -314,7 +317,7 @@ module Installations
     def run_pipeline!(project_id, branch_name, inputs, transforms)
       params = {
         json: {
-          variables: inputs.map { |k, v| { key: k, value: v } }
+          variables: inputs.map { |k, v| {key: k, value: v} }
         }
       }
 
@@ -363,16 +366,20 @@ module Installations
     end
 
     def cherry_pick_pr(project_id, pr_number, branch_name, patch_branch_name, commit_sha, transforms)
-      create_branch!(project_id, branch_name, patch_branch_name)
-      params = {
-        json: {
-          branch: patch_branch_name
+      begin
+        create_branch!(project_id, branch_name, patch_branch_name)
+        params = {
+          json: {
+            branch: patch_branch_name
+          }
         }
-      }
-      execute(:post, CHERRY_PICK_URL.expand(project_id:, sha: commit_sha).to_s, params)
-      create_pr!(project_id, branch_name, patch_branch_name, "Cherry-pick #{commit_sha}", "", transforms)
+        execute(:post, CHERRY_PICK_URL.expand(project_id:, sha: commit_sha).to_s, params)
+        create_pr!(project_id, branch_name, patch_branch_name, "Cherry-pick #{commit_sha}", "", transforms)
+      rescue => e
+        raise e
+      end
     end
-    
+
     private
 
     def execute(verb, url, params)

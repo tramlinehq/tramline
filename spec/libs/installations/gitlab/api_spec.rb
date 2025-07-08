@@ -95,7 +95,7 @@ RSpec.describe Installations::Gitlab::Api do
     end
 
     it "returns the transformed user info" do
-      result = described_class.new(access_token).user_info(GitlabIntegration::USER_INFO_TRANSFORMATIONS)
+      result = described_class.new("access_token").user_info(GitlabIntegration::USER_INFO_TRANSFORMATIONS)
       expect(result).to eq({
         "avatar_url" => "https://gitlab.com/uploads/-/system/user/avatar/317941/avatar.png",
         "id" => "317941",
