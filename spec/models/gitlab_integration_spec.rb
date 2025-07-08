@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe GitlabIntegration do
   let(:integration) { create(:integration) }
   let(:gitlab_integration) { create(:gitlab_integration, :without_callbacks_and_validations, integration: integration) }
-  let(:app_config) { create(:app_config, :with_vcs_repo, integration: integration) }
+  let(:app_config) { create(:app_config, integration: integration) }
 
   before do
     allow(gitlab_integration).to receive(:app_config).and_return(app_config)

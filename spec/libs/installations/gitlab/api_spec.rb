@@ -9,7 +9,7 @@ RSpec.describe Installations::Gitlab::Api do
     let(:file_path) { "path/to/file.txt" }
     let(:file_content) { "This is the file content." }
     let(:encoded_content) { Base64.encode64(file_content) }
-    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/files/path%252Fto%252Ffile.txt?ref=#{branch_name}" }
+    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/files/#{ERB::Util.url_encode(file_path)}?ref=#{branch_name}" }
 
     it "returns the file content" do
       stub_request(:get, url)
@@ -53,7 +53,7 @@ RSpec.describe Installations::Gitlab::Api do
         )
         .to_return(status: 200, body: "", headers: {})
 
-      api.update_file!(project_id, branch_name, file_path, file_content, commit_message)
+      expect(api.update_file!(project_id, branch_name, file_path, file_content, commit_message)).to be_truthy
     end
   end
 
@@ -79,7 +79,7 @@ RSpec.describe Installations::Gitlab::Api do
         )
         .to_return(status: 201, body: "", headers: {})
 
-      api.create_release!(project_id, tag_name, branch, description)
+      expect(api.create_release!(project_id, tag_name, branch, description)).to be_truthy
     end
   end
 
@@ -107,19 +107,19 @@ RSpec.describe Installations::Gitlab::Api do
 
   describe "#list_projects" do
     let(:url) { "https://gitlab.com/api/v4/projects?membership=true&per_page=50" }
-    let(:projects) { [{ id: "1", name: "Project 1" }, { id: "2", name: "Project 2" }] }
+    let(:projects) { [{"id" => "1", "name" => "Project 1"}, {"id" => "2", "name" => "Project 2"}] }
 
     it "returns a list of projects" do
       stub_request(:get, url)
         .with(headers: {"Authorization" => "Bearer access_token"})
         .to_return(status: 200, body: projects.to_json, headers: {"Content-Type" => "application/json"})
 
-      expect(api.list_projects({ id: :id, name: :name })).to eq(projects.map(&:with_indifferent_access))
+      expect(api.list_projects({"id" => :id, "name" => :name})).to eq(projects.map(&:with_indifferent_access))
     end
 
     context "when there are multiple pages of projects" do
       let(:url2) { "https://gitlab.com/api/v4/projects?membership=true&per_page=50&page=2" }
-      let(:projects2) { [{ id: "3", name: "Project 3" }, { id: "4", name: "Project 4" }] }
+      let(:projects2) { [{"id" => "3", "name" => "Project 3"}, {"id" => "4", "name" => "Project 4"}] }
 
       it "returns all projects" do
         stub_request(:get, url)
@@ -130,7 +130,7 @@ RSpec.describe Installations::Gitlab::Api do
           .with(headers: {"Authorization" => "Bearer access_token"})
           .to_return(status: 200, body: projects2.to_json, headers: {"Content-Type" => "application/json", "x-next-page" => ""})
 
-        expect(api.list_projects({ id: :id, name: :name })).to eq((projects + projects2).map(&:with_indifferent_access))
+        expect(api.list_projects({"id" => :id, "name" => :name})).to eq((projects + projects2).map(&:with_indifferent_access))
       end
     end
   end
