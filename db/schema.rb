@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_08_032249) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_09_114524) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -443,7 +443,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_08_032249) do
     t.boolean "core_enabled", default: false, null: false
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
-    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))", validate: false
+    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))"
   end
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -463,6 +463,18 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_08_032249) do
     t.string "sso_configuration_link"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["status"], name: "index_organizations_on_status"
+  end
+
+  create_table "outgoing_webhooks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.string "url", null: false
+    t.text "event_types", default: [], array: true
+    t.text "description"
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_outgoing_webhooks_on_active"
+    t.index ["train_id"], name: "index_outgoing_webhooks_on_train_id"
   end
 
   create_table "passports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1097,6 +1109,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_08_032249) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
+  add_foreign_key "outgoing_webhooks", "trains"
   add_foreign_key "pre_prod_releases", "commits"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "parent_internal_release_id"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "previous_id"

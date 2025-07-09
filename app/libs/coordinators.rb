@@ -46,6 +46,11 @@ module Coordinators
       Coordinators::PreReleaseJob.perform_async(release.id)
       Releases::FetchCommitLogJob.perform_async(release.id)
       RefreshReportsJob.perform_async(release.hotfixed_from.id) if release.hotfix?
+
+      ::Webhooks::TriggerService.trigger_for_train(release.train, :release_started, {
+        release_id: release.id,
+        release_version: release.release_version
+      })
     end
 
     def self.commits_have_landed!(release, head_commit, rest_commits)
@@ -66,6 +71,12 @@ module Coordinators
 
     def self.build_is_available!(workflow_run_id)
       Coordinators::TriggerSubmissionsJob.perform_async(workflow_run_id)
+
+      workflow_run = WorkflowRun.find(workflow_run_id)
+      ::Webhooks::TriggerService.trigger_for_train(workflow_run.release.train, :build_available, {
+        workflow_run_id: workflow_run_id,
+        build_id: workflow_run.build&.id
+      })
     end
 
     def self.internal_release_finished!(build)
@@ -88,6 +99,11 @@ module Coordinators
 
     def self.production_release_is_complete!(release_platform_run)
       Coordinators::FinishPlatformRun.call(release_platform_run)
+
+      ::Webhooks::TriggerService.trigger_for_train(release_platform_run.train, :production_release_complete, {
+        release_platform_run_id: release_platform_run.id,
+        platform: release_platform_run.platform
+      })
     end
 
     def self.workflow_run_trigger_failed!(workflow_run)
