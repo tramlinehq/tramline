@@ -23,6 +23,8 @@ class GitlabIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
+  delegate :integrable, to: :integration
+  delegate :organization, to: :integrable
   delegate :code_repository_name, :code_repo_namespace, :working_branch, to: :app_config
   delegate :cache, to: Rails
 
@@ -424,7 +426,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def app_config
-    integration.integrable.config
+    integrable.config
   end
 
   def redirect_uri
