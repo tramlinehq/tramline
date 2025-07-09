@@ -343,7 +343,6 @@ module Installations
         .first
     end
 
-
     def create_annotated_tag!(project_id, tag_name, branch_name, message)
       params = {
         json: {

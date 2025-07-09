@@ -439,8 +439,8 @@ class GitlabIntegration < ApplicationRecord
     ci_config = YAML.safe_load(yaml_content, aliases: true)
     return [] unless ci_config.is_a?(Hash)
 
-    jobs = ci_config.reject { |key, _| GITLAB_CI_GLOBAL_KEYWORDS.include?(key.to_s) || key.to_s.start_with?('.') }
-    jobs.map { |job_name, _| { id: job_name, name: job_name } }
+    jobs = ci_config.reject { |key, _| GITLAB_CI_GLOBAL_KEYWORDS.include?(key.to_s) || key.to_s.start_with?(".") }
+    jobs.map { |job_name, _| {id: job_name, name: job_name} }
   rescue YAML::Exception => e
     raise Installations::Error.new("Failed to parse .gitlab-ci.yml: #{e.message}", reason: :gitlab_ci_parse_error)
   rescue => e
