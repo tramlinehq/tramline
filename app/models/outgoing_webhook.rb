@@ -19,19 +19,31 @@ class OutgoingWebhook < ApplicationRecord
   validates :url, presence: true, format: {with: URI::DEFAULT_PARSER.make_regexp(%w[http https])}
   validates :event_types, presence: true
 
-  enum :event_types, {
-    release_started: "release_started",
-    release_finished: "release_finished",
-    release_stopped: "release_stopped",
-    build_available: "build_available",
-    internal_release_finished: "internal_release_finished",
-    beta_release_finished: "beta_release_finished",
-    production_release_complete: "production_release_complete",
-    workflow_run_finished: "workflow_run_finished",
-    submission_started: "submission_started",
-    rollout_started: "rollout_started",
-    rollout_completed: "rollout_completed"
-  }, _multiple: true
+  # Remove enum and work with plain array validation
+  VALID_EVENT_TYPES = %w[
+    release_started
+    release_finished
+    release_stopped
+    build_available
+    internal_release_finished
+    beta_release_finished
+    production_release_complete
+    workflow_run_finished
+    submission_started
+    rollout_started
+    rollout_completed
+  ].freeze
+
+  validate :event_types_are_valid
+
+  private
+
+  def event_types_are_valid
+    return if event_types.blank?
+    
+    invalid_types = event_types - VALID_EVENT_TYPES
+    errors.add(:event_types, "contains invalid event types: #{invalid_types.join(', ')}") if invalid_types.any?
+  end
 
   scope :active, -> { where(active: true) }
   scope :for_event_type, ->(event_type) { where("? = ANY(event_types)", event_type) }
