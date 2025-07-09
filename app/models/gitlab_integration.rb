@@ -143,11 +143,16 @@ class GitlabIntegration < ApplicationRecord
     name: :name
   }
 
-  def workflows(_, bust_cache: false)
-    Rails.cache.delete(workflows_cache_key) if bust_cache
+  GITLAB_CI_GLOBAL_KEYWORDS = %w[
+    default include stages workflow variables spec
+    image services before_script after_script cache
+  ].freeze
 
-    cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
-      with_api_retries { installation.list_pipelines(code_repository_name, WORKFLOWS_TRANSFORMATIONS) }
+  def workflows(branch_name = "main", bust_cache: false)
+    Rails.cache.delete(workflows_cache_key(branch_name)) if bust_cache
+
+    cache.fetch(workflows_cache_key(branch_name), expires_in: 120.minutes) do
+      parse_gitlab_ci_jobs(branch_name)
     end
   rescue Installations::Error
     []
@@ -423,7 +428,22 @@ class GitlabIntegration < ApplicationRecord
     end
   end
 
-  def workflows_cache_key
-    "app/#{integrable.id}/gitlab_integration/#{id}/workflows"
+  def workflows_cache_key(branch_name = "main")
+    "app/#{integrable.id}/gitlab_integration/#{id}/workflows/#{branch_name}"
+  end
+
+  def parse_gitlab_ci_jobs(branch_name)
+    yaml_content = with_api_retries { installation.get_file_content(code_repository_name, branch_name, ".gitlab-ci.yml") }
+    return [] if yaml_content.nil?
+
+    ci_config = YAML.safe_load(yaml_content, aliases: true)
+    return [] unless ci_config.is_a?(Hash)
+
+    jobs = ci_config.reject { |key, _| GITLAB_CI_GLOBAL_KEYWORDS.include?(key.to_s) || key.to_s.start_with?('.') }
+    jobs.map { |job_name, _| { id: job_name, name: job_name } }
+  rescue YAML::Exception => e
+    raise Installations::Error.new("Failed to parse .gitlab-ci.yml: #{e.message}", reason: :gitlab_ci_parse_error)
+  rescue => e
+    raise Installations::Error.new("Failed to fetch .gitlab-ci.yml: #{e.message}", reason: :gitlab_ci_not_found)
   end
 end
