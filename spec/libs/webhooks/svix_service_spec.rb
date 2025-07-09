@@ -23,9 +23,11 @@ describe Webhooks::SvixService do
     it "does not trigger inactive webhooks" do
       create(:outgoing_webhook, train: train, active: false)
 
-      expect(described_class).not_to receive(:new)
+      allow(described_class).to receive(:new)
 
       described_class.trigger_for_train(train, "release_started", {test: "data"})
+
+      expect(described_class).not_to have_received(:new)
     end
   end
 
@@ -98,10 +100,13 @@ describe Webhooks::SvixService do
     let(:service) { described_class.new(outgoing_webhook) }
 
     it "logs webhook trigger" do
-      expect(Rails.logger).to receive(:info).with("Outgoing webhook triggered: #{outgoing_webhook.url}")
-      expect(Rails.logger).to receive(:debug)
+      allow(Rails.logger).to receive(:info)
+      allow(Rails.logger).to receive(:debug)
 
       service.send(:send_webhook, {test: "payload"})
+
+      expect(Rails.logger).to have_received(:info).with("Outgoing webhook triggered: #{outgoing_webhook.url}")
+      expect(Rails.logger).to have_received(:debug)
     end
   end
 end

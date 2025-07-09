@@ -40,9 +40,9 @@ class OutgoingWebhook < ApplicationRecord
 
   def event_types_are_valid
     return if event_types.blank?
-    
+
     invalid_types = event_types - VALID_EVENT_TYPES
-    errors.add(:event_types, "contains invalid event types: #{invalid_types.join(', ')}") if invalid_types.any?
+    errors.add(:event_types, "contains invalid event types: #{invalid_types.join(", ")}") if invalid_types.any?
   end
 
   scope :active, -> { where(active: true) }
