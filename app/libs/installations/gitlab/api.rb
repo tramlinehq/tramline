@@ -25,6 +25,9 @@ module Installations
     CANCEL_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/cancel"
     RETRY_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/retry"
     GET_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}"
+    LIST_PIPELINES_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines"
+    LIST_PIPELINE_JOBS_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/jobs"
+    TRIGGER_JOB_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/jobs/{job_id}/play"
     CHERRY_PICK_PR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}/cherry_pick"
     CHERRY_PICK_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/commits/{sha}/cherry_pick"
 
@@ -341,6 +344,28 @@ module Installations
       execute(:get, GET_PIPELINE_URL.expand(project_id:, pipeline_id:).to_s, {})
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
+    end
+
+    def list_pipelines(project_id, transforms, max_results: 50)
+      params = {
+        params: {
+          per_page: 50,
+          order_by: "updated_at",
+          sort: "desc"
+        }
+      }
+
+      paginated_execute(:get, LIST_PIPELINES_URL.expand(project_id:).to_s, params: params, max_results: max_results)
+        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
+    end
+
+    def list_pipeline_jobs(project_id, pipeline_id, transforms)
+      execute(:get, LIST_PIPELINE_JOBS_URL.expand(project_id:, pipeline_id:).to_s, {})
+        .then { |response| Installations::Response::Keys.transform(response, transforms) }
+    end
+
+    def trigger_job!(project_id, job_id)
+      raw_execute(:post, TRIGGER_JOB_URL.expand(project_id:, job_id:).to_s, {})
     end
 
     def create_annotated_tag!(project_id, tag_name, branch_name, message)
