@@ -14,6 +14,7 @@
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
 #  bitrise_project_id      :jsonb
+#  codemagic_project_id    :jsonb
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
@@ -64,6 +65,10 @@ class AppConfig < ApplicationRecord
     bitrise_project_id&.fetch("id", nil)
   end
 
+  def codemagic_project
+    codemagic_project_id&.fetch("id", nil)
+  end
+
   def further_setup_by_category?
     integrations = app.integrations.connected
     categories = {}.with_indifferent_access
@@ -78,7 +83,7 @@ class AppConfig < ApplicationRecord
     if integrations.ci_cd.present?
       categories[:ci_cd] = {
         further_setup: integrations.ci_cd.any?(&:further_setup?),
-        ready: bitrise_ready?
+        ready: bitrise_ready? || codemagic_ready?
       }
     end
 
@@ -133,6 +138,7 @@ class AppConfig < ApplicationRecord
       self.code_repository = nil
     elsif integration.ci_cd?
       self.bitrise_project_id = nil
+      self.codemagic_project_id = nil
     end
 
     save!
@@ -155,6 +161,11 @@ class AppConfig < ApplicationRecord
   def bitrise_ready?
     return true unless app.bitrise_connected?
     bitrise_project.present?
+  end
+
+  def codemagic_ready?
+    return true unless app.codemagic_connected?
+    codemagic_project.present?
   end
 
   def bugsnag_ready?

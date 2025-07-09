@@ -1,0 +1,14 @@
+{
+  "applications": [
+    {
+      "_id": "5d85eaa0e941e00019e81bc2",
+      "appName": "flutter_counter",
+      "repository": "https://github.com/tramlinehq/flutter_counter.git"
+    },
+    {
+      "_id": "6f95fbb1f052f11129f92cd3",
+      "appName": "android_sample",
+      "repository": "https://github.com/tramlinehq/android_sample.git"
+    }
+  ]
+}

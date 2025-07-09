@@ -3,6 +3,7 @@ class WorkflowProcessors::WorkflowRunV2
   GITHUB = WorkflowProcessors::Github::WorkflowRun
   BITRISE = WorkflowProcessors::Bitrise::WorkflowRun
   BITRISE_PIPELINE = WorkflowProcessors::Bitrise::PipelineRun
+  CODEMAGIC = WorkflowProcessors::Codemagic::WorkflowRun
   BITBUCKET = WorkflowProcessors::Bitbucket::WorkflowRun
 
   class WorkflowRunUnknownStatus < StandardError; end
@@ -28,7 +29,7 @@ class WorkflowProcessors::WorkflowRunV2
 
   attr_reader :workflow_run
   delegate :in_progress?, :successful?, :failed?, :error?, :halted?, :artifacts_url, :started_at, :finished_at, to: :runner
-  delegate :github_integration?, :bitrise_integration?, :bitbucket_integration?, to: :integration
+  delegate :github_integration?, :bitrise_integration?, :codemagic_integration?, :bitbucket_integration?, to: :integration
   delegate :artifact_name_pattern, :app, to: :workflow_run
 
   def update_status!
@@ -53,6 +54,7 @@ class WorkflowProcessors::WorkflowRunV2
     return GITHUB.new(external_workflow_run) if github_integration?
     return BITRISE_PIPELINE.new(external_workflow_run) if bitrise_integration? && app.custom_bitrise_pipelines?
     return BITRISE.new(workflow_run.ci_cd_provider, external_workflow_run, artifact_name_pattern) if bitrise_integration?
+    return CODEMAGIC.new(workflow_run.ci_cd_provider, external_workflow_run, artifact_name_pattern) if codemagic_integration?
     BITBUCKET.new(external_workflow_run) if bitbucket_integration?
   end
 

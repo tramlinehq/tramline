@@ -1,0 +1,11 @@
+{
+  "buildId": "5fabc6414c483700143f4f92",
+  "_id": "5fabc6414c483700143f4f92",
+  "appId": "5d85eaa0e941e00019e81bc2",
+  "workflowId": "release",
+  "branch": "main",
+  "status": "finished",
+  "buildNumber": 42,
+  "startedAt": "2020-09-08T07:18:02.203+0000",
+  "finishedAt": "2020-09-08T07:20:13.040+0000"
+}
