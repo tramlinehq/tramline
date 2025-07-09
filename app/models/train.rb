@@ -82,6 +82,7 @@ class Train < ApplicationRecord
   has_many :integrations, through: :app
   has_many :scheduled_releases, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
+  has_many :outgoing_webhooks, dependent: :destroy
   has_one :release_index, dependent: :destroy
 
   scope :sequential, -> { reorder("trains.created_at ASC") }

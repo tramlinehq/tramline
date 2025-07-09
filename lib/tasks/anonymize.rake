@@ -57,6 +57,16 @@ namespace :anonymize do
         anonymize("working_branch") { |field| Faker::Hacker.noun }
       end
 
+      table "outgoing_webhooks" do
+        continue { |index, record| record["train_id"] == train_id && !OutgoingWebhook.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "train_id", "event_types", "active"
+        whitelist_timestamps
+        anonymize("url") { |field| "https://example.com/webhook" }
+        anonymize("description") { |field| field.value.present? ? Faker::Lorem.sentence : nil }
+      end
+
       table "release_indices" do
         continue { |index, record| record["train_id"] == train_id && !ReleaseIndex.exists?(record["id"]) }
 
