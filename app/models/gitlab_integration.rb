@@ -170,11 +170,11 @@ class GitlabIntegration < ApplicationRecord
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
     with_api_retries do
       pipeline = installation.run_pipeline!(code_repository_name, branch_name, inputs, WORKFLOW_RUN_TRANSFORMATIONS)
-      
+
       if ci_cd_channel.present? && ci_cd_channel != "default"
         trigger_specific_job(pipeline[:ci_ref], ci_cd_channel)
       end
-      
+
       pipeline
     end
   end
@@ -450,21 +450,21 @@ class GitlabIntegration < ApplicationRecord
   def fetch_jobs_from_pipeline_history(branch_name)
     pipelines = with_api_retries { installation.list_pipelines(code_repository_name, PIPELINE_TRANSFORMATIONS, max_results: 10) }
     branch_pipelines = pipelines.select { |p| p[:ref] == branch_name }
-    
+
     return [] if branch_pipelines.empty?
-    
+
     recent_pipeline = branch_pipelines.find { |p| p[:status] == "success" } || branch_pipelines.first
     jobs = with_api_retries { installation.list_pipeline_jobs(code_repository_name, recent_pipeline[:id], JOB_TRANSFORMATIONS) }
-    
+
     jobs.map { |job| {id: job[:name], name: job[:name]} }.uniq { |job| job[:name] }
   end
 
   def trigger_specific_job(pipeline_id, job_name)
     jobs = with_api_retries { installation.list_pipeline_jobs(code_repository_name, pipeline_id, JOB_TRANSFORMATIONS) }
-    
+
     target_job = jobs.find { |job| job[:name] == job_name }
     return unless target_job
-    
+
     with_api_retries { installation.trigger_job!(code_repository_name, target_job[:id]) }
   end
 end

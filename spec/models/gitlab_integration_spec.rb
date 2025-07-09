@@ -29,7 +29,7 @@ describe GitlabIntegration do
 
   describe "#trigger_workflow_run!" do
     it "calls the GitLab API to trigger a pipeline" do
-      allow(installation).to receive(:run_pipeline!)
+      allow(installation).to receive(:run_pipeline!).and_return({ci_ref: "123", ci_link: "http://example.com"})
       gitlab_integration.trigger_workflow_run!("ci_cd_channel", "main", {key: "value"})
       expect(installation).to have_received(:run_pipeline!).with(app_config.code_repository_name, "main", {key: "value"}, GitlabIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
     end
