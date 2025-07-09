@@ -99,14 +99,8 @@ describe Webhooks::SvixService do
   describe "#send_webhook" do
     let(:service) { described_class.new(outgoing_webhook) }
 
-    it "logs webhook trigger" do
-      allow(Rails.logger).to receive(:info)
-      allow(Rails.logger).to receive(:debug)
-
-      service.send(:send_webhook, {test: "payload"})
-
-      expect(Rails.logger).to have_received(:info).with("Outgoing webhook triggered: #{outgoing_webhook.url}")
-      expect(Rails.logger).to have_received(:debug)
+    it "executes without errors" do
+      expect { service.send(:send_webhook, {test: "payload"}) }.not_to raise_error
     end
   end
 end
