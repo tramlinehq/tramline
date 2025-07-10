@@ -25,6 +25,10 @@ module Installations
         decorated_reason: :tag_reference_already_exists
       },
       {
+        message_matcher: /Release already exists/,
+        decorated_reason: :tagged_release_already_exists
+      },
+      {
         message_matcher: /Not found/i,
         decorated_reason: :not_found
       },
@@ -45,6 +49,10 @@ module Installations
       {
         message_matcher: /404 File Not Found/i,
         decorated_reason: :file_not_found
+      },
+      {
+        message_matcher: /Unplayable Job/,
+        decorated_reason: :workflow_run_not_runnable
       }
     ]
 

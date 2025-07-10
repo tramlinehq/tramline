@@ -199,7 +199,7 @@ class WorkflowRun < ApplicationRecord
         .then { |external_workflow_run| check_external_data(external_workflow_run) }
         .then { |external_workflow_run| update_external_metadata!(external_workflow_run) }
     elsif ci_cd_provider.workflow_retriable_in_place?
-      # if the retry is in place (id doesn't change), we don't need to update anything for ourselves
+      # if the retry is in-place (the id doesn't change), we don't need to update anything for ourselves
       ci_cd_provider.retry_workflow_run!(external_id)
     else
       trigger_external_run!

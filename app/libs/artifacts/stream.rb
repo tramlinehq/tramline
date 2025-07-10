@@ -46,7 +46,7 @@ module Artifacts
 
       if @filter_pattern.present?
         filtered_entries = entries.select { |entry| File.basename(entry.name).include?(@filter_pattern) }
-        entries = filtered_entries.presence || entries
+        entries = filtered_entries.presence || entries.first
       end
 
       entries

@@ -23,6 +23,7 @@ module Installations
     GET_BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches/{branch_name}"
     GET_FILE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/files/{file_path}{?ref}"
     CREATE_RELEASE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/releases"
+    GET_RELEASE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/releases/{tag_name}"
     RUN_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipeline{?ref}"
     LIST_PIPELINES_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines"
     GET_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}"
@@ -41,7 +42,6 @@ module Installations
       push_events: true,
       merge_requests_events: true
     }
-
     VALID_ARTIFACT_TYPES = %w[archive].freeze
 
     def initialize(oauth_access_token)
@@ -267,6 +267,9 @@ module Installations
     # https://docs.gitlab.com/ee/api/tags.html#get-a-single-repository-tag
     def tag_exists?(project_id, tag_name)
       execute(:get, GET_TAG_URL.expand(project_id:, tag_name:).to_s, {}).present?
+    rescue Installations::Gitlab::Error => e
+      raise e if e.reason != :not_found
+      false
     end
 
     # https://docs.gitlab.com/ee/api/branches.html#get-single-repository-branch
@@ -308,24 +311,33 @@ module Installations
     end
 
     # https://docs.gitlab.com/ee/api/releases.html#create-a-release
-    def create_release!(project_id, tag_name, branch, description)
+    def create_release!(project_id, tag_name, branch, release_notes)
+      unless tag_exists?(project_id, tag_name)
+        create_tag!(project_id, tag_name, branch)
+      end
+
       params = {
         json: {
           tag_name: tag_name,
-          ref: branch,
-          description: description
+          description: release_notes
         }
       }
 
-      raw_execute(:post, CREATE_RELEASE_URL.expand(project_id:).to_s, params)
+      execute(:post, CREATE_RELEASE_URL.expand(project_id:).to_s, params)
     end
 
     # https://docs.gitlab.com/ee/api/merge_requests.html#merge-a-merge-request
+    # This works a different from the other enable_auto_merge in other integrations.
+    # Since this tries to merge again with the right flag because the auto_merge flag is not available in MR update API.
     def enable_auto_merge(project_id, pr_number)
+      # check if PR is already merged
+      pr_data = get_pr(project_id, pr_number, {state: :state})
+      return if pr_data[:state] == "merged"
+
       params = {
         json: {
           should_remove_source_branch: true,
-          merge_when_pipeline_succeeds: true
+          auto_merge: true
         }
       }
 
@@ -384,7 +396,8 @@ module Installations
     end
 
     # https://docs.gitlab.com/ee/api/jobs.html#list-pipeline-jobs
-    def list_pipeline_jobs(project_id, pipeline_id, transforms)
+    def list_pipeline_jobs(project_id, pipeline_id)
+      transforms = {id: :id, name: :name, status: :status, stage: :stage}
       execute(:get, LIST_PIPELINE_JOBS_URL.expand(project_id: project_id, pipeline_id: pipeline_id).to_s, {})
         .then { |response| Installations::Response::Keys.transform(response, transforms) }
     end
@@ -449,9 +462,8 @@ module Installations
       create_pr!(project_id, branch, patch_branch_name, "#{pr_title_prefix} #{commit_sha}", pr_description, transforms)
     end
 
-    def download_artifact(download_url)
-      Rails.logger.debug download_url
-      Down::Http.download(download_url, headers: {"Authorization" => oauth_access_token}, follow: {max_hops: 1})
+    def artifact_io_stream(url)
+      Down::Http.download(url, headers: {"Authorization" => oauth_access_token}, follow: {max_hops: 1})
     end
 
     def find_existing_pipeline(project_id, branch_name, commit_sha, transforms)
@@ -465,32 +477,36 @@ module Installations
         }
       }
 
-      pipelines = paginated_execute(:get, LIST_PIPELINES_URL.expand(project_id: project_id).to_s, params: params, max_results: 10)
+      pipelines = paginated_execute(:get, LIST_PIPELINES_URL.expand(project_id: project_id).to_s, params: params, max_results: 20)
       return nil if pipelines.empty?
-
       Installations::Response::Keys.transform(pipelines, transforms).first
     end
+
+    JOB_NOT_FOUND = Installations::Error.new("GitLab Job not found", reason: :workflow_run_not_found)
 
     def run_pipeline_with_job!(project_id, branch_name, inputs, job_name, commit_sha, transforms)
       existing_pipeline = find_existing_pipeline(project_id, branch_name, commit_sha, transforms)
 
       if existing_pipeline
-        trigger_specific_job_in_pipeline(project_id, existing_pipeline[:ci_ref], job_name, transforms)
+        job = trigger_specific_job_in_pipeline(project_id, existing_pipeline[:ci_ref], job_name, transforms)
+        raise JOB_NOT_FOUND if job.blank?
+        return job
       else
         pipeline = run_pipeline!(project_id, branch_name, inputs, transforms)
         if job_name.present? && job_name != "default"
-          trigger_specific_job_in_pipeline(project_id, pipeline[:ci_ref], job_name, transforms)
-        else
-          pipeline
+          job = trigger_specific_job_in_pipeline(project_id, pipeline[:ci_ref], job_name, transforms)
+          raise JOB_NOT_FOUND if job.blank?
+          return job
         end
       end
+
+      raise JOB_NOT_FOUND
     end
 
     def trigger_specific_job_in_pipeline(project_id, pipeline_id, job_name, transforms)
-      jobs = list_pipeline_jobs(project_id, pipeline_id, {id: :id, name: :name, status: :status, stage: :stage})
+      jobs = list_pipeline_jobs(project_id, pipeline_id)
       target_job = jobs.find { |job| job[:name] == job_name }
-      return unless target_job
-
+      raise JOB_NOT_FOUND unless target_job
       trigger_job!(project_id, target_job[:id], transforms)
     end
 

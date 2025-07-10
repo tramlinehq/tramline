@@ -214,7 +214,7 @@ class GitlabIntegration < ApplicationRecord
 
     artifact_stream =
       installation
-        .download_artifact(artifact_url)
+        .artifact_io_stream(artifact_url)
         .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true, filter_pattern: artifact_name_pattern) }
 
     {artifact: {}, stream: artifact_stream}
@@ -239,7 +239,7 @@ class GitlabIntegration < ApplicationRecord
     GitHub::Result.new do
       if id
         webhook = with_api_retries { installation.find_webhook(code_repository_name, id, WEBHOOK_TRANSFORMATIONS) }
-        if webhook[:url] == events_url(train_id:) && installation.class::WEBHOOK_PERMISSIONS.keys.all? { |k| webhook[k] }
+        if webhook[:url] == events_url(train_id:) && API::WEBHOOK_PERMISSIONS.keys.all? { |k| webhook[k] }
           webhook
         else
           create_webhook!(train_id:)
@@ -257,8 +257,8 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_project_webhook!(code_repository_name, events_url(url_params), WEBHOOK_TRANSFORMATIONS) }
   end
 
-  def create_release!(tag_name, branch, _, _)
-    with_api_retries { installation.create_tag!(code_repository_name, tag_name, branch) }
+  def create_release!(tag_name, branch, _, release_notes)
+    with_api_retries { installation.create_release!(code_repository_name, tag_name, branch, release_notes) }
   end
 
   def create_tag!(tag_name, sha)
@@ -402,9 +402,9 @@ class GitlabIntegration < ApplicationRecord
 
   private
 
-  # retry once (2 attempts in total)
-  MAX_RETRY_ATTEMPTS = 2
-  RETRYABLE_ERRORS = []
+  # retry once (11 attempts in total)
+  MAX_RETRY_ATTEMPTS = 10
+  RETRYABLE_ERRORS = [:workflow_run_not_runnable]
 
   def with_api_retries(attempt: 0, &)
     yield
