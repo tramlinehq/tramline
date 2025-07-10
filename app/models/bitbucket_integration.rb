@@ -294,6 +294,8 @@ class BitbucketIntegration < ApplicationRecord
 
   def workflow_retriable? = false
 
+  def workflow_retriable_in_place? = false
+
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
     with_api_retries do
       res = installation.trigger_pipeline!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)

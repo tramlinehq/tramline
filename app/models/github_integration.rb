@@ -264,11 +264,20 @@ class GithubIntegration < ApplicationRecord
   # we currently only select the largest artifact from github, since we have no information about the file types
   # in the future, this could be smarter and/or a user input
   def get_artifact(artifacts_url, artifact_name_pattern, _)
-    artifact = select_artifact(artifacts_url, artifact_name_pattern)
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_url.blank?
 
-    artifact_stream = installation.artifact_download_url(artifact)
-      .then { |url| installation.artifact_io_stream(url) }
-      .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
+    artifact =
+      installation
+        .artifacts(artifacts_url, ARTIFACTS_TRANSFORMATIONS)
+        .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
+        .then { |artifacts| API.find_biggest(artifacts) }
+        .tap { |artifact| raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank? }
+
+    artifact_stream =
+      installation
+        .artifact_download_url(artifact)
+        .then { |url| installation.artifact_io_stream(url) }
+        .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
 
     {artifact:, stream: artifact_stream}
   end
@@ -332,9 +341,9 @@ class GithubIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
-  def workflow_retriable?
-    true
-  end
+  def workflow_retriable? = false
+
+  def workflow_retriable_in_place? = true
 
   def branch_head_sha(branch, sha_only: true)
     installation.head(code_repository_name, branch, sha_only:, commit_transforms: COMMITS_TRANSFORMATIONS)
@@ -349,14 +358,6 @@ class GithubIntegration < ApplicationRecord
   end
 
   private
-
-  def select_artifact(artifacts_url, artifact_name_pattern)
-    installation
-      .artifacts(artifacts_url, ARTIFACTS_TRANSFORMATIONS)
-      .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
-      .then { |artifacts| API.find_biggest(artifacts) }
-      .tap { |artifact| raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank? }
-  end
 
   def namespaced_branch(branch_name)
     [code_repo_namespace, ":", branch_name].join

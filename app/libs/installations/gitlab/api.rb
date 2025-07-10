@@ -1,5 +1,7 @@
 module Installations
   class Gitlab::Api
+    require "down/http"
+
     include Vaultable
     attr_reader :oauth_access_token
 
@@ -22,19 +24,22 @@ module Installations
     GET_FILE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/files/{file_path}{?ref}"
     CREATE_RELEASE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/releases"
     RUN_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipeline{?ref}"
-    CANCEL_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/cancel"
-    RETRY_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/retry"
-    GET_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}"
     LIST_PIPELINES_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines"
     LIST_PIPELINE_JOBS_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/jobs"
     TRIGGER_JOB_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/jobs/{job_id}/play"
+    CANCEL_JOB_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/jobs/{job_id}/cancel"
+    RETRY_JOB_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/jobs/{job_id}/retry"
+    GET_JOB_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/jobs/{job_id}"
     CHERRY_PICK_PR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}/cherry_pick"
     CHERRY_PICK_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/commits/{sha}/cherry_pick"
+    JOB_RUN_ARTIFACTS_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/jobs/{job_id}/artifacts"
 
     WEBHOOK_PERMISSIONS = {
       push_events: true,
       merge_requests_events: true
     }
+
+    VALID_ARTIFACT_TYPES = %w[archive].freeze
 
     def initialize(oauth_access_token)
       @oauth_access_token = oauth_access_token
@@ -81,7 +86,15 @@ module Installations
           .then { |json| json.slice("access_token", "refresh_token") }
           .then
           .detect(&:present?)
-          .then { |tokens| OpenStruct.new tokens }
+          .then { |tokens| OpenStruct.new(tokens) }
+      end
+
+      def artifacts_url(project_id, job_id)
+        JOB_RUN_ARTIFACTS_URL.expand(project_id:, job_id:).to_s
+      end
+
+      def filter_by_relevant_type(artifacts)
+        artifacts.select { |artifact| VALID_ARTIFACT_TYPES.include? artifact["file_type"] }
       end
     end
 
@@ -318,9 +331,15 @@ module Installations
 
     # https://docs.gitlab.com/ee/api/pipelines.html#create-a-new-pipeline
     def run_pipeline!(project_id, branch_name, inputs, transforms)
+      processed_inputs = {
+        versionCode: inputs[:version_code],
+        versionName: inputs[:build_version],
+        buildNotes: inputs[:build_notes]
+      }.merge(inputs[:parameters]).compact
+
       params = {
         json: {
-          variables: inputs.map { |k, v| {key: k, value: v} }
+          variables: processed_inputs.map { |k, v| {key: k, value: v} }
         }
       }
 
@@ -329,21 +348,22 @@ module Installations
         .first
     end
 
-    # https://docs.gitlab.com/ee/api/pipelines.html#cancel-a-pipelines-jobs
-    def cancel_pipeline!(project_id, pipeline_id)
-      raw_execute(:post, CANCEL_PIPELINE_URL.expand(project_id:, pipeline_id:).to_s, {})
+    # https://docs.gitlab.com/ee/api/jobs.html#cancel-a-job
+    def cancel_job!(project_id, job_id)
+      raw_execute(:post, CANCEL_JOB_URL.expand(project_id:, job_id:).to_s, {})
     end
 
-    # https://docs.gitlab.com/ee/api/pipelines.html#retry-jobs-in-a-pipeline
-    def retry_pipeline!(project_id, pipeline_id)
-      raw_execute(:post, RETRY_PIPELINE_URL.expand(project_id:, pipeline_id:).to_s, {})
-    end
-
-    # https://docs.gitlab.com/ee/api/pipelines.html#get-a-single-pipeline
-    def get_pipeline(project_id, pipeline_id, transforms)
-      execute(:get, GET_PIPELINE_URL.expand(project_id:, pipeline_id:).to_s, {})
+    # https://docs.gitlab.com/ee/api/jobs.html#retry-a-job
+    def retry_job!(project_id, job_id, transforms)
+      execute(:post, RETRY_JOB_URL.expand(project_id:, job_id:).to_s, {})
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
+    end
+
+    # https://docs.gitlab.com/ee/api/jobs.html#get-a-single-job
+    def get_job(project_id, job_id)
+      execute(:get, GET_JOB_URL.expand(project_id:, job_id:).to_s, {})
+        &.with_indifferent_access
     end
 
     def list_pipelines(project_id, transforms, max_results: 50)
@@ -364,8 +384,10 @@ module Installations
         .then { |response| Installations::Response::Keys.transform(response, transforms) }
     end
 
-    def trigger_job!(project_id, job_id)
-      raw_execute(:post, TRIGGER_JOB_URL.expand(project_id:, job_id:).to_s, {})
+    def trigger_job!(project_id, job_id, transforms)
+      execute(:post, TRIGGER_JOB_URL.expand(project_id:, job_id:).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def create_annotated_tag!(project_id, tag_name, branch_name, message)
@@ -399,6 +421,11 @@ module Installations
       }
       execute(:post, CHERRY_PICK_URL.expand(project_id:, sha: commit_sha).to_s, params)
       create_pr!(project_id, branch, patch_branch_name, "#{pr_title_prefix} #{commit_sha}", pr_description, transforms)
+    end
+
+    def download_artifact(download_url)
+      Rails.logger.debug download_url
+      Down::Http.download(download_url, headers: {"Authorization" => oauth_access_token}, follow: {max_hops: 1})
     end
 
     private

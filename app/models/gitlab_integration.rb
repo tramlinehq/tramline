@@ -2,13 +2,11 @@
 #
 # Table name: gitlab_integrations
 #
-#  id                           :uuid             not null, primary key
-#  oauth_access_token           :string
-#  oauth_refresh_token          :string
-#  original_oauth_access_token  :string
-#  original_oauth_refresh_token :string
-#  created_at                   :datetime         not null
-#  updated_at                   :datetime         not null
+#  id                  :uuid             not null, primary key
+#  oauth_access_token  :string
+#  oauth_refresh_token :string
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
 #
 class GitlabIntegration < ApplicationRecord
   has_paper_trail
@@ -28,8 +26,8 @@ class GitlabIntegration < ApplicationRecord
   delegate :code_repository_name, :code_repo_namespace, :working_branch, to: :app_config
   delegate :cache, to: Rails
 
-  BASE_INSTALLATION_URL =
-    Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
+  API = Installations::Gitlab::Api
+  BASE_INSTALLATION_URL = Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
   EitherTransformation = Installations::Response::Keys::Either
 
   REPOS_TRANSFORMATIONS = {
@@ -111,28 +109,6 @@ class GitlabIntegration < ApplicationRecord
     merge_commit_sha: [:last_commit, :id] # FIXME: this is not correct, we might need to fetch this, just stubbing this for now.
   }
 
-  def install_path
-    BASE_INSTALLATION_URL
-      .expand(params: {
-        client_id: creds.integrations.gitlab.client_id,
-        redirect_uri: redirect_uri,
-        response_type: :code,
-        scope: creds.integrations.gitlab.scopes,
-        state: integration.installation_state
-      }).to_s
-  end
-
-  def complete_access
-    return if oauth_access_token.present? && oauth_refresh_token.present?
-    set_tokens(Installations::Gitlab::Api.oauth_access_token(code, redirect_uri))
-  end
-
-  def workspaces = nil
-
-  def repos(_)
-    with_api_retries { installation.list_projects(REPOS_TRANSFORMATIONS) }
-  end
-
   WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :id,
     ci_link: :web_url,
@@ -159,9 +135,45 @@ class GitlabIntegration < ApplicationRecord
     stage: :stage
   }
 
+  JOB_RUN_TRANSFORMATIONS = {
+    ci_ref: :id,
+    ci_link: :web_url,
+    number: :id,
+    unique_number: :id
+  }
+
+  ARTIFACTS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name,
+    size_in_bytes: :size,
+    archive_download_url: :file_location,
+    generated_at: :created_at
+  }
+
+  def install_path
+    BASE_INSTALLATION_URL
+      .expand(params: {
+        client_id: creds.integrations.gitlab.client_id,
+        redirect_uri: redirect_uri,
+        response_type: :code,
+        scope: creds.integrations.gitlab.scopes,
+        state: integration.installation_state
+      }).to_s
+  end
+
+  def complete_access
+    return if oauth_access_token.present? && oauth_refresh_token.present?
+    set_tokens(API.oauth_access_token(code, redirect_uri))
+  end
+
+  def workspaces = nil
+
+  def repos(_)
+    with_api_retries { installation.list_projects(REPOS_TRANSFORMATIONS) }
+  end
+
   def workflows(branch_name = "main", bust_cache: false)
     Rails.cache.delete(workflows_cache_key(branch_name)) if bust_cache
-
     cache.fetch(workflows_cache_key(branch_name), expires_in: 120.minutes) do
       fetch_jobs_from_pipeline_history(branch_name)
     end
@@ -172,65 +184,62 @@ class GitlabIntegration < ApplicationRecord
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
     with_api_retries do
       pipeline = installation.run_pipeline!(code_repository_name, branch_name, inputs, WORKFLOW_RUN_TRANSFORMATIONS)
-
       if ci_cd_channel.present? && ci_cd_channel != "default"
         trigger_specific_job(pipeline[:ci_ref], ci_cd_channel)
+      else
+        pipeline
       end
-
-      pipeline
     end
   end
 
   def cancel_workflow_run!(ci_ref)
-    with_api_retries { installation.cancel_pipeline!(code_repository_name, ci_ref) }
+    with_api_retries { installation.cancel_job!(code_repository_name, ci_ref) }
   end
 
   def retry_workflow_run!(ci_ref)
-    with_api_retries { installation.retry_pipeline!(code_repository_name, ci_ref) }
+    with_api_retries { installation.retry_job!(code_repository_name, ci_ref, JOB_RUN_TRANSFORMATIONS) }
   end
 
-  def find_workflow_run(workflow_id, branch, commit_sha)
+  def find_workflow_run(_, _, _)
     # GitLab does not have a direct equivalent to finding a workflow run by workflow_id, branch, and commit_sha.
-    # It's more common to list pipelines and filter them.
-    # For now, we'll raise an unsupported action.
+    # When a job is triggered, we have an ID which we can directly find later (see: get_workflow_run).
     raise Integrations::UnsupportedAction
   end
 
-  def get_workflow_run(pipeline_id)
-    with_api_retries { installation.get_pipeline(code_repository_name, pipeline_id, WORKFLOW_RUN_TRANSFORMATIONS) }
+  def get_workflow_run(job_id)
+    with_api_retries { installation.get_job(code_repository_name, job_id) }
   end
 
-  ARTIFACTS_TRANSFORMATIONS = {
-    id: :id,
-    name: :name,
-    size_in_bytes: :size,
-    archive_download_url: :file_location,
-    generated_at: :created_at
-  }
+  def get_artifact(artifact_url, artifact_name_pattern, _)
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_url.blank?
 
-  def get_artifact(_, _, external_workflow_run_id:)
-    raise Integrations::UnsupportedAction
+    artifact_stream =
+      installation
+        .download_artifact(artifact_url)
+        .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true, filter_pattern: artifact_name_pattern) }
+
+    {artifact: {}, stream: artifact_stream}
   end
 
-  def artifact_url
-    raise Integrations::UnsupportedAction
+  def artifacts_url(job_id, artifacts_payload)
+    return if API.filter_by_relevant_type(artifacts_payload).blank?
+    API.artifacts_url(code_repository_name, job_id)
   end
 
-  def workflow_retriable?
-    false
-  end
+  def workflow_retriable? = true
+
+  def workflow_retriable_in_place? = false
 
   def further_setup?
     false
   end
 
-  def enable_auto_merge? = false
+  def enable_auto_merge? = true
 
   def find_or_create_webhook!(id:, train_id:)
     GitHub::Result.new do
       if id
         webhook = with_api_retries { installation.find_webhook(code_repository_name, id, WEBHOOK_TRANSFORMATIONS) }
-
         if webhook[:url] == events_url(train_id:) && installation.class::WEBHOOK_PERMISSIONS.keys.all? { |k| webhook[k] }
           webhook
         else
@@ -284,7 +293,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def installation
-    Installations::Gitlab::Api.new(oauth_access_token)
+    API.new(oauth_access_token)
   end
 
   def to_s
@@ -417,7 +426,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    set_tokens(Installations::Gitlab::Api.oauth_refresh_token(oauth_refresh_token, redirect_uri))
+    set_tokens(API.oauth_refresh_token(oauth_refresh_token, redirect_uri))
     save!
   end
 
@@ -430,19 +439,11 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def redirect_uri
-    if Rails.env.development?
-      gitlab_callback_url(host: ENV["HOST_NAME"], port: "3000", protocol: "https")
-    else
-      gitlab_callback_url(host: ENV["HOST_NAME"], protocol: "https")
-    end
+    gitlab_callback_url(link_params)
   end
 
   def events_url(params)
-    if Rails.env.development?
-      gitlab_events_url(host: ENV["WEBHOOK_HOST_NAME"], **params)
-    else
-      gitlab_events_url(host: ENV["HOST_NAME"], protocol: "https", **params)
-    end
+    gitlab_events_url(**tunneled_link_params, **params)
   end
 
   def workflows_cache_key(branch_name = "main")
@@ -467,6 +468,6 @@ class GitlabIntegration < ApplicationRecord
     target_job = jobs.find { |job| job[:name] == job_name }
     return unless target_job
 
-    with_api_retries { installation.trigger_job!(code_repository_name, target_job[:id]) }
+    with_api_retries { installation.trigger_job!(code_repository_name, target_job[:id], JOB_RUN_TRANSFORMATIONS) }
   end
 end

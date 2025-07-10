@@ -1,5 +1,6 @@
 class WorkflowProcessors::Gitlab::WorkflowRun
-  def initialize(workflow_payload)
+  def initialize(integration, workflow_payload)
+    @integration = integration
     @workflow_payload = workflow_payload
   end
 
@@ -12,7 +13,7 @@ class WorkflowProcessors::Gitlab::WorkflowRun
   end
 
   def failed?
-    %w[failed canceled].include?(status)
+    status == "failed"
   end
 
   def error?
@@ -20,11 +21,11 @@ class WorkflowProcessors::Gitlab::WorkflowRun
   end
 
   def halted?
-    %w[skipped manual].include?(status)
+    %w[skipped canceled canceling].include?(status)
   end
 
   def artifacts_url
-    true
+    @integration.artifacts_url(job_id, workflow_payload[:artifacts])
   end
 
   def started_at
@@ -41,5 +42,9 @@ class WorkflowProcessors::Gitlab::WorkflowRun
 
   def status
     workflow_payload[:status]
+  end
+
+  def job_id
+    workflow_payload[:id]
   end
 end

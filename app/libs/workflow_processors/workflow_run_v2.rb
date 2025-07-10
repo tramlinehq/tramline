@@ -55,7 +55,7 @@ class WorkflowProcessors::WorkflowRunV2
     return BITRISE_PIPELINE.new(external_workflow_run) if bitrise_integration? && app.custom_bitrise_pipelines?
     return BITRISE.new(workflow_run.ci_cd_provider, external_workflow_run, artifact_name_pattern) if bitrise_integration?
     return BITBUCKET.new(external_workflow_run) if bitbucket_integration?
-    GITLAB.new(external_workflow_run) if gitlab_integration?
+    GITLAB.new(workflow_run.ci_cd_provider, external_workflow_run) if gitlab_integration?
   end
 
   def integration
