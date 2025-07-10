@@ -13,10 +13,10 @@ class GitlabIntegration < ApplicationRecord
   encrypts :oauth_access_token, deterministic: true
   encrypts :oauth_refresh_token, deterministic: true
 
+  include Linkable
   include Vaultable
   include Providable
   include Displayable
-  include Rails.application.routes.url_helpers
   using RefinedHash
 
   attr_accessor :code
