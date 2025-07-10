@@ -342,7 +342,7 @@ module Installations
 
       params = {
         json: {
-          variables: processed_inputs.map { |k, v| { key: k, value: v } }
+          variables: processed_inputs.map { |k, v| {key: k, value: v} }
         }
       }
 
@@ -369,6 +369,7 @@ module Installations
         &.with_indifferent_access
     end
 
+    # https://docs.gitlab.com/ee/api/pipelines.html#list-project-pipelines
     def list_pipelines(project_id, transforms, max_results: 50)
       params = {
         params: {
@@ -382,31 +383,37 @@ module Installations
         .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
+    # https://docs.gitlab.com/ee/api/jobs.html#list-pipeline-jobs
     def list_pipeline_jobs(project_id, pipeline_id, transforms)
       execute(:get, LIST_PIPELINE_JOBS_URL.expand(project_id: project_id, pipeline_id: pipeline_id).to_s, {})
         .then { |response| Installations::Response::Keys.transform(response, transforms) }
     end
 
+    # https://docs.gitlab.com/ee/api/jobs.html#run-a-job
     def trigger_job!(project_id, job_id, transforms)
       execute(:post, TRIGGER_JOB_URL.expand(project_id: project_id, job_id: job_id).to_s, {})
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
+    # https://docs.gitlab.com/ee/api/pipelines.html#get-a-single-pipeline
     def get_pipeline(project_id, pipeline_id, transforms)
       execute(:get, GET_PIPELINE_URL.expand(project_id: project_id, pipeline_id: pipeline_id).to_s, {})
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
+    # https://docs.gitlab.com/ee/api/pipelines.html#cancel-a-pipeline
     def cancel_pipeline!(project_id, pipeline_id)
       raw_execute(:post, CANCEL_PIPELINE_URL.expand(project_id: project_id, pipeline_id: pipeline_id).to_s, {})
     end
 
+    # https://docs.gitlab.com/ee/api/pipelines.html#retry-jobs-in-a-pipeline
     def retry_pipeline!(project_id, pipeline_id)
       raw_execute(:post, RETRY_PIPELINE_URL.expand(project_id: project_id, pipeline_id: pipeline_id).to_s, {})
     end
 
+    # https://docs.gitlab.com/ee/api/tags.html#create-a-new-tag
     def create_annotated_tag!(project_id, tag_name, branch_name, message)
       params = {
         json: {
@@ -419,6 +426,7 @@ module Installations
       raw_execute(:post, CREATE_TAG_URL.expand(project_id: project_id).to_s, params)
     end
 
+    # https://docs.gitlab.com/ee/api/merge_requests.html#update-merge-request
     def assign_pr(project_id, pr_number, assignee_id)
       params = {
         json: {
@@ -429,6 +437,7 @@ module Installations
       raw_execute(:put, GET_MR_URL.expand(project_id: project_id, merge_request_iid: pr_number).to_s, params)
     end
 
+    # https://docs.gitlab.com/ee/api/commits.html#cherry-pick-a-commit
     def cherry_pick_pr(project_id, branch, commit_sha, patch_branch_name, pr_title_prefix, pr_description, transforms)
       create_branch!(project_id, branch, patch_branch_name)
       params = {
@@ -442,7 +451,7 @@ module Installations
 
     def download_artifact(download_url)
       Rails.logger.debug download_url
-      Down::Http.download(download_url, headers: { "Authorization" => oauth_access_token }, follow: { max_hops: 1 })
+      Down::Http.download(download_url, headers: {"Authorization" => oauth_access_token}, follow: {max_hops: 1})
     end
 
     def find_existing_pipeline(project_id, branch_name, commit_sha, transforms)
@@ -478,7 +487,7 @@ module Installations
     end
 
     def trigger_specific_job_in_pipeline(project_id, pipeline_id, job_name, transforms)
-      jobs = list_pipeline_jobs(project_id, pipeline_id, { id: :id, name: :name, status: :status, stage: :stage })
+      jobs = list_pipeline_jobs(project_id, pipeline_id, {id: :id, name: :name, status: :status, stage: :stage})
       target_job = jobs.find { |job| job[:name] == job_name }
       return unless target_job
 
@@ -497,7 +506,7 @@ module Installations
         next if key.start_with?(".") || excluded_keys.include?(key)
         next unless value.is_a?(Hash)
 
-        jobs << { id: key, name: key }
+        jobs << {id: key, name: key}
       end
 
       jobs
