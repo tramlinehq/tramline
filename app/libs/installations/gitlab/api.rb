@@ -25,6 +25,9 @@ module Installations
     CREATE_RELEASE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/releases"
     RUN_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipeline{?ref}"
     LIST_PIPELINES_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines"
+    GET_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}"
+    CANCEL_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/cancel"
+    RETRY_PIPELINE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/retry"
     LIST_PIPELINE_JOBS_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/pipelines/{pipeline_id}/jobs"
     TRIGGER_JOB_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/jobs/{job_id}/play"
     CANCEL_JOB_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/jobs/{job_id}/cancel"
@@ -388,6 +391,20 @@ module Installations
       execute(:post, TRIGGER_JOB_URL.expand(project_id: project_id, job_id: job_id).to_s, {})
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
+    end
+
+    def get_pipeline(project_id, pipeline_id, transforms)
+      execute(:get, GET_PIPELINE_URL.expand(project_id: project_id, pipeline_id: pipeline_id).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
+    end
+
+    def cancel_pipeline!(project_id, pipeline_id)
+      raw_execute(:post, CANCEL_PIPELINE_URL.expand(project_id: project_id, pipeline_id: pipeline_id).to_s, {})
+    end
+
+    def retry_pipeline!(project_id, pipeline_id)
+      raw_execute(:post, RETRY_PIPELINE_URL.expand(project_id: project_id, pipeline_id: pipeline_id).to_s, {})
     end
 
     def create_annotated_tag!(project_id, tag_name, branch_name, message)

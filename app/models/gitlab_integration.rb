@@ -448,5 +448,4 @@ class GitlabIntegration < ApplicationRecord
   def workflows_cache_key(branch_name = "main")
     "app/#{integrable.id}/gitlab_integration/#{id}/pipeline_jobs/#{branch_name}"
   end
-
 end
