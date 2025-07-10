@@ -335,34 +335,34 @@ module Installations
         versionCode: inputs[:version_code],
         versionName: inputs[:build_version],
         buildNotes: inputs[:build_notes]
-      }.merge(inputs[:parameters]).compact
+      }.merge(inputs[:parameters] || {}).compact
 
       params = {
         json: {
-          variables: processed_inputs.map { |k, v| {key: k, value: v} }
+          variables: processed_inputs.map { |k, v| { key: k, value: v } }
         }
       }
 
-      execute(:post, RUN_PIPELINE_URL.expand(project_id:, ref: branch_name).to_s, params)
+      execute(:post, RUN_PIPELINE_URL.expand(project_id: project_id, ref: branch_name).to_s, params)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     # https://docs.gitlab.com/ee/api/jobs.html#cancel-a-job
     def cancel_job!(project_id, job_id)
-      raw_execute(:post, CANCEL_JOB_URL.expand(project_id:, job_id:).to_s, {})
+      raw_execute(:post, CANCEL_JOB_URL.expand(project_id: project_id, job_id: job_id).to_s, {})
     end
 
     # https://docs.gitlab.com/ee/api/jobs.html#retry-a-job
     def retry_job!(project_id, job_id, transforms)
-      execute(:post, RETRY_JOB_URL.expand(project_id:, job_id:).to_s, {})
+      execute(:post, RETRY_JOB_URL.expand(project_id: project_id, job_id: job_id).to_s, {})
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     # https://docs.gitlab.com/ee/api/jobs.html#get-a-single-job
     def get_job(project_id, job_id)
-      execute(:get, GET_JOB_URL.expand(project_id:, job_id:).to_s, {})
+      execute(:get, GET_JOB_URL.expand(project_id: project_id, job_id: job_id).to_s, {})
         &.with_indifferent_access
     end
 
@@ -375,17 +375,17 @@ module Installations
         }
       }
 
-      paginated_execute(:get, LIST_PIPELINES_URL.expand(project_id:).to_s, params: params, max_results: max_results)
+      paginated_execute(:get, LIST_PIPELINES_URL.expand(project_id: project_id).to_s, params: params, max_results: max_results)
         .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
     def list_pipeline_jobs(project_id, pipeline_id, transforms)
-      execute(:get, LIST_PIPELINE_JOBS_URL.expand(project_id:, pipeline_id:).to_s, {})
+      execute(:get, LIST_PIPELINE_JOBS_URL.expand(project_id: project_id, pipeline_id: pipeline_id).to_s, {})
         .then { |response| Installations::Response::Keys.transform(response, transforms) }
     end
 
     def trigger_job!(project_id, job_id, transforms)
-      execute(:post, TRIGGER_JOB_URL.expand(project_id:, job_id:).to_s, {})
+      execute(:post, TRIGGER_JOB_URL.expand(project_id: project_id, job_id: job_id).to_s, {})
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
@@ -399,7 +399,7 @@ module Installations
         }
       }
 
-      raw_execute(:post, CREATE_TAG_URL.expand(project_id:).to_s, params)
+      raw_execute(:post, CREATE_TAG_URL.expand(project_id: project_id).to_s, params)
     end
 
     def assign_pr(project_id, pr_number, assignee_id)
@@ -409,7 +409,7 @@ module Installations
         }
       }
 
-      raw_execute(:put, GET_MR_URL.expand(project_id:, merge_request_iid: pr_number).to_s, params)
+      raw_execute(:put, GET_MR_URL.expand(project_id: project_id, merge_request_iid: pr_number).to_s, params)
     end
 
     def cherry_pick_pr(project_id, branch, commit_sha, patch_branch_name, pr_title_prefix, pr_description, transforms)
@@ -419,13 +419,13 @@ module Installations
           branch: patch_branch_name
         }
       }
-      execute(:post, CHERRY_PICK_URL.expand(project_id:, sha: commit_sha).to_s, params)
+      execute(:post, CHERRY_PICK_URL.expand(project_id: project_id, sha: commit_sha).to_s, params)
       create_pr!(project_id, branch, patch_branch_name, "#{pr_title_prefix} #{commit_sha}", pr_description, transforms)
     end
 
     def download_artifact(download_url)
       Rails.logger.debug download_url
-      Down::Http.download(download_url, headers: {"Authorization" => oauth_access_token}, follow: {max_hops: 1})
+      Down::Http.download(download_url, headers: { "Authorization" => oauth_access_token }, follow: { max_hops: 1 })
     end
 
     def find_existing_pipeline(project_id, branch_name, commit_sha, transforms)
@@ -439,7 +439,7 @@ module Installations
         }
       }
 
-      pipelines = paginated_execute(:get, LIST_PIPELINES_URL.expand(project_id:).to_s, params: params, max_results: 10)
+      pipelines = paginated_execute(:get, LIST_PIPELINES_URL.expand(project_id: project_id).to_s, params: params, max_results: 10)
       return nil if pipelines.empty?
 
       Installations::Response::Keys.transform(pipelines, transforms).first
@@ -447,7 +447,7 @@ module Installations
 
     def run_pipeline_with_job!(project_id, branch_name, inputs, job_name, commit_sha, transforms)
       existing_pipeline = find_existing_pipeline(project_id, branch_name, commit_sha, transforms)
-      
+
       if existing_pipeline
         trigger_specific_job_in_pipeline(project_id, existing_pipeline[:ci_ref], job_name, transforms)
       else
@@ -461,7 +461,7 @@ module Installations
     end
 
     def trigger_specific_job_in_pipeline(project_id, pipeline_id, job_name, transforms)
-      jobs = list_pipeline_jobs(project_id, pipeline_id, {id: :id, name: :name, status: :status, stage: :stage})
+      jobs = list_pipeline_jobs(project_id, pipeline_id, { id: :id, name: :name, status: :status, stage: :stage })
       target_job = jobs.find { |job| job[:name] == job_name }
       return unless target_job
 
@@ -475,11 +475,12 @@ module Installations
       pipeline_config = YAML.safe_load(yaml_content, aliases: true)
       jobs = []
 
+      excluded_keys = %w[stages variables before_script after_script].freeze
       pipeline_config.each do |key, value|
-        next if key.start_with?('.') || %w[stages variables before_script after_script].include?(key)
+        next if key.start_with?(".") || excluded_keys.include?(key)
         next unless value.is_a?(Hash)
 
-        jobs << {id: key, name: key}
+        jobs << { id: key, name: key }
       end
 
       jobs
