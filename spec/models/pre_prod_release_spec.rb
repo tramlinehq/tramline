@@ -88,7 +88,7 @@ describe PreProdRelease do
       result = first_release.changes_since_previous
 
       expect(result.size).to be > 0
-      expect(result).to eq(release_changelog.commit_messages(true))
+      expect(result).to eq(release_changelog.commits.commit_messages(true))
     end
 
     it "returns the release changelog and the commits on the release branch when the previous releases are unfinished" do
