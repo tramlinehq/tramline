@@ -428,6 +428,69 @@ module Installations
       Down::Http.download(download_url, headers: {"Authorization" => oauth_access_token}, follow: {max_hops: 1})
     end
 
+    def find_existing_pipeline(project_id, branch_name, commit_sha, transforms)
+      params = {
+        params: {
+          ref: branch_name,
+          sha: commit_sha,
+          per_page: 10,
+          order_by: "updated_at",
+          sort: "desc"
+        }
+      }
+
+      pipelines = paginated_execute(:get, LIST_PIPELINES_URL.expand(project_id:).to_s, params: params, max_results: 10)
+      return nil if pipelines.empty?
+
+      Installations::Response::Keys.transform(pipelines, transforms).first
+    end
+
+    def run_pipeline_with_job!(project_id, branch_name, inputs, job_name, commit_sha, transforms)
+      existing_pipeline = find_existing_pipeline(project_id, branch_name, commit_sha, transforms)
+      
+      if existing_pipeline
+        trigger_specific_job_in_pipeline(project_id, existing_pipeline[:ci_ref], job_name, transforms)
+      else
+        pipeline = run_pipeline!(project_id, branch_name, inputs, transforms)
+        if job_name.present? && job_name != "default"
+          trigger_specific_job_in_pipeline(project_id, pipeline[:ci_ref], job_name, transforms)
+        else
+          pipeline
+        end
+      end
+    end
+
+    def trigger_specific_job_in_pipeline(project_id, pipeline_id, job_name, transforms)
+      jobs = list_pipeline_jobs(project_id, pipeline_id, {id: :id, name: :name, status: :status, stage: :stage})
+      target_job = jobs.find { |job| job[:name] == job_name }
+      return unless target_job
+
+      trigger_job!(project_id, target_job[:id], transforms)
+    end
+
+    def list_jobs_from_gitlab_ci(project_id, branch_name = "main")
+      yaml_content = get_file_content(project_id, branch_name, ".gitlab-ci.yml")
+      return [] if yaml_content.nil?
+
+      pipeline_config = YAML.safe_load(yaml_content, aliases: true)
+      jobs = []
+
+      pipeline_config.each do |key, value|
+        next if key.start_with?('.') || %w[stages variables before_script after_script].include?(key)
+        next unless value.is_a?(Hash)
+
+        jobs << {id: key, name: key}
+      end
+
+      jobs
+    rescue YAML::SyntaxError, ArgumentError => e
+      Rails.logger.warn "Failed to parse .gitlab-ci.yml: #{e.message}"
+      []
+    rescue Installations::Error => e
+      Rails.logger.warn "Failed to fetch .gitlab-ci.yml: #{e.message}"
+      []
+    end
+
     private
 
     def execute(verb, url, params)

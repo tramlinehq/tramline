@@ -175,7 +175,7 @@ class GitlabIntegration < ApplicationRecord
   def workflows(branch_name = "main", bust_cache: false)
     Rails.cache.delete(workflows_cache_key(branch_name)) if bust_cache
     cache.fetch(workflows_cache_key(branch_name), expires_in: 120.minutes) do
-      fetch_jobs_from_pipeline_history(branch_name)
+      with_api_retries { installation.list_jobs_from_gitlab_ci(code_repository_name, branch_name) }
     end
   rescue Installations::Error
     []
@@ -183,11 +183,10 @@ class GitlabIntegration < ApplicationRecord
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
     with_api_retries do
-      pipeline = installation.run_pipeline!(code_repository_name, branch_name, inputs, WORKFLOW_RUN_TRANSFORMATIONS)
       if ci_cd_channel.present? && ci_cd_channel != "default"
-        trigger_specific_job(pipeline[:ci_ref], ci_cd_channel)
+        installation.run_pipeline_with_job!(code_repository_name, branch_name, inputs, ci_cd_channel, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
       else
-        pipeline
+        installation.run_pipeline!(code_repository_name, branch_name, inputs, WORKFLOW_RUN_TRANSFORMATIONS)
       end
     end
   end
@@ -450,24 +449,4 @@ class GitlabIntegration < ApplicationRecord
     "app/#{integrable.id}/gitlab_integration/#{id}/pipeline_jobs/#{branch_name}"
   end
 
-  def fetch_jobs_from_pipeline_history(branch_name)
-    pipelines = with_api_retries { installation.list_pipelines(code_repository_name, PIPELINE_TRANSFORMATIONS, max_results: 10) }
-    branch_pipelines = pipelines.select { |p| p[:ref] == branch_name }
-
-    return [] if branch_pipelines.empty?
-
-    recent_pipeline = branch_pipelines.find { |p| p[:status] == "success" } || branch_pipelines.first
-    jobs = with_api_retries { installation.list_pipeline_jobs(code_repository_name, recent_pipeline[:id], JOB_TRANSFORMATIONS) }
-
-    jobs.map { |job| {id: job[:name], name: job[:name]} }.uniq { |job| job[:name] }
-  end
-
-  def trigger_specific_job(pipeline_id, job_name)
-    jobs = with_api_retries { installation.list_pipeline_jobs(code_repository_name, pipeline_id, JOB_TRANSFORMATIONS) }
-
-    target_job = jobs.find { |job| job[:name] == job_name }
-    return unless target_job
-
-    with_api_retries { installation.trigger_job!(code_repository_name, target_job[:id], JOB_RUN_TRANSFORMATIONS) }
-  end
 end
