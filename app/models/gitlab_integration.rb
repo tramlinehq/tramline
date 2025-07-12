@@ -215,13 +215,14 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def get_artifact(artifact_url, artifact_name_pattern, _)
-    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_url.blank?
+    artifact_not_found = Installations::Error.new("Could not find the artifact", reason: :artifact_not_found)
+    raise artifact_not_found if artifact_url.blank?
 
     artifact_stream =
       with_api_retries do
         installation
           .artifact_io_stream(artifact_url)
-          .tap { |zip_file| raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if zip_file.blank? }
+          .tap { |zip_file| raise artifact_not_found if zip_file.blank? }
           .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true, filter_pattern: artifact_name_pattern) }
       end
 

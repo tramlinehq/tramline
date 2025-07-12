@@ -65,11 +65,27 @@ describe Installations::Gitlab::Api do
     let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/releases" }
 
     it "creates a new release" do
+      # Stub the tag_exists? check
+      stub_request(:get, "https://gitlab.com/api/v4/projects/#{project_id}/repository/tags/#{tag_name}")
+        .with(headers: {"Authorization" => "Bearer access_token"})
+        .to_return(status: 404, body: {"message" => "404 Tag Not Found"}.to_json, headers: {"Content-Type" => "application/json"})
+
+      # Stub the create_tag! call
+      stub_request(:post, "https://gitlab.com/api/v4/projects/#{project_id}/repository/tags")
+        .with(
+          body: {"tag_name" => tag_name, "ref" => branch},
+          headers: {
+            "Authorization" => "Bearer access_token",
+            "Content-Type" => "application/x-www-form-urlencoded"
+          }
+        )
+        .to_return(status: 201, body: {"name" => tag_name}.to_json, headers: {"Content-Type" => "application/json"})
+
+      # Stub the create_release! call
       stub_request(:post, url)
         .with(
           body: {
             tag_name: tag_name,
-            ref: branch,
             description: description
           }.to_json,
           headers: {
@@ -77,7 +93,7 @@ describe Installations::Gitlab::Api do
             "Content-Type" => "application/json; charset=utf-8"
           }
         )
-        .to_return(status: 201, body: "", headers: {})
+        .to_return(status: 201, body: {"tag_name" => tag_name}.to_json, headers: {"Content-Type" => "application/json"})
 
       expect(api.create_release!(project_id, tag_name, branch, description)).to be_truthy
     end
@@ -141,9 +157,14 @@ describe Installations::Gitlab::Api do
     let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/merge_requests/#{pr_number}/merge" }
 
     it "enables auto-merge for a pull request" do
+      # Stub the get_pr call to check if PR is merged
+      stub_request(:get, "https://gitlab.com/api/v4/projects/#{project_id}/merge_requests/#{pr_number}")
+        .with(headers: {"Authorization" => "Bearer access_token"})
+        .to_return(status: 200, body: {"state" => "opened"}.to_json, headers: {"Content-Type" => "application/json"})
+
       stub_request(:put, url)
         .with(
-          body: {"should_remove_source_branch" => true, "merge_when_pipeline_succeeds" => true}.to_json,
+          body: {"should_remove_source_branch" => true, "auto_merge" => true}.to_json,
           headers: {
             "Authorization" => "Bearer access_token",
             "Content-Type" => "application/json; charset=utf-8"
@@ -158,7 +179,7 @@ describe Installations::Gitlab::Api do
   describe "#run_pipeline!" do
     let(:project_id) { "123" }
     let(:branch_name) { "main" }
-    let(:inputs) { {"foo" => "bar"} }
+    let(:inputs) { {parameters: {"foo" => "bar"}} }
     let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/pipeline?ref=#{branch_name}" }
 
     it "runs a pipeline" do
@@ -216,28 +237,6 @@ describe Installations::Gitlab::Api do
         .to_return(status: 200, body: pipeline.to_json, headers: {"Content-Type" => "application/json"})
 
       expect(api.get_pipeline(project_id, pipeline_id, {id: :id, status: :status})).to eq(pipeline.with_indifferent_access)
-    end
-  end
-
-  describe "#create_annotated_tag!" do
-    let(:project_id) { "123" }
-    let(:tag_name) { "v1.0.0" }
-    let(:branch_name) { "main" }
-    let(:message) { "This is an annotated tag." }
-    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/tags" }
-
-    it "creates an annotated tag" do
-      stub_request(:post, url)
-        .with(
-          body: {tag_name: tag_name, ref: branch_name, message: message}.to_json,
-          headers: {
-            "Authorization" => "Bearer access_token",
-            "Content-Type" => "application/json; charset=utf-8"
-          }
-        )
-        .to_return(status: 201, body: "", headers: {})
-
-      expect(api.create_annotated_tag!(project_id, tag_name, branch_name, message)).to be_truthy
     end
   end
 

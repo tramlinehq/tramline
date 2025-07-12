@@ -30,36 +30,36 @@ describe GitlabIntegration do
   describe "#trigger_workflow_run!" do
     it "calls the GitLab API to trigger a pipeline" do
       allow(installation).to receive_messages(
-        run_pipeline!: {ci_ref: "123", ci_link: "http://example.com"},
+        run_pipeline_with_job!: {ci_ref: "123", ci_link: "http://example.com"},
         list_pipeline_jobs: [{id: "job1", name: "ci_cd_channel", status: "success", stage: "test"}],
         trigger_job!: nil
       )
       gitlab_integration.trigger_workflow_run!("ci_cd_channel", "main", {key: "value"})
-      expect(installation).to have_received(:run_pipeline!).with(app_config.code_repository_name, "main", {key: "value"}, GitlabIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
+      expect(installation).to have_received(:run_pipeline_with_job!).with(app_config.code_repository_name, "main", {key: "value"}, "ci_cd_channel", nil, GitlabIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
     end
   end
 
   describe "#cancel_workflow_run!" do
     it "calls the GitLab API to cancel a pipeline" do
-      allow(installation).to receive(:cancel_pipeline!)
+      allow(installation).to receive(:cancel_job!)
       gitlab_integration.cancel_workflow_run!("123")
-      expect(installation).to have_received(:cancel_pipeline!).with(app_config.code_repository_name, "123")
+      expect(installation).to have_received(:cancel_job!).with(app_config.code_repository_name, "123")
     end
   end
 
   describe "#retry_workflow_run!" do
     it "calls the GitLab API to retry a pipeline" do
-      allow(installation).to receive(:retry_pipeline!)
+      allow(installation).to receive(:retry_job!)
       gitlab_integration.retry_workflow_run!("123")
-      expect(installation).to have_received(:retry_pipeline!).with(app_config.code_repository_name, "123")
+      expect(installation).to have_received(:retry_job!).with(app_config.code_repository_name, "123", GitlabIntegration::JOB_RUN_TRANSFORMATIONS)
     end
   end
 
   describe "#get_workflow_run" do
     it "calls the GitLab API to get a pipeline" do
-      allow(installation).to receive(:get_pipeline)
+      allow(installation).to receive(:get_job)
       gitlab_integration.get_workflow_run("123")
-      expect(installation).to have_received(:get_pipeline).with(app_config.code_repository_name, "123", GitlabIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
+      expect(installation).to have_received(:get_job).with(app_config.code_repository_name, "123")
     end
   end
 
@@ -74,9 +74,8 @@ describe GitlabIntegration do
   describe "#create_patch_pr!" do
     it "calls the GitLab API to cherry pick a commit" do
       allow(installation).to receive(:cherry_pick_pr).and_return({})
-      allow(gitlab_integration).to receive(:working_branch).and_return("working-branch")
       gitlab_integration.create_patch_pr!("main", "patch-branch", "abcdef", "PR Title")
-      expect(installation).to have_received(:cherry_pick_pr).with(app_config.code_repository_name, "working-branch", "abcdef", "patch-branch", "PR Title", "", GitlabIntegration::PR_TRANSFORMATIONS)
+      expect(installation).to have_received(:cherry_pick_pr).with(app_config.code_repository_name, "main", "abcdef", "patch-branch", "PR Title", "", GitlabIntegration::PR_TRANSFORMATIONS)
     end
   end
 
