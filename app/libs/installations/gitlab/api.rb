@@ -425,19 +425,6 @@ module Installations
       raw_execute(:post, RETRY_PIPELINE_URL.expand(project_id: project_id, pipeline_id: pipeline_id).to_s, {})
     end
 
-    # https://docs.gitlab.com/ee/api/tags.html#create-a-new-tag
-    def create_annotated_tag!(project_id, tag_name, branch_name, message)
-      params = {
-        json: {
-          tag_name: tag_name,
-          ref: branch_name,
-          message: message
-        }
-      }
-
-      raw_execute(:post, CREATE_TAG_URL.expand(project_id: project_id).to_s, params)
-    end
-
     # https://docs.gitlab.com/ee/api/merge_requests.html#update-merge-request
     def assign_pr(project_id, pr_number, assignee_id)
       params = {
@@ -459,6 +446,7 @@ module Installations
       }
       execute(:post, CHERRY_PICK_URL.expand(project_id: project_id, sha: commit_sha).to_s, params)
       create_pr!(project_id, branch, patch_branch_name, "#{pr_title_prefix} #{commit_sha}", pr_description, transforms)
+      # TODO: assign the created PR to the original author of the commit being cherry-picked
     end
 
     def artifact_io_stream(url)

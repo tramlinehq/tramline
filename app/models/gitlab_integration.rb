@@ -60,6 +60,7 @@ class GitlabIntegration < ApplicationRecord
     author_name: :author_name,
     author_email: :author_email,
     timestamp: :authored_date
+    # TODO: add parents
   }
 
   COMMITS_HOOK_TRANSFORMATIONS = {
@@ -70,6 +71,7 @@ class GitlabIntegration < ApplicationRecord
     author_email: [:author, :email],
     author_login: [:author, :username],
     timestamp: :timestamp
+    # TODO: add parents
   }
 
   COMMITS_BETWEEN_TRANSFORMATIONS = {
@@ -79,6 +81,7 @@ class GitlabIntegration < ApplicationRecord
     author_name: :author_name,
     author_email: :author_email,
     timestamp: :created_at
+    # TODO: add parents
   }
 
   PR_TRANSFORMATIONS = {
@@ -93,6 +96,7 @@ class GitlabIntegration < ApplicationRecord
     opened_at: :created_at,
     closed_at: EitherTransformation.new(:closed_at, :merged_at),
     merge_commit_sha: EitherTransformation.new(:merge_commit_sha, :squash_commit_sha)
+    # TODO: add labels
   }
 
   WEBHOOK_PR_TRANSFORMATIONS = {
@@ -106,7 +110,8 @@ class GitlabIntegration < ApplicationRecord
     base_ref: :target_branch,
     opened_at: :created_at,
     closed_at: :updated_at,
-    merge_commit_sha: [:last_commit, :id] # FIXME: this is not correct, we might need to fetch this, just stubbing this for now.
+    merge_commit_sha: EitherTransformation.new(:merge_commit_sha, :squash_commit_sha)
+    # TODO: add labels
   }
 
   WORKFLOW_RUN_TRANSFORMATIONS = {
