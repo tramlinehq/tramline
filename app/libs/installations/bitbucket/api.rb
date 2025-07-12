@@ -335,7 +335,7 @@ module Installations
     end
 
     def artifact_io_stream(url)
-      download_url = fetch_redirect(artifact_url)
+      download_url = fetch_redirect(url)
       return unless download_url
       Down::Http.download(download_url, follow: {max_hops: 1})
     end
