@@ -18,12 +18,13 @@ class GitlabIntegration < ApplicationRecord
   include Providable
   include Displayable
   using RefinedHash
+  using RefinedArray
 
   attr_accessor :code
   before_create :complete_access
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
-  delegate :code_repository_name, :code_repo_namespace, :working_branch, to: :app_config
+  delegate :code_repository_name, :code_repo_namespace, to: :app_config
   delegate :cache, to: Rails
 
   API = Installations::Gitlab::Api
@@ -42,9 +43,8 @@ class GitlabIntegration < ApplicationRecord
 
   WEBHOOK_TRANSFORMATIONS = {
     id: :id,
-    url: :url,
-    push_events: :push_events
-  }
+    url: :url
+  }.merge(API::WEBHOOK_PERMISSIONS.keys.zip_map_self)
 
   USER_INFO_TRANSFORMATIONS = {
     id: :id,
@@ -213,9 +213,12 @@ class GitlabIntegration < ApplicationRecord
     raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_url.blank?
 
     artifact_stream =
-      installation
-        .artifact_io_stream(artifact_url)
-        .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true, filter_pattern: artifact_name_pattern) }
+      with_api_retries do
+        installation
+          .artifact_io_stream(artifact_url)
+          .tap { |zip_file| raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if zip_file.blank? }
+          .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true, filter_pattern: artifact_name_pattern) }
+      end
 
     {artifact: {}, stream: artifact_stream}
   end
@@ -349,7 +352,7 @@ class GitlabIntegration < ApplicationRecord
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix, pr_description = "")
     with_api_retries do
       installation
-        .cherry_pick_pr(code_repository_name, working_branch, commit_hash, patch_branch, pr_title_prefix, pr_description, PR_TRANSFORMATIONS)
+        .cherry_pick_pr(code_repository_name, to_branch, commit_hash, patch_branch, pr_title_prefix, pr_description, PR_TRANSFORMATIONS)
         .merge_if_present(source: :gitlab)
     end
   end
@@ -400,10 +403,14 @@ class GitlabIntegration < ApplicationRecord
     %w[opened locked].include?(pr[:state])
   end
 
+  def set_tokens(tokens)
+    assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token)
+  end
+
   private
 
-  # retry once (11 attempts in total)
-  MAX_RETRY_ATTEMPTS = 10
+  # 21 attempts in total
+  MAX_RETRY_ATTEMPTS = 20
   RETRYABLE_ERRORS = [:workflow_run_not_runnable]
 
   def with_api_retries(attempt: 0, &)
@@ -414,10 +421,12 @@ class GitlabIntegration < ApplicationRecord
 
     if ex.reason == :token_expired
       reset_tokens!
+      sleep 0.3
       return with_api_retries(attempt: next_attempt, &)
     end
 
     if RETRYABLE_ERRORS.include?(ex.reason)
+      sleep 0.3
       return with_api_retries(attempt: next_attempt, &)
     end
 
@@ -425,12 +434,21 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    set_tokens(API.oauth_refresh_token(oauth_refresh_token, redirect_uri))
-    save!
-  end
+    tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
 
-  def set_tokens(tokens)
-    assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token) if tokens
+    if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      raise Installations::Gitlab::Error.new("error" => "token_refresh_failure")
+    end
+
+    # ensure that all gitlab integrations are updated with the new tokens (not just self)
+    transaction do
+      affiliated_providers.each do |affiliated_provider|
+        affiliated_provider.set_tokens(tokens)
+        affiliated_provider.save!
+      end
+    end
+
+    reload
   end
 
   def app_config
@@ -447,5 +465,9 @@ class GitlabIntegration < ApplicationRecord
 
   def workflows_cache_key(branch_name = "main")
     "app/#{integrable.id}/gitlab_integration/#{id}/pipeline_jobs/#{branch_name}"
+  end
+
+  def affiliated_providers
+    integrable.integrations.connected.gitlab_integrations.map(&:providable)
   end
 end

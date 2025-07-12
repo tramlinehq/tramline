@@ -37,7 +37,6 @@ module Installations
     CHERRY_PICK_PR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}/cherry_pick"
     CHERRY_PICK_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/commits/{sha}/cherry_pick"
     JOB_RUN_ARTIFACTS_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/jobs/{job_id}/artifacts"
-
     WEBHOOK_PERMISSIONS = {
       push_events: true,
       merge_requests_events: true
@@ -463,7 +462,9 @@ module Installations
     end
 
     def artifact_io_stream(url)
-      Down::Http.download(url, headers: {"Authorization" => oauth_access_token}, follow: {max_hops: 1})
+      download_url = fetch_redirect(url)
+      return unless download_url
+      Down::Http.download(download_url, follow: {max_hops: 1})
     end
 
     def find_existing_pipeline(project_id, branch_name, commit_sha, transforms)
@@ -536,6 +537,11 @@ module Installations
 
     private
 
+    def fetch_redirect(url)
+      response = raw_execute(:get, url, {})
+      response.headers["Location"]
+    end
+
     def execute(verb, url, params)
       response = raw_execute(verb, url, params)
       JSON.parse(response.body.to_s)
@@ -543,7 +549,7 @@ module Installations
 
     def raw_execute(verb, url, params)
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
-
+      raise Installations::Gitlab::Error.new({"error" => "Service Unavailable"}) if response.status.server_error?
       return response unless error?(response.status)
       raise Installations::Gitlab::Error.new(JSON.parse(response.body))
     end
