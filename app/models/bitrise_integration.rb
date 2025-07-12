@@ -142,7 +142,6 @@ class BitriseIntegration < ApplicationRecord
     raise Integrations::UnsupportedAction
   end
 
-  # NOTE: this is bitrise specific right now
   def artifact_url(workflow_run_id, artifact_name_pattern)
     installation
       .artifacts(project, workflow_run_id)
@@ -166,9 +165,9 @@ class BitriseIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
-  def workflow_retriable?
-    false
-  end
+  def workflow_retriable? = false
+
+  def workflow_retriable_in_place? = false
 
   private
 

@@ -302,7 +302,7 @@
     temporarily disable automatic version bumps for non-github integrations
     TODO: remove this once we've implemented this for all integrations
     -->
-    <% if train.vcs_provider.is_a?(GithubIntegration) %>
+    <% if train.vcs_provider.is_a?(GithubIntegration) || train.vcs_provider.is_a?(GitlabIntegration) %>
       <%= f.with_advanced_section(heading: "Automatic Version Bumps") do |section| %>
         <% section.with_description do %>
           When enabled, Tramline will create and merge a Pull Request to update the version name (eg. 1.0.0) directly

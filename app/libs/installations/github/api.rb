@@ -192,18 +192,6 @@ module Installations
       end
     end
 
-    def create_annotated_tag!(repo, name, branch_name, message, tagger_name, tagger_email)
-      execute do
-        object_sha = head(repo, branch_name)
-        type = "commit"
-        tagged_at = Time.current
-
-        @client
-          .create_tag(repo, name, message, object_sha, type, tagger_name, tagger_email, tagged_at)
-          .then { |resp| @client.create_ref(repo, "refs/tags/#{name}", resp[:sha]) }
-      end
-    end
-
     # creates a lightweight tag and a GitHub release simultaneously
     def create_release!(repo, tag_name, branch_name, previous_tag_name, release_notes = nil)
       generated_release_notes = generate_release_notes(repo, tag_name, previous_tag_name, branch_name)

@@ -4,6 +4,8 @@
 * Use `just rails db:migrate:with_data` if there's a data migration using data_migrate gem and not just a schema migration.
 * Always add model enums as string pairs, e.g. `enum status: { shipped: "shipped", being_packed: "being_packed", complete: "complete", cancelled: "cancelled" }`. This allows for better readability and avoids issues with integer-based enums.
 * `just lint` can be run to check code quality and formatting.
+* `just pspec` to run all specs
+* `just spec <file>` to run a specific spec file
 
 ## Rules for general Rails Development
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_08_032249) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_09_165953) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -354,9 +354,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_08_032249) do
 
   create_table "gitlab_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "oauth_access_token"
-    t.string "original_oauth_access_token"
     t.string "oauth_refresh_token"
-    t.string "original_oauth_refresh_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

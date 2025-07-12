@@ -4,6 +4,14 @@ module Installations
       {
         error: "invalid_token",
         decorated_reason: :token_expired
+      },
+      {
+        error: "token_refresh_failure",
+        decorated_reason: :token_refresh_failure
+      },
+      {
+        error: "Service Unavailable",
+        decorated_reason: :service_unavailable
       }
     ]
 
@@ -25,6 +33,10 @@ module Installations
         decorated_reason: :tag_reference_already_exists
       },
       {
+        message_matcher: /Release already exists/,
+        decorated_reason: :tagged_release_already_exists
+      },
+      {
         message_matcher: /Not found/i,
         decorated_reason: :not_found
       },
@@ -41,6 +53,14 @@ module Installations
       {
         message_matcher: /405 Method Not Allowed/i,
         decorated_reason: :pull_request_not_mergeable
+      },
+      {
+        message_matcher: /404 File Not Found/i,
+        decorated_reason: :file_not_found
+      },
+      {
+        message_matcher: /Unplayable Job/,
+        decorated_reason: :workflow_run_not_runnable
       }
     ]
 
