@@ -604,6 +604,11 @@ en:
       already_accepted: "Invitation was already accepted!"
       failed: "Failed to accept your invitation. Please contact support!"
       invalid_or_expired: "This invitation link is no longer valid. Please contact the organization admin for a new invitation."
+
+  mobile:
+    releases:
+      not_found: "Release not found"
+
     invite_mailer:
       existing_user:
         subject: "%{sender} invited you to join the %{org} team on Tramline"

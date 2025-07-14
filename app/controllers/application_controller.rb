@@ -20,7 +20,11 @@ class ApplicationController < ActionController::Base
   end
 
   def authenticated_root_path
-    apps_path
+    if mobile_device?
+      mobile_releases_path
+    else
+      apps_path
+    end
   end
 
   def current_organization
@@ -61,8 +65,14 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def desktop_allowed? = true
+
+  def mobile_device? = false
+
   def supported_device?
-    device_type.in?(%w[desktop])
+    send(:"#{device_type}_allowed?")
+  rescue NoMethodError
+    false
   end
 
   def device_type
