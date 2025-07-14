@@ -16,6 +16,7 @@ Sentry.init do |config|
   #   end
   # end
   config.send_default_pii = true
-  config.logger = Logger.new($stdout)
-  config.logger.level = Logger::WARN
+  config.enable_logs = true
+  config.sdk_logger = Logger.new($stdout)
+  config.sdk_logger.level = Logger::WARN
 end
