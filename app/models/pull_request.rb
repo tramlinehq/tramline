@@ -9,7 +9,7 @@
 #  head_ref                :string           not null, indexed => [release_id]
 #  kind                    :string           indexed => [release_id]
 #  labels                  :jsonb
-#  merge_commit_sha        :string
+#  merge_commit_sha        :string           indexed
 #  number                  :bigint           not null, indexed => [release_id, phase], indexed
 #  opened_at               :datetime         not null
 #  phase                   :string           not null, indexed => [release_id, number], indexed, indexed => [release_id]

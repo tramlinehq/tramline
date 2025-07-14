@@ -1,4 +1,5 @@
 class IntegrationListenerController < SignedInApplicationController
+  include Loggable
   using RefinedString
   before_action :require_write_access!, only: %i[callback]
   INTEGRATION_CREATE_ERROR = "Failed to create the integration, please try again."
@@ -15,10 +16,10 @@ class IntegrationListenerController < SignedInApplicationController
     if @integration.save
       redirect_to app_path(state_app), notice: "Integration was successfully created."
     else
-      redirect_to app_integrations_path(state_app), alert: INTEGRATION_CREATE_ERROR
+      redirect_to app_integrations_path(state_app), alert: integration_create_error
     end
   rescue => e
-    Rails.logger.error("Failed to create integration: #{e.message}")
+    elog(e, level: :error)
     redirect_to app_integrations_path(state_app), alert: INTEGRATION_CREATE_ERROR
   end
 
@@ -29,6 +30,10 @@ class IntegrationListenerController < SignedInApplicationController
   end
 
   private
+
+  def integration_create_error
+    @integration.errors.full_messages.to_sentence.presence || INTEGRATION_CREATE_ERROR
+  end
 
   def state
     @state ||=

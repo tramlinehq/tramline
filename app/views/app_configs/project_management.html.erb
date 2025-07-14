@@ -1,9 +1,9 @@
 <%= render EnhancedTurboFrameComponent.new("#{@integration_category}_config") do %>
-  <% if @app.integrations.project_management.jira_integration.present? %>
+  <% if @app.integrations.jira_integrations.any? %>
     <%= render partial: "jira_form", locals: {config: @config, app: @app, jira_data: @jira_data} %>
   <% end %>
 
-  <% if @app.integrations.project_management.linear_integration.present? %>
+  <% if @app.integrations.linear_integrations.any? %>
     <%= render partial: "linear_form", locals: {config: @config, app: @app, linear_data: @linear_data} %>
   <% end %>
 <% end %>

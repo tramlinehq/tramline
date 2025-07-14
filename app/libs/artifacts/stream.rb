@@ -12,9 +12,10 @@ module Artifacts
 
     StreamIO = Struct.new(:file, :ext)
 
-    def initialize(tempfile, is_archive: false)
+    def initialize(tempfile, is_archive: false, filter_pattern: nil)
       @tempfile = tempfile
       @is_archive = is_archive
+      @filter_pattern = filter_pattern
     end
 
     def with_open(&)
@@ -41,11 +42,17 @@ module Artifacts
 
     def unzip
       entries = Zip::File.open(tempfile).glob(VALID_UNZIPS)
-      raise SingleUnzipSupportedOnly if entries.size > 1
-      entries
+      raise SingleUnzipSupportedOnly if @filter_pattern.blank? && entries.size > 1
+
+      if @filter_pattern.present?
+        filtered_entries = entries.select { |entry| File.basename(entry.name).include?(@filter_pattern) }
+        entries = filtered_entries.presence || entries.first
+      end
+
+      Array(entries)
     end
 
-    attr_reader :tempfile
+    attr_reader :tempfile, :filter_pattern
 
     def unzip?
       @is_archive
@@ -87,6 +94,10 @@ module Artifacts
         path = f.name
         path.include?("Payload/") && path.end_with?("Info.plist")
       end
+    end
+
+    def archive_size_in_bytes
+      tempfile.size
     end
   end
 end

@@ -36,7 +36,7 @@ class Integration < ApplicationRecord
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration GitlabIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
@@ -44,7 +44,7 @@ class Integration < ApplicationRecord
     },
     android: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration GitlabIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
@@ -52,7 +52,7 @@ class Integration < ApplicationRecord
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration BitbucketIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration GitlabIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
@@ -86,7 +86,7 @@ class Integration < ApplicationRecord
   MINIMUM_REQUIRED_SET = [:version_control, :ci_cd, :build_channel].freeze
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected].freeze
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected].freeze
-  DISABLED_CATEGORIES = ["project_management"].freeze
+  DISABLED_CATEGORIES = [].freeze
 
   validate :allowed_integrations_for_app, on: :create
   validate :validate_providable, on: :create
