@@ -21,11 +21,12 @@ class GitlabIntegration < ApplicationRecord
   using RefinedArray
 
   attr_accessor :code
-  before_create :complete_access
+  before_validation :complete_access, if: :new_record?
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
   delegate :code_repository_name, :code_repo_namespace, to: :app_config
   delegate :cache, to: Rails
+  validate :correct_key, on: :create
 
   API = Installations::Gitlab::Api
   BASE_INSTALLATION_URL = Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
@@ -171,9 +172,17 @@ class GitlabIntegration < ApplicationRecord
     set_tokens(API.oauth_access_token(code, redirect_uri))
   end
 
+  def correct_key
+    if integration.ci_cd?
+      errors.add(:base, :workflows) if workflows.blank?
+    elsif integration.version_control?
+      errors.add(:base, :repos) if repos.blank?
+    end
+  end
+
   def workspaces = nil
 
-  def repos(_)
+  def repos(_ = nil)
     with_api_retries { installation.list_projects(REPOS_TRANSFORMATIONS) }
   end
 
@@ -226,7 +235,12 @@ class GitlabIntegration < ApplicationRecord
           .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true, filter_pattern: artifact_name_pattern) }
       end
 
-    {artifact: {}, stream: artifact_stream}
+    artifact_params = {
+      name: artifact_name_pattern,
+      size_in_bytes: artifact_stream.archive_size_in_bytes
+    }
+
+    {artifact: artifact_params, stream: artifact_stream}
   end
 
   def artifacts_url(job_id, artifacts_payload)

@@ -49,7 +49,7 @@ module Artifacts
         entries = filtered_entries.presence || entries.first
       end
 
-      entries
+      Array(entries)
     end
 
     attr_reader :tempfile, :filter_pattern
@@ -94,6 +94,10 @@ module Artifacts
         path = f.name
         path.include?("Payload/") && path.end_with?("Info.plist")
       end
+    end
+
+    def archive_size_in_bytes
+      tempfile.size
     end
   end
 end

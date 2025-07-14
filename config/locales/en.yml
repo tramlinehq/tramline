@@ -580,6 +580,11 @@ en:
               not_present: "the beta release must be configured"
             release_candidate_workflow:
               not_present: "the release candidate workflow must be configured"
+        gitlab_integration:
+          attributes:
+            base:
+              workflows: "No valid workflows found. Check your .gitlab-ci.yml file or try again."
+              repos: "No projects/repos found. Please try again."
         crashlytics_integration:
           attributes:
             json_key:
