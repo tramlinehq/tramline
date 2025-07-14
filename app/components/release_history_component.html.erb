@@ -12,7 +12,7 @@
 
       <% row.with_cell(style: "font-medium") do %>
         <% if release.completed_at %>
-          <%= render BadgeComponent.new(text: release.release_version, kind: :badge) %>
+          <%= render BadgeComponent.new(text: "#{release.release_version} #{release.display_build_number}", kind: :badge) %>
         <% else %>
           <%= render BadgeComponent.new(text: version_in_progress(release.release_version), kind: :badge) %>
         <% end %>
