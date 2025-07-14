@@ -288,10 +288,12 @@ module Installations
     # https://docs.gitlab.com/ee/api/repository_files.html#get-file-from-repository
     def get_file_content(project_id, branch_name, file_path)
       response = execute(:get, GET_FILE_URL.expand(project_id:, file_path: file_path, ref: branch_name).to_s, {})
-      return nil if response.nil? || response["content"].nil?
-      Base64.decode64(response["content"])
-    rescue ArgumentError
-      raise Installations::Gitlab::Error.new("Invalid Base64 content in file", reason: :invalid_file_content)
+
+      if response.nil? || response["content"].nil?
+        raise Installations::Error.new("Could not get file contents", reason: :not_found)
+      else
+        Base64.decode64(response["content"])
+      end
     end
 
     # https://docs.gitlab.com/ee/api/repository_files.html#update-existing-file-in-repository
