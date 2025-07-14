@@ -86,7 +86,7 @@ class Integration < ApplicationRecord
   MINIMUM_REQUIRED_SET = [:version_control, :ci_cd, :build_channel].freeze
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected].freeze
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected].freeze
-  DISABLED_CATEGORIES = ["project_management"].freeze
+  DISABLED_CATEGORIES = [].freeze
 
   validate :allowed_integrations_for_app, on: :create
   validate :validate_providable, on: :create
