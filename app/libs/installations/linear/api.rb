@@ -99,7 +99,7 @@ module Installations
 
       response = execute_graphql(query)
       states = response.dig("data", "workflowStates", "nodes") || []
-      DATA.transform(states, transformations)
+      DATA.transform(states, transformations).uniq { |state| state[:name] }
     end
 
     def search_issues_by_filters(team_id, release_filters, transformations)
