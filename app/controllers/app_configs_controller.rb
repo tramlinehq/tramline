@@ -66,8 +66,8 @@ class AppConfigsController < SignedInApplicationController
   end
 
   def configure_project_management
-    set_jira_projects if further_setup_by_category?.dig(:project_management, :further_setup) && @app.integrations.project_management.jira_integration.present?
-    set_linear_projects if further_setup_by_category?.dig(:project_management, :further_setup) && @app.integrations.project_management.linear_integration.present?
+    set_jira_projects if further_setup_by_category?.dig(:project_management, :further_setup) && @app.integrations.jira_integrations.any?
+    set_linear_projects if further_setup_by_category?.dig(:project_management, :further_setup) && @app.integrations.linear_integrations.any?
   end
 
   def set_app_config
