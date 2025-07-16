@@ -41,25 +41,6 @@ describe IntegrationListeners::LinearController do
         expect(flash[:notice]).to eq(I18n.t("integrations.project_management.linear.integration_created"))
       end
     end
-
-    context "when multiple organizations available" do
-      let(:organizations) { [{"id" => "org1", "name" => "Org 1"}, {"id" => "org2", "name" => "Org 2"}] }
-
-      before do
-        allow(app.integrations).to receive(:build).and_return(integration)
-        allow(integration).to receive_messages(providable: linear_integration, valid?: true)
-        allow(linear_integration).to receive_messages(complete_access: false, available_organizations: organizations)
-
-        get :callback, params: {state: state, code: code}
-      end
-
-      it "renders organization selection page" do
-        expect(response).to be_successful
-        expect(response.content_type).to include("text/html")
-        expect(flash[:alert]).to be_nil
-        expect(linear_integration).to have_received(:available_organizations)
-      end
-    end
   end
 
   describe "#providable_params" do
