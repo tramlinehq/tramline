@@ -96,7 +96,6 @@ class AppConfigsController < SignedInApplicationController
         linear_config: {
           selected_teams: [],
           team_configs: {},
-          release_tracking: [:track_tickets, :auto_transition],
           release_filters: [[:type, :value, :_destroy]]
         }
       )
@@ -179,10 +178,6 @@ class AppConfigsController < SignedInApplicationController
     @config.linear_config = {
       "selected_teams" => @config.linear_config["selected_teams"] || [],
       "team_configs" => @config.linear_config["team_configs"] || {},
-      "release_tracking" => @config.linear_config["release_tracking"] || {
-        "track_tickets" => false,
-        "auto_transition" => false
-      },
       "release_filters" => @config.linear_config["release_filters"] || []
     }
 
@@ -236,10 +231,6 @@ class AppConfigsController < SignedInApplicationController
           custom_done_states: Array(team_config[:custom_done_states]).compact_blank
         }
       end || {},
-      release_tracking: {
-        track_tickets: ActiveModel::Type::Boolean.new.cast(config.dig(:release_tracking, :track_tickets)),
-        auto_transition: ActiveModel::Type::Boolean.new.cast(config.dig(:release_tracking, :auto_transition))
-      },
       release_filters: config[:release_filters]&.values&.filter_map do |filter|
         next if filter[:type].blank? || filter[:value].blank? || filter[:_destroy] == "1"
         {

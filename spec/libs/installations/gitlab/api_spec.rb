@@ -221,7 +221,7 @@ describe Installations::Gitlab::Api do
           .with(headers: {"Authorization" => "Bearer access_token"})
           .to_return(status: 500, body: "Internal Server Error", headers: {})
 
-        expect { api.get_file_content(project_id, branch_name, file_path) }.to raise_error(Installations::Gitlab::Error)
+        expect { api.get_file_content(project_id, branch_name, file_path) }.to raise_error(Installations::Error::ServerError)
       end
     end
 

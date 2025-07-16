@@ -146,4 +146,52 @@ describe Installations::Jira::Api do
       end
     end
   end
+
+  describe "error handling" do
+    describe "#execute" do
+      let(:url) { "https://api.atlassian.com/ex/jira/#{cloud_id}/rest/api/3/test" }
+
+      it "raises ServerError when server returns 500" do
+        stub_request(:get, url)
+          .with(headers: {"Authorization" => "Bearer #{oauth_access_token}"})
+          .to_return(status: 500, body: "Internal Server Error")
+
+        expect { api.send(:execute, :get, url) }.to raise_error(Installations::Error::ServerError)
+      end
+
+      it "raises TokenExpired when server returns 401" do
+        stub_request(:get, url)
+          .with(headers: {"Authorization" => "Bearer #{oauth_access_token}"})
+          .to_return(status: 401, body: '{"error": {"message": "Unauthorized"}}')
+
+        expect { api.send(:execute, :get, url) }.to raise_error(Installations::Error::TokenExpired)
+      end
+
+      it "raises ResourceNotFound when server returns 404" do
+        stub_request(:get, url)
+          .with(headers: {"Authorization" => "Bearer #{oauth_access_token}"})
+          .to_return(status: 404, body: '{"error": {"message": "Not found"}}')
+
+        expect { api.send(:execute, :get, url) }.to raise_error(Installations::Error::ResourceNotFound)
+      end
+
+      it "raises Jira::Error for other client errors" do
+        stub_request(:get, url)
+          .with(headers: {"Authorization" => "Bearer #{oauth_access_token}"})
+          .to_return(status: 422, body: '{"error": {"message": "Validation failed"}}')
+
+        expect { api.send(:execute, :get, url) }.to raise_error(Installations::Jira::Error)
+      end
+
+      it "returns parsed response for successful requests" do
+        response_body = {data: "test"}
+        stub_request(:get, url)
+          .with(headers: {"Authorization" => "Bearer #{oauth_access_token}"})
+          .to_return(status: 200, body: response_body.to_json)
+
+        result = api.send(:execute, :get, url)
+        expect(result).to eq({"data" => "test"})
+      end
+    end
+  end
 end

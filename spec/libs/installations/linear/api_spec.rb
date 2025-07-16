@@ -136,4 +136,91 @@ describe Installations::Linear::Api do
       expect(result["issues"]).to eq([])
     end
   end
+
+  describe "error handling" do
+    describe ".get_access_token" do
+      let(:code) { "test_code" }
+      let(:redirect_uri) { "http://test.com/callback" }
+
+      before do
+        creds = OpenStruct.new(
+          integrations: OpenStruct.new(
+            linear: OpenStruct.new(
+              client_id: "test_client_id",
+              client_secret: "test_secret"
+            )
+          )
+        )
+        allow(described_class).to receive(:creds).and_return(creds)
+      end
+
+      it "returns OpenStruct with nil values when server returns 500 error" do
+        stub_request(:post, "https://api.linear.app/oauth/token")
+          .to_return(status: 500, body: '{"error": "Internal Server Error"}')
+
+        result = described_class.get_access_token(code, redirect_uri)
+        expect(result).to be_a(OpenStruct)
+        expect(result.access_token).to be_nil
+        expect(result.refresh_token).to be_nil
+      end
+
+      it "returns OpenStruct with nil values when server returns 4xx error" do
+        stub_request(:post, "https://api.linear.app/oauth/token")
+          .to_return(status: 400, body: '{"error": "invalid_request"}')
+
+        result = described_class.get_access_token(code, redirect_uri)
+        expect(result).to be_a(OpenStruct)
+        expect(result.access_token).to be_nil
+        expect(result.refresh_token).to be_nil
+      end
+    end
+
+    describe ".get_organizations" do
+      it "returns empty array when server returns 500 error" do
+        stub_request(:post, "https://api.linear.app/graphql")
+          .to_return(status: 500, body: "Internal Server Error")
+
+        result = described_class.get_organizations(access_token)
+        expect(result).to eq([])
+      end
+
+      it "returns empty array when HTTP error occurs" do
+        stub_request(:post, "https://api.linear.app/graphql")
+          .to_raise(HTTP::Error.new("Network error"))
+
+        result = described_class.get_organizations(access_token)
+        expect(result).to eq([])
+      end
+    end
+
+    describe "#execute_graphql" do
+      it "raises ServerError when server returns 500" do
+        stub_request(:post, "https://api.linear.app/graphql")
+          .to_return(status: 500, body: "Internal Server Error")
+
+        expect { api.teams({id: :id}) }.to raise_error(Installations::Error::ServerError)
+      end
+
+      it "raises TokenExpired when server returns 401" do
+        stub_request(:post, "https://api.linear.app/graphql")
+          .to_return(status: 401, body: '{"errors": [{"message": "Unauthorized"}]}')
+
+        expect { api.teams({id: :id}) }.to raise_error(Installations::Error::TokenExpired)
+      end
+
+      it "raises ResourceNotFound when server returns 404" do
+        stub_request(:post, "https://api.linear.app/graphql")
+          .to_return(status: 404, body: '{"errors": [{"message": "Not found"}]}')
+
+        expect { api.teams({id: :id}) }.to raise_error(Installations::Error::ResourceNotFound)
+      end
+
+      it "raises Linear::Error for other client errors" do
+        stub_request(:post, "https://api.linear.app/graphql")
+          .to_return(status: 422, body: '{"errors": [{"message": "Validation failed"}]}')
+
+        expect { api.teams({id: :id}) }.to raise_error(Installations::Linear::Error)
+      end
+    end
+  end
 end
