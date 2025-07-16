@@ -4,14 +4,6 @@ module Installations
       {
         error: "invalid_token",
         decorated_reason: :token_expired
-      },
-      {
-        error: "token_refresh_failure",
-        decorated_reason: :token_refresh_failure
-      },
-      {
-        error: "Service Unavailable",
-        decorated_reason: :service_unavailable
       }
     ]
 

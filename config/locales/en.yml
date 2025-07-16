@@ -241,6 +241,7 @@ en:
       google_firebase_submission: "Firebase App Distribution"
       play_store_submission: "Google Play Store"
       crashlytics_integration: "Firebase Crashlytics"
+      linear_integration: "Linear"
     values:
       pull_request:
         kind:
@@ -756,17 +757,22 @@ en:
   integrations:
     project_management:
       jira:
+        integration_created: "Jira integration created successfully"
+        no_organization: "No Jira organization found. Please check your permissions."
         connect:
           success: "Successfully connected to Jira!"
-          failure: "Failed to connect to Jira: %{errors}"
+      linear:
+        integration_created: "Linear integration created successfully"
+        no_organization: "No Linear organization found. Please check your permissions."
+        connect:
+          success: "Successfully connected to Linear!"
+          failure: "Failed to connect to Linear: %{errors}"
         configure:
-          success: "Jira configuration was successfully updated."
-          failure: "Failed to update Jira configuration: %{errors}"
+          success: "Linear configuration was successfully updated."
+          failure: "Failed to update Linear configuration: %{errors}"
         projects:
           select: "Select Jira Projects"
           help_text: "Choose the projects you want to track in Tramline"
         done_states:
           select: "Select Done States"
           help_text: "Choose which states represent completed work"
-        no_organization: "No Jira organizations available. Please try again."
-        integration_created: "Integration was successfully created."

@@ -16,6 +16,7 @@ class JiraIntegration < ApplicationRecord
   include Vaultable
   include Providable
   include Displayable
+  include Loggable
 
   encrypts :oauth_access_token, deterministic: true
   encrypts :oauth_refresh_token, deterministic: true
@@ -117,17 +118,17 @@ class JiraIntegration < ApplicationRecord
 
     with_api_retries do
       projects_result = fetch_projects
-      return {} if projects_result[:projects].empty?
+      projects = projects_result.dig(:projects)
+      return {} if projects.empty?
 
-      statuses_data = fetch_project_statuses(projects_result[:projects])
-
+      statuses_data = fetch_project_statuses(projects)
       {
-        projects: projects_result[:projects],
+        projects: projects,
         project_statuses: statuses_data
       }
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Jira setup data for cloud_id #{cloud_id}: #{e.message}")
+  rescue Installations::Error => e
+    elog("Failed to fetch Jira setup data for cloud_id #{cloud_id}: #{e}", level: :warn)
     {}
   end
 
@@ -145,17 +146,13 @@ class JiraIntegration < ApplicationRecord
     return [] if project_key.blank? || release_filters.blank?
 
     with_api_retries do
-      response = api.search_tickets_by_filters(
-        project_key,
-        release_filters,
-        TICKET_TRANSFORMATIONS
-      )
-      return [] if response["issues"].blank?
-
-      response["issues"]
+      response = api.search_tickets_by_filters(project_key, release_filters, TICKET_TRANSFORMATIONS)
+      issues = response["issues"]
+      return [] if issues.blank?
+      issues
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Jira tickets for release: #{e.message}")
+  rescue Installations::Error => e
+    elog("Failed to fetch Jira tickets for release: #{e}", level: :warn)
     []
   end
 
@@ -166,7 +163,7 @@ class JiraIntegration < ApplicationRecord
   private
 
   MAX_RETRY_ATTEMPTS = 2
-  RETRYABLE_ERRORS = []
+  RETRYABLE_ERRORS = [:server_error]
 
   def with_api_retries(attempt: 0, &)
     yield
@@ -174,7 +171,7 @@ class JiraIntegration < ApplicationRecord
     raise ex if attempt >= MAX_RETRY_ATTEMPTS
     next_attempt = attempt + 1
 
-    if ex.reason == :token_expired
+    if %i[token_expired token_refresh_failure].include?(ex.reason)
       reset_tokens!
       return with_api_retries(attempt: next_attempt, &)
     end
@@ -187,13 +184,19 @@ class JiraIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    set_tokens(API.oauth_refresh_token(oauth_refresh_token, redirect_uri))
+    tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
+
+    if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      raise Installations::Error::TokenRefreshFailure
+    end
+
+    set_tokens(tokens)
     save!
+
+    reload
   end
 
   def set_tokens(tokens)
-    return unless tokens
-
     self.oauth_access_token = tokens.access_token
     self.oauth_refresh_token = tokens.refresh_token
   end
@@ -207,18 +210,21 @@ class JiraIntegration < ApplicationRecord
   end
 
   def fetch_projects
-    return {projects: []} if cloud_id.blank?
+    projects = {projects: []}
+    return projects if cloud_id.blank?
+
     with_api_retries do
-      response = api.projects(PROJECT_TRANSFORMATIONS)
-      {projects: response}
+      projects[:projects] = api.projects(PROJECT_TRANSFORMATIONS)
+      projects
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Jira projects for cloud_id #{cloud_id}: #{e}")
-    {projects: []}
+  rescue Installations::Error => e
+    elog("Failed to fetch Jira projects for cloud_id #{cloud_id}: #{e}", level: :warn)
+    projects
   end
 
   def fetch_project_statuses(projects)
     return {} if cloud_id.blank? || projects.blank?
+
     with_api_retries do
       statuses = {}
       projects.each do |project|
@@ -227,8 +233,8 @@ class JiraIntegration < ApplicationRecord
       end
       statuses
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Jira project statuses for cloud_id #{cloud_id}: #{e}")
+  rescue Installations::Error => e
+    elog("Failed to fetch Jira project statuses for cloud_id #{cloud_id}: #{e}", level: :warn)
     {}
   end
 end

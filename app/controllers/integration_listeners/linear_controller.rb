@@ -1,5 +1,9 @@
-class IntegrationListeners::JiraController < IntegrationListenerController
+class IntegrationListeners::LinearController < IntegrationListenerController
   using RefinedString
+
+  skip_before_action :verify_authenticity_token, only: [:events]
+  skip_before_action :require_login, only: [:events]
+  skip_before_action :require_organization!, only: [:events]
 
   def callback
     unless valid_state?
@@ -12,16 +16,9 @@ class IntegrationListeners::JiraController < IntegrationListenerController
       @integration.providable = build_providable
 
       if @integration.providable.complete_access && @integration.save
-        redirect_to app_path(state_app), notice: t("integrations.project_management.jira.integration_created")
+        redirect_to app_path(state_app), notice: t("integrations.project_management.linear.integration_created")
       else
-        @resources = @integration.providable.available_resources
-
-        if @resources.blank?
-          redirect_to app_integrations_path(state_app), alert: t("integrations.project_management.jira.no_organization")
-          return
-        end
-
-        render "jira_integration/select_organization"
+        redirect_to app_integrations_path(state_app), alert: t("integrations.project_management.linear.no_organization")
       end
     rescue => e
       elog(e, level: :error)
@@ -29,12 +26,17 @@ class IntegrationListeners::JiraController < IntegrationListenerController
     end
   end
 
+  def events
+    Rails.logger.debug { "Got a webhook from Linear!" }
+    head :accepted
+  end
+
   protected
 
   def providable_params
     super.merge(
       code: code,
-      cloud_id: params[:cloud_id]
+      organization_id: params[:organization_id]
     )
   end
 

@@ -4,19 +4,17 @@ module Installations
     attr_reader :oauth_access_token, :cloud_id
 
     BASE_URL = "https://api.atlassian.com/ex/jira"
-    DATA = Installations::Response::Keys
-
-    # API Endpoints
+    OAUTH_ACCESS_TOKEN_URL = "https://auth.atlassian.com/oauth/token"
+    ACCESSIBLE_RESOURCES_URL = "https://api.atlassian.com/oauth/token/accessible-resources"
     PROJECTS_URL = Addressable::Template.new "#{BASE_URL}/{cloud_id}/rest/api/3/project/search"
     PROJECT_STATUSES_URL = Addressable::Template.new "#{BASE_URL}/{cloud_id}/rest/api/3/project/{project_key}/statuses"
     SEARCH_URL = Addressable::Template.new "#{BASE_URL}/{cloud_id}/rest/api/3/search/jql"
+
+    KEYS = Installations::Response::Keys
     TICKET_SEARCH_FIELDS = "summary, description, status, assignee, fix_versions, labels"
 
     class << self
       include Vaultable
-
-      OAUTH_ACCESS_TOKEN_URL = "https://auth.atlassian.com/oauth/token"
-      ACCESSIBLE_RESOURCES_URL = "https://api.atlassian.com/oauth/token/accessible-resources"
 
       def get_accessible_resources(code, redirect_uri)
         @tokens ||= oauth_access_token(code, redirect_uri)
@@ -81,7 +79,7 @@ module Installations
 
     def projects(transformations)
       response = execute(:get, PROJECTS_URL.expand(cloud_id:).to_s)
-      DATA.transform(response["values"], transformations)
+      KEYS.transform(response["values"], transformations)
     end
 
     def project_statuses(project_key, transformations)
@@ -99,7 +97,7 @@ module Installations
       }
 
       response = execute(:get, SEARCH_URL.expand(cloud_id:).to_s, params)
-      DATA.transform(response["issues"], transformations)
+      KEYS.transform(response["issues"], transformations)
     rescue HTTP::Error => e
       Rails.logger.error "Failed to search Jira tickets: #{e.message}"
       raise Installations::Error.new("Failed to search Jira tickets", reason: :api_error)
@@ -110,7 +108,7 @@ module Installations
     def extract_unique_statuses(statuses, transformations)
       statuses.flat_map { |issue_type| issue_type["statuses"] }
         .uniq { |status| status["id"] }
-        .then { |statuses| DATA.transform(statuses, transformations) }
+        .then { |statuses| KEYS.transform(statuses, transformations) }
     end
 
     def execute(method, url, params = {}, parse_response = true)
@@ -120,13 +118,14 @@ module Installations
           .headers("Accept" => "application/json")
           .public_send(method, url, params)
 
+      raise Installations::Error::ServerError if response.status.server_error?
+
       parsed_body = parse_response ? JSON.parse(response.body) : response.body
       Rails.logger.debug { "Jira API returned #{response.status} for #{url} with body - #{parsed_body}" }
-
       return parsed_body unless response.status.client_error?
 
-      raise Installations::Error.new("Token expired", reason: :token_expired) if response.status == 401
-      raise Installations::Error.new("Resource not found", reason: :not_found) if response.status == 404
+      raise Installations::Error::TokenExpired if response.status == 401
+      raise Installations::Error::ResourceNotFound if response.status == 404
       raise Installations::Jira::Error.new(parsed_body)
     end
 

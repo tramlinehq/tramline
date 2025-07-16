@@ -24,7 +24,7 @@ class Integration < ApplicationRecord
 
   belongs_to :app, optional: true
 
-  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration CrashlyticsIntegration JiraIntegration]
+  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration CrashlyticsIntegration JiraIntegration LinearIntegration]
   delegated_type :providable, types: PROVIDER_TYPES, autosave: true, validate: false
   delegated_type :integrable, types: INTEGRABLE_TYPES, autosave: true, validate: false
 
@@ -40,7 +40,7 @@ class Integration < ApplicationRecord
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
-      "project_management" => %w[JiraIntegration]
+      "project_management" => %w[JiraIntegration LinearIntegration]
     },
     android: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
@@ -48,7 +48,7 @@ class Integration < ApplicationRecord
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
-      "project_management" => %w[JiraIntegration]
+      "project_management" => %w[JiraIntegration LinearIntegration]
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
@@ -56,7 +56,7 @@ class Integration < ApplicationRecord
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
       "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
-      "project_management" => %w[JiraIntegration]
+      "project_management" => %w[JiraIntegration LinearIntegration]
     }
   }.with_indifferent_access
 
@@ -86,7 +86,7 @@ class Integration < ApplicationRecord
   MINIMUM_REQUIRED_SET = [:version_control, :ci_cd, :build_channel].freeze
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected].freeze
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected].freeze
-  DISABLED_CATEGORIES = ["project_management"].freeze
+  DISABLED_CATEGORIES = [].freeze
 
   validate :allowed_integrations_for_app, on: :create
   validate :validate_providable, on: :create

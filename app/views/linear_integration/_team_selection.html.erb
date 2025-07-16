@@ -1,44 +1,43 @@
-<%# locals: (form:, jira_data:, current_jira_config:) %>
+<%# locals: (form:, linear_data:, current_linear_config:) %>
 
-<div class="flex flex-col gap-4" data-controller="targeted-toggle" data-targeted-toggle-reveal-outlet="#no-projects-selected">
+<div class="flex flex-col gap-4" data-controller="targeted-toggle" data-targeted-toggle-reveal-outlet="#no-teams-selected">
   <div class="flex flex-col item-gap-default">
     <div class="heading-4 border-default-b pb-1">
       <div class="flex flex-row place-items-center gap-1">
-        Projects
+        Teams
         <%= render InfoIconComponent.new do %>
-          We will pull tickets from the selected projects and show them in a release context.
+          We will pull tickets from the selected teams and show them in a release context.
         <% end %>
       </div>
     </div>
 
     <div class="flex flex-col">
-      <% jira_data[:projects].each do |project| %>
-        <% project_key = project["key"] %>
-
+      <% linear_data[:teams].each do |team| %>
+        <% team_id = team["id"] %>
         <div class="flex items-center">
-          <%= form.fields_for :jira_config do |sf| %>
+          <%= form.fields_for :linear_config do |sf| %>
             <% checked =
-                 current_jira_config
-                   &.dig("selected_projects")
-                   &.include?(project["key"]) %>
+                 current_linear_config
+                   &.dig("selected_teams")
+                   &.include?(team["id"]) %>
 
-            <%= sf.checkbox :selected_projects,
+            <%= sf.checkbox :selected_teams,
                             {
                               multiple: true,
                               include_hidden: false,
-                              id: "project_#{project["key"]}",
+                              id: "team_#{team["id"]}",
                               checked:,
                               data: {
                                 action: "targeted-toggle#toggle",
-                                section_key: project_key,
+                                section_key: team_id,
                                 targeted_toggle_target: "section"
                               }
                             },
-                            project["key"] %>
+                            team["id"] %>
           <% end %>
 
-          <label for="project_<%= project["key"] %>" class="ml-2 text-sm font-medium text-gray-900">
-            <%= project["name"] %> (<%= project["key"] %>)
+          <label for="team_<%= team["id"] %>" class="ml-2 text-sm font-medium text-gray-900">
+            <%= team["name"] %> (<%= team["key"] %>)
           </label>
         </div>
       <% end %>
@@ -50,48 +49,48 @@
       <div class="flex flex-row place-items-center gap-1">
         Done states
         <%= render InfoIconComponent.new do %>
-          Select which ticket statuses should be considered "done" for each project. This helps Tramline track completed
+          Select which ticket statuses should be considered "done" for each team. This helps Tramline track completed
           work in your releases.
         <% end %>
       </div>
     </div>
 
     <div class="grid grid-cols-3 item-gap-default">
-      <% jira_data[:projects].each do |project| %>
-        <% project_key = project["key"] %>
-        <% statuses = jira_data[:project_statuses][project_key] %>
+      <% linear_data[:teams].each do |team| %>
+        <% team_id = team["id"] %>
+        <% workflow_states = linear_data[:workflow_states] %>
 
-        <div data-targeted-toggle-target="subsection" data-section-key="<%= project_key %>">
+        <div data-targeted-toggle-target="subsection" data-section-key="<%= team_id %>">
           <div class="flex flex-col item-gap-default">
-            <h3 class="heading-5">For <%= project["name"] %> (<%= project["key"] %>)</h3>
+            <h3 class="heading-5">For <%= team["name"] %> (<%= team["key"] %>)</h3>
             <div class="flex flex-col">
-              <% if statuses&.any? %>
-                <% statuses.each do |status| %>
-                  <% status_name = "status_#{project_key}_#{status["name"].parameterize}" %>
+              <% if workflow_states&.any? %>
+                <% workflow_states.each do |state| %>
+                  <% state_name = "state_#{team_id}_#{state["name"].parameterize}" %>
 
                   <div class="flex items-center">
-                    <%= form.fields_for :jira_config do |sf| %>
-                      <%= sf.fields_for :project_configs do |pf| %>
-                        <%= pf.fields_for project_key do |pk| %>
+                    <%= form.fields_for :linear_config do |sf| %>
+                      <%= sf.fields_for :team_configs do |tf| %>
+                        <%= tf.fields_for team_id do |tk| %>
                           <% checked =
-                               current_jira_config
-                                 &.dig("project_configs", project_key, "done_states")
-                                 &.include?(status["name"]) %>
+                               current_linear_config
+                                 &.dig("team_configs", team_id, "done_states")
+                                 &.include?(state["name"]) %>
 
-                          <%= pk.checkbox :done_states,
-                                          {multiple: true, include_hidden: false, id: status_name, checked:},
-                                          status["name"] %>
+                          <%= tk.checkbox :done_states,
+                                          {multiple: true, include_hidden: false, id: state_name, checked:},
+                                          state["name"] %>
                         <% end %>
                       <% end %>
                     <% end %>
 
-                    <label for="<%= status_name %>" class="ml-2 text-sm text-gray-600">
-                      <%= status["name"] %>
+                    <label for="<%= state_name %>" class="ml-2 text-sm text-gray-600">
+                      <%= state["name"] %>
                     </label>
                   </div>
                 <% end %>
               <% else %>
-                <%= render EmptyStateComponent.new(text: "No status configurations found for this project.",
+                <%= render EmptyStateComponent.new(text: "No workflow states found for this team.",
                                                    banner_image: "list_checks.svg",
                                                    type: :tiny) %>
               <% end %>
@@ -101,8 +100,8 @@
       <% end %>
     </div>
 
-    <div id="no-projects-selected" data-controller="reveal" hidden data-reveal>
-      <%= render EmptyStateComponent.new(text: "Select a project to see the done states.",
+    <div id="no-teams-selected" data-controller="reveal" hidden data-reveal>
+      <%= render EmptyStateComponent.new(text: "Select a team to see the done states.",
                                          banner_image: "list_checks.svg",
                                          type: :tiny) %>
     </div>
@@ -114,7 +113,7 @@
         Release filters
         <%= render InfoIconComponent.new do %>
           Add release filters to narrow down the tickets pulled for a release. The release filters are applied
-          for all projects selected.
+          for all teams selected.
         <% end %>
       </div>
     </div>
@@ -134,17 +133,17 @@
       </div>
 
       <ul class="flex flex-col gap-2">
-        <% release_filters = current_jira_config&.dig("release_filters") || [] %>
+        <% release_filters = current_linear_config&.dig("release_filters") || [] %>
 
         <% release_filters.each_with_index do |filter, index| %>
           <li class="nested-form-wrapper" data-new-record="false">
-            <%= render partial: "jira_integration/release_filter_form", locals: {form:, filter: filter, index: index} %>
+            <%= render partial: "linear_integration/release_filter_form", locals: {form:, filter: filter, index: index} %>
           </li>
         <% end %>
 
         <template data-nested-form-ext-target="template">
           <li class="nested-form-wrapper" data-new-record="true">
-            <%= render partial: "jira_integration/release_filter_form", locals: {form:, index: "NEW_RECORD"} %>
+            <%= render partial: "linear_integration/release_filter_form", locals: {form:, index: "NEW_RECORD"} %>
           </li>
         </template>
 
