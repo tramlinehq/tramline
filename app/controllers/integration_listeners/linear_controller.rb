@@ -19,7 +19,7 @@ class IntegrationListeners::LinearController < IntegrationListenerController
         if @organizations.blank?
           redirect_to app_integrations_path(state_app), alert: t("integrations.project_management.linear.no_organization")
         else
-          redirect_to app_integrations_path(state_app), alert: INTEGRATION_CREATE_ERROR
+          render "linear_integration/select_organization"
         end
       end
     rescue => e
