@@ -147,8 +147,8 @@ describe Installations::Jira::Api do
     end
   end
 
-  describe "error handling" do
-    describe "#execute" do
+  describe "#execute" do
+    context "when handling errors" do
       let(:url) { "https://api.atlassian.com/ex/jira/#{cloud_id}/rest/api/3/test" }
 
       it "raises ServerError when server returns 500" do

@@ -17,7 +17,7 @@ describe JiraIntegration do
 
   describe "#with_api_retries" do
     context "when token expired" do
-      let(:error) { Installations::Error.new("The access token expired", reason: :token_expired) }
+      let(:error) { Installations::Error::TokenExpired }
       let(:integration) { build(:jira_integration) }
 
       it "retries after refreshing token" do
