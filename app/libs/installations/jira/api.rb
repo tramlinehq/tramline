@@ -123,7 +123,7 @@ module Installations
 
       return parsed_body unless response.status.client_error?
 
-      raise Installations::Jira::Error.new if _5xx?(response.status)
+      raise Installations::Error.new(nil) if _5xx?(response.status)
       raise Installations::Error.new("Token expired", reason: :token_expired) if response.status == 401
       raise Installations::Error.new("Resource not found", reason: :not_found) if response.status == 404
       raise Installations::Jira::Error.new(parsed_body)
