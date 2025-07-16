@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe LinearIntegration do
+describe LinearIntegration do
   let(:linear_integration) { build(:linear_integration) }
 
   describe "validations" do
