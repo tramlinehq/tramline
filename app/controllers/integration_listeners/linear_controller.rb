@@ -28,6 +28,11 @@ class IntegrationListeners::LinearController < IntegrationListenerController
     end
   end
 
+  def events
+    Rails.logger.debug { "Got a webhook from Linear!" }
+    head :accepted
+  end
+
   protected
 
   def providable_params
