@@ -17,10 +17,15 @@ describe LinearIntegration do
 
     before do
       linear_integration.integration = integration
-      linear_creds = instance_double("LinearCredentials", client_id: "test_client_id")
-      integrations_creds = instance_double("IntegrationCredentials", linear: linear_creds)
-      credentials = instance_double("ApplicationCredentials", integrations: integrations_creds)
-      allow(linear_integration).to receive_messages(creds: credentials, redirect_uri: "http://test.com/callback")
+      creds = OpenStruct.new(
+        integrations: OpenStruct.new(
+          linear: OpenStruct.new(
+            client_id: "test_client_id",
+            client_secret: "test_secret"
+          )
+        )
+      )
+      allow(linear_integration).to receive_messages(creds: creds, redirect_uri: "http://test.com/callback")
       allow(integration).to receive(:installation_state).and_return("test_state")
     end
 

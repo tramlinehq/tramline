@@ -12,7 +12,7 @@ module Installations
       {
         message_matcher: /Issue does not exist/i,
         decorated_reason: :issue_not_found
-      },
+      }
     ].freeze
 
     def initialize(error_body)

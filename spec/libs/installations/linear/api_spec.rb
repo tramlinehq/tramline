@@ -9,10 +9,15 @@ describe Installations::Linear::Api do
     let(:redirect_uri) { "http://test.com/callback" }
 
     before do
-      linear_creds = instance_double("LinearCredentials", client_id: "test_client_id", client_secret: "test_client_secret")
-      integrations_creds = instance_double("IntegrationCredentials", linear: linear_creds)
-      credentials = instance_double("ApplicationCredentials", integrations: integrations_creds)
-      allow(described_class).to receive(:creds).and_return(credentials)
+      creds = OpenStruct.new(
+        integrations: OpenStruct.new(
+          linear: OpenStruct.new(
+            client_id: "test_client_id",
+            client_secret: "test_secret"
+          )
+        )
+      )
+      allow(described_class).to receive(:creds).and_return(creds)
     end
 
     it "makes a POST request to Linear's token endpoint" do

@@ -13,4 +13,3 @@ module Installations
     TokenExpired = Installations::Error.new("Failed to acquire oauth token", reason: :token_expired)
   end
 end
-

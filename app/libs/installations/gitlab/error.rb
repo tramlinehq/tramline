@@ -4,7 +4,7 @@ module Installations
       {
         error: "invalid_token",
         decorated_reason: :token_expired
-      },
+      }
     ]
 
     MESSAGES = [
