@@ -5,9 +5,10 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  workspace_name      :string
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
-#  organization_id     :string           indexed
+#  workspace_id        :string           indexed
 #
 class LinearIntegration < ApplicationRecord
   has_paper_trail
@@ -56,7 +57,7 @@ class LinearIntegration < ApplicationRecord
   attr_accessor :code, :available_organizations
   delegate :app, to: :integration
   delegate :cache, to: Rails
-  validates :organization_id, presence: true
+  validates :workspace_id, presence: true
 
   def install_path
     BASE_INSTALLATION_URL
@@ -75,12 +76,13 @@ class LinearIntegration < ApplicationRecord
     tokens = API.get_access_token(code, redirect_uri)
     set_tokens(tokens)
 
-    return true if organization_id.present?
+    return true if workspace_id.present?
 
     organizations = API.get_organizations(oauth_access_token)
 
     if organizations.length >= 1
-      self.organization_id = organizations.first["id"]
+      self.workspace_id = organizations.first["id"]
+      self.workspace_name = organizations.first["name"]
       true
     else
       false
@@ -108,7 +110,7 @@ class LinearIntegration < ApplicationRecord
   end
 
   def setup
-    return {} if organization_id.blank?
+    return {} if workspace_id.blank?
 
     with_api_retries do
       teams_result = fetch_teams
@@ -121,14 +123,20 @@ class LinearIntegration < ApplicationRecord
       }
     end
   rescue Installations::Error => e
-    elog("Failed to fetch Linear setup data for organization_id #{organization_id}: #{e}", level: :warn)
+    elog("Failed to fetch Linear setup data for workspace_id #{workspace_id}: #{e}", level: :warn)
     {}
   end
 
-  def metadata = organization_id
+  def metadata = workspace_id
 
   def connection_data
-    "Organization ID: #{integration.metadata}" if integration.metadata
+    return unless integration.metadata
+
+    if workspace_name.present?
+      "Workspace: #{workspace_name} (#{integration.metadata})"
+    else
+      "Organization ID: #{integration.metadata}"
+    end
   end
 
   def fetch_issues_for_release
@@ -204,22 +212,22 @@ class LinearIntegration < ApplicationRecord
 
   def fetch_teams
     teams = {teams: []}
-    return teams if organization_id.blank?
+    return teams if workspace_id.blank?
 
     with_api_retries do
       teams[:teams] = api.teams(TEAM_TRANSFORMATIONS)
       teams
     end
   rescue Installations::Error => e
-    elog("Failed to fetch Linear teams data for organization_id #{organization_id}: #{e.message}", level: :warn)
+    elog("Failed to fetch Linear teams data for workspace_id #{workspace_id}: #{e.message}", level: :warn)
     teams
   end
 
   def fetch_workflow_states
-    return {} if organization_id.blank?
+    return {} if workspace_id.blank?
     with_api_retries { api.workflow_states(WORKFLOW_STATE_TRANSFORMATIONS) }
   rescue Installations::Error => e
-    elog("Failed to fetch Linear workflow states for organization_id #{organization_id}: #{e}", level: :warn)
+    elog("Failed to fetch Linear workflow states for workspace_id #{workspace_id}: #{e}", level: :warn)
     {}
   end
 end

@@ -5,6 +5,7 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  organization_name   :string
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #  cloud_id            :string           indexed
@@ -86,11 +87,17 @@ class JiraIntegration < ApplicationRecord
 
     if resources.length == 1
       self.cloud_id = resources.first["id"]
+      self.organization_name = resources.first["name"]
       true
     else
       @available_resources = resources
       false
     end
+  end
+
+  def cloud_id=(new_cloud_id)
+    super
+    set_organization_name_from_resources(new_cloud_id) if new_cloud_id.present?
   end
 
   def installation
@@ -135,7 +142,13 @@ class JiraIntegration < ApplicationRecord
   def metadata = cloud_id
 
   def connection_data
-    "Cloud ID: #{integration.metadata}" if integration.metadata
+    return unless integration.metadata
+
+    if organization_name.present?
+      "Organization: #{organization_name} (#{integration.metadata})"
+    else
+      "Cloud ID: #{integration.metadata}"
+    end
   end
 
   def fetch_tickets_for_release
@@ -236,5 +249,12 @@ class JiraIntegration < ApplicationRecord
   rescue Installations::Error => e
     elog("Failed to fetch Jira project statuses for cloud_id #{cloud_id}: #{e}", level: :warn)
     {}
+  end
+
+  def set_organization_name_from_resources(cloud_id)
+    return unless @available_resources&.any?
+
+    selected_resource = @available_resources.find { |resource| resource["id"] == cloud_id }
+    self.organization_name = selected_resource["name"] if selected_resource
   end
 end
