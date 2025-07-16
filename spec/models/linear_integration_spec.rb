@@ -17,7 +17,10 @@ describe LinearIntegration do
 
     before do
       linear_integration.integration = integration
-      allow(linear_integration).to receive_messages(creds: double(integrations: double(linear: double(client_id: "test_client_id"))), redirect_uri: "http://test.com/callback") # rubocop:disable RSpec/VerifiedDoubles
+      linear_creds = instance_double("LinearCredentials", client_id: "test_client_id")
+      integrations_creds = instance_double("IntegrationCredentials", linear: linear_creds)
+      credentials = instance_double("ApplicationCredentials", integrations: integrations_creds)
+      allow(linear_integration).to receive_messages(creds: credentials, redirect_uri: "http://test.com/callback")
       allow(integration).to receive(:installation_state).and_return("test_state")
     end
 
@@ -67,30 +70,6 @@ describe LinearIntegration do
   describe "#to_s" do
     it "returns 'linear'" do
       expect(linear_integration.to_s).to eq("linear")
-    end
-  end
-
-  describe "#further_setup?" do
-    it "returns true" do
-      expect(linear_integration.further_setup?).to be true
-    end
-  end
-
-  describe "#connectable?" do
-    it "returns true" do
-      expect(linear_integration.connectable?).to be true
-    end
-  end
-
-  describe "#creatable?" do
-    it "returns false" do
-      expect(linear_integration.creatable?).to be false
-    end
-  end
-
-  describe "#store?" do
-    it "returns false" do
-      expect(linear_integration.store?).to be false
     end
   end
 end

@@ -163,7 +163,7 @@ class JiraIntegration < ApplicationRecord
   private
 
   MAX_RETRY_ATTEMPTS = 2
-  RETRYABLE_ERRORS = []
+  RETRYABLE_ERRORS = [:server_error]
 
   def with_api_retries(attempt: 0, &)
     yield
@@ -171,7 +171,7 @@ class JiraIntegration < ApplicationRecord
     raise ex if attempt >= MAX_RETRY_ATTEMPTS
     next_attempt = attempt + 1
 
-    if ex.reason == :token_expired
+    if %i[token_expired token_refresh_failure].include?(ex.reason)
       reset_tokens!
       return with_api_retries(attempt: next_attempt, &)
     end
@@ -187,7 +187,7 @@ class JiraIntegration < ApplicationRecord
     tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
 
     if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
-      raise Installations::Jira::Error.new("error" => "token_refresh_failure")
+      raise Installations::Error::TokenRefreshFailure
     end
 
     set_tokens(tokens)

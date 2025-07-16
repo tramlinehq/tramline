@@ -1,7 +1,7 @@
 require "rails_helper"
 require "webmock/rspec"
 
-RSpec.describe Installations::Jira::Api do
+describe Installations::Jira::Api do
   let(:oauth_access_token) { "test_token" }
   let(:cloud_id) { "test_cloud_id" }
   let(:api) { described_class.new(oauth_access_token, cloud_id) }

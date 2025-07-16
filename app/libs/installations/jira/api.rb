@@ -118,13 +118,14 @@ module Installations
           .headers("Accept" => "application/json")
           .public_send(method, url, params)
 
+      raise Installations::Error::ServerError if response.status.server_error?
+
       parsed_body = parse_response ? JSON.parse(response.body) : response.body
       Rails.logger.debug { "Jira API returned #{response.status} for #{url} with body - #{parsed_body}" }
-
       return parsed_body unless response.status.client_error?
 
-      raise Installations::Error.new("Token expired", reason: :token_expired) if response.status == 401
-      raise Installations::Error.new("Resource not found", reason: :not_found) if response.status == 404
+      raise Installations::Error::TokenExpired if response.status == 401
+      raise Installations::Error::ResourceNotFound if response.status == 404
       raise Installations::Jira::Error.new(parsed_body)
     end
 

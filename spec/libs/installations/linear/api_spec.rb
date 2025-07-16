@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Installations::Linear::Api do
+describe Installations::Linear::Api do
   let(:access_token) { "test_access_token" }
   let(:api) { described_class.new(access_token) }
 
@@ -9,9 +9,10 @@ RSpec.describe Installations::Linear::Api do
     let(:redirect_uri) { "http://test.com/callback" }
 
     before do
-      allow(described_class).to receive(:creds).and_return(
-        double(integrations: double(linear: double(client_id: "client_id", client_secret: "client_secret"))) # rubocop:disable RSpec/VerifiedDoubles
-      )
+      linear_creds = instance_double("LinearCredentials", client_id: "test_client_id", client_secret: "test_client_secret")
+      integrations_creds = instance_double("IntegrationCredentials", linear: linear_creds)
+      credentials = instance_double("ApplicationCredentials", integrations: integrations_creds)
+      allow(described_class).to receive(:creds).and_return(credentials)
     end
 
     it "makes a POST request to Linear's token endpoint" do

@@ -116,14 +116,13 @@ class LinearIntegration < ApplicationRecord
       return {} if teams_result[:teams].empty?
 
       workflow_states_data = fetch_workflow_states
-
       {
         teams: teams_result[:teams],
         workflow_states: workflow_states_data
       }
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Linear setup data for organization_id #{organization_id}: #{e.message}")
+  rescue Installations::Error => e
+    elog("Failed to fetch Linear setup data for organization_id #{organization_id}: #{e}", level: :warn)
     {}
   end
 
@@ -141,17 +140,13 @@ class LinearIntegration < ApplicationRecord
     return [] if team_id.blank? || release_filters.blank?
 
     with_api_retries do
-      response = api.search_issues_by_filters(
-        team_id,
-        release_filters,
-        ISSUE_TRANSFORMATIONS
-      )
-      return [] if response["issues"].blank?
-
-      response["issues"]
+      response = api.search_issues_by_filters(team_id, release_filters, ISSUE_TRANSFORMATIONS)
+      issues = response["issues"]
+      return [] if issues.blank?
+      issues
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Linear issues for release: #{e.message}")
+  rescue Installations::Error => e
+    elog("Failed to fetch Linear issues for release: #{e}", level: :warn)
     []
   end
 
@@ -162,7 +157,7 @@ class LinearIntegration < ApplicationRecord
   private
 
   MAX_RETRY_ATTEMPTS = 2
-  RETRYABLE_ERRORS = []
+  RETRYABLE_ERRORS = [:server_error]
 
   def with_api_retries(attempt: 0, &)
     yield
@@ -170,7 +165,7 @@ class LinearIntegration < ApplicationRecord
     raise ex if attempt >= MAX_RETRY_ATTEMPTS
     next_attempt = attempt + 1
 
-    if ex.reason == :token_expired
+    if %i[token_expired token_refresh_failure].include?(ex.reason)
       reset_tokens!
       return with_api_retries(attempt: next_attempt, &)
     end
@@ -183,13 +178,19 @@ class LinearIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    set_tokens(API.oauth_refresh_token(oauth_refresh_token, redirect_uri))
+    tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
+
+    if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      raise Installations::Error::TokenRefreshFailure
+    end
+
+    set_tokens(tokens)
     save!
+
+    reload
   end
 
   def set_tokens(tokens)
-    return unless tokens
-
     self.oauth_access_token = tokens.access_token
     self.oauth_refresh_token = tokens.refresh_token
   end
@@ -203,23 +204,23 @@ class LinearIntegration < ApplicationRecord
   end
 
   def fetch_teams
-    return {teams: []} if organization_id.blank?
+    teams = {teams: []}
+    return teams if organization_id.blank?
+
     with_api_retries do
-      response = api.teams(TEAM_TRANSFORMATIONS)
-      {teams: response}
+      teams[:teams] = api.teams(TEAM_TRANSFORMATIONS)
+      teams
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Linear teams for organization_id #{organization_id}: #{e}")
-    {teams: []}
+  rescue Installations::Error => e
+    elog("Failed to fetch Linear teams data for organization_id #{organization_id}: #{e.message}", level: :warn)
+    teams
   end
 
   def fetch_workflow_states
     return {} if organization_id.blank?
-    with_api_retries do
-      api.workflow_states(WORKFLOW_STATE_TRANSFORMATIONS)
-    end
-  rescue => e
-    Rails.logger.error("Failed to fetch Linear workflow states for organization_id #{organization_id}: #{e}")
+    with_api_retries { api.workflow_states(WORKFLOW_STATE_TRANSFORMATIONS) }
+  rescue Installations::Error => e
+    elog("Failed to fetch Linear workflow states for organization_id #{organization_id}: #{e}", level: :warn)
     {}
   end
 end

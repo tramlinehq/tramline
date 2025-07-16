@@ -130,13 +130,14 @@ module Installations
         .headers("Content-Type" => "application/json")
         .post(GRAPHQL_URL, json: query)
 
+      raise Installations::Error::ServerError if response.status.server_error?
+
       parsed_body = JSON.parse(response.body)
       Rails.logger.debug { "Linear API returned #{response.status} for GraphQL query with body - #{parsed_body}" }
-
       return parsed_body unless response.status.client_error?
 
-      raise Installations::Error.new("Token expired", reason: :token_expired) if response.status == 401
-      raise Installations::Error.new("Resource not found", reason: :not_found) if response.status == 404
+      raise Installations::Error::TokenExpired if response.status == 401
+      raise Installations::Error::ResourceNotFound if response.status == 404
       raise Installations::Linear::Error.new(parsed_body)
     end
 

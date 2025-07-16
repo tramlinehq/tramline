@@ -2,14 +2,6 @@ module Installations
   class Jira::Error < Installations::Error
     ERRORS = [
       {
-        message_matcher: /token expired/i,
-        decorated_reason: :token_expired
-      },
-      {
-        error: "token_refresh_failure",
-        decorated_reason: :token_refresh_failure
-      },
-      {
         message_matcher: /does not have the required scope/i,
         decorated_reason: :insufficient_scope
       },
@@ -21,10 +13,6 @@ module Installations
         message_matcher: /Issue does not exist/i,
         decorated_reason: :issue_not_found
       },
-      {
-        message_matcher: /Service Unavailable/i,
-        decorated_reason: :service_unavailable
-      }
     ].freeze
 
     def initialize(error_body)

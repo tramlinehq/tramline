@@ -539,8 +539,10 @@ module Installations
 
     def raw_execute(verb, url, params)
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
-      raise Installations::Gitlab::Error.new({"error" => "Service Unavailable"}) if response.status.server_error?
+
+      raise Installations::Error::ServerError if response.status.server_error?
       return response unless error?(response.status)
+
       raise Installations::Gitlab::Error.new(JSON.parse(response.body))
     end
 
