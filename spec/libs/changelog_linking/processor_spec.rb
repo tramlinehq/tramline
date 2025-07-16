@@ -14,7 +14,7 @@ RSpec.describe ChangelogLinking::Processor do
       it "links Linear tickets correctly" do
         messages = ["VOICE-330: Fix null location in debug recording analytics event (#2591)"]
         result = processor.process(messages)
-        
+
         expect(result).to be_an(Array)
         parsed_result = JSON.parse(result.first)
         expect(parsed_result).to include("linear.app/dummy/issue/VOICE-330")
@@ -24,7 +24,7 @@ RSpec.describe ChangelogLinking::Processor do
       it "handles tickets in brackets" do
         messages = ["[IFNO-4936] Modify order payload fix (#15624)"]
         result = processor.process(messages)
-        
+
         parsed_result = JSON.parse(result.first)
         expect(parsed_result).to include("• [<https://linear.app/dummy/issue/IFNO-4936%7CIFNO-4936>] Modify order payload fix (<https://github.com/tramlinehq/ueno/pull/15624%7C#15624>)")
       end
@@ -32,7 +32,7 @@ RSpec.describe ChangelogLinking::Processor do
       it "handles multiple tickets in one message" do
         messages = ["[IE-4945][IE-4946] Modify order payload fix (#15624)"]
         result = processor.process(messages)
-        
+
         parsed_result = JSON.parse(result.first)
         expect(parsed_result).to include("IE-4945")
         expect(parsed_result).to include("IE-4946")
@@ -48,7 +48,7 @@ RSpec.describe ChangelogLinking::Processor do
       it "links Jira tickets correctly" do
         messages = ["CX-654: Fix nesting flows during review"]
         result = processor.process(messages)
-        
+
         parsed_result = JSON.parse(result.first)
         expect(parsed_result).to include("atlassian.net/browse/CX-654")
       end
@@ -62,7 +62,7 @@ RSpec.describe ChangelogLinking::Processor do
       it "links GitHub PRs correctly" do
         messages = ["Bump version to X.Y.Z (#2608)"]
         result = processor.process(messages)
-        
+
         parsed_result = JSON.parse(result.first)
         expect(parsed_result).to include("github.com/tramlinehq/ueno/pull/2608")
       end
@@ -81,10 +81,10 @@ RSpec.describe ChangelogLinking::Processor do
           "VOICE-331: Another voice fix",
           "Bump version (#123)"
         ]
-        
+
         result = processor.process(messages)
         content = JSON.parse(result.first)
-        
+
         expect(content).to match(/General.*CX.*VOICE/m)
       end
     end

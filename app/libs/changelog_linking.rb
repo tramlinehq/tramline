@@ -113,7 +113,7 @@ module ChangelogLinking
       grouped_messages.each do |line|
         # Account for JSON encoding overhead (quotes, escaping, etc.)
         line_json_size = line.to_json.length + 1
-        
+
         if current_size + line_json_size > MAX_CHUNK_SIZE && current_chunk.any?
           chunks << current_chunk.join("\n")
           current_chunk = [line]
@@ -125,7 +125,7 @@ module ChangelogLinking
       end
 
       chunks << current_chunk.join("\n") if current_chunk.any?
-      
+
       chunks.map { |chunk| chunk.to_json }
     end
   end
