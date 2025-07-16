@@ -139,7 +139,7 @@ class PreProdRelease < ApplicationRecord
   end
 
   def generate_linked_tester_notes(changes)
-    ChangelogLinking::Processor.new(train.app).process(
+    ChangelogLinking::Slack.new(train.app).process(
       sanitize_commit_messages(changes, compact_messages: train.compact_build_notes?)
     )
   end
