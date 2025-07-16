@@ -314,6 +314,10 @@ class GitlabIntegration < ApplicationRecord
     "https://gitlab.com/#{code_repository_name}/-/compare/#{to_branch}...#{from_branch}?straight=true"
   end
 
+  def pr_url(pr_number)
+    "https://gitlab.com/#{code_repository_name}/-/merge_requests/#{pr_number}"
+  end
+
   def installation
     API.new(oauth_access_token)
   end
