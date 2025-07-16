@@ -120,8 +120,8 @@ class JiraIntegration < ApplicationRecord
       projects_result = fetch_projects
       projects = projects_result.dig(:projects)
       return {} if projects.empty?
-      statuses_data = fetch_project_statuses(projects)
 
+      statuses_data = fetch_project_statuses(projects)
       {
         projects: projects,
         project_statuses: statuses_data
@@ -184,13 +184,19 @@ class JiraIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    set_tokens(API.oauth_refresh_token(oauth_refresh_token, redirect_uri))
+    tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
+
+    if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      raise Installations::Jira::Error.new("error" => "token_refresh_failure")
+    end
+
+    set_tokens(tokens)
     save!
+
+    reload
   end
 
   def set_tokens(tokens)
-    return unless tokens
-
     self.oauth_access_token = tokens.access_token
     self.oauth_refresh_token = tokens.refresh_token
   end
@@ -206,6 +212,7 @@ class JiraIntegration < ApplicationRecord
   def fetch_projects
     projects = {projects: []}
     return projects if cloud_id.blank?
+
     with_api_retries do
       projects[:projects] = api.projects(PROJECT_TRANSFORMATIONS)
       projects

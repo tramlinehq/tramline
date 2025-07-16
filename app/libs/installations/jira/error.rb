@@ -2,8 +2,12 @@ module Installations
   class Jira::Error < Installations::Error
     ERRORS = [
       {
-        message_matcher: /The access token expired/i,
+        message_matcher: /token expired/i,
         decorated_reason: :token_expired
+      },
+      {
+        error: "token_refresh_failure",
+        decorated_reason: :token_refresh_failure
       },
       {
         message_matcher: /does not have the required scope/i,

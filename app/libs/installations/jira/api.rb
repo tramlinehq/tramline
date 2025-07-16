@@ -123,7 +123,6 @@ module Installations
 
       return parsed_body unless response.status.client_error?
 
-      raise Installations::Error.new(nil) if _5xx?(response.status)
       raise Installations::Error.new("Token expired", reason: :token_expired) if response.status == 401
       raise Installations::Error.new("Resource not found", reason: :not_found) if response.status == 404
       raise Installations::Jira::Error.new(parsed_body)
@@ -146,10 +145,6 @@ module Installations
 
     def sanitize_jql_value(value)
       value.to_s.gsub("'", "\\'").gsub(/[^\w\s\-\.]/, "")
-    end
-
-    def _5xx?(code)
-      code.between?(500, 599)
     end
   end
 end
