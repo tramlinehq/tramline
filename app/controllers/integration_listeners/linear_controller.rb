@@ -1,6 +1,10 @@
 class IntegrationListeners::LinearController < IntegrationListenerController
   using RefinedString
 
+  skip_before_action :verify_authenticity_token, only: [:events]
+  skip_before_action :require_login, only: [:events]
+  skip_before_action :require_organization!, only: [:events]
+
   def callback
     unless valid_state?
       redirect_to app_path(state_app), alert: INTEGRATION_CREATE_ERROR
