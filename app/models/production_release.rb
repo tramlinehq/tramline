@@ -196,8 +196,12 @@ class ProductionRelease < ApplicationRecord
   end
 
   def rollout_started_notification_params
+    changes = changes_since_previous
     store_rollout.notification_params.merge(
-      diff_changelog: sanitize_commit_messages(changes_since_previous)
+      diff_changelog: sanitize_commit_messages(changes),
+      linked_diff_changelog: ChangelogLinking::Processor.new(train.app).process(
+        sanitize_commit_messages(changes)
+      )
     )
   end
 

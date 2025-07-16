@@ -427,6 +427,13 @@ class Release < ApplicationRecord
       .join("\n")
   end
 
+  def linked_release_diff
+    changes_since_last_release = release_changelog&.commits&.commit_messages(true)
+    changes_since_last_run = all_commits.commit_messages(true)
+    combined = ((changes_since_last_run || []) + (changes_since_last_release || []))
+    sanitize_and_link_commit_messages(combined, train.app)
+  end
+
   def branch_url
     train.vcs_provider&.branch_url(release_branch)
   end

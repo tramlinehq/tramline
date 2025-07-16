@@ -4,6 +4,11 @@ module Sanitizable
   COMMIT_FILTER_PATTERNS = /\AMerge|\ASee merge|\ACo-authored-by|\A---------/
   EMOJI_PATTERN = /\p{Emoji_Presentation}\s*/
 
+  def sanitize_and_link_commit_messages(array_of_commit_messages, app, compact_messages: true)
+    sanitized = sanitize_commit_messages(array_of_commit_messages, compact_messages: compact_messages)
+    ChangelogLinking::Processor.new(app).process(sanitized)
+  end
+
   private
 
   def sanitize_commit_messages(array_of_commit_messages, compact_messages: true)
