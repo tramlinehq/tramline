@@ -57,50 +57,48 @@
     </div>
 
     <div class="grid grid-cols-3 item-gap-default">
-      <div class="flex flex-col item-gap-default">
-        <% jira_data[:projects].each do |project| %>
-          <% project_key = project["key"] %>
-          <% statuses = jira_data[:project_statuses][project_key] %>
+      <% jira_data[:projects].each do |project| %>
+        <% project_key = project["key"] %>
+        <% statuses = jira_data[:project_statuses][project_key] %>
 
-          <div data-targeted-toggle-target="subsection" data-section-key="<%= project_key %>">
-            <div class="flex flex-col item-gap-default">
-              <h3 class="heading-5">For <%= project["name"] %> (<%= project["key"] %>)</h3>
-              <div class="flex flex-col">
-                <% if statuses&.any? %>
-                  <% statuses.each do |status| %>
-                    <% status_name = "status_#{project_key}_#{status["name"].parameterize}" %>
+        <div data-targeted-toggle-target="subsection" data-section-key="<%= project_key %>">
+          <div class="flex flex-col item-gap-default">
+            <h3 class="heading-5">For <%= project["name"] %> (<%= project["key"] %>)</h3>
+            <div class="flex flex-col">
+              <% if statuses&.any? %>
+                <% statuses.each do |status| %>
+                  <% status_name = "status_#{project_key}_#{status["name"].parameterize}" %>
 
-                    <div class="flex items-center">
-                      <%= form.fields_for :jira_config do |sf| %>
-                        <%= sf.fields_for :project_configs do |pf| %>
-                          <%= pf.fields_for project_key do |pk| %>
-                            <% checked =
-                                 current_jira_config
-                                   &.dig("project_configs", project_key, "done_states")
-                                   &.include?(status["name"]) %>
+                  <div class="flex items-center">
+                    <%= form.fields_for :jira_config do |sf| %>
+                      <%= sf.fields_for :project_configs do |pf| %>
+                        <%= pf.fields_for project_key do |pk| %>
+                          <% checked =
+                               current_jira_config
+                                 &.dig("project_configs", project_key, "done_states")
+                                 &.include?(status["name"]) %>
 
-                            <%= pk.checkbox :done_states,
-                                            {multiple: true, include_hidden: false, id: status_name, checked:},
-                                            status["name"] %>
-                          <% end %>
+                          <%= pk.checkbox :done_states,
+                                          {multiple: true, include_hidden: false, id: status_name, checked:},
+                                          status["name"] %>
                         <% end %>
                       <% end %>
+                    <% end %>
 
-                      <label for="<%= status_name %>" class="ml-2 text-sm text-gray-600">
-                        <%= status["name"] %>
-                      </label>
-                    </div>
-                  <% end %>
-                <% else %>
-                  <%= render EmptyStateComponent.new(text: "No status configurations found for this project.",
-                                                     banner_image: "list_checks.svg",
-                                                     type: :tiny) %>
+                    <label for="<%= status_name %>" class="ml-2 text-sm text-gray-600">
+                      <%= status["name"] %>
+                    </label>
+                  </div>
                 <% end %>
-              </div>
+              <% else %>
+                <%= render EmptyStateComponent.new(text: "No status configurations found for this project.",
+                                                   banner_image: "list_checks.svg",
+                                                   type: :tiny) %>
+              <% end %>
             </div>
           </div>
-        <% end %>
-      </div>
+        </div>
+      <% end %>
     </div>
 
     <div id="no-projects-selected" data-controller="reveal" hidden data-reveal>

@@ -79,11 +79,10 @@ class LinearIntegration < ApplicationRecord
 
     organizations = API.get_organizations(oauth_access_token)
 
-    if organizations.length == 1
+    if organizations.length >= 1
       self.organization_id = organizations.first["id"]
       true
     else
-      @available_organizations = organizations
       false
     end
   end

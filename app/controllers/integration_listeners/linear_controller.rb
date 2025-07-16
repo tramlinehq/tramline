@@ -18,13 +18,7 @@ class IntegrationListeners::LinearController < IntegrationListenerController
       if @integration.providable.complete_access && @integration.save
         redirect_to app_path(state_app), notice: t("integrations.project_management.linear.integration_created")
       else
-        @organizations = @integration.providable.available_organizations
-
-        if @organizations.blank?
-          redirect_to app_integrations_path(state_app), alert: t("integrations.project_management.linear.no_organization")
-        else
-          render "linear_integration/select_organization"
-        end
+        redirect_to app_integrations_path(state_app), alert: t("integrations.project_management.linear.no_organization")
       end
     rescue => e
       elog(e, level: :error)
