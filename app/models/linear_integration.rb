@@ -149,6 +149,10 @@ class LinearIntegration < ApplicationRecord
     []
   end
 
+  def ticket_url(ticket_id)
+    "https://linear.app/dummy/issue/#{ticket_id}"
+  end
+
   def display
     "Linear"
   end

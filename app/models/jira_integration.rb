@@ -156,6 +156,10 @@ class JiraIntegration < ApplicationRecord
     []
   end
 
+  def ticket_url(ticket_id)
+    "https://#{cloud_id}.atlassian.net/browse/#{ticket_id}"
+  end
+
   def display
     "Jira"
   end
