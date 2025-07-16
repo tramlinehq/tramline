@@ -776,5 +776,3 @@ en:
         done_states:
           select: "Select Done States"
           help_text: "Choose which states represent completed work"
-        no_organization: "No Jira organizations available. Please try again."
-        integration_created: "Integration was successfully created."

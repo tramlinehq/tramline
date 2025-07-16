@@ -1,5 +1,4 @@
 class IntegrationListeners::LinearController < IntegrationListenerController
-  include Loggable
   using RefinedString
 
   def callback
@@ -20,12 +19,13 @@ class IntegrationListeners::LinearController < IntegrationListenerController
         if @organizations.blank?
           redirect_to app_integrations_path(state_app), alert: t("integrations.project_management.linear.no_organization")
           return
+        else
+          redirect_to app_integrations_path(state_app), alert: INTEGRATION_CREATE_ERROR
+          return
         end
-
-        render "linear_integration/select_organization"
       end
     rescue => e
-      elog(e)
+      elog(e, level: :error)
       redirect_to app_integrations_path(state_app), alert: INTEGRATION_CREATE_ERROR
     end
   end
