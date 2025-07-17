@@ -596,6 +596,10 @@ en:
               project_deleted: "the project has been deleted and is no longer accessible"
               unknown_failure: "an unrecognized error occurred connecting to Firebase, please check your project number and key"
 
+  mobile:
+    releases:
+      not_found: "Release not found"
+
   invitation:
     flash:
       invite_issued: "Invitation issued"
@@ -610,10 +614,6 @@ en:
       already_accepted: "Invitation was already accepted!"
       failed: "Failed to accept your invitation. Please contact support!"
       invalid_or_expired: "This invitation link is no longer valid. Please contact the organization admin for a new invitation."
-
-  mobile:
-    releases:
-      not_found: "Release not found"
 
     invite_mailer:
       existing_user:
