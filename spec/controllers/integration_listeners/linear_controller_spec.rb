@@ -53,7 +53,7 @@ describe IntegrationListeners::LinearController do
       )
     end
 
-    it "includes code and organization_id" do
+    it "includes code and workspace_id" do
       result = controller_instance.send(:providable_params)
       expect(result).to eq({code: "test_code", integration: nil, workspace_id: "test_org"})
     end

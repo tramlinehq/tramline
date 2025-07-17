@@ -2,6 +2,7 @@ require "rails_helper"
 
 describe JiraIntegration do
   subject(:integration) { build(:jira_integration) }
+
   let(:sample_release_label) { "release-1.0" }
   let(:sample_version) { "v1.0.0" }
 
