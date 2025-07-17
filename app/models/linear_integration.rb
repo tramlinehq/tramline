@@ -6,6 +6,7 @@
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
 #  workspace_name      :string
+#  workspace_url_key   :string
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #  workspace_id        :string           indexed
@@ -83,6 +84,7 @@ class LinearIntegration < ApplicationRecord
     if organizations.length >= 1
       self.workspace_id = organizations.first["id"]
       self.workspace_name = organizations.first["name"]
+      self.workspace_url_key = organizations.first["urlKey"]
       true
     else
       false
