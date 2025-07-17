@@ -6,7 +6,8 @@ class WorkflowRuns::TriggerJob < ApplicationJob
     :workflow_dispatch_missing,
     :workflow_parameter_invalid,
     :workflow_run_not_found,
-    :workflow_run_not_runnable
+    :workflow_run_not_runnable,
+    :workflow_trigger_failed
   ]
 
   def perform(workflow_run_id, retrigger = false)
