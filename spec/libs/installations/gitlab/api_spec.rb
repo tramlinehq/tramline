@@ -34,6 +34,7 @@ describe Installations::Gitlab::Api do
     let(:project_id) { "123" }
     let(:job_id) { "456" }
     let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/jobs/#{job_id}/play" }
+    let(:inputs) { {parameters: {"foo" => "bar"}} }
     let(:transforms) { {id: :id, status: :status} }
 
     it "triggers a job" do
@@ -41,7 +42,7 @@ describe Installations::Gitlab::Api do
         .with(headers: {"Authorization" => "Bearer access_token"})
         .to_return(status: 200, body: {id: job_id, status: "running"}.to_json, headers: {"Content-Type" => "application/json"})
 
-      result = api.trigger_job!(project_id, job_id, transforms)
+      result = api.trigger_job!(project_id, job_id, inputs, transforms)
       expect(result[:id]).to eq(job_id)
       expect(result[:status]).to eq("running")
     end
@@ -52,7 +53,7 @@ describe Installations::Gitlab::Api do
           .with(headers: {"Authorization" => "Bearer access_token"})
           .to_return(status: 400, body: {"message" => "Unplayable Job"}.to_json, headers: {"Content-Type" => "application/json"})
 
-        expect { api.trigger_job!(project_id, job_id, transforms) }.to raise_error(Installations::Gitlab::Error)
+        expect { api.trigger_job!(project_id, job_id, inputs, transforms) }.to raise_error(Installations::Gitlab::Error)
       end
     end
   end
