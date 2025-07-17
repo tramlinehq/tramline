@@ -258,13 +258,13 @@ class GithubIntegration < ApplicationRecord
   end
 
   def artifact_url
-    raise Integrations::UnsupportedAction
+    raise Integration::UnsupportedAction
   end
 
   # we currently only select the largest artifact from github, since we have no information about the file types
   # in the future, this could be smarter and/or a user input
   def get_artifact(artifacts_url, artifact_name_pattern, _)
-    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_url.blank?
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifacts_url.blank?
 
     artifact =
       installation
