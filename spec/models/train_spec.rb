@@ -206,6 +206,42 @@ describe Train do
 
       expect(train.release_branch_name_fmt(hotfix: true)).to eq("hotfix/train/%Y-%m-%d")
     end
+
+    it "uses default pattern when no custom pattern is set" do
+      train = create(:train, :with_almost_trunk, :active)
+
+      expect(train.release_branch_name_fmt).to eq("r/train/%Y-%m-%d")
+    end
+
+    it "uses custom pattern when release_branch_name_pattern is set" do
+      train = create(:train, :with_almost_trunk, :active, release_branch_name_pattern: "release/{{train_name}}/%Y-%m-%d-%H%M")
+
+      expect(train.release_branch_name_fmt).to eq("release/train/%Y-%m-%d-%H%M")
+    end
+
+    it "substitutes train_name placeholder in custom pattern" do
+      train = create(:train, :with_almost_trunk, :active, name: "My Custom Train", release_branch_name_pattern: "custom/{{train_name}}/v%Y.%m")
+
+      expect(train.release_branch_name_fmt).to eq("custom/my-custom-train/v%Y.%m")
+    end
+
+    it "substitutes version_number placeholder in custom pattern" do
+      train = create(:train, :with_almost_trunk, :active, release_branch_name_pattern: "r/{{train_name}}/{{version_number}}")
+
+      expect(train.release_branch_name_fmt(release_version: "1.2.3")).to eq("r/train/1.2.3")
+    end
+
+    it "substitutes build_number placeholder in custom pattern" do
+      train = create(:train, :with_almost_trunk, :active, release_branch_name_pattern: "r/{{train_name}}/{{build_number}}")
+
+      expect(train.release_branch_name_fmt(build_number: "42")).to eq("r/train/42")
+    end
+
+    it "substitutes multiple placeholders in custom pattern" do
+      train = create(:train, :with_almost_trunk, :active, name: "My Train", release_branch_name_pattern: "release/{{train_name}}/{{version_number}}/{{build_number}}/%Y-%m-%d")
+
+      expect(train.release_branch_name_fmt(release_version: "1.2.3", build_number: "42")).to eq("release/my-train/1.2.3/42/%Y-%m-%d")
+    end
   end
 
   describe "#hotfixable?" do
@@ -344,6 +380,55 @@ describe Train do
 
       expect(release.failure_anywhere?).to be(true)
       expect(release.reload.stopped?).to be(true)
+    end
+  end
+
+  describe "release_branch_name_pattern validation" do
+    it "is valid when pattern is blank" do
+      train = build(:train, release_branch_name_pattern: "")
+      expect(train).to be_valid
+    end
+
+    it "is valid when pattern is nil" do
+      train = build(:train, release_branch_name_pattern: nil)
+      expect(train).to be_valid
+    end
+
+    it "is valid with correct pattern format" do
+      train = build(:train, release_branch_name_pattern: "release/{{train_name}}/%Y-%m-%d")
+      expect(train).to be_valid
+    end
+
+    it "is valid with pattern containing various strftime formats" do
+      train = build(:train, release_branch_name_pattern: "r/{{train_name}}/%Y-%m-%d-%H%M%S")
+      expect(train).to be_valid
+    end
+
+    it "is valid with version_number placeholder" do
+      train = build(:train, release_branch_name_pattern: "r/{{train_name}}/{{version_number}}")
+      expect(train).to be_valid
+    end
+
+    it "is valid with build_number placeholder" do
+      train = build(:train, release_branch_name_pattern: "r/{{train_name}}/{{build_number}}")
+      expect(train).to be_valid
+    end
+
+    it "is valid with multiple placeholders and strftime" do
+      train = build(:train, release_branch_name_pattern: "r/{{train_name}}/{{version_number}}/{{build_number}}/%Y-%m-%d")
+      expect(train).to be_valid
+    end
+
+    it "is not valid when pattern is missing {{train_name}} placeholder" do
+      train = build(:train, release_branch_name_pattern: "release/myapp/%Y-%m-%d")
+      expect(train).not_to be_valid
+      expect(train.errors[:release_branch_name_pattern]).to include("must contain {{train_name}} placeholder")
+    end
+
+    it "is not valid when pattern has invalid format" do
+      train = build(:train, release_branch_name_pattern: "invalid-pattern")
+      expect(train).not_to be_valid
+      expect(train.errors[:release_branch_name_pattern]).to include("must contain {{train_name}} placeholder")
     end
   end
 

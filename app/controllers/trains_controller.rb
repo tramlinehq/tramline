@@ -136,7 +136,8 @@ class TrainsController < SignedInApplicationController
       :version_bump_enabled,
       :version_bump_file_paths,
       :version_bump_branch_prefix,
-      :version_bump_strategy
+      :version_bump_strategy,
+      :release_branch_name_pattern
     )
   end
 
@@ -187,7 +188,8 @@ class TrainsController < SignedInApplicationController
       :version_bump_enabled,
       :version_bump_file_paths,
       :version_bump_branch_prefix,
-      :version_bump_strategy
+      :version_bump_strategy,
+      :release_branch_name_pattern
     )
   end
 

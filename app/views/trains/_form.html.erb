@@ -16,7 +16,8 @@
 
       <div class="grid gap-4">
         <div data-controller="domain--branch-name-help"
-             data-domain--branch-name-help-current-value="<%= train.display_name %>">
+             data-domain--branch-name-help-current-value="<%= train.display_name %>"
+             data-domain--branch-name-help-pattern-value="<%= train.release_branch_name_pattern %>">
           <%= section.F.labeled_text_field :name, "Name",
                                            required: true,
                                            data: {domain__branch_name_help_target: "input",
@@ -164,6 +165,13 @@
                                              disabled: train.persisted? %>
           </div>
         </div>
+      </div>
+      
+      <div class="mt-4">
+        <%= section.F.labeled_text_field :release_branch_name_pattern, "Release Branch Name Pattern",
+                                         placeholder: "e.g., r/{{train_name}}/{{version_number}}/%Y-%m-%d",
+                                         help_text: "Use {{train_name}} for the train name, {{version_number}} for version, and {{build_number}} for build number. Default: r/{{train_name}}/%Y-%m-%d",
+                                         disabled: train.persisted? %>
       </div>
     <% end %>
 

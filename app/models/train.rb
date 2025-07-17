@@ -119,6 +119,7 @@ class Train < ApplicationRecord
   validate :version_config_constraints
   validate :version_bump_config
   validates :version_bump_strategy, inclusion: {in: VERSION_BUMP_STRATEGIES.keys.map(&:to_s)}, if: -> { version_bump_enabled? }
+  validates :release_branch_name_pattern, format: {with: /\A.*\{\{train_name\}\}.*\z/, message: "must contain {{train_name}} placeholder"}, allow_blank: true
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -303,9 +304,18 @@ class Train < ApplicationRecord
     name&.parameterize
   end
 
-  def release_branch_name_fmt(hotfix: false)
+  def release_branch_name_fmt(hotfix: false, release_version: nil, build_number: nil)
     return "hotfix/#{display_name}/%Y-%m-%d" if hotfix
-    "r/#{display_name}/%Y-%m-%d"
+    
+    if release_branch_name_pattern.present?
+      pattern = release_branch_name_pattern.dup
+      pattern.gsub!("{{train_name}}", display_name)
+      pattern.gsub!("{{version_number}}", release_version.to_s) if release_version
+      pattern.gsub!("{{build_number}}", build_number.to_s) if build_number
+      pattern
+    else
+      "r/#{display_name}/%Y-%m-%d"
+    end
   end
 
   def activate!
