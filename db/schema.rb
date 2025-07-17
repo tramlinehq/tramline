@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_09_165953) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_17_080947) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -412,16 +412,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_09_165953) do
     t.string "cloud_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "organization_name"
+    t.string "organization_url"
     t.index ["cloud_id"], name: "index_jira_integrations_on_cloud_id"
   end
 
   create_table "linear_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "oauth_access_token"
     t.string "oauth_refresh_token"
-    t.string "organization_id"
+    t.string "workspace_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["organization_id"], name: "index_linear_integrations_on_organization_id"
+    t.string "workspace_name"
+    t.string "workspace_url_key"
+    t.index ["workspace_id"], name: "index_linear_integrations_on_workspace_id"
   end
 
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

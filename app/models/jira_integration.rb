@@ -5,6 +5,8 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  organization_name   :string
+#  organization_url    :string
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #  cloud_id            :string           indexed
@@ -82,10 +84,19 @@ class JiraIntegration < ApplicationRecord
     set_tokens(tokens)
 
     # access is already complete if cloud_id is already set
-    return true if cloud_id.present?
+    # just set the metadata and move on
+    if cloud_id.present?
+      resource = resources.find { |resource| resource["id"] == cloud_id }
+      return false if resource.nil?
+      self.organization_url = resource["url"]
+      self.organization_name = resource["name"]
+      return true
+    end
 
     if resources.length == 1
       self.cloud_id = resources.first["id"]
+      self.organization_url = resource["url"]
+      self.organization_name = resource["name"]
       true
     else
       @available_resources = resources
@@ -135,7 +146,13 @@ class JiraIntegration < ApplicationRecord
   def metadata = cloud_id
 
   def connection_data
-    "Cloud ID: #{integration.metadata}" if integration.metadata
+    return unless integration.metadata
+
+    if organization_name.present?
+      "Organization: #{organization_name} (#{integration.metadata})"
+    else
+      "Cloud ID: #{integration.metadata}"
+    end
   end
 
   def fetch_tickets_for_release

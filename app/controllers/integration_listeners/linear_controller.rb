@@ -36,7 +36,7 @@ class IntegrationListeners::LinearController < IntegrationListenerController
   def providable_params
     super.merge(
       code: code,
-      organization_id: params[:organization_id]
+      workspace_id: params[:organization_id]
     )
   end
 
