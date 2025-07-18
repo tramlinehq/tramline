@@ -62,10 +62,8 @@ class Notifiers::Slack::Renderers::Base
 
   def changelog_elements(changes)
     result = changes.each_with_object([]) do |change, acc|
-      acc << {
-        type: "rich_text_section",
-        elements: @changelog_linker.process(change)
-      }
+      elements = @changelog_linker&.process(change) || [{"type" => "text", "text" => change}]
+      acc << {type: "rich_text_section", elements: elements}
     end
 
     result.map(&:to_json).join(",")

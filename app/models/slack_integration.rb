@@ -27,6 +27,8 @@ class SlackIntegration < ApplicationRecord
   before_create :complete_access
   after_create_commit :fetch_channels
 
+  Notifier = Notifiers::Slack
+
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://slack.com/oauth/v2/authorize{?params*}")
 
@@ -190,8 +192,8 @@ class SlackIntegration < ApplicationRecord
   end
 
   def notifier(type, params)
-    params[:changelog_linker] = Notifiers::Slack::Changelogs::Linker.new(integrable)
-    Notifiers::Slack::Builder.build(type, **params)
+    params[:changelog_linker] = Notifier::Changelogs::Linker.new(integrable) if params[:enable_changelog_linking]
+    Notifier::Builder.build(type, **params)
   end
 
   def to_s

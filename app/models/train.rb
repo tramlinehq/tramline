@@ -14,6 +14,7 @@
 #  continuous_backmerge_branch_prefix             :string
 #  copy_approvals                                 :boolean          default(FALSE)
 #  description                                    :string
+#  enable_changelog_linking_in_notifications      :boolean          default(FALSE)
 #  freeze_version                                 :boolean          default(FALSE)
 #  kickoff_at                                     :datetime
 #  name                                           :string           not null
@@ -414,7 +415,8 @@ class Train < ApplicationRecord
         train_current_version: version_current,
         train_next_version: next_version,
         train_url: train_link,
-        working_branch:
+        working_branch:,
+        enable_changelog_linking: enable_changelog_linking_in_notifications
       }
     )
   end
