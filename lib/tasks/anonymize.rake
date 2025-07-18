@@ -394,6 +394,9 @@ namespace :anonymize do
         whitelist_timestamps
         anonymize("oauth_access_token") { |_| "anonymized_token" }
         anonymize("oauth_refresh_token") { |_| "anonymized_refresh_token" }
+        anonymize("workspace_id") { |_| "anonymized_workspace_id" }
+        anonymize("workspace_name") { |_| "anonymized_workspace_name" }
+        anonymize("workspace_url_key") { |_| "anonymized_workspace_url_key" }
       end
     end
 

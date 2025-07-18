@@ -174,7 +174,7 @@ class GitlabIntegration < ApplicationRecord
 
   def correct_key
     if integration.ci_cd?
-      errors.add(:base, :workflows) if workflows.blank?
+      errors.add(:base, :workflows) if workflows(bust_cache: true).blank?
     elsif integration.version_control?
       errors.add(:base, :repos) if repos.blank?
     end
