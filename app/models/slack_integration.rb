@@ -190,6 +190,7 @@ class SlackIntegration < ApplicationRecord
   end
 
   def notifier(type, params)
+    params[:changelog_linker] = Notifiers::Slack::Changelogs::Linker.new(integrable)
     Notifiers::Slack::Builder.build(type, **params)
   end
 
