@@ -138,12 +138,6 @@ class PreProdRelease < ApplicationRecord
       .join("\n").presence || "Nothing new"
   end
 
-  def generate_linked_tester_notes(changes)
-    ChangelogLinking::Slack.new(train.app).process(
-      sanitize_commit_messages(changes, compact_messages: train.compact_build_notes?)
-    )
-  end
-
   def set_default_tester_notes
     self.tester_notes = generate_tester_notes(changes_since_previous)
   end
