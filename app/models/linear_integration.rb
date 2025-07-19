@@ -159,6 +159,12 @@ class LinearIntegration < ApplicationRecord
     []
   end
 
+  def ticket_url(ticket_id)
+    return if workspace_url_key.blank? || ticket_id.blank?
+    template = Addressable::Template.new("https://linear.app/{workspace}/issue/{ticket}")
+    template.expand(workspace: workspace_url_key, ticket: ticket_id).to_s
+  end
+
   def display
     "Linear"
   end

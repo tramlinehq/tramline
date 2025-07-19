@@ -174,14 +174,14 @@ class NotificationSetting < ApplicationRecord
 
         # first send the initial part of the changelog
         header_affix = "Full release changelog"
-        notification_provider.notify_changelog!(channel["id"], message, thread_id, full_parts[0],
+        notification_provider.notify_changelog!(channel["id"], message, thread_id, full_parts[0], params,
           header_affix: header_affix,
           continuation: false)
 
         # send the rest of the parts as "continuations"
         full_parts[1..].each.with_index(2) do |change_group, index|
           continuation_header_affix = "#{header_affix} (#{index}/#{full_parts.size})"
-          notification_provider.notify_changelog!(channel["id"], message, thread_id, change_group,
+          notification_provider.notify_changelog!(channel["id"], message, thread_id, change_group, params,
             header_affix: continuation_header_affix,
             continuation: true)
         end

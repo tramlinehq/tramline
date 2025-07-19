@@ -173,6 +173,12 @@ class JiraIntegration < ApplicationRecord
     []
   end
 
+  def ticket_url(ticket_id)
+    return if organization_url.blank? || ticket_id.blank?
+    template = Addressable::Template.new("#{organization_url}/browse/{ticket}")
+    template.expand(ticket: ticket_id).to_s
+  end
+
   def display
     "Jira"
   end
