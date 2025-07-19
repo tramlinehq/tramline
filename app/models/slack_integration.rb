@@ -144,9 +144,12 @@ class SlackIntegration < ApplicationRecord
   end
 
   # renders the changelog exclusively in a thread
-  def notify_changelog!(channel, message, thread_id, changelog, header_affix: nil, continuation: false)
+  def notify_changelog!(channel, message, thread_id, changelog, existing_params, header_affix: nil, continuation: false)
     return if changelog.blank?
-    payload = notifier(:changelog, {changes: changelog, header_affix:, continuation:})
+
+    params = existing_params.merge({changes: changelog, header_affix:, continuation:})
+    payload = notifier(:changelog, params)
+
     installation.message(channel, message, block: payload, thread_id:)
   rescue => e
     elog(e, level: :debug)
@@ -168,7 +171,7 @@ class SlackIntegration < ApplicationRecord
     if changelog_parts.size > 1
       changelog_parts[1..].each.with_index(2) do |change_group, index|
         continuation_header_affix = "#{header_affix} (#{index}/#{changelog_parts.size})"
-        notify_changelog!(channel["id"], message, thread_id, change_group,
+        notify_changelog!(channel["id"], message, thread_id, change_group, params,
           header_affix: continuation_header_affix,
           continuation: true)
       end
@@ -192,6 +195,7 @@ class SlackIntegration < ApplicationRecord
   end
 
   def notifier(type, params)
+    params[:changelog_linker] = nil
     params[:changelog_linker] = Notifier::Changelogs::Linker.new(integrable) if params[:enable_changelog_linking]
     Notifier::Builder.build(type, **params)
   end
