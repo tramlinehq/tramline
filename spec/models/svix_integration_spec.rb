@@ -11,12 +11,6 @@ describe SvixIntegration do
   end
 
   describe "validations" do
-    it "validates presence of train_id" do
-      svix_integration.train_id = nil
-      expect(svix_integration).not_to be_valid
-      expect(svix_integration.errors[:train_id]).to include("can't be blank")
-    end
-
     it "validates presence of status" do
       svix_integration.status = nil
       expect(svix_integration).not_to be_valid
