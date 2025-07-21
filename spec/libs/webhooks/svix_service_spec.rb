@@ -99,7 +99,7 @@ describe Webhooks::SvixService do
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
       allow(outgoing_webhook.train).to receive(:svix_app_id).and_return("app_123")
-      
+
       svix_client = instance_double(Svix::Client)
       message_api = instance_double(Svix::Message)
       message_in = instance_double(Svix::MessageIn)
@@ -121,7 +121,7 @@ describe Webhooks::SvixService do
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
       allow(outgoing_webhook.train).to receive(:svix_app_id).and_return("app_123")
-      
+
       svix_client = instance_double(Svix::Client)
       message_api = instance_double(Svix::Message)
       message_in = instance_double(Svix::MessageIn)

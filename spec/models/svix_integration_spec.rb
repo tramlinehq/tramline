@@ -6,7 +6,7 @@ describe SvixIntegration do
 
   describe "validations" do
     it "validates uniqueness of app_id" do
-      existing = create(:svix_integration, app_id: "duplicate_id")
+      create(:svix_integration, app_id: "duplicate_id")
       new_integration = build(:svix_integration, app_id: "duplicate_id")
       expect(new_integration).not_to be_valid
       expect(new_integration.errors[:app_id]).to include("has already been taken")
@@ -26,7 +26,7 @@ describe SvixIntegration do
 
   describe "enums" do
     it "defines status enum with correct values" do
-      expect(SvixIntegration.statuses).to eq({"active" => "active", "inactive" => "inactive"})
+      expect(described_class.statuses).to eq({"active" => "active", "inactive" => "inactive"})
     end
   end
 
@@ -40,7 +40,7 @@ describe SvixIntegration do
       svix_client = instance_double(Svix::Client)
       application_api = instance_double(Svix::Application)
       application_in = instance_double(Svix::ApplicationIn)
-      response = double(id: "app_123")
+      response = instance_double(Svix::ApplicationOut, id: "app_123")
 
       allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
       allow(Svix::ApplicationIn).to receive(:new).and_return(application_in)
@@ -49,8 +49,8 @@ describe SvixIntegration do
 
       # Create a proper integration chain: App -> Integration -> SvixIntegration
       test_svix_integration = create(:svix_integration, app_id: nil)
-      integration = create(:integration, integrable: train.app, providable: test_svix_integration, category: :webhook)
-      
+      create(:integration, integrable: train.app, providable: test_svix_integration, category: :webhook)
+
       test_svix_integration.create_svix_app!
 
       expect(test_svix_integration.reload.app_id).to eq("app_123")
