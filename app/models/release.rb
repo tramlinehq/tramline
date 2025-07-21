@@ -34,6 +34,7 @@ class Release < ApplicationRecord
   include Displayable
   include Linkable
   include Sanitizable
+  include PatternTokenizer
 
   using RefinedString
 
@@ -639,6 +640,19 @@ class Release < ApplicationRecord
       else
         (train.ongoing_release.presence || train.hotfix_release.presence || train).next_version(major_only: has_major_bump)
       end
+  end
+
+  def set_release_branch
+    tokens = {
+      trainName: train.name,
+      releaseVersion: original_release_version,
+      releaseStartDate: scheduled_at,
+      buildNumber: nil
+    }
+
+    pattern = train.release_branch_pattern.presence || "r/~trainName~/~releaseStartDate~"
+    pattern = "hotfix/~trainName~/~releaseStartDate~" if hotfix?
+    substitute_tokens(pattern, tokens)
   end
 
   def set_internal_notes

@@ -1,170 +1,92 @@
 module PatternTokenizer
-  extend ActiveSupport::Concern
-
-  # Available tokens for pattern substitution
+  # Token format: ~token_name~
+  # Examples:
+  #   Release branch: "release/~releaseVersion~/prod"
+  #   Ticket/issues filter: "rel-~releaseStartDate~"
   AVAILABLE_TOKENS = {
-    'train_name' => 'Name of the train (parameterized)',
-    'release_version' => 'Version number of the release',
-    'release_start_date' => 'Date when the release was started'
+    "trainName" => {
+      description: "Name of the train (parameterized)",
+      formatter: ->(value) { value.to_s.parameterize }
+    },
+    "releaseVersion" => {
+      description: "Version name (eg. 1.2.3) of the release",
+      formatter: ->(value) { value.to_s.strip }
+    },
+    "releaseStartDate" => {
+      description: "Date when the release was started",
+      formatter: lambda do |value|
+        case value
+        when String
+          value # Assume it's already formatted like "%Y-%m-%d"
+        when Date, Time
+          value.strftime("%Y-%m-%d")
+        else
+          value.to_s
+        end
+      end
+    },
+    "buildNumber" => {
+      description: "Build number for the release",
+      formatter: ->(value) { value.to_s.strip }
+    }
   }.freeze
 
-  # Git branch name constraints based on git-check-ref-format
-  # See: https://git-scm.com/docs/git-check-ref-format
-  INVALID_BRANCH_CHARS = [
-    ' ',      # ASCII space
-    '~',      # tilde
-    '^',      # caret
-    ':',      # colon
-    '?',      # question mark
-    '*',      # asterisk
-    '[',      # opening bracket
-    ']',      # closing bracket
-    '\\',     # backslash
-    "\x00",   # null character
-    "\x01",   # control characters
-    "\x02",
-    "\x03",
-    "\x04",
-    "\x05",
-    "\x06",
-    "\x07",
-    "\x08",
-    "\x09",
-    "\x0A",
-    "\x0B",
-    "\x0C",
-    "\x0D",
-    "\x0E",
-    "\x0F",
-    "\x10",
-    "\x11",
-    "\x12",
-    "\x13",
-    "\x14",
-    "\x15",
-    "\x16",
-    "\x17",
-    "\x18",
-    "\x19",
-    "\x1A",
-    "\x1B",
-    "\x1C",
-    "\x1D",
-    "\x1E",
-    "\x1F",
-    "\x7F"
-  ].freeze
+  TOKEN_FORMAT = /~([^~]+)~/
+  TOKEN_PREFIX = "~"
+  TOKEN_SUFFIX = "~"
 
-  included do
-    validate :validate_pattern_characters, if: :has_pattern_field?
-    validate :validate_required_tokens, if: :has_pattern_field?
-  end
+  # included do
+  #   validate :validate_pattern_tokens, if: :should_validate_patterns?
+  # end
 
-  # Substitute tokens in a pattern string
-  def substitute_tokens(pattern, token_values = {})
-    return pattern if pattern.blank?
+  def substitute_tokens(pattern_string, token_values = {})
+    return pattern_string if pattern_string.blank?
 
-    result = pattern.dup
+    result = pattern_string.dup
+    token_values.each do |token, value|
+      next if value.blank?
 
-    AVAILABLE_TOKENS.keys.each do |token|
-      placeholder = "{{#{token}}}"
-      if result.include?(placeholder) && token_values[token.to_sym]
-        result.gsub!(placeholder, token_values[token.to_sym].to_s)
-      end
+      # Apply token-specific formatting if available
+      formatted_value = apply_token_format(token.to_s, value)
+      token_pattern = /#{TOKEN_PREFIX}#{token}#{TOKEN_SUFFIX}/
+      result.gsub!(token_pattern, formatted_value.to_s)
     end
-
-    # Handle strftime patterns if release_start_date is provided
-    if token_values[:release_start_date]
-      result = token_values[:release_start_date].strftime(result)
-    end
-
     result
   end
 
-  # Get list of tokens used in a pattern
-  def tokens_in_pattern(pattern)
-    return [] if pattern.blank?
-
-    tokens = []
-    AVAILABLE_TOKENS.keys.each do |token|
-      placeholder = "{{#{token}}}"
-      tokens << token if pattern.include?(placeholder)
-    end
-    tokens
+  def apply_token_format(token, value)
+    AVAILABLE_TOKENS[token][:formatter].call(value)
   end
 
-  # Validate that pattern contains only allowed characters
-  def validate_pattern_characters
-    pattern = get_pattern_value
-    return if pattern.blank?
+  def should_validate_patterns?
+    raise "#{self.class} must implement validatable_pattern_fields method" unless respond_to?(:validatable_pattern_fields)
 
-    # Check for invalid characters
-    invalid_chars = INVALID_BRANCH_CHARS.select { |char| pattern.include?(char) }
-    if invalid_chars.any?
-      readable_chars = invalid_chars.map do |char|
-        case char
-        when ' '
-          'space'
-        when "\x00".."\x1F", "\x7F"
-          "control character (\\x#{char.ord.to_s(16).upcase.rjust(2, '0')})"
-        else
-          "'#{char}'"
-        end
+    validatable_pattern_fields.any? do |_, field_config|
+      raise "#{self.class} field_config must have :value key" unless field_config.key?(:value)
+      pattern_value = field_config[:value]
+      pattern_value.present? && pattern_value.match?(TOKEN_FORMAT)
+    end
+  end
+
+  def validate_pattern_tokens
+    raise "#{self.class} must implement validatable_pattern_fields method" unless respond_to?(:validatable_pattern_fields)
+
+    validatable_pattern_fields.each do |field_name, field_config|
+      raise "#{self.class} field_config for #{field_name} must have :value key" unless field_config.key?(:value)
+      raise "#{self.class} field_config for #{field_name} must have :allowed_tokens key" unless field_config.key?(:allowed_tokens)
+
+      pattern_value = field_config[:value]
+      allowed_tokens = field_config[:allowed_tokens]
+
+      next if pattern_value.blank? || !pattern_value.match?(TOKEN_FORMAT)
+
+      # Find any ~token~ patterns that don't match the allowed tokens for this field
+      all_tokens = pattern_value.scan(TOKEN_FORMAT).flatten
+      invalid_tokens = all_tokens - allowed_tokens
+
+      if invalid_tokens.any?
+        errors.add(field_name, "contains unknown tokens: #{invalid_tokens.map { |t| "#{TOKEN_PREFIX}#{t}#{TOKEN_SUFFIX}" }.join(", ")}")
       end
-      errors.add(pattern_field_name, "contains invalid characters for git branch names: #{readable_chars.join(', ')}")
     end
-
-    # Check for patterns that would create invalid branch names
-    if pattern.start_with?('/') || pattern.end_with?('/')
-      errors.add(pattern_field_name, "cannot start or end with '/'")
-    end
-
-    if pattern.include?('//')
-      errors.add(pattern_field_name, "cannot contain consecutive slashes '//'")
-    end
-
-    if pattern.include?('..')
-      errors.add(pattern_field_name, "cannot contain '..'")
-    end
-
-    if pattern.start_with?('.') || pattern.end_with?('.') || pattern.include?('/.')
-      errors.add(pattern_field_name, "cannot start with '.', end with '.', or contain '/.'")
-    end
-
-    if pattern.end_with?('.lock')
-      errors.add(pattern_field_name, "cannot end with '.lock'")
-    end
-  end
-
-  # Validate required tokens based on pattern type
-  def validate_required_tokens
-    pattern = get_pattern_value
-    return if pattern.blank?
-
-    required_tokens = get_required_tokens
-    used_tokens = tokens_in_pattern(pattern)
-
-    missing_tokens = required_tokens - used_tokens
-    if missing_tokens.any?
-      token_list = missing_tokens.map { |token| "{{#{token}}}" }.join(', ')
-      errors.add(pattern_field_name, "must contain required tokens: #{token_list}")
-    end
-  end
-
-  private
-
-  # Override in including class to specify the pattern field name
-  def pattern_field_names
-    raise NotImplementedError
-  end
-
-  # Override in including class to get the pattern value
-  def get_pattern_value(pattern_field_name)
-    send(pattern_field_name)
-  end
-
-  # Override in including class to specify if it has a pattern field
-  def has_pattern_field?
-    respond_to?(pattern_field_name)
   end
 end
