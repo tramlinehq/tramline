@@ -12,18 +12,22 @@ module Webhooks
       new(outgoing_webhook).trigger(event_type, payload)
     end
 
-    def self.create_endpoint_for_webhook(outgoing_webhook)
-      train = outgoing_webhook.train
+    def self.create_endpoint_for_webhook(train, url, event_types: ["release.started", "release.ended", "rc.finished"], description: nil)
       svix_integration = train.svix_integration
 
       return if svix_integration&.app_id.blank?
 
-      endpoint_response = svix_integration.create_endpoint(outgoing_webhook.url)
+      # Create the Svix endpoint first
+      endpoint_response = svix_integration.create_endpoint(url)
 
-      # Store endpoint ID in outgoing_webhook if needed
-      outgoing_webhook.update!(svix_endpoint_id: endpoint_response.id) if endpoint_response.respond_to?(:id)
-
-      endpoint_response
+      # Create the OutgoingWebhook record with the endpoint ID
+      train.outgoing_webhooks.create!(
+        url: url,
+        event_types: event_types,
+        description: description,
+        svix_endpoint_id: endpoint_response.respond_to?(:id) ? endpoint_response.id : nil,
+        active: true
+      )
     end
 
     def initialize(outgoing_webhook)
