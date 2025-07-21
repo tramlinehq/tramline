@@ -22,6 +22,7 @@
 #  patch_version_bump_only                        :boolean          default(FALSE), not null
 #  release_backmerge_branch                       :string
 #  release_branch                                 :string
+#  release_branch_pattern                         :string
 #  repeat_duration                                :interval
 #  slug                                           :string
 #  status                                         :string           not null
@@ -54,6 +55,7 @@ class Train < ApplicationRecord
   include Rails.application.routes.url_helpers
   include Versionable
   include Loggable
+  include PatternTokenizer
 
   self.ignored_columns += ["manual_release"]
 
@@ -119,7 +121,7 @@ class Train < ApplicationRecord
   validate :version_config_constraints
   validate :version_bump_config
   validates :version_bump_strategy, inclusion: {in: VERSION_BUMP_STRATEGIES.keys.map(&:to_s)}, if: -> { version_bump_enabled? }
-  validates :release_branch_name_pattern, format: {with: /\A.*\{\{train_name\}\}.*\z/, message: "must contain {{train_name}} placeholder"}, allow_blank: true
+  validates :release_branch_pattern, format: {with: /\A.*\{\{train_name\}\}.*\z/, message: "must contain {{train_name}} placeholder"}, allow_blank: true
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -306,16 +308,29 @@ class Train < ApplicationRecord
 
   def release_branch_name_fmt(hotfix: false, release_version: nil, build_number: nil)
     return "hotfix/#{display_name}/%Y-%m-%d" if hotfix
-    
-    if release_branch_name_pattern.present?
-      pattern = release_branch_name_pattern.dup
-      pattern.gsub!("{{train_name}}", display_name)
-      pattern.gsub!("{{version_number}}", release_version.to_s) if release_version
-      pattern.gsub!("{{build_number}}", build_number.to_s) if build_number
-      pattern
+
+    if release_branch_pattern.present?
+      substitute_tokens(release_branch_pattern, {
+        train_name: display_name,
+        release_version: release_version,
+        release_start_date: "%Y-%m-%d"
+      })
     else
       "r/#{display_name}/%Y-%m-%d"
     end
+  end
+
+  # PatternTokenizer overrides
+  def pattern_field_name
+    :release_branch_name_pattern
+  end
+
+  def get_pattern_value
+    release_branch_name_pattern
+  end
+
+  def get_required_tokens
+    ['train_name']
   end
 
   def activate!
