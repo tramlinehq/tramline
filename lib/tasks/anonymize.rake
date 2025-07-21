@@ -67,6 +67,16 @@ namespace :anonymize do
         anonymize("description") { |field| field.value.present? ? Faker::Lorem.sentence : nil }
       end
 
+      table "outgoing_webhook_events" do
+        continue { |index, record| OutgoingWebhook.exists?(record["outgoing_webhook_id"]) && !OutgoingWebhookEvent.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "train_id", "outgoing_webhook_id", "event_timestamp", "status"
+        whitelist_timestamps
+        anonymize("response_data") { |field| field.value.present? ? "anonymized_response_data" : nil }
+        anonymize("error_message") { |field| field.value.present? ? "anonymized_error_message" : nil }
+      end
+
       table "release_indices" do
         continue { |index, record| record["train_id"] == train_id && !ReleaseIndex.exists?(record["id"]) }
 
