@@ -45,12 +45,13 @@ module Webhooks
         Rails.logger.debug { "Webhook payload: #{payload.to_json}" }
 
         svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+        message_in = Svix::MessageIn.new(
+          eventType: payload[:event_type],
+          payload: payload
+        )
         response = svix_client.message.create(
-          app_id: outgoing_webhook.train.app_id,
-          message: {
-            eventType: payload[:event_type],
-            payload: payload
-          }
+          outgoing_webhook.train.app_id,
+          message_in
         )
 
         event_record.update!(

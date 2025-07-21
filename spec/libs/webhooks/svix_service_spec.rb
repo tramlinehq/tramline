@@ -99,10 +99,12 @@ describe Webhooks::SvixService do
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
       svix_client = instance_double(Svix::Client)
-      message_api = instance_double(Object)
+      message_api = instance_double(Svix::Message)
+      message_in = instance_double(Svix::MessageIn)
       allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
+      allow(Svix::MessageIn).to receive(:new).and_return(message_in)
       allow(svix_client).to receive(:message).and_return(message_api)
-      allow(message_api).to receive(:create).and_return({"id" => "msg_123"})
+      allow(message_api).to receive(:create).with(outgoing_webhook.train.app_id, message_in).and_return({"id" => "msg_123"})
 
       expect {
         service.send(:send_webhook, {test: "payload"})
@@ -117,10 +119,12 @@ describe Webhooks::SvixService do
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
       svix_client = instance_double(Svix::Client)
-      message_api = instance_double(Object)
+      message_api = instance_double(Svix::Message)
+      message_in = instance_double(Svix::MessageIn)
       allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
+      allow(Svix::MessageIn).to receive(:new).and_return(message_in)
       allow(svix_client).to receive(:message).and_return(message_api)
-      allow(message_api).to receive(:create).and_raise(StandardError.new("Connection failed"))
+      allow(message_api).to receive(:create).with(outgoing_webhook.train.app_id, message_in).and_raise(StandardError.new("Connection failed"))
 
       expect {
         expect {
