@@ -17,7 +17,6 @@ class SvixIntegration < ApplicationRecord
 
   validates :app_id, uniqueness: true, allow_nil: true
   validates :status, presence: true
-  validates :train_id, presence: true
 
   enum :status, {active: "active", inactive: "inactive"}
 

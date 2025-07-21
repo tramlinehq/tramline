@@ -92,7 +92,7 @@ describe SvixIntegration do
       svix_client = instance_double(Svix::Client)
       message_api = instance_double(Svix::Message)
       message_in = instance_double(Svix::MessageIn)
-      payload = { event_type: "test.event", data: { test: "data" } }
+      payload = {event_type: "test.event", data: {test: "data"}}
 
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")

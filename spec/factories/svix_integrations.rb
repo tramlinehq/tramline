@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :svix_integration do
-    association :train
+    train
     app_id { "app_#{SecureRandom.hex(8)}" }
     app_name { "Test Svix App" }
     status { "active" }

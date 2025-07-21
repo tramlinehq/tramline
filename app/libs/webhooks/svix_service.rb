@@ -15,14 +15,14 @@ module Webhooks
     def self.create_endpoint_for_webhook(outgoing_webhook)
       train = outgoing_webhook.train
       svix_integration = train.svix_integration
-      
-      return unless svix_integration&.app_id.present?
-      
+
+      return if svix_integration&.app_id.blank?
+
       endpoint_response = svix_integration.create_endpoint(outgoing_webhook.url)
-      
+
       # Store endpoint ID in outgoing_webhook if needed
       outgoing_webhook.update!(svix_endpoint_id: endpoint_response.id) if endpoint_response.respond_to?(:id)
-      
+
       endpoint_response
     end
 

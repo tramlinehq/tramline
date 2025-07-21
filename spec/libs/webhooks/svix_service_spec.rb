@@ -148,7 +148,6 @@ describe Webhooks::SvixService do
     it "raises error when SvixIntegration has no app_id" do
       # Update existing SvixIntegration to have no app_id
       svix_integration.update!(app_id: nil)
-      
       expect {
         service.send(:send_webhook, {test: "payload"})
       }.to raise_error("No Svix app_id found for train #{train.id}")
