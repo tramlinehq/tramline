@@ -1,4 +1,4 @@
-require 'json'
+require "json"
 
 module Webhooks
   class SvixService
@@ -63,7 +63,6 @@ module Webhooks
 
     def build_payload(event_type, payload)
       validate_payload_schema!(event_type, payload)
-      
       {
         event_type: event_type,
         timestamp: Time.current.iso8601,
@@ -131,9 +130,9 @@ module Webhooks
 
       schema = JSON.parse(File.read(schema_file))
       errors = JSON::Validator.fully_validate(schema, payload)
-      
+
       if errors.any?
-        error_message = "Webhook payload validation failed for #{event_type}: #{errors.join(', ')}"
+        error_message = "Webhook payload validation failed for #{event_type}: #{errors.join(", ")}"
         elog(error_message, level: :error)
         raise ArgumentError, error_message
       end
@@ -147,8 +146,6 @@ module Webhooks
         Rails.root.join("config/schema/webhook_release_started.json")
       when "release.ended"
         Rails.root.join("config/schema/webhook_release_ended.json")
-      else
-        nil
       end
     end
   end
