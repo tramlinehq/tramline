@@ -13,20 +13,7 @@
         {
           "type": "rich_text_list",
           "style": "bullet",
-          "elements": [
-            <% changes.each_with_index do |change, i| %>
-            <%= i.zero? ? "" : "," %>
-            {
-              "type": "rich_text_section",
-              "elements": [
-                {
-                  "type": "text",
-                  "text": "<%= safe_string(change) %>"
-                }
-              ]
-            }
-            <% end %>
-          ]
+          "elements": [<%= changelog_elements(changes) %>]
         }
       ]
     }

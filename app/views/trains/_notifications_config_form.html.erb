@@ -23,9 +23,19 @@
                  current: @current_notification_channel.to_json,
                  multiple: false,
                  field_name: :notification_channel,
-                 field_title: "Default Notification Channel"
+                 field_title: "Default Notification Channel (select one)"
                } %>
 
-    <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
+    <div class="mt-4">
+      <%= render Form::SwitchComponent.new(form:, field_name: :enable_changelog_linking_in_notifications,
+                                           hide_child: false,
+                                           on_label: "Link references in changelogs",
+                                           off_label: "Do not link references in changelogs") do |component2| %>
+        <% component2.with_info_icon do %>
+         <p>When enabled, ticket IDs and pull request numbers in changelogs will be automatically converted to clickable links in notifications.</p>
+         <p>This requires that your version control and project management integrations are configured.</p>
+        <% end %>
+      <% end %>
+    </div>
   <% end %>
 <% end %>
