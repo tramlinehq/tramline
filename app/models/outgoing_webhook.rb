@@ -5,7 +5,7 @@
 #  id          :uuid             not null, primary key
 #  active      :boolean          default(TRUE), indexed
 #  description :text
-#  event_types :text             default(NULL), is an Array
+#  event_types :text             default([]), is an Array
 #  url         :string           not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
@@ -15,23 +15,16 @@ class OutgoingWebhook < ApplicationRecord
   has_paper_trail
 
   belongs_to :train
+  has_many :outgoing_webhook_events, dependent: :destroy
 
   validates :url, presence: true, format: {with: URI::DEFAULT_PARSER.make_regexp(%w[http https])}
   validates :event_types, presence: true
 
   # Remove enum and work with plain array validation
   VALID_EVENT_TYPES = %w[
-    release_started
-    release_finished
-    release_stopped
-    build_available
-    internal_release_finished
-    beta_release_finished
-    production_release_complete
-    workflow_run_finished
-    submission_started
-    rollout_started
-    rollout_completed
+    release.started
+    release.ended
+    rc.finished
   ].freeze
 
   validate :event_types_are_valid

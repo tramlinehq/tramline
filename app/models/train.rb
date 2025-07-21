@@ -83,6 +83,7 @@ class Train < ApplicationRecord
   has_many :scheduled_releases, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
   has_many :outgoing_webhooks, dependent: :destroy
+  has_many :outgoing_webhook_events, dependent: :destroy
   has_one :release_index, dependent: :destroy
 
   scope :sequential, -> { reorder("trains.created_at ASC") }
@@ -415,7 +416,21 @@ class Train < ApplicationRecord
         train_current_version: version_current,
         train_next_version: next_version,
         train_url: train_link,
-        working_branch:
+        working_branch: working_branch
+      }
+    )
+  end
+
+  def webhook_params
+    app.notification_params.merge(
+      {
+        train_name: name,
+        train_current_version: version_current,
+        train_next_version: next_version,
+        train_url: train_link,
+        working_branch: working_branch,
+        train_id: id,
+        app_id: app_id
       }
     )
   end

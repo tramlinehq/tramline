@@ -58,11 +58,11 @@ describe OutgoingWebhook do
 
     describe ".for_event_type" do
       let!(:release_webhook) { create(:outgoing_webhook, train: train) }
-      let!(:build_webhook) { create(:outgoing_webhook, :build_events, train: train) }
+      let!(:rc_webhook) { create(:outgoing_webhook, :rc_events, train: train) }
 
       it "returns webhooks for specific event type" do
-        expect(described_class.for_event_type("release_started")).to include(release_webhook)
-        expect(described_class.for_event_type("release_started")).not_to include(build_webhook)
+        expect(described_class.for_event_type("release.started")).to include(release_webhook)
+        expect(described_class.for_event_type("release.started")).not_to include(rc_webhook)
       end
     end
   end

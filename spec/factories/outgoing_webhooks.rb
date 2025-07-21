@@ -4,18 +4,18 @@ FactoryBot.define do
     url { "https://example.com/webhook" }
     description { "Test webhook for release events" }
     active { true }
-    event_types { ["release_started"] }
+    event_types { ["release.started"] }
 
     trait :inactive do
       active { false }
     end
 
     trait :multiple_events do
-      event_types { ["release_started", "build_available", "production_release_complete"] }
+      event_types { ["release.started", "release.ended", "rc.finished"] }
     end
 
-    trait :build_events do
-      event_types { ["build_available", "workflow_run_finished"] }
+    trait :rc_events do
+      event_types { ["rc.finished"] }
     end
   end
 end
