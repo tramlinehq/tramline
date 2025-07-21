@@ -1,5 +1,6 @@
 FactoryBot.define do
   factory :svix_integration do
+    association :train
     app_id { "app_#{SecureRandom.hex(8)}" }
     app_name { "Test Svix App" }
     status { "active" }
@@ -8,10 +9,12 @@ FactoryBot.define do
       status { "inactive" }
     end
 
-    trait :with_integration do
-      after(:create) do |svix_integration|
-        create(:integration, providable: svix_integration, category: :webhook)
-      end
+    trait :without_app_id do
+      app_id { nil }
+    end
+
+    trait :with_app_name do
+      app_name { "Custom Svix App" }
     end
   end
 end

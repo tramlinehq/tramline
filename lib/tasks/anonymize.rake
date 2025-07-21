@@ -420,10 +420,10 @@ namespace :anonymize do
       end
 
       table "svix_integrations" do
-        continue { |index, record| !SvixIntegration.exists?(record["id"]) }
+        continue { |index, record| Train.exists?(record["train_id"]) && !SvixIntegration.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "status"
+        whitelist "train_id", "status"
         whitelist_timestamps
         anonymize("app_id") { |_| "anonymized_app_id" }
         anonymize("app_name") { |_| "Anonymized Svix App" }

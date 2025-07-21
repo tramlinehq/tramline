@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_21_105403) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_21_114209) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -502,6 +502,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_105403) do
     t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "svix_endpoint_id"
     t.index ["active"], name: "index_outgoing_webhooks_on_active"
     t.index ["train_id"], name: "index_outgoing_webhooks_on_train_id"
   end
@@ -955,7 +956,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_105403) do
     t.index ["submission_config_id"], name: "index_submission_external_configs_on_submission_config_id"
   end
 
-  create_table "svix_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "svix_integrations", force: :cascade do |t|
+    t.uuid "train_id", null: false
     t.string "app_id"
     t.string "app_name"
     t.string "status", default: "active"
@@ -963,6 +965,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_105403) do
     t.datetime "updated_at", null: false
     t.index ["app_id"], name: "index_svix_integrations_on_app_id", unique: true
     t.index ["status"], name: "index_svix_integrations_on_status"
+    t.index ["train_id"], name: "index_svix_integrations_on_train_id", unique: true
   end
 
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1189,6 +1192,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_105403) do
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "submission_configs", "release_step_configs"
   add_foreign_key "submission_external_configs", "submission_configs"
+  add_foreign_key "svix_integrations", "trains"
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
   add_foreign_key "user_authentications", "users"

@@ -86,6 +86,7 @@ class Train < ApplicationRecord
   has_many :outgoing_webhooks, dependent: :destroy
   has_many :outgoing_webhook_events, dependent: :destroy
   has_one :release_index, dependent: :destroy
+  has_one :svix_integration, dependent: :destroy
 
   scope :sequential, -> { reorder("trains.created_at ASC") }
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
@@ -435,10 +436,6 @@ class Train < ApplicationRecord
         app_id: app_id
       }
     )
-  end
-
-  def svix_integration
-    integrations.webhook.first&.providable
   end
 
   def svix_app_id

@@ -2,14 +2,15 @@
 #
 # Table name: outgoing_webhooks
 #
-#  id          :uuid             not null, primary key
-#  active      :boolean          default(TRUE), indexed
-#  description :text
-#  event_types :text             default([]), is an Array
-#  url         :string           not null
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  train_id    :uuid             not null, indexed
+#  id               :uuid             not null, primary key
+#  active           :boolean          default(TRUE), indexed
+#  description      :text
+#  event_types      :text             default([]), is an Array
+#  url              :string           not null
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  svix_endpoint_id :string
+#  train_id         :uuid             not null, indexed
 #
 class OutgoingWebhook < ApplicationRecord
   has_paper_trail

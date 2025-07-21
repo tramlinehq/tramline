@@ -2,68 +2,26 @@
 #
 # Table name: svix_integrations
 #
-#  id         :uuid             not null, primary key
+#  id         :bigint           not null, primary key
 #  app_name   :string
 #  status     :string           default("active"), indexed
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  app_id     :string           indexed
+#  train_id   :uuid             not null, indexed
 #
 class SvixIntegration < ApplicationRecord
   has_paper_trail
-  include Providable
-  include Displayable
+
+  belongs_to :train
 
   validates :app_id, uniqueness: true, allow_nil: true
   validates :status, presence: true
+  validates :train_id, presence: true
 
   enum :status, {active: "active", inactive: "inactive"}
 
-  delegate :app, to: :integration
-
-  def train
-    # SvixIntegration is linked to trains through the background job
-    # For now, we'll find the train that triggered this integration creation
-    app&.trains&.first
-  end
-
-  def install_path
-    nil
-  end
-
-  def complete_access
-    true
-  end
-
-  def to_s
-    "svix"
-  end
-
-  def creatable?
-    false
-  end
-
-  def connectable?
-    true
-  end
-
-  def store?
-    false
-  end
-
-  def project_link
-    nil
-  end
-
-  def further_setup?
-    false
-  end
-
-  def public_icon_img
-    "https://storage.googleapis.com/tramline-public-assets/svix_small.png"
-  end
-
-  def display
+  def display_name
     "Svix Webhooks"
   end
 
@@ -108,5 +66,17 @@ class SvixIntegration < ApplicationRecord
     )
 
     svix_client.endpoint.create(app_id, endpoint_in)
+  end
+
+  def send_message(payload)
+    return if app_id.blank?
+
+    svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+    message_in = Svix::MessageIn.new(
+      event_type: payload[:event_type],
+      payload: payload
+    )
+
+    svix_client.message.create(app_id, message_in)
   end
 end

@@ -2,20 +2,32 @@ require "rails_helper"
 
 describe SvixIntegration do
   let(:train) { create(:train, :with_no_platforms) }
-  let(:svix_integration) { create(:svix_integration) }
+  let(:svix_integration) { create(:svix_integration, train: train) }
+
+  describe "associations" do
+    it "belongs to train" do
+      expect(svix_integration.train).to eq(train)
+    end
+  end
 
   describe "validations" do
-    it "validates uniqueness of app_id" do
-      create(:svix_integration, app_id: "duplicate_id")
-      new_integration = build(:svix_integration, app_id: "duplicate_id")
-      expect(new_integration).not_to be_valid
-      expect(new_integration.errors[:app_id]).to include("has already been taken")
+    it "validates presence of train_id" do
+      svix_integration.train_id = nil
+      expect(svix_integration).not_to be_valid
+      expect(svix_integration.errors[:train_id]).to include("can't be blank")
     end
 
     it "validates presence of status" do
       svix_integration.status = nil
       expect(svix_integration).not_to be_valid
       expect(svix_integration.errors[:status]).to include("can't be blank")
+    end
+
+    it "validates uniqueness of app_id" do
+      create(:svix_integration, app_id: "duplicate_id", train: train)
+      new_integration = build(:svix_integration, app_id: "duplicate_id", train: create(:train, :with_no_platforms))
+      expect(new_integration).not_to be_valid
+      expect(new_integration.errors[:app_id]).to include("has already been taken")
     end
 
     it "allows nil app_id" do
@@ -47,9 +59,7 @@ describe SvixIntegration do
       allow(svix_client).to receive(:application).and_return(application_api)
       allow(application_api).to receive(:create).with(application_in).and_return(response)
 
-      # Create a proper integration chain: App -> Integration -> SvixIntegration
-      test_svix_integration = create(:svix_integration, app_id: nil)
-      create(:integration, integrable: train.app, providable: test_svix_integration, category: :webhook)
+      test_svix_integration = create(:svix_integration, train: train, app_id: nil)
 
       test_svix_integration.create_svix_app!
 
@@ -74,6 +84,26 @@ describe SvixIntegration do
       svix_integration.create_endpoint("https://example.com/webhook")
 
       expect(endpoint_api).to have_received(:create).with(svix_integration.app_id, endpoint_in)
+    end
+  end
+
+  describe "#send_message" do
+    it "sends a message through Svix" do
+      svix_client = instance_double(Svix::Client)
+      message_api = instance_double(Svix::Message)
+      message_in = instance_double(Svix::MessageIn)
+      payload = { event_type: "test.event", data: { test: "data" } }
+
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
+      allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
+      allow(Svix::MessageIn).to receive(:new).and_return(message_in)
+      allow(svix_client).to receive(:message).and_return(message_api)
+      allow(message_api).to receive(:create).with(svix_integration.app_id, message_in)
+
+      svix_integration.send_message(payload)
+
+      expect(message_api).to have_received(:create).with(svix_integration.app_id, message_in)
     end
   end
 end
