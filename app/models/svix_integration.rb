@@ -12,6 +12,7 @@
 #
 class SvixIntegration < ApplicationRecord
   has_paper_trail
+  include Loggable
 
   belongs_to :train
 
@@ -54,8 +55,8 @@ class SvixIntegration < ApplicationRecord
       )
 
       response
-    rescue => error
-      Rails.logger.error("Failed to create Svix app: #{error.message}")
+    rescue HTTP::Error, Faraday::Error, StandardError => error
+      elog("Failed to create Svix app for train #{train.id}: #{error.message}", level: :warn)
       raise error
     end
   end
@@ -71,8 +72,8 @@ class SvixIntegration < ApplicationRecord
       )
 
       svix_client.endpoint.create(app_id, endpoint_in)
-    rescue => error
-      Rails.logger.error("Failed to create Svix endpoint: #{error.message}")
+    rescue HTTP::Error, Faraday::Error, StandardError => error
+      elog("Failed to create Svix endpoint for app #{app_id}: #{error.message}", level: :warn)
       raise error
     end
   end
@@ -88,8 +89,8 @@ class SvixIntegration < ApplicationRecord
       )
 
       svix_client.message.create(app_id, message_in)
-    rescue => error
-      Rails.logger.error("Failed to send Svix message: #{error.message}")
+    rescue HTTP::Error, Faraday::Error, StandardError => error
+      elog("Failed to send Svix message for app #{app_id}: #{error.message}", level: :warn)
       raise error
     end
   end

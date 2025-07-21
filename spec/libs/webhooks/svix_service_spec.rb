@@ -148,6 +148,21 @@ describe Webhooks::SvixService do
       result = described_class.create_endpoint_for_webhook(train_without_webhook, "https://example.com/webhook")
       expect(result).to be_nil
     end
+
+    it "creates inactive OutgoingWebhook with error when endpoint creation fails" do
+      allow(webhook_integration).to receive(:create_endpoint).and_raise(HTTP::Error.new("Network error"))
+
+      expect {
+        expect {
+          described_class.create_endpoint_for_webhook(train, "https://example.com/webhook")
+        }.to raise_error(HTTP::Error, "Network error")
+      }.to change(OutgoingWebhook, :count).by(1)
+
+      webhook = OutgoingWebhook.last
+      expect(webhook.active).to be false
+      expect(webhook.url).to eq("https://example.com/webhook")
+      expect(webhook.svix_endpoint_id).to be_nil
+    end
   end
 
   describe "#send_webhook" do
@@ -169,19 +184,46 @@ describe Webhooks::SvixService do
       expect(webhook_integration).to have_received(:send_message)
     end
 
-    it "creates pending event and updates to failed on delivery error" do
-      # Override the mock to raise an error for this specific test
-      allow(webhook_integration).to receive(:send_message).and_raise(StandardError.new("Connection failed"))
+    it "creates pending event and updates to failed on HTTP error" do
+      allow(webhook_integration).to receive(:send_message).and_raise(HTTP::Error.new("Network error"))
 
       expect {
         expect {
           service.send(:send_webhook, {test: "payload"})
-        }.to raise_error(StandardError, "Connection failed")
+        }.to raise_error(HTTP::Error, "Network error")
       }.to change(OutgoingWebhookEvent, :count).by(1)
 
       event = OutgoingWebhookEvent.last
       expect(event.status).to eq("failed")
-      expect(event.error_message).to eq("Connection failed")
+      expect(event.error_message).to eq("Network error: Network error")
+    end
+
+    it "creates pending event and updates to failed on Faraday error" do
+      allow(webhook_integration).to receive(:send_message).and_raise(Faraday::Error.new("Connection failed"))
+
+      expect {
+        expect {
+          service.send(:send_webhook, {test: "payload"})
+        }.to raise_error(Faraday::Error, "Connection failed")
+      }.to change(OutgoingWebhookEvent, :count).by(1)
+
+      event = OutgoingWebhookEvent.last
+      expect(event.status).to eq("failed")
+      expect(event.error_message).to eq("Network error: Connection failed")
+    end
+
+    it "creates pending event and updates to failed on standard error" do
+      allow(webhook_integration).to receive(:send_message).and_raise(StandardError.new("General error"))
+
+      expect {
+        expect {
+          service.send(:send_webhook, {test: "payload"})
+        }.to raise_error(StandardError, "General error")
+      }.to change(OutgoingWebhookEvent, :count).by(1)
+
+      event = OutgoingWebhookEvent.last
+      expect(event.status).to eq("failed")
+      expect(event.error_message).to eq("General error")
     end
 
     it "raises error when no webhook integration is found" do

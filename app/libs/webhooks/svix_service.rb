@@ -17,17 +17,30 @@ module Webhooks
 
       return if webhook_integration&.app_id.blank?
 
-      # Create the Svix endpoint first
-      endpoint_response = webhook_integration.create_endpoint(url, event_types: event_types)
+      begin
+        # Create the Svix endpoint first
+        endpoint_response = webhook_integration.create_endpoint(url, event_types: event_types)
 
-      # Create the OutgoingWebhook record with the endpoint ID
-      train.outgoing_webhooks.create!(
-        url: url,
-        event_types: event_types,
-        description: description,
-        svix_endpoint_id: endpoint_response.respond_to?(:id) ? endpoint_response.id : nil,
-        active: true
-      )
+        # Create the OutgoingWebhook record with the endpoint ID
+        train.outgoing_webhooks.create!(
+          url: url,
+          event_types: event_types,
+          description: description,
+          svix_endpoint_id: endpoint_response.respond_to?(:id) ? endpoint_response.id : nil,
+          active: true
+        )
+      rescue HTTP::Error, Faraday::Error, StandardError => error
+        # Create OutgoingWebhook with error state for tracking
+        webhook = train.outgoing_webhooks.create!(
+          url: url,
+          event_types: event_types,
+          description: description,
+          active: false
+        )
+        # Add error to the saved webhook for inspection in tests
+        webhook.errors.add(:base, "Failed to create Svix endpoint: #{error.message}")
+        raise error
+      end
     end
 
     def initialize(outgoing_webhook)
@@ -63,8 +76,12 @@ module Webhooks
         Rails.logger.debug { "Webhook payload: #{payload.to_json}" }
 
         webhook_integration = outgoing_webhook.train.webhook_integration
-        raise "No SvixIntegration found for train #{outgoing_webhook.train.id}" unless webhook_integration
-        raise "No Svix app_id found for train #{outgoing_webhook.train.id}" unless webhook_integration.app_id
+        unless webhook_integration
+          raise "No SvixIntegration found for train #{outgoing_webhook.train.id}"
+        end
+        unless webhook_integration.app_id
+          raise "No Svix app_id found for train #{outgoing_webhook.train.id}"
+        end
 
         response = webhook_integration.send_message(payload)
 
@@ -74,8 +91,17 @@ module Webhooks
         )
 
         Rails.logger.info("Webhook delivered successfully: #{outgoing_webhook.url}")
+      rescue HTTP::Error, Faraday::Error => error
+        elog("Webhook delivery failed for #{outgoing_webhook.url}: #{error.message}", level: :warn)
+
+        event_record.update!(
+          status: :failed,
+          error_message: "Network error: #{error.message}"
+        )
+
+        raise error
       rescue => error
-        Rails.logger.error("Webhook delivery failed: #{error.message}")
+        elog("Webhook delivery failed for #{outgoing_webhook.url}: #{error.message}", level: :warn)
 
         event_record.update!(
           status: :failed,
