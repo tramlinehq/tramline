@@ -3,6 +3,8 @@ FactoryBot.define do
     oauth_access_token { "test_access_token" }
     oauth_refresh_token { "test_refresh_token" }
     cloud_id { "cloud_123" }
+    organization_name { "test_org" }
+    organization_url { "https://testorg.atlassian.net" }
     integration
 
     trait :with_app_config do

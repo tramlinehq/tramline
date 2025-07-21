@@ -62,6 +62,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_091833) do
     t.jsonb "firebase_crashlytics_ios_config"
     t.jsonb "firebase_crashlytics_android_config"
     t.jsonb "jira_config", default: {}, null: false
+    t.jsonb "linear_config", default: {}, null: false
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -354,9 +355,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_091833) do
 
   create_table "gitlab_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "oauth_access_token"
-    t.string "original_oauth_access_token"
     t.string "oauth_refresh_token"
-    t.string "original_oauth_refresh_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -413,7 +412,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_091833) do
     t.string "cloud_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "organization_name"
+    t.string "organization_url"
     t.index ["cloud_id"], name: "index_jira_integrations_on_cloud_id"
+  end
+
+  create_table "linear_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "oauth_access_token"
+    t.string "oauth_refresh_token"
+    t.string "workspace_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "workspace_name"
+    t.string "workspace_url_key"
+    t.index ["workspace_id"], name: "index_linear_integrations_on_workspace_id"
   end
 
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -996,6 +1008,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_091833) do
     t.boolean "tag_store_releases_vcs_release", default: false
     t.boolean "notifications_release_specific_channel_enabled", default: false
     t.string "version_bump_strategy"
+    t.boolean "enable_changelog_linking_in_notifications", default: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

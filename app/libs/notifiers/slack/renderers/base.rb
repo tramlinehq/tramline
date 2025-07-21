@@ -59,4 +59,13 @@ class Notifiers::Slack::Renderers::Base
   def apple_publishing_text
     "- Releases from Tramline are always manually released, you can start the release to users once it is approved from the Tramline release page."
   end
+
+  def changelog_elements(changes)
+    result = changes.each_with_object([]) do |change, acc|
+      elements = @changelog_linker&.process(change) || [{"type" => "text", "text" => change}]
+      acc << {type: "rich_text_section", elements: elements}
+    end
+
+    result.map(&:to_json).join(",")
+  end
 end

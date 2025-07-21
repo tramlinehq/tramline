@@ -97,15 +97,16 @@ describe SlackIntegration do
     end
 
     it "notifies rest of the parts of the changelog" do
-      slack_integration.notify_with_threaded_changelog!(channel, "some message", "notif_type", {diff_changelog: changelog}, changelog_key: :diff_changelog, changelog_partitions: 5, header_affix: "affix")
+      params = {diff_changelog: changelog}
+      slack_integration.notify_with_threaded_changelog!(channel, "some message", "notif_type", params, changelog_key: :diff_changelog, changelog_partitions: 5, header_affix: "affix")
 
       changelog_part2 = changelog[5, 5]
       changelog_part3 = changelog[10, 5]
       changelog_part4 = changelog[15, 5]
 
-      expect(slack_integration).to have_received(:notify_changelog!).with(channel[:id], "some message", thread_id, changelog_part2, header_affix: "affix (2/4)", continuation: true)
-      expect(slack_integration).to have_received(:notify_changelog!).with(channel[:id], "some message", thread_id, changelog_part3, header_affix: "affix (3/4)", continuation: true)
-      expect(slack_integration).to have_received(:notify_changelog!).with(channel[:id], "some message", thread_id, changelog_part4, header_affix: "affix (4/4)", continuation: true)
+      expect(slack_integration).to have_received(:notify_changelog!).with(channel[:id], "some message", thread_id, changelog_part2, params, header_affix: "affix (2/4)", continuation: true)
+      expect(slack_integration).to have_received(:notify_changelog!).with(channel[:id], "some message", thread_id, changelog_part3, params, header_affix: "affix (3/4)", continuation: true)
+      expect(slack_integration).to have_received(:notify_changelog!).with(channel[:id], "some message", thread_id, changelog_part4, params, header_affix: "affix (4/4)", continuation: true)
     end
   end
 end

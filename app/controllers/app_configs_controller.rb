@@ -66,7 +66,8 @@ class AppConfigsController < SignedInApplicationController
   end
 
   def configure_project_management
-    set_jira_projects if further_setup_by_category?.dig(:project_management, :further_setup)
+    set_jira_projects if further_setup_by_category?.dig(:project_management, :further_setup) && @app.integrations.jira_integrations.any?
+    set_linear_projects if further_setup_by_category?.dig(:project_management, :further_setup) && @app.integrations.linear_integrations.any?
   end
 
   def set_app_config
@@ -91,6 +92,11 @@ class AppConfigsController < SignedInApplicationController
           project_configs: {},
           release_tracking: [:track_tickets, :auto_transition],
           release_filters: [[:type, :value, :_destroy]]
+        },
+        linear_config: {
+          selected_teams: [],
+          team_configs: {},
+          release_filters: [[:type, :value, :_destroy]]
         }
       )
   end
@@ -103,6 +109,7 @@ class AppConfigsController < SignedInApplicationController
       .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
       .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)
       .merge(jira_config: parse_jira_config(app_config_params[:jira_config]))
+      .merge(linear_config: parse_linear_config(app_config_params[:linear_config]))
       .except(*BUGSNAG_CONFIG_PARAMS)
       .compact
   end
@@ -163,6 +170,31 @@ class AppConfigsController < SignedInApplicationController
     @current_jira_config = @config.jira_config.with_indifferent_access
   end
 
+  def set_linear_projects
+    provider = @app.integrations.project_management_provider
+    @linear_data = provider.setup
+
+    @config.linear_config = {} if @config.linear_config.nil?
+    @config.linear_config = {
+      "selected_teams" => @config.linear_config["selected_teams"] || [],
+      "team_configs" => @config.linear_config["team_configs"] || {},
+      "release_filters" => @config.linear_config["release_filters"] || []
+    }
+
+    @linear_data[:teams]&.each do |team|
+      team_id = team["id"]
+      workflow_states = @linear_data[:workflow_states]
+      done_states = workflow_states&.select { |state| state["type"] == "completed" }&.pluck("name") || []
+
+      @config.linear_config["team_configs"][team_id] ||= {
+        "done_states" => done_states
+      }
+    end
+
+    @config.save! if @config.changed?
+    @current_linear_config = @config.linear_config.with_indifferent_access
+  end
+
   def parse_jira_config(config)
     return {} if config.blank?
 
@@ -178,6 +210,27 @@ class AppConfigsController < SignedInApplicationController
         track_tickets: ActiveModel::Type::Boolean.new.cast(config.dig(:release_tracking, :track_tickets)),
         auto_transition: ActiveModel::Type::Boolean.new.cast(config.dig(:release_tracking, :auto_transition))
       },
+      release_filters: config[:release_filters]&.values&.filter_map do |filter|
+        next if filter[:type].blank? || filter[:value].blank? || filter[:_destroy] == "1"
+        {
+          "type" => filter[:type],
+          "value" => filter[:value]
+        }
+      end || []
+    }
+  end
+
+  def parse_linear_config(config)
+    return {} if config.blank?
+
+    {
+      selected_teams: Array(config[:selected_teams]),
+      team_configs: config[:team_configs]&.transform_values do |team_config|
+        {
+          done_states: Array(team_config[:done_states]).compact_blank,
+          custom_done_states: Array(team_config[:custom_done_states]).compact_blank
+        }
+      end || {},
       release_filters: config[:release_filters]&.values&.filter_map do |filter|
         next if filter[:type].blank? || filter[:value].blank? || filter[:_destroy] == "1"
         {

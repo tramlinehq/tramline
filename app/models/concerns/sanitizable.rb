@@ -1,7 +1,7 @@
 module Sanitizable
   extend ActiveSupport::Concern
 
-  COMMIT_FILTER_PATTERNS = /\AMerge|\ACo-authored-by|\A---------/
+  COMMIT_FILTER_PATTERNS = /\AMerge|\ASee merge|\ACo-authored-by|\A---------/
   EMOJI_PATTERN = /\p{Emoji_Presentation}\s*/
 
   private

@@ -13,7 +13,7 @@
       "elements": [
         {
           "type": "mrkdwn",
-          "text": "<%= initial_rollout_percentage_text %>\n<%= google_managed_publishing_text %>\n<%= google_unmanaged_publishing_text %>"
+          "text": "<%= requires_review_text %>"
         }
       ]
     }
@@ -31,20 +31,7 @@
         {
           "type": "rich_text_list",
           "style": "bullet",
-          "elements": [
-            <% @changelog[:first_part].each_with_index do |change, i| %>
-            <%= i.zero? ? "" : "," %>
-            {
-              "type": "rich_text_section",
-              "elements": [
-                {
-                  "type": "text",
-                  "text": "<%= safe_string(change) %>"
-                }
-              ]
-            }
-            <% end %>
-          ]
+          "elements": [<%= changelog_elements(@changelog[:first_part]) %>]
         }
       ]
     }
