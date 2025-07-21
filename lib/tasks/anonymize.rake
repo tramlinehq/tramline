@@ -418,6 +418,16 @@ namespace :anonymize do
         anonymize("workspace_name") { |_| "anonymized_workspace_name" }
         anonymize("workspace_url_key") { |_| "anonymized_workspace_url_key" }
       end
+
+      table "svix_integrations" do
+        continue { |index, record| !SvixIntegration.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "status"
+        whitelist_timestamps
+        anonymize("app_id") { |_| "anonymized_app_id" }
+        anonymize("app_name") { |_| "Anonymized Svix App" }
+      end
     end
 
     RefreshReldexJob.perform_async(train_id)

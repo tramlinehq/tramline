@@ -98,13 +98,15 @@ describe Webhooks::SvixService do
     it "creates pending event and updates to success on successful delivery" do
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
+      allow(outgoing_webhook.train).to receive(:svix_app_id).and_return("app_123")
+      
       svix_client = instance_double(Svix::Client)
       message_api = instance_double(Svix::Message)
       message_in = instance_double(Svix::MessageIn)
       allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
       allow(Svix::MessageIn).to receive(:new).and_return(message_in)
       allow(svix_client).to receive(:message).and_return(message_api)
-      allow(message_api).to receive(:create).with(outgoing_webhook.train.app_id, message_in).and_return({"id" => "msg_123"})
+      allow(message_api).to receive(:create).with("app_123", message_in).and_return({"id" => "msg_123"})
 
       expect {
         service.send(:send_webhook, {test: "payload"})
@@ -118,13 +120,15 @@ describe Webhooks::SvixService do
     it "creates pending event and updates to failed on delivery error" do
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
+      allow(outgoing_webhook.train).to receive(:svix_app_id).and_return("app_123")
+      
       svix_client = instance_double(Svix::Client)
       message_api = instance_double(Svix::Message)
       message_in = instance_double(Svix::MessageIn)
       allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
       allow(Svix::MessageIn).to receive(:new).and_return(message_in)
       allow(svix_client).to receive(:message).and_return(message_api)
-      allow(message_api).to receive(:create).with(outgoing_webhook.train.app_id, message_in).and_raise(StandardError.new("Connection failed"))
+      allow(message_api).to receive(:create).with("app_123", message_in).and_raise(StandardError.new("Connection failed"))
 
       expect {
         expect {
@@ -135,6 +139,16 @@ describe Webhooks::SvixService do
       event = OutgoingWebhookEvent.last
       expect(event.status).to eq("failed")
       expect(event.error_message).to eq("Connection failed")
+    end
+
+    it "raises error when no svix_app_id is found" do
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
+      allow(outgoing_webhook.train).to receive(:svix_app_id).and_return(nil)
+
+      expect {
+        service.send(:send_webhook, {test: "payload"})
+      }.to raise_error("No Svix app_id found for train #{outgoing_webhook.train.id}")
     end
   end
 end

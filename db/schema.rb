@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_21_091833) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_21_105403) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -953,6 +953,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_091833) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["submission_config_id"], name: "index_submission_external_configs_on_submission_config_id"
+  end
+
+  create_table "svix_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "app_id"
+    t.string "app_name"
+    t.string "status", default: "active"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_id"], name: "index_svix_integrations_on_app_id", unique: true
+    t.index ["status"], name: "index_svix_integrations_on_status"
   end
 
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

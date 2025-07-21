@@ -137,6 +137,7 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
+  after_create_commit -> { CreateSvixAppJob.perform_async(id) }
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   before_update :create_default_notification_settings, if: -> do
     notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
@@ -434,6 +435,14 @@ class Train < ApplicationRecord
         app_id: app_id
       }
     )
+  end
+
+  def svix_integration
+    integrations.webhook.first&.providable
+  end
+
+  def svix_app_id
+    svix_integration&.app_id
   end
 
   def send_notifications?

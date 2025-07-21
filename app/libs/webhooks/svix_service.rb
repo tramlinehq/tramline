@@ -46,11 +46,14 @@ module Webhooks
 
         svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
         message_in = Svix::MessageIn.new(
-          eventType: payload[:event_type],
+          event_type: payload[:event_type],
           payload: payload
         )
+        svix_app_id = outgoing_webhook.train.svix_app_id
+        raise "No Svix app_id found for train #{outgoing_webhook.train.id}" unless svix_app_id
+        
         response = svix_client.message.create(
-          outgoing_webhook.train.app_id,
+          svix_app_id,
           message_in
         )
 
