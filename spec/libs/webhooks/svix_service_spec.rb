@@ -62,9 +62,15 @@ describe Webhooks::SvixService do
         allow(service).to receive(:build_payload).and_call_original
         allow(service).to receive(:send_webhook)
 
-        service.trigger("release.started", {test: "data"})
+        valid_payload = {
+          full_changelog: ["commit 1", "commit 2"],
+          release_version: "1.0.0",
+          release_branch_name: "r/main/2025-01-09",
+          platform: "android"
+        }
+        service.trigger("release.started", valid_payload)
 
-        expect(service).to have_received(:build_payload).with("release.started", {test: "data"})
+        expect(service).to have_received(:build_payload).with("release.started", valid_payload)
         expect(service).to have_received(:send_webhook).with(hash_including(:event_type, :timestamp, :data, :train))
       end
     end
@@ -74,7 +80,13 @@ describe Webhooks::SvixService do
 
       it "does not send webhook" do
         allow(service).to receive(:send_webhook)
-        service.trigger("release.started", {test: "data"})
+        valid_payload = {
+          full_changelog: ["commit 1", "commit 2"],
+          release_version: "1.0.0",
+          release_branch_name: "r/main/2025-01-09",
+          platform: "android"
+        }
+        service.trigger("release.started", valid_payload)
         expect(service).not_to have_received(:send_webhook)
       end
     end
@@ -92,12 +104,18 @@ describe Webhooks::SvixService do
     let(:service) { described_class.new(outgoing_webhook) }
 
     it "builds correct payload structure" do
-      payload = service.send(:build_payload, "release.started", {release_id: "123"})
+      valid_payload = {
+        full_changelog: ["commit 1", "commit 2"],
+        release_version: "1.0.0",
+        release_branch_name: "r/main/2025-01-09",
+        platform: "android"
+      }
+      payload = service.send(:build_payload, "release.started", valid_payload)
 
       expect(payload).to include(
         event_type: "release.started",
         timestamp: be_a(String),
-        data: {release_id: "123"},
+        data: valid_payload,
         train: train.webhook_params
       )
     end
@@ -243,6 +261,171 @@ describe Webhooks::SvixService do
       expect {
         service.send(:send_webhook, {test: "payload"})
       }.to raise_error("No Svix app_id found for train #{train.id}")
+    end
+  end
+
+  describe "schema validation" do
+    let(:valid_rc_finished_payload) do
+      {
+        full_changelog: ["commit 1", "commit 2"],
+        diff_changelog: ["commit 1"],
+        release_version: "1.0.0",
+        build_number: "123",
+        release_branch_name: "r/main/2025-01-09",
+        platform: "android"
+      }
+    end
+
+    let(:valid_release_started_payload) do
+      {
+        full_changelog: ["commit 1", "commit 2"],
+        release_version: "1.0.0",
+        release_branch_name: "r/main/2025-01-09",
+        platform: "ios"
+      }
+    end
+
+    let(:valid_release_ended_payload) do
+      {
+        full_changelog: ["commit 1", "commit 2"],
+        diff_changelog: ["commit 1"],
+        release_version: "1.0.0",
+        release_branch_name: "r/main/2025-01-09",
+        platform: "android"
+      }
+    end
+
+    let(:invalid_payload) do
+      {
+        full_changelog: "not an array",
+        platform: "invalid_platform"
+      }
+    end
+
+    describe "#validate_payload_schema!" do
+      it "validates payload against rc.finished schema" do
+        service = described_class.new(outgoing_webhook)
+        
+        expect {
+          service.send(:validate_payload_schema!, "rc.finished", valid_rc_finished_payload)
+        }.not_to raise_error
+      end
+
+      it "validates payload against release.started schema" do
+        service = described_class.new(outgoing_webhook)
+        
+        expect {
+          service.send(:validate_payload_schema!, "release.started", valid_release_started_payload)
+        }.not_to raise_error
+      end
+
+      it "validates payload against release.ended schema" do
+        service = described_class.new(outgoing_webhook)
+        
+        expect {
+          service.send(:validate_payload_schema!, "release.ended", valid_release_ended_payload)
+        }.not_to raise_error
+      end
+
+      it "raises error for invalid payload against rc.finished schema" do
+        service = described_class.new(outgoing_webhook)
+        
+        expect {
+          service.send(:validate_payload_schema!, "rc.finished", invalid_payload)
+        }.to raise_error(ArgumentError, /Webhook payload validation failed/)
+      end
+
+      it "logs validation errors" do
+        service = described_class.new(outgoing_webhook)
+        allow(service).to receive(:elog)
+        
+        expect {
+          service.send(:validate_payload_schema!, "rc.finished", invalid_payload)
+        }.to raise_error(ArgumentError)
+        
+        expect(service).to have_received(:elog).with(
+          /Webhook payload validation failed for rc.finished/,
+          level: :error
+        )
+      end
+
+      it "skips validation for unknown event types" do
+        service = described_class.new(outgoing_webhook)
+        
+        expect {
+          service.send(:validate_payload_schema!, "unknown.event", {})
+        }.not_to raise_error
+      end
+
+      it "skips validation when schema file does not exist" do
+        service = described_class.new(outgoing_webhook)
+        allow(service).to receive(:schema_file_for_event).and_return("/nonexistent/file.json")
+        
+        expect {
+          service.send(:validate_payload_schema!, "rc.finished", {})
+        }.not_to raise_error
+      end
+    end
+
+    describe "#schema_file_for_event" do
+      it "returns correct schema file for rc.finished" do
+        service = described_class.new(outgoing_webhook)
+        expected_path = Rails.root.join("config/schema/webhook_rc_finished.json")
+        
+        expect(service.send(:schema_file_for_event, "rc.finished")).to eq(expected_path)
+      end
+
+      it "returns correct schema file for release.started" do
+        service = described_class.new(outgoing_webhook)
+        expected_path = Rails.root.join("config/schema/webhook_release_started.json")
+        
+        expect(service.send(:schema_file_for_event, "release.started")).to eq(expected_path)
+      end
+
+      it "returns correct schema file for release.ended" do
+        service = described_class.new(outgoing_webhook)
+        expected_path = Rails.root.join("config/schema/webhook_release_ended.json")
+        
+        expect(service.send(:schema_file_for_event, "release.ended")).to eq(expected_path)
+      end
+
+      it "returns nil for unknown event types" do
+        service = described_class.new(outgoing_webhook)
+        
+        expect(service.send(:schema_file_for_event, "unknown.event")).to be_nil
+      end
+    end
+
+    describe "integration with trigger method" do
+      it "validates payload before sending webhook" do
+        # Update webhook to support rc.finished event type
+        allow(outgoing_webhook).to receive(:event_types).and_return(["rc.finished"])
+        allow(outgoing_webhook).to receive(:active?).and_return(true)
+        
+        service = described_class.new(outgoing_webhook)
+        allow(service).to receive(:send_webhook)
+        allow(service).to receive(:validate_payload_schema!)
+        
+        service.trigger("rc.finished", valid_rc_finished_payload)
+        
+        expect(service).to have_received(:validate_payload_schema!).with("rc.finished", valid_rc_finished_payload)
+      end
+
+      it "prevents webhook sending when validation fails" do
+        # Update webhook to support rc.finished event type
+        allow(outgoing_webhook).to receive(:event_types).and_return(["rc.finished"])
+        allow(outgoing_webhook).to receive(:active?).and_return(true)
+        
+        service = described_class.new(outgoing_webhook)
+        allow(service).to receive(:send_webhook)
+        allow(service).to receive(:validate_payload_schema!).and_raise(ArgumentError, "Validation failed")
+        
+        expect {
+          service.trigger("rc.finished", invalid_payload)
+        }.to raise_error(ArgumentError, "Validation failed")
+        
+        expect(service).not_to have_received(:send_webhook)
+      end
     end
   end
 end
