@@ -20,11 +20,11 @@ class SvixIntegration < ApplicationRecord
   enum :status, {active: "active", inactive: "inactive"}
 
   delegate :app, to: :integration
-  
+
   def train
     # SvixIntegration is linked to trains through the background job
     # For now, we'll find the train that triggered this integration creation
-    app.trains.first if app
+    app&.trains&.first
   end
 
   def install_path
@@ -72,7 +72,7 @@ class SvixIntegration < ApplicationRecord
   end
 
   def connection_data
-    return unless app_id.present?
+    return if app_id.blank?
     "Svix App ID: #{app_id}"
   end
 
@@ -81,32 +81,32 @@ class SvixIntegration < ApplicationRecord
 
     svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
     app_name = "#{train.app.name} - #{train.name}"
-    
+
     application_in = Svix::ApplicationIn.new(
       name: app_name,
       uid: "tramline-#{train.id}"
     )
-    
+
     response = svix_client.application.create(application_in)
-    
+
     update!(
       app_id: response.id,
       app_name: app_name,
       status: :active
     )
-    
+
     response
   end
 
   def create_endpoint(url)
-    return unless app_id.present?
+    return if app_id.blank?
 
     svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
     endpoint_in = Svix::EndpointIn.new(
       url: url,
       eventTypes: ["release.started", "release.ended", "rc.finished"]
     )
-    
+
     svix_client.endpoint.create(app_id, endpoint_in)
   end
 end

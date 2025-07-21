@@ -4,7 +4,7 @@ class CreateSvixAppJob < ApplicationJob
     return unless train
 
     svix_integration = train.integrations.webhook.first&.providable
-    
+
     if svix_integration.nil?
       integration = train.integrations.create!(
         category: :webhook,

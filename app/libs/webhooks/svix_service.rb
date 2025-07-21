@@ -51,7 +51,7 @@ module Webhooks
         )
         svix_app_id = outgoing_webhook.train.svix_app_id
         raise "No Svix app_id found for train #{outgoing_webhook.train.id}" unless svix_app_id
-        
+
         response = svix_client.message.create(
           svix_app_id,
           message_in
