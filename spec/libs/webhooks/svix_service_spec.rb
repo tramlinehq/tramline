@@ -3,11 +3,17 @@ require "webmock/rspec"
 
 describe Webhooks::SvixService do
   let(:train) { create(:train, :with_no_platforms) }
-  let(:svix_integration) { create(:svix_integration, train: train, app_id: "app_123") }
+  let(:webhook_integration) { create(:webhook_integration, train: train, app_id: "app_123") }
   let(:outgoing_webhook) { create(:outgoing_webhook, train: train) }
 
   before do
-    svix_integration # Ensure SvixIntegration is created
+    webhook_integration # Ensure SvixIntegration is created
+    # Mock ENV["SVIX_TOKEN"] to avoid nil errors
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
+
+    # Mock the train's webhook_integration association to return our mocked integration
+    allow(train).to receive(:webhook_integration).and_return(webhook_integration)
   end
 
   describe ".trigger_for_train" do
@@ -98,52 +104,48 @@ describe Webhooks::SvixService do
   end
 
   describe ".create_endpoint_for_webhook" do
-    it "creates Svix endpoint and OutgoingWebhook record" do
-      svix_client = instance_double(Svix::Client)
-      endpoint_api = instance_double(Svix::Endpoint)
-      endpoint_in = instance_double(Svix::EndpointIn)
-      endpoint_response = instance_double(Svix::EndpointOut, id: "ep_123")
+    before do
+      # Mock the create_endpoint method to avoid real HTTP calls
+      allow(webhook_integration).to receive(:create_endpoint).and_return(instance_double(Svix::EndpointOut, id: "ep_123"))
+    end
 
-      allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
-      allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
-      allow(Svix::EndpointIn).to receive(:new).and_return(endpoint_in)
-      allow(svix_client).to receive(:endpoint).and_return(endpoint_api)
-      allow(endpoint_api).to receive(:create).with(svix_integration.app_id, endpoint_in).and_return(endpoint_response)
-
+    it "creates OutgoingWebhook record" do
       expect {
-        result = described_class.create_endpoint_for_webhook(train, "https://example.com/webhook", event_types: ["release.started"], description: "Test webhook")
-        expect(result).to be_a(OutgoingWebhook)
-        expect(result.url).to eq("https://example.com/webhook")
-        expect(result.event_types).to eq(["release.started"])
-        expect(result.description).to eq("Test webhook")
+        described_class.create_endpoint_for_webhook(train, "https://example.com/webhook", event_types: ["release.started"], description: "Test webhook")
       }.to change(OutgoingWebhook, :count).by(1)
     end
 
-    it "creates active OutgoingWebhook with correct svix_endpoint_id" do
-      allow(svix_integration).to receive(:create_endpoint).and_return(instance_double(Svix::EndpointOut, id: "ep_123"))
+    it "creates OutgoingWebhook with correct attributes" do
+      result = described_class.create_endpoint_for_webhook(train, "https://example.com/webhook", event_types: ["release.started"], description: "Test webhook")
+      expect(result).to be_a(OutgoingWebhook)
+      expect(result.url).to eq("https://example.com/webhook")
+      expect(result.event_types).to eq(["release.started"])
+      expect(result.description).to eq("Test webhook")
+      expect(webhook_integration).to have_received(:create_endpoint).with("https://example.com/webhook", event_types: ["release.started"])
+    end
 
+    it "creates active OutgoingWebhook with correct svix_endpoint_id" do
       result = described_class.create_endpoint_for_webhook(train, "https://example.com/webhook")
       expect(result.active).to be true
       expect(result.svix_endpoint_id).to eq("ep_123")
+      expect(webhook_integration).to have_received(:create_endpoint).with("https://example.com/webhook", event_types: ["release.started", "release.ended", "rc.finished"])
     end
 
     it "uses default event types when not specified" do
-      allow(svix_integration).to receive(:create_endpoint).and_return(instance_double(Svix::EndpointOut, id: "ep_456"))
-
       result = described_class.create_endpoint_for_webhook(train, "https://example.com/webhook")
       expect(result.event_types).to eq(["release.started", "release.ended", "rc.finished"])
+      expect(webhook_integration).to have_received(:create_endpoint).with("https://example.com/webhook", event_types: ["release.started", "release.ended", "rc.finished"])
     end
 
-    it "returns nil when SvixIntegration has no app_id" do
-      svix_integration.update!(app_id: nil)
+    it "returns nil when webhook integration has no app_id" do
+      webhook_integration.update!(app_id: nil)
       result = described_class.create_endpoint_for_webhook(train, "https://example.com/webhook")
       expect(result).to be_nil
     end
 
-    it "returns nil when train has no SvixIntegration" do
-      train_without_svix = create(:train, :with_no_platforms)
-      result = described_class.create_endpoint_for_webhook(train_without_svix, "https://example.com/webhook")
+    it "returns nil when train has no webhook integration" do
+      train_without_webhook = create(:train, :with_no_platforms)
+      result = described_class.create_endpoint_for_webhook(train_without_webhook, "https://example.com/webhook")
       expect(result).to be_nil
     end
   end
@@ -151,13 +153,12 @@ describe Webhooks::SvixService do
   describe "#send_webhook" do
     let(:service) { described_class.new(outgoing_webhook) }
 
+    before do
+      # Mock the send_message method to avoid real HTTP calls
+      allow(webhook_integration).to receive(:send_message).and_return({"id" => "msg_123"})
+    end
+
     it "creates pending event and updates to success on successful delivery" do
-      allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
-
-      # Mock the SvixIntegration send_message method
-      allow(svix_integration).to receive(:send_message).and_return({"id" => "msg_123"})
-
       expect {
         service.send(:send_webhook, {test: "payload"})
       }.to change(OutgoingWebhookEvent, :count).by(1)
@@ -165,14 +166,12 @@ describe Webhooks::SvixService do
       event = OutgoingWebhookEvent.last
       expect(event.status).to eq("success")
       expect(event.response_data).to include("msg_123")
+      expect(webhook_integration).to have_received(:send_message)
     end
 
     it "creates pending event and updates to failed on delivery error" do
-      allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
-
-      # Mock the SvixIntegration send_message method to raise an error
-      allow(svix_integration).to receive(:send_message).and_raise(StandardError.new("Connection failed"))
+      # Override the mock to raise an error for this specific test
+      allow(webhook_integration).to receive(:send_message).and_raise(StandardError.new("Connection failed"))
 
       expect {
         expect {
@@ -185,20 +184,20 @@ describe Webhooks::SvixService do
       expect(event.error_message).to eq("Connection failed")
     end
 
-    it "raises error when no SvixIntegration is found" do
-      # Create a train without SvixIntegration
-      train_without_svix = create(:train, :with_no_platforms)
-      webhook_without_svix = create(:outgoing_webhook, train: train_without_svix)
-      service_without_svix = described_class.new(webhook_without_svix)
+    it "raises error when no webhook integration is found" do
+      # Create a train without webhook integration
+      train_without_webhook = create(:train, :with_no_platforms)
+      webhook_without_integration = create(:outgoing_webhook, train: train_without_webhook)
+      service_without_integration = described_class.new(webhook_without_integration)
 
       expect {
-        service_without_svix.send(:send_webhook, {test: "payload"})
-      }.to raise_error("No SvixIntegration found for train #{train_without_svix.id}")
+        service_without_integration.send(:send_webhook, {test: "payload"})
+      }.to raise_error("No SvixIntegration found for train #{train_without_webhook.id}")
     end
 
-    it "raises error when SvixIntegration has no app_id" do
-      # Update existing SvixIntegration to have no app_id
-      svix_integration.update!(app_id: nil)
+    it "raises error when webhook integration has no app_id" do
+      # Update existing webhook integration to have no app_id
+      webhook_integration.update!(app_id: nil)
       expect {
         service.send(:send_webhook, {test: "payload"})
       }.to raise_error("No Svix app_id found for train #{train.id}")

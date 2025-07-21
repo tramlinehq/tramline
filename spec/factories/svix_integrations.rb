@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :svix_integration do
+  factory :webhook_integration, class: "SvixIntegration" do
     train
     app_id { "app_#{SecureRandom.hex(8)}" }
     app_name { "Test Svix App" }

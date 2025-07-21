@@ -36,46 +36,61 @@ class SvixIntegration < ApplicationRecord
   def create_svix_app!
     return if app_id.present?
 
-    svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
-    app_name = "#{train.app.name} - #{train.name}"
+    begin
+      svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+      app_name = "#{train.app.name} - #{train.name}"
 
-    application_in = Svix::ApplicationIn.new(
-      name: app_name,
-      uid: "tramline-#{train.id}"
-    )
+      application_in = Svix::ApplicationIn.new(
+        name: app_name,
+        uid: "tramline-#{train.id}"
+      )
 
-    response = svix_client.application.create(application_in)
+      response = svix_client.application.create(application_in)
 
-    update!(
-      app_id: response.id,
-      app_name: app_name,
-      status: :active
-    )
+      update!(
+        app_id: response.id,
+        app_name: app_name,
+        status: :active
+      )
 
-    response
+      response
+    rescue => error
+      Rails.logger.error("Failed to create Svix app: #{error.message}")
+      raise error
+    end
   end
 
-  def create_endpoint(url)
+  def create_endpoint(url, event_types: ["release.started", "release.ended", "rc.finished"])
     return if app_id.blank?
 
-    svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
-    endpoint_in = Svix::EndpointIn.new(
-      url: url,
-      eventTypes: ["release.started", "release.ended", "rc.finished"]
-    )
+    begin
+      svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+      endpoint_in = Svix::EndpointIn.new(
+        url: url,
+        filter_types: event_types
+      )
 
-    svix_client.endpoint.create(app_id, endpoint_in)
+      svix_client.endpoint.create(app_id, endpoint_in)
+    rescue => error
+      Rails.logger.error("Failed to create Svix endpoint: #{error.message}")
+      raise error
+    end
   end
 
   def send_message(payload)
     return if app_id.blank?
 
-    svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
-    message_in = Svix::MessageIn.new(
-      event_type: payload[:event_type],
-      payload: payload
-    )
+    begin
+      svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+      message_in = Svix::MessageIn.new(
+        event_type: payload[:event_type],
+        payload: payload
+      )
 
-    svix_client.message.create(app_id, message_in)
+      svix_client.message.create(app_id, message_in)
+    rescue => error
+      Rails.logger.error("Failed to send Svix message: #{error.message}")
+      raise error
+    end
   end
 end

@@ -13,12 +13,12 @@ module Webhooks
     end
 
     def self.create_endpoint_for_webhook(train, url, event_types: ["release.started", "release.ended", "rc.finished"], description: nil)
-      svix_integration = train.svix_integration
+      webhook_integration = train.webhook_integration
 
-      return if svix_integration&.app_id.blank?
+      return if webhook_integration&.app_id.blank?
 
       # Create the Svix endpoint first
-      endpoint_response = svix_integration.create_endpoint(url)
+      endpoint_response = webhook_integration.create_endpoint(url, event_types: event_types)
 
       # Create the OutgoingWebhook record with the endpoint ID
       train.outgoing_webhooks.create!(
@@ -62,11 +62,11 @@ module Webhooks
         Rails.logger.info("Outgoing webhook triggered: #{outgoing_webhook.url}")
         Rails.logger.debug { "Webhook payload: #{payload.to_json}" }
 
-        svix_integration = outgoing_webhook.train.svix_integration
-        raise "No SvixIntegration found for train #{outgoing_webhook.train.id}" unless svix_integration
-        raise "No Svix app_id found for train #{outgoing_webhook.train.id}" unless svix_integration.app_id
+        webhook_integration = outgoing_webhook.train.webhook_integration
+        raise "No SvixIntegration found for train #{outgoing_webhook.train.id}" unless webhook_integration
+        raise "No Svix app_id found for train #{outgoing_webhook.train.id}" unless webhook_integration.app_id
 
-        response = svix_integration.send_message(payload)
+        response = webhook_integration.send_message(payload)
 
         event_record.update!(
           status: :success,

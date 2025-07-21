@@ -86,7 +86,7 @@ class Train < ApplicationRecord
   has_many :outgoing_webhooks, dependent: :destroy
   has_many :outgoing_webhook_events, dependent: :destroy
   has_one :release_index, dependent: :destroy
-  has_one :svix_integration, dependent: :destroy
+  has_one :webhook_integration, class_name: "SvixIntegration", dependent: :destroy
 
   scope :sequential, -> { reorder("trains.created_at ASC") }
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
@@ -138,7 +138,7 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
-  after_create_commit -> { CreateSvixAppJob.perform_async(id) }
+  after_create_commit -> { CreateOutgoingWebhookIntegrationJob.perform_async(id) }
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   before_update :create_default_notification_settings, if: -> do
     notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
@@ -439,7 +439,7 @@ class Train < ApplicationRecord
   end
 
   def svix_app_id
-    svix_integration&.app_id
+    webhook_integration&.app_id
   end
 
   def send_notifications?
