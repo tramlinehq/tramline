@@ -125,10 +125,9 @@ module Webhooks
     end
 
     def validate_payload_schema!(event_type, payload)
-      schema_file = schema_file_for_event(event_type)
-      return unless schema_file && File.exist?(schema_file)
+      schema = schema_for_event(event_type)
+      return unless schema
 
-      schema = JSON.parse(File.read(schema_file))
       errors = JSON::Validator.fully_validate(schema, payload)
 
       if errors.any?
@@ -138,15 +137,8 @@ module Webhooks
       end
     end
 
-    def schema_file_for_event(event_type)
-      case event_type.to_s
-      when "rc.finished"
-        Rails.root.join("config/schema/webhook_rc_finished.json")
-      when "release.started"
-        Rails.root.join("config/schema/webhook_release_started.json")
-      when "release.ended"
-        Rails.root.join("config/schema/webhook_release_ended.json")
-      end
+    def schema_for_event(event_type)
+      OutgoingWebhook::VALID_EVENT_TYPES[event_type.to_s]
     end
   end
 end

@@ -357,42 +357,42 @@ describe Webhooks::SvixService do
         }.not_to raise_error
       end
 
-      it "skips validation when schema file does not exist" do
+      it "skips validation when schema does not exist" do
         service = described_class.new(outgoing_webhook)
-        allow(service).to receive(:schema_file_for_event).and_return("/nonexistent/file.json")
+        allow(service).to receive(:schema_for_event).and_return(nil)
 
         expect {
-          service.send(:validate_payload_schema!, "rc.finished", {})
+          service.send(:validate_payload_schema!, "unknown.event", {})
         }.not_to raise_error
       end
     end
 
-    describe "#schema_file_for_event" do
-      it "returns correct schema file for rc.finished" do
+    describe "#schema_for_event" do
+      it "returns correct schema for rc.finished" do
         service = described_class.new(outgoing_webhook)
-        expected_path = Rails.root.join("config/schema/webhook_rc_finished.json")
+        expected_schema = OutgoingWebhook::VALID_EVENT_TYPES["rc.finished"]
 
-        expect(service.send(:schema_file_for_event, "rc.finished")).to eq(expected_path)
+        expect(service.send(:schema_for_event, "rc.finished")).to eq(expected_schema)
       end
 
-      it "returns correct schema file for release.started" do
+      it "returns correct schema for release.started" do
         service = described_class.new(outgoing_webhook)
-        expected_path = Rails.root.join("config/schema/webhook_release_started.json")
+        expected_schema = OutgoingWebhook::VALID_EVENT_TYPES["release.started"]
 
-        expect(service.send(:schema_file_for_event, "release.started")).to eq(expected_path)
+        expect(service.send(:schema_for_event, "release.started")).to eq(expected_schema)
       end
 
-      it "returns correct schema file for release.ended" do
+      it "returns correct schema for release.ended" do
         service = described_class.new(outgoing_webhook)
-        expected_path = Rails.root.join("config/schema/webhook_release_ended.json")
+        expected_schema = OutgoingWebhook::VALID_EVENT_TYPES["release.ended"]
 
-        expect(service.send(:schema_file_for_event, "release.ended")).to eq(expected_path)
+        expect(service.send(:schema_for_event, "release.ended")).to eq(expected_schema)
       end
 
       it "returns nil for unknown event types" do
         service = described_class.new(outgoing_webhook)
 
-        expect(service.send(:schema_file_for_event, "unknown.event")).to be_nil
+        expect(service.send(:schema_for_event, "unknown.event")).to be_nil
       end
     end
 

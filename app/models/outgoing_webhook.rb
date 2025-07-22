@@ -21,12 +21,96 @@ class OutgoingWebhook < ApplicationRecord
   validates :url, presence: true, format: {with: URI::DEFAULT_PARSER.make_regexp(%w[http https])}
   validates :event_types, presence: true
 
-  # Remove enum and work with plain array validation
-  VALID_EVENT_TYPES = %w[
-    release.started
-    release.ended
-    rc.finished
-  ].freeze
+  # Event types with their JSON schemas for validation
+  VALID_EVENT_TYPES = {
+    "release.started" => {
+      "type" => "object",
+      "required" => [
+        "full_changelog",
+        "release_version",
+        "release_branch_name",
+        "platform"
+      ],
+      "properties" => {
+        "full_changelog" => {
+          "type" => "array"
+        },
+        "release_version" => {
+          "type" => "string"
+        },
+        "release_branch_name" => {
+          "type" => "string"
+        },
+        "platform" => {
+          "type" => "string",
+          "enum" => ["android", "ios"]
+        }
+      },
+      "additionalProperties" => true
+    },
+    "release.ended" => {
+      "type" => "object",
+      "required" => [
+        "full_changelog",
+        "diff_changelog",
+        "release_version",
+        "release_branch_name",
+        "platform"
+      ],
+      "properties" => {
+        "full_changelog" => {
+          "type" => "array"
+        },
+        "diff_changelog" => {
+          "type" => "array"
+        },
+        "release_version" => {
+          "type" => "string"
+        },
+        "release_branch_name" => {
+          "type" => "string"
+        },
+        "platform" => {
+          "type" => "string",
+          "enum" => ["android", "ios"]
+        }
+      },
+      "additionalProperties" => true
+    },
+    "rc.finished" => {
+      "type" => "object",
+      "required" => [
+        "full_changelog",
+        "diff_changelog",
+        "release_version",
+        "build_number",
+        "release_branch_name",
+        "platform"
+      ],
+      "properties" => {
+        "full_changelog" => {
+          "type" => "array"
+        },
+        "diff_changelog" => {
+          "type" => "array"
+        },
+        "release_version" => {
+          "type" => "string"
+        },
+        "build_number" => {
+          "type" => "string"
+        },
+        "release_branch_name" => {
+          "type" => "string"
+        },
+        "platform" => {
+          "type" => "string",
+          "enum" => ["android", "ios"]
+        }
+      },
+      "additionalProperties" => true
+    }
+  }.freeze
 
   validate :event_types_are_valid
 
@@ -35,7 +119,7 @@ class OutgoingWebhook < ApplicationRecord
   def event_types_are_valid
     return if event_types.blank?
 
-    invalid_types = event_types - VALID_EVENT_TYPES
+    invalid_types = event_types - VALID_EVENT_TYPES.keys
     errors.add(:event_types, "contains invalid event types: #{invalid_types.join(", ")}") if invalid_types.any?
   end
 
