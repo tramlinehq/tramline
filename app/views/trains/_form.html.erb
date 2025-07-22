@@ -15,18 +15,7 @@
       <% end %>
 
       <div class="grid gap-4">
-        <div data-controller="domain--branch-name-help"
-             data-domain--branch-name-help-current-value="<%= train.display_name %>"
-             data-domain--branch-name-help-pattern-value="<%= train.release_branch_pattern %>">
-          <%= section.F.labeled_text_field :name, "Name",
-                                           required: true,
-                                           data: {domain__branch_name_help_target: "input",
-                                                  action: "domain--branch-name-help#set"} %>
-          <div class="text-sm mt-1">
-            <span data-domain--branch-name-help-target="helpTextTitle"></span>
-            <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
-          </div>
-        </div>
+        <div><%= section.F.labeled_text_field :name, "Name", required: true %></div>
         <div><%= section.F.labeled_textarea :description, "Description" %></div>
       </div>
     <% end %>
@@ -129,6 +118,8 @@
         Refer to
         the <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/release-management/branching-strategies", class: "underline" %>
         to learn more about our supported branching strategies.
+
+        Available tokens: ~trainName~, ~releaseVersion~, ~releaseStartDate~
       <% end %>
       <div class="grid gap-x-5 md:grid-cols-2">
         <div>
@@ -167,10 +158,16 @@
         </div>
       </div>
 
-      <div class="mt-4">
+      <div data-controller="domain--branch-name-help">
         <%= section.F.labeled_text_field :release_branch_pattern, "Release Branch Pattern",
-                                         placeholder: "e.g., r/{{train_name}}/{{release_version}}/{{release_start_date}}",
-                                         help_text: "Use {{train_name}} for the train name, {{release_version}} for version, and {{build_number}} for build number. Default: r/{{train_name}}/{{release_start_date}}" %>
+                                         placeholder: "e.g., r/~trainName~/~releaseStartDate~",
+                                         help_text: "Use ~trainName~ for the train name, ~releaseVersion~ for version, and ~releaseStartDate~ for date. Default: r/~trainName~/~releaseStartDate~",
+                                         data: {domain__branch_name_help_target: "input",
+                                                action: "domain--branch-name-help#updatePreview"} %>
+        <div class="text-sm mt-1">
+          <span data-domain--branch-name-help-target="helpTextTitle"></span>
+          <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
+        </div>
       </div>
     <% end %>
 
