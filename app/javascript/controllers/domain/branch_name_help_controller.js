@@ -30,7 +30,6 @@ export default class extends Controller {
   interpolateTokens(pattern) {
     if (!pattern) return "";
 
-    // Define example values for tokens
     const exampleValues = {
       trainName: "my-train",
       releaseVersion: "1.2.3",
@@ -40,7 +39,7 @@ export default class extends Controller {
 
     let result = pattern;
 
-    // Replace token placeholders (~token~) with example values
+    // replace placeholders
     Object.entries(exampleValues).forEach(([token, value]) => {
       const tokenPattern = new RegExp(`~${token}~`, 'g');
       result = result.replace(tokenPattern, value);

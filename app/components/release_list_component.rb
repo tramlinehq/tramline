@@ -113,7 +113,7 @@ class ReleaseListComponent < BaseComponent
   end
 
   def branch_help
-    substitution_tokens = { trainName: train.display_name, releaseStartDate: Time.current, releaseVersion: "" }
+    substitution_tokens = {trainName: train.display_name, releaseStartDate: Time.current, releaseVersion: ""}
     new_branch = train.release_branch_name_fmt(hotfix: false, substitution_tokens:)
     working_branch = train.working_branch
     "Release branch #{new_branch} will be automatically cut from #{working_branch}."
