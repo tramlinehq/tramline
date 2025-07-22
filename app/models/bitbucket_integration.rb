@@ -212,6 +212,10 @@ class BitbucketIntegration < ApplicationRecord
     "https://bitbucket.org/#{code_repository_name}/pull-requests/?#{q}"
   end
 
+  def pr_url(pr_number)
+    "https://bitbucket.org/#{code_repository_name}/pull-requests/#{pr_number}"
+  end
+
   def tag_exists?(tag_name)
     with_api_retries { installation.get_tag(code_repository_name, tag_name) }.present?
   rescue Installations::Error => ex

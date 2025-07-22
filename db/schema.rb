@@ -412,16 +412,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_18_134502) do
     t.string "cloud_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "organization_name"
+    t.string "organization_url"
     t.index ["cloud_id"], name: "index_jira_integrations_on_cloud_id"
   end
 
   create_table "linear_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "oauth_access_token"
     t.string "oauth_refresh_token"
-    t.string "organization_id"
+    t.string "workspace_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["organization_id"], name: "index_linear_integrations_on_organization_id"
+    t.string "workspace_name"
+    t.string "workspace_url_key"
+    t.index ["workspace_id"], name: "index_linear_integrations_on_workspace_id"
   end
 
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -976,6 +980,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_18_134502) do
     t.boolean "notifications_release_specific_channel_enabled", default: false
     t.string "version_bump_strategy"
     t.string "release_branch_pattern"
+    t.boolean "enable_changelog_linking_in_notifications", default: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

@@ -174,7 +174,7 @@ class GitlabIntegration < ApplicationRecord
 
   def correct_key
     if integration.ci_cd?
-      errors.add(:base, :workflows) if workflows.blank?
+      errors.add(:base, :workflows) if workflows(bust_cache: true).blank?
     elsif integration.version_control?
       errors.add(:base, :repos) if repos.blank?
     end
@@ -312,6 +312,10 @@ class GitlabIntegration < ApplicationRecord
 
   def compare_url(to_branch, from_branch)
     "https://gitlab.com/#{code_repository_name}/-/compare/#{to_branch}...#{from_branch}?straight=true"
+  end
+
+  def pr_url(pr_number)
+    "https://gitlab.com/#{code_repository_name}/-/merge_requests/#{pr_number}"
   end
 
   def installation

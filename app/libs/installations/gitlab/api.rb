@@ -347,18 +347,7 @@ module Installations
 
     # https://docs.gitlab.com/ee/api/pipelines.html#create-a-new-pipeline
     def run_pipeline!(project_id, branch_name, inputs, transforms)
-      processed_inputs = {
-        versionCode: inputs[:version_code],
-        versionName: inputs[:build_version],
-        buildNotes: inputs[:build_notes]
-      }.merge(inputs[:parameters] || {}).compact
-
-      params = {
-        json: {
-          variables: processed_inputs.map { |k, v| {key: k, value: v} }
-        }
-      }
-
+      params = input_variables_params(:variables, inputs)
       execute(:post, RUN_PIPELINE_URL.expand(project_id: project_id, ref: branch_name).to_s, params)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
@@ -404,8 +393,9 @@ module Installations
     end
 
     # https://docs.gitlab.com/ee/api/jobs.html#run-a-job
-    def trigger_job!(project_id, job_id, transforms)
-      execute(:post, TRIGGER_JOB_URL.expand(project_id: project_id, job_id: job_id).to_s, {})
+    def trigger_job!(project_id, job_id, inputs, transforms)
+      params = input_variables_params(:job_variables_attributes, inputs)
+      execute(:post, TRIGGER_JOB_URL.expand(project_id: project_id, job_id: job_id).to_s, params)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
@@ -479,13 +469,13 @@ module Installations
       existing_pipeline = find_existing_pipeline(project_id, branch_name, commit_sha, transforms)
 
       if existing_pipeline
-        job = trigger_specific_job_in_pipeline(project_id, existing_pipeline[:ci_ref], job_name, transforms)
+        job = trigger_specific_job_in_pipeline(project_id, existing_pipeline[:ci_ref], job_name, inputs, transforms)
         raise JOB_NOT_FOUND if job.blank?
         return job
       else
         pipeline = run_pipeline!(project_id, branch_name, inputs, transforms)
         if job_name.present? && job_name != "default"
-          job = trigger_specific_job_in_pipeline(project_id, pipeline[:ci_ref], job_name, transforms)
+          job = trigger_specific_job_in_pipeline(project_id, pipeline[:ci_ref], job_name, inputs, transforms)
           raise JOB_NOT_FOUND if job.blank?
           return job
         end
@@ -494,11 +484,11 @@ module Installations
       raise JOB_NOT_FOUND
     end
 
-    def trigger_specific_job_in_pipeline(project_id, pipeline_id, job_name, transforms)
+    def trigger_specific_job_in_pipeline(project_id, pipeline_id, job_name, inputs, transforms)
       jobs = list_pipeline_jobs(project_id, pipeline_id)
       target_job = jobs.find { |job| job[:name] == job_name }
       raise JOB_NOT_FOUND unless target_job
-      trigger_job!(project_id, target_job[:id], transforms)
+      trigger_job!(project_id, target_job[:id], inputs, transforms)
     end
 
     def list_jobs_from_gitlab_ci(project_id, branch_name = "main")
@@ -562,6 +552,19 @@ module Installations
 
     def error?(code)
       code.between?(400, 499)
+    end
+
+    def input_variables_params(key, inputs)
+      processed_inputs = {
+        versionCode: inputs[:version_code],
+        versionName: inputs[:build_version],
+        buildNotes: inputs[:build_notes]
+      }.merge(inputs[:parameters] || {}).compact
+
+      params = {json: {}}
+      params[:json][key] = processed_inputs.map { |k, v| {key: k, value: v} }
+      Rails.logger.debug { "GitLab params: #{params.inspect}" }
+      params
     end
   end
 end

@@ -108,6 +108,7 @@
           <% else %>
             Notification Settings
           <% end %>for the train.
+          <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
         <% end %>
         <%= render partial: "notifications_config_form", locals: {form: section.F} %>
       <% end %>

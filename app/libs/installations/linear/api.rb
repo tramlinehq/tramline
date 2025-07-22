@@ -60,7 +60,7 @@ module Installations
 
       def get_organizations(access_token)
         query = {
-          query: "query { organization { id name } }"
+          query: "query { organization { id name urlKey } }"
         }
 
         response = HTTP

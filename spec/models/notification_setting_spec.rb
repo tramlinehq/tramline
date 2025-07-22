@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe NotificationSetting do
+describe NotificationSetting do
   let(:notification_provider) { instance_double(SlackIntegration) }
 
   before do
@@ -158,6 +158,7 @@ RSpec.describe NotificationSetting do
               "Some Message",
               thread_id,
               full_changelog.first(20),
+              params,
               header_affix: "Full release changelog",
               continuation: false
             )
@@ -168,6 +169,7 @@ RSpec.describe NotificationSetting do
               "Some Message",
               thread_id,
               full_changelog.last(20),
+              params,
               header_affix: "Full release changelog (2/2)",
               continuation: true
             )

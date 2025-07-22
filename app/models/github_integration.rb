@@ -178,6 +178,10 @@ class GithubIntegration < ApplicationRecord
     "https://github.com/#{code_repository_name}/compare/#{to_branch}..#{from_branch}"
   end
 
+  def pr_url(pr_number)
+    "https://github.com/#{code_repository_name}/pull/#{pr_number}"
+  end
+
   def installation
     API.new(installation_id)
   end

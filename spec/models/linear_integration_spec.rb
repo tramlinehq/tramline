@@ -4,10 +4,10 @@ describe LinearIntegration do
   let(:linear_integration) { build(:linear_integration) }
 
   describe "validations" do
-    it "validates presence of organization_id" do
-      linear_integration.organization_id = nil
+    it "validates presence of workspace_id" do
+      linear_integration.workspace_id = nil
       expect(linear_integration).not_to be_valid
-      expect(linear_integration.errors[:organization_id]).to include("can't be blank")
+      expect(linear_integration.errors[:workspace_id]).to include("can't be blank")
     end
   end
 
@@ -52,10 +52,10 @@ describe LinearIntegration do
       end
     end
 
-    context "when organization_id is already set" do
+    context "when workspace_id is already set" do
       it "returns true" do
         linear_integration.code = "test_code"
-        linear_integration.organization_id = "existing_org_id"
+        linear_integration.workspace_id = "existing_org_id"
 
         allow(Installations::Linear::Api).to receive(:get_access_token).and_return(
           double(access_token: "token", refresh_token: "refresh") # rubocop:disable RSpec/VerifiedDoubles
