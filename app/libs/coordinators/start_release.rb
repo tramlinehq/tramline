@@ -12,7 +12,6 @@ class Coordinators::StartRelease
 
   def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil, custom_version: nil)
     @train = train
-
     @starting_time = Time.current
     @has_major_bump = has_major_bump
     @automatic = automatic
@@ -102,9 +101,9 @@ class Coordinators::StartRelease
 
   def new_hotfix_branch? = new_hotfix_branch
 
-  def hotfix_from_previous_branch? = (hotfix? && !new_hotfix_branch?)
+  def hotfix_from_previous_branch? = hotfix? && !new_hotfix_branch?
 
-  def hotfix_from_new_branch? = (hotfix? && new_hotfix_branch?)
+  def hotfix_from_new_branch? = hotfix? && new_hotfix_branch?
 
   def invalid_hotfix_platform?
     hotfix? && hotfix_platform.present? && !hotfix_platform.in?(ReleasePlatform.platforms.values)
@@ -121,7 +120,7 @@ class Coordinators::StartRelease
   memoize def new_release_version
     return custom_version if custom_version.present?
     return train.version_current if train.freeze_version?
-    return train.hotfix_from&.next_version(patch_only: true) if hotfix?
+    return train.hotfix_from&.next_version(patch_only: hotfix?) if hotfix?
     (train.ongoing_release.presence || train.hotfix_release.presence || train).next_version(major_only: @has_major_bump)
   end
 

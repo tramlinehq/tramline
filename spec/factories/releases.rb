@@ -4,7 +4,7 @@ FactoryBot.define do
     scheduled_at { Time.current }
     status { "on_track" }
     branch_name { "branch" }
-    original_release_version { "1.2.3" }
+    original_release_version { VersioningStrategies::Semverish.new(train.version_seeded_with).bump!(:minor) }
     release_type { "release" }
     release_pilot_id { train.app.organization.owner.id }
 

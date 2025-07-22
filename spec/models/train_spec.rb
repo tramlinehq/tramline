@@ -203,42 +203,42 @@ describe Train do
   describe "#release_branch_name_fmt" do
     it "adds hotfix to branch name if hotfix" do
       train = create(:train, :with_almost_trunk, :active)
-      tokens = { trainName: "train", releaseStartDate: "%Y-%m-%d" }
+      tokens = {trainName: "train", releaseStartDate: "%Y-%m-%d"}
 
       expect(train.release_branch_name_fmt(hotfix: true, substitution_tokens: tokens)).to eq("hotfix/train/%Y-%m-%d")
     end
 
     it "uses default pattern when no custom pattern is set" do
       train = create(:train, :with_almost_trunk, :active)
-      tokens = { trainName: "train", releaseStartDate: "%Y-%m-%d" }
+      tokens = {trainName: "train", releaseStartDate: "%Y-%m-%d"}
 
       expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("r/train/%Y-%m-%d")
     end
 
     it "uses custom pattern when release_branch_pattern is set" do
       train = create(:train, :with_almost_trunk, :active, release_branch_pattern: "release/~trainName~/%Y-%m-%d-%H%M")
-      tokens = { trainName: "train" }
+      tokens = {trainName: "train"}
 
       expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("release/train/%Y-%m-%d-%H%M")
     end
 
     it "substitutes trainName placeholder in custom pattern" do
       train = create(:train, :with_almost_trunk, :active, name: "My Custom Train", release_branch_pattern: "custom/~trainName~/v%Y.%m")
-      tokens = { trainName: "My Custom Train" }
+      tokens = {trainName: "My Custom Train"}
 
       expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("custom/my-custom-train/v%Y.%m")
     end
 
     it "substitutes releaseVersion placeholder in custom pattern" do
       train = create(:train, :with_almost_trunk, :active, release_branch_pattern: "r/~trainName~/~releaseVersion~")
-      tokens = { trainName: "train", releaseVersion: "1.2.3" }
+      tokens = {trainName: "train", releaseVersion: "1.2.3"}
 
       expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("r/train/1.2.3")
     end
 
     it "substitutes multiple placeholders in custom pattern" do
       train = create(:train, :with_almost_trunk, :active, name: "My Train", release_branch_pattern: "release/~trainName~/~releaseVersion~/~releaseStartDate~")
-      tokens = { trainName: "My Train", releaseVersion: "1.2.3", releaseStartDate: "2023-12-25" }
+      tokens = {trainName: "My Train", releaseVersion: "1.2.3", releaseStartDate: "2023-12-25"}
 
       expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("release/my-train/1.2.3/2023-12-25")
     end
