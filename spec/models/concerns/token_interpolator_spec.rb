@@ -1,14 +1,14 @@
 require "rails_helper"
 
-# Test class to include PatternTokenizer
+# Test class to include TokenInterpolator
 class TestModelWithPattern
   include ActiveModel::Model
   include ActiveModel::Validations
-  include PatternTokenizer
+  include TokenInterpolator
 
   attr_accessor :pattern_field
 
-  def validatable_pattern_fields
+  def token_fields
     {
       pattern_field: {
         value: pattern_field,
@@ -18,15 +18,15 @@ class TestModelWithPattern
   end
 end
 
-describe PatternTokenizer do
+describe TokenInterpolator do
   let(:model) { TestModelWithPattern.new }
 
-  describe "#substitute_tokens" do
+  describe "#interpolate" do
     it "substitutes tokens in pattern string" do
       pattern = "release/~trainName~/~releaseVersion~"
       tokens = {trainName: "my-train", releaseVersion: "1.2.3"}
 
-      result = model.substitute_tokens(pattern, tokens)
+      result = model.interpolate_tokens(pattern, tokens)
 
       expect(result).to eq("release/my-train/1.2.3")
     end
@@ -35,7 +35,7 @@ describe PatternTokenizer do
       pattern = "release/~trainName~/~releaseVersion~"
       tokens = {trainName: "my-train", releaseVersion: ""}
 
-      result = model.substitute_tokens(pattern, tokens)
+      result = model.interpolate_tokens(pattern, tokens)
 
       expect(result).to eq("release/my-train/~releaseVersion~")
     end
@@ -44,55 +44,17 @@ describe PatternTokenizer do
       pattern = "simple-string"
       tokens = {trainName: "my-train"}
 
-      result = model.substitute_tokens(pattern, tokens)
+      result = model.interpolate_tokens(pattern, tokens)
 
       expect(result).to eq("simple-string")
     end
 
     it "returns blank string if input is blank" do
-      result = model.substitute_tokens("", {trainName: "my-train"})
+      result = model.interpolate_tokens("", {trainName: "my-train"})
       expect(result).to eq("")
 
-      result = model.substitute_tokens(nil, {trainName: "my-train"})
+      result = model.interpolate_tokens(nil, {trainName: "my-train"})
       expect(result).to be_nil
-    end
-  end
-
-  describe "#extract_tokens_from_pattern" do
-    it "extracts tokens from pattern string" do
-      pattern = "release/~trainName~/~releaseVersion~"
-
-      tokens = model.extract_tokens_from_pattern(pattern)
-
-      expect(tokens).to contain_exactly("trainName", "releaseVersion")
-    end
-
-    it "returns empty array for string without tokens" do
-      pattern = "release/simple/path"
-
-      tokens = model.extract_tokens_from_pattern(pattern)
-
-      expect(tokens).to eq([])
-    end
-
-    it "returns empty array for blank string" do
-      expect(model.extract_tokens_from_pattern("")).to eq([])
-      expect(model.extract_tokens_from_pattern(nil)).to eq([])
-    end
-  end
-
-  describe "#has_tokens?" do
-    it "returns true if pattern contains tokens" do
-      expect(model.has_tokens?("release/~trainName~")).to be true
-    end
-
-    it "returns false if pattern contains no tokens" do
-      expect(model.has_tokens?("release/simple")).to be false
-    end
-
-    it "returns false for blank strings" do
-      expect(model.has_tokens?("")).to be false
-      expect(model.has_tokens?(nil)).to be false
     end
   end
 
@@ -157,7 +119,7 @@ describe PatternTokenizer do
       pattern = "release/~trainName~"
       tokens = {trainName: "My Complex Train Name"}
 
-      result = model.substitute_tokens(pattern, tokens)
+      result = model.interpolate_tokens(pattern, tokens)
 
       expect(result).to eq("release/my-complex-train-name")
     end
@@ -166,7 +128,7 @@ describe PatternTokenizer do
       pattern = "release/~releaseVersion~"
       tokens = {releaseVersion: "  1.2.3  "}
 
-      result = model.substitute_tokens(pattern, tokens)
+      result = model.interpolate_tokens(pattern, tokens)
 
       expect(result).to eq("release/1.2.3")
     end
@@ -176,7 +138,7 @@ describe PatternTokenizer do
       date_obj = Date.new(2023, 12, 25)
       tokens = {releaseStartDate: date_obj}
 
-      result = model.substitute_tokens(pattern, tokens)
+      result = model.interpolate_tokens(pattern, tokens)
 
       expect(result).to eq("release/2023-12-25")
     end
@@ -185,7 +147,7 @@ describe PatternTokenizer do
       pattern = "release/~releaseStartDate~"
       tokens = {releaseStartDate: "%Y-%m-%d"}
 
-      result = model.substitute_tokens(pattern, tokens)
+      result = model.interpolate_tokens(pattern, tokens)
 
       expect(result).to eq("release/%Y-%m-%d")
     end

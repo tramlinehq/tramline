@@ -1,9 +1,11 @@
-module PatternTokenizer
+module TokenInterpolator
+  extend ActiveSupport::Concern
+
   # Token format: ~token_name~
   # Examples:
   #   Release branch: "release/~releaseVersion~/prod"
   #   Ticket/issues filter: "rel-~releaseStartDate~"
-  AVAILABLE_TOKENS = {
+  TOKEN_DEFINITIONS = {
     "trainName" => {
       description: "Name of the train (parameterized)",
       formatter: ->(value) { value.to_s.parameterize }
@@ -35,11 +37,11 @@ module PatternTokenizer
   TOKEN_PREFIX = "~"
   TOKEN_SUFFIX = "~"
 
-  # included do
-  #   validate :validate_pattern_tokens, if: :should_validate_patterns?
-  # end
+  included do
+    validate :validate_token_fields, if: :should_validate_tokens?
+  end
 
-  def substitute_tokens(pattern_string, token_values = {})
+  def interpolate_tokens(pattern_string, token_values = {})
     return pattern_string if pattern_string.blank?
 
     result = pattern_string.dup
@@ -54,24 +56,26 @@ module PatternTokenizer
     result
   end
 
+  private
+
   def apply_token_format(token, value)
-    AVAILABLE_TOKENS[token][:formatter].call(value)
+    TOKEN_DEFINITIONS[token][:formatter].call(value)
   end
 
-  def should_validate_patterns?
-    raise "#{self.class} must implement validatable_pattern_fields method" unless respond_to?(:validatable_pattern_fields)
+  def should_validate_tokens?
+    raise "#{self.class} must implement token_fields method" unless respond_to?(:token_fields)
 
-    validatable_pattern_fields.any? do |_, field_config|
+    token_fields.any? do |_, field_config|
       raise "#{self.class} field_config must have :value key" unless field_config.key?(:value)
       pattern_value = field_config[:value]
       pattern_value.present? && pattern_value.match?(TOKEN_FORMAT)
     end
   end
 
-  def validate_pattern_tokens
-    raise "#{self.class} must implement validatable_pattern_fields method" unless respond_to?(:validatable_pattern_fields)
+  def validate_token_fields
+    raise "#{self.class} must implement token_fields method" unless respond_to?(:token_fields)
 
-    validatable_pattern_fields.each do |field_name, field_config|
+    token_fields.each do |field_name, field_config|
       raise "#{self.class} field_config for #{field_name} must have :value key" unless field_config.key?(:value)
       raise "#{self.class} field_config for #{field_name} must have :allowed_tokens key" unless field_config.key?(:allowed_tokens)
 
