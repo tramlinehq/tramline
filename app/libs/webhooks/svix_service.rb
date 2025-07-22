@@ -138,7 +138,10 @@ module Webhooks
     end
 
     def schema_for_event(event_type)
-      OutgoingWebhook::VALID_EVENT_TYPES[event_type.to_s]
+      event_config = OutgoingWebhook::VALID_EVENT_TYPES[event_type.to_s]
+      return nil unless event_config
+
+      event_config[:schema].call
     end
   end
 end

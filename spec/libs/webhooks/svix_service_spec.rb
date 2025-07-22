@@ -370,21 +370,21 @@ describe Webhooks::SvixService do
     describe "#schema_for_event" do
       it "returns correct schema for rc.finished" do
         service = described_class.new(outgoing_webhook)
-        expected_schema = OutgoingWebhook::VALID_EVENT_TYPES["rc.finished"]
+        expected_schema = JSON.parse(Rails.root.join("config/schema/webhook_rc_finished.json").read)
 
         expect(service.send(:schema_for_event, "rc.finished")).to eq(expected_schema)
       end
 
       it "returns correct schema for release.started" do
         service = described_class.new(outgoing_webhook)
-        expected_schema = OutgoingWebhook::VALID_EVENT_TYPES["release.started"]
+        expected_schema = JSON.parse(Rails.root.join("config/schema/webhook_release_started.json").read)
 
         expect(service.send(:schema_for_event, "release.started")).to eq(expected_schema)
       end
 
       it "returns correct schema for release.ended" do
         service = described_class.new(outgoing_webhook)
-        expected_schema = OutgoingWebhook::VALID_EVENT_TYPES["release.ended"]
+        expected_schema = JSON.parse(Rails.root.join("config/schema/webhook_release_ended.json").read)
 
         expect(service.send(:schema_for_event, "release.ended")).to eq(expected_schema)
       end

@@ -21,94 +21,19 @@ class OutgoingWebhook < ApplicationRecord
   validates :url, presence: true, format: {with: URI::DEFAULT_PARSER.make_regexp(%w[http https])}
   validates :event_types, presence: true
 
-  # Event types with their JSON schemas for validation
+  # Event types with their metadata and JSON schemas for validation
   VALID_EVENT_TYPES = {
     "release.started" => {
-      "type" => "object",
-      "required" => [
-        "full_changelog",
-        "release_version",
-        "release_branch_name",
-        "platform"
-      ],
-      "properties" => {
-        "full_changelog" => {
-          "type" => "array"
-        },
-        "release_version" => {
-          "type" => "string"
-        },
-        "release_branch_name" => {
-          "type" => "string"
-        },
-        "platform" => {
-          "type" => "string",
-          "enum" => ["android", "ios"]
-        }
-      },
-      "additionalProperties" => true
+      name: "Release Started",
+      schema: -> { JSON.parse(Rails.root.join("config/schema/webhook_release_started.json").read) }
     },
     "release.ended" => {
-      "type" => "object",
-      "required" => [
-        "full_changelog",
-        "diff_changelog",
-        "release_version",
-        "release_branch_name",
-        "platform"
-      ],
-      "properties" => {
-        "full_changelog" => {
-          "type" => "array"
-        },
-        "diff_changelog" => {
-          "type" => "array"
-        },
-        "release_version" => {
-          "type" => "string"
-        },
-        "release_branch_name" => {
-          "type" => "string"
-        },
-        "platform" => {
-          "type" => "string",
-          "enum" => ["android", "ios"]
-        }
-      },
-      "additionalProperties" => true
+      name: "Release Ended",
+      schema: -> { JSON.parse(Rails.root.join("config/schema/webhook_release_ended.json").read) }
     },
     "rc.finished" => {
-      "type" => "object",
-      "required" => [
-        "full_changelog",
-        "diff_changelog",
-        "release_version",
-        "build_number",
-        "release_branch_name",
-        "platform"
-      ],
-      "properties" => {
-        "full_changelog" => {
-          "type" => "array"
-        },
-        "diff_changelog" => {
-          "type" => "array"
-        },
-        "release_version" => {
-          "type" => "string"
-        },
-        "build_number" => {
-          "type" => "string"
-        },
-        "release_branch_name" => {
-          "type" => "string"
-        },
-        "platform" => {
-          "type" => "string",
-          "enum" => ["android", "ios"]
-        }
-      },
-      "additionalProperties" => true
+      name: "Release Candidate Finished",
+      schema: -> { JSON.parse(Rails.root.join("config/schema/webhook_rc_finished.json").read) }
     }
   }.freeze
 
