@@ -1,6 +1,5 @@
 module TokenInterpolator
-  extend ActiveSupport::Concern
-
+  DATE_FORMAT = "%Y-%m-%d"
   # Token format: ~token_name~
   # Examples:
   #   Release branch: "release/~releaseVersion~/prod"
@@ -19,9 +18,13 @@ module TokenInterpolator
       formatter: lambda do |value|
         case value
         when String
-          value # Assume it's already formatted like "%Y-%m-%d"
+          begin
+            Date.parse(value).strftime(DATE_FORMAT)
+          rescue ArgumentError
+            value # Fallback to original if unparseable
+          end
         when Date, Time
-          value.strftime("%Y-%m-%d")
+          value.strftime(DATE_FORMAT)
         else
           value.to_s
         end
@@ -32,14 +35,9 @@ module TokenInterpolator
       formatter: ->(value) { value.to_s.strip }
     }
   }.freeze
-
   TOKEN_FORMAT = /~([^~]+)~/
   TOKEN_PREFIX = "~"
   TOKEN_SUFFIX = "~"
-
-  included do
-    validate :validate_token_fields, if: :should_validate_tokens?
-  end
 
   def interpolate_tokens(pattern_string, token_values = {})
     return pattern_string if pattern_string.blank?
@@ -47,7 +45,6 @@ module TokenInterpolator
     result = pattern_string.dup
     token_values.each do |token, value|
       next if value.blank?
-
       # Apply token-specific formatting if available
       formatted_value = apply_token_format(token.to_s, value)
       token_pattern = /#{TOKEN_PREFIX}#{token}#{TOKEN_SUFFIX}/
@@ -62,7 +59,7 @@ module TokenInterpolator
     TOKEN_DEFINITIONS[token][:formatter].call(value)
   end
 
-  def should_validate_tokens?
+  def validate_tokens?
     raise "#{self.class} must implement token_fields method" unless respond_to?(:token_fields)
 
     token_fields.any? do |_, field_config|

@@ -116,13 +116,10 @@
 
     <%= f.with_section(heading: "Branching strategy") do |section| %>
       <% section.with_description do %>
-        Refer to
-        the <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/release-management/branching-strategies", class: "underline" %>
-        to learn more about our supported branching strategies.
-
-        <p>
-          Release branch patterns can have dynamic values with embeddable tokens. Read more on what <%= link_to_external "tokens are available", "https://docs.tramline.app/using-tramline/release-management/embeddable-tokens", class: "underline" %> for branches.
-        </p>
+        Learn more about our supported branching strategies in the
+        <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/release-management/branching-strategies", class: "underline" %>.
+        You can use dynamic values in release branch patterns with embeddable tokens.
+        See which <%= link_to_external "tokens are available", "https://docs.tramline.app/using-tramline/release-management/embeddable-tokens", class: "underline" %> for branches.
       <% end %>
       <div class="grid gap-x-5 md:grid-cols-2">
         <div>

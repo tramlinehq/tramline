@@ -6,6 +6,8 @@ class TestModelWithPattern
   include ActiveModel::Validations
   include TokenInterpolator
 
+  validate :validate_token_fields, if: :validate_tokens?
+
   attr_accessor :pattern_field
 
   def token_fields
@@ -89,9 +91,7 @@ describe TokenInterpolator do
 
       expect(model).to be_valid
     end
-  end
 
-  describe "multiple token validation" do
     it "validates multiple invalid tokens" do
       model.pattern_field = "release/~unknownToken~/~anotherBadToken~"
 

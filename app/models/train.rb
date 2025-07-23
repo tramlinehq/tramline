@@ -122,7 +122,7 @@ class Train < ApplicationRecord
   validate :version_config_constraints
   validate :version_bump_config
   validates :version_bump_strategy, inclusion: {in: VERSION_BUMP_STRATEGIES.keys.map(&:to_s)}, if: -> { version_bump_enabled? }
-  validate :validate_token_fields, if: :should_validate_tokens?
+  validate :validate_token_fields, if: :validate_tokens?
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
