@@ -57,6 +57,16 @@ namespace :anonymize do
         anonymize("working_branch") { |field| Faker::Hacker.noun }
       end
 
+      table "outgoing_webhook_events" do
+        continue { |index, record| Release.exists?(record["release_id"]) && !OutgoingWebhookEvent.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "release_id", "event_timestamp", "event_type", "status", "event_payload"
+        whitelist_timestamps
+        anonymize("response_data") { |field| field.value.present? ? {"id" => "anonymized_msg_id", "status" => "delivered"} : nil }
+        anonymize("error_message") { |field| field.value.present? ? "anonymized_error_message" : nil }
+      end
+
       table "release_indices" do
         continue { |index, record| record["train_id"] == train_id && !ReleaseIndex.exists?(record["id"]) }
 
@@ -397,6 +407,17 @@ namespace :anonymize do
         anonymize("workspace_id") { |_| "anonymized_workspace_id" }
         anonymize("workspace_name") { |_| "anonymized_workspace_name" }
         anonymize("workspace_url_key") { |_| "anonymized_workspace_url_key" }
+      end
+
+      table "svix_integrations" do
+        continue { |index, record| Train.exists?(record["train_id"]) && !SvixIntegration.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "train_id", "status"
+        whitelist_timestamps
+        anonymize("svix_app_id") { |_| "anonymized_app_id" }
+        anonymize("svix_app_uid") { |_| "anonymized-app-uid" }
+        anonymize("svix_app_name") { |_| "Anonymized Svix App" }
       end
     end
 

@@ -85,7 +85,9 @@ class Train < ApplicationRecord
   has_many :integrations, through: :app
   has_many :scheduled_releases, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
+  has_many :outgoing_webhook_events, dependent: :destroy
   has_one :release_index, dependent: :destroy
+  has_one :webhook_integration, class_name: "SvixIntegration", dependent: :destroy
 
   scope :sequential, -> { reorder("trains.created_at ASC") }
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
@@ -139,6 +141,7 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
+  after_create_commit -> { CreateOutgoingWebhookIntegrationJob.perform_async(id) }
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   before_update :create_default_notification_settings, if: -> do
     notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
@@ -431,10 +434,28 @@ class Train < ApplicationRecord
         train_current_version: version_current,
         train_next_version: next_version,
         train_url: train_link,
-        working_branch:,
+        working_branch: working_branch,
         enable_changelog_linking: enable_changelog_linking_in_notifications
       }
     )
+  end
+
+  def webhook_params
+    app.notification_params.merge(
+      {
+        train_name: name,
+        train_current_version: version_current,
+        train_next_version: next_version,
+        train_url: train_link,
+        working_branch: working_branch,
+        train_id: id,
+        app_id: app_id
+      }
+    )
+  end
+
+  def svix_app_id
+    webhook_integration&.app_id
   end
 
   def send_notifications?

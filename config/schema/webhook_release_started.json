@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "required": [
+    "platform"
+//    "full_changelog",
+//    "release_version",
+//    "release_branch_name"
+  ]
+//  "properties": {
+//    "full_changelog": {
+//      "type": "array"
+//    },
+//    "release_version": {
+//      "type": "string"
+//    },
+//    "release_branch_name": {
+//      "type": "string"
+//    },
+//    "platform": {
+//      "type": "string",
+//      "enum": ["android", "ios"]
+//    }
+//  },
+//  "additionalProperties": true
+}
