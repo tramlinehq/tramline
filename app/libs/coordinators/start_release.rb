@@ -12,7 +12,6 @@ class Coordinators::StartRelease
 
   def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil, custom_version: nil)
     @train = train
-
     @starting_time = Time.current
     @has_major_bump = has_major_bump
     @automatic = automatic
@@ -57,26 +56,30 @@ class Coordinators::StartRelease
     @release ||= train.releases.create!(
       scheduled_at: starting_time,
       branch_name: release_branch,
-      has_major_bump: major_release?,
       is_automatic: automatic,
       release_type: release_type,
       hotfixed_from: hotfix_from,
       new_hotfix_branch: new_hotfix_branch,
       hotfix_platform: (hotfix_platform if hotfix?),
-      custom_version: custom_version,
+      original_release_version: new_release_version,
       release_pilot_id: Current.user&.id
     )
   end
 
   def release_branch
-    return new_branch_name(hotfix: true) if hotfix_from_new_branch? && create_branches?
+    return build_branch_name(hotfix: true) if hotfix_from_new_branch? && create_branches?
     return existing_hotfix_branch if hotfix_from_previous_branch?
-    return new_branch_name if create_branches?
+    return build_branch_name if create_branches?
     train.release_branch
   end
 
-  memoize def new_branch_name(hotfix: false)
-    branch_name = starting_time.strftime(train.release_branch_name_fmt(hotfix:))
+  memoize def build_branch_name(hotfix: false)
+    substitution_tokens = {
+      trainName: train.display_name,
+      releaseStartDate: starting_time,
+      releaseVersion: new_release_version
+    }
+    branch_name = train.release_branch_name_fmt(hotfix:, substitution_tokens:)
 
     if train.releases.exists?(branch_name:)
       branch_name += "-1"
@@ -86,24 +89,24 @@ class Coordinators::StartRelease
     branch_name
   end
 
-  def major_release?
-    @has_major_bump
-  end
+  def create_branches? = branching_strategy.in?(%w[almost_trunk release_backmerge])
 
-  def hotfix?
-    release_type == "hotfix"
-  end
+  def hotfix? = (release_type == "hotfix")
 
-  def regular_release?
-    release_type == "release"
-  end
+  def regular_release? = (release_type == "release")
 
-  def create_branches?
-    branching_strategy.in?(%w[almost_trunk release_backmerge])
-  end
+  def existing_hotfix_branch = hotfix_from.branch_name
 
-  def new_hotfix_branch?
-    new_hotfix_branch
+  def existing_hotfix_tag = hotfix_from.tag_name
+
+  def new_hotfix_branch? = new_hotfix_branch
+
+  def hotfix_from_previous_branch? = hotfix? && !new_hotfix_branch?
+
+  def hotfix_from_new_branch? = hotfix? && new_hotfix_branch?
+
+  def invalid_hotfix_platform?
+    hotfix? && hotfix_platform.present? && !hotfix_platform.in?(ReleasePlatform.platforms.values)
   end
 
   memoize def hotfix_branch_exists?
@@ -114,24 +117,11 @@ class Coordinators::StartRelease
     existing_hotfix_tag.present? && train.vcs_provider.tag_exists?(existing_hotfix_tag)
   end
 
-  def hotfix_from_new_branch?
-    hotfix? && new_hotfix_branch?
-  end
-
-  def hotfix_from_previous_branch?
-    hotfix? && !new_hotfix_branch?
-  end
-
-  def existing_hotfix_tag
-    hotfix_from.tag_name
-  end
-
-  def existing_hotfix_branch
-    hotfix_from.branch_name
-  end
-
-  def invalid_hotfix_platform?
-    hotfix? && hotfix_platform.present? && !hotfix_platform.in?(ReleasePlatform.platforms.values)
+  memoize def new_release_version
+    return custom_version if custom_version.present?
+    return train.version_current if train.freeze_version?
+    return train.hotfix_from&.next_version(patch_only: hotfix?) if hotfix?
+    (train.ongoing_release.presence || train.hotfix_release.presence || train).next_version(major_only: @has_major_bump)
   end
 
   def invalid_custom_version?

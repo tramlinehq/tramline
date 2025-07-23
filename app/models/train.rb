@@ -23,6 +23,7 @@
 #  patch_version_bump_only                        :boolean          default(FALSE), not null
 #  release_backmerge_branch                       :string
 #  release_branch                                 :string
+#  release_branch_pattern                         :string
 #  repeat_duration                                :interval
 #  slug                                           :string
 #  status                                         :string           not null
@@ -55,6 +56,7 @@ class Train < ApplicationRecord
   include Rails.application.routes.url_helpers
   include Versionable
   include Loggable
+  include TokenInterpolator
 
   self.ignored_columns += ["manual_release"]
 
@@ -99,6 +101,7 @@ class Train < ApplicationRecord
 
   friendly_id :name, use: :slugged
   normalizes :name, with: ->(name) { name.squish }
+  normalizes :release_branch_pattern, with: ->(name) { name.squish }
   attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
   attr_accessor :build_queue_wait_time_unit, :build_queue_wait_time_value
   attr_accessor :repeat_duration_unit, :repeat_duration_value, :release_schedule_enabled
@@ -120,6 +123,7 @@ class Train < ApplicationRecord
   validate :version_config_constraints
   validate :version_bump_config
   validates :version_bump_strategy, inclusion: {in: VERSION_BUMP_STRATEGIES.keys.map(&:to_s)}, if: -> { version_bump_enabled? }
+  validate :validate_token_fields, if: :validate_tokens?
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -298,15 +302,27 @@ class Train < ApplicationRecord
         .update_all(release_specific_enabled: notifications_release_specific_channel_enabled?)
     end
   end
+
   # rubocop:enable Rails/SkipsModelValidations
 
   def display_name
     name&.parameterize
   end
 
-  def release_branch_name_fmt(hotfix: false)
-    return "hotfix/#{display_name}/%Y-%m-%d" if hotfix
-    "r/#{display_name}/%Y-%m-%d"
+  def release_branch_name_fmt(hotfix: false, substitution_tokens: {})
+    pattern = release_branch_pattern.presence || "r/~trainName~/~releaseStartDate~"
+    pattern = "hotfix/~trainName~/~releaseStartDate~" if hotfix
+    interpolate_tokens(pattern, substitution_tokens)
+  end
+
+  # TokenInterpolator#token_fields override
+  def token_fields
+    {
+      release_branch_pattern: {
+        value: release_branch_pattern,
+        allowed_tokens: %w[trainName releaseVersion releaseStartDate]
+      }
+    }
   end
 
   def activate!

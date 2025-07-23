@@ -15,17 +15,7 @@
       <% end %>
 
       <div class="grid gap-4">
-        <div data-controller="domain--branch-name-help"
-             data-domain--branch-name-help-current-value="<%= train.display_name %>">
-          <%= section.F.labeled_text_field :name, "Name",
-                                           required: true,
-                                           data: {domain__branch_name_help_target: "input",
-                                                  action: "domain--branch-name-help#set"} %>
-          <div class="text-sm mt-1">
-            <span data-domain--branch-name-help-target="helpTextTitle"></span>
-            <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
-          </div>
-        </div>
+        <div><%= section.F.labeled_text_field :name, "Name", required: true %></div>
         <div><%= section.F.labeled_textarea :description, "Description" %></div>
       </div>
     <% end %>
@@ -126,9 +116,10 @@
 
     <%= f.with_section(heading: "Branching strategy") do |section| %>
       <% section.with_description do %>
-        Refer to
-        the <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/release-management/branching-strategies", class: "underline" %>
-        to learn more about our supported branching strategies.
+        Learn more about our supported branching strategies in the
+        <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/release-management/branching-strategies", class: "underline" %>.
+        You can use dynamic values in release branch patterns with embeddable tokens.
+        See which <%= link_to_external "tokens are available", "https://docs.tramline.app/using-tramline/release-management/embeddable-tokens", class: "underline" %> for branches.
       <% end %>
       <div class="grid gap-x-5 md:grid-cols-2">
         <div>
@@ -164,6 +155,18 @@
                                              placeholder: "eg., production",
                                              disabled: train.persisted? %>
           </div>
+        </div>
+      </div>
+
+      <div data-controller="domain--branch-name-help">
+        <%= section.F.labeled_text_field :release_branch_pattern, "Release Branch Pattern",
+                                         placeholder: "default is r/~trainName~/~releaseStartDate~",
+                                         help_text: "Use ~trainName~ for the train name, ~releaseVersion~ for version, and ~releaseStartDate~ for date. Default: r/~trainName~/~releaseStartDate~",
+                                         data: {domain__branch_name_help_target: "input",
+                                                action: "domain--branch-name-help#updatePreview"} %>
+        <div class="text-sm mt-1">
+          <span data-domain--branch-name-help-target="helpTextTitle"></span>
+          <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
         </div>
       </div>
     <% end %>

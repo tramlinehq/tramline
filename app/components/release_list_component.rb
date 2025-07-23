@@ -112,10 +112,21 @@ class ReleaseListComponent < BaseComponent
     ]
   end
 
-  def branch_help
-    new_branch = Time.current.strftime(train.release_branch_name_fmt(hotfix: false))
+  def branch_help_html
+    substitution_tokens = {trainName: train.display_name, releaseStartDate: Time.current, releaseVersion: "<newVersion>"}
+    new_branch = train.release_branch_name_fmt(hotfix: false, substitution_tokens:)
     working_branch = train.working_branch
-    "Release branch #{new_branch} will be automatically cut from #{working_branch}."
+    content_tag(:span) do
+      safe_join(
+        [
+          "Release branch ",
+          content_tag(:code, new_branch),
+          " will be cut from ",
+          content_tag(:code, working_branch),
+          "."
+        ]
+      )
+    end
   end
 
   def ios_enabled?

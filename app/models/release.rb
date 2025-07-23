@@ -168,14 +168,13 @@ class Release < ApplicationRecord
     end
   end
 
-  before_create :set_version
   before_create :set_internal_notes
   after_create :create_platform_runs!
   after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::CopyPreviousApprovalsJob.perform_async(id) }, on: :create, if: :copy_approvals_enabled?
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
-  attr_accessor :has_major_bump, :hotfix_platform, :custom_version
+  attr_accessor :hotfix_platform
   friendly_id :human_slug, use: :slugged
 
   delegate :versioning_strategy, :patch_version_bump_only, to: :train
@@ -620,25 +619,6 @@ class Release < ApplicationRecord
         release_platform: release_platform
       )
     end
-  end
-
-  def set_version
-    if custom_version.present?
-      self.original_release_version = custom_version
-      return
-    end
-
-    if train.freeze_version?
-      self.original_release_version = train.version_current
-      return
-    end
-
-    self.original_release_version =
-      if hotfix?
-        train.hotfix_from&.next_version(patch_only: hotfix?)
-      else
-        (train.ongoing_release.presence || train.hotfix_release.presence || train).next_version(major_only: has_major_bump)
-      end
   end
 
   def set_internal_notes
