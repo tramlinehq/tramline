@@ -57,23 +57,13 @@ namespace :anonymize do
         anonymize("working_branch") { |field| Faker::Hacker.noun }
       end
 
-      table "outgoing_webhooks" do
-        continue { |index, record| record["train_id"] == train_id && !OutgoingWebhook.exists?(record["id"]) }
-
-        primary_key "id"
-        whitelist "train_id", "event_types", "active"
-        whitelist_timestamps
-        anonymize("url") { |field| "https://example.com/webhook" }
-        anonymize("description") { |field| field.value.present? ? Faker::Lorem.sentence : nil }
-      end
-
       table "outgoing_webhook_events" do
-        continue { |index, record| OutgoingWebhook.exists?(record["outgoing_webhook_id"]) && !OutgoingWebhookEvent.exists?(record["id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && !OutgoingWebhookEvent.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "train_id", "outgoing_webhook_id", "event_timestamp", "status"
+        whitelist "release_id", "event_timestamp", "event_type", "status", "event_payload"
         whitelist_timestamps
-        anonymize("response_data") { |field| field.value.present? ? "anonymized_response_data" : nil }
+        anonymize("response_data") { |field| field.value.present? ? {"id" => "anonymized_msg_id", "status" => "delivered"} : nil }
         anonymize("error_message") { |field| field.value.present? ? "anonymized_error_message" : nil }
       end
 
@@ -425,8 +415,9 @@ namespace :anonymize do
         primary_key "id"
         whitelist "train_id", "status"
         whitelist_timestamps
-        anonymize("app_id") { |_| "anonymized_app_id" }
-        anonymize("app_name") { |_| "Anonymized Svix App" }
+        anonymize("svix_app_id") { |_| "anonymized_app_id" }
+        anonymize("svix_app_uid") { |_| "anonymized-app-uid" }
+        anonymize("svix_app_name") { |_| "Anonymized Svix App" }
       end
     end
 
