@@ -33,8 +33,7 @@ export default class extends Controller {
     const exampleValues = {
       trainName: "my-train",
       releaseVersion: "1.2.3",
-      releaseStartDate: strftime('%Y-%m-%d'),
-      buildNumber: "42"
+      releaseStartDate: strftime('%Y-%m-%d')
     };
 
     let result = pattern;
