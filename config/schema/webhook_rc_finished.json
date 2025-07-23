@@ -1,33 +1,33 @@
 {
   "type": "object",
   "required": [
-    "full_changelog",
-    "diff_changelog",
-    "release_version",
-    "build_number",
-    "release_branch_name",
     "platform"
-  ],
-  "properties": {
-    "full_changelog": {
-      "type": "array"
-    },
-    "diff_changelog": {
-      "type": "array"
-    },
-    "release_version": {
-      "type": "string"
-    },
-    "build_number": {
-      "type": "string"
-    },
-    "release_branch_name": {
-      "type": "string"
-    },
-    "platform": {
-      "type": "string",
-      "enum": ["android", "ios"]
-    }
-  },
-  "additionalProperties": true
+//    "full_changelog",
+//    "diff_changelog",
+//    "release_version",
+//    "build_number",
+//    "release_branch_name"
+  ]
+//  "properties": {
+//    "full_changelog": {
+//      "type": "array"
+//    },
+//    "diff_changelog": {
+//      "type": "array"
+//    },
+//    "release_version": {
+//      "type": "string"
+//    },
+//    "build_number": {
+//      "type": "string"
+//    },
+//    "release_branch_name": {
+//      "type": "string"
+//    },
+//    "platform": {
+//      "type": "string",
+//      "enum": ["android", "ios"]
+//    }
+//  },
+//  "additionalProperties": true
 }

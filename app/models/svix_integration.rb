@@ -2,13 +2,13 @@
 #
 # Table name: svix_integrations
 #
-#  id         :bigint           not null, primary key
-#  app_name   :string
-#  status     :string           default("active"), indexed
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#  app_id     :string           indexed
-#  train_id   :uuid             not null, indexed
+#  id            :uuid             not null, primary key
+#  status        :string           default("inactive"), indexed
+#  svix_app_name :string
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  svix_app_id   :string           indexed
+#  train_id      :uuid             not null, indexed
 #
 class SvixIntegration < ApplicationRecord
   has_paper_trail
@@ -16,82 +16,62 @@ class SvixIntegration < ApplicationRecord
 
   belongs_to :train
 
-  validates :app_id, uniqueness: true, allow_nil: true
+  validates :svix_app_id, uniqueness: true, allow_nil: true
   validates :status, presence: true
 
   enum :status, {active: "active", inactive: "inactive"}
 
-  def display_name
-    "Svix Webhooks"
-  end
+  def display_name = "Svix Webhook"
 
-  def metadata
-    app_id
-  end
+  def metadata = svix_app_id
 
   def connection_data
-    return if app_id.blank?
-    "Svix App ID: #{app_id}"
+    return if unavailable?
+    "Svix App ID: #{svix_app_id}"
   end
 
-  def create_svix_app!
-    return if app_id.present?
-
-    begin
-      svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
-      app_name = "#{train.app.name} - #{train.name}"
-
-      application_in = Svix::ApplicationIn.new(
-        name: app_name,
-        uid: "tramline-#{train.id}"
-      )
-
-      response = svix_client.application.create(application_in)
-
-      update!(
-        app_id: response.id,
-        app_name: app_name,
-        status: :active
-      )
-
-      response
-    rescue HTTP::Error, Faraday::Error, StandardError => error
-      elog("Failed to create Svix app for train #{train.id}: #{error.message}", level: :warn)
-      raise error
-    end
+  def unavailable?
+    inactive? || svix_app_id.blank?
   end
 
-  def create_endpoint(url, event_types: ["release.started", "release.ended", "rc.finished"])
-    return if app_id.blank?
+  def available?
+    !unavailable?
+  end
 
-    begin
-      svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
-      endpoint_in = Svix::EndpointIn.new(
-        url: url,
-        filter_types: event_types
-      )
+  def create_app!
+    svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+    application_in = Svix::ApplicationIn.new(name: new_app_name, uid: new_app_uid)
 
-      svix_client.endpoint.create(app_id, endpoint_in)
-    rescue HTTP::Error, Faraday::Error, StandardError => error
-      elog("Failed to create Svix endpoint for app #{app_id}: #{error.message}", level: :warn)
-      raise error
-    end
+    response = svix_client.application.create(application_in)
+    update!(svix_app_id: response.id, svix_app_name: new_app_name, status: :active)
+
+    response
+  rescue HTTP::Error, Faraday::Error, StandardError => error
+    elog("Failed to create Svix app for train #{train.id}: #{error.message}", level: :warn)
+    raise error
   end
 
   def send_message(payload)
-    return if app_id.blank?
+    return if unavailable?
 
     begin
       svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
-      message_in = Svix::MessageIn.new(
-        event_type: payload[:event_type],
-        payload: payload
-      )
-
-      svix_client.message.create(app_id, message_in)
+      message_in = Svix::MessageIn.new(event_type: payload[:event_type], payload: payload)
+      response = svix_client.message.create(svix_app_id, message_in)
+      JSON.parse(response)
     rescue HTTP::Error, Faraday::Error, StandardError => error
-      elog("Failed to send Svix message for app #{app_id}: #{error.message}", level: :warn)
+      elog("Failed to send Svix message for app #{svix_app_id}: #{error.message}", level: :warn)
       raise error
     end
+  end
+
+  private
+
+  def new_app_name
+    "#{train.organization.name} • #{train.app.name} • #{train.name}"
+  end
+
+  def new_app_uid
+    "tramline-#{train.id}"
   end
 end

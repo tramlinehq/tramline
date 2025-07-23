@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_21_114209) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_21_114017) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -477,34 +477,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_114209) do
     t.index ["status"], name: "index_organizations_on_status"
   end
 
-  create_table "outgoing_webhook_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_id", null: false
-    t.uuid "outgoing_webhook_id", null: false
+  create_table "outgoing_webhook_events", force: :cascade do |t|
+    t.uuid "release_id", null: false
+    t.string "event_type", null: false
     t.datetime "event_timestamp", null: false
     t.string "status", null: false
-    t.text "response_data"
+    t.jsonb "event_payload", null: false
+    t.jsonb "response_data"
     t.text "error_message"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["event_timestamp"], name: "index_outgoing_webhook_events_on_event_timestamp"
-    t.index ["outgoing_webhook_id", "event_timestamp"], name: "idx_on_outgoing_webhook_id_event_timestamp_0435b5b3a2"
-    t.index ["outgoing_webhook_id"], name: "index_outgoing_webhook_events_on_outgoing_webhook_id"
+    t.index ["event_type"], name: "index_outgoing_webhook_events_on_event_type"
+    t.index ["release_id"], name: "index_outgoing_webhook_events_on_release_id"
     t.index ["status"], name: "index_outgoing_webhook_events_on_status"
-    t.index ["train_id", "event_timestamp"], name: "index_outgoing_webhook_events_on_train_id_and_event_timestamp"
-    t.index ["train_id"], name: "index_outgoing_webhook_events_on_train_id"
-  end
-
-  create_table "outgoing_webhooks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_id", null: false
-    t.string "url", null: false
-    t.text "event_types", default: [], array: true
-    t.text "description"
-    t.boolean "active", default: true
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "svix_endpoint_id"
-    t.index ["active"], name: "index_outgoing_webhooks_on_active"
-    t.index ["train_id"], name: "index_outgoing_webhooks_on_train_id"
   end
 
   create_table "passports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -956,15 +942,15 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_114209) do
     t.index ["submission_config_id"], name: "index_submission_external_configs_on_submission_config_id"
   end
 
-  create_table "svix_integrations", force: :cascade do |t|
+  create_table "svix_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
-    t.string "app_id"
-    t.string "app_name"
-    t.string "status", default: "active"
+    t.string "svix_app_id"
+    t.string "svix_app_name"
+    t.string "status", default: "inactive"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["app_id"], name: "index_svix_integrations_on_app_id", unique: true
     t.index ["status"], name: "index_svix_integrations_on_status"
+    t.index ["svix_app_id"], name: "index_svix_integrations_on_svix_app_id", unique: true
     t.index ["train_id"], name: "index_svix_integrations_on_train_id", unique: true
   end
 
@@ -1153,9 +1139,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_114209) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
-  add_foreign_key "outgoing_webhook_events", "outgoing_webhooks"
-  add_foreign_key "outgoing_webhook_events", "trains"
-  add_foreign_key "outgoing_webhooks", "trains"
+  add_foreign_key "outgoing_webhook_events", "releases"
   add_foreign_key "pre_prod_releases", "commits"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "parent_internal_release_id"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "previous_id"

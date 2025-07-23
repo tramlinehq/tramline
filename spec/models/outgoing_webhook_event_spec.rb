@@ -20,42 +20,31 @@ describe OutgoingWebhookEvent do
   end
 
   describe "associations" do
-    let(:train) { create(:train, :with_no_platforms) }
-    let(:webhook) { create(:outgoing_webhook, train: train) }
-    let(:event) { create(:outgoing_webhook_event, train: train, outgoing_webhook: webhook) }
+    let(:release) { create(:release) }
+    let(:event) { create(:outgoing_webhook_event, release: release) }
 
-    it "belongs to train" do
-      expect(event.train).to eq(train)
-    end
-
-    it "belongs to outgoing_webhook" do
-      expect(event.outgoing_webhook).to eq(webhook)
+    it "belongs to release" do
+      expect(event.release).to eq(release)
     end
   end
 
   describe "scopes" do
-    let(:train) { create(:train, :with_no_platforms) }
+    let(:release) { create(:release) }
     let(:webhook) { create(:outgoing_webhook, train: train) }
-    let!(:recent_event) { create(:outgoing_webhook_event, train: train, outgoing_webhook: webhook, event_timestamp: 1.hour.ago) }
-    let!(:old_event) { create(:outgoing_webhook_event, train: train, outgoing_webhook: webhook, event_timestamp: 1.day.ago) }
+    let!(:recent_event) { create(:outgoing_webhook_event, release:, event_timestamp: 1.hour.ago) }
+    let!(:old_event) { create(:outgoing_webhook_event, release:, event_timestamp: 1.day.ago) }
 
     describe ".recent" do
       it "orders by event_timestamp desc" do
         expect(described_class.recent).to eq([recent_event, old_event])
       end
     end
-
-    describe ".for_webhook" do
-      it "returns events for specific webhook" do
-        expect(described_class.for_webhook(webhook)).to include(recent_event, old_event)
-      end
-    end
   end
 
   describe "status methods" do
-    it "returns true for successful? when status is success" do
-      event = build(:outgoing_webhook_event, :successful)
-      expect(event.successful?).to be true
+    it "returns true for success? when status is success" do
+      event = build(:outgoing_webhook_event, :success)
+      expect(event.success?).to be true
     end
 
     it "returns true for failed? when status is failed" do

@@ -1,11 +1,12 @@
 FactoryBot.define do
   factory :outgoing_webhook_event do
-    train factory: [:train, :with_no_platforms]
-    outgoing_webhook factory: :outgoing_webhook
+    release factory: [:release]
     event_timestamp { Time.current }
+    event_payload { {foo: :bar} }
+    event_type { "rc.finished" }
     status { :pending }
 
-    trait :successful do
+    trait :success do
       status { :success }
       response_data { '{"id": "msg_123", "status": "delivered"}' }
     end
