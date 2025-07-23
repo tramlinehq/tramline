@@ -123,7 +123,7 @@ describe NotificationSetting do
               setting.notification_channels.first,
               "Some Message",
               "rc_finished",
-              params,
+              params.merge(user_content: nil),
               changelog_key: :diff_changelog,
               changelog_partitions: 20,
               header_affix: "Changes in this build"
@@ -142,7 +142,7 @@ describe NotificationSetting do
               setting.notification_channels.first,
               "Some Message",
               "rc_finished",
-              params,
+              params.merge(user_content: nil),
               changelog_key: :diff_changelog,
               changelog_partitions: 20,
               header_affix: "Changes in this build"
@@ -158,7 +158,7 @@ describe NotificationSetting do
               "Some Message",
               thread_id,
               full_changelog.first(20),
-              params,
+              params.merge(user_content: nil),
               header_affix: "Full release changelog",
               continuation: false
             )
@@ -169,7 +169,7 @@ describe NotificationSetting do
               "Some Message",
               thread_id,
               full_changelog.last(20),
-              params,
+              params.merge(user_content: nil),
               header_affix: "Full release changelog (2/2)",
               continuation: true
             )
@@ -193,7 +193,7 @@ describe NotificationSetting do
             setting.notification_channels.first,
             "Some Message",
             "production_rollout_started",
-            params,
+            params.merge(user_content: nil),
             changelog_key: :diff_changelog,
             changelog_partitions: 20,
             header_affix: "Changes in release"
