@@ -37,23 +37,19 @@ describe SvixIntegration do
   end
 
   describe "#create_app!" do
+    let(:test_webhook_integration) { create(:webhook_integration, train: train, svix_app_id: nil) }
+    let(:svix_client) { instance_double(Svix::Client) }
+    let(:response) { instance_double(Svix::ApplicationOut, id: "app_123") }
+
     before do
-      allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
+      allow(Svix::Client).to receive(:new).and_return(svix_client)
+      allow(svix_client).to receive(:application).and_return(instance_double(Svix::Application))
+      allow(test_webhook_integration).to receive(:elog)
     end
 
-    it "creates a Svix app and updates the integration" do
-      svix_client = instance_double(Svix::Client)
-      application_api = instance_double(Svix::Application)
-      application_in = instance_double(Svix::ApplicationIn)
-      response = instance_double(Svix::ApplicationOut, id: "app_123")
-
-      allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
-      allow(Svix::ApplicationIn).to receive(:new).and_return(application_in)
-      allow(svix_client).to receive(:application).and_return(application_api)
-      allow(application_api).to receive(:create).with(application_in).and_return(response)
-
-      test_webhook_integration = create(:webhook_integration, train: train, svix_app_id: nil)
+    it "creates a Svix app successfully" do
+      allow(svix_client.application).to receive(:create).and_return(response)
 
       test_webhook_integration.create_app!
 
@@ -61,73 +57,118 @@ describe SvixIntegration do
       expect(test_webhook_integration.status).to eq("active")
     end
 
-    it "logs error and re-raises when Svix API fails" do
-      svix_client = instance_double(Svix::Client)
-      application_api = instance_double(Svix::Application)
-      application_in = instance_double(Svix::ApplicationIn)
+    context "with retry logic" do
+      let(:server_error) do
+        error = StandardError.new("Internal Server Error")
+        def error.code
+          500
+        end
+        error
+      end
 
-      allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
-      allow(Svix::ApplicationIn).to receive(:new).and_return(application_in)
-      allow(svix_client).to receive(:application).and_return(application_api)
-      allow(application_api).to receive(:create).and_raise(StandardError.new("API Error"))
+      before { allow(test_webhook_integration).to receive(:sleep) }
 
-      test_webhook_integration = create(:webhook_integration, train: train, svix_app_id: nil)
+      it "retries on 500 errors and succeeds" do
+        call_count = 0
+        allow(svix_client.application).to receive(:create) do
+          call_count += 1
+          (call_count == 1) ? raise(server_error) : response
+        end
 
-      allow(test_webhook_integration).to receive(:elog)
-
-      expect {
         test_webhook_integration.create_app!
-      }.to raise_error(StandardError, "API Error")
 
-      expect(test_webhook_integration).to have_received(:elog).with(
-        "Failed to create Svix app for train #{train.id}: API Error",
-        level: :warn
-      )
+        expect(test_webhook_integration.reload.svix_app_id).to eq("app_123")
+        expect(test_webhook_integration).to have_received(:elog).with(
+          "Svix API error for train #{train.id}, retrying attempt 1", level: :warn
+        )
+      end
+
+      it "raises WebhookApiError after max retries" do
+        allow(svix_client.application).to receive(:create).and_raise(server_error)
+
+        expect {
+          test_webhook_integration.create_app!
+        }.to raise_error(SvixIntegration::WebhookApiError)
+
+        expect(test_webhook_integration).to have_received(:elog).with(
+          "Failed to create Svix app for train #{train.id}: Internal Server Error", level: :error
+        )
+      end
+    end
+  end
+
+  describe "#delete_app!" do
+    let(:test_webhook_integration) { create(:webhook_integration, train: train, svix_app_id: "app_123", status: :active) }
+    let(:svix_client) { instance_double(Svix::Client) }
+
+    before do
+      allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
+      allow(Svix::Client).to receive(:new).and_return(svix_client)
+      allow(svix_client).to receive(:application).and_return(instance_double(Svix::Application))
+      allow(test_webhook_integration).to receive(:elog)
+    end
+
+    it "deletes the Svix app and clears integration data" do
+      allow(svix_client.application).to receive(:delete).with("app_123")
+
+      test_webhook_integration.delete_app!
+
+      expect(test_webhook_integration.reload.svix_app_id).to be_nil
+      expect(test_webhook_integration.svix_app_uid).to be_nil
+      expect(test_webhook_integration.svix_app_name).to be_nil
+      expect(test_webhook_integration.status).to eq("inactive")
+    end
+
+    it "accepts custom app_id parameter" do
+      allow(svix_client.application).to receive(:delete).with("custom_app_123")
+
+      test_webhook_integration.delete_app!(app_id: "custom_app_123")
+
+      expect(test_webhook_integration.reload.svix_app_id).to be_nil
+      expect(test_webhook_integration.status).to eq("inactive")
+    end
+
+    it "returns early if integration is unavailable" do
+      test_webhook_integration.update!(status: :inactive, svix_app_id: nil)
+
+      expect(svix_client).not_to receive(:application)
+
+      test_webhook_integration.delete_app!
     end
   end
 
   describe "#send_message" do
-    it "sends a message through Svix" do
-      svix_client = instance_double(Svix::Client)
-      message_api = instance_double(Svix::Message)
-      message_in = instance_double(Svix::MessageIn)
-      payload = {event_type: "test.event", data: {test: "data"}}
+    let(:payload) { {event_type: "test.event", data: {test: "data"}} }
+    let(:svix_client) { instance_double(Svix::Client) }
+    let(:message_api) { instance_double(Svix::Message) }
 
-      allow(ENV).to receive(:[]).and_call_original
+    before do
       allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
-      allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
-      allow(Svix::MessageIn).to receive(:new).and_return(message_in)
+      allow(Svix::Client).to receive(:new).and_return(svix_client)
       allow(svix_client).to receive(:message).and_return(message_api)
-      allow(message_api).to receive(:create).with(webhook_integration.svix_app_id, message_in).and_return("{\"done\":true}")
-
-      webhook_integration.send_message(payload)
-
-      expect(message_api).to have_received(:create).with(webhook_integration.svix_app_id, message_in)
+      allow(webhook_integration).to receive(:elog)
     end
 
-    it "logs error and re-raises when message sending fails" do
-      svix_client = instance_double(Svix::Client)
-      message_api = instance_double(Svix::Message)
-      message_in = instance_double(Svix::MessageIn)
-      payload = {event_type: "test.event", data: {test: "data"}}
+    it "sends message successfully" do
+      response_obj = instance_double("SvixResponse")
+      allow(response_obj).to receive(:to_json).and_return("{\"done\":true}")
+      allow(message_api).to receive(:create).and_return(response_obj)
 
-      allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
-      allow(Svix::Client).to receive(:new).with("test_token").and_return(svix_client)
-      allow(Svix::MessageIn).to receive(:new).and_return(message_in)
-      allow(svix_client).to receive(:message).and_return(message_api)
-      allow(message_api).to receive(:create).and_raise(Faraday::Error.new("Connection failed"))
+      result = webhook_integration.send_message(payload)
 
-      allow(webhook_integration).to receive(:elog)
+      expect(result).to eq({"done" => true})
+    end
+
+    it "raises WebhookApiError on failure" do
+      error = StandardError.new("Connection failed")
+      def error.code
+        500
+      end
+      allow(message_api).to receive(:create).and_raise(error)
 
       expect {
         webhook_integration.send_message(payload)
-      }.to raise_error(Faraday::Error, "Connection failed")
-
-      expect(webhook_integration).to have_received(:elog).with(
-        "Failed to send Svix message for app #{webhook_integration.svix_app_id}: Connection failed",
-        level: :warn
-      )
+      }.to raise_error(SvixIntegration::WebhookApiError)
     end
   end
 end

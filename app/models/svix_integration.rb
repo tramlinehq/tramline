@@ -5,6 +5,7 @@
 #  id            :uuid             not null, primary key
 #  status        :string           default("inactive"), indexed
 #  svix_app_name :string
+#  svix_app_uid  :string
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  svix_app_id   :string           indexed
@@ -39,29 +40,37 @@ class SvixIntegration < ApplicationRecord
   end
 
   def create_app!
-    svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
-    application_in = Svix::ApplicationIn.new(name: new_app_name, uid: new_app_uid)
+    with_retry do
+      svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+      app_name = new_app_name
+      app_uid = new_app_uid
 
-    response = svix_client.application.create(application_in)
-    update!(svix_app_id: response.id, svix_app_name: new_app_name, status: :active)
+      application_in = Svix::ApplicationIn.new(name: app_name, uid: app_uid)
+      response = svix_client.application.create(application_in)
 
-    response
-  rescue HTTP::Error, Faraday::Error, StandardError => error
-    elog("Failed to create Svix app for train #{train.id}: #{error.message}", level: :warn)
-    raise error
+      update!(svix_app_id: response.id, svix_app_uid: app_uid, svix_app_name: app_name, status: :active)
+      response
+    end
+  end
+
+  def delete_app!(app_id: svix_app_id)
+    return if unavailable?
+
+    with_retry do
+      svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+      svix_client.application.delete(app_id)
+      update!(svix_app_id: nil, svix_app_uid: nil, svix_app_name: nil, status: :inactive)
+    end
   end
 
   def send_message(payload)
     return if unavailable?
 
-    begin
+    with_retry do
       svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
       message_in = Svix::MessageIn.new(event_type: payload[:event_type], payload: payload)
       response = svix_client.message.create(svix_app_id, message_in)
-      JSON.parse(response)
-    rescue HTTP::Error, Faraday::Error, StandardError => error
-      elog("Failed to send Svix message for app #{svix_app_id}: #{error.message}", level: :warn)
-      raise error
+      JSON.parse(response.to_json)
     end
   end
 
@@ -72,6 +81,38 @@ class SvixIntegration < ApplicationRecord
   end
 
   def new_app_uid
-    "tramline-#{train.id}"
+    "tramline-#{train.id}--#{SecureRandom.uuid}"
+  end
+
+  MAX_RETRY_ATTEMPTS = 3
+  WebhookApiError = Class.new(StandardError)
+
+  def with_retry
+    attempt = 0
+
+    begin
+      yield
+    rescue Svix::ApiError, StandardError => error
+      if attempt < MAX_RETRY_ATTEMPTS && server_error?(error)
+        elog("Svix API error for train #{train.id}, retrying attempt #{attempt + 1}", level: :warn)
+        sleep 0.1 * (attempt + 1)
+        attempt += 1
+        retry
+      else
+        elog(generic_error_message(error), level: :error)
+        raise WebhookApiError, error
+      end
+    rescue => error
+      elog(generic_error_message(error), level: :error)
+      raise
+    end
+  end
+
+  def server_error?(error)
+    error.code == 500
+  end
+
+  def generic_error_message(error)
+    "Failed to create Svix app for train #{train.id}: #{error.message}"
   end
 end

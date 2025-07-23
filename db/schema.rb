@@ -945,6 +945,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_114017) do
   create_table "svix_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
     t.string "svix_app_id"
+    t.string "svix_app_uid"
     t.string "svix_app_name"
     t.string "status", default: "inactive"
     t.datetime "created_at", null: false

@@ -36,15 +36,10 @@ module Webhooks
       event_record = create_pending_event(payload)
 
       begin
-        Rails.logger.info("Outgoing Webhook triggered for #{release.id} and event_type #{event_type}")
         response = @webhook.send_message(payload)
         event_record.record_success!(response)
-      rescue HTTP::Error, Faraday::Error => error
-        elog("Webhook delivery failed for #{release.id} and event_type #{event_type}: #{error.message}", level: :warn)
-        event_record.record_failure!("Network error: #{error.message}")
-        raise error
-      rescue => error
-        elog("Webhook delivery failed for #{outgoing_webhook.url}: #{error.message}", level: :warn)
+      rescue WebhookApiError => error
+        elog("Webhook delivery failed for #{release.id} and event_type #{event_type}: #{error.message}", level: :error)
         event_record.record_failure!(error.message)
         raise error
       end

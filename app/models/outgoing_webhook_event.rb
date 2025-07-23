@@ -36,8 +36,8 @@ class OutgoingWebhookEvent < ApplicationRecord
     update!(status: :failed, error_message: error)
   end
 
-  def record_success!(response)
-    update!(status: :success, response_data: response.to_json)
+  def record_success!(response_json)
+    update!(status: :success, response_data: response_json)
   end
 
   private
