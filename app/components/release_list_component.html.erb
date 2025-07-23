@@ -47,7 +47,7 @@
         <% if train.almost_trunk? %>
           <div class="mb-6 flex flex-row items-center gap-x-1 text-secondary">
             <%= render IconComponent.new("git_branch.svg", size: :md) %>
-            <div class="text-sm"><%= branch_help %></div>
+            <div class="text-sm"><%== branch_help_html %></div>
           </div>
         <% end %>
 

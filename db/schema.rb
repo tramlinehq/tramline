@@ -1021,6 +1021,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_114209) do
     t.boolean "tag_store_releases_vcs_release", default: false
     t.boolean "notifications_release_specific_channel_enabled", default: false
     t.string "version_bump_strategy"
+    t.string "release_branch_pattern"
     t.boolean "enable_changelog_linking_in_notifications", default: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
