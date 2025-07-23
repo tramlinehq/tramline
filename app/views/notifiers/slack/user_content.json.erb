@@ -1,0 +1,17 @@
+<% if @user_content.present? %>
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Custom Content:*\n> <%= safe_string(@user_content) %>"
+      }
+    }
+  ]
+}
+<% else %>
+{
+  "blocks": []
+}
+<% end %>

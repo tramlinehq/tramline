@@ -16,6 +16,7 @@ FactoryBot.define do
     }
     release_specific_channel { nil }
     user_groups { nil }
+    user_content { nil }
 
     trait :inactive do
       active { false }
@@ -40,6 +41,10 @@ FactoryBot.define do
 
     trait :threaded_changelog do
       kind { NotificationSetting::THREADED_CHANGELOG_NOTIFICATION_KINDS.sample }
+    end
+
+    trait :with_user_content do
+      user_content { "Custom notification content from the team" }
     end
 
     train factory: %i[train with_no_platforms without_notification_settings]

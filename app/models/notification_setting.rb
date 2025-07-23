@@ -9,6 +9,7 @@
 #  notification_channels    :jsonb
 #  release_specific_channel :jsonb
 #  release_specific_enabled :boolean          default(FALSE)
+#  user_content             :text
 #  user_groups              :jsonb
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -20,6 +21,9 @@ class NotificationSetting < ApplicationRecord
   include Displayable
 
   belongs_to :train
+
+  normalizes :user_content, with: ->(content) { content&.strip }
+  validates :user_content, format: {with: /\A[a-zA-Z0-9\s\p{L}\p{N}\p{P}\p{S}]*\z/, message: :invalid}, allow_blank: true
 
   enum :kind, {
     release_started: "release_started",

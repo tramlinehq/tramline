@@ -46,6 +46,15 @@
         <% end %>
       <% end %>
 
+      <% section.with_description do %>
+        <p>Add custom content to include in notifications (optional).</p>
+      <% end %>
+
+      <div>
+        <%= section.F.labeled_textarea :user_content, "Custom Content", placeholder: "Add any additional information you'd like to include in notifications..." %>
+      </div>
+    <% end %>
+
     <% if @setting.release_specific_channel_allowed? %>
       <% if @setting.active? %>
         <% f.with_action do %>
