@@ -116,10 +116,12 @@ describe Webhooks::SvixService do
 
     before do
       allow(train).to receive(:webhook_integration).and_return(mocked_integration)
-      allow(mocked_integration).to receive_messages(blank?: false, unavailable?: false, send_message?: {"id" => "msg_123"})
+      allow(mocked_integration).to receive(:unavailable?).and_return(false)
     end
 
     it "validates payload and sends webhook when valid" do
+      allow(mocked_integration).to receive(:send_message).and_return({"id" => "msg_123"})
+
       expect {
         service.trigger(valid_payload)
       }.to change(OutgoingWebhookEvent, :count).by(1)

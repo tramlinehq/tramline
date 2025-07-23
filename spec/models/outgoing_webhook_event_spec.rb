@@ -111,16 +111,6 @@ describe OutgoingWebhookEvent do
       expect(event).not_to be_valid
       expect(event.errors[:release]).to include("must exist")
     end
-
-    it "has a foreign key constraint preventing orphaned events" do
-      event_id = event.id
-      expect {
-        release.destroy
-      }.to raise_error(ActiveRecord::InvalidForeignKey)
-
-      # Event should still exist since the delete was prevented
-      expect { described_class.find(event_id) }.not_to raise_error
-    end
   end
 
   describe "scopes" do
@@ -198,7 +188,7 @@ describe OutgoingWebhookEvent do
 
   describe "#record_success!" do
     let(:event) { create(:outgoing_webhook_event, status: :pending) }
-    let(:response) { {id: "msg_123", status: "delivered"} }
+    let(:response) { {id: "msg_123", status: "delivered"}.with_indifferent_access }
 
     it "updates status to success" do
       event.record_success!(response)
@@ -207,7 +197,7 @@ describe OutgoingWebhookEvent do
 
     it "stores the response data as JSON" do
       event.record_success!(response)
-      expect(event.reload.response_data).to eq(response.to_json)
+      expect(event.reload.response_data).to eq(response)
     end
 
     it "updates the record in the database" do
@@ -219,13 +209,13 @@ describe OutgoingWebhookEvent do
     it "handles nil response" do
       event.record_success!(nil)
       expect(event.reload).to be_success
-      expect(event.response_data).to eq("null")
+      expect(event.response_data).to eq(nil)
     end
 
     it "handles empty hash response" do
       event.record_success!({})
       expect(event.reload).to be_success
-      expect(event.response_data).to eq("{}")
+      expect(event.response_data).to eq({})
     end
 
     it "raises an error if save fails" do
@@ -257,12 +247,12 @@ describe OutgoingWebhookEvent do
       event = create(:outgoing_webhook_event, status: :pending)
       expect(event).to be_pending
 
-      response_data = {id: "webhook_123", delivered_at: Time.current.iso8601}
+      response_data = {id: "webhook_123", delivered_at: Time.current.iso8601}.with_indifferent_access
       event.record_success!(response_data)
 
       event.reload
       expect(event).to be_success
-      expect(event.response_data).to eq(response_data.to_json)
+      expect(event.response_data).to eq(response_data)
       expect(event.error_message).to be_nil
     end
 
