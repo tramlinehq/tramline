@@ -119,7 +119,7 @@ describe OutgoingWebhookEvent do
       }.to raise_error(ActiveRecord::InvalidForeignKey)
 
       # Event should still exist since the delete was prevented
-      expect { OutgoingWebhookEvent.find(event_id) }.not_to raise_error
+      expect { described_class.find(event_id) }.not_to raise_error
     end
   end
 
@@ -239,7 +239,7 @@ describe OutgoingWebhookEvent do
   describe "integration tests" do
     it "creates a valid event with all required attributes" do
       release = create(:release)
-      event = OutgoingWebhookEvent.create!(
+      event = described_class.create!(
         release: release,
         event_type: "rc.finished",
         event_timestamp: Time.current,

@@ -38,7 +38,7 @@ module Webhooks
       begin
         response = @webhook.send_message(payload)
         event_record.record_success!(response)
-      rescue WebhookApiError => error
+      rescue SvixIntegration::WebhookApiError => error
         elog("Webhook delivery failed for #{release.id} and event_type #{event_type}: #{error.message}", level: :error)
         event_record.record_failure!(error.message)
         raise error

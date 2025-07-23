@@ -118,7 +118,7 @@ class Release < ApplicationRecord
   has_many :pre_prod_releases, through: :release_platform_runs
   has_many :production_releases, through: :release_platform_runs
   has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
-  has_many :outgoing_webhook_events
+  has_many :outgoing_webhook_events, dependent: :destroy
 
   scope :completed, -> { where(status: TERMINAL_STATES) }
   scope :pending_release, -> { where.not(status: TERMINAL_STATES) }

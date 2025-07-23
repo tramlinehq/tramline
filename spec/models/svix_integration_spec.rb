@@ -131,7 +131,7 @@ describe SvixIntegration do
     it "returns early if integration is unavailable" do
       test_webhook_integration.update!(status: :inactive, svix_app_id: nil)
 
-      expect(svix_client).not_to receive(:application)
+      expect(svix_client).not_to have_received(:application)
 
       test_webhook_integration.delete_app!
     end
@@ -143,6 +143,7 @@ describe SvixIntegration do
     let(:message_api) { instance_double(Svix::Message) }
 
     before do
+      allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
       allow(Svix::Client).to receive(:new).and_return(svix_client)
       allow(svix_client).to receive(:message).and_return(message_api)
@@ -150,7 +151,7 @@ describe SvixIntegration do
     end
 
     it "sends message successfully" do
-      response_obj = instance_double("SvixResponse")
+      response_obj = instance_double(Svix::MessageOut)
       allow(response_obj).to receive(:to_json).and_return("{\"done\":true}")
       allow(message_api).to receive(:create).and_return(response_obj)
 
