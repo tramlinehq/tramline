@@ -77,7 +77,7 @@ namespace :anonymize do
         continue { |index, record| record["train_id"] == train_id && !NotificationSetting.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "train_id", "kind", "active", "user_groups", "release_specific_enabled", "release_specific_channel"
+        whitelist "train_id", "kind", "active", "user_groups", "release_specific_enabled", "release_specific_channel", "user_content"
         whitelist_timestamps
         anonymize("notification_channels") do |field|
           [{"id" => "dummy", "name" => "test", "is_private" => false}]

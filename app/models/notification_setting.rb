@@ -9,6 +9,7 @@
 #  notification_channels    :jsonb
 #  release_specific_channel :jsonb
 #  release_specific_enabled :boolean          default(FALSE)
+#  user_content             :text
 #  user_groups              :jsonb
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -20,6 +21,9 @@ class NotificationSetting < ApplicationRecord
   include Displayable
 
   belongs_to :train
+
+  normalizes :user_content, with: ->(content) { content&.strip }
+  validates :user_content, format: {with: /\A[a-zA-Z0-9\s\p{L}\p{N}\p{P}\p{S}]*\z/, message: :invalid}, allow_blank: true
 
   enum :kind, {
     release_started: "release_started",
@@ -74,7 +78,7 @@ class NotificationSetting < ApplicationRecord
     return unless send_notifications?
 
     notifiable_channels.each do |channel|
-      notification_provider.notify!(channel["id"], message, kind, params, file_id, file_title)
+      notification_provider.notify!(channel["id"], message, kind, enrich_params(params), file_id, file_title)
     end
   end
 
@@ -82,7 +86,7 @@ class NotificationSetting < ApplicationRecord
     return unless send_notifications?
 
     notifiable_channels.each do |channel|
-      notification_provider.notify_with_snippet!(channel["id"], message, kind, params, snippet_content, snippet_title)
+      notification_provider.notify_with_snippet!(channel["id"], message, kind, enrich_params(params), snippet_content, snippet_title)
     end
   end
 
@@ -91,8 +95,8 @@ class NotificationSetting < ApplicationRecord
     return unless kind.to_sym.in?(THREADED_CHANGELOG_NOTIFICATION_KINDS)
 
     case kind.to_sym
-    when :rc_finished then notify_rc_finished!(message, params)
-    when :production_rollout_started then notify_production_rollout_started!(message, params)
+    when :rc_finished then notify_rc_finished!(message, enrich_params(params))
+    when :production_rollout_started then notify_production_rollout_started!(message, enrich_params(params))
     else true
     end
   end
@@ -110,6 +114,10 @@ class NotificationSetting < ApplicationRecord
   end
 
   private
+
+  def enrich_params(params)
+    params.merge(user_content: user_content)
+  end
 
   def handle_active_flag
     if release_specific_notifiable?
