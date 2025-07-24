@@ -78,7 +78,7 @@ class NotificationSetting < ApplicationRecord
     return unless send_notifications?
 
     notifiable_channels.each do |channel|
-      notification_provider.notify!(channel["id"], message, kind, enriched_params(params), file_id, file_title)
+      notification_provider.notify!(channel["id"], message, kind, enrich_params(params), file_id, file_title)
     end
   end
 
@@ -86,7 +86,7 @@ class NotificationSetting < ApplicationRecord
     return unless send_notifications?
 
     notifiable_channels.each do |channel|
-      notification_provider.notify_with_snippet!(channel["id"], message, kind, enriched_params(params), snippet_content, snippet_title)
+      notification_provider.notify_with_snippet!(channel["id"], message, kind, enrich_params(params), snippet_content, snippet_title)
     end
   end
 
@@ -95,8 +95,8 @@ class NotificationSetting < ApplicationRecord
     return unless kind.to_sym.in?(THREADED_CHANGELOG_NOTIFICATION_KINDS)
 
     case kind.to_sym
-    when :rc_finished then notify_rc_finished!(message, enriched_params(params))
-    when :production_rollout_started then notify_production_rollout_started!(message, params_with_user_content)
+    when :rc_finished then notify_rc_finished!(message, enrich_params(params))
+    when :production_rollout_started then notify_production_rollout_started!(message, enrich_params(params))
     else true
     end
   end
@@ -115,7 +115,7 @@ class NotificationSetting < ApplicationRecord
 
   private
 
-  def enriched_params(params)
+  def enrich_params(params)
     params.merge(user_content: user_content)
   end
 
