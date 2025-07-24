@@ -3,6 +3,10 @@
     <% f.with_section(heading: "Select") do |section| %>
       <% section.with_description do %>
         <p>One or more channel names for this type of notification.</p>
+        <p class="mt-1">You can optionally add custom content to include in this notification. Even if the notification
+          is disabled, your custom content will be safely kept in Tramline for posterity.
+          See <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/quality-and-monitoring/notifications#custom-content", class: "underline" %>
+          for more info.</p>
         <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
         <% if @setting.needs_invite? %>
           <div class="text-secondary mt-1">
@@ -16,38 +20,33 @@
                                            switch_id: "core-switch-#{@setting.id}",
                                            on_label: "#{@setting.core_prefix_text}Notifications enabled",
                                            off_label: "#{@setting.core_prefix_text}Notifications disabled") do |switch| %>
-          <% switch.with_child do %>
-            <div class="flex flex-col gap-1">
-              <%= render partial: "shared/notifications_form",
-                         locals: {
-                           form: section.F,
-                           channels: @setting.channels,
-                           current: @setting.default_channels,
-                           multiple: true,
-                           field_name: :notification_channels,
-                           field_title: "#{@setting.core_prefix_text}Channels"
-                         } %>
-            </div>
-          <% end %>
-        <% end %>
-
-        <% if @setting.release_specific_channel_allowed? %>
-          <%= render Form::SwitchComponent.new(form: section.F,
-                                               field_name: :release_specific_enabled,
-                                               switch_id: "release-specific-enabled-#{@setting.id}",
-                                               on_label: "Release-specific channel enabled",
-                                               off_label: "Release-specific channel disabled") do |switch| %>
-            <% switch.with_info_icon do %>
-              <span class="text-secondary">
-              Channels like <strong><%= release_specific_channel_pattern(@setting.app) %></strong> will be automatically created for each release.
-              </span>
-            <% end %>
-          <% end %>
+        <% switch.with_child do %>
+          <div class="flex flex-col gap-1">
+            <%= render partial: "shared/notifications_form",
+                       locals: {
+                         form: section.F,
+                         channels: @setting.channels,
+                         current: @setting.default_channels,
+                         multiple: true,
+                         field_name: :notification_channels,
+                         field_title: "#{@setting.core_prefix_text}Channels"
+                       } %>
+          </div>
         <% end %>
       <% end %>
 
-      <% section.with_description do %>
-        <p>Add custom content to include in notifications (optional).</p>
+      <% if @setting.release_specific_channel_allowed? %>
+        <%= render Form::SwitchComponent.new(form: section.F,
+                                             field_name: :release_specific_enabled,
+                                             switch_id: "release-specific-enabled-#{@setting.id}",
+                                             on_label: "Release-specific channel enabled",
+                                             off_label: "Release-specific channel disabled") do |switch| %>
+          <% switch.with_info_icon do %>
+            <span class="text-secondary">
+              Channels like <strong><%= release_specific_channel_pattern(@setting.app) %></strong> will be automatically created for each release.
+              </span>
+          <% end %>
+        <% end %>
       <% end %>
 
       <div>
