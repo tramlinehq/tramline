@@ -71,6 +71,7 @@ describe Coordinators::PreReleaseJob do
 
     describe ".mark_failed!" do
       before do
+        allow(described_class).to receive(:elog)
         allow(release).to receive_messages(release_branch:, train: create(:train, branching_strategy: "almost_trunk"))
       end
 
@@ -78,10 +79,9 @@ describe Coordinators::PreReleaseJob do
         msg = {"args" => [release.id]}
         error = Triggers::Errors.new("test error")
 
-        expect(described_class).to receive(:elog).with(error, level: :warn)
-
         described_class.mark_failed!(msg, error)
 
+        expect(described_class).to have_received(:elog).with(error, level: :warn)
         expect(release.reload.status).to eq("pre_release_failed")
       end
     end
@@ -100,9 +100,11 @@ describe Coordinators::PreReleaseJob do
       end
 
       it "kills job immediately for trigger failures" do
+        allow(described_class).to receive(:mark_failed!)
+
         error = Triggers::Errors.new("some error")
-        expect(described_class).to receive(:mark_failed!).with(msg, error)
         expect(described_class.new.sidekiq_retry_in_block.call(0, error, msg)).to eq(:kill)
+        expect(described_class).to have_received(:mark_failed!).with(msg, error)
       end
 
       it "kills job immediately for other errors" do
@@ -111,9 +113,11 @@ describe Coordinators::PreReleaseJob do
       end
 
       it "marks job as failed when retries are exhausted for retryable failures" do
+        allow(described_class).to receive(:mark_failed!)
+
         error = Triggers::Branch::RetryableBranchCreateError.new("branch create failed")
-        expect(described_class).to receive(:mark_failed!).with(msg, error)
         described_class.new.sidekiq_retries_exhausted_block.call(msg, error)
+        expect(described_class).to have_received(:mark_failed!).with(msg, error)
       end
     end
   end
