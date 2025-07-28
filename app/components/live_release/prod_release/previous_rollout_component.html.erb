@@ -40,7 +40,7 @@
       <% button.with_icon("activity.svg", size: :base) %>
       <% button.with_tooltip("See recent rollout activity", placement: "top") %>
       <% modal.with_body do %>
-        <div class="pl-3"><%= render TimelineComponent.new(events:) %></div>
+        <div class="pl-3"><%= render TimelineComponent.new(events:, view_all_link: timeline_release_path(release)) %></div>
       <% end %>
     <% end %>
   </div>
