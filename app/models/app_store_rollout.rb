@@ -74,6 +74,7 @@ class AppStoreRollout < StoreRollout
     unless result.ok?
       elog(result.error, level: :warn)
       errors.add(:base, result.error)
+      return
     end
 
     if staged_rollout?

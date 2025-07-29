@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_21_114017) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_23_112203) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -453,6 +453,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_114017) do
     t.jsonb "release_specific_channel"
     t.boolean "release_specific_enabled", default: false
     t.boolean "core_enabled", default: false, null: false
+    t.text "user_content"
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
     t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))"
@@ -1008,8 +1009,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_21_114017) do
     t.boolean "tag_store_releases_vcs_release", default: false
     t.boolean "notifications_release_specific_channel_enabled", default: false
     t.string "version_bump_strategy"
-    t.string "release_branch_pattern"
     t.boolean "enable_changelog_linking_in_notifications", default: false
+    t.string "release_branch_pattern"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

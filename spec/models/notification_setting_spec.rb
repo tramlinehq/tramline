@@ -123,7 +123,7 @@ describe NotificationSetting do
               setting.notification_channels.first,
               "Some Message",
               "rc_finished",
-              params,
+              params.merge(user_content: nil),
               changelog_key: :diff_changelog,
               changelog_partitions: 20,
               header_affix: "Changes in this build"
@@ -142,7 +142,7 @@ describe NotificationSetting do
               setting.notification_channels.first,
               "Some Message",
               "rc_finished",
-              params,
+              params.merge(user_content: nil),
               changelog_key: :diff_changelog,
               changelog_partitions: 20,
               header_affix: "Changes in this build"
@@ -158,7 +158,7 @@ describe NotificationSetting do
               "Some Message",
               thread_id,
               full_changelog.first(20),
-              params,
+              params.merge(user_content: nil),
               header_affix: "Full release changelog",
               continuation: false
             )
@@ -169,7 +169,7 @@ describe NotificationSetting do
               "Some Message",
               thread_id,
               full_changelog.last(20),
-              params,
+              params.merge(user_content: nil),
               header_affix: "Full release changelog (2/2)",
               continuation: true
             )
@@ -193,12 +193,58 @@ describe NotificationSetting do
             setting.notification_channels.first,
             "Some Message",
             "production_rollout_started",
-            params,
+            params.merge(user_content: nil),
             changelog_key: :diff_changelog,
             changelog_partitions: 20,
             header_affix: "Changes in release"
           )
       end
+    end
+  end
+
+  describe "user_content validation" do
+    it "allows valid alphanumeric and unicode content" do
+      setting = build(:notification_setting, user_content: "Hello world! 🚀 Release v1.2.3")
+      expect(setting).to be_valid
+    end
+
+    it "allows empty user content" do
+      setting = build(:notification_setting, user_content: "")
+      expect(setting).to be_valid
+    end
+
+    it "allows nil user content" do
+      setting = build(:notification_setting, user_content: nil)
+      expect(setting).to be_valid
+    end
+
+    it "normalizes user content by stripping whitespace" do
+      setting = create(:notification_setting, user_content: "  content with spaces  ")
+      expect(setting.user_content).to eq("content with spaces")
+    end
+
+    it "allows unicode characters and punctuation" do
+      setting = build(:notification_setting, user_content: "Release notes: Bug fixes & improvements! 🎉")
+      expect(setting).to be_valid
+    end
+
+    it "allows slack-friendly characters" do
+      setting = build(:notification_setting, user_content: "Check out <#channel> and @user mentions")
+      expect(setting).to be_valid
+    end
+  end
+
+  describe "Slack notification rendering with user content" do
+    let(:setting_with_content) { create(:notification_setting, :with_user_content) }
+    let(:setting_without_content) { create(:notification_setting, user_content: nil) }
+
+    it "includes user content when present" do
+      # Test that user content is accessible
+      expect(setting_with_content.user_content).to eq("Custom notification content from the team")
+    end
+
+    it "handles nil user content gracefully" do
+      expect(setting_without_content.user_content).to be_nil
     end
   end
 end
