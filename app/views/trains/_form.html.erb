@@ -114,12 +114,31 @@
       <% end %>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Outgoing Webhooks") do |section| %>
+      <% section.with_description do %>
+        Enable outgoing webhooks to receive real-time notifications about release events and updates.
+        When enabled, Tramline will send HTTP POST requests to configured webhook endpoints with release data.
+      <% end %>
+
+      <%= render Form::SwitchComponent.new(form: section.F,
+                                           field_name: :webhooks_enabled,
+                                           on_label: "Outgoing webhooks enabled",
+                                           off_label: "Outgoing webhooks disabled") do |component| %>
+        <% component.with_child do %>
+          <% render partial: "configure_svix_webhooks", locals: {app: @app, train: @train} %>
+        <% end %>
+      <% end %>
+    <% end %>
+
     <%= f.with_section(heading: "Branching strategy") do |section| %>
       <% section.with_description do %>
         Learn more about our supported branching strategies in the
-        <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/release-management/branching-strategies", class: "underline" %>.
+        <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/release-management/branching-strategies", class: "underline" %>
+        .
         You can use dynamic values in release branch patterns with embeddable tokens.
-        See which <%= link_to_external "tokens are available", "https://docs.tramline.app/using-tramline/release-management/embeddable-tokens", class: "underline" %> for branches.
+        See
+        which <%= link_to_external "tokens are available", "https://docs.tramline.app/using-tramline/release-management/embeddable-tokens", class: "underline" %>
+        for branches.
       <% end %>
       <div class="grid gap-x-5 md:grid-cols-2">
         <div>
