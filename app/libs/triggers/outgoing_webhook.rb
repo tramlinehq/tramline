@@ -1,8 +1,8 @@
-module Webhooks
-  class SvixService
+module Triggers
+  class OutgoingWebhook
     include Loggable
 
-    def self.trigger_webhook(release, event_type, payload)
+    def self.call(release, event_type, payload)
       new(release, event_type).trigger(payload)
     end
 

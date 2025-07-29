@@ -1,7 +1,7 @@
 require "rails_helper"
 require "webmock/rspec"
 
-describe Webhooks::SvixService do
+describe Triggers::OutgoingWebhook do
   let(:train) { create(:train, :with_no_platforms) }
   let(:release) { create(:release, train: train) }
   let(:webhook_integration) { create(:webhook_integration, train: train, svix_app_id: "app_123", status: :active) }
@@ -38,8 +38,8 @@ describe Webhooks::SvixService do
         service.trigger(valid_payload)
 
         expect(service).to have_received(:send_webhook).with(hash_including(
-          :event_type, :event_source, :event_timestamp, :tramline_payload
-        ))
+                                                               :event_type, :event_source, :event_timestamp, :tramline_payload
+                                                             ))
       end
     end
 
