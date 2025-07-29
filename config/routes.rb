@@ -140,6 +140,12 @@ Rails.application.routes.draw do
           post :finish_release
         end
       end
+
+      resources :outgoing_webhooks do
+        collection do
+          get :portal
+        end
+      end
     end
 
     resources :integrations, only: %i[index create destroy] do

@@ -39,6 +39,18 @@ class SvixIntegration < ApplicationRecord
     !unavailable?
   end
 
+  def portal_access_link
+    svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+
+    begin
+      portal_access =
+        svix_client.authentication.app_portal_access(svix_app_id, { expires_at: 6.hours.from_now })
+      portal_access.url
+    rescue Svix::ApiError
+      nil
+    end
+  end
+
   def create_app!
     with_retry do
       svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
