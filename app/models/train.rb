@@ -42,6 +42,7 @@
 #  version_current                                :string
 #  version_seeded_with                            :string
 #  versioning_strategy                            :string           default("semver")
+#  webhooks_enabled                               :boolean          default(FALSE), not null
 #  working_branch                                 :string
 #  created_at                                     :datetime         not null
 #  updated_at                                     :datetime         not null
@@ -85,7 +86,6 @@ class Train < ApplicationRecord
   has_many :integrations, through: :app
   has_many :scheduled_releases, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
-  has_many :outgoing_webhook_events, dependent: :destroy
   has_one :release_index, dependent: :destroy
   has_one :webhook_integration, class_name: "SvixIntegration", dependent: :destroy
 
@@ -437,20 +437,6 @@ class Train < ApplicationRecord
         train_url: train_link,
         working_branch: working_branch,
         enable_changelog_linking: enable_changelog_linking_in_notifications
-      }
-    )
-  end
-
-  def webhook_params
-    app.notification_params.merge(
-      {
-        train_name: name,
-        train_current_version: version_current,
-        train_next_version: next_version,
-        train_url: train_link,
-        working_branch: working_branch,
-        train_id: id,
-        app_id: app_id
       }
     )
   end
