@@ -1,6 +1,6 @@
 {
   "additionalProperties": true,
-  "description": "This webhook event is triggered when the release first kick-offs from Tramline.",
+  "description": "This webhook event is triggered when a release successfully completes.",
   "properties": {
     "platform": {
       "enum": [
@@ -25,6 +25,6 @@
     "release_branch",
     "release_version"
   ],
-  "title": "release.started",
+  "title": "release.completed",
   "type": "object"
 }

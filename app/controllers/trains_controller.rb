@@ -138,7 +138,8 @@ class TrainsController < SignedInApplicationController
       :version_bump_branch_prefix,
       :version_bump_strategy,
       :release_branch_pattern,
-      :enable_changelog_linking_in_notifications
+      :enable_changelog_linking_in_notifications,
+      :webhooks_enabled
     )
   end
 
@@ -191,7 +192,8 @@ class TrainsController < SignedInApplicationController
       :version_bump_branch_prefix,
       :version_bump_strategy,
       :release_branch_pattern,
-      :enable_changelog_linking_in_notifications
+      :enable_changelog_linking_in_notifications,
+      :webhooks_enabled
     )
   end
 

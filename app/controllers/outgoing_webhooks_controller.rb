@@ -3,7 +3,7 @@ class OutgoingWebhooksController < SignedInApplicationController
 
   def portal
     train = @app.trains.friendly.find(params[:train_id])
-    link = train.webhook_integration&.portal_access_link
+    link = train.webhook_integration&.unique_portal_link
 
     if link
       redirect_to link, allow_other_host: true

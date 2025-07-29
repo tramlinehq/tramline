@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_23_112203) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_29_133903) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1011,6 +1011,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_23_112203) do
     t.string "version_bump_strategy"
     t.boolean "enable_changelog_linking_in_notifications", default: false
     t.string "release_branch_pattern"
+    t.boolean "webhooks_enabled", default: false, null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

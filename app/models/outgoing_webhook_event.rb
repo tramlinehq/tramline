@@ -20,8 +20,8 @@ class OutgoingWebhookEvent < ApplicationRecord
 
   VALID_EVENT_TYPES = {
     "rc.finished" => {schema: JSON.parse(Rails.root.join("config/schema/webhook_rc_finished.json").read)},
-    "release.finished" => {schema: JSON.parse(Rails.root.join("config/schema/webhook_release_finished.json").read)},
-    "release.started" => {schema: JSON.parse(Rails.root.join("config/schema/webhook_release_started.json").read)}
+    "release.started" => {schema: JSON.parse(Rails.root.join("config/schema/webhook_release_started.json").read)},
+    "release.completed" => {schema: JSON.parse(Rails.root.join("config/schema/webhook_release_completed.json").read)}
   }.freeze
   enum :status, {pending: "pending", success: "success", failed: "failed"}
 

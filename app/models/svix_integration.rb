@@ -39,7 +39,7 @@ class SvixIntegration < ApplicationRecord
     !unavailable?
   end
 
-  def portal_access_link
+  def unique_portal_link
     svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
 
     begin

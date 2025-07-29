@@ -5,7 +5,8 @@ describe Triggers::OutgoingWebhook do
   let(:train) { create(:train, :with_no_platforms) }
   let(:release) { create(:release, train: train) }
   let(:webhook_integration) { create(:webhook_integration, train: train, svix_app_id: "app_123", status: :active) }
-  let(:event_type) { "release.started" }
+  let(:event_type) { "release.completed" }
+  let(:valid_payload) { {platform: "android", release_diff: "", release_branch: "master", release_version: "1.0"} }
 
   before do
     webhook_integration # Ensure SvixIntegration is created
@@ -14,13 +15,13 @@ describe Triggers::OutgoingWebhook do
     allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
   end
 
-  describe ".trigger_webhook" do
+  describe ".call" do
     it "creates a new instance and calls trigger" do
       service_instance = instance_double(described_class)
       allow(described_class).to receive(:new).with(release, event_type).and_return(service_instance)
       allow(service_instance).to receive(:trigger)
 
-      described_class.trigger_webhook(release, event_type, {platform: "android"})
+      described_class.call(release, event_type, {platform: "android"})
 
       expect(service_instance).to have_received(:trigger).with({platform: "android"})
     end
@@ -28,7 +29,6 @@ describe Triggers::OutgoingWebhook do
 
   describe "#trigger" do
     let(:service) { described_class.new(release, event_type) }
-    let(:valid_payload) { {platform: "android"} }
 
     context "when webhook integration is available" do
       it "builds payload and sends webhook" do
@@ -69,7 +69,6 @@ describe Triggers::OutgoingWebhook do
 
   describe "integration with actual webhook sending" do
     let(:service) { described_class.new(release, event_type) }
-    let(:valid_payload) { {platform: "android"} }
     let(:mocked_integration) { instance_double(SvixIntegration) }
 
     before do
@@ -110,7 +109,6 @@ describe Triggers::OutgoingWebhook do
 
   describe "schema validation" do
     let(:service) { described_class.new(release, "release.started") }
-    let(:valid_payload) { {platform: "android"} }
     let(:mocked_integration) { instance_double(SvixIntegration) }
 
     before do

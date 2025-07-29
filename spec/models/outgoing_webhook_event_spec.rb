@@ -36,8 +36,8 @@ describe OutgoingWebhookEvent do
         expect(event).to be_valid
       end
 
-      it "is valid with release.finished event type" do
-        event = build(:outgoing_webhook_event, event_type: "release.finished")
+      it "is valid with release.completed event type" do
+        event = build(:outgoing_webhook_event, event_type: "release.completed")
         expect(event).to be_valid
       end
 

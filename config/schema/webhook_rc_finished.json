@@ -1,33 +1,50 @@
 {
-  "type": "object",
+  "additionalProperties": true,
+  "description": "This webhook event is triggered when an RC build is completed.",
+  "properties": {
+    "build_number": {
+      "title": "BuildNumber",
+      "type": "string"
+    },
+    "diff_changelog": {
+      "title": "DiffChangelog",
+      "type": "array"
+    },
+    "full_changelog": {
+      "title": "FullChangelog",
+      "type": "array"
+    },
+    "platform": {
+      "enum": [
+        "android",
+        "ios",
+        "cross_platform"
+      ],
+      "title": "Platform",
+      "type": "string"
+    },
+    "release_branch": {
+      "title": "ReleaseBranch",
+      "type": "string"
+    },
+    "release_version": {
+      "title": "ReleaseVersion",
+      "type": "string"
+    }
+  },
   "required": [
-    "platform"
-//    "full_changelog",
-//    "diff_changelog",
-//    "release_version",
-//    "build_number",
-//    "release_branch_name"
-  ]
-//  "properties": {
-//    "full_changelog": {
-//      "type": "array"
-//    },
-//    "diff_changelog": {
-//      "type": "array"
-//    },
-//    "release_version": {
-//      "type": "string"
-//    },
-//    "build_number": {
-//      "type": "string"
-//    },
-//    "release_branch_name": {
-//      "type": "string"
-//    },
-//    "platform": {
-//      "type": "string",
-//      "enum": ["android", "ios"]
-//    }
-//  },
-//  "additionalProperties": true
+    "platform",
+    "release_branch",
+    "release_version",
+    "build_number",
+    "full_changelog",
+    "diff_changelog"
+  ],
+  "title": "rc.finished",
+  "type": "object",
+  "x-svix-preserve-example": true
 }
+
+
+
+

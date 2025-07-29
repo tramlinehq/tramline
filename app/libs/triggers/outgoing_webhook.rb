@@ -1,3 +1,5 @@
+# TODO: eventually this service should be driven through background jobs always, like Passports
+# Right now, they are (incidentally) called from jobs, so we can come back to this
 module Triggers
   class OutgoingWebhook
     include Loggable

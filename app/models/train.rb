@@ -141,7 +141,8 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
-  after_create_commit -> { CreateOutgoingWebhookIntegrationJob.perform_async(id) }
+  after_create_commit :create_webhook_integration
+  after_update_commit :update_webhook_integration
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   before_update :create_default_notification_settings, if: -> do
     notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
@@ -514,6 +515,16 @@ class Train < ApplicationRecord
       .completed
       .where.not(id: last_finished_release)
       .order(completed_at: :desc, scheduled_at: :desc)
+  end
+
+  def create_webhook_integration
+    return unless webhooks_enabled?
+    UpdateOutgoingWebhookIntegrationJob.perform_async(id, true)
+  end
+
+  def update_webhook_integration
+    return unless saved_change_to_webhooks_enabled?
+    UpdateOutgoingWebhookIntegrationJob.perform_async(id, webhooks_enabled?)
   end
 
   private
