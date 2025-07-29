@@ -36,8 +36,8 @@ describe OutgoingWebhookEvent do
         expect(event).to be_valid
       end
 
-      it "is valid with release.ended event type" do
-        event = build(:outgoing_webhook_event, event_type: "release.ended")
+      it "is valid with release.finished event type" do
+        event = build(:outgoing_webhook_event, event_type: "release.finished")
         expect(event).to be_valid
       end
 
@@ -209,7 +209,7 @@ describe OutgoingWebhookEvent do
     it "handles nil response" do
       event.record_success!(nil)
       expect(event.reload).to be_success
-      expect(event.response_data).to eq(nil)
+      expect(event.response_data).to be_nil
     end
 
     it "handles empty hash response" do

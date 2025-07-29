@@ -44,7 +44,7 @@ class SvixIntegration < ApplicationRecord
 
     begin
       portal_access =
-        svix_client.authentication.app_portal_access(svix_app_id, { expires_at: 6.hours.from_now })
+        svix_client.authentication.app_portal_access(svix_app_id, {expires_at: 6.hours.from_now})
       portal_access.url
     rescue Svix::ApiError
       nil

@@ -9,7 +9,7 @@ class OutgoingWebhooksController < SignedInApplicationController
       redirect_to link, allow_other_host: true
     else
       redirect_back fallback_location: root_path,
-                    flash: {error: "Could not access the Webhooks portal at this moment."}
+        flash: {error: "Could not access the Webhooks portal at this moment."}
     end
   end
 end

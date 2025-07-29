@@ -37,9 +37,8 @@ describe Triggers::OutgoingWebhook do
 
         service.trigger(valid_payload)
 
-        expect(service).to have_received(:send_webhook).with(hash_including(
-                                                               :event_type, :event_source, :event_timestamp, :tramline_payload
-                                                             ))
+        expectation = hash_including(:event_type, :event_source, :event_timestamp, :tramline_payload)
+        expect(service).to have_received(:send_webhook).with(expectation)
       end
     end
 
