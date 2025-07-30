@@ -42,7 +42,7 @@ describe SvixIntegration do
     let(:response) { instance_double(Svix::ApplicationOut, id: "app_123") }
 
     before do
-      allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
+      allow(Rails.application.credentials).to receive_message_chain(:integrations, :svix, :api_key).and_return("test_token")
       allow(Svix::Client).to receive(:new).and_return(svix_client)
       allow(svix_client).to receive(:application).and_return(instance_double(Svix::Application))
       allow(test_webhook_integration).to receive(:elog)
@@ -102,7 +102,7 @@ describe SvixIntegration do
     let(:svix_client) { instance_double(Svix::Client) }
 
     before do
-      allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
+      allow(Rails.application.credentials).to receive_message_chain(:integrations, :svix, :api_key).and_return("test_token")
       allow(Svix::Client).to receive(:new).and_return(svix_client)
       allow(svix_client).to receive(:application).and_return(instance_double(Svix::Application))
       allow(test_webhook_integration).to receive(:elog)
@@ -143,8 +143,7 @@ describe SvixIntegration do
     let(:message_api) { instance_double(Svix::Message) }
 
     before do
-      allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with("SVIX_TOKEN").and_return("test_token")
+      allow(Rails.application.credentials).to receive_message_chain(:integrations, :svix, :api_key).and_return("test_token")
       allow(Svix::Client).to receive(:new).and_return(svix_client)
       allow(svix_client).to receive(:message).and_return(message_api)
       allow(webhook_integration).to receive(:elog)

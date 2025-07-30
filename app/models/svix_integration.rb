@@ -15,6 +15,7 @@ class SvixIntegration < ApplicationRecord
   has_paper_trail
   include Loggable
   include Backoffable
+  include Vaultable
 
   belongs_to :train
 
@@ -41,7 +42,7 @@ class SvixIntegration < ApplicationRecord
   end
 
   def unique_portal_link
-    svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+    svix_client = Svix::Client.new(svix_api_token)
 
     begin
       portal_access =
@@ -54,7 +55,7 @@ class SvixIntegration < ApplicationRecord
 
   def create_app!
     with_retry do
-      svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+      svix_client = Svix::Client.new(svix_api_token)
       app_name = new_app_name
       app_uid = new_app_uid
 
@@ -70,7 +71,7 @@ class SvixIntegration < ApplicationRecord
     return if unavailable?
 
     with_retry do
-      svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+      svix_client = Svix::Client.new(svix_api_token)
       svix_client.application.delete(app_id)
       update!(svix_app_id: nil, svix_app_uid: nil, svix_app_name: nil, status: :inactive)
     end
@@ -80,7 +81,7 @@ class SvixIntegration < ApplicationRecord
     return if unavailable?
 
     with_retry do
-      svix_client = Svix::Client.new(ENV["SVIX_TOKEN"])
+      svix_client = Svix::Client.new(svix_api_token)
       message_in = Svix::MessageIn.new(event_type: payload[:event_type], payload: payload)
       response = svix_client.message.create(svix_app_id, message_in)
       JSON.parse(response.to_json)
@@ -88,6 +89,10 @@ class SvixIntegration < ApplicationRecord
   end
 
   private
+
+  def svix_api_token
+    creds.integrations.svix.api_key
+  end
 
   def new_app_name
     "#{train.organization.name} • #{train.app.name} • #{train.name}"
