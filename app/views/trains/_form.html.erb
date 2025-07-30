@@ -118,6 +118,7 @@
       <% section.with_description do %>
         Enable outgoing webhooks to receive real-time notifications about release events and updates.
         When enabled, Tramline will send HTTP POST requests to configured webhook endpoints with release data.
+        <%= link_to_external "Read more in docs", "https://docs.tramline.app/using-tramline/quality-and-monitoring/outgoing-webhooks", class: "underline" %>.
       <% end %>
 
       <%= render Form::SwitchComponent.new(form: section.F,

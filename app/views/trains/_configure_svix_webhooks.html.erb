@@ -1,42 +1,31 @@
 <div class="border-default box-padding bg-white dark:bg-backgroundDark">
-  <div class="flex flex-col h-full space-y-3">
+  <div class="flex flex-col h-full space-y-2">
     <header class="flex justify-between">
-      <div class="flex items-start space-x-2 align-top">
+      <div class="flex items-center space-x-2">
         <%= image_tag("integrations/logo_svix.svg", width: 24, height: 24) %>
-        <h4 class="heading-4">Svix</h4>
+        <h4 class="heading-4">Powered by Svix</h4>
       </div>
 
       <% if train.webhook_integration&.available? %>
-        <div class="flex justify-end">
-          <% button =
-               ButtonComponent
-                 .new(scheme: :supporting,
-                      label: "Go to portal",
-                      options: portal_app_train_outgoing_webhooks_path(app, train),
-                      size: :sm,
-                      html_options: {class: "-mr-2"},
-                      authz: false,
-                      type: :link) %>
-          <% button.with_icon("arrow_right.svg") %>
-          <%= render button %>
-        </div>
+        <%= render ButtonComponent
+              .new(scheme: :supporting,
+                   label: "Go to portal ↗",
+                   options: portal_app_train_outgoing_webhooks_path(app, train),
+                   size: :sm,
+                   html_options: {class: "-mr-2"},
+                   authz: false,
+                   type: :link_external) %>
       <% end %>
     </header>
 
-    <footer>
-      <div class="flex flex-col justify-start items-start space-y-5">
+    <% unless train.webhook_integration&.available? %>
+      <footer>
         <div class="text-xs text-slate-500">
-          <% if train.webhook_integration&.available? %>
-            We've partnered with <%= link_to_external "Svix", "https://www.svix.com", class: "underline" %> to provide
-            Webhooks in Tramline. To configure webhook endpoints,
-            <%= link_to_external("click this to be redirected to your unique Svix portal.", portal_app_train_outgoing_webhooks_path(app, train), class: "underline") %>
-            To read more about Tramline webhooks, check out the <%= link_to_external "docs", "docs.tramline.app" %>.
-          <% else %>
-            We've partnered with Svix to provide Webhooks in Tramline. We're now configuring them for you. Please save
-            this form and come back later to retrieve your unique Svix portal link.
-          <% end %>
+          We've partnered with <%= link_to_external "Svix", "https://www.svix.com", class: "underline" %> to bring
+          webhooks to Tramline. Setup is in progress—save this form and return later to access your unique portal and
+          configure endpoints.
         </div>
-      </div>
-    </footer>
+      </footer>
+    <% end %>
   </div>
 </div>
