@@ -48,7 +48,7 @@
 
             <% if webhook_integration&.available? %>
               <%= render ModalComponent.new(title: "Outgoing Webhooks Logs",
-                                            size: :sm,
+                                            size: :xs,
                                             type: :drawer,
                                             authz: false) do |modal| %>
                 <% button = modal.with_button(label: "Outgoing webhooks logs", scheme: :link, type: :action, html_options: {class: "text-sm"}, size: :none) %>

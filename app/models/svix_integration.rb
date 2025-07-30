@@ -14,6 +14,7 @@
 class SvixIntegration < ApplicationRecord
   has_paper_trail
   include Loggable
+  include Backoffable
 
   belongs_to :train
 
@@ -107,7 +108,7 @@ class SvixIntegration < ApplicationRecord
     rescue Svix::ApiError, StandardError => error
       if attempt < MAX_RETRY_ATTEMPTS && server_error?(error)
         elog("Svix API error for train #{train.id}, retrying attempt #{attempt + 1}", level: :warn)
-        sleep 0.1 * (attempt + 1)
+        sleep(backoff_in(attempt: attempt + 1, period: :seconds, type: :static, factor: 1).to_i)
         attempt += 1
         retry
       else
@@ -121,7 +122,7 @@ class SvixIntegration < ApplicationRecord
   end
 
   def server_error?(error)
-    error.code == 500
+    error.respond_to?(:code) && error.code == 500
   end
 
   def generic_error_message(error)

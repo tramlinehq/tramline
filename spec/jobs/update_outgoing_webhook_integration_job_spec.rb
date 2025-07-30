@@ -3,66 +3,77 @@
 require "rails_helper"
 
 describe UpdateOutgoingWebhookIntegrationJob do
-  let(:train) { create(:train) }
-  let(:svix_double) { instance_double(SvixIntegration, create_app!: true) }
+  before do
+    allow_any_instance_of(SvixIntegration).to receive(:create_app!).and_return(true)
+    allow_any_instance_of(SvixIntegration).to receive(:delete_app!).and_return(true)
+  end
 
   describe "#perform" do
     context "when enabled is true (default)" do
       it "creates webhook integration when it doesn't exist" do
-        allow(Train).to receive(:find).with(train.id).and_return(train)
-        allow(train).to receive_messages(webhook_integration: nil, create_webhook_integration!: svix_double)
+        train = create(:train)
 
-        described_class.new.perform(train.id, true)
+        expect(train.reload.webhook_integration).not_to be_present
 
-        expect(train).to have_received(:create_webhook_integration!)
+        expect {
+          described_class.new.perform(train.id, true)
+        }.to change { train.reload.webhook_integration }.from(nil)
+
+        expect(train.reload.webhook_integration).to be_present
       end
 
       it "creates webhook integration when called without enabled parameter (defaults to true)" do
-        allow(Train).to receive(:find).with(train.id).and_return(train)
-        allow(train).to receive_messages(webhook_integration: nil, create_webhook_integration!: svix_double)
+        train = create(:train)
 
-        described_class.new.perform(train.id)
+        expect(train.reload.webhook_integration).not_to be_present
 
-        expect(train).to have_received(:create_webhook_integration!)
+        expect {
+          described_class.new.perform(train.id)
+        }.to change { train.reload.webhook_integration }.from(nil)
+
+        expect(train.reload.webhook_integration).to be_present
       end
 
       it "does nothing when webhook integration already exists and is available" do
-        webhook_integration = instance_double(SvixIntegration, available?: true)
-        allow(Train).to receive(:find).with(train.id).and_return(train)
-        allow(train).to receive_messages(webhook_integration: webhook_integration, create_webhook_integration!: nil)
+        train = create(:train)
+        create(:webhook_integration, train: train)
 
-        described_class.new.perform(train.id, true)
-
-        expect(train).not_to have_received(:create_webhook_integration!)
+        expect {
+          described_class.new.perform(train.id, true)
+        }.not_to change { train.reload.webhook_integration }
       end
     end
 
     context "when enabled is false" do
       it "deletes webhook integration when it exists and is available" do
-        webhook_integration = instance_double(SvixIntegration)
-        allow(Train).to receive(:find).with(train.id).and_return(train)
-        allow(train).to receive(:webhook_integration).and_return(webhook_integration)
-        allow(webhook_integration).to receive_messages(available?: true, delete_app!: nil, destroy!: nil)
+        train = create(:train)
+        webhook_integration = create(:webhook_integration, train: train)
 
-        described_class.new.perform(train.id, false)
-
-        expect(webhook_integration).to have_received(:delete_app!)
-        expect(webhook_integration).to have_received(:destroy!)
+        expect {
+          described_class.new.perform(train.id, false)
+        }.to change { SvixIntegration.exists?(webhook_integration.id) }.from(true).to(false)
       end
 
       it "does nothing when webhook integration doesn't exist" do
-        allow(Train).to receive(:find).with(train.id).and_return(train)
-        allow(train).to receive(:webhook_integration).and_return(nil)
+        train = create(:train)
 
         expect { described_class.new.perform(train.id, false) }.not_to raise_error
+        expect(train.reload.webhook_integration).to be_nil
       end
 
       it "does nothing when webhook integration is not available" do
-        webhook_integration = instance_double(SvixIntegration, available?: false)
-        allow(Train).to receive(:find).with(train.id).and_return(train)
-        allow(train).to receive(:webhook_integration).and_return(webhook_integration)
+        train = create(:train)
+        webhook_integration = create(:webhook_integration, :inactive, train: train)
 
         expect { described_class.new.perform(train.id, false) }.not_to raise_error
+        expect(webhook_integration.reload).to be_persisted
+      end
+    end
+
+    context "when train doesn't exist" do
+      it "raises ActiveRecord::RecordNotFound" do
+        non_existent_id = "00000000-0000-0000-0000-000000000000"
+        expect { described_class.new.perform(non_existent_id, true) }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
   end

@@ -162,9 +162,7 @@ describe SvixIntegration do
 
     it "raises WebhookApiError on failure" do
       error = StandardError.new("Connection failed")
-      def error.code
-        500
-      end
+      def error.code = 500
       allow(message_api).to receive(:create).and_raise(error)
 
       expect {

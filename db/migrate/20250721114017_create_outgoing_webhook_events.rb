@@ -21,9 +21,9 @@ class CreateOutgoingWebhookEvents < ActiveRecord::Migration[7.2]
   end
 
   def down
-    drop_table :outgoing_webhook_events, if_exists: true
     remove_index :outgoing_webhook_events, :status, if_exists: true
     remove_index :outgoing_webhook_events, :event_type, if_exists: true
     remove_index :outgoing_webhook_events, :event_timestamp, if_exists: true
+    drop_table :outgoing_webhook_events, if_exists: true
   end
 end

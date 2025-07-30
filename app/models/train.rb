@@ -503,16 +503,6 @@ class Train < ApplicationRecord
       .order(completed_at: :desc, scheduled_at: :desc)
   end
 
-  def create_webhook_integration
-    return unless webhooks_enabled?
-    UpdateOutgoingWebhookIntegrationJob.perform_async(id, true)
-  end
-
-  def update_webhook_integration
-    return unless saved_change_to_webhooks_enabled?
-    UpdateOutgoingWebhookIntegrationJob.perform_async(id, webhooks_enabled?)
-  end
-
   private
 
   def train_link
@@ -673,5 +663,15 @@ class Train < ApplicationRecord
         errors.add(:version_bump_file_paths, :invalid_file_type, valid_extensions: valid_extensions.join(", "))
       end
     end
+  end
+
+  def create_webhook_integration
+    return unless webhooks_enabled?
+    UpdateOutgoingWebhookIntegrationJob.perform_async(id, true)
+  end
+
+  def update_webhook_integration
+    return unless saved_change_to_webhooks_enabled?
+    UpdateOutgoingWebhookIntegrationJob.perform_async(id, webhooks_enabled?)
   end
 end

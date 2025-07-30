@@ -10,11 +10,11 @@ FactoryBot.define do
     end
 
     trait :without_app_id do
-      app_id { nil }
+      svix_app_id { nil }
     end
 
     trait :with_app_name do
-      app_name { "Custom Svix App" }
+      svix_app_name { "Custom Svix App" }
     end
   end
 end
