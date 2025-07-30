@@ -13,7 +13,7 @@ class UpdateOutgoingWebhookIntegrationJob < ApplicationJob
   private
 
   def create_webhook_integration(train)
-    return if train.webhook_integration&.available?
+    return if train.webhooks_available?
 
     webhook_integration = train.create_webhook_integration!
     webhook_integration.create_app!
@@ -21,7 +21,8 @@ class UpdateOutgoingWebhookIntegrationJob < ApplicationJob
 
   def delete_webhook_integration(train)
     webhook_integration = train.webhook_integration
-    return unless webhook_integration&.available?
+    return unless webhook_integration
+    return if webhook_integration.unavailable?
 
     webhook_integration.delete_app!
     webhook_integration.destroy!

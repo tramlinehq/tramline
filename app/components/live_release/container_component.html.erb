@@ -46,7 +46,7 @@
                   b.with_icon("activity.svg")
                 end %>
 
-            <% if webhook_integration&.available? %>
+            <% if webhooks_available? %>
               <%= render ModalComponent.new(title: "Outgoing Webhooks Logs",
                                             size: :xs,
                                             type: :drawer,

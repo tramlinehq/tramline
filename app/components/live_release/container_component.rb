@@ -86,4 +86,8 @@ class LiveRelease::ContainerComponent < BaseComponent
   def webhook_integration
     release.train.webhook_integration
   end
+
+  def webhooks_available?
+    release.train.webhooks_available?
+  end
 end

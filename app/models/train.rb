@@ -441,8 +441,8 @@ class Train < ApplicationRecord
     )
   end
 
-  def svix_app_id
-    webhook_integration&.app_id
+  def webhooks_available?
+    webhooks_enabled? && webhook_integration&.available?
   end
 
   def send_notifications?

@@ -18,9 +18,10 @@ class OutgoingWebhooksController < SignedInApplicationController
         .joins(:outgoing_webhook_events, [train: :app])
         .where(apps: {organization: current_organization})
         .friendly.find(params[:release_id])
-    webhook_integration = @release.train.webhook_integration
+    train = @release.train
+    webhook_integration = train.webhook_integration
 
-    if webhook_integration&.available?
+    if train.webhooks_available?
       @dom_id = helpers.dom_id(webhook_integration)
       @events_component = OutgoingWebhookEventsComponent.new(
         @release.outgoing_webhook_events.recent,

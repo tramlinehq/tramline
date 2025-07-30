@@ -6,7 +6,7 @@
         <h4 class="heading-4">Powered by Svix</h4>
       </div>
 
-      <% if train.webhook_integration&.available? %>
+      <% if train.webhooks_available? %>
         <%= render ButtonComponent
               .new(scheme: :supporting,
                    label: "Go to portal ↗",
@@ -18,7 +18,7 @@
       <% end %>
     </header>
 
-    <% unless train.webhook_integration&.available? %>
+    <% unless train.webhooks_available? %>
       <footer>
         <div class="text-xs text-slate-500">
           We've partnered with <%= link_to_external "Svix", "https://www.svix.com", class: "underline" %> to bring

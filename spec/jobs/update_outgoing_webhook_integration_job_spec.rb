@@ -11,7 +11,7 @@ describe UpdateOutgoingWebhookIntegrationJob do
   describe "#perform" do
     context "when enabled is true (default)" do
       it "creates webhook integration when it doesn't exist" do
-        train = create(:train)
+        train = create(:train, webhooks_enabled: true)
 
         expect(train.reload.webhook_integration).not_to be_present
 
@@ -23,7 +23,7 @@ describe UpdateOutgoingWebhookIntegrationJob do
       end
 
       it "creates webhook integration when called without enabled parameter (defaults to true)" do
-        train = create(:train)
+        train = create(:train, webhooks_enabled: true)
 
         expect(train.reload.webhook_integration).not_to be_present
 
@@ -35,7 +35,7 @@ describe UpdateOutgoingWebhookIntegrationJob do
       end
 
       it "does nothing when webhook integration already exists and is available" do
-        train = create(:train)
+        train = create(:train, webhooks_enabled: true)
         create(:webhook_integration, train: train)
 
         expect {
