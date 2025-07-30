@@ -82,4 +82,8 @@ class LiveRelease::ContainerComponent < BaseComponent
   def hotfix_background
     "bg-diagonal-stripes-soft-red" if hotfix?
   end
+
+  def webhook_integration
+    release.train.webhook_integration
+  end
 end

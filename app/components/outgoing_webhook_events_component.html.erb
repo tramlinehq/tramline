@@ -1,0 +1,7 @@
+<div class="pl-3">
+  <% if events.present? %>
+    <%= render TimelineComponent.new(events:, truncate: true, view_all_link:) %>
+  <% else %>
+    <%= render TimelineComponent.new(events: []) %>
+  <% end %>
+</div>
