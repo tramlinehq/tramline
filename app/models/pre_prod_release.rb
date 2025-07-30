@@ -166,11 +166,22 @@ class PreProdRelease < ApplicationRecord
       commit_sha: commit.short_sha,
       commit_url: commit.url,
       build_number: build.build_number,
-      release_version: release.release_version,
+      release_version: build.version_name,
       submissions: store_submissions,
       first_pre_prod_release: previous_successful.blank?,
       diff_changelog: sanitize_commit_messages(changes_since_previous),
       full_changelog: sanitize_commit_messages(changes_since_previous(skip_delta: true))
+    )
+  end
+
+  def webhook_params
+    release.webhook_params.merge(
+      {
+        full_changelog: sanitize_commit_messages(changes_since_previous(skip_delta: true)),
+        diff_changelog: sanitize_commit_messages(changes_since_previous),
+        build_number: build.build_number,
+        release_version: build.version_name
+      }
     )
   end
 
@@ -182,6 +193,12 @@ class PreProdRelease < ApplicationRecord
     ].compact.flatten
 
     Passport.where(stampable_id:).order(event_timestamp: :desc).limit(n)
+  end
+
+  protected
+
+  def trigger_webhook!(event_type)
+    Triggers::OutgoingWebhook.call(release, event_type, webhook_params)
   end
 
   private

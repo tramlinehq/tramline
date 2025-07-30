@@ -42,6 +42,7 @@
 #  version_current                                :string
 #  version_seeded_with                            :string
 #  versioning_strategy                            :string           default("semver")
+#  webhooks_enabled                               :boolean          default(FALSE), not null
 #  working_branch                                 :string
 #  created_at                                     :datetime         not null
 #  updated_at                                     :datetime         not null
@@ -86,6 +87,7 @@ class Train < ApplicationRecord
   has_many :scheduled_releases, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
   has_one :release_index, dependent: :destroy
+  has_one :webhook_integration, class_name: "SvixIntegration", dependent: :destroy
 
   scope :sequential, -> { reorder("trains.created_at ASC") }
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
@@ -139,6 +141,8 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
+  after_create_commit :create_webhook_integration
+  after_update_commit :update_webhook_integration
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   before_update :create_default_notification_settings, if: -> do
     notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
@@ -431,10 +435,14 @@ class Train < ApplicationRecord
         train_current_version: version_current,
         train_next_version: next_version,
         train_url: train_link,
-        working_branch:,
+        working_branch: working_branch,
         enable_changelog_linking: enable_changelog_linking_in_notifications
       }
     )
+  end
+
+  def webhooks_available?
+    webhooks_enabled? && webhook_integration&.available?
   end
 
   def send_notifications?
@@ -655,5 +663,15 @@ class Train < ApplicationRecord
         errors.add(:version_bump_file_paths, :invalid_file_type, valid_extensions: valid_extensions.join(", "))
       end
     end
+  end
+
+  def create_webhook_integration
+    return unless webhooks_enabled?
+    UpdateOutgoingWebhookIntegrationJob.perform_async(id, true)
+  end
+
+  def update_webhook_integration
+    return unless saved_change_to_webhooks_enabled?
+    UpdateOutgoingWebhookIntegrationJob.perform_async(id, webhooks_enabled?)
   end
 end

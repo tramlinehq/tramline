@@ -111,6 +111,7 @@ Rails.application.routes.draw do
           post :copy_approvals
         end
 
+        resources :outgoing_webhooks, only: [:index]
         resources :approval_items, only: %i[index create update destroy], shallow: false
 
         get :edit, to: "release_metadata#index", path: :metadata, as: :metadata_edit
@@ -138,6 +139,12 @@ Rails.application.routes.draw do
           get :timeline
           post :post_release
           post :finish_release
+        end
+      end
+
+      resources :outgoing_webhooks, only: [] do
+        collection do
+          get :portal
         end
       end
     end

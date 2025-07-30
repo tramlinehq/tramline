@@ -83,6 +83,7 @@ gem "google-cloud-bigquery", "~> 1.50.0"
 gem "active_record_union", "~> 1.3"
 gem "pg_search", "~> 2.3"
 gem "redlock", "~> 2.0"
+gem "svix", "~> 1.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

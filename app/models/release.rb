@@ -113,12 +113,12 @@ class Release < ApplicationRecord
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
   has_many :approval_items, -> { order(:created_at) }, inverse_of: :release, dependent: :destroy
-
   has_many :store_rollouts, through: :release_platform_runs
   has_many :store_submissions, through: :release_platform_runs
   has_many :pre_prod_releases, through: :release_platform_runs
   has_many :production_releases, through: :release_platform_runs
   has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
+  has_many :outgoing_webhook_events, dependent: :destroy, inverse_of: :release
 
   scope :completed, -> { where(status: TERMINAL_STATES) }
   scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
@@ -464,6 +464,14 @@ class Release < ApplicationRecord
     )
   end
 
+  def webhook_params
+    {
+      release_branch:,
+      release_version:,
+      platform:
+    }
+  end
+
   def last_commit
     all_commits.last
   end
@@ -596,6 +604,10 @@ class Release < ApplicationRecord
     return if prev.blank?
 
     prev.tag_name.presence || prev.production_releases.last&.tag_name
+  end
+
+  def trigger_webhook!(event_type)
+    Triggers::OutgoingWebhook.call(self, event_type, webhook_params)
   end
 
   private

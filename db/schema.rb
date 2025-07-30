@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_23_112203) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_29_133903) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -478,6 +478,22 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_23_112203) do
     t.index ["status"], name: "index_organizations_on_status"
   end
 
+  create_table "outgoing_webhook_events", force: :cascade do |t|
+    t.uuid "release_id", null: false
+    t.string "event_type", null: false
+    t.datetime "event_timestamp", null: false
+    t.string "status", null: false
+    t.jsonb "event_payload", null: false
+    t.jsonb "response_data"
+    t.text "error_message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_timestamp"], name: "index_outgoing_webhook_events_on_event_timestamp"
+    t.index ["event_type"], name: "index_outgoing_webhook_events_on_event_type"
+    t.index ["release_id"], name: "index_outgoing_webhook_events_on_release_id"
+    t.index ["status"], name: "index_outgoing_webhook_events_on_status"
+  end
+
   create_table "passports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "stampable_type", null: false
     t.uuid "stampable_id", null: false
@@ -927,6 +943,19 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_23_112203) do
     t.index ["submission_config_id"], name: "index_submission_external_configs_on_submission_config_id"
   end
 
+  create_table "svix_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.string "svix_app_id"
+    t.string "svix_app_uid"
+    t.string "svix_app_name"
+    t.string "status", default: "inactive"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["status"], name: "index_svix_integrations_on_status"
+    t.index ["svix_app_id"], name: "index_svix_integrations_on_svix_app_id", unique: true
+    t.index ["train_id"], name: "index_svix_integrations_on_train_id", unique: true
+  end
+
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "organization_id", null: false
     t.string "name", null: false
@@ -982,6 +1011,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_23_112203) do
     t.string "version_bump_strategy"
     t.boolean "enable_changelog_linking_in_notifications", default: false
     t.string "release_branch_pattern"
+    t.boolean "webhooks_enabled", default: false, null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
@@ -1112,6 +1142,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_23_112203) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
+  add_foreign_key "outgoing_webhook_events", "releases"
   add_foreign_key "pre_prod_releases", "commits"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "parent_internal_release_id"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "previous_id"
@@ -1149,6 +1180,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_23_112203) do
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "submission_configs", "release_step_configs"
   add_foreign_key "submission_external_configs", "submission_configs"
+  add_foreign_key "svix_integrations", "trains"
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
   add_foreign_key "user_authentications", "users"
