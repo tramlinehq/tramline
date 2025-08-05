@@ -85,6 +85,7 @@ GEM
       activerecord (>= 4.2)
       activesupport
     amazing_print (1.6.0)
+    analytics-ruby (2.5.0)
     annotate (3.2.0)
       activerecord (>= 3.2, < 8.0)
       rake (>= 10.4, < 14.0)
@@ -354,7 +355,6 @@ GEM
       regexp_parser (~> 2.0)
       simpleidn (~> 0.2)
       uri_template (~> 0.7)
-    june-analytics-ruby (2.4.3)
     jwt (2.8.2)
       base64
     language_server-protocol (3.17.0.4)
@@ -792,6 +792,7 @@ DEPENDENCIES
   activerecord_json_validator (~> 2.1)
   after_commit_everywhere (~> 1.2)
   amazing_print (~> 1.4)
+  analytics-ruby (~> 2.4)
   annotate
   awesome_print
   bcrypt (~> 3.1.7)
@@ -839,7 +840,6 @@ DEPENDENCIES
   invisible_captcha (~> 2.3)
   jbuilder (~> 2.11)
   json-schema (~> 4.1)
-  june-analytics-ruby (~> 2.4)
   jwt (~> 2.3)
   letter_opener
   letter_opener_web

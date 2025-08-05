@@ -1,9 +1,9 @@
 module SiteAnalytics
-  require "june/analytics"
+  require "segment/analytics"
 
-  ANALYTICS = June::Analytics.new(
+  ANALYTICS = Segment::Analytics.new(
     {
-      write_key: ENV["JUNE_ANALYTICS_KEY"] || "",
+      write_key: ENV["SEGMENT_WRITE_KEY"] || "",
       on_error: proc { |_status, msg| Rails.logger.debug { msg } },
       stub: !Rails.env.production?
     }

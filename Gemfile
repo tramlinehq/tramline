@@ -69,7 +69,7 @@ gem "google-apis-firebaseappdistribution_v1", "~> 0.1"
 gem "google-apis-firebase_v1beta1", "~> 0.35.0"
 gem "initials", "~> 0.4.3"
 gem "rack-attack", "~> 6.7"
-gem "june-analytics-ruby", "~> 2.4"
+gem "analytics-ruby", "~> 2.4"
 gem "discard", "~> 1.3"
 gem "bugsnag-api", "~> 3.0"
 gem "data-anonymization", require: false
