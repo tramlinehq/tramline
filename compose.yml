@@ -140,17 +140,9 @@ services:
         condition: service_healthy
 
   applelink:
-    build:
-      dockerfile: ../applelink/dev.Dockerfile
-      context: ../applelink
-      args:
-        RUBY_VERSION: '3.2.0'
-    image: applelink-dev:1.0.0
-    command: bundle exec guard --no-bundler-warning --no-interactions
+    image: ghcr.io/tramlinehq/applelink:latest
     ports:
       - '4000:4000'
-    volumes:
-      - ../applelink:/applelink:cached
 
 volumes:
   bundle:
