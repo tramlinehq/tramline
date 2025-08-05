@@ -85,7 +85,6 @@ GEM
       activerecord (>= 4.2)
       activesupport
     amazing_print (1.6.0)
-    analytics-ruby (2.5.0)
     annotate (3.2.0)
       activerecord (>= 3.2, < 8.0)
       rake (>= 10.4, < 14.0)
@@ -474,6 +473,8 @@ GEM
       activesupport (>= 6.1)
     pghero (3.6.1)
       activerecord (>= 6.1)
+    posthog-ruby (3.1.0)
+      concurrent-ruby (~> 1)
     postmark (1.25.1)
       json
     postmark-rails (0.21.0)
@@ -792,7 +793,6 @@ DEPENDENCIES
   activerecord_json_validator (~> 2.1)
   after_commit_everywhere (~> 1.2)
   amazing_print (~> 1.4)
-  analytics-ruby (~> 2.4)
   annotate
   awesome_print
   bcrypt (~> 3.1.7)
@@ -855,6 +855,7 @@ DEPENDENCIES
   pg_query
   pg_search (~> 2.3)
   pghero (~> 3.1)
+  posthog-ruby (~> 3.1)
   postmark-rails (~> 0.21.0)
   prosopite
   pry
