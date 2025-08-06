@@ -67,10 +67,6 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:merge_only_build_notes, self)
   end
 
-  def deploy_action_enabled?
-    Flipper.enabled?(:deploy_action_enabled, self)
-  end
-
   def tester_notes_in_beta_releases?
     Flipper.enabled?(:tester_notes_in_beta_releases, self)
   end
