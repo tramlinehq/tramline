@@ -107,6 +107,7 @@ class ScheduledTrainComponent < BaseComponent
   end
 
   def next_next_version
-    (ongoing_release || train).next_to_next_version
+    versionable = ongoing_release || train
+    versionable.calver? ? versionable.future_version : versionable.next_to_next_version
   end
 end
