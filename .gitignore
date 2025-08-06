@@ -63,3 +63,4 @@ aasm-*.pdf
 
 # Ignore LLM related files
 .claude/settings.local.json
+CLAUDE.local.md

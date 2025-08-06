@@ -4,9 +4,9 @@ module SiteAnalytics
   ANALYTICS = PostHog::Client.new(
     {
       api_key: ENV["POSTHOG_API_KEY"] || "",
-      host: ENV["POSTHOG_HOST"] || "https://us.i.posthog.com",
+      host: ENV["POSTHOG_HOST"] || "https://eu.i.posthog.com",
       on_error: proc { |_status, msg| Rails.logger.debug { msg } },
-      test_mode: !Rails.env.production?
+      test_mode: false
     }
   )
 
@@ -14,13 +14,13 @@ module SiteAnalytics
     def identify_and_group(user, organization)
       return if user.blank? || organization.blank?
       identify(user)
-      group(user, organization)
+      # group(organization)
     rescue => e
       elog(e)
     end
 
-    def group(user, organization)
-      return if user.blank? || organization.blank?
+    def group(organization)
+      return if organization.blank?
 
       ANALYTICS.group_identify(
         group_type: "organization",
@@ -36,14 +36,13 @@ module SiteAnalytics
     def identify(user)
       return if user.blank?
 
-      ANALYTICS.capture(
+      ANALYTICS.identify(
         distinct_id: user.id,
-        event: "user_identified",
         properties: {
-          "$set" => {
-            email: user.email,
-            name: user.full_name
-          }
+          id: user.id,
+          user_id: user.id,
+          email: user.email,
+          name: user.full_name
         }
       )
     rescue => e
@@ -56,12 +55,10 @@ module SiteAnalytics
       ANALYTICS.capture(
         distinct_id: user.id,
         event: event.titleize,
-        properties: properties.merge(
-          :browser => device&.name,
-          "$groups" => {
-            organization: organization.id
-          }
-        )
+        properties: properties.merge(browser: device&.name),
+        groups: {
+          organization: organization.id
+        }
       )
     rescue => e
       elog(e)
