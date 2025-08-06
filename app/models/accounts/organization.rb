@@ -63,10 +63,6 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:build_notes_in_workflow, self)
   end
 
-  def merge_only_build_notes?
-    Flipper.enabled?(:merge_only_build_notes, self)
-  end
-
   def deploy_action_enabled?
     Flipper.enabled?(:deploy_action_enabled, self)
   end

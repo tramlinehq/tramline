@@ -32,13 +32,7 @@ class ReleaseMonitoringComponent < BaseComponent
     monitoring_provider.dashboard_url(platform:, release_id: release_data&.external_release_id)
   end
 
-  def show_stats?
-    return true if monitoring_provider.is_a?(BugsnagIntegration)
-    current_user.show_crashlytics_stats?
-  end
-
   def release_data
-    return nil unless show_stats?
     @release_data ||= parent_release.latest_health_data
   end
 
