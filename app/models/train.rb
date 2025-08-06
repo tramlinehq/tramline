@@ -181,10 +181,6 @@ class Train < ApplicationRecord
     Flipper.enabled?(:one_percent_beta_release, self)
   end
 
-  def deploy_action_enabled?
-    Flipper.enabled?(:deploy_action_enabled, self)
-  end
-
   def temporarily_allow_workflow_errors?
     Flipper.enabled?(:temporarily_allow_workflow_errors, self)
   end
