@@ -16,8 +16,8 @@ module Versionable
   def future_version
     version = next_version.to_semverish
     patch = version.patch
-    patch = format '%02d', patch[0..1].to_i + 1 # ignore seq number
-    VersioningStrategies::Semverish.new([version.major, version.minor, patch].join('.')).to_s
+    patch = format "%02d", patch[0..1].to_i + 1 # ignore seq number
+    VersioningStrategies::Semverish.new([version.major, version.minor, patch].join(".")).to_s
   end
 
   private
