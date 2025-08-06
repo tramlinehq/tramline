@@ -62,7 +62,7 @@ class Accounts::Organization < ApplicationRecord
   def build_notes_in_workflow?
     Flipper.enabled?(:build_notes_in_workflow, self)
   end
-  
+
   def deploy_action_enabled?
     Flipper.enabled?(:deploy_action_enabled, self)
   end

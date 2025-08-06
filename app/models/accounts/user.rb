@@ -49,10 +49,6 @@ class Accounts::User < ApplicationRecord
   accepts_nested_attributes_for :organizations
   accepts_nested_attributes_for :memberships, allow_destroy: false
 
-  def show_crashlytics_stats?
-    Flipper.enabled?(:show_crashlytics_stats, self)
-  end
-
   def email_authentication
     email_authentications.first
   end
