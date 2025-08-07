@@ -162,6 +162,30 @@ describe PlayStoreRollout do
 
       expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: false).once
     end
+
+    context "update_stage behavior during move_to_next_stage!" do
+      it "updates stage and stays started when moving between stages" do
+        rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100], current_stage: 0)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+        rollout.move_to_next_stage!
+
+        expect(rollout.reload.current_stage).to eq(1)
+        expect(rollout.started?).to be(true)
+      end
+
+      it "completes rollout when reaching final stage" do
+        rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100], current_stage: 1)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+        rollout.move_to_next_stage!
+
+        expect(rollout.reload.current_stage).to eq(2)
+        expect(rollout.completed?).to be(true)
+      end
+    end
   end
 
   describe "#release_fully!" do
@@ -355,4 +379,5 @@ describe PlayStoreRollout do
       expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: false).once
     end
   end
+
 end
