@@ -539,6 +539,7 @@ class Train < ApplicationRecord
     self.continuous_backmerge_enabled = continuous_backmerge?
   end
 
+  # just used for the UI to show the correct state
   def set_notifications_config
     self.notifications_enabled = send_notifications?
   end
