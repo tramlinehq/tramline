@@ -88,10 +88,6 @@ class App < ApplicationRecord
     releases.first.scheduled_at > 3.months.ago
   end
 
-  def deploy_action_enabled?
-    Flipper.enabled?(:deploy_action_enabled, self)
-  end
-
   def monitoring_disabled?
     Flipper.enabled?(:monitoring_disabled, self)
   end
