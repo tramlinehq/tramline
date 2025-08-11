@@ -124,9 +124,7 @@ describe AppStoreRollout do
 
     before do
       allow_any_instance_of(AppStoreSubmission).to receive(:provider).and_return(providable_dbl)
-      allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:inflight_store_link)
-      allow(providable_dbl).to receive(:deliverable_store_link)
+      allow(providable_dbl).to receive_messages(public_icon_img: nil, inflight_store_link: nil, deliverable_store_link: nil)
     end
 
     it "halts the rollout if started" do
@@ -181,9 +179,7 @@ describe AppStoreRollout do
 
     before do
       allow_any_instance_of(AppStoreSubmission).to receive(:provider).and_return(providable_dbl)
-      allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:inflight_store_link)
-      allow(providable_dbl).to receive(:deliverable_store_link)
+      allow(providable_dbl).to receive_messages(public_icon_img: nil, inflight_store_link: nil, deliverable_store_link: nil)
     end
 
     it "resumes the rollout if halted" do
@@ -225,9 +221,7 @@ describe AppStoreRollout do
 
     before do
       allow_any_instance_of(AppStoreSubmission).to receive(:provider).and_return(providable_dbl)
-      allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:inflight_store_link)
-      allow(providable_dbl).to receive(:deliverable_store_link)
+      allow(providable_dbl).to receive_messages(public_icon_img: nil, inflight_store_link: nil, deliverable_store_link: nil)
     end
 
     it "resumes the rollout if paused" do
@@ -269,7 +263,7 @@ describe AppStoreRollout do
       allow(providable_dbl).to receive(:deliverable_store_link)
     end
 
-    context "update_stage behavior during track_live_release_status" do
+    context "when it updates the stage" do
       let(:release_info) {
         AppStoreIntegration::AppStoreReleaseInfo.new(
           {
@@ -286,46 +280,62 @@ describe AppStoreRollout do
 
       it "updates stage when release is live and staged" do
         rollout = create(:store_rollout, :app_store, :started, release_platform_run:, store_submission:, current_stage: 0, config: [1, 50, 100])
-        allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+        allow(rollout).to receive_messages(provider: providable_dbl, actionable?: true, event_stamp!: true)
         allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
-        allow(rollout).to receive(:actionable?).and_return(true)
-        allow(release_info).to receive(:live?).with(rollout.build_number).and_return(true)
-        allow(release_info).to receive(:phased_release_complete?).and_return(false)
-        allow(release_info).to receive(:phased_release_stage).and_return(1)
+        allow(release_info).to receive_messages(live?: true, phased_release_complete?: false, phased_release_stage: 1)
 
         expect { rollout.track_live_release_status }.to raise_error(AppStoreRollout::ReleaseNotFullyLive)
+        rollout.reload
 
-        expect(rollout.reload.current_stage).to eq(1)
+        expect(rollout.current_stage).to eq(1)
         expect(rollout.started?).to be(true)
+        expect(rollout).to have_received(:event_stamp!).exactly(1).times
       end
 
-      it "completes rollout when release is live and phased release complete" do
-        rollout = create(:store_rollout, :app_store, :started, release_platform_run:, store_submission:, current_stage: 2, config: [1, 50, 100])
-        allow(rollout).to receive(:provider).and_return(providable_dbl)
-        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
-        allow(rollout).to receive(:actionable?).and_return(true)
-        allow(release_info).to receive(:live?).with(rollout.build_number).and_return(true)
-        allow(release_info).to receive(:phased_release_complete?).and_return(true)
-        allow(release_info).to receive(:phased_release_stage).and_return(2)
+      context "when completing the rollout" do
+        it "completes rollout when release is live and phased release complete" do
+          rollout = create(:store_rollout, :app_store, :started, release_platform_run:, store_submission:, current_stage: 2, config: [1, 50, 100])
 
-        rollout.track_live_release_status
+          allow(rollout).to receive_messages(provider: providable_dbl, actionable?: true)
+          allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
+          allow(release_info).to receive_messages(live?: true, phased_release_complete?: true, phased_release_stage: 2)
 
-        expect(rollout.reload.current_stage).to eq(2)
-        expect(rollout.completed?).to be(true)
+          rollout.track_live_release_status
+          rollout.reload
+
+          expect(rollout.current_stage).to eq(2)
+          expect(rollout.completed?).to be(true)
+        end
+
+        it "only stamps/notifies one event change" do
+          rollout = create(:store_rollout, :app_store, :started, release_platform_run:, store_submission:, current_stage: 2, config: [1, 50, 100])
+
+          allow(rollout).to receive_messages(provider: providable_dbl, actionable?: true)
+          allow(rollout).to receive(:event_stamp!)
+          allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
+          allow(release_info).to receive_messages(live?: true, phased_release_complete?: true, phased_release_stage: 2)
+
+          rollout.track_live_release_status
+          rollout.reload
+
+          expect(rollout).to have_received(:event_stamp!).exactly(1).times
+        end
       end
 
       it "completes immediately for non-staged rollout when live" do
         rollout = create(:store_rollout, :app_store, :started, release_platform_run:, store_submission:, is_staged_rollout: false)
-        allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+        allow(rollout).to receive_messages(provider: providable_dbl, actionable?: true)
         allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
         allow(rollout).to receive(:actionable?).and_return(true)
         allow(release_info).to receive(:live?).with(rollout.build_number).and_return(true)
 
         rollout.track_live_release_status
+        rollout.reload
 
         expect(rollout.completed?).to be(true)
       end
     end
   end
-
 end

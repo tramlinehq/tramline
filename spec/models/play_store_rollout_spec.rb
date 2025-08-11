@@ -163,8 +163,8 @@ describe PlayStoreRollout do
       expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: false).once
     end
 
-    context "update_stage behavior during move_to_next_stage!" do
-      it "updates stage and stays started when moving between stages" do
+    context "when it updates stage" do
+      it "updates stage to be started when moving between stages" do
         rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100], current_stage: 0)
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         allow(rollout).to receive(:provider).and_return(providable_dbl)
@@ -379,5 +379,4 @@ describe PlayStoreRollout do
       expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: false).once
     end
   end
-
 end

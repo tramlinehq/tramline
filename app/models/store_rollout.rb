@@ -127,7 +127,7 @@ class StoreRollout < ApplicationRecord
 
     # otherwise
     if may_start?
-      # start the rollout and notify (if it can be started)
+      # start the rollout and stamp (if it can be started)
       start!
       event_stamp!(reason: :started, kind: :success, data: stamp_data)
     else
