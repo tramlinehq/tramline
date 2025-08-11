@@ -82,8 +82,8 @@ module Installations
       end
     end
 
-    def run_workflow!(repo, id, ref, inputs, commit_hash, json_inputs_enabled = false)
-      inputs = if json_inputs_enabled
+    def run_workflow!(repo, id, ref, inputs, commit_hash)
+      inputs =
         inputs
           .slice(:version_code, :build_notes)
           .merge(version_name: inputs[:build_version], commit_ref: commit_hash)
@@ -91,17 +91,10 @@ module Installations
           .to_json
           .then { {"tramline-input" => _1} }
           .merge(inputs[:parameters])
-      else
-        {
-          versionCode: inputs[:version_code],
-          versionName: inputs[:build_version],
-          buildNotes: inputs[:build_notes]
-        }.merge(inputs[:parameters]).compact
-      end
 
       execute do
         @client
-          .workflow_dispatch(repo, id, ref, inputs: inputs)
+          .workflow_dispatch(repo, id, ref, inputs:)
           .then { |ok| ok.presence || raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed)) }
       end
     end

@@ -195,7 +195,7 @@ class GitlabIntegration < ApplicationRecord
     []
   end
 
-  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
     with_api_retries do
       if ci_cd_channel.present? && ci_cd_channel != "default"
         installation.run_pipeline_with_job!(code_repository_name, branch_name, inputs, ci_cd_channel, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
