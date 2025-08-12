@@ -17,7 +17,7 @@ class BuildArtifact < ApplicationRecord
   self.ignored_columns += ["step_run_id"]
 
   belongs_to :build, inverse_of: :artifact
-  has_one_attached :file
+  has_one_attached :file, service: ->(record) { record.active_storage_service }
 
   delegate :create_and_upload!, to: ActiveStorage::Blob
   delegate :signed_id, to: :file
@@ -65,6 +65,17 @@ class BuildArtifact < ApplicationRecord
   end
 
   delegate :organization, to: :app
+
+  def active_storage_service
+    return Rails.application.config.active_storage.service unless organization.custom_storage
+
+    {
+      service: "GCS",
+      project: organization.custom_storage.project_id,
+      credentials: organization.custom_storage.credentials,
+      bucket: organization.custom_storage.bucket
+    }
+  end
 
   def build_url(params)
     blob_redirect_url(file.signed_id, file.filename, params)
