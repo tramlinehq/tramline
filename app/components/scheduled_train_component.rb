@@ -115,15 +115,15 @@ class ScheduledTrainComponent < BaseComponent
   private
 
   def future_version(versionable)
-    # For CalVer, increment the day by 1 using proper date arithmetic
+    # For CalVer, increment the day by the repeat duration using proper date arithmetic
     version = versionable.next_version.to_semverish
     year = version.major.to_i
     month = version.minor.to_i
     day = version.patch[0..1].to_i  # Get just the day part, ignore any sequence number
 
-    # Create a date and add 1 day
+    # Create a date and add the repeat duration
     current_date = Date.new(year, month, day)
-    next_date = current_date + 1.day
+    next_date = current_date + versionable.repeat_duration
 
     # Format as CalVer (YYYY.MM.DD)
     "#{next_date.year}.%02d.%02d" % [next_date.month, next_date.day]
