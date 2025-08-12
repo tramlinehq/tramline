@@ -28,6 +28,10 @@ module Installations
       {
         message_matcher: /This pull request is already closed/i,
         decorated_reason: :pull_request_closed
+      },
+      {
+        message_matcher: /refresh token.*invalid|invalid.*refresh token|refresh token.*expired|Failed to obtain valid OAuth tokens/i,
+        decorated_reason: :refresh_token_invalid
       }
     ]
 
