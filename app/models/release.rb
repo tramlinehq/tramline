@@ -177,7 +177,7 @@ class Release < ApplicationRecord
   attr_accessor :hotfix_platform
   friendly_id :human_slug, use: :slugged
 
-  delegate :versioning_strategy, :patch_version_bump_only, :calver?, to: :train
+  delegate :versioning_strategy, :patch_version_bump_only, :calver?, :repeat_duration, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
   delegate :platform, :organization, :notification_provider, to: :app
 
