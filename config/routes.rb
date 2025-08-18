@@ -52,6 +52,7 @@ Rails.application.routes.draw do
       resources :teams, only: %i[create update destroy]
       resources :invitations, only: %i[create destroy]
       resources :memberships, only: [:destroy]
+      resource :custom_storage, only: %i[edit update], controller: "custom_storages"
     end
 
     resource :user, only: [:edit, :update] do
