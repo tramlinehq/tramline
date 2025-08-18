@@ -1,14 +1,14 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe Accounts::CustomStorage, type: :model do
+RSpec.describe Accounts::CustomStorage do
   describe "associations" do
-    it { should belong_to(:organization).class_name("Accounts::Organization") }
+    it { is_expected.to belong_to(:organization).class_name("Accounts::Organization") }
   end
 
   describe "validations" do
-    it { should validate_presence_of(:bucket) }
-    it { should validate_presence_of(:project_id) }
-    it { should validate_presence_of(:credentials) }
+    it { is_expected.to validate_presence_of(:bucket) }
+    it { is_expected.to validate_presence_of(:project_id) }
+    it { is_expected.to validate_presence_of(:credentials) }
 
     it "is not valid with invalid credentials" do
       organization = create(:organization)

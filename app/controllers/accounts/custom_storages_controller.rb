@@ -8,7 +8,7 @@ class Accounts::CustomStoragesController < Accounts::BaseController
     @organization = current_organization
     @custom_storage = @organization.custom_storage || @organization.build_custom_storage
     if @custom_storage.update(custom_storage_params)
-      redirect_to edit_accounts_organization_path(@organization), notice: "Custom storage updated."
+      redirect_to edit_accounts_organization_path(@organization), notice: t(".updated")
     else
       render :edit
     end
