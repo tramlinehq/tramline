@@ -109,12 +109,12 @@ class ScheduledTrainComponent < BaseComponent
 
   def next_next_version
     versionable = ongoing_release || train
-    versionable.calver? ? future_version(versionable) : versionable.next_to_next_version
+    versionable.calver? ? future_calver_version(versionable) : versionable.next_to_next_version
   end
 
   private
 
-  def future_version(versionable)
+  def future_calver_version(versionable)
     # For CalVer, increment the day by the repeat duration using proper date arithmetic
     version = versionable.next_version.to_semverish
     year = version.major.to_i
