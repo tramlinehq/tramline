@@ -63,8 +63,8 @@ module RefinedString
       VersioningStrategies::Semverish.new(to_s)
     end
 
-    def ver_bump(term, strategy:)
-      to_semverish.bump!(term, strategy:).to_s
+    def ver_bump(term, strategy:, offset_duration: nil)
+      to_semverish.bump!(term, strategy:, offset_duration:).to_s
     end
 
     def better_titleize

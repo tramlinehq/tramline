@@ -31,8 +31,8 @@ class VersioningStrategies::Semverish
 
   attr_reader :major, :minor, :patch, :version
 
-  def bump!(term, strategy: DEFAULT_STRATEGY)
-    bump_strategy = STRATEGIES[strategy.to_sym].new(major, minor, patch).bump!(term)
+  def bump!(term, strategy: DEFAULT_STRATEGY, offset_duration: nil)
+    bump_strategy = STRATEGIES[strategy.to_sym].new(major, minor, patch).bump!(term, offset_duration)
     VersioningStrategies::Semverish.build(bump_strategy.major, bump_strategy.minor, bump_strategy.patch)
   end
 

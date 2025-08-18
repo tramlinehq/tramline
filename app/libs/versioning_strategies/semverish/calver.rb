@@ -15,19 +15,20 @@ class VersioningStrategies::Semverish::Calver
 
   attr_accessor :major, :minor, :patch, :seq_number
 
-  def bump!(term)
+  def bump!(term, offset_duration)
     term = term.to_sym
     new_version = clone
+    offset_duration = offset_duration.to_i
 
     case term
     when :major
-      new_version.major = year
-      new_version.minor = month
-      new_version.patch = day
+      new_version.major = year offset_duration
+      new_version.minor = month offset_duration
+      new_version.patch = day offset_duration
     when :minor
-      new_version.major = year
-      new_version.minor = month
-      new_version.patch = day
+      new_version.major = year offset_duration
+      new_version.minor = month offset_duration
+      new_version.patch = day offset_duration
     when :patch
       new_version.patch = inc(new_version.patch)
     else
@@ -47,16 +48,20 @@ class VersioningStrategies::Semverish::Calver
 
   private
 
-  def day
-    zero_pad Time.current.day
+  def day offset_duration
+    zero_pad(offset_time(offset_duration).day)
   end
 
-  def month
-    zero_pad Time.current.month
+  def month offset_duration
+    zero_pad(offset_time(offset_duration).month)
   end
 
-  def year
-    Time.current.year
+  def year offset_duration
+    offset_time(offset_duration).year
+  end
+
+  def offset_time offset_duration
+    @offset_time ||= Time.current + offset_duration
   end
 
   def zero_pad(v)
