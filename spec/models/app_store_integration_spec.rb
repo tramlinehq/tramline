@@ -235,4 +235,36 @@ describe AppStoreIntegration do
       end
     end
   end
+
+  describe "AppStoreReleaseInfo#phased_release_stage" do
+    let(:release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(release_data) }
+
+    context "when phased release is complete" do
+      let(:release_data) { {phased_release_status: "COMPLETE", phased_release_day: 3} }
+
+      it "returns the final stage index" do
+        expect(release_info.phased_release_stage).to eq(6)
+      end
+    end
+
+    it "returns correct stage for first phased release day" do
+      release_info = AppStoreIntegration::AppStoreReleaseInfo.new({phased_release_status: "ACTIVE", phased_release_day: 1})
+      expect(release_info.phased_release_stage).to eq(0)
+    end
+
+    it "returns correct stage for middle phased release day" do
+      release_info = AppStoreIntegration::AppStoreReleaseInfo.new({phased_release_status: "ACTIVE", phased_release_day: 3})
+      expect(release_info.phased_release_stage).to eq(2)
+    end
+
+    it "returns final stage when at maximum phased release day" do
+      release_info = AppStoreIntegration::AppStoreReleaseInfo.new({phased_release_status: "ACTIVE", phased_release_day: 7})
+      expect(release_info.phased_release_stage).to eq(6)
+    end
+
+    it "returns final stage when beyond maximum phased release day" do
+      release_info = AppStoreIntegration::AppStoreReleaseInfo.new({phased_release_status: "ACTIVE", phased_release_day: 10})
+      expect(release_info.phased_release_stage).to eq(6)
+    end
+  end
 end

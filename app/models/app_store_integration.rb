@@ -354,8 +354,11 @@ class AppStoreIntegration < ApplicationRecord
     end
 
     def phased_release_stage
-      return DEFAULT_PHASED_RELEASE_SEQUENCE.count.pred if phased_release_complete?
-      release_info[:phased_release_day].pred
+      final_stage = DEFAULT_PHASED_RELEASE_SEQUENCE.size.pred
+      return final_stage if phased_release_complete?
+      current_stage = release_info[:phased_release_day].pred
+      # sometimes the current_stage can go upto 8 from ASC-side
+      [current_stage, final_stage].min
     end
 
     def phased_release_complete?
