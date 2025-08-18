@@ -47,15 +47,5 @@
             label: "Project ID",
             clipboard: false) %>
     </div>
-    <div class="mt-4">
-      <%= link_to "Edit Custom Storage", edit_accounts_organization_custom_storage_path(@organization), class: "text-blue-600 hover:underline" %>
-    </div>
-  <% end %>
-<% else %>
-  <%= render SectionComponent.new(style: :titled, title: "Custom Storage", subtitle: "Custom Google Cloud Storage bucket for build artifacts") do %>
-    <div class="flex flex-col gap-y-6 w-1/3">
-      <p>No custom storage configured.</p>
-      <%= link_to "Configure Custom Storage", edit_accounts_organization_custom_storage_path(@organization), class: "text-blue-600 hover:underline" %>
-    </div>
   <% end %>
 <% end %>
