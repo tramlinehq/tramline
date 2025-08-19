@@ -1,21 +1,45 @@
 <div class="flex flex-col section-gap-default">
-  <div>
-    <%= render HorizontalDataSetComponent.new do |component| %>
-      <% component.with_data_set(title: "Chosen build to submit") do %>
-        <%= render LiveRelease::BuildComponent.new(submission.build, show_commit: false, show_activity: false, show_metadata: false, show_compact_metadata: true) %>
-      <% end %>
+  <div class="flex flex-col item-gap-default">
+    <div>
+      <%= render HorizontalDataSetComponent.new do |component| %>
+        <% component.with_data_set(title: "Chosen build to submit") do %>
+          <%= render LiveRelease::BuildComponent.new(submission.build, show_commit: false, show_activity: false, show_metadata: false, show_compact_metadata: true) %>
+        <% end %>
 
-      <% component.with_data_set(title: "Phased release") do %>
-        <% if phased_release_enabled? %>
-          <%= render BadgeComponent.new(text: "Enabled", status: :success) %>
-        <% else %>
-          <%= render BadgeComponent.new(text: "Disabled", status: :neutral) %>
+        <% component.with_data_set(title: "Phased release") do %>
+          <% if phased_release_enabled? %>
+            <%= render BadgeComponent.new(text: "Enabled", status: :success) %>
+          <% else %>
+            <%= render BadgeComponent.new(text: "Disabled", status: :neutral) %>
+          <% end %>
+        <% end %>
+
+        <% component.with_data_set(title: "Release style") do %>
+          <%= render BadgeComponent.new(text: "Manual", status: :neutral) %>
         <% end %>
       <% end %>
+    </div>
 
-      <% component.with_data_set(title: "Release style") do %>
-        <%= render BadgeComponent.new(text: "Manual", status: :neutral) %>
-      <% end %>
+    <% if existing_review_items&.any? %>
+      <div>
+        <%= render HorizontalDataSetComponent.new do |component| %>
+          <% component.with_data_set(title: "Other items in review submission") do %>
+            <div class="flex flex-col item-gap-default items-start">
+            <span class="text-xs">
+              <%= show_existing_review_items %>
+            </span>
+              <%= render ButtonComponent
+                    .new(scheme: :light,
+                         label: "Review items ↗",
+                         options: existing_review_submission_link,
+                         size: :xxs,
+                         html_options: {class: "-mr-2 inline-flex"},
+                         authz: false,
+                         type: :link_external) %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
     <% end %>
   </div>
 
