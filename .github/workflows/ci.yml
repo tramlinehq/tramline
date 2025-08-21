@@ -46,6 +46,21 @@ jobs:
       - name: Scan for common Rails security vulnerabilities using static analysis
         run: bin/brakeman --no-pager -w2
 
+      - name: Generate a valid CycloneDX BOM
+        run: |
+          gem install cyclonedx-ruby
+          cyclonedx-ruby -p . -o sbom.xml
+          npm install -g @cyclonedx/cyclonedx-cli
+          cyclonedx validate --input-file sbom.xml
+
+      - name: Upload CycloneDX BOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: |
+            sbom.xml
+          retention-days: 30
+
   lint:
     runs-on: ubuntu-latest
     services:
