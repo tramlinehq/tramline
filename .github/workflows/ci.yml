@@ -55,7 +55,7 @@ jobs:
           name: sbom-cyclonedx
           path: |
             sbom.xml
-          retention-days: 30
+          retention-days: 7
 
       - name: Security bundler audit dependencies
         run: bundle exec bundler-audit --update
