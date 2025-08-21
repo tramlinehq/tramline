@@ -43,9 +43,6 @@ jobs:
       - name: Security bundler audit dependencies
         run: bundle exec bundler-audit --update
 
-      - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager -w2
-
       - name: Generate a valid CycloneDX BOM
         run: |
           gem install cyclonedx-ruby
@@ -60,6 +57,9 @@ jobs:
           path: |
             sbom.xml
           retention-days: 30
+
+      - name: Scan for common Rails security vulnerabilities using static analysis
+        run: bin/brakeman --no-pager -w2
 
   lint:
     runs-on: ubuntu-latest
