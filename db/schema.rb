@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_29_133903) do
+ActiveRecord::Schema[7.2].define(version: 2025_08_18_012307) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -231,6 +231,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_29_133903) do
     t.string "project_number"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "custom_storages", force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.string "bucket", null: false
+    t.string "project_id", null: false
+    t.jsonb "credentials", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_custom_storages_on_organization_id", unique: true
   end
 
   create_table "data_migrations", primary_key: "version", id: :string, force: :cascade do |t|
@@ -1130,6 +1140,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_29_133903) do
   add_foreign_key "commits", "release_changelogs"
   add_foreign_key "commits", "release_platform_runs"
   add_foreign_key "commits", "release_platforms"
+  add_foreign_key "custom_storages", "organizations"
   add_foreign_key "deployment_runs", "deployments"
   add_foreign_key "deployment_runs", "step_runs"
   add_foreign_key "deployments", "steps"

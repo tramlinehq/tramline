@@ -1,14 +1,14 @@
 # == Schema Information
 #
-# Table name: accounts_custom_storages
+# Table name: custom_storages
 #
-#  id              :uuid             not null, primary key
+#  id              :bigint           not null, primary key
 #  bucket          :string           not null
 #  credentials     :jsonb            not null
-#  project_id      :string           not null
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  organization_id :uuid             not null, indexed
+#  project_id      :string           not null
 #
 class Accounts::CustomStorage < ApplicationRecord
   belongs_to :organization, class_name: "Accounts::Organization"
@@ -17,6 +17,8 @@ class Accounts::CustomStorage < ApplicationRecord
   validates :project_id, presence: true
   validates :credentials, presence: true
   validate :credentials_must_be_a_hash
+
+  encrypts :credentials, deterministic: true
 
   private
 
