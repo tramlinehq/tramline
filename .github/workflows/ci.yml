@@ -43,9 +43,11 @@ jobs:
       - name: Generate a valid CycloneDX BOM
         run: |
           gem install cyclonedx-ruby
+          wget https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64 -O cyclonedx-cli
+          chmod +x cyclonedx-cli
+
           cyclonedx-ruby -p . -o sbom.xml
-          npm install -g @cyclonedx/cyclonedx-cli
-          cyclonedx validate --input-file sbom.xml
+          ./cyclonedx-cli validate --input-file sbom.xml --fail-on-errors
 
       - name: Upload CycloneDX BOM
         uses: actions/upload-artifact@v4
