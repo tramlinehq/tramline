@@ -28,6 +28,7 @@ class Accounts::Organization < ApplicationRecord
   has_many :apps, -> { sequential }, dependent: :destroy, inverse_of: :organization
   has_many :releases, through: :apps
   has_many :invites, dependent: :destroy
+  has_one :custom_storage, class_name: "Accounts::CustomStorage", dependent: :destroy, inverse_of: :organization
 
   enum :status, {active: "active", dormant: "dormant", guest: "guest"}
 
