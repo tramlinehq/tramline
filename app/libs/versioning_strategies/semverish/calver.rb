@@ -21,13 +21,13 @@ class VersioningStrategies::Semverish::Calver
 
     case term
     when :major
-      new_version.major = year relative_time
-      new_version.minor = month relative_time
-      new_version.patch = day relative_time
+      new_version.major = year(relative_time)
+      new_version.minor = month(relative_time)
+      new_version.patch = day(relative_time)
     when :minor
-      new_version.major = year relative_time
-      new_version.minor = month relative_time
-      new_version.patch = day relative_time
+      new_version.major = year(relative_time)
+      new_version.minor = month(relative_time)
+      new_version.patch = day(relative_time)
     when :patch
       new_version.patch = inc(new_version.patch)
     else

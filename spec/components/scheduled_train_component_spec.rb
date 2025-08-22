@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe ScheduledTrainComponent, type: :component do
+describe ScheduledTrainComponent, type: :component do
   let(:app) { create(:app, :android) }
 
   describe "#next_version" do
