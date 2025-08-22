@@ -17,7 +17,7 @@ class BuildArtifact < ApplicationRecord
   self.ignored_columns += ["step_run_id"]
 
   belongs_to :build, inverse_of: :artifact
-  has_one_attached :file, service: ->(record) { record.active_storage_service }
+  has_one_attached :file, service: ->(record) { record.resolve_service_name }
 
   delegate :create_and_upload!, to: ActiveStorage::Blob
   delegate :signed_id, to: :file
@@ -66,15 +66,9 @@ class BuildArtifact < ApplicationRecord
 
   delegate :organization, to: :app
 
-  def active_storage_service
-    return Rails.application.config.active_storage.service unless organization.custom_storage
-
-    {
-      service: "GCS",
-      project: organization.custom_storage.project_id,
-      credentials: organization.custom_storage.credentials,
-      bucket: organization.custom_storage.bucket
-    }
+  def resolve_service_name
+    return organization.custom_storage.service.to_sym if organization.custom_storage.present?
+    Rails.application.config.active_storage.service
   end
 
   def build_url(params)

@@ -36,7 +36,7 @@ Rails.application.configure do
   end
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = ENV["ACTIVE_STORAGE_LOCATION"].to_sym
+  config.active_storage.service = :google # ENV["ACTIVE_STORAGE_LOCATION"].to_sym
 
   config.active_storage.draw_routes = true
 

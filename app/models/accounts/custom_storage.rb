@@ -4,25 +4,26 @@
 #
 #  id              :bigint           not null, primary key
 #  bucket          :string           not null
-#  credentials     :jsonb            not null
+#  bucket_region   :string           not null
+#  service         :string           not null
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  organization_id :uuid             not null, indexed
-#  project_id      :string           not null
 #
 class Accounts::CustomStorage < ApplicationRecord
   belongs_to :organization, class_name: "Accounts::Organization"
 
   validates :bucket, presence: true
-  validates :project_id, presence: true
-  validates :credentials, presence: true
-  validate :credentials_must_be_a_hash
+  validates :bucket_region, presence: true
+  validates :service, presence: true
 
-  encrypts :credentials, deterministic: true
+  SERVICES = {
+    s3: "Amazon S3",
+    google: "Google Cloud Storage",
+    google_india: "Google Cloud Storage",
+  }
 
-  private
-
-  def credentials_must_be_a_hash
-    errors.add(:credentials, "must be a valid JSON object") unless credentials.is_a?(Hash)
+  def service_name
+    SERVICES[service.to_sym]
   end
 end

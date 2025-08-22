@@ -236,8 +236,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_18_012307) do
   create_table "custom_storages", force: :cascade do |t|
     t.uuid "organization_id", null: false
     t.string "bucket", null: false
-    t.string "project_id", null: false
-    t.jsonb "credentials", null: false
+    t.string "bucket_region", null: false
+    t.string "service", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["organization_id"], name: "index_custom_storages_on_organization_id", unique: true
