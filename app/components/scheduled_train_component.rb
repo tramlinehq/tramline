@@ -97,16 +97,21 @@ class ScheduledTrainComponent < BaseComponent
     past_release.release&.release_version
   end
 
+  def next_run_at
+    return unless future_release
+    future_release.scheduled_at
+  end
+
   def next_to_next_run_at
     return unless future_release
     future_release.scheduled_at + train.repeat_duration
   end
 
   def next_version
-    (ongoing_release || train).next_version
+    (ongoing_release || train).next_version(relative_time: next_run_at)
   end
 
   def next_next_version
-    (ongoing_release || train).next_to_next_version
+    (ongoing_release || train).next_to_next_version(relative_time: next_to_next_run_at)
   end
 end

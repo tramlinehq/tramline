@@ -18,7 +18,7 @@ class VersioningStrategies::Semverish::Semver
 
   attr_accessor :major, :minor, :patch
 
-  def bump!(term)
+  def bump!(term, _relative_time = nil)
     term = term.to_sym
     new_version = clone
     new_value = inc(public_send(term))
