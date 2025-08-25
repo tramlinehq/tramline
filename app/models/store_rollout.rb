@@ -73,7 +73,6 @@ class StoreRollout < ApplicationRecord
   end
 
   def next_rollout_percentage
-    return config.first if created?
     config[next_stage]
   end
 
