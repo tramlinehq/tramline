@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :accounts_custom_storage, class: "Accounts::CustomStorage" do
-    organization
-    bucket { "test-bucket" }
-    project_id { "test-project" }
-    credentials { {private_key: "test_private_key"} }
+    organization { association :organization }
+    bucket { "test-bucket-#{SecureRandom.hex(4)}" }
+    bucket_region { "us-central1" }
+    service { "google" }
   end
 end
