@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_08_18_012307) do
+ActiveRecord::Schema[7.2].define(version: 2025_08_26_110821) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -154,8 +154,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_18_012307) do
     t.datetime "generated_at", precision: nil
     t.datetime "uploaded_at", precision: nil
     t.uuid "build_id"
+    t.string "storage_service"
     t.index ["build_id"], name: "index_build_artifacts_on_build_id"
     t.index ["step_run_id"], name: "index_build_artifacts_on_step_run_id"
+    t.index ["storage_service"], name: "index_build_artifacts_on_storage_service"
   end
 
   create_table "build_queues", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

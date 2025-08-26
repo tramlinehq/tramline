@@ -2,12 +2,13 @@
 #
 # Table name: build_artifacts
 #
-#  id           :uuid             not null, primary key
-#  generated_at :datetime
-#  uploaded_at  :datetime
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
-#  build_id     :uuid             indexed
+#  id              :uuid             not null, primary key
+#  generated_at    :datetime
+#  storage_service :string           indexed
+#  uploaded_at     :datetime
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  build_id        :uuid             indexed
 #
 require "zip"
 
@@ -18,6 +19,8 @@ class BuildArtifact < ApplicationRecord
 
   belongs_to :build, inverse_of: :artifact
   has_one_attached :file, service: ->(record) { record.resolve_service_name }
+
+  before_create :set_storage_service
 
   delegate :create_and_upload!, to: ActiveStorage::Blob
   delegate :signed_id, to: :file
@@ -67,7 +70,7 @@ class BuildArtifact < ApplicationRecord
   delegate :organization, to: :app
 
   def resolve_service_name
-    return organization.custom_storage.service.to_sym if organization.custom_storage.present?
+    return storage_service.to_sym if storage_service.present?
     Rails.application.config.active_storage.service
   end
 
@@ -78,5 +81,18 @@ class BuildArtifact < ApplicationRecord
   def file_size_in_mb
     return unless file
     (file.byte_size.to_f / 1.megabyte).round(2)
+  end
+
+  private
+
+  # store the storage service per build artifact for ease of migration and point-in-time segregation
+  def set_storage_service
+    return if storage_service.present?
+
+    self.storage_service = if organization.custom_storage.present?
+      organization.custom_storage.service
+    else
+      Rails.application.config.active_storage.service.to_s
+    end
   end
 end

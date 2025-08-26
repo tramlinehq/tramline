@@ -18,7 +18,6 @@ class Accounts::CustomStorage < ApplicationRecord
   validates :service, presence: true
 
   SERVICES = {
-    s3: "Amazon S3",
     google: "Google Cloud Storage",
     google_india: "Google Cloud Storage",
   }
