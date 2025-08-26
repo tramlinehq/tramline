@@ -1,3 +1,16 @@
+GIT
+  remote: https://github.com/tramlinehq/data-anonymization.git
+  revision: 159d04bec7a21a407bfa606ec760acd8aae2e237
+  specs:
+    data-anonymization (0.9.1)
+      activerecord (~> 7.1)
+      activesupport (~> 7.1)
+      parallel (~> 1.21)
+      powerbar (~> 2.0)
+      rgeo (~> 2.4.0)
+      rgeo-geojson (~> 2.1.1)
+      thor (~> 1.4.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -124,14 +137,6 @@ GEM
       rexml
     crass (1.0.6)
     csv (3.3.2)
-    data-anonymization (0.8.10)
-      activerecord (~> 7.1)
-      activesupport (~> 7.1)
-      parallel (~> 1.21)
-      powerbar (~> 2.0)
-      rgeo (~> 2.4.0)
-      rgeo-geojson (~> 2.1.1)
-      thor (~> 1.2.1)
     data_migrate (11.0.0.rc3)
       activerecord (>= 6.1)
       railties (>= 6.1)
@@ -458,7 +463,7 @@ GEM
     paper_trail (15.2.0)
       activerecord (>= 6.1)
       request_store (~> 1.4)
-    parallel (1.26.3)
+    parallel (1.27.0)
     parallel_rspec (2.4.2)
       rake (> 10.0)
       rspec
@@ -730,7 +735,7 @@ GEM
       railties (>= 7.0.0)
     tailwindcss-rails (2.7.9-x86_64-linux)
       railties (>= 7.0.0)
-    thor (1.2.2)
+    thor (1.4.0)
     timeout (0.4.3)
     trailblazer-option (0.1.2)
     turbo-rails (2.0.13)
@@ -802,7 +807,7 @@ DEPENDENCIES
   bundler-audit
   color (~> 1.8)
   csv (~> 3.3)
-  data-anonymization
+  data-anonymization!
   data_migrate (= 11.0.0.rc3)
   ddtrace (~> 1.4)
   debug
