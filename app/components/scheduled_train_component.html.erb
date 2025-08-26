@@ -57,14 +57,14 @@
     <% end %>
 
     <!-- ongoing -->
-    <% if ongoing_release.present? %>
+    <% if current_release.present? %>
       <%= render partial: "scheduled_release/show", locals: {
             header: ongoing_text,
-            title: ongoing_release.release_version,
-            status: release_status(ongoing_release),
+            title: current_release.release_version,
+            status: release_status(current_release),
             box_classes: "bg-diagonal-stripes-soft-blue",
             empty_icon: "coffee.svg",
-            footer: time_format(ongoing_release.scheduled_at, only_day: true)
+            footer: time_format(current_release.scheduled_at, only_day: true)
           } %>
     <% else %>
       <%= render partial: "scheduled_release/show", locals: {
