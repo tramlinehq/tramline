@@ -3,6 +3,6 @@ class Coordinators::VersionBumpJob < ApplicationJob
 
   def perform(release_id)
     release = Release.find(release_id)
-    Triggers::VersionBump.call(release)
+    Triggers::VersionBump.call(release).value!
   end
 end

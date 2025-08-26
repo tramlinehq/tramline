@@ -52,10 +52,6 @@ module Coordinators
     end
 
     def self.commits_have_landed!(release, head_commit, rest_commits)
-      if release.train.next_version_after_release_branch?
-        Coordinators::VersionBumpJob.perform_async(release.id)
-      end
-
       Coordinators::ProcessCommits.call(release, head_commit, rest_commits)
     end
 
