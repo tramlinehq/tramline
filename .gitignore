@@ -60,6 +60,8 @@ Brewfile.lock.json
 # Ignore temp project files
 coverage
 aasm-*.pdf
+sbom.xml
+sbom.json
 
 # Ignore LLM related files
 .claude/settings.local.json

@@ -72,7 +72,7 @@ gem "rack-attack", "~> 6.7"
 gem "posthog-ruby", "~> 3.1"
 gem "discard", "~> 1.3"
 gem "bugsnag-api", "~> 3.0"
-gem "data-anonymization", require: false
+gem "data-anonymization", github: "tramlinehq/data-anonymization", require: false
 gem "faker"
 gem "json-schema", "~> 4.1"
 gem "color", "~> 1.8"

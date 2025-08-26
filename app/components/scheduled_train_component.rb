@@ -3,14 +3,13 @@ class ScheduledTrainComponent < BaseComponent
 
   def initialize(train)
     @train = train
-    @ongoing_release = train.ongoing_release
 
     previous_time =
-      if @ongoing_release.present?
-        if @ongoing_release.is_automatic?
-          @ongoing_release.scheduled_release.scheduled_at
+      if current_release.present?
+        if current_release.is_automatic?
+          current_release.scheduled_release.scheduled_at
         else
-          @ongoing_release.scheduled_at
+          current_release.scheduled_at
         end
       else
         Time.current
@@ -20,7 +19,7 @@ class ScheduledTrainComponent < BaseComponent
     @future_release = train.scheduled_releases.pending.order(scheduled_at: :asc).first
   end
 
-  attr_reader :ongoing_release, :past_releases, :future_release, :train
+  attr_reader :past_releases, :future_release, :train
 
   def scheduled_release_status(scheduled_release)
     return unless scheduled_release
@@ -82,8 +81,8 @@ class ScheduledTrainComponent < BaseComponent
   end
 
   def ongoing_text
-    return "No release is running" if ongoing_release.blank?
-    "Kickoff at #{time_format(ongoing_release.scheduled_at, only_time: true)}"
+    return "No release is running" if current_release.blank?
+    "Kickoff at #{time_format(current_release.scheduled_at, only_time: true)}"
   end
 
   def past_text(past_release)
@@ -97,16 +96,25 @@ class ScheduledTrainComponent < BaseComponent
     past_release.release&.release_version
   end
 
+  def next_run_at
+    return unless future_release
+    future_release.scheduled_at
+  end
+
   def next_to_next_run_at
     return unless future_release
     future_release.scheduled_at + train.repeat_duration
   end
 
   def next_version
-    (ongoing_release || train).next_version
+    (current_release || train).next_version(relative_time: next_run_at)
   end
 
   def next_next_version
-    (ongoing_release || train).next_to_next_version
+    (current_release || train).next_to_next_version(relative_time: next_to_next_run_at)
+  end
+
+  def current_release
+    @current_release ||= train.active_runs.max_by(&:scheduled_at)
   end
 end
