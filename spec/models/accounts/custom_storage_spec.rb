@@ -96,14 +96,16 @@ describe Accounts::CustomStorage do
       custom_storage.valid?
       expect(custom_storage.service).to eq("google")
     end
+
+    it "accepts mixed-case service because of normalization" do
+      custom_storage = build(:accounts_custom_storage, service: "GoOgLe")
+      expect(custom_storage).to be_valid
+    end
   end
 
   describe "SERVICES constant" do
     it "contains expected services" do
-      expect(Accounts::CustomStorage::SERVICES).to include(
-        google: "Google Cloud Storage",
-        google_india: "Google Cloud Storage"
-      )
+      expect(Accounts::CustomStorage::SERVICES).to include(google: "Google Cloud Storage", google_india: "Google Cloud Storage")
     end
   end
 end

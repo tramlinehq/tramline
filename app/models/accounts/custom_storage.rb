@@ -16,7 +16,7 @@ class Accounts::CustomStorage < ApplicationRecord
   SERVICES = {
     google: "Google Cloud Storage",
     google_india: "Google Cloud Storage"
-  }
+  }.freeze
 
   validates :bucket, presence: true
   validates :bucket_region, presence: true

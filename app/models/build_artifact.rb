@@ -89,10 +89,11 @@ class BuildArtifact < ApplicationRecord
   def set_storage_service
     return if storage_service.present?
 
-    self.storage_service = if organization.custom_storage.present?
-      organization.custom_storage.service
-    else
-      Rails.application.config.active_storage.service.to_s
-    end
+    self.storage_service =
+      if organization.custom_storage.present?
+        organization.custom_storage.service
+      else
+        Rails.application.config.active_storage.service.to_s
+      end
   end
 end
