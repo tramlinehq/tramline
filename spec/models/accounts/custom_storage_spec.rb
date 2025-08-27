@@ -105,7 +105,7 @@ describe Accounts::CustomStorage do
 
   describe "SERVICES constant" do
     it "contains expected services" do
-      expect(Accounts::CustomStorage::SERVICES).to include(google: "Google Cloud Storage", google_india: "Google Cloud Storage")
+      expect(Accounts::CustomStorage::SUPPORTED_SERVICES).to include(google: "Google Cloud Storage", google_india: "Google Cloud Storage")
     end
   end
 end
