@@ -37,8 +37,7 @@ class BuildArtifact < ApplicationRecord
 
   def save_file!(artifact_stream)
     filename = gen_filename(artifact_stream.ext)
-    unique_filename = "#{id}-#{filename}"
-    key = [BASE_FOLDER, unique_filename].join("/")
+    key = [BASE_FOLDER, filename].join("/")
 
     transaction do
       self.file = create_and_upload!(io: artifact_stream.file, filename:, key:, service_name: resolve_service_name)
@@ -48,7 +47,7 @@ class BuildArtifact < ApplicationRecord
   end
 
   def gen_filename(ext)
-    "#{app.slug}-#{build.version_name}-build#{ext}"
+    "#{app.slug}-#{build.version_name}-#{id}-build#{ext}"
   end
 
   def get_filename
@@ -75,11 +74,6 @@ class BuildArtifact < ApplicationRecord
 
   delegate :organization, to: :app
 
-  def resolve_service_name
-    set_storage_service if storage_service.blank?
-    storage_service.present? ? storage_service.to_sym : Rails.application.config.active_storage.service
-  end
-
   def build_url(params)
     blob_redirect_url(file.signed_id, file.filename, params)
   end
@@ -90,6 +84,11 @@ class BuildArtifact < ApplicationRecord
   end
 
   private
+
+  def resolve_service_name
+    set_storage_service if storage_service.blank?
+    storage_service.present? ? storage_service.to_sym : Rails.application.config.active_storage.service
+  end
 
   # store the storage service per build artifact for ease of migration and point-in-time segregation
   def set_storage_service
