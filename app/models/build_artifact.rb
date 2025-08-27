@@ -25,14 +25,6 @@ class BuildArtifact < ApplicationRecord
   delegate :create_and_upload!, to: ActiveStorage::Blob
   delegate :signed_id, to: :file
 
-  def self.find_via_signed_id(signed_id)
-    blob = ActiveStorage::Blob.find_signed(signed_id)
-    return nil if blob.blank?
-    attachment = ActiveStorage::Attachment.find_by(blob_id: blob.id)
-    return nil if attachment.blank?
-    find_by(id: attachment.record_id)
-  end
-
   def save_file!(artifact_stream)
     key = filename = gen_filename(artifact_stream.ext)
 

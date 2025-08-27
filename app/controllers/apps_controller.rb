@@ -97,6 +97,11 @@ class AppsController < SignedInApplicationController
     redirect_to app_path(@app), notice: "Store status was successfully refreshed."
   end
 
+  def remove_icon
+    @app.icon.purge if @app.icon.attached?
+    redirect_to app_path(@app), notice: "Icon removed."
+  end
+
   private
 
   def set_search_result_counts
@@ -125,7 +130,8 @@ class AppsController < SignedInApplicationController
       :platform,
       :build_number_managed_internally,
       :build_number,
-      :timezone
+      :timezone,
+      :icon
     )
   end
 

@@ -2,6 +2,21 @@
   <% f.with_section(heading: "Basics") do |section| %>
     <div><%= section.F.labeled_text_field :name, "Name", required: true %></div>
     <div><%= section.F.labeled_textarea :description, "Description" %></div>
+    <% if @app.icon.attached? %>
+      <div>
+        <%= render IconComponent.new(@app.icon, size: :xxl, rounded: false) %>
+        <%= render ButtonComponent.new(
+              scheme: :danger,
+              label: "Remove icon",
+              options: remove_icon_app_path(@app),
+              type: :link,
+              html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to remove this train?"}}
+            ) do |b|
+              b.with_icon("trash.svg", size: :sm)
+            end %>
+      </div>
+    <% end %>
+    <div><%= section.F.labeled_file_field :icon, "Choose icon", "512x512 to 1024x1024, square only.", accept: "image/png,image/jpeg,image/jpg,image/webp" %></div>
   <% end %>
 
   <% f.with_section(heading: "Build Settings") do |section| %>
