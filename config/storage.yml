@@ -6,35 +6,29 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
-google:
+gcs_credentials: &gcs_credentials
+  type: "service_account"
+  project_id: <%= Rails.application.credentials.dependencies.gcp.project_id %>
+  private_key_id: <%= Rails.application.credentials.dependencies.gcp.private_key_id %>
+  private_key: <%= Rails.application.credentials.dependencies.gcp.private_key.dump %>
+  client_email: <%= Rails.application.credentials.dependencies.gcp.client_email %>
+  client_id: <%= Rails.application.credentials.dependencies.gcp.client_id %>
+  auth_uri: "https://accounts.google.com/o/oauth2/auth"
+  token_uri: "https://accounts.google.com/o/oauth2/token"
+  auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
+  client_x509_cert_url: <%= Rails.application.credentials.dependencies.gcp.client_x509_cert_url %>
+
+# As of 26-06-2025, all build artifacts in production and staging are stored in the base bucket
+google: &google_default
   service: GCS
   credentials:
-    type: "service_account"
-    project_id: <%= Rails.application.credentials.dependencies.gcp.project_id %>
-    private_key_id: <%= Rails.application.credentials.dependencies.gcp.private_key_id %>
-    private_key: <%= Rails.application.credentials.dependencies.gcp.private_key.dump %>
-    client_email: <%= Rails.application.credentials.dependencies.gcp.client_email %>
-    client_id: <%= Rails.application.credentials.dependencies.gcp.client_id %>
-    auth_uri: "https://accounts.google.com/o/oauth2/auth"
-    token_uri: "https://accounts.google.com/o/oauth2/token"
-    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
-    client_x509_cert_url: <%= Rails.application.credentials.dependencies.gcp.client_x509_cert_url %>
+    <<: *gcs_credentials
   project: <%= Rails.application.credentials.dependencies.gcp.project_id %>
   bucket: <%= ENV["ARTIFACT_BUILDS_BUCKET_NAME"] %>
 
-google_india:
+google_india: &google_india
   service: GCS
   credentials:
-    type: "service_account"
-    project_id: <%= Rails.application.credentials.dependencies.gcp_india.project_id %>
-    private_key_id: <%= Rails.application.credentials.dependencies.gcp_india.private_key_id %>
-    private_key: <%= Rails.application.credentials.dependencies.gcp_india.private_key.dump %>
-    client_email: <%= Rails.application.credentials.dependencies.gcp_india.client_email %>
-    client_id: <%= Rails.application.credentials.dependencies.gcp_india.client_id %>
-    auth_uri: "https://accounts.google.com/o/oauth2/auth"
-    token_uri: "https://accounts.google.com/o/oauth2/token"
-    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
-    client_x509_cert_url: <%= Rails.application.credentials.dependencies.gcp_india.client_x509_cert_url %>
-  project: <%= Rails.application.credentials.dependencies.gcp_india.project_id %>
+    <<: *gcs_credentials
+  project: <%= Rails.application.credentials.dependencies.gcp.project_id %>
   bucket: <%= ENV["ARTIFACT_BUILDS_BUCKET_NAME_INDIA"] %>
-  prefix: "artifacts"

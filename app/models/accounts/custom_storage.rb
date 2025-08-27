@@ -13,20 +13,20 @@
 class Accounts::CustomStorage < ApplicationRecord
   belongs_to :organization, class_name: "Accounts::Organization"
 
-  SERVICES = {
+  SUPPORTED_SERVICES = {
     google: "Google Cloud Storage",
     google_india: "Google Cloud Storage"
   }.freeze
 
   validates :bucket, presence: true
   validates :bucket_region, presence: true
-  validates :service, presence: true, inclusion: {in: SERVICES.keys.map(&:to_s)}
+  validates :service, presence: true, inclusion: {in: SUPPORTED_SERVICES.keys.map(&:to_s)}
   validates :organization, uniqueness: true
 
   before_validation :normalize_service!
 
   def service_name
-    SERVICES[service.to_sym]
+    SUPPORTED_SERVICES[service.to_sym]
   end
 
   private
