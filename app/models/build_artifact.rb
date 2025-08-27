@@ -47,7 +47,7 @@ class BuildArtifact < ApplicationRecord
   end
 
   def gen_filename(ext)
-    "#{app.slug}-#{build.version_name}-#{id}-build#{ext}"
+    "#{app.slug}-#{build.version_name}-#{SecureRandom.uuid}-build#{ext}"
   end
 
   def get_filename
@@ -93,12 +93,7 @@ class BuildArtifact < ApplicationRecord
   # store the storage service per build artifact for ease of migration and point-in-time segregation
   def set_storage_service
     return if storage_service.present?
-
-    self.storage_service =
-      if organization.custom_storage.present?
-        organization.custom_storage.service
-      else
-        Rails.application.config.active_storage.service.to_s
-      end
+    custom_svc = organization.custom_storage&.service
+    self.storage_service = custom_svc&.present? ? custom_svc : Rails.application.config.active_storage.service.to_s
   end
 end
