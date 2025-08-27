@@ -38,6 +38,7 @@ class App < ApplicationRecord
   has_many :builds, through: :releases
   has_many :release_platforms, dependent: :destroy
   has_many :release_platform_runs, through: :releases
+  has_one_attached :icon
 
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
