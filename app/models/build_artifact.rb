@@ -20,7 +20,7 @@ class BuildArtifact < ApplicationRecord
   belongs_to :build, inverse_of: :artifact
   has_one_attached :file
 
-  before_create :set_storage_service
+  after_initialize :set_storage_service
 
   delegate :create_and_upload!, to: ActiveStorage::Blob
   delegate :signed_id, to: :file
@@ -86,7 +86,6 @@ class BuildArtifact < ApplicationRecord
   private
 
   def resolve_service_name
-    set_storage_service if storage_service.blank?
     storage_service.present? ? storage_service.to_sym : Rails.application.config.active_storage.service
   end
 
