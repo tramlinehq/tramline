@@ -1,8 +1,8 @@
 module Validators
   class AppIconValidator
+    APP_ICON_ALLOWED_CONTENT_TYPES = %w[image/png image/jpeg image/webp image/jpg].freeze
     APP_ICON_FILE_SIZE_LIMIT = 1.megabyte
-    MIN_DIMENSION = 512
-    MAX_DIMENSION = 1024
+    APP_ICON_ALLOWED_DIMENSIONS = [512, 1024].freeze
 
     def self.validate(icon_file)
       new(icon_file).validate
@@ -17,6 +17,11 @@ module Validators
 
     def validate
       return self if icon_file.nil?
+
+      unless icon_file.content_type.in?(APP_ICON_ALLOWED_CONTENT_TYPES)
+        errors << "the file format is not supported."
+        return self
+      end
 
       maximum_file_size
       square_shape_and_dimensions
@@ -40,8 +45,8 @@ module Validators
       if width != height
         errors << "the app icon must be a square image."
       end
-      unless width.in?(MIN_DIMENSION..MAX_DIMENSION)
-        errors << "the app icon size must be at least #{MIN_DIMENSION}x#{MIN_DIMENSION} pixels and at most #{MAX_DIMENSION}x#{MAX_DIMENSION} pixels."
+      unless width.in?(APP_ICON_ALLOWED_DIMENSIONS)
+        errors << "the app icon size must either be #{APP_ICON_ALLOWED_DIMENSIONS.first}x#{APP_ICON_ALLOWED_DIMENSIONS.first} pixels or #{APP_ICON_ALLOWED_DIMENSIONS.last}x#{APP_ICON_ALLOWED_DIMENSIONS.last} pixels."
       end
     end
   end
