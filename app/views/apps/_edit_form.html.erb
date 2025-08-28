@@ -10,13 +10,13 @@
               label: "Remove icon",
               options: remove_icon_app_path(@app),
               type: :link,
-              html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to remove this train?"}}
+              html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to remove this icon?"}}
             ) do |b|
               b.with_icon("trash.svg", size: :sm)
             end %>
       </div>
     <% end %>
-    <div><%= section.F.labeled_file_field :icon, "Choose icon", "512x512 to 1024x1024, square only.", accept: "image/png,image/jpeg,image/jpg,image/webp" %></div>
+    <div><%= section.F.labeled_file_field :icon, "Choose icon", "512x512 or 1024x1024, square only. Under 1 MiB.", accept: "image/png,image/jpeg,image/jpg,image/webp" %></div>
   <% end %>
 
   <% f.with_section(heading: "Build Settings") do |section| %>
