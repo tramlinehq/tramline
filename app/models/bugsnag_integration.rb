@@ -2,10 +2,12 @@
 #
 # Table name: bugsnag_integrations
 #
-#  id           :uuid             not null, primary key
-#  access_token :string
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
+#  id             :uuid             not null, primary key
+#  access_token   :string
+#  android_config :jsonb
+#  ios_config     :jsonb
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
 #
 class BugsnagIntegration < ApplicationRecord
   has_paper_trail
@@ -48,6 +50,24 @@ class BugsnagIntegration < ApplicationRecord
 
   encrypts :access_token, deterministic: true
   delegate :cache, to: Rails
+
+  def bugsnag_project(platform)
+    case platform
+    when "android" then android_config&.fetch("project_id", nil)
+    when "ios" then ios_config&.fetch("project_id", nil)
+    else
+      raise ArgumentError, "platform must be valid"
+    end
+  end
+
+  def bugsnag_release_stage(platform)
+    case platform
+    when "android" then android_config&.fetch("release_stage", nil)
+    when "ios" then ios_config&.fetch("release_stage", nil)
+    else
+      raise ArgumentError, "platform must be valid"
+    end
+  end
   delegate :integrable, to: :integration
   delegate :bugsnag_project, :bugsnag_release_stage, to: :app_config
   alias_method :project, :bugsnag_project

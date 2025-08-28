@@ -2,10 +2,11 @@
 #
 # Table name: bitrise_integrations
 #
-#  id           :uuid             not null, primary key
-#  access_token :string
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
+#  id             :uuid             not null, primary key
+#  access_token   :string
+#  project_config :jsonb
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
 #
 class BitriseIntegration < ApplicationRecord
   has_paper_trail
@@ -14,6 +15,10 @@ class BitriseIntegration < ApplicationRecord
   include Providable
   include Displayable
   include Rails.application.routes.url_helpers
+
+  def bitrise_project
+    project_config&.fetch("id", nil)
+  end
 
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/bitrise_small.png".freeze
 

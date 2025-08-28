@@ -7,6 +7,7 @@
 #  oauth_refresh_token :string
 #  organization_name   :string
 #  organization_url    :string
+#  project_config      :jsonb            default({}), not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #  cloud_id            :string           indexed
@@ -61,6 +62,7 @@ class JiraIntegration < ApplicationRecord
   delegate :app, to: :integration
   delegate :cache, to: Rails
   validates :cloud_id, presence: true
+  validate :jira_release_filters, if: -> { project_config&.dig("release_filters").present? }
 
   def install_path
     BASE_INSTALLATION_URL
@@ -156,10 +158,10 @@ class JiraIntegration < ApplicationRecord
   end
 
   def fetch_tickets_for_release
-    return [] if app.config.jira_config.blank?
+    return [] if project_config.blank?
 
-    project_key = app.config.jira_config["selected_projects"]&.last
-    release_filters = app.config.jira_config["release_filters"]
+    project_key = project_config["selected_projects"]&.last
+    release_filters = project_config["release_filters"]
     return [] if project_key.blank? || release_filters.blank?
 
     with_api_retries do
@@ -259,5 +261,15 @@ class JiraIntegration < ApplicationRecord
   rescue Installations::Error => e
     elog("Failed to fetch Jira project statuses for cloud_id #{cloud_id}: #{e}", level: :warn)
     {}
+  end
+
+  private
+
+  def jira_release_filters
+    project_config["release_filters"].each do |filter|
+      unless filter.is_a?(Hash) && VALID_FILTER_TYPES.include?(filter["type"]) && filter["value"].present?
+        errors.add(:project_config, "release filters must contain valid type and value")
+      end
+    end
   end
 end

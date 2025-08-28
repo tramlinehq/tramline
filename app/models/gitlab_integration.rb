@@ -5,6 +5,7 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  repository_config   :jsonb
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
@@ -24,8 +25,23 @@ class GitlabIntegration < ApplicationRecord
   before_validation :complete_access, if: :new_record?
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
-  delegate :code_repository_name, :code_repo_namespace, to: :app_config
   delegate :cache, to: Rails
+
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
+
+  def code_repo_namespace
+    repository_config&.fetch("namespace", nil)
+  end
+
+  def code_repo_name_only
+    repository_config&.fetch("name", nil)
+  end
+
+  def code_repo_url
+    repository_config&.fetch("repo_url", nil)
+  end
   validate :correct_key, on: :create
 
   API = Installations::Gitlab::Api
@@ -346,7 +362,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def get_commit(sha)
-    with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMITS_TRANSFORMATIONS) }
+    with_api_retries { installation.get_commit(repository_config["id"], sha, COMMITS_TRANSFORMATIONS) }
   end
 
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
@@ -475,9 +491,6 @@ class GitlabIntegration < ApplicationRecord
     reload
   end
 
-  def app_config
-    integrable.config
-  end
 
   def redirect_uri
     gitlab_callback_url(link_params)
