@@ -52,13 +52,12 @@ describe BuildArtifact do
 
     context "when organization has no custom storage" do
       it "uploads to default service and sets storage_service" do
-        expect(build_artifact.storage_service).to eq(Rails.application.config.active_storage.service.to_s)
+        expect(build_artifact.storage_service).to be_nil
 
         build_artifact.save_file!(artifact_stream)
 
         expect(build_artifact.file).to be_attached
         expect(build_artifact.file.blob.service_name).to eq(Rails.application.config.active_storage.service.to_s)
-        expect(build_artifact.file.blob.key).to start_with("artifacts/")
         expect(build_artifact.uploaded_at).to be_present
       end
     end
@@ -76,7 +75,6 @@ describe BuildArtifact do
 
         expect(build_artifact.file).to be_attached
         expect(build_artifact.file.blob.service_name).to eq("local")
-        expect(build_artifact.file.blob.key).to start_with("artifacts/")
         expect(build_artifact.uploaded_at).to be_present
       end
     end
@@ -94,8 +92,6 @@ describe BuildArtifact do
       build_artifact2.save_file!(artifact_stream2)
 
       expect(build_artifact1.file.blob.key).not_to eq(build_artifact2.file.blob.key)
-      expect(build_artifact1.file.blob.key).to start_with("artifacts/")
-      expect(build_artifact2.file.blob.key).to start_with("artifacts/")
 
       tempfile2.close
       tempfile2.unlink

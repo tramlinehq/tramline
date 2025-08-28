@@ -20,8 +20,6 @@ class BuildArtifact < ApplicationRecord
   belongs_to :build, inverse_of: :artifact
   has_one_attached :file
 
-  before_validation :set_storage_service
-
   delegate :create_and_upload!, to: ActiveStorage::Blob
   delegate :signed_id, to: :file
 
@@ -34,10 +32,12 @@ class BuildArtifact < ApplicationRecord
   end
 
   def save_file!(artifact_stream)
+    set_storage_service
+    service_name = resolve_service_name
     key = filename = gen_filename(artifact_stream.ext)
 
     transaction do
-      self.file = create_and_upload!(io: artifact_stream.file, filename:, key:, service_name: resolve_service_name)
+      self.file = create_and_upload!(io: artifact_stream.file, filename:, key:, service_name:)
       self.uploaded_at = Time.current
       save!
     end
