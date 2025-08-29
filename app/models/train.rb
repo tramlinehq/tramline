@@ -177,10 +177,6 @@ class Train < ApplicationRecord
     first&.release_platforms&.android&.first&.steps&.release&.any?
   end
 
-  def one_percent_beta_release?
-    Flipper.enabled?(:one_percent_beta_release, self)
-  end
-
   def temporarily_allow_workflow_errors?
     Flipper.enabled?(:temporarily_allow_workflow_errors, self)
   end

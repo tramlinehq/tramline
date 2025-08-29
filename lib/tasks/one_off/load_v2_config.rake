@@ -1,8 +1,7 @@
 namespace :one_off do
   desc "Populate the config for all trains with v2 enabled"
   task load_v2_config: [:destructive, :environment] do |_, _args|
-    trains = Train.all
-    trains.each do |train|
+    Train.find_each do |train|
       puts "Populating config for train: #{train.name}"
       train.release_platforms.each do |release_platform|
         if release_platform.platform_config.present?
