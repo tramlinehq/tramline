@@ -46,7 +46,7 @@ module Validators
         errors << "the app icon must be a square image."
       end
       unless width.in?(APP_ICON_ALLOWED_DIMENSIONS)
-        errors << "the app icon size must either be #{APP_ICON_ALLOWED_DIMENSIONS.first}x#{APP_ICON_ALLOWED_DIMENSIONS.first} pixels or #{APP_ICON_ALLOWED_DIMENSIONS.last}x#{APP_ICON_ALLOWED_DIMENSIONS.last} pixels."
+        errors << "the app icon size must either be #{APP_ICON_ALLOWED_DIMENSIONS.first}x#{APP_ICON_ALLOWED_DIMENSIONS.first} or #{APP_ICON_ALLOWED_DIMENSIONS.last}x#{APP_ICON_ALLOWED_DIMENSIONS.last} pixels."
       end
     end
   end
