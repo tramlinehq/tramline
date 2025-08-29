@@ -177,10 +177,6 @@ class Train < ApplicationRecord
     first&.release_platforms&.android&.first&.steps&.release&.any?
   end
 
-  def one_percent_beta_release?
-    Flipper.enabled?(:one_percent_beta_release, self)
-  end
-
   def temporarily_allow_workflow_errors?
     Flipper.enabled?(:temporarily_allow_workflow_errors, self)
   end
@@ -535,6 +531,7 @@ class Train < ApplicationRecord
     self.continuous_backmerge_enabled = continuous_backmerge?
   end
 
+  # just used for the UI to show the correct state
   def set_notifications_config
     self.notifications_enabled = send_notifications?
   end
