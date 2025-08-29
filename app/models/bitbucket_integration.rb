@@ -5,6 +5,8 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  repository_config   :jsonb
+#  workspace           :string
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
@@ -26,8 +28,23 @@ class BitbucketIntegration < ApplicationRecord
   attr_accessor :code
   before_create :complete_access
   delegate :integrable, to: :integration
-  delegate :code_repository_name, to: :app_config
   delegate :cache, to: Rails
+
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
+
+  def code_repo_namespace
+    repository_config&.fetch("namespace", nil)
+  end
+
+  def code_repo_name_only
+    repository_config&.fetch("name", nil)
+  end
+
+  def code_repo_url
+    repository_config&.fetch("repo_url", nil)
+  end
 
   def install_path
     BASE_INSTALLATION_URL

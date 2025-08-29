@@ -62,9 +62,27 @@ Rails.application.routes.draw do
   end
 
   resources :apps do
-    resource :app_config, only: %i[edit update], path: :config do
-      resources :app_variants, only: %i[index edit create update destroy]
+    namespace :firebase do
+      resource :config, only: %i[edit update], controller: :configs
     end
+
+    namespace :bugsnag do
+      resource :config, only: %i[edit update], controller: :configs
+    end
+
+    namespace :version_control do
+      resource :config, only: %i[edit update], controller: :configs
+    end
+
+    namespace :bitrise do
+      resource :config, only: %i[edit update], controller: :configs
+    end
+
+    namespace :project_management do
+      resource :config, only: %i[edit update], controller: :configs
+    end
+
+    resources :app_variants, only: %i[index edit create update destroy]
 
     member do
       get :all_builds

@@ -2,10 +2,11 @@
 #
 # Table name: github_integrations
 #
-#  id              :uuid             not null, primary key
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  installation_id :string           not null
+#  id                :uuid             not null, primary key
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  installation_id   :string           not null
+#  repository_config :jsonb
 #
 class GithubIntegration < ApplicationRecord
   has_paper_trail
@@ -18,10 +19,25 @@ class GithubIntegration < ApplicationRecord
 
   validates :installation_id, presence: true
 
-  delegate :code_repository_name, :code_repo_namespace, :code_repo_name_only, to: :app_config
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
   delegate :cache, to: Rails
+
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
+
+  def code_repo_namespace
+    repository_config&.fetch("namespace", nil)
+  end
+
+  def code_repo_name_only
+    repository_config&.fetch("name", nil)
+  end
+
+  def code_repo_url
+    repository_config&.fetch("repo_url", nil)
+  end
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
@@ -375,9 +391,6 @@ class GithubIntegration < ApplicationRecord
     installation.update_repo_webhook!(code_repository_name, id, events_url(url_params), WEBHOOK_TRANSFORMATIONS)
   end
 
-  def app_config
-    integrable.config
-  end
 
   def events_url(params)
     if Rails.env.development?
