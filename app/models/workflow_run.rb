@@ -132,7 +132,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def allow_error?
-    train.temporarily_allow_workflow_errors?
+    train.temporary_allow_workflow_errors?
   end
 
   def active?

@@ -177,8 +177,8 @@ class Train < ApplicationRecord
     first&.release_platforms&.android&.first&.steps&.release&.any?
   end
 
-  def temporarily_allow_workflow_errors?
-    Flipper.enabled?(:temporarily_allow_workflow_errors, self)
+  def temporary_allow_workflow_errors?
+    Flipper.enabled?(:temporary_allow_workflow_errors, self)
   end
 
   def workflows(bust_cache: false)
