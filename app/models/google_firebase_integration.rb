@@ -3,6 +3,8 @@
 # Table name: google_firebase_integrations
 #
 #  id             :uuid             not null, primary key
+#  android_config :jsonb
+#  ios_config     :jsonb
 #  json_key       :string
 #  project_number :string
 #  created_at     :datetime         not null
@@ -22,11 +24,15 @@ class GoogleFirebaseIntegration < ApplicationRecord
   encrypts :json_key, deterministic: true
 
   validate :correct_key, on: :create
+  validates :android_config, 
+    allow_blank: true,
+    json: {message: ->(errors) { errors }, schema: Rails.root.join("config/schema/platform_aware_integration_config.json")}
+  validates :ios_config, 
+    allow_blank: true,
+    json: {message: ->(errors) { errors }, schema: Rails.root.join("config/schema/platform_aware_integration_config.json")}
 
   delegate :cache, to: Rails
   delegate :integrable, to: :integration
-  delegate :config, to: :integrable
-  delegate :firebase_app, to: :config
 
   after_create_commit :fetch_channels
 
@@ -128,6 +134,15 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def pick_default_beta_channel
     build_channels.first
+  end
+
+  def firebase_app(platform)
+    case platform
+    when "android" then android_config&.fetch("app_id", nil)
+    when "ios" then ios_config&.fetch("app_id", nil)
+    else
+      raise ArgumentError, "platform must be valid"
+    end
   end
 
   def upload(file, filename, platform:)
