@@ -42,6 +42,7 @@
     <div><%= form.F.labeled_select :platform, "Mobile Platform", options_for_select(App.allowed_platforms, "Android") %></div>
     <div><%= form.F.labeled_tz_select :timezone, "Timezone", default_timezones, {model: ActiveSupport::TimeZone} %></div>
     <div class="sm:col-span-2"><%= form.F.labeled_textarea :description, "Description" %></div>
+    <div class="sm:col-span-2"><%= form.F.labeled_file_field :icon, "Choose image", "512x512 or 1024x1024, square only. Under 1 MiB.", accept: "image/png,image/jpeg,image/jpg,image/webp" %></div>
   </div>
 
   <% form.with_action do %>
