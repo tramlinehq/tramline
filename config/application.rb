@@ -23,7 +23,11 @@ module Site
     config.active_job.queue_adapter = :sidekiq
     config.active_model.i18n_customize_full_message = true
     config.assets.css_compressor = nil
-    config.middleware.insert_after ActionDispatch::Static, Rack::Deflater
+    if ENV["RAILS_PIPELINE_ENV"] != "staging"
+      config.middleware.insert_after ActionDispatch::Static, Rack::Deflater
+    else
+      config.middleware.delete Rack::Deflater
+    end
     config.action_dispatch.default_headers["X-XSS-Protection"] = "1; mode=block"
     PaperTrail.config.version_limit = 10
     config.active_storage.draw_routes = false
