@@ -1,0 +1,34 @@
+<%= render EnhancedTurboFrameComponent.new(:version_control_config) do %>
+  <%= render FormComponent.new(model: [@app, @bitbucket_integration], url: app_version_control_bitbucket_config_path(@app), method: :patch) do |f| %>
+    <% f.with_section(heading: "Select Repository") do |section| %>
+      <% section.with_description do %>
+        Primary working code repository.
+      <% end %>
+
+      <div data-controller="stream-effect"
+            data-stream-effect-url-value="<%= edit_app_version_control_bitbucket_config_url(@app) %>"
+            data-stream-effect-param-value="workspace">
+        <%= section.F.labeled_select :workspace,
+              "Workspace",
+              options_for_select(@workspaces, selected: @bitbucket_integration.workspace),
+              {},
+              disabled: @workspaces.blank?,
+              class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES,
+              data: {action: "change->stream-effect#fetch", stream_effect_target: "dispatch"} %>
+      </div>
+
+      <div>
+        <%= section.F.labeled_select :repository_config,
+              "Code Repository",
+              options_for_select(
+                display_channels(@code_repositories) { |repo| repo[:full_name] },
+                @code_repository.to_json
+              ) %>
+      </div>
+    <% end %>
+
+    <% f.with_action do %>
+      <%= f.F.authz_submit "Update", "plus.svg", size: :xs %>
+    <% end %>
+  <% end %>
+<% end %>

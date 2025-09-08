@@ -77,4 +77,37 @@ class IntegrationCardComponent < BaseComponent
   def disconnectable?
     integration.disconnectable? && disconnectable_categories?
   end
+
+  def category_title
+    "Configure #{Integration.human_enum_name(:category, @category)}"
+  end
+
+  def pre_open_category?
+    @pre_open_category == @category
+  end
+
+  def category_config_turbo_frame_id
+    "#{@category}_config"
+  end
+
+  def further_setup?
+    # TODO: delegate to Integration properly
+    integration.version_control?
+  end
+
+  def edit_config_path
+    # TODO: find a potentially better way to route this
+    if integration.version_control?
+      case integration.providable_type
+      when "GithubIntegration"
+        edit_app_version_control_github_config_path(@app)
+      when "GitlabIntegration"
+        edit_app_version_control_gitlab_config_path(@app)
+      when "BitbucketIntegration"
+        edit_app_version_control_bitbucket_config_path(@app)
+      else
+        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
+      end
+    end
+  end
 end

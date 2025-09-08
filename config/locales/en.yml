@@ -776,3 +776,13 @@ en:
         done_states:
           select: "Select Done States"
           help_text: "Choose which states represent completed work"
+
+  github_configs:
+    update:
+      success: "Version control configuration was successfully updated."
+  gitlab_configs:
+    update:
+      success: "Version control configuration was successfully updated."
+  bitbucket_configs:
+    update:
+      success: "Version control configuration was successfully updated."

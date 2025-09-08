@@ -73,7 +73,7 @@ class AppConfig < ApplicationRecord
     if integrations.version_control.present?
       categories[:version_control] = {
         further_setup: integrations.version_control.any?(&:further_setup?),
-        ready: code_repository.present?
+        ready: integrations.version_control.any? { _1.providable&.repository_config.present? } # TODO: perhaps &:ready? makes sense?
       }
     end
 
@@ -138,6 +138,10 @@ class AppConfig < ApplicationRecord
     end
 
     save!
+  end
+
+  def code_repository
+    app.vcs_provider&.repository_config
   end
 
   private

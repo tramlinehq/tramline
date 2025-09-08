@@ -69,6 +69,12 @@ Rails.application.routes.draw do
       resources :app_variants, only: %i[index edit create update destroy]
     end
 
+    namespace :version_control do
+      resource :github_config, only: %i[edit update]
+      resource :gitlab_config, only: %i[edit update]
+      resource :bitbucket_config, only: %i[edit update]
+    end
+
     member do
       get :all_builds
       get :search

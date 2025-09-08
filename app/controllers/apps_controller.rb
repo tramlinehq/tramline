@@ -24,8 +24,11 @@ class AppsController < SignedInApplicationController
       redirect_to app_train_releases_path(@app, selected_train)
     end
 
-    @train_in_creation = @app.train_in_creation
-    @app_setup_instructions = @app.app_setup_instructions
+    if @app.ready?
+      @train_in_creation = @app.train_in_creation
+    else
+      @app_setup_instructions = @app.app_setup_instructions
+    end
   end
 
   def edit

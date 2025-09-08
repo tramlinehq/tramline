@@ -2,10 +2,11 @@
 #
 # Table name: github_integrations
 #
-#  id              :uuid             not null, primary key
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  installation_id :string           not null
+#  id                :uuid             not null, primary key
+#  repository_config :jsonb
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  installation_id   :string           not null
 #
 class GithubIntegration < ApplicationRecord
   has_paper_trail
@@ -119,7 +120,7 @@ class GithubIntegration < ApplicationRecord
 
   def workspaces = nil
 
-  def repos(_)
+  def repos(_ = nil)
     installation.list_repos(REPOS_TRANSFORMATIONS)
   end
 
