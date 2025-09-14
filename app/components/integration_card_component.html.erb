@@ -23,8 +23,8 @@
             <div class="flex gap-2">
               <% if further_setup? %>
                 <%= render ModalComponent.new(title: category_title, open: pre_open_category?) do |modal| %>
-                  <% modal.with_button(scheme: :light, type: :action, size: :xxs)
-                       .with_icon("cog.svg", size: :sm) %>
+                  <% button = modal.with_button(scheme: :light, type: :action, size: :xxs) %>
+                  <% button.with_icon("cog.svg", size: :sm) %>
                   <% modal.with_body do %>
                     <%= tag.turbo_frame id: category_config_turbo_frame_id,
                                         src: edit_config_path,

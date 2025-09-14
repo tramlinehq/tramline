@@ -13,7 +13,6 @@ class VersionControl::GithubConfigsController < SignedInApplicationController
       format.html do |variant|
         variant.turbo_frame { render :edit }
       end
-      format.turbo_stream { render :edit } # NOTE: probably not needed for GithubIntegration
     end
   end
 
