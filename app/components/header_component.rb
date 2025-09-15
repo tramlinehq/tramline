@@ -1,4 +1,6 @@
 class HeaderComponent < BaseComponent
+  include ActiveStorage::Engine.routes.url_helpers
+
   USER_PROFILE_LINK_CLASSES = "hover:bg-main-100 dark:hover:bg-main-600 dark:text-secondary-50 dark:hover:text-white"
   renders_one :sticky_message
 
