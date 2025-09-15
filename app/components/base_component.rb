@@ -17,6 +17,7 @@ class BaseComponent < ViewComponent::Base
     :live_release_tab_configuration,
     :live_release_overall_status,
     :teams_supported?,
+    :rails_blob_path,
     to: :helpers
   delegate :team_colors, to: :current_organization
 

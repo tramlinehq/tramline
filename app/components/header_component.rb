@@ -15,10 +15,6 @@ class HeaderComponent < BaseComponent
   end
 
   def app_icon
-    if default_app.icon.attached?
-      ActiveStorage::Engine.routes.url_helpers.rails_blob_path(default_app.icon, host: request.host_with_port)
-    else
-      "art/cross_platform_default.png"
-    end
+    default_app.icon.attached? ? rails_blob_path(default_app.icon) : "art/cross_platform_default.png"
   end
 end
