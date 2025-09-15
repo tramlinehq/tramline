@@ -1,6 +1,4 @@
 class HeaderComponent < BaseComponent
-  include ActiveStorage::Engine.routes.url_helpers
-
   USER_PROFILE_LINK_CLASSES = "hover:bg-main-100 dark:hover:bg-main-600 dark:text-secondary-50 dark:hover:text-white"
   renders_one :sticky_message
 
@@ -17,6 +15,10 @@ class HeaderComponent < BaseComponent
   end
 
   def app_icon
-    default_app.icon.attached? ? rails_blob_path(default_app.icon) : "art/cross_platform_default.png"
+    if default_app.icon.attached?
+      ActiveStorage::Engine.routes.url_helpers.rails_blob_path(default_app.icon, host: request.host_with_port)
+    else
+      "art/cross_platform_default.png"
+    end
   end
 end
