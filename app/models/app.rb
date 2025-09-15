@@ -289,6 +289,11 @@ class App < ApplicationRecord
     Flipper.enabled?(:skip_finding_builds_for_firebase, self)
   end
 
+  def icon_path
+    Rails.application.routes.url_helpers
+         .blob_redirect_path(icon.signed_id, icon.filename, disposition: "inline")
+  end
+
   private
 
   def latest_store_build_number

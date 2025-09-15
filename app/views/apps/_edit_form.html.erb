@@ -4,7 +4,7 @@
     <div><%= section.F.labeled_textarea :description, "Description" %></div>
     <% if @app.icon.attached? %>
       <div>
-        <%= render IconComponent.new(url_for(@app.icon), size: :xxl, rounded: false) %>
+        <%= render IconComponent.new(@app.icon_path, size: :xxl, rounded: false) %>
         <%= render ButtonComponent.new(
               scheme: :danger,
               label: "Remove icon",

@@ -16,8 +16,7 @@ class HeaderComponent < BaseComponent
 
   def app_icon
     if default_app.icon.attached?
-      Rails.application.routes.url_helpers
-           .blob_redirect_path(default_app.icon.signed_id, default_app.icon.filename, disposition: "inline")
+      default_app.icon_path
     else
       "art/cross_platform_default.png"
     end
