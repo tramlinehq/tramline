@@ -32,3 +32,10 @@ google_india: &google_india
     <<: *gcs_credentials
   project: <%= Rails.application.credentials.dependencies.gcp.project_id %>
   bucket: <%= ENV["ARTIFACT_BUILDS_BUCKET_NAME_INDIA"] %>
+
+google_assets: &google_default
+  service: GCS
+  credentials:
+    <<: *gcs_credentials
+  project: <%= Rails.application.credentials.dependencies.gcp.project_id %>
+  bucket: <%= ENV["ASSETS_BUCKET_NAME"] %>
