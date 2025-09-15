@@ -15,6 +15,10 @@ class HeaderComponent < BaseComponent
   end
 
   def app_icon
-    default_app.icon.attached? ? helpers.url_for(default_app.icon) : "art/cross_platform_default.png"
+    if default_app.icon.attached?
+      helpers.rails_service_blob_path(default_app.icon.signed_id, default_app.icon.filename, disposition: "inline")
+    else
+      "art/cross_platform_default.png"
+    end
   end
 end
