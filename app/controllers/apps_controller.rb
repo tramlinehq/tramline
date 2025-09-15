@@ -3,9 +3,10 @@ class AppsController < SignedInApplicationController
   include Filterable
   include Tabbable
 
-  before_action :require_write_access!, only: %i[create update destroy]
+  before_action :require_write_access!, only: %i[create update destroy remove_icon]
   before_action :set_integrations, only: %i[show destroy]
   before_action :set_app_config_tabs, only: %i[edit update]
+  before_action :ensure_valid_app_icon, only: %i[create update]
   around_action :set_time_zone
 
   def index
@@ -97,6 +98,11 @@ class AppsController < SignedInApplicationController
     redirect_to app_path(@app), notice: "Store status was successfully refreshed."
   end
 
+  def remove_icon
+    @app.icon.purge_later if @app.icon.attached?
+    redirect_to app_path(@app), notice: "Icon removed."
+  end
+
   private
 
   def set_search_result_counts
@@ -125,7 +131,8 @@ class AppsController < SignedInApplicationController
       :platform,
       :build_number_managed_internally,
       :build_number,
-      :timezone
+      :timezone,
+      :icon
     )
   end
 
@@ -135,5 +142,15 @@ class AppsController < SignedInApplicationController
 
   def app_id_key
     :id
+  end
+
+  def ensure_valid_app_icon
+    if app_icon_params_errors.present?
+      redirect_back fallback_location: apps_path, flash: {error: app_icon_params_errors.first}
+    end
+  end
+
+  def app_icon_params_errors
+    @app_icon_params_errors ||= Validators::AppIconValidator.validate(app_update_params[:icon]).errors
   end
 end
