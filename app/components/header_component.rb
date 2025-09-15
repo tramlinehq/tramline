@@ -15,6 +15,11 @@ class HeaderComponent < BaseComponent
   end
 
   def app_icon
-    default_app.icon.attached? ? rails_blob_path(default_app.icon) : "art/cross_platform_default.png"
+    if default_app.icon.attached?
+      Rails.logger.info("Rails blob path: " + Rails.application.routes.url_helpers.rails_blob_path(default_app.icon, only_path: true))
+      Rails.application.routes.url_helpers.rails_blob_path(default_app.icon, only_path: true)
+    else
+      "art/cross_platform_default.png"
+    end
   end
 end
