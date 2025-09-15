@@ -291,7 +291,7 @@ class App < ApplicationRecord
 
   def icon_path
     Rails.application.routes.url_helpers
-         .blob_redirect_path(icon.signed_id, icon.filename, disposition: "inline")
+      .blob_redirect_path(icon.signed_id, icon.filename, disposition: "inline")
   end
 
   private
