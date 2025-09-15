@@ -15,6 +15,6 @@ class HeaderComponent < BaseComponent
   end
 
   def app_icon
-    default_app.icon.attached? ? default_app.icon.url : "art/cross_platform_default.png"
+    default_app.icon.attached? ? url_for(default_app.icon) : "art/cross_platform_default.png"
   end
 end
