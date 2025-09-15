@@ -97,7 +97,7 @@ class Train < ApplicationRecord
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :monitoring_provider, to: :integrations
 
   enum :status, {draft: "draft", active: "active", inactive: "inactive"}
-  enum :backmerge_strategy, {continuous: "continuous", on_finalize: "on_finalize"}
+  enum :backmerge_strategy, {continuous: "continuous", on_finalize: "on_finalize", disabled: "disabled"}
   enum :versioning_strategy, VersioningStrategies::Semverish::STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
   enum :version_bump_strategy, VERSION_BUMP_STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
 
@@ -107,7 +107,7 @@ class Train < ApplicationRecord
   attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
   attr_accessor :build_queue_wait_time_unit, :build_queue_wait_time_value
   attr_accessor :repeat_duration_unit, :repeat_duration_value, :release_schedule_enabled
-  attr_accessor :continuous_backmerge_enabled, :notifications_enabled
+  attr_accessor :notifications_enabled
 
   validates :branching_strategy, :working_branch, presence: true
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
@@ -131,7 +131,6 @@ class Train < ApplicationRecord
   after_initialize :set_constituent_seed_versions, if: :persisted?
   after_initialize :set_release_schedule, if: :persisted?
   after_initialize :set_build_queue_config, if: :persisted?
-  after_initialize :set_backmerge_config, if: :persisted?
   after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
   before_validation :cleanse_tagging_configs
@@ -525,10 +524,6 @@ class Train < ApplicationRecord
     parts = build_queue_wait_time.parts
     self.build_queue_wait_time_unit = parts.keys.first.to_s
     self.build_queue_wait_time_value = parts.values.first
-  end
-
-  def set_backmerge_config
-    self.continuous_backmerge_enabled = continuous_backmerge?
   end
 
   # just used for the UI to show the correct state

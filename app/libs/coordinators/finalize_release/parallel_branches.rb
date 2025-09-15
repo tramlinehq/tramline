@@ -9,7 +9,10 @@ class Coordinators::FinalizeRelease::ParallelBranches
   end
 
   def call
-    create_tag.then { create_and_merge_pr }
+    case train.backmerge_strategy
+    when Train.backmerge_strategies[:on_finalize] then create_tag.then { create_and_merge_pr }
+    else create_tag
+    end
   end
 
   private

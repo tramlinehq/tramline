@@ -232,26 +232,32 @@
       <%= render partial: "build_queue_form", locals: {form: section.F} %>
     <% end %>
 
-    <%= f.with_advanced_section(heading: "Continuous Backmerge",
+    <%= f.with_advanced_section(heading: "Back-merges",
                                 html_options: {hidden: true,
-                                               data: {domain__branching_selector_target: "backmerge"}}) do |section| %>
+                                               data: {domain__branching_selector_target: "backmerge",
+                                                      controller: "domain--backmerge-selector"}}) do |section| %>
       <% section.with_description do %>
-        Enable backmerging of release branch commits into the working branch as they arrive.
-        By default, merge happens at the end of the release.
+        Configure how changes from the release branch are merged back to the working branch.
       <% end %>
 
-      <%= render Form::SwitchComponent.new(form: section.F,
-                                           field_name: :continuous_backmerge_enabled,
-                                           on_label: "Continuous backmerge enabled",
-                                           off_label: "Continuous backmerge disabled",
-                                           html_options: {disabled: train.backmerge_disabled?}) do |component| %>
-        <% component.with_child do %>
-          <%= section.F.labeled_text_field :continuous_backmerge_branch_prefix,
-                                           "Branch Prefix",
-                                           placeholder: "e.g., <your prefix>-patch-main-08bcbb",
-                                           help_text: "" %>
-        <% end %>
-      <% end %>
+      <div>
+        <%= section.F.labeled_select :backmerge_strategy, "Backmerge Strategy",
+                                     options_for_select([
+                                       ["Continuously back-merge", "continuous"],
+                                       ["Back-merge once at the end of release", "on_finalize"],
+                                       ["Disable all back-merges", "disabled"]
+                                     ], train.backmerge_strategy),
+                                     {},
+                                     {data: {action: "domain--backmerge-selector#change",
+                                             domain__backmerge_selector_target: "backmergeStrategy"}} %>
+      </div>
+
+      <div hidden data-domain--backmerge-selector-target="continuousOptions">
+        <%= section.F.labeled_text_field :continuous_backmerge_branch_prefix,
+                                         "Branch Prefix",
+                                         placeholder: "e.g., <your prefix>-patch-main-08bcbb",
+                                         help_text: "" %>
+      </div>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Auto-apply patch changes") do |section| %>
