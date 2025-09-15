@@ -28,6 +28,7 @@ module Site
     PaperTrail.config.version_limit = 10
     config.active_storage.draw_routes = false
     config.lograge.enabled = false
+    config.active_storage.service_urls_expire_in = 1.week
 
     if ENV["RAILS_PIPELINE_ENV"].present?
       Rails.application.config.credentials.content_path =

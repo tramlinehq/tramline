@@ -39,8 +39,6 @@ class IconComponent < BaseComponent
   end
 
   def external?
-    return false if @icon.is_a?(ActiveStorage::Attached)
-
     uri = URI.parse(@icon)
     uri.is_a?(URI::HTTP) && !uri.host.nil?
   rescue URI::InvalidURIError
