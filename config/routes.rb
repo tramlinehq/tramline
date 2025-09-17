@@ -75,6 +75,10 @@ Rails.application.routes.draw do
       resource :bitbucket_config, only: %i[edit update]
     end
 
+    namespace :ci_cd do
+      resource :bitrise_config, only: %i[edit update]
+    end
+
     member do
       get :all_builds
       get :search

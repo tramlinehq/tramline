@@ -62,8 +62,8 @@
 
             <% if creatable? %>
               <%= render ModalComponent.new(title: creatable_modal_title) do |modal| %>
-                <% modal.with_button(label: "Connect", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                     .with_icon("plus.svg", size: :md) %>
+                <% button = modal.with_button(label: "Connect", scheme: :light, type: :action, size: :xxs, arrow: :none) %>
+                <% button.with_icon("plus.svg", size: :md) %>
                 <% modal.with_body do %>
                   <%= creatable_form_partial %>
                 <% end %>

@@ -63,7 +63,7 @@ class AppConfig < ApplicationRecord
   end
 
   def bitrise_project
-    bitrise_project_id&.fetch("id", nil)
+    app.ci_cd_provider&.project_config&.fetch("id", nil)
   end
 
   def further_setup_by_category?
@@ -160,7 +160,7 @@ class AppConfig < ApplicationRecord
 
   def bitrise_ready?
     return true unless app.bitrise_connected?
-    bitrise_project.present?
+    app.ci_cd_provider.project_config.present?
   end
 
   def bugsnag_ready?

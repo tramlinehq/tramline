@@ -15,6 +15,6 @@ class IntegrationListComponent < BaseComponent
 
   def connected_integrations?(integrations)
     # TODO: Move away from checking integration category later
-    integrations.any? { |i| i.connected? && i.further_setup? && !i.version_control? }
+    integrations.any? { |i| i.connected? && i.further_setup? && !(i.version_control? || i.ci_cd?) }
   end
 end

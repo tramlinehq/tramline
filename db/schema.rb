@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_09_08_020424) do
+ActiveRecord::Schema[7.2].define(version: 2025_09_09_193500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -141,6 +141,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_08_020424) do
     t.string "access_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "project_config"
   end
 
   create_table "bugsnag_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

@@ -92,7 +92,7 @@ class IntegrationCardComponent < BaseComponent
 
   def further_setup?
     # TODO: delegate to Integration properly
-    integration.version_control?
+    integration.version_control? || integration.ci_cd?
   end
 
   def edit_config_path
@@ -108,6 +108,15 @@ class IntegrationCardComponent < BaseComponent
       else
         raise TypeError, "Unknown providable_type: #{integration.providable_type}"
       end
+    elsif integration.ci_cd?
+      case integration.providable_type
+      when "BitriseIntegration"
+        edit_app_ci_cd_bitrise_config_path(@app)
+      else
+        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
+      end
+    else
+      raise TypeError, "further_setup? should be true only for version_control or ci_cd integrations"
     end
   end
 end
