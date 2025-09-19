@@ -92,7 +92,7 @@ class IntegrationCardComponent < BaseComponent
 
   def further_setup?
     # TODO: delegate to Integration properly
-    integration.version_control? || integration.ci_cd?
+    integration.version_control? || integration.ci_cd? || integration.build_channel?
   end
 
   def edit_config_path
@@ -115,8 +115,15 @@ class IntegrationCardComponent < BaseComponent
       else
         raise TypeError, "Unknown providable_type: #{integration.providable_type}"
       end
+    elsif integration.build_channel?
+      case integration.providable_type
+      when "GoogleFirebaseIntegration"
+        edit_app_build_channel_google_firebase_config_path(@app)
+      else
+        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
+      end
     else
-      raise TypeError, "further_setup? should be true only for version_control or ci_cd integrations"
+      raise TypeError, "further_setup? should be true only for version_control, ci_cd, or build_channel integrations"
     end
   end
 end

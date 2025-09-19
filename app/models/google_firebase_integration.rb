@@ -3,6 +3,8 @@
 # Table name: google_firebase_integrations
 #
 #  id             :uuid             not null, primary key
+#  android_config :jsonb
+#  ios_config     :jsonb
 #  json_key       :string
 #  project_number :string
 #  created_at     :datetime         not null

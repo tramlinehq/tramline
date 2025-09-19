@@ -155,7 +155,15 @@ class AppConfig < ApplicationRecord
 
   def firebase_ready?
     return true unless app.firebase_connected?
-    configs_ready?(firebase_ios_config, firebase_android_config)
+
+    firebase_build_channel = app.integrations.firebase_build_channel_provider
+    return firebase_build_channel.ios_config.present? if app.ios?
+    return firebase_build_channel.android_config.present? if app.android?
+
+    if app.cross_platform?
+      firebase_build_channel.ios_config.present? &&
+        firebase_build_channel.android_config.present?
+    end
   end
 
   def bitrise_ready?

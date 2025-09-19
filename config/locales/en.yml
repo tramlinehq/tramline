@@ -792,3 +792,8 @@ en:
     bitrise_configs:
       update:
         success: "CI/CD configuration was successfully updated."
+
+  build_channel:
+    google_firebase_configs:
+      update:
+        success: "Build channel configuration was successfully updated."

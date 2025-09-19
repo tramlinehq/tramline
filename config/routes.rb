@@ -79,6 +79,10 @@ Rails.application.routes.draw do
       resource :bitrise_config, only: %i[edit update]
     end
 
+    namespace :build_channel do
+      resource :google_firebase_config, only: %i[edit update]
+    end
+
     member do
       get :all_builds
       get :search
