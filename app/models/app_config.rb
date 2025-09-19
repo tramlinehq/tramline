@@ -63,7 +63,7 @@ class AppConfig < ApplicationRecord
   end
 
   def bitrise_project
-    bitrise_project_id&.fetch("id", nil)
+    app.ci_cd_provider&.project_config&.fetch("id", nil)
   end
 
   def further_setup_by_category?
@@ -73,7 +73,7 @@ class AppConfig < ApplicationRecord
     if integrations.version_control.present?
       categories[:version_control] = {
         further_setup: integrations.version_control.any?(&:further_setup?),
-        ready: code_repository.present?
+        ready: integrations.version_control.any? { _1.providable&.repository_config.present? } # TODO: perhaps &:ready? makes sense?
       }
     end
 
@@ -140,6 +140,10 @@ class AppConfig < ApplicationRecord
     save!
   end
 
+  def code_repository
+    app.vcs_provider&.repository_config
+  end
+
   private
 
   def set_bugsnag_config
@@ -151,12 +155,20 @@ class AppConfig < ApplicationRecord
 
   def firebase_ready?
     return true unless app.firebase_connected?
-    configs_ready?(firebase_ios_config, firebase_android_config)
+
+    firebase_build_channel = app.integrations.firebase_build_channel_provider
+    return firebase_build_channel.ios_config.present? if app.ios?
+    return firebase_build_channel.android_config.present? if app.android?
+
+    if app.cross_platform?
+      firebase_build_channel.ios_config.present? &&
+        firebase_build_channel.android_config.present?
+    end
   end
 
   def bitrise_ready?
     return true unless app.bitrise_connected?
-    bitrise_project.present?
+    app.ci_cd_provider.project_config.present?
   end
 
   def bugsnag_ready?

@@ -77,4 +77,53 @@ class IntegrationCardComponent < BaseComponent
   def disconnectable?
     integration.disconnectable? && disconnectable_categories?
   end
+
+  def category_title
+    "Configure #{Integration.human_enum_name(:category, @category)}"
+  end
+
+  def pre_open_category?
+    @pre_open_category == @category
+  end
+
+  def category_config_turbo_frame_id
+    "#{@category}_config"
+  end
+
+  def further_setup?
+    # TODO: delegate to Integration properly
+    integration.version_control? || integration.ci_cd? || integration.build_channel?
+  end
+
+  def edit_config_path
+    # TODO: find a potentially better way to route this
+    if integration.version_control?
+      case integration.providable_type
+      when "GithubIntegration"
+        edit_app_version_control_github_config_path(@app)
+      when "GitlabIntegration"
+        edit_app_version_control_gitlab_config_path(@app)
+      when "BitbucketIntegration"
+        edit_app_version_control_bitbucket_config_path(@app)
+      else
+        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
+      end
+    elsif integration.ci_cd?
+      case integration.providable_type
+      when "BitriseIntegration"
+        edit_app_ci_cd_bitrise_config_path(@app)
+      else
+        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
+      end
+    elsif integration.build_channel?
+      case integration.providable_type
+      when "GoogleFirebaseIntegration"
+        edit_app_build_channel_google_firebase_config_path(@app)
+      else
+        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
+      end
+    else
+      raise TypeError, "further_setup? should be true only for version_control, ci_cd, or build_channel integrations"
+    end
+  end
 end

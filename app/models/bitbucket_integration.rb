@@ -5,6 +5,8 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  repository_config   :jsonb
+#  workspace           :string
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
