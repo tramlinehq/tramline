@@ -10,10 +10,11 @@ class IntegrationCardComponent < BaseComponent
     bitrise: "Access Token"
   }
 
-  def initialize(app, integration, category)
+  def initialize(app, integration, category, pre_open_category = nil)
     @app = app
     @integration = integration
     @category = category
+    @pre_open_category = pre_open_category
   end
 
   attr_reader :integration
