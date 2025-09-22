@@ -10,7 +10,7 @@
               "Code Repository",
               options_for_select(
                 display_channels(@code_repositories) { |repo| repo[:full_name] },
-                @code_repository.to_json
+                @code_repositories.find { |repo| repo[:id] == @gitlab_integration.repository_config&.dig("id") }&.to_json
               ) %>
       </div>
     <% end %>

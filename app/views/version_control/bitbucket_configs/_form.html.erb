@@ -9,7 +9,7 @@
           data-stream-effect-param-value="workspace">
       <%= section.F.labeled_select :workspace,
             "Workspace",
-            options_for_select(workspaces, selected: bitbucket_integration.workspace),
+            options_for_select(workspaces, bitbucket_integration.workspace),
             {},
             disabled: workspaces.blank?,
             class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES,
@@ -21,7 +21,7 @@
             "Code Repository",
             options_for_select(
               display_channels(code_repositories) { |repo| repo[:full_name] },
-              code_repository.to_json
+              code_repositories.find { |repo| repo[:full_name] == bitbucket_integration.repository_config&.dig("full_name") }&.to_json
             ) %>
     </div>
   <% end %>

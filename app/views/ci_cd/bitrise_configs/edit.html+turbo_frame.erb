@@ -12,7 +12,7 @@
                 "App Name",
                 options_for_select(
                   display_channels(@ci_cd_apps) { |app| "#{app[:name]} (#{app[:id]})" },
-                  @project_config.to_json
+                  @ci_cd_apps.find { |app| app[:id] == @project_config&.dig("id") }&.to_json
                 ),
                 {},
                 data: {controller: "input-select"} %>
