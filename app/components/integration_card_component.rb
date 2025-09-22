@@ -93,7 +93,7 @@ class IntegrationCardComponent < BaseComponent
 
   def further_setup?
     # TODO: delegate to Integration properly
-    integration.version_control? || integration.ci_cd? || integration.build_channel?
+    integration.version_control? || integration.ci_cd? || integration.build_channel? || integration.monitoring?
   end
 
   def edit_config_path
@@ -123,8 +123,15 @@ class IntegrationCardComponent < BaseComponent
       else
         raise TypeError, "Unknown providable_type: #{integration.providable_type}"
       end
+    elsif integration.monitoring?
+      case integration.providable_type
+      when "BugsnagIntegration"
+        edit_app_monitoring_bugsnag_config_path(@app)
+      else
+        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
+      end
     else
-      raise TypeError, "further_setup? should be true only for version_control, ci_cd, or build_channel integrations"
+      raise TypeError, "further_setup? should be true only for version_control, ci_cd, build_channel, or monitoring integrations"
     end
   end
 end

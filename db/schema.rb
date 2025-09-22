@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_09_18_025642) do
+ActiveRecord::Schema[7.2].define(version: 2025_09_19_124803) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -148,6 +148,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_18_025642) do
     t.string "access_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "android_config"
+    t.jsonb "ios_config"
   end
 
   create_table "build_artifacts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

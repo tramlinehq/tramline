@@ -797,3 +797,8 @@ en:
     google_firebase_configs:
       update:
         success: "Build channel configuration was successfully updated."
+
+  monitoring:
+    bugsnag_configs:
+      update:
+        success: "Monitoring configuration was successfully updated."

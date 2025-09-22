@@ -109,21 +109,11 @@ class AppConfig < ApplicationRecord
   end
 
   def bugsnag_project(platform)
-    case platform
-    when "android" then bugsnag_android_config["project_id"]
-    when "ios" then bugsnag_ios_config["project_id"]
-    else
-      raise ArgumentError, INVALID_PLATFORM_ERROR
-    end
+    app.monitoring_provider.project(platform)
   end
 
   def bugsnag_release_stage(platform)
-    case platform
-    when "android" then bugsnag_android_config["release_stage"]
-    when "ios" then bugsnag_ios_config["release_stage"]
-    else
-      raise ArgumentError, INVALID_PLATFORM_ERROR
-    end
+    app.monitoring_provider.release_stage(platform)
   end
 
   def ci_cd_workflows
@@ -147,10 +137,11 @@ class AppConfig < ApplicationRecord
   private
 
   def set_bugsnag_config
-    self.bugsnag_ios_release_stage = bugsnag_ios_config&.fetch("release_stage", nil)
-    self.bugsnag_ios_project_id = bugsnag_ios_config&.fetch("project_id", nil)
-    self.bugsnag_android_release_stage = bugsnag_android_config&.fetch("release_stage", nil)
-    self.bugsnag_android_project_id = bugsnag_android_config&.fetch("project_id", nil)
+    monitoring_provider = app.monitoring_provider
+    self.bugsnag_ios_release_stage = monitoring_provider.ios_release_stage
+    self.bugsnag_ios_project_id = monitoring_provider.ios_project_id
+    self.bugsnag_android_release_stage = monitoring_provider.android_release_stage
+    self.bugsnag_android_project_id = monitoring_provider.android_project_id
   end
 
   def firebase_ready?
@@ -166,7 +157,8 @@ class AppConfig < ApplicationRecord
 
   def bugsnag_ready?
     return true unless app.bugsnag_connected?
-    configs_ready?(bugsnag_ios_config, bugsnag_android_config)
+    monitoring_provider = app.monitoring_provider
+    configs_ready?(monitoring_provider.ios_config, monitoring_provider.android_config)
   end
 
   def configs_ready?(ios, android)

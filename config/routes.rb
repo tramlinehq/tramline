@@ -83,6 +83,10 @@ Rails.application.routes.draw do
       resource :google_firebase_config, only: %i[edit update]
     end
 
+    namespace :monitoring do
+      resource :bugsnag_config, only: %i[edit update]
+    end
+
     member do
       get :all_builds
       get :search
