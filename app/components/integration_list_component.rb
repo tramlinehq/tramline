@@ -12,9 +12,4 @@ class IntegrationListComponent < BaseComponent
   def pre_open?(category)
     @pre_open_category == category
   end
-
-  def connected_integrations?(integrations)
-    # TODO: Move away from checking integration category later
-    integrations.any? { |i| i.connected? && i.further_setup? && !(i.version_control? || i.ci_cd? || i.build_channel? || i.monitoring?) }
-  end
 end

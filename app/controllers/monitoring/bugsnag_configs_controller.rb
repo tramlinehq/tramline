@@ -42,17 +42,6 @@ class Monitoring::BugsnagConfigsController < SignedInApplicationController
     @monitoring_projects = @bugsnag_integration.setup
   end
 
-  def bugsnag_integration_params
-    params
-      .require(:bugsnag_integration)
-      .permit(
-        :ios_project_id,
-        :ios_release_stage,
-        :android_project_id,
-        :android_release_stage
-      )
-  end
-
   def parsed_bugsnag_config_params
     bugsnag_config_params = params.require(:bugsnag_integration)
       .permit(

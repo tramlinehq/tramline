@@ -5,6 +5,7 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  project_config      :jsonb            not null
 #  workspace_name      :string
 #  workspace_url_key   :string
 #  created_at          :datetime         not null
@@ -142,10 +143,10 @@ class LinearIntegration < ApplicationRecord
   end
 
   def fetch_issues_for_release
-    return [] if app.config.linear_config.blank?
+    return [] if project_config.blank?
 
-    team_id = app.config.linear_config["selected_teams"]&.last
-    release_filters = app.config.linear_config["release_filters"]
+    team_id = project_config["selected_teams"]&.last
+    release_filters = project_config["release_filters"]
     return [] if team_id.blank? || release_filters.blank?
 
     with_api_retries do

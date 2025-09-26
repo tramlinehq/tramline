@@ -7,6 +7,7 @@
 #  oauth_refresh_token :string
 #  organization_name   :string
 #  organization_url    :string
+#  project_config      :jsonb            not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #  cloud_id            :string           indexed
@@ -156,10 +157,10 @@ class JiraIntegration < ApplicationRecord
   end
 
   def fetch_tickets_for_release
-    return [] if app.config.jira_config.blank?
+    return [] if project_config.blank?
 
-    project_key = app.config.jira_config["selected_projects"]&.last
-    release_filters = app.config.jira_config["release_filters"]
+    project_key = project_config["selected_projects"]&.last
+    release_filters = project_config["release_filters"]
     return [] if project_key.blank? || release_filters.blank?
 
     with_api_retries do

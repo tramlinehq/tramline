@@ -15,7 +15,7 @@
       <% linear_data[:teams].each do |team| %>
         <% team_id = team["id"] %>
         <div class="flex items-center">
-          <%= form.fields_for :linear_config do |sf| %>
+          <%= form.fields_for :project_config do |sf| %>
             <% checked =
                  current_linear_config
                    &.dig("selected_teams")
@@ -69,7 +69,7 @@
                   <% state_name = "state_#{team_id}_#{state["name"].parameterize}" %>
 
                   <div class="flex items-center">
-                    <%= form.fields_for :linear_config do |sf| %>
+                    <%= form.fields_for :project_config do |sf| %>
                       <%= sf.fields_for :team_configs do |tf| %>
                         <%= tf.fields_for team_id do |tk| %>
                           <% checked =

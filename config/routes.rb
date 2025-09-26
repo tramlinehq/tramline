@@ -87,6 +87,11 @@ Rails.application.routes.draw do
       resource :bugsnag_config, only: %i[edit update]
     end
 
+    namespace :project_management do
+      resource :jira_config, only: %i[edit update]
+      resource :linear_config, only: %i[edit update]
+    end
+
     member do
       get :all_builds
       get :search

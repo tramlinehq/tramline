@@ -23,7 +23,8 @@ class IntegrationCardComponent < BaseComponent
     :providable,
     :connection_data,
     :providable_type,
-    :disconnectable_categories?, to: :integration, allow_nil: true
+    :disconnectable_categories?,
+    :further_setup?, to: :integration, allow_nil: true
   delegate :creatable?, :connectable?, to: :provider
   alias_method :provider, :providable
 
@@ -91,47 +92,62 @@ class IntegrationCardComponent < BaseComponent
     "#{@category}_config"
   end
 
-  def further_setup?
-    # TODO: delegate to Integration properly
-    integration.version_control? || integration.ci_cd? || integration.build_channel? || integration.monitoring?
+  def edit_config_path
+    case integration.category
+    when "version_control" then edit_app_version_control_config_path
+    when "ci_cd" then edit_app_ci_cd_config_path
+    when "build_channel" then edit_app_build_channel_config_path
+    when "monitoring" then edit_app_monitoring_config_path
+    when "project_management" then edit_app_project_management_config_path
+    else unsupported_integration_category
+    end
   end
 
-  def edit_config_path
-    # TODO: find a potentially better way to route this
-    if integration.version_control?
-      case integration.providable_type
-      when "GithubIntegration"
-        edit_app_version_control_github_config_path(@app)
-      when "GitlabIntegration"
-        edit_app_version_control_gitlab_config_path(@app)
-      when "BitbucketIntegration"
-        edit_app_version_control_bitbucket_config_path(@app)
-      else
-        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
-      end
-    elsif integration.ci_cd?
-      case integration.providable_type
-      when "BitriseIntegration"
-        edit_app_ci_cd_bitrise_config_path(@app)
-      else
-        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
-      end
-    elsif integration.build_channel?
-      case integration.providable_type
-      when "GoogleFirebaseIntegration"
-        edit_app_build_channel_google_firebase_config_path(@app)
-      else
-        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
-      end
-    elsif integration.monitoring?
-      case integration.providable_type
-      when "BugsnagIntegration"
-        edit_app_monitoring_bugsnag_config_path(@app)
-      else
-        raise TypeError, "Unknown providable_type: #{integration.providable_type}"
-      end
-    else
-      raise TypeError, "further_setup? should be true only for version_control, ci_cd, build_channel, or monitoring integrations"
+  private
+
+  def edit_app_version_control_config_path
+    case integration.providable_type
+    when "GithubIntegration" then edit_app_version_control_github_config_path(@app)
+    when "GitlabIntegration" then edit_app_version_control_gitlab_config_path(@app)
+    when "BitbucketIntegration" then edit_app_version_control_bitbucket_config_path(@app)
+    else unsupported_integration_type
     end
+  end
+
+  def edit_app_ci_cd_config_path
+    case integration.providable_type
+    when "BitriseIntegration" then edit_app_ci_cd_bitrise_config_path(@app)
+    else unsupported_integration_type
+    end
+  end
+
+  def edit_app_build_channel_config_path
+    case integration.providable_type
+    when "GoogleFirebaseIntegration" then edit_app_build_channel_google_firebase_config_path(@app)
+    else unsupported_integration_type
+    end
+  end
+
+  def edit_app_monitoring_config_path
+    case integration.providable_type
+    when "BugsnagIntegration" then edit_app_monitoring_bugsnag_config_path(@app)
+    else unsupported_integration_type
+    end
+  end
+
+  def edit_app_project_management_config_path
+    case integration.providable_type
+    when "JiraIntegration" then edit_app_project_management_jira_config_path(@app)
+    when "LinearIntegration" then edit_app_project_management_linear_config_path(@app)
+    else unsupported_integration_type
+    end
+  end
+
+  def unsupported_integration_category
+    raise TypeError, "Unsupported integration category: #{integration.category}"
+  end
+
+  def unsupported_integration_type
+    raise TypeError, "Unsupported integration type: #{integration.providable_type}"
   end
 end

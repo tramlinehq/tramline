@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_09_19_124803) do
+ActiveRecord::Schema[7.2].define(version: 2025_09_24_035033) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -435,6 +435,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_19_124803) do
     t.datetime "updated_at", null: false
     t.string "organization_name"
     t.string "organization_url"
+    t.jsonb "project_config", default: {}, null: false
     t.index ["cloud_id"], name: "index_jira_integrations_on_cloud_id"
   end
 
@@ -446,6 +447,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_19_124803) do
     t.datetime "updated_at", null: false
     t.string "workspace_name"
     t.string "workspace_url_key"
+    t.jsonb "project_config", default: {}, null: false
     t.index ["workspace_id"], name: "index_linear_integrations_on_workspace_id"
   end
 

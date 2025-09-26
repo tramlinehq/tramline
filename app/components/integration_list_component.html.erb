@@ -9,22 +9,6 @@
         <% end %>
       </div>
     </div>
-    <% if connected_integrations?(integrations) %>
-      <% sc.with_sidenote do %>
-        <%= render ModalComponent.new(title: title(category), open: pre_open?(category)) do |modal| %>
-          <% modal.with_button(label: "Configure", scheme: :light, type: :action, size: :xxs, arrow: :none)
-               .with_icon("cog.svg", size: :md) %>
-          <% modal.with_body do %>
-            <%= tag.turbo_frame id: "#{category}_config",
-                                src: edit_app_app_config_path(@app, integration_category: category),
-                                loading: :lazy,
-                                class: "with-turbo-frame-loader" do %>
-              <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
-            <% end %>
-          <% end %>
-        <% end %>
-      <% end %>
-    <% end %>
   <% end %>
 <% end %>
 <%= render SectionComponent.new(style: :titled, title: "Coming Soon") do %>

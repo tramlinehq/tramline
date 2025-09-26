@@ -802,3 +802,11 @@ en:
     bugsnag_configs:
       update:
         success: "Monitoring configuration was successfully updated."
+
+  project_management:
+    jira_configs:
+      update:
+        success: "Project management configuration was successfully updated."
+    linear_configs:
+      update:
+        success: "Project management configuration was successfully updated."
