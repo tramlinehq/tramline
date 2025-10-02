@@ -28,14 +28,15 @@ class AppConfig < ApplicationRecord
 
   attr_accessor :bugsnag_ios_release_stage, :bugsnag_android_release_stage, :bugsnag_ios_project_id, :bugsnag_android_project_id
 
+  # TODO: migrate validations to the appropriate integrations
   validates :firebase_ios_config,
     allow_blank: true,
     json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
   validates :firebase_android_config,
     allow_blank: true,
     json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
-  validate :jira_release_filters, if: -> { jira_config&.dig("release_filters").present? } # TODO: remove
-  validate :linear_release_filters, if: -> { linear_config&.dig("release_filters").present? } # TODO: remove
+  validate :jira_release_filters, if: -> { jira_config&.dig("release_filters").present? }
+  validate :linear_release_filters, if: -> { linear_config&.dig("release_filters").present? }
 
   after_initialize :set_bugsnag_config, if: :persisted?
 

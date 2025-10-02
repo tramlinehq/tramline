@@ -23,7 +23,15 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   encrypts :json_key, deterministic: true
 
+  PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
+
   validate :correct_key, on: :create
+  validates :ios_config,
+    allow_blank: true,
+    json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
+  validates :android_config,
+    allow_blank: true,
+    json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
 
   delegate :cache, to: Rails
   delegate :integrable, to: :integration
