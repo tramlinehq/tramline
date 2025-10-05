@@ -7,7 +7,7 @@ FactoryBot.define do
     build_number { Faker::Number.number(digits: 4) }
 
     after(:build) do |app|
-      app.config = build(:app_config, app: app)
+      app.config = build(:app_config, app: app) # TODO: try removing this
     end
 
     trait :android do

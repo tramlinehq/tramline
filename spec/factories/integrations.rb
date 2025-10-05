@@ -49,7 +49,7 @@ FactoryBot.define do
 
     trait :with_jira do
       category { "project_management" }
-      providable factory: %i[jira_integration with_app_config]
+      providable factory: %i[jira_integration with_config]
     end
 
     trait :with_crashlytics do
