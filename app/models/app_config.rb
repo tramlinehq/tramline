@@ -40,10 +40,6 @@ class AppConfig < ApplicationRecord
 
   after_initialize :set_bugsnag_config, if: :persisted?
 
-  def bitrise_project
-    app.ci_cd_provider&.project_config&.fetch("id", nil)
-  end
-
   def bugsnag_project(platform)
     app.monitoring_provider.project(platform)
   end
@@ -66,10 +62,6 @@ class AppConfig < ApplicationRecord
     save!
   end
 
-  def code_repository
-    app.vcs_provider&.repository_config
-  end
-
   private
 
   def set_bugsnag_config
@@ -88,7 +80,7 @@ class AppConfig < ApplicationRecord
 
   def bitrise_ready?
     return true unless app.bitrise_connected?
-    bitrise_project.present?
+    app.ci_cd_provider&.project_config&.fetch("id", nil).present?
   end
 
   def bugsnag_ready?

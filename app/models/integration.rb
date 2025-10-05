@@ -285,7 +285,7 @@ class Integration < ApplicationRecord
     end
 
     def bitrise_project
-      ci_cd_provider&.project_config&.fetch("id", nil)
+      ci_cd.find(&:bitrise_integration?)&.providable&.bitrise_project
     end
 
     def firebase_ready?

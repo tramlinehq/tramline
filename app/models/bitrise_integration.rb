@@ -59,9 +59,12 @@ class BitriseIntegration < ApplicationRecord
   encrypts :access_token, deterministic: true
 
   delegate :integrable, to: :integration
-  delegate :bitrise_project, to: :app_config
-  alias_method :project, :bitrise_project
   delegate :cache, to: Rails
+
+  def bitrise_project
+    project_config&.fetch("id", nil)
+  end
+  alias_method :project, :bitrise_project
 
   def installation
     API.new(access_token)
