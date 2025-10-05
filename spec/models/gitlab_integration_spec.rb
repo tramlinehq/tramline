@@ -3,19 +3,14 @@ require "rails_helper"
 describe GitlabIntegration do
   let(:app) { create(:app, :android) }
   let(:integration) { create(:integration, integrable: app) }
-  let(:gitlab_integration) { create(:gitlab_integration, :without_callbacks_and_validations, integration: integration) }
-  let(:app_config) { app.config }
+  let(:gitlab_integration) { create(:gitlab_integration, :without_callbacks_and_validations, integration:) }
   let(:installation) { instance_double(Installations::Gitlab::Api) }
-
-  before do
-    allow(gitlab_integration).to receive_messages(app_config: app_config, installation: installation)
-  end
 
   describe "#create_release!" do
     it "calls the GitLab API to create a release" do
       allow(installation).to receive(:create_release!).and_return({"tag_name" => "v1.0.0"})
       result = gitlab_integration.create_release!("v1.0.0", "main", anything, "Release notes")
-      expect(installation).to have_received(:create_release!).with(app_config.code_repository_name, "v1.0.0", "main", "Release notes")
+      expect(installation).to have_received(:create_release!).with(gitlab_integration.code_repository_name, "v1.0.0", "main", "Release notes")
       expect(result).to eq({"tag_name" => "v1.0.0"})
     end
 
@@ -31,7 +26,7 @@ describe GitlabIntegration do
     it "calls the GitLab API to get file content" do
       allow(installation).to receive(:get_file_content).and_return("file content")
       result = gitlab_integration.get_file_content("main", "path/to/file.txt")
-      expect(installation).to have_received(:get_file_content).with(app_config.code_repository_name, "main", "path/to/file.txt")
+      expect(installation).to have_received(:get_file_content).with(gitlab_integration.code_repository_name, "main", "path/to/file.txt")
       expect(result).to eq("file content")
     end
 
@@ -55,7 +50,7 @@ describe GitlabIntegration do
     it "calls the GitLab API to update a file" do
       allow(installation).to receive(:update_file!).and_return(true)
       result = gitlab_integration.update_file!("main", "path/to/file.txt", "new content", "commit message")
-      expect(installation).to have_received(:update_file!).with(app_config.code_repository_name, "main", "path/to/file.txt", "new content", "commit message", author_name: nil, author_email: nil)
+      expect(installation).to have_received(:update_file!).with(gitlab_integration.code_repository_name, "main", "path/to/file.txt", "new content", "commit message", author_name: nil, author_email: nil)
       expect(result).to be true
     end
 
@@ -63,7 +58,7 @@ describe GitlabIntegration do
       it "passes author details to update_file!" do
         allow(installation).to receive(:update_file!).and_return(true)
         gitlab_integration.update_file!("main", "path/to/file.txt", "new content", "commit message", author_name: "Test User", author_email: "test@example.com")
-        expect(installation).to have_received(:update_file!).with(app_config.code_repository_name, "main", "path/to/file.txt", "new content", "commit message", author_name: "Test User", author_email: "test@example.com")
+        expect(installation).to have_received(:update_file!).with(gitlab_integration.code_repository_name, "main", "path/to/file.txt", "new content", "commit message", author_name: "Test User", author_email: "test@example.com")
       end
     end
 
@@ -83,14 +78,14 @@ describe GitlabIntegration do
         trigger_job!: nil
       )
       gitlab_integration.trigger_workflow_run!("ci_cd_channel", "main", {key: "value"})
-      expect(installation).to have_received(:run_pipeline_with_job!).with(app_config.code_repository_name, "main", {key: "value"}, "ci_cd_channel", nil, GitlabIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
+      expect(installation).to have_received(:run_pipeline_with_job!).with(gitlab_integration.code_repository_name, "main", {key: "value"}, "ci_cd_channel", nil, GitlabIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
     end
 
     context "with commit SHA" do
       it "passes commit SHA to run_pipeline_with_job!" do
         allow(installation).to receive(:run_pipeline_with_job!).and_return({ci_ref: "123", ci_link: "http://example.com"})
         gitlab_integration.trigger_workflow_run!("ci_cd_channel", "main", {key: "value"}, "abc123")
-        expect(installation).to have_received(:run_pipeline_with_job!).with(app_config.code_repository_name, "main", {key: "value"}, "ci_cd_channel", "abc123", GitlabIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
+        expect(installation).to have_received(:run_pipeline_with_job!).with(gitlab_integration.code_repository_name, "main", {key: "value"}, "ci_cd_channel", "abc123", GitlabIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
       end
     end
 
@@ -106,7 +101,7 @@ describe GitlabIntegration do
     it "calls the GitLab API to cancel a pipeline" do
       allow(installation).to receive(:cancel_job!)
       gitlab_integration.cancel_workflow_run!("123")
-      expect(installation).to have_received(:cancel_job!).with(app_config.code_repository_name, "123")
+      expect(installation).to have_received(:cancel_job!).with(gitlab_integration.code_repository_name, "123")
     end
   end
 
@@ -114,7 +109,7 @@ describe GitlabIntegration do
     it "calls the GitLab API to retry a pipeline" do
       allow(installation).to receive(:retry_job!)
       gitlab_integration.retry_workflow_run!("123")
-      expect(installation).to have_received(:retry_job!).with(app_config.code_repository_name, "123", GitlabIntegration::JOB_RUN_TRANSFORMATIONS)
+      expect(installation).to have_received(:retry_job!).with(gitlab_integration.code_repository_name, "123", GitlabIntegration::JOB_RUN_TRANSFORMATIONS)
     end
   end
 
@@ -122,7 +117,7 @@ describe GitlabIntegration do
     it "calls the GitLab API to get a pipeline" do
       allow(installation).to receive(:get_job)
       gitlab_integration.get_workflow_run("123")
-      expect(installation).to have_received(:get_job).with(app_config.code_repository_name, "123")
+      expect(installation).to have_received(:get_job).with(gitlab_integration.code_repository_name, "123")
     end
   end
 
@@ -130,7 +125,7 @@ describe GitlabIntegration do
     it "calls the GitLab API to create a tag" do
       allow(installation).to receive(:create_tag!).and_return({"name" => "v1.0.0"})
       result = gitlab_integration.create_tag!("v1.0.0", "abcdef")
-      expect(installation).to have_received(:create_tag!).with(app_config.code_repository_name, "v1.0.0", "abcdef")
+      expect(installation).to have_received(:create_tag!).with(gitlab_integration.code_repository_name, "v1.0.0", "abcdef")
       expect(result).to eq({"name" => "v1.0.0"})
     end
 
@@ -153,14 +148,14 @@ describe GitlabIntegration do
     it "calls the GitLab API to cherry pick a commit" do
       allow(installation).to receive(:cherry_pick_pr).and_return({})
       gitlab_integration.create_patch_pr!("main", "patch-branch", "abcdef", "PR Title")
-      expect(installation).to have_received(:cherry_pick_pr).with(app_config.code_repository_name, "main", "abcdef", "patch-branch", "PR Title", "", GitlabIntegration::PR_TRANSFORMATIONS)
+      expect(installation).to have_received(:cherry_pick_pr).with(gitlab_integration.code_repository_name, "main", "abcdef", "patch-branch", "PR Title", "", GitlabIntegration::PR_TRANSFORMATIONS)
     end
 
     context "with custom description" do
       it "passes description to cherry_pick_pr" do
         allow(installation).to receive(:cherry_pick_pr).and_return({})
         gitlab_integration.create_patch_pr!("main", "patch-branch", "abcdef", "PR Title", "Custom description")
-        expect(installation).to have_received(:cherry_pick_pr).with(app_config.code_repository_name, "main", "abcdef", "patch-branch", "PR Title", "Custom description", GitlabIntegration::PR_TRANSFORMATIONS)
+        expect(installation).to have_received(:cherry_pick_pr).with(gitlab_integration.code_repository_name, "main", "abcdef", "patch-branch", "PR Title", "Custom description", GitlabIntegration::PR_TRANSFORMATIONS)
       end
     end
 
@@ -176,7 +171,7 @@ describe GitlabIntegration do
     it "calls the GitLab API to enable auto merge" do
       allow(installation).to receive(:enable_auto_merge).and_return(true)
       result = gitlab_integration.enable_auto_merge!(123)
-      expect(installation).to have_received(:enable_auto_merge).with(app_config.code_repository_name, 123)
+      expect(installation).to have_received(:enable_auto_merge).with(gitlab_integration.code_repository_name, 123)
       expect(result).to be true
     end
 

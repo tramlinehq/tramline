@@ -28,8 +28,11 @@ class BitbucketIntegration < ApplicationRecord
   attr_accessor :code
   before_create :complete_access
   delegate :integrable, to: :integration
-  delegate :code_repository_name, to: :app_config
   delegate :cache, to: Rails
+
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
 
   def install_path
     BASE_INSTALLATION_URL
@@ -380,10 +383,6 @@ class BitbucketIntegration < ApplicationRecord
 
   def set_tokens(tokens)
     assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token) if tokens
-  end
-
-  def app_config
-    integrable.config
   end
 
   def redirect_uri

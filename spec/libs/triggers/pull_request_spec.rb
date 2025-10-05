@@ -9,7 +9,7 @@ describe Triggers::PullRequest do
   let(:pr_title) { Faker::Lorem.word }
   let(:pr_description) { Faker::Lorem.word }
   let(:repo_integration) { instance_double(Installations::Github::Api) }
-  let(:repo_name) { app.config.code_repository_name }
+  let(:repo_name) { app.vcs_provider.code_repository_name }
   let(:no_diff_error) { Installations::Error.new("Should not create a Pull Request without a diff", reason: :pull_request_without_commits) }
 
   before do

@@ -25,7 +25,7 @@ class GitlabIntegration < ApplicationRecord
   before_validation :complete_access, if: :new_record?
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
-  delegate :code_repository_name, :code_repo_namespace, to: :app_config
+  delegate :code_repo_namespace, to: :app_config
   delegate :cache, to: Rails
   validate :correct_key, on: :create
 
@@ -156,6 +156,10 @@ class GitlabIntegration < ApplicationRecord
     archive_download_url: :file_location,
     generated_at: :created_at
   }
+
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
 
   def install_path
     BASE_INSTALLATION_URL
@@ -347,7 +351,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def get_commit(sha)
-    with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMITS_TRANSFORMATIONS) }
+    with_api_retries { installation.get_commit(repository_config["id"], sha, COMMITS_TRANSFORMATIONS) }
   end
 
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
