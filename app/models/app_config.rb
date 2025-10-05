@@ -40,10 +40,6 @@ class AppConfig < ApplicationRecord
 
   after_initialize :set_bugsnag_config, if: :persisted?
 
-  def code_repo_url
-    code_repository&.fetch("repo_url", nil)
-  end
-
   def code_repo_namespace
     code_repository&.fetch("namespace", nil)
   end
