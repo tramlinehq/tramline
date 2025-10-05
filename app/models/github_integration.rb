@@ -19,7 +19,6 @@ class GithubIntegration < ApplicationRecord
 
   validates :installation_id, presence: true
 
-  delegate :code_repo_name_only, to: :app_config
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
   delegate :cache, to: Rails
@@ -121,6 +120,10 @@ class GithubIntegration < ApplicationRecord
 
   def code_repo_namespace
     repository_config&.fetch("namespace", nil)
+  end
+
+  def code_repo_name_only
+    repository_config&.fetch("name", nil)
   end
 
   def install_path
@@ -386,10 +389,6 @@ class GithubIntegration < ApplicationRecord
 
   def update_webhook!(id, url_params)
     installation.update_repo_webhook!(code_repository_name, id, events_url(url_params), WEBHOOK_TRANSFORMATIONS)
-  end
-
-  def app_config
-    integrable.config
   end
 
   def events_url(params)

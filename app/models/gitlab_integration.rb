@@ -168,6 +168,10 @@ class GitlabIntegration < ApplicationRecord
     repository_config&.fetch("namespace", nil)
   end
 
+  def code_repo_name_only
+    repository_config&.fetch("name", nil)
+  end
+
   def install_path
     BASE_INSTALLATION_URL
       .expand(params: {

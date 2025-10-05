@@ -40,10 +40,6 @@ class AppConfig < ApplicationRecord
 
   after_initialize :set_bugsnag_config, if: :persisted?
 
-  def code_repo_name_only
-    code_repository&.fetch("name", nil)
-  end
-
   def bitrise_project
     app.ci_cd_provider&.project_config&.fetch("id", nil)
   end
