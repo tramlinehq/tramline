@@ -40,14 +40,6 @@ class AppConfig < ApplicationRecord
 
   after_initialize :set_bugsnag_config, if: :persisted?
 
-  def bugsnag_project(platform)
-    app.monitoring_provider.project(platform)
-  end
-
-  def bugsnag_release_stage(platform)
-    app.monitoring_provider.release_stage(platform)
-  end
-
   def ci_cd_workflows
     super&.map(&:with_indifferent_access)
   end
