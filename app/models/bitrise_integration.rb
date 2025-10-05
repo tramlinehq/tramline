@@ -197,10 +197,6 @@ class BitriseIntegration < ApplicationRecord
     []
   end
 
-  def app_config
-    integrable.config
-  end
-
   def correct_key
     if access_token.present?
       errors.add(:access_token, :no_apps) if list_apps.size < 1

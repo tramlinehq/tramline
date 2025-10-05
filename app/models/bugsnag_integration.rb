@@ -148,10 +148,6 @@ class BugsnagIntegration < ApplicationRecord
     project(platform)&.fetch("id", nil)
   end
 
-  def app_config
-    integrable.config
-  end
-
   def correct_key
     if access_token.present? && list_organizations.blank?
       errors.add(:access_token, :no_orgs)

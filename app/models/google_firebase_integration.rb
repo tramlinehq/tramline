@@ -35,8 +35,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   delegate :cache, to: Rails
   delegate :integrable, to: :integration
-  delegate :config, to: :integrable
-  delegate :firebase_app, to: :config
 
   after_create_commit :fetch_channels
 
@@ -57,6 +55,17 @@ class GoogleFirebaseIntegration < ApplicationRecord
   EMPTY_CHANNEL = {id: :no_testers, name: "No testers (upload only)"}
 
   CACHE_EXPIRY = 1.month
+
+  INVALID_PLATFORM_ERROR = "platform must be valid"
+
+  def firebase_app(platform)
+    case platform
+    when "android" then android_config["app_id"]
+    when "ios" then ios_config["app_id"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
+  end
 
   def installation
     Installations::Google::Firebase::Api.new(project_number, access_key)
