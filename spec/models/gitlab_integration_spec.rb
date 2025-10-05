@@ -6,6 +6,10 @@ describe GitlabIntegration do
   let(:gitlab_integration) { create(:gitlab_integration, :without_callbacks_and_validations, integration:) }
   let(:installation) { instance_double(Installations::Gitlab::Api) }
 
+  before do
+    allow(gitlab_integration).to receive_messages(installation:)
+  end
+
   describe "#create_release!" do
     it "calls the GitLab API to create a release" do
       allow(installation).to receive(:create_release!).and_return({"tag_name" => "v1.0.0"})
