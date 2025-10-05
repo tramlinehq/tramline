@@ -40,6 +40,7 @@ class AppConfig < ApplicationRecord
 
   after_initialize :set_bugsnag_config, if: :persisted?
 
+  # NOTE: not sure where this is being called from, if at all
   def ci_cd_workflows
     super&.map(&:with_indifferent_access)
   end

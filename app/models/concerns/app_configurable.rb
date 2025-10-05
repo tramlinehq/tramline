@@ -1,6 +1,8 @@
 module AppConfigurable
   INVALID_PLATFORM_ERROR = "platform must be valid"
 
+  # NOTE: not being used by AppVariant, only by GoogleFirebaseIntegration via AppConfig
+  # Can probably be moved into GoogleFirebaseIntegration
   def firebase_app(platform)
     case platform
     when "android" then firebase_android_config["app_id"]
