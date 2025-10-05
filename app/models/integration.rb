@@ -158,7 +158,7 @@ class Integration < ApplicationRecord
     end
 
     def ready?
-      MINIMUM_REQUIRED_SET.all? { |category| category_ready?(category) }
+      minimum_required_set_ready? && integration_configs_ready?
     end
 
     def slack_notifications?
@@ -211,10 +211,126 @@ class Integration < ApplicationRecord
       kept.build_channel.filter { |b| ALLOWED_INTEGRATIONS_FOR_APP[platform.to_sym][:build_channel].include?(b.providable_type) }
     end
 
+    def further_setup_by_category
+      connected_integrations = connected
+      categories = {}.with_indifferent_access
+
+      if connected_integrations.version_control.present?
+        categories[:version_control] = {
+          further_setup: connected_integrations.version_control.any?(&:further_setup?),
+          ready: code_repository.present?
+        }
+      end
+
+      if connected_integrations.ci_cd.present?
+        categories[:ci_cd] = {
+          further_setup: connected_integrations.ci_cd.any?(&:further_setup?),
+          ready: bitrise_ready?
+        }
+      end
+
+      if connected_integrations.build_channel.present?
+        categories[:build_channel] = {
+          further_setup: connected_integrations.build_channel.map(&:providable).any?(&:further_setup?),
+          ready: firebase_ready?
+        }
+      end
+
+      if connected_integrations.monitoring.present?
+        categories[:monitoring] = {
+          further_setup: connected_integrations.monitoring.any?(&:further_setup?),
+          ready: bugsnag_ready?
+        }
+      end
+
+      if connected_integrations.project_management.present?
+        categories[:project_management] = {
+          further_setup: connected_integrations.project_management.map(&:providable).any?(&:further_setup?),
+          ready: project_management_ready?
+        }
+      end
+
+      categories
+    end
+
     private
+
+    def minimum_required_set_ready?
+      MINIMUM_REQUIRED_SET.all? { |category| category_ready?(category) }
+    end
+
+    # Configuration readiness checks (migrated from AppConfig)
+    def integration_configs_ready?
+      return false if none? # need at least one integration
+
+      further_setup_by_category
+        .values
+        .pluck(:ready)
+        .all?
+    end
 
     def providable_error_message(meta)
       meta[:value].errors.full_messages[0]
+    end
+
+    def code_repository
+      vcs_provider&.repository_config
+    end
+
+    def bitrise_ready?
+      app = first&.integrable
+      return true unless app&.bitrise_connected?
+
+      bitrise_project.present?
+    end
+
+    def bitrise_project
+      ci_cd_provider&.project_config&.fetch("id", nil)
+    end
+
+    def firebase_ready?
+      app = first&.integrable
+      return true unless app&.firebase_connected?
+
+      firebase_build_channel = firebase_build_channel_provider
+      configs_ready?(app, firebase_build_channel&.android_config, firebase_build_channel&.ios_config)
+    end
+
+    def bugsnag_ready?
+      app = first&.integrable
+      return true unless app&.bugsnag_connected?
+
+      monitoring = monitoring_provider
+      configs_ready?(app, monitoring&.android_config, monitoring&.ios_config)
+    end
+
+    def project_management_ready?
+      return false if project_management.blank?
+
+      jira = project_management.find(&:jira_integration?)&.providable
+      linear = project_management.find(&:linear_integration?)&.providable
+
+      if jira
+        return jira.project_config.present? &&
+            jira.project_config["selected_projects"].present? &&
+            jira.project_config["selected_projects"].any? &&
+            jira.project_config["project_configs"].present?
+      end
+
+      if linear
+        return linear.project_config.present? &&
+            linear.project_config["selected_teams"].present? &&
+            linear.project_config["selected_teams"].any? &&
+            linear.project_config["team_configs"].present?
+      end
+
+      false
+    end
+
+    def configs_ready?(app, android, ios)
+      return ios.present? if app&.ios?
+      return android.present? if app&.android?
+      ios.present? && android.present? if app&.cross_platform?
     end
   end
 

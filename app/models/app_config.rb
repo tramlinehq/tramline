@@ -40,13 +40,6 @@ class AppConfig < ApplicationRecord
 
   after_initialize :set_bugsnag_config, if: :persisted?
 
-  def ready?
-    further_setup_by_category?
-      .values
-      .pluck(:ready)
-      .all?
-  end
-
   def code_repository_name
     code_repository&.fetch("full_name", nil)
   end
@@ -65,48 +58,6 @@ class AppConfig < ApplicationRecord
 
   def bitrise_project
     app.ci_cd_provider&.project_config&.fetch("id", nil)
-  end
-
-  def further_setup_by_category?
-    integrations = app.integrations.connected
-    categories = {}.with_indifferent_access
-
-    if integrations.version_control.present?
-      categories[:version_control] = {
-        further_setup: integrations.version_control.any?(&:further_setup?),
-        ready: code_repository.present?
-      }
-    end
-
-    if integrations.ci_cd.present?
-      categories[:ci_cd] = {
-        further_setup: integrations.ci_cd.any?(&:further_setup?),
-        ready: bitrise_ready?
-      }
-    end
-
-    if integrations.build_channel.present?
-      categories[:build_channel] = {
-        further_setup: integrations.build_channel.map(&:providable).any?(&:further_setup?),
-        ready: firebase_ready?
-      }
-    end
-
-    if integrations.monitoring.present?
-      categories[:monitoring] = {
-        further_setup: integrations.monitoring.any?(&:further_setup?),
-        ready: bugsnag_ready?
-      }
-    end
-
-    if integrations.project_management.present?
-      categories[:project_management] = {
-        further_setup: integrations.project_management.map(&:providable).any?(&:further_setup?),
-        ready: project_management_ready?
-      }
-    end
-
-    categories
   end
 
   def bugsnag_project(platform)

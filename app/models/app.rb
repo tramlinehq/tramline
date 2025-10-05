@@ -126,9 +126,7 @@ class App < ApplicationRecord
     integrations.project_management.connected.any?
   end
 
-  def ready?
-    integrations.ready? and config&.ready?
-  end
+  delegate :ready?, to: :integrations
 
   def guided_train_setup?
     trains.none? || train_in_creation.present?
@@ -193,7 +191,7 @@ class App < ApplicationRecord
       }
     }
 
-    config.further_setup_by_category?.each do |category, status_map|
+    integrations.further_setup_by_category.each do |category, status_map|
       app_config_setup[:app_config][:integrations][category] = {
         visible: true, completed: status_map[:ready]
       }
