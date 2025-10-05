@@ -31,7 +31,7 @@ describe Triggers::PullRequest do
         title: pr_title,
         description: pr_description
       )
-      namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
+      namespaced_release_branch = "#{release.train.app.vcs_provider.code_repo_namespace}:#{release_branch}"
 
       expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
       expect(result.ok?).to be(true)
@@ -96,7 +96,7 @@ describe Triggers::PullRequest do
 
       expect(repo_integration).to have_received(:cherry_pick_pr).with(repo_name, working_branch, commit.commit_hash, patch_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
       expect(repo_integration).to have_received(:merge_pr!).with(repo_name, created_pr.number, GithubIntegration::PR_TRANSFORMATIONS)
-      expect(repo_integration).to have_received(:enable_auto_merge).with(app.config.code_repo_namespace, app.config.code_repo_name_only, created_pr.number)
+      expect(repo_integration).to have_received(:enable_auto_merge).with(app.vcs_provider.code_repo_namespace, app.vcs_provider.code_repo_name_only, created_pr.number)
       expect(result.ok?).to be(true)
       expect(created_pr.closed?).to be(false)
     end
@@ -113,7 +113,7 @@ describe Triggers::PullRequest do
         description: pr_description,
         allow_without_diff: true
       )
-      namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
+      namespaced_release_branch = "#{release.train.app.vcs_provider.code_repo_namespace}:#{release_branch}"
 
       expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
       expect(result.ok?).to be(true)
@@ -132,7 +132,7 @@ describe Triggers::PullRequest do
         description: pr_description,
         allow_without_diff: false
       )
-      namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
+      namespaced_release_branch = "#{release.train.app.vcs_provider.code_repo_namespace}:#{release_branch}"
 
       expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
       expect(result.ok?).to be(false)

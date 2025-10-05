@@ -25,7 +25,6 @@ class GitlabIntegration < ApplicationRecord
   before_validation :complete_access, if: :new_record?
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
-  delegate :code_repo_namespace, to: :app_config
   delegate :cache, to: Rails
   validate :correct_key, on: :create
 
@@ -163,6 +162,10 @@ class GitlabIntegration < ApplicationRecord
 
   def code_repo_url
     repository_config&.fetch("repo_url", nil)
+  end
+
+  def code_repo_namespace
+    repository_config&.fetch("namespace", nil)
   end
 
   def install_path
@@ -482,10 +485,6 @@ class GitlabIntegration < ApplicationRecord
     end
 
     reload
-  end
-
-  def app_config
-    integrable.config
   end
 
   def redirect_uri

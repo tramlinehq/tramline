@@ -38,6 +38,10 @@ class BitbucketIntegration < ApplicationRecord
     repository_config&.fetch("repo_url", nil)
   end
 
+  def code_repo_namespace
+    repository_config&.fetch("namespace", nil)
+  end
+
   def install_path
     BASE_INSTALLATION_URL
       .expand(params: {

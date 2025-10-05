@@ -19,7 +19,7 @@ class GithubIntegration < ApplicationRecord
 
   validates :installation_id, presence: true
 
-  delegate :code_repo_namespace, :code_repo_name_only, to: :app_config
+  delegate :code_repo_name_only, to: :app_config
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
   delegate :cache, to: Rails
@@ -117,6 +117,10 @@ class GithubIntegration < ApplicationRecord
 
   def code_repo_url
     repository_config&.fetch("repo_url", nil)
+  end
+
+  def code_repo_namespace
+    repository_config&.fetch("namespace", nil)
   end
 
   def install_path
