@@ -42,7 +42,6 @@
                       options: app_integration_path(@app, integration),
                       type: :button,
                       size: :xxs,
-                      turbo: false,
                       disabled: !disconnectable?,
                       html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want disconnect the integration?"}}
                     ) do |b|

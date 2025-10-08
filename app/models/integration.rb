@@ -345,7 +345,6 @@ class Integration < ApplicationRecord
   def disconnect
     return unless disconnectable?
     transaction do
-      integrable.config.disconnect!(self)
       update!(status: :disconnected, discarded_at: Time.current)
       true
     end
