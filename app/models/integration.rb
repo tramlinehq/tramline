@@ -173,6 +173,10 @@ class Integration < ApplicationRecord
       kept.ci_cd.connected.first&.providable
     end
 
+    def bitrise_ci_cd_provider
+      kept.ci_cd.find(&:bitrise_integration?)&.providable
+    end
+
     def monitoring_provider
       kept.monitoring.first&.providable
     end
@@ -285,7 +289,7 @@ class Integration < ApplicationRecord
     end
 
     def bitrise_project
-      ci_cd.find(&:bitrise_integration?)&.providable&.bitrise_project
+      bitrise_ci_cd_provider&.bitrise_project
     end
 
     def firebase_ready?
