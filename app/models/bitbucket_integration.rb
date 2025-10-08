@@ -72,7 +72,7 @@ class BitbucketIntegration < ApplicationRecord
   def project_link = nil
 
   def further_setup?
-    false
+    true
   end
 
   def enable_auto_merge? = false

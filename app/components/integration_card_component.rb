@@ -116,6 +116,9 @@ class IntegrationCardComponent < BaseComponent
 
   def edit_app_ci_cd_config_path
     case integration.providable_type
+    when "GithubIntegration" then edit_app_ci_cd_github_config_path(@app)
+    when "GitlabIntegration" then edit_app_ci_cd_gitlab_config_path(@app)
+    when "BitbucketIntegration" then edit_app_ci_cd_bitbucket_config_path(@app)
     when "BitriseIntegration" then edit_app_ci_cd_bitrise_config_path(@app)
     else unsupported_integration_type
     end

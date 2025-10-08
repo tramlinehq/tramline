@@ -792,6 +792,15 @@ en:
     bitrise_configs:
       update:
         success: "CI/CD configuration was successfully updated."
+    github_configs:
+      update:
+        success: "CI/CD configuration was successfully updated."
+    gitlab_configs:
+      update:
+        success: "CI/CD configuration was successfully updated."
+    bitbucket_configs:
+      update:
+        success: "CI/CD configuration was successfully updated."
 
   build_channel:
     google_firebase_configs:

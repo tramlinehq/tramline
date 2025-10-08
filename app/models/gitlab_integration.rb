@@ -186,7 +186,8 @@ class GitlabIntegration < ApplicationRecord
 
   def correct_key
     if integration.ci_cd?
-      errors.add(:base, :workflows) if workflows(bust_cache: true).blank?
+      # NOTE: relaxing this validation temporarily since it depends on config that's not yet setup
+      # errors.add(:base, :workflows) if workflows(bust_cache: true).blank?
     elsif integration.version_control?
       errors.add(:base, :repos) if repos.blank?
     end
@@ -265,7 +266,7 @@ class GitlabIntegration < ApplicationRecord
   def workflow_retriable_in_place? = false
 
   def further_setup?
-    false
+    true
   end
 
   def enable_auto_merge? = true

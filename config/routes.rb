@@ -77,6 +77,9 @@ Rails.application.routes.draw do
 
     namespace :ci_cd do
       resource :bitrise_config, only: %i[edit update]
+      resource :github_config, only: %i[edit update]
+      resource :gitlab_config, only: %i[edit update]
+      resource :bitbucket_config, only: %i[edit update]
     end
 
     namespace :build_channel do

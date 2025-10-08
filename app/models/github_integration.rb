@@ -221,7 +221,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def further_setup?
-    false
+    true
   end
 
   def enable_auto_merge? = true
