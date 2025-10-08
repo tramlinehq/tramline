@@ -19,7 +19,7 @@ class VersionControl::BitbucketConfigsController < SignedInApplicationController
 
   def update
     if @bitbucket_integration.update(parsed_bitbucket_config_params)
-      redirect_to app_integrations_path(@app), notice: t(".success")
+      redirect_to app_path(@app), notice: t(".success")
     else
       redirect_back fallback_location: app_integrations_path(@app),
         flash: {error: @bitbucket_integration.errors.full_messages.to_sentence}

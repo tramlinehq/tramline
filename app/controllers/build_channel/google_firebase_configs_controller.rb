@@ -18,7 +18,7 @@ class BuildChannel::GoogleFirebaseConfigsController < SignedInApplicationControl
 
   def update
     if @google_firebase_integration.update(parsed_google_firebase_config_params)
-      redirect_to app_integrations_path(@app), notice: t(".success")
+      redirect_to app_path(@app), notice: t(".success")
     else
       redirect_back fallback_location: app_integrations_path(@app),
         flash: {error: @google_firebase_integration.errors.full_messages.to_sentence}

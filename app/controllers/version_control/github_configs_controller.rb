@@ -18,7 +18,7 @@ class VersionControl::GithubConfigsController < SignedInApplicationController
 
   def update
     if @github_integration.update(parsed_github_config_params)
-      redirect_to app_integrations_path(@app), notice: t(".success")
+      redirect_to app_path(@app), notice: t(".success")
     else
       redirect_back fallback_location: app_integrations_path(@app),
         flash: {error: @github_integration.errors.full_messages.to_sentence}

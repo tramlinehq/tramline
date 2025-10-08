@@ -18,7 +18,7 @@ class CiCd::BitriseConfigsController < SignedInApplicationController
 
   def update
     if @bitrise_integration.update(parsed_bitrise_config_params)
-      redirect_to app_integrations_path(@app), notice: t(".success")
+      redirect_to app_path(@app), notice: t(".success")
     else
       redirect_back fallback_location: app_integrations_path(@app),
         flash: {error: @bitrise_integration.errors.full_messages.to_sentence}

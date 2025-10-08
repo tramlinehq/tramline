@@ -126,7 +126,9 @@ class App < ApplicationRecord
     integrations.project_management.connected.any?
   end
 
-  delegate :ready?, to: :integrations
+  def ready?
+    integrations.ready? && integrations.configured?
+  end
 
   def guided_train_setup?
     trains.none? || train_in_creation.present?

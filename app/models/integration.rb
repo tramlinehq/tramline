@@ -158,7 +158,16 @@ class Integration < ApplicationRecord
     end
 
     def ready?
-      minimum_required_set_ready? && integration_configs_ready?
+      MINIMUM_REQUIRED_SET.all? { |category| category_ready?(category) }
+    end
+
+    def configured?
+      return false if none? # need at least one integration
+
+      further_setup_by_category
+        .values
+        .pluck(:ready)
+        .all?
     end
 
     def slack_notifications?
@@ -170,7 +179,7 @@ class Integration < ApplicationRecord
     end
 
     def ci_cd_provider
-      kept.ci_cd.connected.first&.providable
+      kept.ci_cd.first&.providable
     end
 
     def bitrise_ci_cd_provider
@@ -229,7 +238,7 @@ class Integration < ApplicationRecord
       if connected_integrations.ci_cd.present?
         categories[:ci_cd] = {
           further_setup: connected_integrations.ci_cd.any?(&:further_setup?),
-          ready: bitrise_ready?
+          ready: ci_cd_ready?
         }
       end
 
@@ -259,26 +268,29 @@ class Integration < ApplicationRecord
 
     private
 
-    def minimum_required_set_ready?
-      MINIMUM_REQUIRED_SET.all? { |category| category_ready?(category) }
-    end
-
-    # Configuration readiness checks (migrated from AppConfig)
-    def integration_configs_ready?
-      return false if none? # need at least one integration
-
-      further_setup_by_category
-        .values
-        .pluck(:ready)
-        .all?
-    end
-
     def providable_error_message(meta)
       meta[:value].errors.full_messages[0]
     end
 
     def code_repository
       vcs_provider&.repository_config
+    end
+
+    def ci_cd_code_repository
+      ci_cd_provider&.repository_config
+    end
+
+    def ci_cd_ready?
+      return false if ci_cd_provider.blank?
+
+      case ci_cd_provider
+      when GithubIntegration, GitlabIntegration, BitbucketIntegration
+        ci_cd_code_repository.present?
+      when BitriseIntegration
+        bitrise_ready?
+      else
+        false
+      end
     end
 
     def bitrise_ready?
