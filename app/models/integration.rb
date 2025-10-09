@@ -143,6 +143,7 @@ class Integration < ApplicationRecord
     end
 
     def category_ready?(category)
+      # Does the following need to change to `ready.first.integrable` since app seems like an optional `belongs_to` association?
       app = ready.first&.app
 
       if category != :build_channel || !app&.cross_platform?
@@ -294,8 +295,8 @@ class Integration < ApplicationRecord
     end
 
     def bitrise_ready?
-      app = first&.integrable
-      return true unless app&.bitrise_connected?
+      app = first.integrable
+      return true unless app.bitrise_connected?
 
       bitrise_project.present?
     end
@@ -305,16 +306,16 @@ class Integration < ApplicationRecord
     end
 
     def firebase_ready?
-      app = first&.integrable
-      return true unless app&.firebase_connected?
+      app = first.integrable
+      return true unless app.firebase_connected?
 
       firebase_build_channel = firebase_build_channel_provider
       configs_ready?(app, firebase_build_channel&.android_config, firebase_build_channel&.ios_config)
     end
 
     def bugsnag_ready?
-      app = first&.integrable
-      return true unless app&.bugsnag_connected?
+      app = first.integrable
+      return true unless app.bugsnag_connected?
 
       monitoring = monitoring_provider
       configs_ready?(app, monitoring&.android_config, monitoring&.ios_config)
@@ -343,10 +344,11 @@ class Integration < ApplicationRecord
       false
     end
 
+    # NOTE: Could be moved to App perhaps?
     def configs_ready?(app, android, ios)
-      return ios.present? if app&.ios?
-      return android.present? if app&.android?
-      ios.present? && android.present? if app&.cross_platform?
+      return ios.present? if app.ios?
+      return android.present? if app.android?
+      ios.present? && android.present? if app.cross_platform?
     end
   end
 
