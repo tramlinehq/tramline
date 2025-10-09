@@ -33,7 +33,7 @@ class BuildChannel::GoogleFirebaseConfigsController < SignedInApplicationControl
 
   def set_google_firebase_integration
     @google_firebase_integration = @app.integrations.firebase_build_channel_provider
-    unless @google_firebase_integration
+    unless @google_firebase_integration.is_a?(GoogleFirebaseIntegration)
       redirect_to app_integrations_path(@app), flash: {error: "Firebase build channel integration not found."}
     end
   end

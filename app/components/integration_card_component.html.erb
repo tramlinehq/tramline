@@ -43,7 +43,7 @@
                       type: :button,
                       size: :xxs,
                       disabled: !disconnectable?,
-                      html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want disconnect the integration?"}}
+                      html_options: {method: :delete, data: {turbo_confirm: "Are you sure you want to disconnect this integration?"}}
                     ) do |b|
                       b.with_icon("trash.svg", size: :sm)
                     end %>

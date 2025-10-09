@@ -33,7 +33,7 @@ class CiCd::GithubConfigsController < SignedInApplicationController
 
   def set_github_integration
     @github_integration = @app.ci_cd_provider
-    unless @github_integration
+    unless @github_integration.is_a?(GithubIntegration)
       redirect_to app_integrations_path(@app), flash: {error: "CI/CD integration not found."}
     end
   end

@@ -38,8 +38,10 @@ class AppConfig < ApplicationRecord
   validate :jira_release_filters, if: -> { jira_config&.dig("release_filters").present? }
   validate :linear_release_filters, if: -> { linear_config&.dig("release_filters").present? }
 
+  # TODO: remove callback
   after_initialize :set_bugsnag_config, if: :persisted?
 
+  # TODO: remove private method
   private
 
   def set_bugsnag_config

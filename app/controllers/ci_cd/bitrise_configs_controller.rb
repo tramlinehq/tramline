@@ -33,7 +33,7 @@ class CiCd::BitriseConfigsController < SignedInApplicationController
 
   def set_bitrise_integration
     @bitrise_integration = @app.ci_cd_provider
-    unless @bitrise_integration
+    unless @bitrise_integration.is_a?(BitriseIntegration)
       redirect_to app_integrations_path(@app), flash: {error: "CI/CD integration not found."}
     end
   end

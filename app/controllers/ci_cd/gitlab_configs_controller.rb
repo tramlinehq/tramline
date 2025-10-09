@@ -33,7 +33,7 @@ class CiCd::GitlabConfigsController < SignedInApplicationController
 
   def set_gitlab_integration
     @gitlab_integration = @app.ci_cd_provider
-    unless @gitlab_integration
+    unless @gitlab_integration.is_a?(GitlabIntegration)
       redirect_to app_integrations_path(@app), flash: {error: "CI/CD integration not found."}
     end
   end

@@ -33,7 +33,7 @@ class Monitoring::BugsnagConfigsController < SignedInApplicationController
 
   def set_bugsnag_integration
     @bugsnag_integration = @app.monitoring_provider
-    unless @bugsnag_integration
+    unless @bugsnag_integration.is_a?(BugsnagIntegration)
       redirect_to app_integrations_path(@app), flash: {error: "Monitoring integration not found."}
     end
   end

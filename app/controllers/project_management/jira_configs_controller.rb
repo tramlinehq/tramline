@@ -1,6 +1,4 @@
 class ProjectManagement::JiraConfigsController < SignedInApplicationController
-  using RefinedString
-
   before_action :require_write_access!
   before_action :set_app
   before_action :set_jira_integration

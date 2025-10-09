@@ -34,7 +34,7 @@ class CiCd::BitbucketConfigsController < SignedInApplicationController
 
   def set_bitbucket_integration
     @bitbucket_integration = @app.ci_cd_provider
-    unless @bitbucket_integration
+    unless @bitbucket_integration.is_a?(BitbucketIntegration)
       redirect_to app_integrations_path(@app), flash: {error: "CI/CD integration not found."}
     end
   end

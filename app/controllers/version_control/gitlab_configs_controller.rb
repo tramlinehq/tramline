@@ -33,7 +33,7 @@ class VersionControl::GitlabConfigsController < SignedInApplicationController
 
   def set_gitlab_integration
     @gitlab_integration = @app.vcs_provider
-    unless @gitlab_integration
+    unless @gitlab_integration.is_a?(GitlabIntegration)
       redirect_to app_integrations_path(@app), flash: {error: "Version control integration not found."}
     end
   end

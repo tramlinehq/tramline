@@ -34,7 +34,7 @@ class VersionControl::BitbucketConfigsController < SignedInApplicationController
 
   def set_bitbucket_integration
     @bitbucket_integration = @app.vcs_provider
-    unless @bitbucket_integration
+    unless @bitbucket_integration.is_a?(BitbucketIntegration)
       redirect_to app_integrations_path(@app), flash: {error: "Version control integration not found."}
     end
   end
