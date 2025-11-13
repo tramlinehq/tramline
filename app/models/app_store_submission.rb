@@ -162,6 +162,11 @@ class AppStoreSubmission < StoreSubmission
     trigger!
   end
 
+  def retry!
+    return unless retryable?
+    retrigger!
+  end
+
   def prepare_for_release!
     result = provider.prepare_release(build_number, release_version, staged_rollout?, notes, true)
 
