@@ -5,6 +5,19 @@ module Integrable
     has_many :integrations, as: :integrable, dependent: :destroy
   end
 
+  def self.find(id)
+    ApplicationRecord::INTEGRABLE_TYPES.each do |type|
+      begin
+        record = type.constantize.friendly.find(id)
+        return record if record
+      rescue ActiveRecord::RecordNotFound
+        next
+      end
+    end
+
+    raise ActiveRecord::RecordNotFound, "Couldn't find integrable with id=#{id}"
+  end
+
   delegate :ios_store_provider,
     :android_store_provider,
     :slack_build_channel_provider,

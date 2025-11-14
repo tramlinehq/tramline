@@ -65,9 +65,8 @@ Rails.application.routes.draw do
     member do
       delete :remove_icon
     end
-    resource :app_config, only: %i[edit update], path: :config do
-      resources :app_variants, only: %i[index edit create update destroy]
-    end
+
+    resources :app_variants, only: %i[index edit create update destroy]
 
     namespace :version_control do
       resource :github_config, only: %i[edit update]

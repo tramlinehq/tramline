@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_09_24_035033) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_14_124755) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -75,15 +75,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_09_24_035033) do
   end
 
   create_table "app_variants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "app_config_id", null: false
+    t.uuid "app_config_id"
     t.string "name", null: false
     t.string "bundle_identifier", null: false
     t.jsonb "firebase_ios_config"
     t.jsonb "firebase_android_config"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "app_id"
+    t.string "slug"
     t.index ["app_config_id"], name: "index_app_variants_on_app_config_id"
+    t.index ["app_id"], name: "index_app_variants_on_app_id"
     t.index ["bundle_identifier", "app_config_id"], name: "index_app_variants_on_bundle_identifier_and_app_config_id", unique: true
+    t.index ["bundle_identifier", "app_id"], name: "index_app_variants_on_bundle_identifier_and_app_id", unique: true
+    t.index ["slug"], name: "index_app_variants_on_slug", unique: true
   end
 
   create_table "approval_assignees", force: :cascade do |t|

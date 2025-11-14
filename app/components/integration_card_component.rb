@@ -126,7 +126,7 @@ class IntegrationCardComponent < BaseComponent
 
   def edit_app_build_channel_config_path
     case integration.providable_type
-    when "GoogleFirebaseIntegration" then edit_app_build_channel_google_firebase_config_path(@app)
+    when "GoogleFirebaseIntegration" then edit_app_build_channel_google_firebase_config_path(@app, integrable_id: @app)
     else unsupported_integration_type
     end
   end
