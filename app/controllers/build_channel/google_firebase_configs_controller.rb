@@ -27,7 +27,7 @@ class BuildChannel::GoogleFirebaseConfigsController < SignedInApplicationControl
   private
 
   def set_integrable
-    @integrable = Integrable.find(params[:integrable_id])
+    @integrable = Integrable.find(current_organization, params[:integrable_id])
   end
 
   def set_google_firebase_integration

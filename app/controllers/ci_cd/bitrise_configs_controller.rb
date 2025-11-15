@@ -25,7 +25,6 @@ class CiCd::BitriseConfigsController < SignedInApplicationController
 
   private
 
-
   def set_bitrise_integration
     @bitrise_integration = @app.ci_cd_provider
     unless @bitrise_integration.is_a?(BitriseIntegration)

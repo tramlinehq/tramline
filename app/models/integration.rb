@@ -143,13 +143,14 @@ class Integration < ApplicationRecord
     end
 
     def category_ready?(category)
-      # Does the following need to change to `ready.first.integrable` since app seems like an optional `belongs_to` association?
       app = ready.first&.app
 
+      # if it's not a build channel or single-platform, any of the platforms need to be ready
       if category != :build_channel || !app&.cross_platform?
         return ready.any? { |i| i.category.eql?(category.to_s) }
       end
 
+      # if it's a build channel and cross-platform, both platforms need to be ready
       [:ios, :android].all? do |platform|
         ready
           .build_channel

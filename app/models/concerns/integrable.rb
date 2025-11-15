@@ -5,10 +5,13 @@ module Integrable
     has_many :integrations, as: :integrable, dependent: :destroy
   end
 
-  def self.find(id)
+  def self.find(org, id)
     ApplicationRecord::INTEGRABLE_TYPES.each do |type|
       record = type.constantize.friendly.find(id)
-      return record if record
+      if record
+        raise ActiveRecord::RecordNotFound, "Couldn't find integrable with id=#{id}" if record.organization != org
+        return record
+      end
     rescue ActiveRecord::RecordNotFound
       next
     end
