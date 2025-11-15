@@ -69,10 +69,10 @@ gem "google-apis-firebaseappdistribution_v1", "~> 0.1"
 gem "google-apis-firebase_v1beta1", "~> 0.35.0"
 gem "initials", "~> 0.4.3"
 gem "rack-attack", "~> 6.7"
-gem "june-analytics-ruby", "~> 2.4"
+gem "posthog-ruby", "~> 3.1"
 gem "discard", "~> 1.3"
 gem "bugsnag-api", "~> 3.0"
-gem "data-anonymization", require: false
+gem "data-anonymization", github: "tramlinehq/data-anonymization", require: false
 gem "faker"
 gem "json-schema", "~> 4.1"
 gem "color", "~> 1.8"
@@ -83,6 +83,8 @@ gem "google-cloud-bigquery", "~> 1.50.0"
 gem "active_record_union", "~> 1.3"
 gem "pg_search", "~> 2.3"
 gem "redlock", "~> 2.0"
+gem "svix", "~> 1.0"
+gem "ruby-vips", "~> 2.2"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

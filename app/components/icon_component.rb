@@ -50,7 +50,7 @@ class IconComponent < BaseComponent
   end
 
   def svg_file?
-    @icon.ends_with?(".svg")
+    @icon.is_a?(String) && @icon.ends_with?(".svg")
   end
 
   def raw_svg?

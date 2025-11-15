@@ -38,6 +38,7 @@ class App < ApplicationRecord
   has_many :builds, through: :releases
   has_many :release_platforms, dependent: :destroy
   has_many :release_platform_runs, through: :releases
+  has_one_attached :icon, service: :google_assets
 
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
@@ -86,10 +87,6 @@ class App < ApplicationRecord
     return true if created_at > 3.months.ago
     return false if releases.none?
     releases.first.scheduled_at > 3.months.ago
-  end
-
-  def deploy_action_enabled?
-    Flipper.enabled?(:deploy_action_enabled, self)
   end
 
   def monitoring_disabled?
@@ -290,6 +287,11 @@ class App < ApplicationRecord
 
   def skip_finding_builds_for_firebase?
     Flipper.enabled?(:skip_finding_builds_for_firebase, self)
+  end
+
+  def icon_path
+    Rails.application.routes.url_helpers
+      .blob_redirect_path(icon.signed_id, icon.filename, disposition: "inline")
   end
 
   private

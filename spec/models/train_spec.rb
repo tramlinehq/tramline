@@ -203,8 +203,44 @@ describe Train do
   describe "#release_branch_name_fmt" do
     it "adds hotfix to branch name if hotfix" do
       train = create(:train, :with_almost_trunk, :active)
+      tokens = {trainName: "train", releaseStartDate: "%Y-%m-%d"}
 
-      expect(train.release_branch_name_fmt(hotfix: true)).to eq("hotfix/train/%Y-%m-%d")
+      expect(train.release_branch_name_fmt(hotfix: true, substitution_tokens: tokens)).to eq("hotfix/train/%Y-%m-%d")
+    end
+
+    it "uses default pattern when no custom pattern is set" do
+      train = create(:train, :with_almost_trunk, :active)
+      tokens = {trainName: "train", releaseStartDate: "%Y-%m-%d"}
+
+      expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("r/train/%Y-%m-%d")
+    end
+
+    it "uses custom pattern when release_branch_pattern is set" do
+      train = create(:train, :with_almost_trunk, :active, release_branch_pattern: "release/~trainName~/%Y-%m-%d-%H%M")
+      tokens = {trainName: "train"}
+
+      expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("release/train/%Y-%m-%d-%H%M")
+    end
+
+    it "substitutes trainName placeholder in custom pattern" do
+      train = create(:train, :with_almost_trunk, :active, name: "My Custom Train", release_branch_pattern: "custom/~trainName~/v%Y.%m")
+      tokens = {trainName: "My Custom Train"}
+
+      expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("custom/my-custom-train/v%Y.%m")
+    end
+
+    it "substitutes releaseVersion placeholder in custom pattern" do
+      train = create(:train, :with_almost_trunk, :active, release_branch_pattern: "r/~trainName~/~releaseVersion~")
+      tokens = {trainName: "train", releaseVersion: "1.2.3"}
+
+      expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("r/train/1.2.3")
+    end
+
+    it "substitutes multiple placeholders in custom pattern" do
+      train = create(:train, :with_almost_trunk, :active, name: "My Train", release_branch_pattern: "release/~trainName~/~releaseVersion~/~releaseStartDate~")
+      tokens = {trainName: "My Train", releaseVersion: "1.2.3", releaseStartDate: "2023-12-25"}
+
+      expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("release/my-train/1.2.3/2023-12-25")
     end
   end
 
@@ -344,6 +380,54 @@ describe Train do
 
       expect(release.failure_anywhere?).to be(true)
       expect(release.reload.stopped?).to be(true)
+    end
+  end
+
+  describe "release_branch_pattern validation" do
+    it "is valid when pattern is blank" do
+      train = build(:train, release_branch_pattern: "")
+      expect(train).to be_valid
+    end
+
+    it "is valid when pattern is nil" do
+      train = build(:train, release_branch_pattern: nil)
+      expect(train).to be_valid
+    end
+
+    it "is valid with correct pattern format" do
+      train = build(:train, release_branch_pattern: "release/~trainName~/%Y-%m-%d")
+      expect(train).to be_valid
+    end
+
+    it "is valid with pattern containing various strftime formats" do
+      train = build(:train, release_branch_pattern: "r/~trainName~/%Y-%m-%d-%H%M%S")
+      expect(train).to be_valid
+    end
+
+    it "is valid with releaseVersion token" do
+      train = build(:train, release_branch_pattern: "r/~trainName~/~releaseVersion~")
+      expect(train).to be_valid
+    end
+
+    it "is valid with releaseStartDate token" do
+      train = build(:train, release_branch_pattern: "r/~trainName~/~releaseStartDate~")
+      expect(train).to be_valid
+    end
+
+    it "is valid with multiple tokens and strftime" do
+      train = build(:train, release_branch_pattern: "r/~trainName~/~releaseVersion~/~releaseStartDate~/%Y-%m-%d")
+      expect(train).to be_valid
+    end
+
+    it "is valid when pattern has no tokens" do
+      train = build(:train, release_branch_pattern: "release/myapp/%Y-%m-%d")
+      expect(train).to be_valid
+    end
+
+    it "is not valid when pattern has invalid tokens" do
+      train = build(:train, release_branch_pattern: "release/~invalidToken~")
+      expect(train).not_to be_valid
+      expect(train.errors[:release_branch_pattern]).to include("contains unknown tokens: ~invalidToken~")
     end
   end
 

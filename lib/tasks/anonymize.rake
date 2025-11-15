@@ -50,11 +50,22 @@ namespace :anonymize do
           "repeat_duration", "build_queue_wait_time", "build_queue_size", "backmerge_strategy", "manual_release",
           "tag_store_releases_with_platform_names", "tag_store_releases", "compact_build_notes", "tag_end_of_release", "build_queue_enabled",
           "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_release_specific_channel_enabled",
-          "tag_end_of_release_prefix", "tag_end_of_release_suffix", "version_bump_strategy"
+          "tag_end_of_release_prefix", "tag_end_of_release_suffix", "version_bump_strategy", "enable_changelog_linking_in_notifications",
+          "release_branch_pattern", "webhooks_enabled"
         whitelist_timestamps
         anonymize("app_id") { |field| app.id }
         anonymize("notification_channel") { |field| {"id" => "dummy", "name" => "test", "is_private" => false} }
         anonymize("working_branch") { |field| Faker::Hacker.noun }
+      end
+
+      table "outgoing_webhook_events" do
+        continue { |index, record| Release.exists?(record["release_id"]) && !OutgoingWebhookEvent.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "release_id", "event_timestamp", "event_type", "status", "event_payload"
+        whitelist_timestamps
+        anonymize("response_data") { |field| field.value.present? ? {"id" => "anonymized_msg_id", "status" => "delivered"} : nil }
+        anonymize("error_message") { |field| field.value.present? ? "anonymized_error_message" : nil }
       end
 
       table "release_indices" do
@@ -77,7 +88,7 @@ namespace :anonymize do
         continue { |index, record| record["train_id"] == train_id && !NotificationSetting.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "train_id", "kind", "active", "user_groups", "release_specific_enabled", "release_specific_channel"
+        whitelist "train_id", "kind", "active", "user_groups", "release_specific_enabled", "release_specific_channel", "user_content"
         whitelist_timestamps
         anonymize("notification_channels") do |field|
           [{"id" => "dummy", "name" => "test", "is_private" => false}]
@@ -376,6 +387,38 @@ namespace :anonymize do
             }
           end
         end
+      end
+
+      table "integrations" do
+        continue { |index, record| !Integration.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "integrable_id", "integrable_type", "category", "providable_id", "providable_type"
+        whitelist_timestamps
+      end
+
+      table "linear_integrations" do
+        continue { |index, record| !LinearIntegration.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "organization_id"
+        whitelist_timestamps
+        anonymize("oauth_access_token") { |_| "anonymized_token" }
+        anonymize("oauth_refresh_token") { |_| "anonymized_refresh_token" }
+        anonymize("workspace_id") { |_| "anonymized_workspace_id" }
+        anonymize("workspace_name") { |_| "anonymized_workspace_name" }
+        anonymize("workspace_url_key") { |_| "anonymized_workspace_url_key" }
+      end
+
+      table "svix_integrations" do
+        continue { |index, record| Train.exists?(record["train_id"]) && !SvixIntegration.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "train_id", "status"
+        whitelist_timestamps
+        anonymize("svix_app_id") { |_| "anonymized_app_id" }
+        anonymize("svix_app_uid") { |_| "anonymized-app-uid" }
+        anonymize("svix_app_name") { |_| "Anonymized Svix App" }
       end
     end
 

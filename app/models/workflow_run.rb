@@ -132,7 +132,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def allow_error?
-    train.temporarily_allow_workflow_errors?
+    train.temporary_allow_workflow_errors?
   end
 
   def active?
@@ -194,6 +194,12 @@ class WorkflowRun < ApplicationRecord
 
   def retrigger_external_run!
     if ci_cd_provider.workflow_retriable?
+      ci_cd_provider
+        .retry_workflow_run!(external_id)
+        .then { |external_workflow_run| check_external_data(external_workflow_run) }
+        .then { |external_workflow_run| update_external_metadata!(external_workflow_run) }
+    elsif ci_cd_provider.workflow_retriable_in_place?
+      # if the retry is in-place (the id doesn't change), we don't need to update anything for ourselves
       ci_cd_provider.retry_workflow_run!(external_id)
     else
       trigger_external_run!
@@ -236,10 +242,8 @@ class WorkflowRun < ApplicationRecord
   end
 
   def trigger_external_run!
-    deploy_action_enabled = organization.deploy_action_enabled? || app.deploy_action_enabled? || train.deploy_action_enabled?
-
     ci_cd_provider
-      .trigger_workflow_run!(conf.identifier, release_branch, workflow_inputs, commit_hash, deploy_action_enabled)
+      .trigger_workflow_run!(conf.identifier, release_branch, workflow_inputs, commit_hash)
       .then { |external_workflow_run| check_external_data(external_workflow_run) }
       .then { |external_workflow_run| update_external_metadata!(external_workflow_run) }
   end

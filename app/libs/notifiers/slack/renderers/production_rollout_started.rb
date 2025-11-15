@@ -14,6 +14,14 @@ module Notifiers
       def initial_rollout_percentage_text
         "🎢 Initial rollout percentage is *#{@rollout_percentage}%*."
       end
+
+      def changelog_header
+        ":memo: *#{@changelog[:header_affix]}*"
+      end
+
+      def requires_review_text
+        safe_string("#{initial_rollout_percentage_text}\n#{google_managed_publishing_text}\n#{google_unmanaged_publishing_text}")
+      end
     end
   end
 end

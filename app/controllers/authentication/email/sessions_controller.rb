@@ -1,5 +1,6 @@
 class Authentication::Email::SessionsController < Devise::SessionsController
   include Authenticatable
+  include MobileDeviceAllowable
 
   before_action :skip_authentication, only: [:new, :create]
   before_action :set_confirmed_email, only: [:new]

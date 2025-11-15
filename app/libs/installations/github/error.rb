@@ -48,6 +48,10 @@ module Installations
         decorated_reason: :tag_reference_already_exists
       },
       {
+        message_matcher: /Reference update failed/,
+        decorated_reason: :ref_cannot_be_updated
+      },
+      {
         message_matcher: /Pull Request is not mergeable/i,
         decorated_reason: :pull_request_not_mergeable
       },

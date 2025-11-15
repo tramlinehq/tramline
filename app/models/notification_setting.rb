@@ -9,6 +9,7 @@
 #  notification_channels    :jsonb
 #  release_specific_channel :jsonb
 #  release_specific_enabled :boolean          default(FALSE)
+#  user_content             :text
 #  user_groups              :jsonb
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -20,6 +21,9 @@ class NotificationSetting < ApplicationRecord
   include Displayable
 
   belongs_to :train
+
+  normalizes :user_content, with: ->(content) { content&.strip }
+  validates :user_content, format: {with: /\A[a-zA-Z0-9\s\p{L}\p{N}\p{P}\p{S}]*\z/, message: :invalid}, allow_blank: true
 
   enum :kind, {
     release_started: "release_started",
@@ -34,6 +38,7 @@ class NotificationSetting < ApplicationRecord
     internal_release_failed: "internal_release_failed",
     beta_release_failed: "beta_release_failed",
     beta_submission_finished: "beta_submission_finished",
+    rc_finished: "rc_finished",
     internal_submission_finished: "internal_submission_finished",
     submission_failed: "submission_failed",
     production_submission_started: "production_submission_started",
@@ -52,13 +57,13 @@ class NotificationSetting < ApplicationRecord
     workflow_run_unavailable: "workflow_run_unavailable",
     workflow_trigger_failed: "workflow_trigger_failed"
   }
-
   RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS = [
     :release_started,
     :release_scheduled
   ]
-
   RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS = NotificationSetting.kinds.keys.map(&:to_sym) - RELEASE_SPECIFIC_CHANNEL_NOT_ALLOWED_KINDS
+  THREADED_CHANGELOG_NOTIFICATION_KINDS = [:rc_finished, :production_rollout_started]
+  CHANGELOG_PER_MESSAGE_LIMIT = 20
 
   scope :active, -> { where(active: true) }
   scope :release_specific_channel_allowed, -> { where(kind: RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS) }
@@ -68,6 +73,51 @@ class NotificationSetting < ApplicationRecord
   delegate :channels, to: :notification_provider
   before_validation :handle_active_flag
   validate :notification_channels_settings
+
+  def notify!(message, params, file_id = nil, file_title = nil)
+    return unless send_notifications?
+
+    notifiable_channels.each do |channel|
+      notification_provider.notify!(channel["id"], message, kind, enrich_params(params), file_id, file_title)
+    end
+  end
+
+  def notify_with_snippet!(message, params, snippet_content, snippet_title)
+    return unless send_notifications?
+
+    notifiable_channels.each do |channel|
+      notification_provider.notify_with_snippet!(channel["id"], message, kind, enrich_params(params), snippet_content, snippet_title)
+    end
+  end
+
+  def notify_with_changelog!(message, params)
+    return unless send_notifications?
+    return unless kind.to_sym.in?(THREADED_CHANGELOG_NOTIFICATION_KINDS)
+
+    case kind.to_sym
+    when :rc_finished then notify_rc_finished!(message, enrich_params(params))
+    when :production_rollout_started then notify_production_rollout_started!(message, enrich_params(params))
+    else true
+    end
+  end
+
+  def send_notifications?
+    app.notifications_set_up? && active?
+  end
+
+  def release_specific_notifiable?
+    train.notifications_release_specific_channel_enabled? && release_specific_channel_allowed?
+  end
+
+  def release_specific_channel_allowed?
+    kind.to_sym.in?(RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS)
+  end
+
+  private
+
+  def enrich_params(params)
+    params.merge(user_content: user_content)
+  end
 
   def handle_active_flag
     if release_specific_notifiable?
@@ -82,26 +132,6 @@ class NotificationSetting < ApplicationRecord
     end
   end
 
-  def notify!(message, params, file_id = nil, file_title = nil)
-    return unless send_notifications?
-
-    notifiable_channels.each do |channel|
-      notification_provider.notify!(channel["id"], message, kind, params, file_id, file_title)
-    end
-  end
-
-  def notify_with_snippet!(message, params, snippet_content, snippet_title)
-    return unless send_notifications?
-
-    notifiable_channels.each do |channel|
-      notification_provider.notify_with_snippet!(channel["id"], message, kind, params, snippet_content, snippet_title)
-    end
-  end
-
-  def send_notifications?
-    app.notifications_set_up? && active?
-  end
-
   def notifiable_channels
     channels = []
 
@@ -114,14 +144,6 @@ class NotificationSetting < ApplicationRecord
     end
 
     channels.compact.uniq { |c| c["id"] }
-  end
-
-  def release_specific_notifiable?
-    train.notifications_release_specific_channel_enabled? && release_specific_channel_allowed?
-  end
-
-  def release_specific_channel_allowed?
-    kind.to_sym.in?(RELEASE_SPECIFIC_CHANNEL_ALLOWED_KINDS)
   end
 
   def notification_channels_settings
@@ -142,10 +164,45 @@ class NotificationSetting < ApplicationRecord
     end
   end
 
-  # rubocop:disable Rails/SkipsModelValidations
-  def self.replicate(new_train)
-    vals = all.map { _1.attributes.with_indifferent_access.except(:id).update_key(:train_id) { new_train.id } }
-    NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
+  def notify_rc_finished!(message, params)
+    notifiable_channels.each do |channel|
+      thread_id =
+        notification_provider.notify_with_threaded_changelog!(channel, message, kind, params,
+          changelog_key: :diff_changelog,
+          changelog_partitions: CHANGELOG_PER_MESSAGE_LIMIT,
+          header_affix: "Changes in this build")
+
+      # show full changelog when necessary
+      # todo: we can probably also encapsulate this nicely like we do for notify_with_threaded_changelog!
+      # todo: but in the interest of time, this is sort of manually hand-constructed
+      show_full_changelog = !params[:first_pre_prod_release] || false
+      if show_full_changelog
+        full = params[:full_changelog]
+        full_parts = full.in_groups_of(CHANGELOG_PER_MESSAGE_LIMIT, false)
+
+        # first send the initial part of the changelog
+        header_affix = "Full release changelog"
+        notification_provider.notify_changelog!(channel["id"], message, thread_id, full_parts[0], params,
+          header_affix: header_affix,
+          continuation: false)
+
+        # send the rest of the parts as "continuations"
+        full_parts[1..].each.with_index(2) do |change_group, index|
+          continuation_header_affix = "#{header_affix} (#{index}/#{full_parts.size})"
+          notification_provider.notify_changelog!(channel["id"], message, thread_id, change_group, params,
+            header_affix: continuation_header_affix,
+            continuation: true)
+        end
+      end
+    end
   end
-  # rubocop:enable Rails/SkipsModelValidations
+
+  def notify_production_rollout_started!(message, params)
+    notifiable_channels.each do |channel|
+      notification_provider.notify_with_threaded_changelog!(channel, message, kind, params,
+        changelog_key: :diff_changelog,
+        changelog_partitions: CHANGELOG_PER_MESSAGE_LIMIT,
+        header_affix: "Changes in release")
+    end
+  end
 end

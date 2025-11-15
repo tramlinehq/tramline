@@ -118,7 +118,7 @@ class TrainsController < SignedInApplicationController
       :build_queue_wait_time_value,
       :release_schedule_enabled,
       :stop_automatic_releases_on_failure,
-      :continuous_backmerge_enabled,
+      :backmerge_strategy,
       :continuous_backmerge_branch_prefix,
       :compact_build_notes,
       :tag_store_releases,
@@ -136,7 +136,10 @@ class TrainsController < SignedInApplicationController
       :version_bump_enabled,
       :version_bump_file_paths,
       :version_bump_branch_prefix,
-      :version_bump_strategy
+      :version_bump_strategy,
+      :release_branch_pattern,
+      :enable_changelog_linking_in_notifications,
+      :webhooks_enabled
     )
   end
 
@@ -144,10 +147,9 @@ class TrainsController < SignedInApplicationController
     release_schedule_params = release_schedule_config(train_params.slice(*release_schedule_config_params))
     create_params = train_params
       .merge(build_queue_config(train_params.slice(*build_queue_config_params)))
-      .merge(backmerge_config(train_params[:continuous_backmerge_enabled]))
       .merge(notifications_config(train_params[:notifications_enabled]))
       .merge(version_bump_file_paths: train_params.fetch(:version_bump_file_paths, "")&.safe_csv_parse(coerce_string: true))
-      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit, :continuous_backmerge_enabled, :notifications_enabled)
+      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit, :notifications_enabled)
       .except(*release_schedule_config_params)
     create_params.merge!(release_schedule_params) if release_schedule_params
     create_params
@@ -169,7 +171,7 @@ class TrainsController < SignedInApplicationController
       :repeat_duration_unit,
       :release_schedule_enabled,
       :stop_automatic_releases_on_failure,
-      :continuous_backmerge_enabled,
+      :backmerge_strategy,
       :continuous_backmerge_branch_prefix,
       :compact_build_notes,
       :tag_store_releases,
@@ -187,7 +189,10 @@ class TrainsController < SignedInApplicationController
       :version_bump_enabled,
       :version_bump_file_paths,
       :version_bump_branch_prefix,
-      :version_bump_strategy
+      :version_bump_strategy,
+      :release_branch_pattern,
+      :enable_changelog_linking_in_notifications,
+      :webhooks_enabled
     )
   end
 
@@ -195,10 +200,9 @@ class TrainsController < SignedInApplicationController
     release_schedule_params = release_schedule_config(train_update_params.slice(*release_schedule_config_params))
     update_params = train_update_params
       .merge(build_queue_config(train_update_params.slice(*build_queue_config_params)))
-      .merge(backmerge_config(train_update_params[:continuous_backmerge_enabled]))
       .merge(notifications_config(train_update_params[:notifications_enabled]))
       .merge(version_bump_file_paths: train_params.fetch(:version_bump_file_paths, "").safe_csv_parse(coerce_string: true))
-      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit, :continuous_backmerge_enabled)
+      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit)
       .except(*release_schedule_config_params)
     update_params.merge!(release_schedule_params) if release_schedule_params
     update_params
@@ -256,14 +260,6 @@ class TrainsController < SignedInApplicationController
   def parsed_duration(value, unit)
     return if unit.blank? || value.blank?
     value.to_i.as_duration_with(unit: unit)
-  end
-
-  def backmerge_config(continuous_backmerge_enabled)
-    if continuous_backmerge_enabled.blank? || continuous_backmerge_enabled == "false"
-      {backmerge_strategy: Train.backmerge_strategies[:on_finalize]}
-    elsif continuous_backmerge_enabled == "true"
-      {backmerge_strategy: Train.backmerge_strategies[:continuous]}
-    end
   end
 
   def notifications_config(notifications_enabled)

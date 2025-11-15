@@ -47,6 +47,7 @@ class Coordinators::FinalizeRelease
     release.update_train_version!
     release.event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     release.notify!("Release has finished!", :release_ended, release.notification_params)
+    release.trigger_webhook!("release.completed")
     RefreshReportsJob.perform_async(release.id)
   end
 

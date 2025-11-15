@@ -6,6 +6,24 @@ class Coordinators::PreReleaseJob < ApplicationJob
   }
 
   queue_as :high
+  sidekiq_options retry: 2
+
+  sidekiq_retry_in do |count, ex, msg|
+    if retryable_failure?(ex)
+      backoff_in(attempt: count + 1, period: :minutes, type: :static, factor: 1).to_i
+    elsif trigger_failure?(ex)
+      mark_failed!(msg, ex)
+      :kill
+    else
+      :kill
+    end
+  end
+
+  sidekiq_retries_exhausted do |msg, ex|
+    if retryable_failure?(ex)
+      mark_failed!(msg, ex)
+    end
+  end
 
   def perform(release_id)
     release = Release.find(release_id)
@@ -18,13 +36,22 @@ class Coordinators::PreReleaseJob < ApplicationJob
       return Signal.commits_have_landed!(release, latest_commit, [])
     end
 
-    begin
-      release.start_pre_release_phase!
-      RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
-    rescue Triggers::Errors => ex
-      elog(ex, level: :warn)
-      release.fail_pre_release_phase!
-      release.event_stamp!(reason: :pre_release_failed, kind: :error, data: {error: ex.message})
-    end
+    release.start_pre_release_phase!
+    RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
+  end
+
+  def self.mark_failed!(msg, ex)
+    release = Release.find(msg["args"].first)
+    elog(ex, level: :warn)
+    release.fail_pre_release_phase!
+    release.event_stamp!(reason: :pre_release_failed, kind: :error, data: {error: ex.message})
+  end
+
+  def self.trigger_failure?(ex)
+    ex.is_a?(Triggers::Errors)
+  end
+
+  def self.retryable_failure?(ex)
+    ex.is_a?(Triggers::Branch::RetryableBranchCreateError)
   end
 end

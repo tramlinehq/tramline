@@ -22,6 +22,7 @@ class Coordinators::ProcessCommits
       if release.may_start?
         release.start!
         release.release_platform_runs.each(&:start!)
+        Coordinators::VersionBumpJob.perform_async(release.id) if train.next_version_after_release_branch?
       end
 
       created_rest_commits, created_head_commit = create_other_commits!, create_head_commit!

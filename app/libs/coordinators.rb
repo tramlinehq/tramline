@@ -42,17 +42,16 @@ module Coordinators
   module Signals
     def self.release_has_started!(release)
       Coordinators::SetupReleaseSpecificChannel.call(release)
+
       release.notify!("New release has commenced!", :release_started, release.notification_params)
+      release.trigger_webhook!("release.started")
+
       Coordinators::PreReleaseJob.perform_async(release.id)
       Releases::FetchCommitLogJob.perform_async(release.id)
       RefreshReportsJob.perform_async(release.hotfixed_from.id) if release.hotfix?
     end
 
     def self.commits_have_landed!(release, head_commit, rest_commits)
-      if release.train.next_version_after_release_branch?
-        Coordinators::VersionBumpJob.perform_async(release.id)
-      end
-
       Coordinators::ProcessCommits.call(release, head_commit, rest_commits)
     end
 

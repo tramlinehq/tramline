@@ -4,7 +4,7 @@ FactoryBot.define do
     scheduled_at { Time.current }
     status { "on_track" }
     branch_name { "branch" }
-    original_release_version { "1.2.3" }
+    original_release_version { VersioningStrategies::Semverish.new(train.version_seeded_with).bump!(:minor) }
     release_type { "release" }
     release_pilot_id { train.app.organization.owner.id }
 
@@ -35,6 +35,14 @@ FactoryBot.define do
 
     trait :partially_finished do
       status { "partially_finished" }
+    end
+
+    trait :pre_release_failed do
+      status { "pre_release_failed" }
+    end
+
+    trait :pre_release_started do
+      status { "pre_release_started" }
     end
 
     trait :with_no_platform_runs do

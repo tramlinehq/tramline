@@ -62,6 +62,9 @@ Rails.application.routes.draw do
   end
 
   resources :apps do
+    member do
+      delete :remove_icon
+    end
     resource :app_config, only: %i[edit update], path: :config do
       resources :app_variants, only: %i[index edit create update destroy]
     end
@@ -111,6 +114,7 @@ Rails.application.routes.draw do
           post :copy_approvals
         end
 
+        resources :outgoing_webhooks, only: [:index]
         resources :approval_items, only: %i[index create update destroy], shallow: false
 
         get :edit, to: "release_metadata#index", path: :metadata, as: :metadata_edit
@@ -138,6 +142,12 @@ Rails.application.routes.draw do
           get :timeline
           post :post_release
           post :finish_release
+        end
+      end
+
+      resources :outgoing_webhooks, only: [] do
+        collection do
+          get :portal
         end
       end
     end
@@ -264,6 +274,10 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :mobile do
+    resources :releases, only: %i[index show]
+  end
+
   scope :github do
     get :callback, controller: "integration_listeners/github", as: :github_callback
     post "/events/:train_id", to: "integration_listeners/github#events", as: :github_events
@@ -287,6 +301,12 @@ Rails.application.routes.draw do
     get :callback, controller: "integration_listeners/jira", as: :jira_callback
     post :callback, controller: "integration_listeners/jira", as: :resend_jira_callback
     get :select_organization, to: "integration_listeners/jira#select_organization", as: :jira_select_organization
+  end
+
+  scope :linear do
+    get :callback, controller: "integration_listeners/linear", as: :linear_callback
+    post :callback, controller: "integration_listeners/linear", as: :resend_linear_callback
+    post "/events", to: "integration_listeners/linear#events", as: :linear_events
   end
 
   get "/rails/active_storage/blobs/redirect/:signed_id/*filename",

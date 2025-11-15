@@ -39,6 +39,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 1,
         phased_release_status: "ACTIVE",
+        existing_review_submission: nil,
         localizations: [{
           description: "The true Yamanote line aural aesthetic.",
           language: "en-US",
@@ -78,6 +79,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 1,
         phased_release_status: "ACTIVE",
+        existing_review_submission: nil,
         localizations: [{
           description: "The true Yamanote line aural aesthetic.",
           language: "en-US",
@@ -131,6 +133,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 1,
         phased_release_status: "ACTIVE",
+        existing_review_submission: nil,
         localizations: [{
           description: "The true Yamanote line aural aesthetic.",
           language: "en-US",
@@ -236,6 +239,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 4,
         phased_release_status: "COMPLETE",
+        existing_review_submission: nil,
         localizations: [{
           description: "The true Yamanote line aural aesthetic.",
           language: "en-US",

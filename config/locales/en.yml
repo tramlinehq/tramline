@@ -241,6 +241,7 @@ en:
       google_firebase_submission: "Firebase App Distribution"
       play_store_submission: "Google Play Store"
       crashlytics_integration: "Firebase Crashlytics"
+      linear_integration: "Linear"
     values:
       pull_request:
         kind:
@@ -290,6 +291,7 @@ en:
           workflow_run_halted: "Workflow run halted"
           workflow_run_unavailable: "Workflow run unavailable"
           workflow_trigger_failed: "Workflow trigger failed"
+          rc_finished: "RC finished"
       release_platform_run:
         platform:
           ios: "iOS"
@@ -579,6 +581,11 @@ en:
               not_present: "the beta release must be configured"
             release_candidate_workflow:
               not_present: "the release candidate workflow must be configured"
+        gitlab_integration:
+          attributes:
+            base:
+              workflows: "No valid workflows found. Check your .gitlab-ci.yml file or try again."
+              repos: "No projects/repos found. Please try again."
         crashlytics_integration:
           attributes:
             json_key:
@@ -588,6 +595,10 @@ en:
               permission_denied: "permission denied to access the project using the key"
               project_deleted: "the project has been deleted and is no longer accessible"
               unknown_failure: "an unrecognized error occurred connecting to Firebase, please check your project number and key"
+
+  mobile:
+    releases:
+      not_found: "Release not found"
 
   invitation:
     flash:
@@ -603,6 +614,7 @@ en:
       already_accepted: "Invitation was already accepted!"
       failed: "Failed to accept your invitation. Please contact support!"
       invalid_or_expired: "This invitation link is no longer valid. Please contact the organization admin for a new invitation."
+
     invite_mailer:
       existing_user:
         subject: "%{sender} invited you to join the %{org} team on Tramline"
@@ -745,17 +757,22 @@ en:
   integrations:
     project_management:
       jira:
+        integration_created: "Jira integration created successfully"
+        no_organization: "No Jira organization found. Please check your permissions."
         connect:
           success: "Successfully connected to Jira!"
-          failure: "Failed to connect to Jira: %{errors}"
+      linear:
+        integration_created: "Linear integration created successfully"
+        no_organization: "No Linear organization found. Please check your permissions."
+        connect:
+          success: "Successfully connected to Linear!"
+          failure: "Failed to connect to Linear: %{errors}"
         configure:
-          success: "Jira configuration was successfully updated."
-          failure: "Failed to update Jira configuration: %{errors}"
+          success: "Linear configuration was successfully updated."
+          failure: "Failed to update Linear configuration: %{errors}"
         projects:
           select: "Select Jira Projects"
           help_text: "Choose the projects you want to track in Tramline"
         done_states:
           select: "Select Done States"
           help_text: "Choose which states represent completed work"
-        no_organization: "No Jira organizations available. Please try again."
-        integration_created: "Integration was successfully created."

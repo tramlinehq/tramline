@@ -23,9 +23,13 @@ class Notifiers::Slack::Renderers::Base
   def render_json
     header_response = JSON.parse(render_header)
     specific_data = JSON.parse(render_notification)
+    user_content_response = JSON.parse(render_user_content)
     footer_response = JSON.parse(render_footer)
-
-    {blocks: header_response["blocks"].concat(specific_data["blocks"]).concat(footer_response["blocks"])}
+    blocks = header_response["blocks"]
+      .concat(specific_data["blocks"])
+      .concat(user_content_response["blocks"])
+      .concat(footer_response["blocks"])
+    {blocks:}
   end
 
   def render_header
@@ -39,6 +43,11 @@ class Notifiers::Slack::Renderers::Base
 
   def render_footer
     file = File.read(File.join(ROOT_PATH, FOOTER_TEMPLATE))
+    ERB.new(file).result(binding)
+  end
+
+  def render_user_content
+    file = File.read(File.join(ROOT_PATH, "user_content.json.erb"))
     ERB.new(file).result(binding)
   end
 
@@ -58,5 +67,14 @@ class Notifiers::Slack::Renderers::Base
 
   def apple_publishing_text
     "- Releases from Tramline are always manually released, you can start the release to users once it is approved from the Tramline release page."
+  end
+
+  def changelog_elements(changes)
+    result = changes.each_with_object([]) do |change, acc|
+      elements = @changelog_linker&.process(change) || [{"type" => "text", "text" => change}]
+      acc << {type: "rich_text_section", elements: elements}
+    end
+
+    result.map(&:to_json).join(",")
   end
 end

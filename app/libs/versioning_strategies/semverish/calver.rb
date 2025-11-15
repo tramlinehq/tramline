@@ -15,19 +15,19 @@ class VersioningStrategies::Semverish::Calver
 
   attr_accessor :major, :minor, :patch, :seq_number
 
-  def bump!(term)
+  def bump!(term, relative_time = Time.current)
     term = term.to_sym
     new_version = clone
 
     case term
     when :major
-      new_version.major = year
-      new_version.minor = month
-      new_version.patch = day
+      new_version.major = year(relative_time)
+      new_version.minor = month(relative_time)
+      new_version.patch = day(relative_time)
     when :minor
-      new_version.major = year
-      new_version.minor = month
-      new_version.patch = day
+      new_version.major = year(relative_time)
+      new_version.minor = month(relative_time)
+      new_version.patch = day(relative_time)
     when :patch
       new_version.patch = inc(new_version.patch)
     else
@@ -47,16 +47,16 @@ class VersioningStrategies::Semverish::Calver
 
   private
 
-  def day
-    zero_pad Time.current.day
+  def day(relative_time)
+    zero_pad(relative_time.day)
   end
 
-  def month
-    zero_pad Time.current.month
+  def month(relative_time)
+    zero_pad(relative_time.month)
   end
 
-  def year
-    Time.current.year
+  def year(relative_time)
+    zero_pad(relative_time.year)
   end
 
   def zero_pad(v)

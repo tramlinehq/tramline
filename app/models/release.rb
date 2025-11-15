@@ -33,6 +33,7 @@ class Release < ApplicationRecord
   include Versionable
   include Displayable
   include Linkable
+  include Sanitizable
 
   using RefinedString
 
@@ -112,12 +113,12 @@ class Release < ApplicationRecord
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
   has_many :approval_items, -> { order(:created_at) }, inverse_of: :release, dependent: :destroy
-
   has_many :store_rollouts, through: :release_platform_runs
   has_many :store_submissions, through: :release_platform_runs
   has_many :pre_prod_releases, through: :release_platform_runs
   has_many :production_releases, through: :release_platform_runs
   has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
+  has_many :outgoing_webhook_events, dependent: :destroy, inverse_of: :release
 
   scope :completed, -> { where(status: TERMINAL_STATES) }
   scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
@@ -167,14 +168,13 @@ class Release < ApplicationRecord
     end
   end
 
-  before_create :set_version
   before_create :set_internal_notes
   after_create :create_platform_runs!
   after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::CopyPreviousApprovalsJob.perform_async(id) }, on: :create, if: :copy_approvals_enabled?
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
-  attr_accessor :has_major_bump, :hotfix_platform, :custom_version
+  attr_accessor :hotfix_platform
   friendly_id :human_slug, use: :slugged
 
   delegate :versioning_strategy, :patch_version_bump_only, to: :train
@@ -407,6 +407,10 @@ class Release < ApplicationRecord
     release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
 
+  def build_number
+    builds.order(created_at: :desc).pick(:build_number)
+  end
+
   alias_method :version_current, :release_version
 
   def release_branch
@@ -414,15 +418,10 @@ class Release < ApplicationRecord
   end
 
   def release_diff
-    changes_since_last_release = release_changelog&.commit_messages(true)
+    changes_since_last_release = release_changelog&.commits&.commit_messages(true)
     changes_since_last_run = all_commits.commit_messages(true)
-
-    ((changes_since_last_run || []) + (changes_since_last_release || []))
-      .map { |str| str&.strip }
-      .flat_map { |line| line.split("\n").first }
-      .map { |line| line.gsub('"', "\\\"") }
-      .compact_blank
-      .uniq
+    combined = ((changes_since_last_run || []) + (changes_since_last_release || []))
+    sanitize_commit_messages(combined)
       .map { |str| "- #{str}" }
       .join("\n")
   end
@@ -463,6 +462,14 @@ class Release < ApplicationRecord
         release_specific_channel_id:
       }
     )
+  end
+
+  def webhook_params
+    {
+      release_branch:,
+      release_version:,
+      platform:
+    }
   end
 
   def last_commit
@@ -542,12 +549,12 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:failure?)
   end
 
-  def previous_release
-    base_conditions = train.releases
-      .where(status: "finished")
-      .where.not(id: id)
-      .reorder(completed_at: :desc)
+  def previous_finished_releases
+    train.releases.where(status: "finished").where.not(id: id).reorder(completed_at: :desc)
+  end
 
+  def previous_release
+    base_conditions = previous_finished_releases
     return base_conditions.first if completed_at.blank?
 
     base_conditions
@@ -599,6 +606,10 @@ class Release < ApplicationRecord
     prev.tag_name.presence || prev.production_releases.last&.tag_name
   end
 
+  def trigger_webhook!(event_type)
+    Triggers::OutgoingWebhook.call(self, event_type, webhook_params)
+  end
+
   private
 
   def base_tag_name
@@ -620,25 +631,6 @@ class Release < ApplicationRecord
         release_platform: release_platform
       )
     end
-  end
-
-  def set_version
-    if custom_version.present?
-      self.original_release_version = custom_version
-      return
-    end
-
-    if train.freeze_version?
-      self.original_release_version = train.version_current
-      return
-    end
-
-    self.original_release_version =
-      if hotfix?
-        train.hotfix_from&.next_version(patch_only: hotfix?)
-      else
-        (train.ongoing_release.presence || train.hotfix_release.presence || train).next_version(major_only: has_major_bump)
-      end
   end
 
   def set_internal_notes

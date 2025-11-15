@@ -49,14 +49,6 @@ class Accounts::User < ApplicationRecord
   accepts_nested_attributes_for :organizations
   accepts_nested_attributes_for :memberships, allow_destroy: false
 
-  def super_admin?
-    Flipper.enabled?(:super_admin, self)
-  end
-
-  def show_crashlytics_stats?
-    Flipper.enabled?(:show_crashlytics_stats, self)
-  end
-
   def email_authentication
     email_authentications.first
   end
@@ -193,12 +185,18 @@ class Accounts::User < ApplicationRecord
       .find(&:accepted?)
   end
 
-  # FIXME: This assumes that the blob is always a BuildArtifact
-  # Eventually, make the URLs domain-specific and not blob-based general ones.
+  # Checks if the blob lives within the organization.
   def access_to_blob?(signed_blob_id)
-    build = BuildArtifact.find_via_signed_id(signed_blob_id)
-    return false if build.blank?
-    access_for(build.organization).present?
+    blob = ActiveStorage::Blob.find_signed(signed_blob_id)
+    return false if blob.blank?
+
+    attachment = ActiveStorage::Attachment.find_by(blob_id: blob.id)
+    return false if attachment.blank?
+
+    record = attachment.record
+    return false if record.blank?
+
+    access_for(record.organization).present?
   end
 
   def pending_profile?(organization)

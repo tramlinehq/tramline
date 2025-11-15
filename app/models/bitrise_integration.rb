@@ -114,7 +114,7 @@ class BitriseIntegration < ApplicationRecord
     end
   end
 
-  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
     if custom_pipelines?
       installation.run_workflow!(project, nil, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
     else
@@ -142,7 +142,6 @@ class BitriseIntegration < ApplicationRecord
     raise Integrations::UnsupportedAction
   end
 
-  # NOTE: this is bitrise specific right now
   def artifact_url(workflow_run_id, artifact_name_pattern)
     installation
       .artifacts(project, workflow_run_id)
@@ -166,9 +165,9 @@ class BitriseIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
-  def workflow_retriable?
-    false
-  end
+  def workflow_retriable? = false
+
+  def workflow_retriable_in_place? = false
 
   private
 

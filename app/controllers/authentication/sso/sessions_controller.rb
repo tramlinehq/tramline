@@ -1,5 +1,6 @@
 class Authentication::Sso::SessionsController < ApplicationController
   include Authenticatable
+  include MobileDeviceAllowable
 
   before_action :skip_authentication, only: [:new, :create]
   after_action :prepare_intercom_shutdown, only: [:destroy]

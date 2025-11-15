@@ -17,9 +17,14 @@ class IntegrationCardComponent < BaseComponent
   end
 
   attr_reader :integration
-  delegate :connected?, :disconnected?, :providable, :connection_data, :providable_type, :disconnectable_categories?, to: :integration, allow_nil: true
-  alias_method :provider, :providable
+  delegate :connected?,
+    :disconnected?,
+    :providable,
+    :connection_data,
+    :providable_type,
+    :disconnectable_categories?, to: :integration, allow_nil: true
   delegate :creatable?, :connectable?, to: :provider
+  alias_method :provider, :providable
 
   memoize def repeated_integrations_across_apps
     Integration.existing_integrations_across_apps(@app, providable_type)

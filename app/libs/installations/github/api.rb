@@ -82,8 +82,8 @@ module Installations
       end
     end
 
-    def run_workflow!(repo, id, ref, inputs, commit_hash, json_inputs_enabled = false)
-      inputs = if json_inputs_enabled
+    def run_workflow!(repo, id, ref, inputs, commit_hash)
+      inputs =
         inputs
           .slice(:version_code, :build_notes)
           .merge(version_name: inputs[:build_version], commit_ref: commit_hash)
@@ -91,17 +91,10 @@ module Installations
           .to_json
           .then { {"tramline-input" => _1} }
           .merge(inputs[:parameters])
-      else
-        {
-          versionCode: inputs[:version_code],
-          versionName: inputs[:build_version],
-          buildNotes: inputs[:build_notes]
-        }.merge(inputs[:parameters]).compact
-      end
 
       execute do
         @client
-          .workflow_dispatch(repo, id, ref, inputs: inputs)
+          .workflow_dispatch(repo, id, ref, inputs:)
           .then { |ok| ok.presence || raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed)) }
       end
     end
@@ -189,18 +182,6 @@ module Installations
     def create_tag!(repo, name, sha)
       execute do
         @client.create_ref(repo, "refs/tags/#{name}", sha)
-      end
-    end
-
-    def create_annotated_tag!(repo, name, branch_name, message, tagger_name, tagger_email)
-      execute do
-        object_sha = head(repo, branch_name)
-        type = "commit"
-        tagged_at = Time.current
-
-        @client
-          .create_tag(repo, name, message, object_sha, type, tagger_name, tagger_email, tagged_at)
-          .then { |resp| @client.create_ref(repo, "refs/tags/#{name}", resp[:sha]) }
       end
     end
 

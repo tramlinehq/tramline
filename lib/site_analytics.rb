@@ -1,11 +1,12 @@
 module SiteAnalytics
-  require "june/analytics"
+  require "posthog"
 
-  ANALYTICS = June::Analytics.new(
+  ANALYTICS = PostHog::Client.new(
     {
-      write_key: ENV["JUNE_ANALYTICS_KEY"] || "",
+      api_key: ENV["POSTHOG_API_KEY"] || "",
+      host: ENV["POSTHOG_HOST"] || "https://eu.i.posthog.com",
       on_error: proc { |_status, msg| Rails.logger.debug { msg } },
-      stub: !Rails.env.production?
+      test_mode: !Rails.env.production?
     }
   )
 
@@ -20,10 +21,12 @@ module SiteAnalytics
 
     def group(user, organization)
       return if user.blank? || organization.blank?
-      ANALYTICS.group(
-        user_id: user.id,
-        group_id: organization.id,
-        traits: {
+
+      ANALYTICS.group_identify(
+        distinct_id: user.id,
+        group_type: "organization",
+        group_key: organization.id,
+        properties: {
           name: organization.name
         }
       )
@@ -33,9 +36,12 @@ module SiteAnalytics
 
     def identify(user)
       return if user.blank?
+
       ANALYTICS.identify(
-        user_id: user.id,
-        traits: {
+        distinct_id: user.id,
+        properties: {
+          id: user.id,
+          user_id: user.id,
           email: user.email,
           name: user.full_name
         }
@@ -46,12 +52,13 @@ module SiteAnalytics
 
     def track(user, organization, device, event, properties = {})
       return if user.blank? || organization.blank?
-      ANALYTICS.track(
-        user_id: user.id,
+
+      ANALYTICS.capture(
+        distinct_id: user.id,
         event: event.titleize,
         properties: properties.merge(browser: device&.name),
-        context: {
-          groupId: organization.id
+        groups: {
+          organization: organization.id
         }
       )
     rescue => e

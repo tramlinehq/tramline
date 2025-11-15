@@ -19,6 +19,7 @@ class ProductionRelease < ApplicationRecord
   include Loggable
   include Passportable
   include Taggable
+  include Sanitizable
 
   belongs_to :release_platform_run
   belongs_to :build
@@ -33,7 +34,7 @@ class ProductionRelease < ApplicationRecord
   delegate :app, :train, :release, :platform, :release_platform, :hotfix?, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, :prepared_at, to: :store_submission
-  delegate :notify!, to: :train
+  delegate :notify!, :notify_with_changelog!, to: :train
   delegate :commit, :version_name, :build_number, to: :build
   delegate :release_health_rules, to: :release_platform
 
@@ -119,7 +120,8 @@ class ProductionRelease < ApplicationRecord
 
     previous&.mark_as_stale!
     update!(status: STATES[:active])
-    notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
+    notify_with_changelog!("Production release was started!", :production_rollout_started, rollout_started_notification_params)
+
     ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank?
 
     return if beyond_monitoring_period?
@@ -193,14 +195,35 @@ class ProductionRelease < ApplicationRecord
     )
   end
 
+  def rollout_started_notification_params
+    store_rollout.notification_params.merge(
+      diff_changelog: sanitize_commit_messages(changes_since_previous)
+    )
+  end
+
   def commits_since_previous
-    changes_since_last_release = release.release_changelog&.commits || []
-    changes_since_last_run = release.all_commits.between_commits(previous&.commit, commit) || []
+    commits_since_last_release = release.release_changelog&.commits || []
+    commits_since_last_run = release.all_commits.between_commits(previous&.commit, commit) || []
 
     if previous
-      changes_since_last_run
+      # if it's a patch-fix, only return the delta of commits
+      commits_since_last_run
     else
-      changes_since_last_release
+      # if it's the first rollout, return all the commits in the release
+      (commits_since_last_run + commits_since_last_release).uniq { |c| c.commit_hash }
+    end
+  end
+
+  def changes_since_previous
+    commits_since_last_release = release.release_changelog&.commits&.commit_messages(true) || []
+    commits_since_last_run = release.all_commits.between_commits(previous&.commit, commit).commit_messages(true) || []
+
+    if previous
+      # if it's a patch-fix, only return the delta of changes
+      commits_since_last_run
+    else
+      # if it's the first rollout, return all the changes in the release
+      (commits_since_last_run + commits_since_last_release).uniq
     end
   end
 

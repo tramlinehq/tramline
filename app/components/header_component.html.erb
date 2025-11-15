@@ -55,7 +55,7 @@
 
             <%= render DropdownComponent.new(authz: false) do |dropdown| %>
               <% button = dropdown.with_button(size: :xs) %>
-              <% button.with_icon("art/cross_platform_default.png", size: :xxl, rounded: false) %>
+              <% button.with_icon(app_icon, size: :xxl, rounded: false) %>
               <% button.with_title_text do %>
                 <div class="flex items-center justify-center gap-x-1 text-sm font-semibold leading-none text-main dark:text-white">
                   <%= render IconComponent.new("#{default_app.platform}.svg", size: :md) %>

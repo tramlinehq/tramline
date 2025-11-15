@@ -10,10 +10,10 @@ class Coordinators::FinalizeRelease::AlmostTrunk
 
   # FIXME: Merge back to upcoming release branch also if it exists
   def call
-    if release.continuous_backmerge?
-      create_tag
-    else
-      create_tag.then { create_and_merge_pr }
+    case train.backmerge_strategy
+    when Train.backmerge_strategies[:continuous] then create_tag
+    when Train.backmerge_strategies[:on_finalize] then create_tag.then { create_and_merge_pr }
+    else create_tag
     end
   end
 

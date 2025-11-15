@@ -1,0 +1,30 @@
+{
+  "additionalProperties": true,
+  "description": "This webhook event is triggered when the release first kick-offs from Tramline.",
+  "properties": {
+    "platform": {
+      "enum": [
+        "android",
+        "ios",
+        "cross_platform"
+      ],
+      "title": "Platform",
+      "type": "string"
+    },
+    "release_branch": {
+      "title": "ReleaseBranch",
+      "type": "string"
+    },
+    "release_version": {
+      "title": "ReleaseVersion",
+      "type": "string"
+    }
+  },
+  "required": [
+    "platform",
+    "release_branch",
+    "release_version"
+  ],
+  "title": "release.started",
+  "type": "object"
+}

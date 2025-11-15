@@ -88,7 +88,8 @@ class AppStoreIntegration < ApplicationRecord
                                     whats_new: :whats_new,
                                     promo_text: :promotional_text,
                                     keywords: :keywords,
-                                    description: :description}}
+                                    description: :description}},
+    existing_review_submission: :ready_review_submission
   }
 
   PROD_CHANNEL = {id: :app_store, name: "App Store (production)", is_production: true}.with_indifferent_access
@@ -258,7 +259,11 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def release_info(build_info)
-    AppStoreReleaseInfo.new(build_info.merge(external_link: APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id: integrable.external_id, external_id: build_info[:external_id]).to_s))
+    app_id = integrable.external_id
+    external_id = build_info[:external_id]
+    external_link = APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id:, external_id:).to_s
+    params = build_info.merge(external_link:).merge(app_id:)
+    AppStoreReleaseInfo.new(params)
   end
 
   def correct_key
@@ -348,14 +353,17 @@ class AppStoreIntegration < ApplicationRecord
     PHASED_RELEASE_INACTIVE = "INACTIVE"
     IN_REVIEW = "IN_REVIEW"
     WAITING_FOR_REVIEW = "WAITING_FOR_REVIEW"
+    REVIEW_SUBMISSION_LINK =
+      Addressable::Template.new("https://appstoreconnect.apple.com/apps/{app_id}/distribution/reviewsubmissions/details/{review_submission_id}")
 
-    def attributes
-      release_info.except(:phased_release_day, :phased_release_status, :localizations)
-    end
+    alias_method :attributes, :release_info
 
     def phased_release_stage
-      return DEFAULT_PHASED_RELEASE_SEQUENCE.count.pred if phased_release_complete?
-      release_info[:phased_release_day].pred
+      final_stage = DEFAULT_PHASED_RELEASE_SEQUENCE.size.pred
+      return final_stage if phased_release_complete?
+      current_stage = release_info[:phased_release_day].pred
+      # sometimes the current_stage can go upto 8 from ASC-side
+      [current_stage, final_stage].min
     end
 
     def phased_release_complete?
@@ -367,15 +375,34 @@ class AppStoreIntegration < ApplicationRecord
     end
 
     def valid?(build_number, version_name, staged_rollout_enabled)
-      base_validation = release_info[:build_number] == build_number &&
-        release_info[:name] == version_name
-
+      base_validation = release_info[:build_number] == build_number && release_info[:name] == version_name
       return false unless base_validation
 
       if staged_rollout_enabled
         release_info[:phased_release_status] == PHASED_RELEASE_INACTIVE
       else
         release_info[:phased_release_status].nil?
+      end
+    end
+
+    def existing_review_submission_link
+      app_id = release_info[:app_id]
+      review_submission_id = release_info.dig(:existing_review_submission, :id)
+      return unless review_submission_id
+      REVIEW_SUBMISSION_LINK.expand(app_id:, review_submission_id:).to_s
+    end
+
+    REVIEW_ITEM_TRANSFORMS = {
+      "appStoreVersionExperimentV2" => "App Store Experiment",
+      "appStoreVersionExperiment" => "App Store Experiment",
+      "appStoreVersion" => "Store Version",
+      "appCustomProductPageVersion" => "Custom Product Page",
+      "appEvent" => "App Event"
+    }
+
+    def existing_review_submission_items
+      release_info.dig(:existing_review_submission, :items)&.map do |item|
+        item.merge(type: REVIEW_ITEM_TRANSFORMS[item[:type]])
       end
     end
 

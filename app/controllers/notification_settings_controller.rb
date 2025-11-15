@@ -47,6 +47,7 @@ class NotificationSettingsController < SignedInApplicationController
       :active,
       :core_enabled,
       :release_specific_enabled,
+      :user_content,
       notification_channels: []
     )
   end

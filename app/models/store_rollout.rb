@@ -73,7 +73,6 @@ class StoreRollout < ApplicationRecord
   end
 
   def next_rollout_percentage
-    return config.first if created?
     config[next_stage]
   end
 
@@ -115,28 +114,32 @@ class StoreRollout < ApplicationRecord
     last_rollout_percentage.to_f.equal_to?(100.0)
   end
 
+  def update_stage(stage, finish_rollout: false)
+    # do nothing if the new stage is the same as current and the rollout has not finished
+    return if stage == current_stage && !finish_rollout
+
+    # update the stage
+    update!(current_stage: stage)
+
+    # complete the release if the rollout has finished and we've reached the last stage
+    return complete! if finish_rollout && reached_last_stage?
+
+    # otherwise
+    if may_start?
+      # start the rollout and stamp (if it can be started)
+      start!
+      event_stamp!(reason: :started, kind: :success, data: stamp_data)
+    else
+      # notify that the rollout has updated
+      event_stamp!(reason: :updated, kind: :notice, data: stamp_data)
+      notify!("Rollout has been updated", :production_rollout_updated, notification_params)
+    end
+  end
+
   protected
 
   def next_stage
     current_stage.blank? ? 0 : current_stage.succ
-  end
-
-  def update_stage(stage, finish_rollout: false)
-    return if stage == current_stage && !finish_rollout
-
-    update!(current_stage: stage)
-    if may_start?
-      start!
-      event_stamp!(reason: :started, kind: :success, data: stamp_data)
-    else
-      event_stamp!(reason: :updated, kind: :notice, data: stamp_data)
-      notify!("Rollout has been updated", :production_rollout_updated, notification_params)
-    end
-
-    if finish_rollout && reached_last_stage?
-      complete!
-      event_stamp!(reason: :completed, kind: :success, data: stamp_data)
-    end
   end
 
   def stamp_data
