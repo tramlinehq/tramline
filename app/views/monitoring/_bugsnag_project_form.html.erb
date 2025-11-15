@@ -11,17 +11,17 @@
        data-nested-select-option-key-value="id"
        data-nested-select-nested-option-key-value="release_stages">
     <div>
-      <%= section.F.labeled_select "bugsnag_#{platform}_project_id".downcase.to_sym,
+      <%= section.F.labeled_select "#{platform.downcase}_project_id",
             "Project",
             options_for_select(
               display_channels(projects.map { |p| p.except(:release_stages) }) { |project| "#{project[:name]} (#{project[:id]})" },
-              project.to_json
+              projects.find { |proj| proj[:id] == project&.dig("id") }&.except(:release_stages)&.to_json
             ),
             {},
             {data: {nested_select_target: "primary", action: "nested-select#updateNestedOptions"}} %>
     </div>
     <div>
-      <%= section.F.labeled_select "bugsnag_#{platform}_release_stage".downcase.to_sym,
+      <%= section.F.labeled_select "#{platform.downcase}_release_stage",
             "Release Stage",
             {},
             {},

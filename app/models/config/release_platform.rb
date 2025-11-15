@@ -124,8 +124,8 @@ class Config::ReleasePlatform < ApplicationRecord
       ]
     }
 
-    if app.config.variants.any?
-      opts[:variants] += app.config.variants.map do |variant|
+    if app.variants.any?
+      opts[:variants] += app.variants.map do |variant|
         {
           name: "#{variant.name} – #{variant.bundle_identifier}",
           id: variant.id,

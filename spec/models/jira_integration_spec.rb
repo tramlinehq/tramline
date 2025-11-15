@@ -6,6 +6,42 @@ describe JiraIntegration do
   let(:sample_release_label) { "release-1.0" }
   let(:sample_version) { "v1.0.0" }
 
+  describe "validations" do
+    describe "release filters" do
+      context "with invalid filter type" do
+        it "is invalid" do
+          integration.project_config = {
+            "release_filters" => [{"type" => "invalid", "value" => "test"}]
+          }
+          expect(integration).not_to be_valid
+          expect(integration.errors[:project_config]).to include("release filters must contain valid type and value")
+        end
+      end
+
+      context "with empty filter value" do
+        it "is invalid" do
+          integration.project_config = {
+            "release_filters" => [{"type" => "label", "value" => ""}]
+          }
+          expect(integration).not_to be_valid
+          expect(integration.errors[:project_config]).to include("release filters must contain valid type and value")
+        end
+      end
+
+      context "with valid filters" do
+        it "is valid" do
+          integration.project_config = {
+            "release_filters" => [
+              {"type" => "label", "value" => sample_release_label},
+              {"type" => "fix_version", "value" => sample_version}
+            ]
+          }
+          expect(integration).to be_valid
+        end
+      end
+    end
+  end
+
   describe "#installation" do
     it "returns a new API instance with correct credentials" do
       api = integration.installation
@@ -65,7 +101,7 @@ describe JiraIntegration do
     end
 
     before do
-      app.config.update!(jira_config: {
+      integration.update!(project_config: {
         "selected_projects" => ["PROJ"],
         "release_filters" => [{"type" => "label", "value" => sample_release_label}]
       })
@@ -88,14 +124,14 @@ describe JiraIntegration do
 
     context "when missing required configuration" do
       it "returns empty array when no selected projects" do
-        app.config.update!(jira_config: {
+        integration.update!(project_config: {
           "release_filters" => [{"type" => "label", "value" => sample_release_label}]
         })
         expect(integration.fetch_tickets_for_release).to eq([])
       end
 
       it "returns empty array when no release filters" do
-        app.config.update!(jira_config: {
+        integration.update!(project_config: {
           "selected_projects" => ["PROJ"]
         })
         expect(integration.fetch_tickets_for_release).to eq([])

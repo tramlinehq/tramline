@@ -8,7 +8,7 @@ module Tabbable
     @tab_configuration = [
       [1, "General", edit_app_path(@app), "cog.svg"],
       [2, "Integrations", app_integrations_path(@app), "blocks.svg"],
-      [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
+      [3, "App Variants", app_app_variants_path(@app), "dna.svg"]
     ]
   end
 

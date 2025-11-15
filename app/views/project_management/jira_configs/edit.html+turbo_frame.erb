@@ -1,0 +1,28 @@
+<%= render EnhancedTurboFrameComponent.new(:project_management_config) do %>
+  <% if @jira_data && @jira_data[:projects].present? %>
+    <%= render FormComponent.new(model: @jira_integration,
+                                 url: app_project_management_jira_config_path(@app),
+                                 method: :patch,
+                                 data: {turbo_frame: "_top"},
+                                 builder: EnhancedFormHelper::AuthzForm,
+                                 free_form: true) do |f| %>
+      <%= render CardComponent.new(title: "Select Jira Projects",
+                                   subtitle: "Pick projects, add release filters and done states for tracking releases",
+                                   separator: false,
+                                   size: :full) do %>
+        <%= render partial: "jira_integration/project_selection",
+                   locals: {form: f.F, jira_data: @jira_data, current_jira_config: @current_jira_config} %>
+        <% f.with_action do %>
+          <%= f.F.authz_submit "Update", "plus.svg", size: :sm %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= render EmptyStateComponent.new(
+          title: "No Jira projects found",
+          text: "Please try loading this page again or check your configured projects.",
+          banner_image: "folder_open.svg",
+          type: :subdued
+        ) %>
+  <% end %>
+<% end %>

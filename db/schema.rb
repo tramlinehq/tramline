@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_08_26_110821) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_15_090005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -75,15 +75,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_26_110821) do
   end
 
   create_table "app_variants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "app_config_id", null: false
+    t.uuid "app_config_id"
     t.string "name", null: false
     t.string "bundle_identifier", null: false
     t.jsonb "firebase_ios_config"
     t.jsonb "firebase_android_config"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "app_id"
+    t.string "slug"
     t.index ["app_config_id"], name: "index_app_variants_on_app_config_id"
+    t.index ["app_id"], name: "index_app_variants_on_app_id"
     t.index ["bundle_identifier", "app_config_id"], name: "index_app_variants_on_bundle_identifier_and_app_config_id", unique: true
+    t.index ["bundle_identifier", "app_id"], name: "index_app_variants_on_bundle_identifier_and_app_id", unique: true
+    t.index ["slug"], name: "index_app_variants_on_slug", unique: true
   end
 
   create_table "approval_assignees", force: :cascade do |t|
@@ -133,18 +138,23 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_26_110821) do
     t.string "oauth_refresh_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "repository_config"
+    t.string "workspace"
   end
 
   create_table "bitrise_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "access_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "project_config"
   end
 
   create_table "bugsnag_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "access_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "android_config"
+    t.jsonb "ios_config"
   end
 
   create_table "build_artifacts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -363,6 +373,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_26_110821) do
     t.string "installation_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "repository_config"
   end
 
   create_table "gitlab_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -370,6 +381,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_26_110821) do
     t.string "oauth_refresh_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "repository_config"
   end
 
   create_table "google_firebase_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -378,6 +390,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_26_110821) do
     t.string "app_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "android_config"
+    t.jsonb "ios_config"
   end
 
   create_table "google_play_store_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -426,6 +440,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_26_110821) do
     t.datetime "updated_at", null: false
     t.string "organization_name"
     t.string "organization_url"
+    t.jsonb "project_config", default: {}, null: false
     t.index ["cloud_id"], name: "index_jira_integrations_on_cloud_id"
   end
 
@@ -437,6 +452,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_26_110821) do
     t.datetime "updated_at", null: false
     t.string "workspace_name"
     t.string "workspace_url_key"
+    t.jsonb "project_config", default: {}, null: false
     t.index ["workspace_id"], name: "index_linear_integrations_on_workspace_id"
   end
 
@@ -1125,8 +1141,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_26_110821) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "app_configs", "apps"
-  add_foreign_key "app_variants", "app_configs"
+  add_foreign_key "app_variants", "apps"
   add_foreign_key "approval_assignees", "approval_items"
   add_foreign_key "approval_assignees", "users", column: "assignee_id"
   add_foreign_key "approval_items", "releases"

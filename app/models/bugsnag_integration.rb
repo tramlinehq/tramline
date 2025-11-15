@@ -2,10 +2,12 @@
 #
 # Table name: bugsnag_integrations
 #
-#  id           :uuid             not null, primary key
-#  access_token :string
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
+#  id             :uuid             not null, primary key
+#  access_token   :string
+#  android_config :jsonb
+#  ios_config     :jsonb
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
 #
 class BugsnagIntegration < ApplicationRecord
   has_paper_trail
@@ -13,6 +15,8 @@ class BugsnagIntegration < ApplicationRecord
   include Providable
   include Displayable
   include Rails.application.routes.url_helpers
+
+  attr_accessor :ios_release_stage, :android_release_stage, :ios_project_id, :android_project_id
 
   CACHE_EXPIRY = 1.month
   API = Installations::Bugsnag::Api
@@ -46,12 +50,11 @@ class BugsnagIntegration < ApplicationRecord
   validate :correct_key, on: :create
   validates :access_token, presence: true
 
+  after_initialize :set_bugsnag_config, if: :persisted?
+
   encrypts :access_token, deterministic: true
   delegate :cache, to: Rails
   delegate :integrable, to: :integration
-  delegate :bugsnag_project, :bugsnag_release_stage, to: :app_config
-  alias_method :project, :bugsnag_project
-  alias_method :release_stage, :bugsnag_release_stage
 
   def installation
     API.new(access_token)
@@ -110,7 +113,32 @@ class BugsnagIntegration < ApplicationRecord
     "#{project_url(platform)}/overview?release_stage=#{release_stage(platform)}"
   end
 
+  def project(platform)
+    case platform
+    when "android" then android_config&.dig("project_id")
+    when "ios" then ios_config&.dig("project_id")
+    else
+      raise ArgumentError, "Invalid platform: #{platform}"
+    end
+  end
+
+  def release_stage(platform)
+    case platform
+    when "android" then android_config&.dig("release_stage")
+    when "ios" then ios_config&.dig("release_stage")
+    else
+      raise ArgumentError, "Invalid platform: #{platform}"
+    end
+  end
+
   private
+
+  def set_bugsnag_config
+    self.ios_release_stage = ios_config&.fetch("release_stage", nil)
+    self.ios_project_id = ios_config&.fetch("project_id", nil)
+    self.android_release_stage = android_config&.fetch("release_stage", nil)
+    self.android_project_id = android_config&.fetch("project_id", nil)
+  end
 
   def project_url(platform)
     project(platform)&.fetch("url", nil)
@@ -118,10 +146,6 @@ class BugsnagIntegration < ApplicationRecord
 
   def project_id(platform)
     project(platform)&.fetch("id", nil)
-  end
-
-  def app_config
-    integrable.config
   end
 
   def correct_key

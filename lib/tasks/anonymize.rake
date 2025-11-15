@@ -396,30 +396,6 @@ namespace :anonymize do
         whitelist "integrable_id", "integrable_type", "category", "providable_id", "providable_type"
         whitelist_timestamps
       end
-
-      table "linear_integrations" do
-        continue { |index, record| !LinearIntegration.exists?(record["id"]) }
-
-        primary_key "id"
-        whitelist "organization_id"
-        whitelist_timestamps
-        anonymize("oauth_access_token") { |_| "anonymized_token" }
-        anonymize("oauth_refresh_token") { |_| "anonymized_refresh_token" }
-        anonymize("workspace_id") { |_| "anonymized_workspace_id" }
-        anonymize("workspace_name") { |_| "anonymized_workspace_name" }
-        anonymize("workspace_url_key") { |_| "anonymized_workspace_url_key" }
-      end
-
-      table "svix_integrations" do
-        continue { |index, record| Train.exists?(record["train_id"]) && !SvixIntegration.exists?(record["id"]) }
-
-        primary_key "id"
-        whitelist "train_id", "status"
-        whitelist_timestamps
-        anonymize("svix_app_id") { |_| "anonymized_app_id" }
-        anonymize("svix_app_uid") { |_| "anonymized-app-uid" }
-        anonymize("svix_app_name") { |_| "Anonymized Svix App" }
-      end
     end
 
     RefreshReldexJob.perform_async(train_id)

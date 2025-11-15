@@ -5,6 +5,7 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  repository_config   :jsonb
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
@@ -24,7 +25,6 @@ class GitlabIntegration < ApplicationRecord
   before_validation :complete_access, if: :new_record?
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
-  delegate :code_repository_name, :code_repo_namespace, to: :app_config
   delegate :cache, to: Rails
   validate :correct_key, on: :create
 
@@ -156,6 +156,18 @@ class GitlabIntegration < ApplicationRecord
     generated_at: :created_at
   }
 
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
+
+  def code_repo_url
+    repository_config&.fetch("repo_url", nil)
+  end
+
+  def code_repo_namespace = nil
+
+  def code_repo_name_only = nil
+
   def install_path
     BASE_INSTALLATION_URL
       .expand(params: {
@@ -174,7 +186,8 @@ class GitlabIntegration < ApplicationRecord
 
   def correct_key
     if integration.ci_cd?
-      errors.add(:base, :workflows) if workflows(bust_cache: true).blank?
+      # NOTE: relaxing this validation temporarily since it depends on config that's not yet setup
+      # errors.add(:base, :workflows) if workflows(bust_cache: true).blank?
     elsif integration.version_control?
       errors.add(:base, :repos) if repos.blank?
     end
@@ -253,7 +266,7 @@ class GitlabIntegration < ApplicationRecord
   def workflow_retriable_in_place? = false
 
   def further_setup?
-    false
+    true
   end
 
   def enable_auto_merge? = true
@@ -346,7 +359,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def get_commit(sha)
-    with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMITS_TRANSFORMATIONS) }
+    with_api_retries { installation.get_commit(repository_config["id"], sha, COMMITS_TRANSFORMATIONS) }
   end
 
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
@@ -473,10 +486,6 @@ class GitlabIntegration < ApplicationRecord
     end
 
     reload
-  end
-
-  def app_config
-    integrable.config
   end
 
   def redirect_uri

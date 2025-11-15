@@ -20,19 +20,35 @@
         <% if connected? %>
           <div class="flex justify-between w-full items-baseline">
             <%= render BadgeComponent.new(text: "Connected", status: :success) %>
-            <% if disconnectable_categories? %>
-              <%= render ButtonComponent.new(
-                    scheme: :danger,
-                    options: app_integration_path(@app, integration),
-                    type: :button,
-                    size: :xxs,
-                    turbo: false,
-                    disabled: !disconnectable?,
-                    html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want disconnect the integration?"}}
-                  ) do |b|
-                    b.with_icon("trash.svg", size: :sm)
-                  end %>
-            <% end %>
+            <div class="flex gap-2">
+              <% if further_setup? %>
+                <%= render ModalComponent.new(title: category_title, open: pre_open_category?) do |modal| %>
+                  <% button = modal.with_button(scheme: :light, type: :action, size: :xxs) %>
+                  <% button.with_icon("cog.svg", size: :sm) %>
+                  <% modal.with_body do %>
+                    <%= tag.turbo_frame id: category_config_turbo_frame_id,
+                                        src: edit_config_path,
+                                        loading: :lazy,
+                                        class: "with-turbo-frame-loader" do %>
+                      <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+              <% end %>
+
+              <% if disconnectable_categories? %>
+                <%= render ButtonComponent.new(
+                      scheme: :danger,
+                      options: app_integration_path(@app, integration),
+                      type: :button,
+                      size: :xxs,
+                      disabled: !disconnectable?,
+                      html_options: {method: :delete, data: {turbo_confirm: "Are you sure you want to disconnect this integration?"}}
+                    ) do |b|
+                      b.with_icon("trash.svg", size: :sm)
+                    end %>
+              <% end %>
+            </div>
           </div>
         <% end %>
 
@@ -45,8 +61,8 @@
 
             <% if creatable? %>
               <%= render ModalComponent.new(title: creatable_modal_title) do |modal| %>
-                <% modal.with_button(label: "Connect", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                     .with_icon("plus.svg", size: :md) %>
+                <% button = modal.with_button(label: "Connect", scheme: :light, type: :action, size: :xxs, arrow: :none) %>
+                <% button.with_icon("plus.svg", size: :md) %>
                 <% modal.with_body do %>
                   <%= creatable_form_partial %>
                 <% end %>
