@@ -1,8 +1,6 @@
 class ProjectManagement::JiraConfigsController < SignedInApplicationController
   before_action :require_write_access!
-  before_action :set_app
   before_action :set_jira_integration
-  around_action :set_time_zone
 
   def edit
     set_jira_projects
@@ -24,10 +22,6 @@ class ProjectManagement::JiraConfigsController < SignedInApplicationController
   end
 
   private
-
-  def set_app
-    @app = current_organization.apps.friendly.find(params[:app_id])
-  end
 
   def set_jira_integration
     project_management_integration = @app.project_management_provider

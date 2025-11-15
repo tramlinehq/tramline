@@ -2,9 +2,7 @@ class CiCd::BitriseConfigsController < SignedInApplicationController
   using RefinedString
 
   before_action :require_write_access!
-  before_action :set_app
   before_action :set_bitrise_integration
-  around_action :set_time_zone
 
   def edit
     set_ci_cd_projects
@@ -27,9 +25,6 @@ class CiCd::BitriseConfigsController < SignedInApplicationController
 
   private
 
-  def set_app
-    @app = current_organization.apps.friendly.find(params[:app_id])
-  end
 
   def set_bitrise_integration
     @bitrise_integration = @app.ci_cd_provider
@@ -44,10 +39,9 @@ class CiCd::BitriseConfigsController < SignedInApplicationController
   end
 
   def parsed_bitrise_config_params
-    bitrise_config_params = params.require(:bitrise_integration)
-      .permit(:project_config)
-    bitrise_config_params.merge(
-      project_config: bitrise_config_params[:project_config]&.safe_json_parse
-    )
+    bitrise_config_params =
+      params.require(:bitrise_integration).permit(:project_config)
+    bitrise_config_params
+      .merge(project_config: bitrise_config_params[:project_config]&.safe_json_parse)
   end
 end

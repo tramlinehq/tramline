@@ -2,9 +2,7 @@ class CiCd::GitlabConfigsController < SignedInApplicationController
   using RefinedString
 
   before_action :require_write_access!
-  before_action :set_app
   before_action :set_gitlab_integration
-  around_action :set_time_zone
 
   def edit
     set_code_repositories
@@ -27,10 +25,6 @@ class CiCd::GitlabConfigsController < SignedInApplicationController
 
   private
 
-  def set_app
-    @app = current_organization.apps.friendly.find(params[:app_id])
-  end
-
   def set_gitlab_integration
     @gitlab_integration = @app.ci_cd_provider
     unless @gitlab_integration.is_a?(GitlabIntegration)
@@ -43,10 +37,9 @@ class CiCd::GitlabConfigsController < SignedInApplicationController
   end
 
   def parsed_gitlab_config_params
-    gitlab_config_params = params.require(:gitlab_integration)
-      .permit(:repository_config)
-    gitlab_config_params.merge(
-      repository_config: gitlab_config_params[:repository_config]&.safe_json_parse
-    )
+    gitlab_config_params =
+      params.require(:gitlab_integration).permit(:repository_config)
+    gitlab_config_params
+      .merge(repository_config: gitlab_config_params[:repository_config]&.safe_json_parse)
   end
 end

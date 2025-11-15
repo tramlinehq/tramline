@@ -61,10 +61,9 @@ class BitriseIntegration < ApplicationRecord
   delegate :integrable, to: :integration
   delegate :cache, to: Rails
 
-  def bitrise_project
+  def project
     project_config&.fetch("id", nil)
   end
-  alias_method :project, :bitrise_project
 
   def installation
     API.new(access_token)

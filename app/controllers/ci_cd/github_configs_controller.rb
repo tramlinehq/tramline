@@ -2,9 +2,7 @@ class CiCd::GithubConfigsController < SignedInApplicationController
   using RefinedString
 
   before_action :require_write_access!
-  before_action :set_app
   before_action :set_github_integration
-  around_action :set_time_zone
 
   def edit
     set_code_repositories
@@ -27,10 +25,6 @@ class CiCd::GithubConfigsController < SignedInApplicationController
 
   private
 
-  def set_app
-    @app = current_organization.apps.friendly.find(params[:app_id])
-  end
-
   def set_github_integration
     @github_integration = @app.ci_cd_provider
     unless @github_integration.is_a?(GithubIntegration)
@@ -43,10 +37,9 @@ class CiCd::GithubConfigsController < SignedInApplicationController
   end
 
   def parsed_github_config_params
-    github_config_params = params.require(:github_integration)
-      .permit(:repository_config)
-    github_config_params.merge(
-      repository_config: github_config_params[:repository_config]&.safe_json_parse
-    )
+    github_config_params =
+      params.require(:github_integration).permit(:repository_config)
+    github_config_params
+      .merge(repository_config: github_config_params[:repository_config]&.safe_json_parse)
   end
 end

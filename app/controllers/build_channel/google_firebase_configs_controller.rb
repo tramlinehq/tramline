@@ -4,7 +4,6 @@ class BuildChannel::GoogleFirebaseConfigsController < SignedInApplicationControl
   before_action :require_write_access!
   before_action :set_integrable
   before_action :set_google_firebase_integration
-  around_action :set_time_zone
 
   def edit
     set_firebase_apps
@@ -28,7 +27,6 @@ class BuildChannel::GoogleFirebaseConfigsController < SignedInApplicationControl
   private
 
   def set_integrable
-    # current_organization.apps.friendly.find(params[:app_id])
     @integrable = Integrable.find(params[:integrable_id])
   end
 

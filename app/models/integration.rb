@@ -298,11 +298,7 @@ class Integration < ApplicationRecord
       app = first.integrable
       return true unless app.bitrise_connected?
 
-      bitrise_project.present?
-    end
-
-    def bitrise_project
-      bitrise_ci_cd_provider&.bitrise_project
+      bitrise_ci_cd_provider&.project.present?
     end
 
     def firebase_ready?
@@ -344,11 +340,10 @@ class Integration < ApplicationRecord
       false
     end
 
-    # NOTE: Could be moved to App perhaps?
-    def configs_ready?(app, android, ios)
-      return ios.present? if app.ios?
-      return android.present? if app.android?
-      ios.present? && android.present? if app.cross_platform?
+    def configs_ready?(app, android_config, ios_config)
+      return ios_config.present? if app.ios?
+      return android_config.present? if app.android?
+      ios_config.present? && android_config.present? if app.cross_platform?
     end
   end
 

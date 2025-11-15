@@ -2,9 +2,7 @@ class Monitoring::BugsnagConfigsController < SignedInApplicationController
   using RefinedString
 
   before_action :require_write_access!
-  before_action :set_app
   before_action :set_bugsnag_integration
-  around_action :set_time_zone
 
   def edit
     set_monitoring_projects
@@ -26,10 +24,6 @@ class Monitoring::BugsnagConfigsController < SignedInApplicationController
   end
 
   private
-
-  def set_app
-    @app = current_organization.apps.friendly.find(params[:app_id])
-  end
 
   def set_bugsnag_integration
     @bugsnag_integration = @app.monitoring_provider
