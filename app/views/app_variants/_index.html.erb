@@ -8,14 +8,14 @@
     <% section.with_sidenote do %>
       <%= render ModalComponent.new(title: "Add a new App Variant") do |modal| %>
         <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                .with_icon("plus.svg", size: :sm) %>
+             .with_icon("plus.svg", size: :sm) %>
 
         <% modal.with_body do %>
           <%= render partial: "create",
-                     locals: { app: @app,
-                               app_variant: @new_app_variant,
-                               firebase_ios_apps: @firebase_ios_apps,
-                               firebase_android_apps: @firebase_android_apps } %>
+                     locals: {app: @app,
+                              app_variant: @new_app_variant,
+                              firebase_ios_apps: @firebase_ios_apps,
+                              firebase_android_apps: @firebase_android_apps} %>
         <% end %>
       <% end %>
     <% end %>
@@ -69,15 +69,15 @@
             <% end %>
 
             <%= render ButtonComponent.new(
-              scheme: :light,
-              options: app_app_variant_path(@app, variant),
-              type: :link,
-              html_options: { method: :delete,
-                              data: { turbo_method: :delete,
-                                      turbo_confirm: "Are you sure you want to delete the variant? This will also destroy the associated integrations." } }
-            ) do |b|
-              b.with_icon("trash.svg")
-            end %>
+                  scheme: :light,
+                  options: app_app_variant_path(@app, variant),
+                  type: :link,
+                  html_options: {method: :delete,
+                                 data: {turbo_method: :delete,
+                                        turbo_confirm: "Are you sure you want to delete the variant? This will also destroy the associated integrations."}}
+                ) do |b|
+                  b.with_icon("trash.svg")
+                end %>
           </div>
         <% end %>
       <% end %>

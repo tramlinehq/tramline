@@ -21,7 +21,7 @@ class BuildChannel::GoogleFirebaseConfigsController < SignedInApplicationControl
       redirect_to app_path(@app), notice: t(".success")
     else
       redirect_back fallback_location: app_integrations_path(@integrable),
-                    flash: { error: @google_firebase_integration.errors.full_messages.to_sentence }
+        flash: {error: @google_firebase_integration.errors.full_messages.to_sentence}
     end
   end
 
@@ -35,7 +35,7 @@ class BuildChannel::GoogleFirebaseConfigsController < SignedInApplicationControl
   def set_google_firebase_integration
     @google_firebase_integration = @integrable&.integrations&.firebase_build_channel_provider
     unless @google_firebase_integration.is_a?(GoogleFirebaseIntegration)
-      redirect_to app_integrations_path(@app), flash: { error: "Firebase build channel integration not found." }
+      redirect_to app_integrations_path(@app), flash: {error: "Firebase build channel integration not found."}
     end
   end
 

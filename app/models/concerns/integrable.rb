@@ -7,12 +7,10 @@ module Integrable
 
   def self.find(id)
     ApplicationRecord::INTEGRABLE_TYPES.each do |type|
-      begin
-        record = type.constantize.friendly.find(id)
-        return record if record
-      rescue ActiveRecord::RecordNotFound
-        next
-      end
+      record = type.constantize.friendly.find(id)
+      return record if record
+    rescue ActiveRecord::RecordNotFound
+      next
     end
 
     raise ActiveRecord::RecordNotFound, "Couldn't find integrable with id=#{id}"
