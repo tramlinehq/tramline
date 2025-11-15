@@ -96,9 +96,10 @@ class JiraIntegration < ApplicationRecord
     end
 
     if resources.length == 1
-      self.cloud_id = resources.first["id"]
-      self.organization_url = resources.first["url"]
-      self.organization_name = resources.first["name"]
+      resource = resources.first
+      self.cloud_id = resource["id"]
+      self.organization_url = resource["url"]
+      self.organization_name = resource["name"]
       true
     else
       @available_resources = resources

@@ -53,7 +53,7 @@ RSpec/AnyInstance:
   Enabled: false
 
 RSpec/MultipleExpectations:
-  Max: 5
+  Max: 6
 
 RSpec/NestedGroups:
   Max: 4
