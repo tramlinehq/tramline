@@ -29,7 +29,7 @@ class App < ApplicationRecord
   PUBLIC_IOS_ICON = "https://storage.googleapis.com/tramline-public-assets/default_ios.png"
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
-  has_one :config, class_name: "AppConfig", dependent: :destroy
+  # has_one :config, class_name: "AppConfig", dependent: :destroy
   has_many :variants, class_name: "AppVariant", dependent: :destroy
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
@@ -47,7 +47,6 @@ class App < ApplicationRecord
 
   enum :platform, {android: "android", ios: "ios", cross_platform: "cross_platform"}
 
-  after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
@@ -303,10 +302,6 @@ class App < ApplicationRecord
     ].compact.max
   rescue
     nil
-  end
-
-  def initialize_config
-    build_config
   end
 
   def no_trains_are_running

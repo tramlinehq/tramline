@@ -17,21 +17,29 @@ class AppVariant < ApplicationRecord
   has_paper_trail
   extend FriendlyId
   include Integrable
-  include AppConfigurable
 
-  belongs_to :app_config, optional: true
+  # self.ignored_columns += %w[firebase_android_config firebase_ios_config]
+
+  # belongs_to :app_config, optional: true # TODO: remove this
   belongs_to :app
 
   validates :bundle_identifier, presence: true, uniqueness: {scope: :app_id}
   validate :duplicate_bundle_identifier
-  validate :single_variant_per_app_config, on: :create
+  validate :single_variant_per_app, on: :create
   validates :name, presence: true, length: {maximum: 30}
 
-  friendly_id :name, use: :slugged
+  friendly_id :slug_candidates, use: :slugged
   normalizes :name, with: ->(name) { name.squish }
 
   delegate :organization, :active_runs, :platform, to: :app
   delegate :id, to: :app, prefix: true
+
+  def slug_candidates
+    [
+      [:name, :bundle_identifier],
+      [:name, :bundle_identifier, :id]
+    ]
+  end
 
   def display_text
     "#{name} (#{bundle_identifier})"
@@ -49,9 +57,9 @@ class AppVariant < ApplicationRecord
     errors.add(:bundle_identifier, :same_as_parent) if app.bundle_identifier == bundle_identifier
   end
 
-  def single_variant_per_app_config
-    if AppVariant.exists?(app_config_id: app_config_id)
-      errors.add(:app_config_id, "can only have one variant")
+  def single_variant_per_app
+    if AppVariant.exists?(app_id: app_id)
+      errors.add(:app_id, "can only have one variant")
     end
   end
 end

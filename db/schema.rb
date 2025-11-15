@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_14_124755) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_15_090005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1141,8 +1141,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_14_124755) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "app_configs", "apps"
-  add_foreign_key "app_variants", "app_configs"
+  add_foreign_key "app_variants", "apps"
   add_foreign_key "approval_assignees", "approval_items"
   add_foreign_key "approval_assignees", "users", column: "assignee_id"
   add_foreign_key "approval_items", "releases"

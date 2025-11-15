@@ -1,6 +1,12 @@
 <%= render EnhancedTurboFrameComponent.new(:build_channel_config) do %>
-  <%= render FormComponent.new(model: [@integrable, @google_firebase_integration], url: app_build_channel_google_firebase_config_path(@app, integrable_id: @integrable), method: :patch) do |f| %>
-    <%= render partial: "build_channel/firebase_integration_form", locals: {f:, integration: @google_firebase_integration, firebase_ios_apps: @firebase_ios_apps, firebase_android_apps: @firebase_android_apps} %>
+  <%= render FormComponent.new(model: [@integrable, @google_firebase_integration],
+                               url: app_build_channel_google_firebase_config_path(@app, integrable_id: @integrable),
+                               method: :patch) do |f| %>
+    <%= render partial: "build_channel/firebase_integration_form",
+               locals: {f:,
+                        integration: @google_firebase_integration,
+                        firebase_ios_apps: @firebase_ios_apps,
+                        firebase_android_apps: @firebase_android_apps} %>
 
     <% f.with_action do %>
       <%= f.F.authz_submit "Update", "plus.svg", size: :xs %>

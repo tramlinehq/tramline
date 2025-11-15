@@ -49,7 +49,7 @@ class AppVariantsController < SignedInApplicationController
   private
 
   def set_app_variant
-    @app_variant = AppVariant.find(params[:id])
+    @app_variant = AppVariant.friendly.find(params[:id])
     @app = @app_variant.app
   end
 
