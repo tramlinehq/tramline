@@ -838,4 +838,132 @@ describe Release do
       expect(release.last_applicable_commit).to eq(commit_in_queue)
     end
   end
+
+  describe "soak period methods" do
+    let(:train) { create(:train, soak_period_enabled: true, soak_period_hours: 24) }
+    let(:release) { create(:release, train:) }
+
+    describe "#soak_period_enabled?" do
+      it "delegates to train" do
+        expect(release.soak_period_enabled?).to eq(true)
+      end
+
+      it "returns false when train has soak disabled" do
+        release.train.update!(soak_period_enabled: false)
+        expect(release.soak_period_enabled?).to eq(false)
+      end
+    end
+
+    describe "#soak_period_hours" do
+      it "returns the train's soak_period_hours" do
+        expect(release.soak_period_hours).to eq(24)
+      end
+
+      it "returns custom hours from train" do
+        release.train.update!(soak_period_hours: 48)
+        expect(release.soak_period_hours).to eq(48)
+      end
+
+      it "returns 24 as default when train soak_period_hours is nil" do
+        release.train.update_column(:soak_period_hours, nil)
+        expect(release.soak_period_hours).to eq(24)
+      end
+    end
+
+    describe "#soak_period_active?" do
+      it "returns false when soak_started_at is nil" do
+        expect(release.soak_period_active?).to eq(false)
+      end
+
+      it "returns true when soak is started but not completed" do
+        release.update!(soak_started_at: 1.hour.ago)
+        expect(release.soak_period_active?).to eq(true)
+      end
+
+      it "returns false when soak period has completed" do
+        release.update!(soak_started_at: 25.hours.ago)
+        expect(release.soak_period_active?).to eq(false)
+      end
+    end
+
+    describe "#soak_period_completed?" do
+      it "returns false when soak_started_at is nil" do
+        expect(release.soak_period_completed?).to eq(false)
+      end
+
+      it "returns false when soak is ongoing" do
+        release.update!(soak_started_at: 1.hour.ago)
+        expect(release.soak_period_completed?).to eq(false)
+      end
+
+      it "returns true when current time is past soak_end_time" do
+        release.update!(soak_started_at: 25.hours.ago)
+        expect(release.soak_period_completed?).to eq(true)
+      end
+
+      it "returns false when soak_end_time is nil" do
+        release.update!(soak_started_at: 1.hour.ago)
+        allow(release).to receive(:soak_end_time).and_return(nil)
+        expect(release.soak_period_completed?).to eq(false)
+      end
+    end
+
+    describe "#soak_end_time" do
+      it "returns nil when soak_started_at is nil" do
+        expect(release.soak_end_time).to be_nil
+      end
+
+      it "returns nil when soak_period_hours is nil" do
+        release.update!(soak_started_at: Time.current)
+        release.train.update_column(:soak_period_hours, nil)
+        # Even though we have a default in the method, test the nil case
+        allow(release).to receive(:soak_period_hours).and_return(nil)
+        expect(release.soak_end_time).to be_nil
+      end
+
+      it "returns soak_started_at + soak_period_hours" do
+        start_time = Time.current
+        release.update!(soak_started_at: start_time)
+        expected_end = start_time + 24.hours
+        expect(release.soak_end_time).to be_within(1.second).of(expected_end)
+      end
+
+      it "calculates correctly with custom hours" do
+        start_time = Time.current
+        release.train.update!(soak_period_hours: 48)
+        release.update!(soak_started_at: start_time)
+        expected_end = start_time + 48.hours
+        expect(release.soak_end_time).to be_within(1.second).of(expected_end)
+      end
+    end
+
+    describe "#soak_time_remaining" do
+      it "returns nil when soak is not active" do
+        expect(release.soak_time_remaining).to be_nil
+      end
+
+      it "returns nil when soak_end_time is nil" do
+        release.update!(soak_started_at: Time.current)
+        allow(release).to receive(:soak_end_time).and_return(nil)
+        expect(release.soak_time_remaining).to be_nil
+      end
+
+      it "returns time remaining in seconds" do
+        release.update!(soak_started_at: 1.hour.ago)
+        remaining = release.soak_time_remaining
+        expect(remaining).to be_within(1).of(23.hours.to_i)
+      end
+
+      it "returns 0 when soak period has passed" do
+        release.update!(soak_started_at: 25.hours.ago)
+        expect(release.soak_time_remaining).to eq(0)
+      end
+
+      it "returns exact remaining time for partially elapsed soak" do
+        release.update!(soak_started_at: 12.hours.ago)
+        remaining = release.soak_time_remaining
+        expect(remaining).to be_within(1).of(12.hours.to_i)
+      end
+    end
+  end
 end

@@ -99,4 +99,33 @@ describe Coordinators::Signals do
       expect(Coordinators::TriggerSubmissionsJob).to have_received(:perform_async).with(workflow_run.id).once
     end
   end
+
+  describe ".beta_release_is_finished! with soak period" do
+    let(:train) { create(:train, soak_period_enabled: true, soak_period_hours: 24) }
+    let(:release) { create(:release, :on_track, train:) }
+    let(:release_platform_run) { create(:release_platform_run, :on_track, release:) }
+    let(:beta_release) { create(:beta_release, release_platform_run:) }
+    let(:workflow_run) { create(:workflow_run, :rc, release_platform_run:, triggering_release: beta_release) }
+    let(:build) { create(:build, release_platform_run:, workflow_run:) }
+
+    it "starts the soak period when beta release finishes" do
+      expect {
+        described_class.beta_release_is_finished!(build)
+      }.to change { release.reload.soak_started_at }.from(nil)
+    end
+
+    it "does not start soak when soak period is disabled" do
+      train.update!(soak_period_enabled: false)
+
+      expect {
+        described_class.beta_release_is_finished!(build)
+      }.not_to change { release.reload.soak_started_at }
+    end
+
+    it "starts production release in addition to starting soak" do
+      described_class.beta_release_is_finished!(build)
+      expect(release_platform_run.reload.production_releases.size).to eq(1)
+      expect(release.reload.soak_started_at).to be_present
+    end
+  end
 end
