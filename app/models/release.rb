@@ -649,18 +649,22 @@ class Release < ApplicationRecord
     event_stamp!(reason: :soak_period_started, kind: :notice, data: {ends_at: soak_end_time})
   end
 
-  def end_soak_period!
+  def end_soak_period!(who)
+    return false unless active?
     return false unless soak_period_active?
+    return false unless who == release_pilot
 
     update!(soak_started_at: soak_started_at - soak_period_hours.hours)
-    event_stamp!(reason: :soak_period_ended_early, kind: :notice)
+    event_stamp!(reason: :soak_period_ended_early, kind: :notice, data: {ended_by: who.id})
   end
 
-  def extend_soak_period!(additional_hours)
+  def extend_soak_period!(additional_hours, who)
+    return false unless active?
     return false unless soak_started_at.present?
+    return false unless who == release_pilot
 
     update!(soak_started_at: soak_started_at - additional_hours.hours)
-    event_stamp!(reason: :soak_period_extended, kind: :notice, data: {additional_hours: additional_hours, new_end_time: soak_end_time})
+    event_stamp!(reason: :soak_period_extended, kind: :notice, data: {additional_hours: additional_hours, new_end_time: soak_end_time, extended_by: who.id})
   end
 
   private

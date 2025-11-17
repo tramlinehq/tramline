@@ -1,5 +1,5 @@
 <%= render CardComponent.new(title: "Active Release Candidate", size: :full, separator: true) do |card| %>
-  <% if @release.soak_period_active? %>
+  <% if @release.soak_period_active? && current_user == @release.release_pilot %>
     <% card.with_action do %>
       <%= button_to "End soak", end_soak_release_path(@release), method: :post,
           data: {turbo_confirm: "Are you sure you want to end the soak period early?"},
@@ -55,6 +55,9 @@
       <div>‡ App submission will be enabled once your configured <%= @release.soak_period_hours %>-hour soak period ends.</div>
       <% if @release.soak_started_at.present? && !@release.soak_period_completed? %>
         <div>‡ Soak period started at <%= @release.soak_started_at.strftime("%Y-%m-%d %H:%M %Z") %> and will end at <%= @release.soak_end_time.strftime("%Y-%m-%d %H:%M %Z") %>.</div>
+      <% end %>
+      <% if @release.soak_period_active? && current_user != @release.release_pilot %>
+        <div class="mt-2 text-warning">Note: Only the release pilot can end or extend the soak period.</div>
       <% end %>
     </div>
   </div>

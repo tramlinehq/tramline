@@ -72,19 +72,29 @@ class ReleasesController < SignedInApplicationController
   end
 
   def end_soak
-    if @release.end_soak_period!
+    if @release.end_soak_period!(current_user)
       redirect_to soak_release_path(@release), notice: "Soak period has been ended early."
     else
-      redirect_back fallback_location: root_path, flash: {error: "Unable to end soak period."}
+      error_message = if current_user != @release.release_pilot
+        "Only the release pilot can end the soak period."
+      else
+        "Unable to end soak period."
+      end
+      redirect_back fallback_location: root_path, flash: {error: error_message}
     end
   end
 
   def extend_soak
     additional_hours = params[:additional_hours]&.to_i || 24
-    if @release.extend_soak_period!(additional_hours)
+    if @release.extend_soak_period!(additional_hours, current_user)
       redirect_to soak_release_path(@release), notice: "Soak period has been extended by #{additional_hours} hours."
     else
-      redirect_back fallback_location: root_path, flash: {error: "Unable to extend soak period."}
+      error_message = if current_user != @release.release_pilot
+        "Only the release pilot can extend the soak period."
+      else
+        "Unable to extend soak period."
+      end
+      redirect_back fallback_location: root_path, flash: {error: error_message}
     end
   end
 
