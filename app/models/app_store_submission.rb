@@ -96,7 +96,7 @@ class AppStoreSubmission < StoreSubmission
     end
 
     event :start_submission, after_commit: :on_start_submission! do
-      transitions from: :prepared, to: :submitting_for_review
+      transitions from: [:prepared, :failed], to: :submitting_for_review
     end
 
     event :submit_for_review, after_commit: :on_submit_for_review! do
