@@ -15,6 +15,7 @@
 #  release_type              :string           not null
 #  scheduled_at              :datetime
 #  slug                      :string           indexed
+#  soak_started_at           :datetime
 #  status                    :string           not null
 #  stopped_at                :datetime
 #  tag_name                  :string
@@ -63,6 +64,9 @@ class Release < ApplicationRecord
     finalize_failed
     stopped
     finished
+    soak_period_started
+    soak_period_ended_early
+    soak_period_extended
   ]
   STAMPABLE_REASONS.concat(%w[status_changed backmerge_pr_created pr_merged pull_request_not_mergeable post_release_pr_succeeded kickoff_pr_succeeded]) # TODO: deprecate this
   STATES = {
@@ -608,6 +612,55 @@ class Release < ApplicationRecord
 
   def trigger_webhook!(event_type)
     Triggers::OutgoingWebhook.call(self, event_type, webhook_params)
+  end
+
+  def soak_period_enabled?
+    train.soak_period_enabled?
+  end
+
+  def soak_period_hours
+    train.soak_period_hours
+  end
+
+  def soak_period_active?
+    soak_started_at.present? && !soak_period_completed?
+  end
+
+  def soak_period_completed?
+    return false if soak_started_at.blank?
+    Time.current >= soak_end_time
+  end
+
+  def soak_end_time
+    return nil if soak_started_at.blank?
+    soak_started_at + soak_period_hours.hours
+  end
+
+  def soak_time_remaining
+    return nil unless soak_period_active?
+    [soak_end_time - Time.current, 0].max
+  end
+
+  def start_soak_period!
+    return false unless soak_period_enabled?
+    return false if soak_started_at.present?
+
+    update!(soak_started_at: Time.current)
+    event_stamp!(reason: :soak_period_started, kind: :notice, data: {ends_at: soak_end_time})
+  end
+
+  def end_soak_period!
+    return false unless soak_period_active?
+
+    update!(soak_started_at: soak_started_at - soak_period_hours.hours)
+    event_stamp!(reason: :soak_period_ended_early, kind: :notice)
+  end
+
+  def extend_soak_period!(additional_hours)
+    return false unless soak_started_at.present?
+
+    update!(soak_started_at: soak_started_at - additional_hours.hours)
+    event_stamp!(reason: :soak_period_extended, kind: :notice, data: {additional_hours: additional_hours, new_end_time: soak_end_time})
   end
 
   private

@@ -76,8 +76,11 @@ module Coordinators
     end
 
     def self.beta_release_is_finished!(build)
-      # start soak, or
       release_platform_run = build.release_platform_run
+
+      # Start soak period if enabled (cross-platform, starts when any RC is ready)
+      Coordinators::StartSoakPeriod.call(release_platform_run.release)
+
       if release_platform_run.conf.production_release.present?
         Coordinators::StartProductionRelease.call(release_platform_run, build.id)
       else
