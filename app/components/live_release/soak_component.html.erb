@@ -25,7 +25,6 @@
     <% end %>
 
     <% if @release.soak_started_at.present? %>
-      <% time_remaining_hours = @release.soak_time_remaining / 3600.0 %>
       <div data-controller="countdown"
            data-countdown-count-down-hours-value="<%= time_remaining_hours %>"
            data-countdown-direction-value="down"
@@ -36,7 +35,7 @@
             <div class="text-2xl">Soak period has ended</div>
           <% else %>
             <div class="text-4xl" data-countdown-target="output">
-              <%= Time.at(@release.soak_time_remaining).utc.strftime("%H:%M:%S") %>
+              <%= time_remaining_display %>
             </div>
           <% end %>
         </div>
@@ -54,7 +53,7 @@
       <div>† Soak starts as soon as an active Release Candidate is available.</div>
       <div>‡ App submission will be enabled once your configured <%= @release.soak_period_hours %>-hour soak period ends.</div>
       <% if @release.soak_started_at.present? && !@release.soak_period_completed? %>
-        <div>‡ Soak period started at <%= @release.soak_started_at.strftime("%Y-%m-%d %H:%M %Z") %> and will end at <%= @release.soak_end_time.strftime("%Y-%m-%d %H:%M %Z") %>.</div>
+        <div>‡ Soak period started at <%= soak_start_time_display %> and will end at <%= soak_end_time_display %>.</div>
       <% end %>
       <% if show_pilot_only_message? %>
         <div class="mt-2 text-warning">Note: Only the release pilot can end or extend the soak period.</div>
