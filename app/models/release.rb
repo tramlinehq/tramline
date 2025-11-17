@@ -649,7 +649,11 @@ class Release < ApplicationRecord
       return false if soak_started_at.present?
 
       update!(soak_started_at: Time.current)
-      event_stamp!(reason: :soak_period_started, kind: :notice, data: {ends_at: soak_end_time})
+      event_stamp!(
+        reason: :soak_period_started,
+        kind: :notice,
+        data: {ends_at: soak_end_time.in_time_zone(app.timezone).strftime("%Y-%m-%d %H:%M %Z")}
+      )
     end
   end
 
@@ -671,7 +675,15 @@ class Release < ApplicationRecord
 
     # Move soak_started_at forward to extend the soak_end_time
     update!(soak_started_at: soak_started_at + additional_hours.hours)
-    event_stamp!(reason: :soak_period_extended, kind: :notice, data: {additional_hours: additional_hours, new_end_time: soak_end_time, extended_by: who.id})
+    event_stamp!(
+      reason: :soak_period_extended,
+      kind: :notice,
+      data: {
+        additional_hours: additional_hours,
+        new_end_time: soak_end_time.in_time_zone(app.timezone).strftime("%Y-%m-%d %H:%M %Z"),
+        extended_by: who.id
+      }
+    )
   end
 
   private
