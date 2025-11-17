@@ -619,7 +619,7 @@ class Release < ApplicationRecord
   end
 
   def soak_period_hours
-    train.soak_period_hours
+    train.soak_period_hours || 24
   end
 
   def soak_period_active?
@@ -628,25 +628,31 @@ class Release < ApplicationRecord
 
   def soak_period_completed?
     return false if soak_started_at.blank?
+    return false if soak_end_time.blank?
     Time.current >= soak_end_time
   end
 
   def soak_end_time
     return nil if soak_started_at.blank?
+    return nil if soak_period_hours.blank?
     soak_started_at + soak_period_hours.hours
   end
 
   def soak_time_remaining
     return nil unless soak_period_active?
+    return nil if soak_end_time.blank?
     [soak_end_time - Time.current, 0].max
   end
 
   def start_soak_period!
     return false unless soak_period_enabled?
-    return false if soak_started_at.present?
 
-    update!(soak_started_at: Time.current)
-    event_stamp!(reason: :soak_period_started, kind: :notice, data: {ends_at: soak_end_time})
+    with_lock do
+      return false if soak_started_at.present?
+
+      update!(soak_started_at: Time.current)
+      event_stamp!(reason: :soak_period_started, kind: :notice, data: {ends_at: soak_end_time})
+    end
   end
 
   def end_soak_period!(who)
@@ -662,6 +668,7 @@ class Release < ApplicationRecord
     return false unless active?
     return false unless soak_started_at.present?
     return false unless who == release_pilot
+    return false if additional_hours.to_i <= 0
 
     update!(soak_started_at: soak_started_at - additional_hours.hours)
     event_stamp!(reason: :soak_period_extended, kind: :notice, data: {additional_hours: additional_hours, new_end_time: soak_end_time, extended_by: who.id})

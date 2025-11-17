@@ -29,13 +29,15 @@ class LiveRelease::SoakComponent < BaseComponent
   end
 
   def time_remaining_hours
-    return nil unless @release.soak_time_remaining.present?
-    @release.soak_time_remaining / 3600.0
+    time_remaining = @release.soak_time_remaining
+    return nil if time_remaining.blank?
+    time_remaining / 3600.0
   end
 
   def time_remaining_display
-    return nil unless @release.soak_time_remaining.present?
-    Time.at(@release.soak_time_remaining).utc.strftime("%H:%M:%S")
+    time_remaining = @release.soak_time_remaining
+    return nil if time_remaining.blank?
+    Time.at(time_remaining).utc.strftime("%H:%M:%S")
   end
 
   private
