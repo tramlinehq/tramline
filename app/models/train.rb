@@ -146,7 +146,7 @@ class Train < ApplicationRecord
   before_update :create_default_notification_settings, if: -> do
     notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
   end
-  after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
+  after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_changed? }
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -444,7 +444,7 @@ class Train < ApplicationRecord
   end
 
   def schedule_editable?
-    draft? || !automatic? || !persisted?
+    true  # Always allow editing release schedule
   end
 
   def hotfixable?

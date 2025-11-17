@@ -9,11 +9,12 @@
                                                        domain__release_schedule_help_target: "checkbox"}) do |component| %>
 
       <% component.with_child do %>
-        <div class="grid gap-y-4 gap-x-2 md:grid-cols-3">
+        <div class="grid gap-y-3 gap-x-2 md:grid-cols-3">
           <div class="col-span-1">
             <%= form.labeled_datetime_field :kickoff_at,
                   "Kickoff at",
                   {min: Date.current,
+                   value: @train.kickoff_at&.in_time_zone(@app.timezone),
                    data: {action: "domain--release-schedule-help#change",
                           domain__release_schedule_help_target: "kickoffDate"}} %>
           </div>
