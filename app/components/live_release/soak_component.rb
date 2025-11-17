@@ -34,8 +34,11 @@ class LiveRelease::SoakComponent < BaseComponent
   end
 
   def time_remaining_display
-    soak_seconds = @release.soak_time_remaining || 0
-    Time.at(soak_seconds).utc.strftime("%H:%M:%S")
+    soak_seconds = (@release.soak_time_remaining || 0).to_i
+    hours = soak_seconds / 3600
+    minutes = (soak_seconds % 3600) / 60
+    seconds = soak_seconds % 60
+    sprintf("%02d:%02d:%02d", hours, minutes, seconds)
   end
 
   private
