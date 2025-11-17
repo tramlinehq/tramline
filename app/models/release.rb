@@ -614,9 +614,7 @@ class Release < ApplicationRecord
     Triggers::OutgoingWebhook.call(self, event_type, webhook_params)
   end
 
-  def soak_period_enabled?
-    train.soak_period_enabled?
-  end
+  delegate :soak_period_enabled?, to: :train
 
   def soak_period_hours
     train.soak_period_hours || 24
@@ -660,17 +658,19 @@ class Release < ApplicationRecord
     return false unless soak_period_active?
     return false unless who == release_pilot
 
-    update!(soak_started_at: soak_started_at - soak_period_hours.hours)
+    # Set soak_started_at so that soak_end_time equals Time.current
+    update!(soak_started_at: Time.current - soak_period_hours.hours)
     event_stamp!(reason: :soak_period_ended_early, kind: :notice, data: {ended_by: who.id})
   end
 
   def extend_soak_period!(additional_hours, who)
     return false unless active?
-    return false unless soak_started_at.present?
+    return false unless soak_period_active?
     return false unless who == release_pilot
     return false if additional_hours.to_i <= 0
 
-    update!(soak_started_at: soak_started_at - additional_hours.hours)
+    # Move soak_started_at forward to extend the soak_end_time
+    update!(soak_started_at: soak_started_at + additional_hours.hours)
     event_stamp!(reason: :soak_period_extended, kind: :notice, data: {additional_hours: additional_hours, new_end_time: soak_end_time, extended_by: who.id})
   end
 

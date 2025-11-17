@@ -85,12 +85,8 @@ class ReleasesController < SignedInApplicationController
   end
 
   def extend_soak
-    additional_hours = params[:additional_hours]&.to_i || 24
-
-    if additional_hours <= 0
-      redirect_back fallback_location: root_path, flash: {error: "Extension hours must be positive."}
-      return
-    end
+    additional_hours = params[:additional_hours].to_i
+    additional_hours = 24 if additional_hours <= 0
 
     if @release.extend_soak_period!(additional_hours, current_user)
       redirect_to soak_release_path(@release), notice: "Soak period has been extended by #{additional_hours} hours."
