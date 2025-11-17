@@ -347,7 +347,7 @@ class Train < ApplicationRecord
   def upcoming_release_startable?
     !inactive? &&
       ongoing_release.present? &&
-      ongoing_release.production_release_started? &&
+      ongoing_release.production_release_attempted? &&
       upcoming_release.blank?
   end
 

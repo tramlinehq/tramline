@@ -264,17 +264,12 @@ class Release < ApplicationRecord
     false
   end
 
-  def production_release_happened?
-    release_platform_runs.all?(&:production_release_happened?)
+  def production_release_attempted?
+    release_platform_runs.any? { |rpr| rpr.latest_production_release.present? }
   end
 
   def production_release_active?
     release_platform_runs.all?(&:production_release_active?)
-  end
-
-  def production_release_started?
-    # TODO: check if the submission has been sent for review and not just the presence of the latest production release
-    release_platform_runs.all? { |rpr| rpr.latest_production_release.present? }
   end
 
   def mid_release_backmerge_failure_count
