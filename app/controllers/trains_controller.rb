@@ -139,7 +139,9 @@ class TrainsController < SignedInApplicationController
       :version_bump_strategy,
       :release_branch_pattern,
       :enable_changelog_linking_in_notifications,
-      :webhooks_enabled
+      :webhooks_enabled,
+      :soak_period_enabled,
+      :soak_period_hours
     )
   end
 
@@ -192,7 +194,9 @@ class TrainsController < SignedInApplicationController
       :version_bump_strategy,
       :release_branch_pattern,
       :enable_changelog_linking_in_notifications,
-      :webhooks_enabled
+      :webhooks_enabled,
+      :soak_period_enabled,
+      :soak_period_hours
     )
   end
 
