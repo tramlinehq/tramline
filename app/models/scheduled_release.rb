@@ -3,6 +3,7 @@
 # Table name: scheduled_releases
 #
 #  id               :uuid             not null, primary key
+#  discarded_at     :datetime         indexed
 #  failure_reason   :string
 #  is_success       :boolean          default(FALSE)
 #  manually_skipped :boolean          default(FALSE)
@@ -13,6 +14,7 @@
 #  train_id         :uuid             not null, indexed
 #
 class ScheduledRelease < ApplicationRecord
+  include Discard::Model
   has_paper_trail
 
   self.implicit_order_column = :scheduled_at

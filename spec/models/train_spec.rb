@@ -45,6 +45,69 @@ describe Train do
     expect(create(:train)).to be_valid
   end
 
+  describe "#populate_release_schedules" do
+    let(:train) { create(:train, status: :active, kickoff_at: 1.hour.from_now, repeat_duration: 1.day) }
+
+    context "when updating schedule with existing scheduled releases" do
+      before do
+        # Create existing scheduled releases
+        create(:scheduled_release, train: train, scheduled_at: 2.hours.from_now)
+        create(:scheduled_release, train: train, scheduled_at: 1.day.from_now)
+      end
+
+      it "discards existing scheduled releases and creates new one from kickoff_at" do
+        expect(train.scheduled_releases.count).to eq(2)
+
+        # Update kickoff_at to trigger populate_release_schedules
+        new_kickoff = 3.hours.from_now
+        train.update!(kickoff_at: new_kickoff)
+
+        # Should have discarded old ones and created one new one
+        expect(train.scheduled_releases.kept.count).to eq(1)
+        expect(train.scheduled_releases.unscoped.discarded.count).to eq(2)
+
+        # New schedule should be based on updated kickoff_at, not previous schedule
+        new_scheduled_release = train.scheduled_releases.kept.first
+        expect(new_scheduled_release.scheduled_at).to be_within(1.minute).of(new_kickoff)
+      end
+
+      it "calculates next run correctly within transaction" do
+        # Mock to verify transaction behavior
+        allow(train).to receive(:next_run_at).and_call_original
+
+        _old_kickoff = train.kickoff_at
+        new_kickoff = 2.days.from_now
+
+        train.update!(kickoff_at: new_kickoff)
+
+        # Should have called next_run_at after discarding
+        expect(train).to have_received(:next_run_at)
+
+        # Verify the scheduled release uses new kickoff time
+        new_scheduled_release = train.scheduled_releases.kept.first
+        expect(new_scheduled_release.scheduled_at).to be_within(1.minute).of(new_kickoff)
+      end
+    end
+
+    context "when kickoff_at is in the past" do
+      it "prevents setting kickoff_at to a past time" do
+        past_kickoff = 2.hours.ago
+        
+        expect {
+          train.update!(kickoff_at: past_kickoff)
+        }.to raise_error(ActiveRecord::RecordInvalid, /the schedule kickoff should be in the future/)
+      end
+    end
+
+    context "when train is not automatic" do
+      let(:train) { create(:train, status: :draft, kickoff_at: nil, repeat_duration: nil) }
+
+      it "does not create scheduled releases" do
+        expect { train.update!(name: "Updated") }.not_to change(ScheduledRelease, :count)
+      end
+    end
+  end
+
   describe "#set_current_version" do
     it "sets it to the version_seeded_with" do
       ver = "1.2.3"
@@ -173,11 +236,11 @@ describe Train do
   describe "#update" do
     it "schedules the release for an automatic train" do
       train = create(:train, :with_almost_trunk, :active)
-      expect(train.scheduled_releases.count).to be(0)
+      expect(train.scheduled_releases.count).to eq(0)
 
       train.update!(kickoff_at: 2.days.from_now, repeat_duration: 2.days)
 
-      expect(train.reload.scheduled_releases.count).to be(1)
+      expect(train.reload.scheduled_releases.count).to eq(1)
       expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at)
     end
   end

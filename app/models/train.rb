@@ -84,7 +84,7 @@ class Train < ApplicationRecord
   has_many :release_platforms, -> { sequential }, dependent: :destroy, inverse_of: :train
   has_many :release_platform_runs, -> { sequential }, through: :releases
   has_many :integrations, through: :app
-  has_many :scheduled_releases, dependent: :destroy
+  has_many :scheduled_releases, -> { kept }, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
   has_one :release_index, dependent: :destroy
   has_one :webhook_integration, class_name: "SvixIntegration", dependent: :destroy
@@ -116,7 +116,7 @@ class Train < ApplicationRecord
   validates :release_branch, presence: true, if: -> { branching_strategy == "parallel_working" }
   validate :version_compatibility, on: :create
   validate :ready?, on: :create
-  validate :valid_schedule, if: -> { kickoff_at_changed? || repeat_duration_changed? }
+  validate :valid_schedule, if: :release_schedule_changed?
   validate :build_queue_config
   validate :backmerge_config
   validate :working_branch_presence, on: :create
@@ -146,7 +146,7 @@ class Train < ApplicationRecord
   before_update :create_default_notification_settings, if: -> do
     notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
   end
-  after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_changed? }
+  after_update_commit :populate_release_schedules, if: :saved_release_schedule_changed?
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -202,6 +202,13 @@ class Train < ApplicationRecord
 
   def schedule_release!
     scheduled_releases.create!(scheduled_at: next_run_at) if automatic?
+  end
+
+  def populate_release_schedules
+    transaction do
+      scheduled_releases.discard_all
+      schedule_release!
+    end
   end
 
   def hotfix_from
@@ -444,7 +451,7 @@ class Train < ApplicationRecord
   end
 
   def schedule_editable?
-    true  # Always allow editing release schedule
+    true # Always allow editing release schedule
   end
 
   def hotfixable?
@@ -661,5 +668,15 @@ class Train < ApplicationRecord
   def update_webhook_integration
     return unless saved_change_to_webhooks_enabled?
     UpdateOutgoingWebhookIntegrationJob.perform_async(id, webhooks_enabled?)
+  end
+
+  def release_schedule_changed?
+    (kickoff_at.present? && kickoff_at_changed?) ||
+      (repeat_duration.present? && repeat_duration_changed?)
+  end
+
+  def saved_release_schedule_changed?
+    (kickoff_at.present? && saved_change_to_kickoff_at?) ||
+      (repeat_duration.present? && saved_change_to_repeat_duration?)
   end
 end
