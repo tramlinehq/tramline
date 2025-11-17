@@ -642,50 +642,6 @@ class Release < ApplicationRecord
     [soak_end_time - Time.current, 0].max
   end
 
-  def start_soak_period!
-    return false unless soak_period_enabled?
-
-    with_lock do
-      return false if soak_started_at.present?
-
-      update!(soak_started_at: Time.current)
-      event_stamp!(
-        reason: :soak_period_started,
-        kind: :notice,
-        data: {ends_at: soak_end_time.in_time_zone(app.timezone).strftime("%Y-%m-%d %H:%M %Z")}
-      )
-    end
-  end
-
-  def end_soak_period!(who)
-    return false unless active?
-    return false unless soak_period_active?
-    return false unless who == release_pilot
-
-    # Set soak_started_at so that soak_end_time equals Time.current
-    update!(soak_started_at: Time.current - soak_period_hours.hours)
-    event_stamp!(reason: :soak_period_ended_early, kind: :notice, data: {ended_by: who.id})
-  end
-
-  def extend_soak_period!(additional_hours, who)
-    return false unless active?
-    return false unless soak_period_active?
-    return false unless who == release_pilot
-    return false if additional_hours.to_i <= 0
-
-    # Move soak_started_at forward to extend the soak_end_time
-    update!(soak_started_at: soak_started_at + additional_hours.hours)
-    event_stamp!(
-      reason: :soak_period_extended,
-      kind: :notice,
-      data: {
-        additional_hours: additional_hours,
-        new_end_time: soak_end_time.in_time_zone(app.timezone).strftime("%Y-%m-%d %H:%M %Z"),
-        extended_by: who.id
-      }
-    )
-  end
-
   private
 
   def base_tag_name

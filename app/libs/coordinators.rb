@@ -79,7 +79,7 @@ module Coordinators
       release_platform_run = build.release_platform_run
 
       # Start soak period if enabled (cross-platform, starts when any RC is ready)
-      Coordinators::StartSoakPeriod.call(release_platform_run.release)
+      Coordinators::SoakPeriod::Start.call(release_platform_run.release)
 
       if release_platform_run.conf.production_release.present?
         Coordinators::StartProductionRelease.call(release_platform_run, build.id)
@@ -298,6 +298,25 @@ module Coordinators
         end
 
         FinalizeReleaseJob.perform_async(release.id)
+      end
+    end
+
+    def self.end_soak_period!(release, who)
+      Res.new do
+        raise "only the release pilot can end the soak period" unless who == release.release_pilot
+        raise "release is not active" unless release.active?
+        raise "soak period is not active" unless release.soak_period_active?
+        Coordinators::SoakPeriod::End.call(release, who)
+      end
+    end
+
+    def self.extend_soak_period!(release, additional_hours, who)
+      Res.new do
+        raise "only the release pilot can extend the soak period" unless who == release.release_pilot
+        raise "release is not active" unless release.active?
+        raise "soak period is not active" unless release.soak_period_active?
+        raise "extension hours must be positive" if additional_hours.to_i <= 0
+        Coordinators::SoakPeriod::Extend.call(release, additional_hours, who)
       end
     end
   end
