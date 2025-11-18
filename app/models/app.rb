@@ -267,7 +267,7 @@ class App < ApplicationRecord
       app_name: name,
       app_platform: platform,
       platform_public_img: platform_public_img,
-      vcs_public_icon_img: vcs_provider.public_icon_img
+      vcs_public_icon_img: vcs_provider&.public_icon_img
     }
   end
 
