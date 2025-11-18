@@ -83,11 +83,17 @@ class ReleasesController < SignedInApplicationController
 
   def regression_testing
     live_release!
+    unless demo_org?
+      redirect_back fallback_location: release_path(@release), flash: {notice: "This feature is coming soon!"} and return
+    end
     set_train_and_app
   end
 
   def soak
     live_release!
+    unless demo_org?
+      redirect_back fallback_location: release_path(@release), flash: {notice: "This feature is coming soon!"} and return
+    end
     set_train_and_app
   end
 
