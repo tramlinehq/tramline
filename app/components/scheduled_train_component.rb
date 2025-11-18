@@ -1,6 +1,4 @@
 class ScheduledTrainComponent < BaseComponent
-  include TrainsHelper
-
   def initialize(train)
     @train = train
 

@@ -207,6 +207,10 @@ class Train < ApplicationRecord
   def populate_release_schedules
     transaction do
       scheduled_releases.discard_all
+      # as long as the schedule_release creation in this transaction is the last thing
+      # the callbacks (if any) from the creation should be safe
+      # if there's other stuff that happens after this, that fails
+      # the callbacks from scheduled_release could get fired for a rolled-back record
       schedule_release!
     end
   end
@@ -448,10 +452,6 @@ class Train < ApplicationRecord
     # Some notifications are not supported (do not make sense) in release-specific mode.
     # So, this does not check for the release-specific flag.
     app.notifications_set_up? && notification_channel.present?
-  end
-
-  def schedule_editable?
-    true # Always allow editing release schedule
   end
 
   def hotfixable?
