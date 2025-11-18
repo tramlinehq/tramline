@@ -11,11 +11,10 @@
       <% component.with_child do %>
         <div class="grid gap-y-4 gap-x-2 md:grid-cols-3">
           <div class="col-span-1">
-            <%= form.labeled_datetime_field :kickoff_at,
-                  "Kickoff at",
-                  {min: Date.current,
-                   data: {action: "domain--release-schedule-help#change",
-                          domain__release_schedule_help_target: "kickoffDate"}} %>
+            <%= form.labeled_time_field :kickoff_time,
+                  "Kickoff time",
+                  {data: {action: "domain--release-schedule-help#change",
+                          domain__release_schedule_help_target: "kickoffTime"}} %>
           </div>
           <div class="col-span-2">
             <%= form.label_only :repeat_duration, "Every" %>

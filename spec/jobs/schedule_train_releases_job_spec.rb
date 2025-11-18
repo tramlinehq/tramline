@@ -4,12 +4,16 @@ require "rails_helper"
 describe ScheduleTrainReleasesJob do
   it "schedules release for active trains" do
     train = create(:train, :active, :with_schedule)
-    train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
+    tz = train.app.timezone
 
-    travel_to train.kickoff_at + 1.hour do
+    # Create a scheduled release in the past
+    first_scheduled = 2.hours.ago.in_time_zone(tz).change(hour: 14, min: 0, sec: 0).utc
+    train.scheduled_releases.create!(scheduled_at: first_scheduled)
+
+    travel_to first_scheduled + 1.hour do
       described_class.new.perform
       expect(train.reload.scheduled_releases.count).to eq(2)
-      expect(train.reload.scheduled_releases.last.scheduled_at).to eq(train.kickoff_at + train.repeat_duration)
+      expect(train.reload.scheduled_releases.last.scheduled_at).to eq(first_scheduled + train.repeat_duration)
     end
   end
 
@@ -23,8 +27,13 @@ describe ScheduleTrainReleasesJob do
   end
 
   it "does not schedule release for active trains with nothing to schedule" do
-    train = create(:train, :with_almost_trunk, :active, kickoff_at: Time.current + 2.hours, repeat_duration: 5.days)
-    train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
+    future_time = (Time.current + 2.hours).strftime("%H:%M:%S")
+    train = create(:train, :with_almost_trunk, :active, kickoff_time: future_time, repeat_duration: 5.days)
+    tz = train.app.timezone
+
+    # Create a scheduled release in the future
+    future_scheduled = Time.current.in_time_zone(tz).change(hour: Time.current.hour + 2).utc
+    train.scheduled_releases.create!(scheduled_at: future_scheduled)
 
     expect(train.scheduled_releases.count).to eq(1)
 

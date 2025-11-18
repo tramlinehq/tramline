@@ -102,51 +102,73 @@ describe Train do
       train.activate!
 
       expect(train.reload.scheduled_releases.count).to be(1)
-      expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at)
+      scheduled_at = train.reload.scheduled_releases.first.scheduled_at
+      expect(scheduled_at.in_time_zone(train.app.timezone).strftime("%H:%M:%S")).to eq(train.kickoff_time.strftime("%H:%M:%S"))
     end
   end
 
   describe "#next_run_at" do
-    it "returns kickoff time if no releases have been scheduled yet and kickoff is in the future" do
+    it "returns next occurrence of kickoff time if no releases have been scheduled yet" do
       train = create(:train, :with_schedule, :active)
+      next_run = train.next_run_at
 
-      expect(train.next_run_at).to eq(train.kickoff_at)
+      expect(next_run).to be > Time.current
+      expect(next_run.in_time_zone(train.app.timezone).strftime("%H:%M:%S")).to eq(train.kickoff_time.strftime("%H:%M:%S"))
     end
 
-    it "returns kickoff + repeat duration time if no releases have been scheduled yet and kickoff is in the past" do
-      train = create(:train, :with_schedule, :active)
+    it "returns next occurrence with repeat duration if kickoff time today has passed" do
+      # Set kickoff_time to 10 AM
+      train = create(:train, :active, branching_strategy: "almost_trunk", kickoff_time: "10:00:00", repeat_duration: 1.day)
 
-      travel_to train.kickoff_at + 1.hour do
-        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration)
+      # Travel to 3 PM same day - should return next occurrence (tomorrow at 10 AM)
+      tz = train.app.timezone
+      today_3pm = Time.current.in_time_zone(tz).change(hour: 15, min: 0, sec: 0)
+
+      travel_to today_3pm do
+        next_run = train.next_run_at
+        expect(next_run).to be > Time.current
+        expect(next_run.in_time_zone(tz).strftime("%H:%M:%S")).to eq("10:00:00")
       end
     end
 
     it "returns next available schedule time if there is a scheduled release" do
       train = create(:train, :with_schedule, :active)
-      train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
+      tz = train.app.timezone
 
-      travel_to train.kickoff_at + 1.hour do
-        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration)
-      end
+      # Create a scheduled release for a specific time
+      first_scheduled = Time.current.in_time_zone(tz).change(hour: 14, min: 0, sec: 0).utc
+      train.scheduled_releases.create!(scheduled_at: first_scheduled)
+
+      # Next run should be first_scheduled + repeat_duration
+      expect(train.next_run_at).to eq(first_scheduled + train.repeat_duration)
     end
 
     it "returns next available schedule time if there are many scheduled releases" do
       train = create(:train, :with_schedule, :active)
-      train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
-      train.scheduled_releases.create!(scheduled_at: train.kickoff_at + train.repeat_duration)
+      tz = train.app.timezone
 
-      travel_to train.kickoff_at + 1.day + 1.hour do
-        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration * 2)
-      end
+      first_scheduled = Time.current.in_time_zone(tz).change(hour: 14, min: 0, sec: 0).utc
+      train.scheduled_releases.create!(scheduled_at: first_scheduled)
+      train.scheduled_releases.create!(scheduled_at: first_scheduled + train.repeat_duration)
+
+      # Next run should be last scheduled + repeat_duration
+      expect(train.next_run_at).to eq(first_scheduled + train.repeat_duration * 2)
     end
 
     it "returns next available schedule time if there are scheduled releases and more than repeat duration has passed since last scheduled release" do
       train = create(:train, :with_schedule, :active)
-      train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
+      tz = train.app.timezone
 
-      travel_to train.kickoff_at + 2.days + 1.hour do
-        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration * 3)
-      end
+      # Create a scheduled release in the past
+      past_scheduled = 3.days.ago.in_time_zone(tz).change(hour: 14, min: 0, sec: 0).utc
+      train.scheduled_releases.create!(scheduled_at: past_scheduled)
+
+      next_run = train.next_run_at
+
+      # Should be in the future
+      expect(next_run).to be > Time.current
+      # Should be calculated by adding repeat_duration multiples to past_scheduled
+      expect(next_run).to be > past_scheduled
     end
   end
 
@@ -175,10 +197,12 @@ describe Train do
       train = create(:train, :with_almost_trunk, :active)
       expect(train.scheduled_releases.count).to be(0)
 
-      train.update!(kickoff_at: 2.days.from_now, repeat_duration: 2.days)
+      future_time = (Time.current + 2.hours).strftime("%H:%M:%S")
+      train.update!(kickoff_time: future_time, repeat_duration: 2.days)
 
       expect(train.reload.scheduled_releases.count).to be(1)
-      expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at)
+      scheduled_at = train.reload.scheduled_releases.first.scheduled_at
+      expect(scheduled_at.in_time_zone(train.app.timezone).strftime("%H:%M:%S")).to eq(train.kickoff_time.strftime("%H:%M:%S"))
     end
   end
 

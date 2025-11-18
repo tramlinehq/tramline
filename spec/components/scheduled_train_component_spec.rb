@@ -41,7 +41,7 @@ describe ScheduledTrainComponent, type: :component do
                 version_seeded_with: "2025.01.01",
                 versioning_strategy: :calver,
                 repeat_duration: 1.day,
-                kickoff_at: creation_time + 1.hour)
+                kickoff_time: (creation_time + 1.hour).strftime("%H:%M:%S"))
 
               create(:scheduled_release, train:, scheduled_at: scheduled_time)
             end
@@ -66,7 +66,7 @@ describe ScheduledTrainComponent, type: :component do
                 version_seeded_with: "2025.01.01",
                 versioning_strategy: :calver,
                 repeat_duration:,
-                kickoff_at: creation_time + 1.hour)
+                kickoff_time: (creation_time + 1.hour).strftime("%H:%M:%S"))
               create(:scheduled_release, train:, scheduled_at: scheduled_time)
             end
 
@@ -93,7 +93,7 @@ describe ScheduledTrainComponent, type: :component do
                 version_seeded_with: "2025.01.01",
                 versioning_strategy: :calver,
                 repeat_duration: 1.day,
-                kickoff_at: creation_time + 1.hour)
+                kickoff_time: (creation_time + 1.hour).strftime("%H:%M:%S"))
               scheduled_release = create(:scheduled_release, train:, scheduled_at: scheduled_time)
               create(:release, :on_track, train:, original_release_version: "2025.02.01", scheduled_release:)
             end
@@ -118,7 +118,7 @@ describe ScheduledTrainComponent, type: :component do
                 version_seeded_with: "2025.01.01",
                 versioning_strategy: :calver,
                 repeat_duration:,
-                kickoff_at: creation_time + 1.hour)
+                kickoff_time: (creation_time + 1.hour).strftime("%H:%M:%S"))
               scheduled_release = create(:scheduled_release, train:, scheduled_at: scheduled_time)
               create(:release, :on_track, train:, original_release_version: "2025.02.01", scheduled_release:)
             end
@@ -171,7 +171,7 @@ describe ScheduledTrainComponent, type: :component do
                 version_seeded_with: "2025.01.01",
                 versioning_strategy: :calver,
                 repeat_duration: 1.day,
-                kickoff_at: creation_time + 1.hour)
+                kickoff_time: (creation_time + 1.hour).strftime("%H:%M:%S"))
 
               create(:scheduled_release, train:, scheduled_at: scheduled_time)
             end
@@ -196,7 +196,7 @@ describe ScheduledTrainComponent, type: :component do
                 version_seeded_with: "2025.01.01",
                 versioning_strategy: :calver,
                 repeat_duration:,
-                kickoff_at: creation_time + 1.hour)
+                kickoff_time: (creation_time + 1.hour).strftime("%H:%M:%S"))
               create(:scheduled_release, train:, scheduled_at: scheduled_time)
             end
 
@@ -223,7 +223,7 @@ describe ScheduledTrainComponent, type: :component do
                 version_seeded_with: "2025.01.01",
                 versioning_strategy: :calver,
                 repeat_duration: 1.day,
-                kickoff_at: creation_time + 1.hour)
+                kickoff_time: (creation_time + 1.hour).strftime("%H:%M:%S"))
               scheduled_release = create(:scheduled_release, train:, scheduled_at: scheduled_time)
               create(:release, :on_track, train:, original_release_version: "2025.02.01", scheduled_release:)
             end
@@ -248,7 +248,7 @@ describe ScheduledTrainComponent, type: :component do
                 version_seeded_with: "2025.01.01",
                 versioning_strategy: :calver,
                 repeat_duration:,
-                kickoff_at: creation_time + 1.hour)
+                kickoff_time: (creation_time + 1.hour).strftime("%H:%M:%S"))
               scheduled_release = create(:scheduled_release, train:, scheduled_at: scheduled_time)
               create(:release, :on_track, train:, original_release_version: "2025.02.01", scheduled_release:)
             end
