@@ -36,10 +36,10 @@
         <%= section.F.labeled_select :versioning_strategy, "Versioning Strategy",
                                      options_for_select(TrainPresenter::VERSIONING_STRATEGIES, train.versioning_strategy),
                                      {},
-                                     { disabled: @edit_not_allowed || train.persisted?,
-                                       data: { domain__version_name_help_strategy_value: train.versioning_strategy,
-                                               domain__version_name_help_target: "versioningStrategy",
-                                               action: "domain--version-name-help#updateStrategy" } } %>
+                                     {disabled: @edit_not_allowed || train.persisted?,
+                                      data: {domain__version_name_help_strategy_value: train.versioning_strategy,
+                                             domain__version_name_help_target: "versioningStrategy",
+                                             action: "domain--version-name-help#updateStrategy"}} %>
       </div>
 
       <% if @edit_not_allowed %>
@@ -53,22 +53,22 @@
           <div class="flex flex-row gap-x-2 items-center">
             <%= section.F.text_field_without_label :major_version_seed, "major",
                                                    disabled: @edit_not_allowed || train.persisted?,
-                                                   data: { domain__version_name_help_target: "majorInput",
-                                                           action: "domain--version-name-help#bump" } %>
+                                                   data: {domain__version_name_help_target: "majorInput",
+                                                          action: "domain--version-name-help#bump"} %>
             <span class="mx-1">
               <%= render IconComponent.new("circle.svg", size: :xs) %>
             </span>
             <%= section.F.text_field_without_label :minor_version_seed, "minor",
                                                    disabled: @edit_not_allowed || train.persisted?,
-                                                   data: { domain__version_name_help_target: "minorInput",
-                                                           action: "domain--version-name-help#bump" } %>
+                                                   data: {domain__version_name_help_target: "minorInput",
+                                                          action: "domain--version-name-help#bump"} %>
             <span class="mx-1">
               <%= render IconComponent.new("circle.svg", size: :xs) %>
             </span>
             <%= section.F.text_field_without_label :patch_version_seed, "patch (optional)",
                                                    disabled: @edit_not_allowed || train.persisted?,
-                                                   data: { domain__version_name_help_target: "patchInput",
-                                                           action: "domain--version-name-help#bump" } %>
+                                                   data: {domain__version_name_help_target: "patchInput",
+                                                          action: "domain--version-name-help#bump"} %>
           </div>
 
           <% unless @edit_not_allowed || train.persisted? %>
@@ -109,13 +109,13 @@
         <% section.with_description do %>
           Enable notifications to be sent during the release. Advanced notifications can be configured in the
           <% if @train.persisted? %>
-            <%= link_to "Notification Settings", app_train_notification_settings_path(@app, @train), class: "underline", data: { turbo: false } %>
+            <%= link_to "Notification Settings", app_train_notification_settings_path(@app, @train), class: "underline", data: {turbo: false} %>
           <% else %>
             Notification Settings
           <% end %>for the train.
-          <%= render partial: "shared/notifications_refresh", locals: { app: @app } %>
+          <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
         <% end %>
-        <%= render partial: "notifications_config_form", locals: { form: section.F } %>
+        <%= render partial: "notifications_config_form", locals: {form: section.F} %>
       <% end %>
     <% end %>
 
@@ -132,7 +132,7 @@
                                            on_label: "Outgoing webhooks enabled",
                                            off_label: "Outgoing webhooks disabled") do |component| %>
         <% component.with_child do %>
-          <% render partial: "configure_svix_webhooks", locals: { app: @app, train: @train } %>
+          <% render partial: "configure_svix_webhooks", locals: {app: @app, train: @train} %>
         <% end %>
       <% end %>
     <% end %>
@@ -152,9 +152,9 @@
           <%= section.F.labeled_select :branching_strategy, "Strategy",
                                        options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
                                        {},
-                                       { data: { action: "domain--branching-selector#change",
-                                                 domain__branching_selector_target: "branchingStrategy" },
-                                         disabled: @edit_not_allowed || train.persisted? } %>
+                                       {data: {action: "domain--branching-selector#change",
+                                               domain__branching_selector_target: "branchingStrategy"},
+                                        disabled: @edit_not_allowed || train.persisted?} %>
         </div>
 
         <div>
@@ -189,8 +189,8 @@
                                          placeholder: "default is r/~trainName~/~releaseStartDate~",
                                          help_text: "Use ~trainName~ for the train name, ~releaseVersion~ for version, and ~releaseStartDate~ for date. Default: r/~trainName~/~releaseStartDate~",
                                          disabled: @edit_not_allowed || train.persisted?,
-                                         data: { domain__branch_name_help_target: "input",
-                                                 action: "domain--branch-name-help#updatePreview" } %>
+                                         data: {domain__branch_name_help_target: "input",
+                                                action: "domain--branch-name-help#updatePreview"} %>
         <div class="text-sm mt-1">
           <span data-domain--branch-name-help-target="helpTextTitle"></span>
           <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
@@ -205,13 +205,13 @@
     <% end %>
 
     <%= f.with_advanced_section(heading: "Release Schedule",
-                                html_options: { hidden: true,
-                                                data: { branching_selector_target: "schedule" } }) do |section| %>
+                                html_options: {hidden: true,
+                                               data: {branching_selector_target: "schedule"}}) do |section| %>
       <% section.with_description do %>
         Set a schedule for automatic kickoff of your release train. Leave blank for only manual control.
       <% end %>
 
-      <%= render partial: "release_schedule_form", locals: { form: section.F } %>
+      <%= render partial: "release_schedule_form", locals: {form: section.F} %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Approvals before submissions") do |section| %>
@@ -242,13 +242,13 @@
         By default, commits on the release branch are auto-applied.
       <% end %>
 
-      <%= render partial: "build_queue_form", locals: { form: section.F } %>
+      <%= render partial: "build_queue_form", locals: {form: section.F} %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Back-merges",
-                                html_options: { hidden: true,
-                                                data: { domain__branching_selector_target: "backmerge",
-                                                        controller: "domain--backmerge-selector" } }) do |section| %>
+                                html_options: {hidden: true,
+                                               data: {domain__branching_selector_target: "backmerge",
+                                                      controller: "domain--backmerge-selector"}}) do |section| %>
       <% section.with_description do %>
         Configure how changes from the release branch are merged back to the working branch.
       <% end %>
@@ -256,13 +256,13 @@
       <div>
         <%= section.F.labeled_select :backmerge_strategy, "Backmerge Strategy",
                                      options_for_select([
-                                                          ["Continuously back-merge", "continuous"],
-                                                          ["Back-merge once at the end of release", "on_finalize"],
-                                                          ["Disable all back-merges", "disabled"]
-                                                        ], train.backmerge_strategy),
+                                       ["Continuously back-merge", "continuous"],
+                                       ["Back-merge once at the end of release", "on_finalize"],
+                                       ["Disable all back-merges", "disabled"]
+                                     ], train.backmerge_strategy),
                                      {},
-                                     { data: { action: "domain--backmerge-selector#change",
-                                               domain__backmerge_selector_target: "backmergeStrategy" } } %>
+                                     {data: {action: "domain--backmerge-selector#change",
+                                             domain__backmerge_selector_target: "backmergeStrategy"}} %>
       </div>
 
       <div hidden data-domain--backmerge-selector-target="continuousOptions">
@@ -312,7 +312,7 @@
         </div>
       <% end %>
 
-      <%= render partial: "release_tag_form", locals: { form: section.F } %>
+      <%= render partial: "release_tag_form", locals: {form: section.F} %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Freeze release version") do |section| %>
@@ -324,8 +324,8 @@
                                            field_name: :freeze_version,
                                            on_label: "Freeze release version enabled",
                                            off_label: "Freeze release version disabled",
-                                           switch_data: { action: "dependent-disable#change domain--version-name-help#updateVersion",
-                                                          dependent_disable_target: "primary", domain__version_name_help_target: "freezeReleaseVersion" }) %>
+                                           switch_data: {action: "dependent-disable#change domain--version-name-help#updateVersion",
+                                                         dependent_disable_target: "primary", domain__version_name_help_target: "freezeReleaseVersion"}) %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Patch Version Change Only") do |section| %>
@@ -338,7 +338,7 @@
                                            field_name: :patch_version_bump_only,
                                            on_label: "Only patch version will change between releases",
                                            off_label: "Minor version will change between releases (default)",
-                                           switch_data: { dependent_disable_target: "secondary", action: "dependent-disable#change" }) %>
+                                           switch_data: {dependent_disable_target: "secondary", action: "dependent-disable#change"}) %>
     <% end %>
 
     <!--
@@ -368,7 +368,7 @@
             <%= section.F.labeled_select :version_bump_strategy,
                                          "Version Bump Strategy",
                                          options_for_select(Train::VERSION_BUMP_STRATEGIES.invert, train.version_bump_strategy),
-                                         { disabled: !train.version_bump_enabled? },
+                                         {disabled: !train.version_bump_enabled?},
                                          {} %>
 
             <%= section.F.labeled_text_field :version_bump_file_paths,

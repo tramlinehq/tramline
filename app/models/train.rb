@@ -84,7 +84,7 @@ class Train < ApplicationRecord
   has_many :release_platforms, -> { sequential }, dependent: :destroy, inverse_of: :train
   has_many :release_platform_runs, -> { sequential }, through: :releases
   has_many :integrations, through: :app
-  has_many :scheduled_releases, -> { kept }, dependent: :destroy
+  has_many :scheduled_releases, -> { kept }, dependent: :destroy, inverse_of: :train
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
   has_one :release_index, dependent: :destroy
   has_one :webhook_integration, class_name: "SvixIntegration", dependent: :destroy

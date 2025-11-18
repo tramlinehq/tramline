@@ -172,7 +172,7 @@ namespace :anonymize do
         continue { |index, record| Train.exists?(record["train_id"]) && !ScheduledRelease.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "train_id", "failure_reason", "is_success", "scheduled_at", "release_id"
+        whitelist "train_id", "failure_reason", "is_success", "scheduled_at", "release_id", "discarded_at"
         whitelist_timestamps
       end
 

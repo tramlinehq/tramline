@@ -92,7 +92,7 @@ describe Train do
     context "when kickoff_at is in the past" do
       it "prevents setting kickoff_at to a past time" do
         past_kickoff = 2.hours.ago
-        
+
         expect {
           train.update!(kickoff_at: past_kickoff)
         }.to raise_error(ActiveRecord::RecordInvalid, /the schedule kickoff should be in the future/)
