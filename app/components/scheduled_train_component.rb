@@ -13,8 +13,8 @@ class ScheduledTrainComponent < BaseComponent
         Time.current
       end
 
-    @past_releases = train.scheduled_releases.where(scheduled_at: ...previous_time).order(scheduled_at: :asc).last(2)
-    @future_release = train.scheduled_releases.pending.order(scheduled_at: :asc).first
+    @past_releases = train.scheduled_releases.past(2, before: previous_time)
+    @future_release = train.scheduled_releases.future.first
   end
 
   attr_reader :past_releases, :future_release, :train

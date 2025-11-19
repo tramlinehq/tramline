@@ -318,7 +318,7 @@
     <%= f.with_advanced_section(heading: "Freeze release version") do |section| %>
       <% section.with_description do %>
         Versions are automatically managed and bumped by Tramline.
-        Turn this on if you want to keep a single static release version for all releases.
+        Turn this on if you want to keep a single static release version for all releases. Changes to this config will only be applicable for a new release.
       <% end %>
       <%= render Form::SwitchComponent.new(form: section.F,
                                            field_name: :freeze_version,
