@@ -219,36 +219,14 @@ class Train < ApplicationRecord
   def next_run_at
     return unless automatic?
 
-    # Get the app's timezone
-    tz = app.timezone
+    base_time = last_run_at || kickoff_datetime.utc
+    now = Time.current
 
-    # If we have previous scheduled releases, calculate next occurrence from last scheduled time
-    if scheduled_releases.any?
-      base_time = scheduled_releases.last.scheduled_at
-      next_time = base_time + repeat_duration
+    return base_time if now < base_time
 
-      # Keep adding repeat_duration until we get a future time
-      while next_time <= Time.current
-        next_time += repeat_duration
-      end
-
-      return next_time.utc
-    end
-
-    # First time: combine kickoff_time with today's date in app timezone
-    now_in_tz = Time.current.in_time_zone(tz)
-
-    # Parse kickoff_time as a time today in the app's timezone
-    # kickoff_time is stored as HH:MM:SS
-    kickoff_today = tz.parse("#{now_in_tz.to_date} #{kickoff_time.strftime('%H:%M:%S')}")
-
-    # If kickoff_today already passed, start from the next occurrence
-    next_time = kickoff_today
-    while next_time <= now_in_tz
-      next_time += repeat_duration
-    end
-
-    next_time.utc
+    time_difference = now - base_time
+    elapsed_durations = (time_difference / repeat_duration.to_i).ceil
+    base_time + (repeat_duration.to_i * elapsed_durations)
   end
 
   def runnable?
@@ -259,6 +237,15 @@ class Train < ApplicationRecord
 
   def last_run_at
     scheduled_releases.last&.scheduled_at
+  end
+
+  # Converts kickoff_time to a datetime in the app's timezone for the next occurrence
+  def kickoff_datetime(reference_time = Time.current)
+    tz = app.timezone
+    ref_in_tz = reference_time.in_time_zone(tz)
+
+    # Combine kickoff_time with reference date in app's timezone
+    tz.parse("#{ref_in_tz.to_date} #{kickoff_time.strftime('%H:%M:%S')}")
   end
 
   def diff_since_last_release?
