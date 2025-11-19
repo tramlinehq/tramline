@@ -16,7 +16,7 @@
 #  description                                    :string
 #  enable_changelog_linking_in_notifications      :boolean          default(FALSE)
 #  freeze_version                                 :boolean          default(FALSE)
-#  kickoff_at                                     :datetime
+#  kickoff_time                                   :time
 #  name                                           :string           not null
 #  notification_channel                           :jsonb
 #  notifications_release_specific_channel_enabled :boolean          default(FALSE)
@@ -116,7 +116,7 @@ class Train < ApplicationRecord
   validates :release_branch, presence: true, if: -> { branching_strategy == "parallel_working" }
   validate :version_compatibility, on: :create
   validate :ready?, on: :create
-  validate :valid_schedule, if: -> { kickoff_at_changed? || repeat_duration_changed? }
+  validate :valid_schedule, if: -> { kickoff_time_changed? || repeat_duration_changed? }
   validate :build_queue_config
   validate :backmerge_config
   validate :working_branch_presence, on: :create
@@ -146,7 +146,7 @@ class Train < ApplicationRecord
   before_update :create_default_notification_settings, if: -> do
     notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
   end
-  after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
+  after_update :schedule_release!, if: -> { kickoff_time.present? && kickoff_time_previously_was.blank? }
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -213,13 +213,13 @@ class Train < ApplicationRecord
   end
 
   def automatic?
-    kickoff_at.present? && repeat_duration.present?
+    kickoff_time.present? && repeat_duration.present?
   end
 
   def next_run_at
     return unless automatic?
 
-    base_time = last_run_at
+    base_time = last_run_at || kickoff_datetime.utc
     now = Time.current
 
     return base_time if now < base_time
@@ -230,11 +230,22 @@ class Train < ApplicationRecord
   end
 
   def runnable?
+    return false unless next_run_at
+    return true if last_run_at.nil? # First run is always runnable
     next_run_at > last_run_at
   end
 
   def last_run_at
-    scheduled_releases.last&.scheduled_at || kickoff_at
+    scheduled_releases.last&.scheduled_at
+  end
+
+  # Converts kickoff_time to a datetime in the app's timezone for the next occurrence
+  def kickoff_datetime(reference_time = Time.current)
+    tz = app.timezone
+    ref_in_tz = reference_time.in_time_zone(tz)
+
+    # Combine kickoff_time with reference date in app's timezone
+    tz.parse("#{ref_in_tz.to_date} #{kickoff_time.strftime('%H:%M:%S')}")
   end
 
   def diff_since_last_release?
@@ -586,9 +597,8 @@ class Train < ApplicationRecord
   end
 
   def valid_schedule
-    if kickoff_at.present? || repeat_duration.present?
-      errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless kickoff_at.present? && repeat_duration.present?
-      errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at <= Time.current
+    if kickoff_time.present? || repeat_duration.present?
+      errors.add(:repeat_duration, "invalid schedule, provide both kickoff time and period for repeat") unless kickoff_time.present? && repeat_duration.present?
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
     end
   end

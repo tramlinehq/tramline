@@ -49,7 +49,7 @@ namespace :anonymize do
         whitelist "name", "slug", "description", "status", "branching_strategy", "version_seeded_with", "version_current",
           "repeat_duration", "build_queue_wait_time", "build_queue_size", "backmerge_strategy", "manual_release",
           "tag_store_releases_with_platform_names", "tag_store_releases", "compact_build_notes", "tag_end_of_release", "build_queue_enabled",
-          "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_release_specific_channel_enabled",
+          "kickoff_time", "versioning_strategy", "send_build_notes", "notifications_release_specific_channel_enabled",
           "tag_end_of_release_prefix", "tag_end_of_release_suffix", "version_bump_strategy", "enable_changelog_linking_in_notifications",
           "release_branch_pattern", "webhooks_enabled"
         whitelist_timestamps

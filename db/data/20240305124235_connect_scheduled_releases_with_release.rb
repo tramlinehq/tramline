@@ -3,7 +3,7 @@ class ConnectScheduledReleasesWithRelease < ActiveRecord::Migration[7.0]
     return
     ActiveRecord::Base.transaction do
       # scan all automatic trains
-      Train.where.not(kickoff_at: nil).where.not(repeat_duration: nil).each do |train|
+      Train.where.not(kickoff_time: nil).where.not(repeat_duration: nil).each do |train|
         # check redundantly to be sure
         next unless train.automatic?
 

@@ -151,7 +151,7 @@ class ReleaseListComponent < BaseComponent
       else
         {
           title: "Upcoming release",
-          text: "Your first scheduled release will automatically kick-off at #{train.kickoff_at.to_fs(:short)}. You can also manually run a new release by clicking the prepare button."
+          text: "Your first scheduled release will automatically kick-off at #{train.next_run_at.in_time_zone(train.app.timezone).to_fs(:short)}. You can also manually run a new release by clicking the prepare button."
         }
       end
     else
