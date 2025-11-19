@@ -20,7 +20,7 @@ class Authentication::Sso::SessionsController < ApplicationController
         redirect_to sso_new_sso_session_path, flash: {error: t(".connect_failure")}
       end
     else
-      redirect_to sso_new_sso_session_path, flash: {error: t(".no_account")}
+      redirect_to sso_new_sso_session_path, flash: {error: t(".invalid_login")}
     end
   rescue Accounts::SsoAuthentication::AuthException
     redirect_to sso_new_sso_session_path, flash: {error: t(".failure")}
