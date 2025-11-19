@@ -613,6 +613,11 @@ class Train < ApplicationRecord
   end
 
   def build_queue_config
+    if build_queue_enabled_changed? && active_runs.exists?
+      errors.add(:build_queue_enabled, :cannot_edit_when_releases_are_running)
+      return
+    end
+
     if build_queue_enabled?
       errors.add(:build_queue_size, :config_required) unless build_queue_size.present? && build_queue_wait_time.present?
       errors.add(:build_queue_size, :invalid_size) if build_queue_size && build_queue_size < 1
@@ -676,7 +681,6 @@ class Train < ApplicationRecord
   end
 
   def saved_release_schedule_changed?
-    (kickoff_at.present? && saved_change_to_kickoff_at?) ||
-      (repeat_duration.present? && saved_change_to_repeat_duration?)
+    saved_change_to_kickoff_at? || saved_change_to_repeat_duration?
   end
 end

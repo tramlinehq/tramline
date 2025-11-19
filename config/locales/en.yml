@@ -480,6 +480,8 @@ en:
               ci_cd_workflows_not_available: "Your working branch / release does not have any CI workflows available. Please add at least one workflow to continue."
             tag_store_releases:
               not_allowed: "cannot enable tags for all store releases without enabling platform-specific tags"
+            build_queue_enabled:
+              cannot_edit_when_releases_are_running: "build queue cannot be enabled/disabled when releases are running"
             build_queue_size:
               config_required: "invalid config, provide both size and wait time for the queue"
               config_not_allowed: "build queue size cannot be configured when queue is disabled"

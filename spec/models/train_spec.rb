@@ -534,4 +534,90 @@ describe Train do
       expect(train.previous_releases).to match_array(finished_releases[0..3])
     end
   end
+
+  describe "build queue validations" do
+    let(:train) { create(:train, :active) }
+
+    describe "when build_queue_enabled changes and releases are running" do
+      before do
+        # Create an active run
+        create(:release, :on_track, train: train)
+      end
+
+      it "prevents enabling build queue when releases are running" do
+        train.build_queue_enabled = true
+        train.build_queue_size = 5
+        train.build_queue_wait_time = 1.hour
+
+        expect(train).not_to be_valid
+        expect(train.errors[:build_queue_enabled]).to include("build queue cannot be enabled/disabled when releases are running")
+      end
+
+      it "prevents disabling build queue when releases are running" do
+        # Create a train with build queue already enabled (without active runs)
+        train_with_queue = create(:train, :active, build_queue_enabled: true, build_queue_size: 5, build_queue_wait_time: 1.hour)
+
+        # Now create an active run
+        create(:release, :on_track, train: train_with_queue)
+
+        # Try to disable it
+        train_with_queue.build_queue_enabled = false
+
+        expect(train_with_queue).not_to be_valid
+        expect(train_with_queue.errors[:build_queue_enabled]).to include("build queue cannot be enabled/disabled when releases are running")
+      end
+
+      it "allows other changes when build_queue_enabled doesn't change" do
+        # Create a train with build queue already enabled (without active runs)
+        train_with_queue = create(:train, :active, build_queue_enabled: true, build_queue_size: 5, build_queue_wait_time: 1.hour)
+
+        # Now create an active run
+        create(:release, :on_track, train: train_with_queue)
+
+        # Change other attributes but not build_queue_enabled
+        train_with_queue.build_queue_size = 10
+        train_with_queue.name = "Updated Train Name"
+
+        expect(train_with_queue).to be_valid
+      end
+    end
+
+    describe "when no releases are running" do
+      it "allows enabling build queue" do
+        train.build_queue_enabled = true
+        train.build_queue_size = 5
+        train.build_queue_wait_time = 1.hour
+
+        expect(train).to be_valid
+      end
+
+      it "allows disabling build queue" do
+        # First enable build queue
+        train.update!(build_queue_enabled: true, build_queue_size: 5, build_queue_wait_time: 1.hour)
+
+        # Now disable it (and clear the config to avoid validation errors)
+        train.build_queue_enabled = false
+        train.build_queue_size = nil
+        train.build_queue_wait_time = nil
+
+        expect(train).to be_valid
+      end
+    end
+
+    describe "when releases exist but are not active" do
+      before do
+        # Create finished releases (not active runs)
+        create(:release, :finished, train: train)
+        create(:release, :stopped, train: train)
+      end
+
+      it "allows changing build queue settings" do
+        train.build_queue_enabled = true
+        train.build_queue_size = 5
+        train.build_queue_wait_time = 1.hour
+
+        expect(train).to be_valid
+      end
+    end
+  end
 end
