@@ -88,6 +88,17 @@ describe Accounts::UsersController do
           create(:membership, user: current_user, organization:, role: :owner)
         end
 
+        it "does not allow the user to change another owner's role" do
+          membership = create(:membership, user: member, organization:, role: :owner)
+
+          expect do
+            patch :update_user_role, params: {email: member.email, role: :developer}
+          end.not_to change { membership.reload.role }
+
+          expect(response).to redirect_to(accounts_organization_teams_path(organization))
+          expect(flash[:alert]).to eq("You don't have permission to edit this member's role")
+        end
+
         it "allows the user to change a developer's role" do
           membership = create(:membership, user: member, organization:, role: :developer)
 
@@ -118,6 +129,14 @@ describe Accounts::UsersController do
 
         it "does not allow the user to change an owner's role" do
           membership = create(:membership, user: member, organization:, role: :owner)
+
+          expect do
+            patch :update_user_role, params: {email: member.email, role: :viewer}
+          end.not_to change { membership.reload.role }
+        end
+
+        it "does not allow the user to change another developer's role" do
+          membership = create(:membership, user: member, organization:, role: :developer)
 
           expect do
             patch :update_user_role, params: {email: member.email, role: :viewer}
