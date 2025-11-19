@@ -106,6 +106,28 @@ describe Train do
         expect { train.update!(name: "Updated") }.not_to change(ScheduledRelease, :count)
       end
     end
+
+    context "when updating attributes other than schedule" do
+      before do
+        # Create some initial scheduled releases
+        create(:scheduled_release, train: train, scheduled_at: 1.hour.from_now)
+        create(:scheduled_release, train: train, scheduled_at: 1.day.from_now)
+      end
+
+      it "does not repopulate scheduled releases" do
+        expect(train.scheduled_releases.count).to eq(2)
+
+        original_count = train.scheduled_releases.count
+        original_scheduled_at = train.scheduled_releases.first.scheduled_at
+
+        # Update non-schedule attributes
+        train.update!(name: "Updated Name", description: "Updated Description")
+
+        # Should not have changed scheduled releases
+        expect(train.scheduled_releases.count).to eq(original_count)
+        expect(train.scheduled_releases.first.scheduled_at).to eq(original_scheduled_at)
+      end
+    end
   end
 
   describe "#set_current_version" do
