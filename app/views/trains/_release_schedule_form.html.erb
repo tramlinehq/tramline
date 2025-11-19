@@ -12,7 +12,7 @@
         <div class="col-span-1">
           <%= form.labeled_datetime_field :kickoff_at,
                                           "Kickoff at",
-                                          {min: Date.current,
+                                          {min: @train.new_record? ? Time.current.iso8601 : nil,
                                            value: @train.kickoff_at&.in_time_zone(@app.timezone),
                                            data: {action: "domain--release-schedule-help#change",
                                                   domain__release_schedule_help_target: "kickoffDate"}} %>
