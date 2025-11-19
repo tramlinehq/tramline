@@ -5,10 +5,11 @@ class ReleasesController < SignedInApplicationController
   include Pagy::Backend
 
   before_action :require_write_access!, only: %i[create destroy update override_approvals copy_approvals post_release finish_release]
-  before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals post_release finish_release]
+  before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals post_release finish_release regression_testing soak wrap_up_automations live_release ongoing_release upcoming_release hotfix_release]
   before_action :set_train_and_app, only: %i[destroy timeline]
   before_action :ensure_approval_items_exist, only: %i[copy_approvals]
   before_action :ensure_approval_items_copyable, only: %i[copy_approvals]
+  before_action :ensure_demo_org, only: %i[regression_testing soak]
   around_action :set_time_zone
 
   def index
@@ -83,17 +84,11 @@ class ReleasesController < SignedInApplicationController
 
   def regression_testing
     live_release!
-    unless demo_org?
-      redirect_back fallback_location: release_path(@release), flash: {notice: "This feature is coming soon!"} and return
-    end
     set_train_and_app
   end
 
   def soak
     live_release!
-    unless demo_org?
-      redirect_back fallback_location: release_path(@release), flash: {notice: "This feature is coming soon!"} and return
-    end
     set_train_and_app
   end
 
@@ -226,6 +221,12 @@ class ReleasesController < SignedInApplicationController
   def ensure_approval_items_copyable
     unless @release.copy_approvals_allowed?
       redirect_back fallback_location: root_path, flash: {error: "Cannot copy over approvals."}
+    end
+  end
+
+  def ensure_demo_org
+    unless demo_org?
+      redirect_back fallback_location: release_path(@release), flash: {notice: "This feature is coming soon!"}
     end
   end
 end
