@@ -25,7 +25,7 @@ class ScheduledRelease < ApplicationRecord
 
   scope :pending, -> { where("scheduled_at > ?", Time.current) }
   scope :past, ->(n, before:, include_discarded: true) do
-    query = include_discarded ? unscoped : kept
+    query = include_discarded ? with_discarded : kept
     query.where(scheduled_at: ...before).order(scheduled_at: :asc).last(n)
   end
   scope :future, ->(n = 1) { pending.order(scheduled_at: :asc).limit(n) }
