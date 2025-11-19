@@ -140,12 +140,10 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
+  before_update :disable_copy_approvals, unless: :approvals_enabled?
+  before_update :create_default_notification_settings, if: :notification_channels_config_changed?
   after_create_commit :create_webhook_integration
   after_update_commit :update_webhook_integration
-  before_update :disable_copy_approvals, unless: :approvals_enabled?
-  before_update :create_default_notification_settings, if: -> do
-    notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
-  end
   after_update_commit :populate_release_schedules, if: :saved_release_schedule_changed?
 
   def disable_copy_approvals
@@ -673,6 +671,10 @@ class Train < ApplicationRecord
   def update_webhook_integration
     return unless saved_change_to_webhooks_enabled?
     UpdateOutgoingWebhookIntegrationJob.perform_async(id, webhooks_enabled?)
+  end
+
+  def notification_channels_config_changed?
+    notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
   end
 
   def release_schedule_changed?
