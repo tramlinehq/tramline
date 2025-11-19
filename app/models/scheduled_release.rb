@@ -3,6 +3,7 @@
 # Table name: scheduled_releases
 #
 #  id               :uuid             not null, primary key
+#  discarded_at     :datetime         indexed
 #  failure_reason   :string
 #  is_success       :boolean          default(FALSE)
 #  manually_skipped :boolean          default(FALSE)
@@ -13,6 +14,7 @@
 #  train_id         :uuid             not null, indexed
 #
 class ScheduledRelease < ApplicationRecord
+  include Discard::Model
   has_paper_trail
 
   self.implicit_order_column = :scheduled_at
@@ -22,6 +24,11 @@ class ScheduledRelease < ApplicationRecord
   delegate :app, to: :train
 
   scope :pending, -> { where("scheduled_at > ?", Time.current) }
+  scope :past, ->(n, before:, include_discarded: true) do
+    query = include_discarded ? with_discarded : kept
+    query.where(scheduled_at: ...before).order(scheduled_at: :asc).last(n)
+  end
+  scope :future, ->(n = 1) { pending.order(scheduled_at: :asc).limit(n) }
 
   after_create_commit :schedule_kickoff!
 

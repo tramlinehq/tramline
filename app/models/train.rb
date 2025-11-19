@@ -84,7 +84,7 @@ class Train < ApplicationRecord
   has_many :release_platforms, -> { sequential }, dependent: :destroy, inverse_of: :train
   has_many :release_platform_runs, -> { sequential }, through: :releases
   has_many :integrations, through: :app
-  has_many :scheduled_releases, dependent: :destroy
+  has_many :scheduled_releases, -> { kept }, dependent: :destroy, inverse_of: :train
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
   has_one :release_index, dependent: :destroy
   has_one :webhook_integration, class_name: "SvixIntegration", dependent: :destroy
@@ -116,7 +116,7 @@ class Train < ApplicationRecord
   validates :release_branch, presence: true, if: -> { branching_strategy == "parallel_working" }
   validate :version_compatibility, on: :create
   validate :ready?, on: :create
-  validate :valid_schedule, if: -> { kickoff_at_changed? || repeat_duration_changed? }
+  validate :valid_schedule, if: :release_schedule_changed?
   validate :build_queue_config
   validate :backmerge_config
   validate :working_branch_presence, on: :create
@@ -140,13 +140,11 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
+  before_update :disable_copy_approvals, unless: :approvals_enabled?
+  before_update :create_default_notification_settings, if: :notification_channels_config_changed?
   after_create_commit :create_webhook_integration
   after_update_commit :update_webhook_integration
-  before_update :disable_copy_approvals, unless: :approvals_enabled?
-  before_update :create_default_notification_settings, if: -> do
-    notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
-  end
-  after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
+  after_update_commit :populate_release_schedules, if: :saved_release_schedule_changed?
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -202,6 +200,17 @@ class Train < ApplicationRecord
 
   def schedule_release!
     scheduled_releases.create!(scheduled_at: next_run_at) if automatic?
+  end
+
+  def populate_release_schedules
+    transaction do
+      scheduled_releases.discard_all
+      # as long as the schedule_release creation in this transaction is the last thing
+      # the callbacks (if any) from the creation should be safe
+      # if there's other stuff that happens after this, that fails
+      # the callbacks from scheduled_release could get fired for a rolled-back record
+      schedule_release!
+    end
   end
 
   def hotfix_from
@@ -443,10 +452,6 @@ class Train < ApplicationRecord
     app.notifications_set_up? && notification_channel.present?
   end
 
-  def schedule_editable?
-    draft? || !automatic? || !persisted?
-  end
-
   def hotfixable?
     return false unless app.ready?
     return false unless has_production_deployment?
@@ -586,7 +591,7 @@ class Train < ApplicationRecord
   end
 
   def valid_schedule
-    if kickoff_at.present? || repeat_duration.present?
+    if release_schedule_changed?
       errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless kickoff_at.present? && repeat_duration.present?
       errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at <= Time.current
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
@@ -606,6 +611,11 @@ class Train < ApplicationRecord
   end
 
   def build_queue_config
+    if build_queue_enabled_changed? && active_runs.exists?
+      errors.add(:build_queue_enabled, :cannot_edit_when_releases_are_running)
+      return
+    end
+
     if build_queue_enabled?
       errors.add(:build_queue_size, :config_required) unless build_queue_size.present? && build_queue_wait_time.present?
       errors.add(:build_queue_size, :invalid_size) if build_queue_size && build_queue_size < 1
@@ -661,5 +671,18 @@ class Train < ApplicationRecord
   def update_webhook_integration
     return unless saved_change_to_webhooks_enabled?
     UpdateOutgoingWebhookIntegrationJob.perform_async(id, webhooks_enabled?)
+  end
+
+  def notification_channels_config_changed?
+    notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
+  end
+
+  def release_schedule_changed?
+    (kickoff_at.present? && kickoff_at_changed?) ||
+      (repeat_duration.present? && repeat_duration_changed?)
+  end
+
+  def saved_release_schedule_changed?
+    saved_change_to_kickoff_at? || saved_change_to_repeat_duration?
   end
 end

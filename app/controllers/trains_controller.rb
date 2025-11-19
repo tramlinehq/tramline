@@ -40,7 +40,7 @@ class TrainsController < SignedInApplicationController
 
   def update
     if @train.update(parsed_train_update_params)
-      redirect_to edit_app_train_path(@app, @train), notice: "Train was updated"
+      redirect_to edit_app_train_path(@app, @train), notice: "Train was updated."
     else
       @edit_not_allowed = false
       render :edit, status: :unprocessable_entity
