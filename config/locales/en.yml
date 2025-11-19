@@ -159,6 +159,10 @@ en:
     fully_release_previous_rollout:
       success: "The previous rollout was fully released."
       failure: "Failed to release the previous rollout — %{errors}"
+    sync:
+      success: "Store status sync initiated successfully."
+      failure: "Failed to sync store status — %{errors}"
+      not_syncable: "This submission cannot be synced at the moment."
   store_rollouts:
     switcher:
       ios:
@@ -185,6 +189,10 @@ en:
     start:
       success: "Rollout was successfully started."
       failure: "Failed to start rollout — %{errors}"
+    sync:
+      success: "Store rollout sync initiated successfully."
+      failure: "Failed to sync store rollout — %{errors}"
+      not_syncable: "This rollout cannot be synced at the moment."
     rollout_not_controllable: "Rollout is not controllable."
     rollout_not_automatic: "Rollout is not automatic."
     rollout_not_moveable: "Rollout is not moveable."

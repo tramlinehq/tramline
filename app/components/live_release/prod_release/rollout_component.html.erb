@@ -79,11 +79,24 @@
           <%= render SectionComponent.new(title: "More actions", style: :titled, size: :micro) do %>
             <div class="flex flex-col justify-between items-center gap-2 md:flex-row">
               <div class="flex flex-wrap flex-row gap-2">
+                <% if syncable? %>
+                  <%= render ButtonComponent.new(label: "Sync store status",
+                                                 scheme: :light,
+                                                 type: :button,
+                                                 options: sync_store_rollout_path(id),
+                                                 html_options: html_opts(:patch, "Sync the current status from the store?"),
+                                                 size: :xxs) do |b|
+                        b.with_icon("arrow_path.svg", size: :md)
+                      end %>
+                <% end %>
                 <% more_actions.each do |action| %>
                   <%= render action %>
                 <% end %>
               </div>
               <div class="flex flex-row gap-2">
+                <% if last_sync_time.present? %>
+                  <span class="text-sm text-secondary">Last sync: <%= last_sync_time %></span>
+                <% end %>
                 <%= render ButtonComponent.new(label: "Store dashboard ↗",
                                                scheme: :link,
                                                type: :link_external,

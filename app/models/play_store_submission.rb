@@ -40,6 +40,10 @@ class PlayStoreSubmission < StoreSubmission
     review_rejected
     finished_manually
     failed
+    sync_initiated
+    sync_completed
+    sync_no_changes
+    sync_failed
   ]
   STATES = {
     created: "created",
@@ -49,7 +53,8 @@ class PlayStoreSubmission < StoreSubmission
     review_failed: "review_failed",
     failed: "failed",
     failed_with_action_required: "failed_with_action_required",
-    finished_manually: "finished_manually"
+    finished_manually: "finished_manually",
+    syncing: "syncing"
   }
   FINAL_STATES = %w[prepared]
   PRE_PREPARE_STATES = %w[created preprocessing review_failed failed]
@@ -102,6 +107,17 @@ class PlayStoreSubmission < StoreSubmission
 
     event :finish_manually do
       transitions from: :failed_with_action_required, to: :finished_manually
+    end
+
+    event :start_sync do
+      transitions from: [:prepared, :review_failed, :failed, :failed_with_action_required], to: :syncing
+    end
+
+    event :finish_sync do
+      transitions from: :syncing, to: :prepared, guard: :prepared_before_sync?
+      transitions from: :syncing, to: :review_failed, guard: :review_failed_before_sync?
+      transitions from: :syncing, to: :failed, guard: :failed_before_sync?
+      transitions from: :syncing, to: :failed_with_action_required, guard: :failed_with_action_required_before_sync?
     end
   end
 
@@ -273,7 +289,39 @@ class PlayStoreSubmission < StoreSubmission
     DEEP_LINK_BASE + app.bundle_identifier
   end
 
+  def sync_from_store!
+    return unless may_start_sync?
+
+    previous_status = status
+    start_sync!
+    event_stamp!(reason: :sync_initiated, kind: :notice, data: stamp_data)
+
+    StoreSubmissions::PlayStore::SyncStoreStatusJob.perform_async(id, previous_status)
+  end
+
+  def syncable?
+    !syncing? && may_start_sync?
+  end
+
   private
+
+  attr_accessor :status_before_sync
+
+  def prepared_before_sync?
+    status_before_sync == "prepared"
+  end
+
+  def review_failed_before_sync?
+    status_before_sync == "review_failed"
+  end
+
+  def failed_before_sync?
+    status_before_sync == "failed"
+  end
+
+  def failed_with_action_required_before_sync?
+    status_before_sync == "failed_with_action_required"
+  end
 
   def check_manual_upload
     if provider.build_present_in_channel?(submission_channel_id, build_number, raise_on_lock_error: true)

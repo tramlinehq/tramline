@@ -60,6 +60,10 @@ en:
       review_rejected_html: 'Play Store submission for <span class="emphasize">%{version} (%{build_number})</span> was rejected'
       failed_html: 'Failed to create a release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span>. Error – <span class="emphasize">%{failure_reason}</span>'
       finished_manually_html: 'Marked the release for <span class="emphasize">%{version} (%{build_number})</span> as finished manually'
+      sync_initiated_html: 'Started syncing store status for <span class="emphasize">%{version} (%{build_number})</span> from Play Store'
+      sync_completed_html: 'Synced store status for <span class="emphasize">%{version} (%{build_number})</span> from Play Store<span class="ml-1 text-xs">(%{changes})</span>'
+      sync_no_changes_html: 'Synced store status for <span class="emphasize">%{version} (%{build_number})</span> – no changes detected'
+      sync_failed_html: 'Failed to sync store status for <span class="emphasize">%{version} (%{build_number})</span> from Play Store. Error – <span class="emphasize">%{error_message}</span>'
     app_store_submission:
       triggered_html: 'Triggered a new store release for <span class="emphasize">%{version} (%{build_number})</span> in the App Store'
       prepared_html: 'Created a new store release for <span class="emphasize">%{version} (%{build_number})</span> in the App Store'
@@ -72,6 +76,10 @@ en:
       cancelling_html: 'Cancelling release submission to the App Store for <span class="emphasize">%{version} (%{build_number})</span>'
       cancelled_html: 'Release submission to the App Store for <span class="emphasize">%{version} (%{build_number})</span> was cancelled'
       failed_html: 'Failed to create an inflight store version for <span class="emphasize">%{version} (%{build_number})</span> in the App Store. Error – <span class="emphasize">%{failure_reason}</span>'
+      sync_initiated_html: 'Started syncing store status for <span class="emphasize">%{version} (%{build_number})</span> from App Store'
+      sync_completed_html: 'Synced store status for <span class="emphasize">%{version} (%{build_number})</span> from App Store<span class="ml-1 text-xs">(%{changes})</span>'
+      sync_no_changes_html: 'Synced store status for <span class="emphasize">%{version} (%{build_number})</span> – no changes detected'
+      sync_failed_html: 'Failed to sync store status for <span class="emphasize">%{version} (%{build_number})</span> from App Store. Error – <span class="emphasize">%{error_message}</span>'
     play_store_rollout:
       started_html: 'Started rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
       updated_html: 'Updated the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track to <span class="emphasize">%{rollout_percentage}%</span>'
@@ -81,6 +89,10 @@ en:
       fully_released_html: 'Fully released <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track from <span class="emphasize">%{rollout_percentage}%</span>'
       finished_manually_html: 'Marked the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track as finished manually'
       failed_html: 'Failed to rollout <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track'
+      sync_initiated_html: 'Started syncing rollout status for <span class="emphasize">%{version} (%{build_number})</span> from Play Store'
+      sync_completed_html: 'Synced rollout status for <span class="emphasize">%{version} (%{build_number})</span> from Play Store<span class="ml-1 text-xs">(%{changes})</span>'
+      sync_no_changes_html: 'Synced rollout status for <span class="emphasize">%{version} (%{build_number})</span> – no changes detected'
+      sync_failed_html: 'Failed to sync rollout status for <span class="emphasize">%{version} (%{build_number})</span> from Play Store. Error – <span class="emphasize">%{error_message}</span>'
     app_store_rollout:
       started_html: 'Started rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
       updated_html: 'Rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store is at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
@@ -89,6 +101,10 @@ en:
       fully_released_html: 'Fully released <span class="emphasize">%{version} (%{build_number})</span> to App Store from phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
       paused_html: 'Paused the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
       resumed_html: 'Resumed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
+      sync_initiated_html: 'Started syncing rollout status for <span class="emphasize">%{version} (%{build_number})</span> from App Store'
+      sync_completed_html: 'Synced rollout status for <span class="emphasize">%{version} (%{build_number})</span> from App Store<span class="ml-1 text-xs">(%{changes})</span>'
+      sync_no_changes_html: 'Synced rollout status for <span class="emphasize">%{version} (%{build_number})</span> – no changes detected'
+      sync_failed_html: 'Failed to sync rollout status for <span class="emphasize">%{version} (%{build_number})</span> from App Store. Error – <span class="emphasize">%{error_message}</span>'
     store_rollout:
       reasons:
         started: 'Rollout started'
@@ -99,3 +115,7 @@ en:
         paused: 'Rollout paused'
         resumed: 'Rollout resumed'
         increased: 'Rollout increased'
+        sync_initiated: 'Sync initiated'
+        sync_completed: 'Sync completed'
+        sync_no_changes: 'Sync completed (no changes)'
+        sync_failed: 'Sync failed'

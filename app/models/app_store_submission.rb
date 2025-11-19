@@ -46,10 +46,11 @@ class AppStoreSubmission < StoreSubmission
     approved: "approved",
     failed: "failed",
     cancelling: "cancelling",
-    cancelled: "cancelled"
+    cancelled: "cancelled",
+    syncing: "syncing"
   }
   FINAL_STATES = %w[approved]
-  IMMUTABLE_STATES = %w[preparing approved submitting_for_review submitted_for_review cancelling]
+  IMMUTABLE_STATES = %w[preparing approved submitting_for_review submitted_for_review cancelling syncing]
   PRE_PREPARE_STATES = %w[created cancelled review_failed failed]
   CHANGEABLE_STATES = %w[created prepared failed_prepare cancelled review_failed failed approved]
   CANCELABLE_STATES = %w[submitted_for_review]
@@ -66,6 +67,10 @@ class AppStoreSubmission < StoreSubmission
     cancellation_failed
     cancelled
     failed
+    sync_initiated
+    sync_completed
+    sync_no_changes
+    sync_failed
   ]
 
   PreparedVersionNotFoundError = Class.new(StandardError)
@@ -124,6 +129,18 @@ class AppStoreSubmission < StoreSubmission
 
     event :fail, before: :set_failure_context, after_commit: :on_fail! do
       transitions to: :failed
+    end
+
+    event :start_sync do
+      transitions from: [:prepared, :submitted_for_review, :approved, :review_failed, :failed_prepare], to: :syncing
+    end
+
+    event :finish_sync do
+      transitions from: :syncing, to: :prepared, guard: :prepared_before_sync?
+      transitions from: :syncing, to: :submitted_for_review, guard: :submitted_before_sync?
+      transitions from: :syncing, to: :approved, guard: :approved_before_sync?
+      transitions from: :syncing, to: :review_failed, guard: :review_failed_before_sync?
+      transitions from: :syncing, to: :failed_prepare, guard: :failed_prepare_before_sync?
     end
   end
 
@@ -266,7 +283,43 @@ class AppStoreSubmission < StoreSubmission
     )
   end
 
+  def sync_from_store!
+    return unless may_start_sync?
+
+    previous_status = status
+    start_sync!
+    event_stamp!(reason: :sync_initiated, kind: :notice, data: stamp_data)
+
+    StoreSubmissions::AppStore::SyncStoreStatusJob.perform_async(id, previous_status)
+  end
+
+  def syncable?
+    !syncing? && may_start_sync?
+  end
+
   private
+
+  attr_accessor :status_before_sync
+
+  def prepared_before_sync?
+    status_before_sync == "prepared"
+  end
+
+  def submitted_before_sync?
+    status_before_sync == "submitted_for_review"
+  end
+
+  def approved_before_sync?
+    status_before_sync == "approved"
+  end
+
+  def review_failed_before_sync?
+    status_before_sync == "review_failed"
+  end
+
+  def failed_prepare_before_sync?
+    status_before_sync == "failed_prepare"
+  end
 
   def release_notes
     release_metadata.map do |metadata|
