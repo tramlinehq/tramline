@@ -190,7 +190,7 @@ describe GitlabIntegration do
     context "when enable auto merge fails" do
       it "raises an error" do
         allow(installation).to receive(:enable_auto_merge).and_raise(Installations::Gitlab::Error.new({"message" => "Cannot enable auto merge"}))
-        expect { gitlab_integration.enable_auto_merge!(123) }.to raise_error(Installations::Gitlab::Error)
+        expect(gitlab_integration.enable_auto_merge!(123)).to eq(false)
       end
     end
   end
