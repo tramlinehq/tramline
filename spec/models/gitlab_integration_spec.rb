@@ -190,7 +190,7 @@ describe GitlabIntegration do
     context "when enable auto merge fails" do
       it "raises an error" do
         allow(installation).to receive(:enable_auto_merge).and_raise(Installations::Gitlab::Error.new({"message" => "Cannot enable auto merge"}))
-        expect(gitlab_integration.enable_auto_merge!(123)).to eq(false)
+        expect(gitlab_integration.enable_auto_merge!(123)).to be(false)
       end
     end
   end
@@ -200,17 +200,4 @@ describe GitlabIntegration do
       expect(gitlab_integration.bot_name).to eq("gitlab-bot")
     end
   end
-end
-
-
-def recent_contributors(installation, repo_name, days: 60)
-  since_date = (Time.current - days.days).iso8601
-  commits = installation.commits(repo_name, since: since_date)
-
-  commits
-    .map { |c| c.author&.login }
-    .compact
-    .tally
-    .sort_by { |_, count| -count }
-    .to_h
 end
