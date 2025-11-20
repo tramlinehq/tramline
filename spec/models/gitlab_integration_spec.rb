@@ -201,3 +201,16 @@ describe GitlabIntegration do
     end
   end
 end
+
+
+def recent_contributors(installation, repo_name, days: 60)
+  since_date = (Time.current - days.days).iso8601
+  commits = installation.commits(repo_name, since: since_date)
+
+  commits
+    .map { |c| c.author&.login }
+    .compact
+    .tally
+    .sort_by { |_, count| -count }
+    .to_h
+end
