@@ -181,8 +181,6 @@ describe Accounts::UsersController do
             patch :update_user_role, params: {email: member.email, role: :owner}
           end.not_to change { membership.reload.role }
 
-          # NOTE: assertions on response and flash may not be necessary
-          #       since we already verify behavior with the change matcher
           expect(response).to redirect_to(accounts_organization_teams_path(organization))
           expect(flash[:alert]).to eq("You don't have permission to edit this member's role")
         end
