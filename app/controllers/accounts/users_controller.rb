@@ -38,6 +38,11 @@ class Accounts::UsersController < SignedInApplicationController
       return
     end
 
+    unless helpers.can_current_user_edit_role?(member)
+      redirect_to accounts_organization_teams_path(@current_organization), alert: "You don't have permission to edit this member's role"
+      return
+    end
+
     if membership.update(role: params[:role])
       flash[:notice] = "#{email} role was successfully updated to #{params[:role]}"
     else
