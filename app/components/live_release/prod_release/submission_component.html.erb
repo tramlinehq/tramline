@@ -147,6 +147,19 @@
     <% end %>
 
     <% card.with_action do %>
+      <% if syncable? %>
+        <%= render ButtonComponent.new(label: "Sync store status",
+                                       scheme: :light,
+                                       type: :button,
+                                       options: sync_store_submission_path(submission),
+                                       html_options: html_opts(:patch, "Sync the current status from the store?"),
+                                       size: :xxs) do |b| %>
+          <% b.with_icon("arrow_path.svg", size: :md) %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% card.with_action do %>
       <% if submission.retryable? %>
         <%= render ButtonComponent.new(label: "Retry sending to #{submission.provider.display}",
                                        auto_label_case: false,
@@ -229,6 +242,9 @@
               <% else %>
                 <%= NOT_AVAILABLE %>
               <% end %>
+            <% end %>
+            <% if last_sync_time.present? %>
+              <% component.with_data_set(title: "Last sync").with_content(last_sync_time) %>
             <% end %>
           <% end %>
         </div>

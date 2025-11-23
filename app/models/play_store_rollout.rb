@@ -28,10 +28,15 @@ class PlayStoreRollout < StoreRollout
     completed
     failed
     fully_released
+    sync_initiated
+    sync_completed
+    sync_no_changes
+    sync_failed
   ]
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
+    state :syncing
     state(*STATES.keys)
 
     event :start, after_commit: :on_start! do
@@ -51,6 +56,16 @@ class PlayStoreRollout < StoreRollout
     event :fully_release, after_commit: :on_complete! do
       after { set_completed_at! }
       transitions from: [:completed, :started], to: :fully_released
+    end
+
+    event :start_sync do
+      transitions from: [:created, :started, :halted], to: :syncing
+    end
+
+    event :finish_sync do
+      transitions from: :syncing, to: :created, guard: :created_before_sync?
+      transitions from: :syncing, to: :started, guard: :started_before_sync?
+      transitions from: :syncing, to: :halted, guard: :halted_before_sync?
     end
   end
 
@@ -150,7 +165,35 @@ class PlayStoreRollout < StoreRollout
     false
   end
 
+  def sync_from_store!
+    return unless may_start_sync?
+
+    previous_status = status
+    start_sync!
+    event_stamp!(reason: :sync_initiated, kind: :notice, data: stamp_data)
+
+    StoreRollouts::PlayStore::SyncStoreStatusJob.perform_async(id, previous_status)
+  end
+
+  def syncable?
+    !syncing? && may_start_sync?
+  end
+
   private
+
+  attr_accessor :status_before_sync
+
+  def created_before_sync?
+    status_before_sync == "created"
+  end
+
+  def started_before_sync?
+    status_before_sync == "started"
+  end
+
+  def halted_before_sync?
+    status_before_sync == "halted"
+  end
 
   def fail!(error)
     elog(error, level: :warn)

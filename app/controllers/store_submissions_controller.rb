@@ -9,6 +9,7 @@ class StoreSubmissionsController < SignedInApplicationController
   before_action :ensure_retryable, only: [:retry]
   before_action :ensure_reviewable, only: [:submit_for_review]
   before_action :ensure_cancellable, only: [:cancel]
+  before_action :ensure_syncable, only: [:sync]
   before_action :live_release!, only: %i[index]
   before_action :set_app, only: %i[index]
   around_action :set_time_zone
@@ -77,6 +78,13 @@ class StoreSubmissionsController < SignedInApplicationController
     end
   end
 
+  def sync
+    @submission.sync_from_store!
+    redirect_back fallback_location: fallback_path, notice: t(".sync.success")
+  rescue => e
+    redirect_back fallback_location: fallback_path, flash: {error: t(".sync.failure", errors: e.message)}
+  end
+
   protected
 
   def build_id
@@ -119,6 +127,12 @@ class StoreSubmissionsController < SignedInApplicationController
   def ensure_reviewable
     unless @submission.reviewable?
       redirect_back fallback_location: root_path, flash: {error: t(".submit_for_review.unreviewable")}
+    end
+  end
+
+  def ensure_syncable
+    unless @submission.syncable?
+      redirect_back fallback_location: root_path, flash: {error: t(".sync.not_syncable")}
     end
   end
 
