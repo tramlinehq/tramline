@@ -19,6 +19,7 @@ class Integration < ApplicationRecord
   using RefinedArray
   using RefinedString
   include Discard::Model
+  include Loggable
 
   self.ignored_columns += %w[app_id]
 
@@ -358,10 +359,9 @@ class Integration < ApplicationRecord
 
   def disconnect
     return unless disconnectable?
+
     transaction do
       update!(status: :disconnected, discarded_at: Time.current)
-      # Stop any keepalive jobs if this is a GitLab integration
-      stop_keepalive_jobs if gitlab_integration?
       true
     end
   rescue ActiveRecord::RecordInvalid => e
@@ -370,11 +370,14 @@ class Integration < ApplicationRecord
   end
 
   def mark_needs_reauth!
-    update!(status: :needs_reauth)
-    # Stop any keepalive jobs if this is a GitLab integration
-    stop_keepalive_jobs if gitlab_integration?
+    return unless connected?
+
+    transaction do
+      update!(status: :needs_reauth)
+      true
+    end
   rescue ActiveRecord::RecordInvalid => e
-    Rails.logger.error "Failed to mark integration #{id} as needs_reauth: #{e.message}"
+    elog(e, level: :error)
     false
   end
 
@@ -424,12 +427,6 @@ class Integration < ApplicationRecord
     if providable && !providable.valid?
       errors.add(:base, providable&.errors&.full_messages&.[](0))
     end
-  end
-
-  def stop_keepalive_jobs
-    # Note: This is a simple approach that relies on the job checking connection status.
-    # For more precise control, you could maintain job IDs and cancel them explicitly.
-    Rails.logger.info "Integration #{id} disconnected - keepalive jobs will stop naturally on next run"
   end
 
   def app_variant_restriction
