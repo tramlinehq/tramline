@@ -63,7 +63,11 @@ describe Accounts::Invite do
 
         expect do
           threads = []
-          [[invitee_email, organization1.id, user1.id], [invitee_2_email, organization1.id, user1.id], [invitee_3_email, organization2.id, user2.id]].each do |email, organization_id, sender_id|
+          [
+            [invitee_email, organization1.id, user1.id],
+            [invitee_2_email, organization1.id, user1.id],
+            [invitee_3_email, organization2.id, user2.id]
+          ].each do |email, organization_id, sender_id|
             threads << Thread.new do
               ActiveRecord::Base.connection_pool.with_connection do
                 invite = described_class.new(
