@@ -20,6 +20,7 @@ class IntegrationCardComponent < BaseComponent
   attr_reader :integration
   delegate :connected?,
     :disconnected?,
+    :needs_reauth?,
     :providable,
     :connection_data,
     :providable_type,
@@ -34,6 +35,10 @@ class IntegrationCardComponent < BaseComponent
 
   def connect_path
     connect_app_integrations_path(@app, integration)
+  end
+
+  def reauth_path
+    reauth_app_integration_path(@app, integration)
   end
 
   def logo
@@ -74,6 +79,14 @@ class IntegrationCardComponent < BaseComponent
                url: reuse_app_integrations_path(@app),
                type: providable_type,
                provider: provider})
+  end
+
+  def disconnect_partial
+    render(partial: "integrations/disconnect",
+      locals: {app: @app,
+               integration: @integration,
+               is_disconnectable: disconnectable?,
+               is_disconnectable_category: disconnectable_categories?})
   end
 
   def disconnectable?

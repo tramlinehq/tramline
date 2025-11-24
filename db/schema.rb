@@ -415,6 +415,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_17_145308) do
     t.string "integrable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["integrable_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
+    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying, 'disconnected'::character varying, 'needs_reauth'::character varying]::text[])", name: "chk_rails_status_enum"
   end
 
   create_table "invites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

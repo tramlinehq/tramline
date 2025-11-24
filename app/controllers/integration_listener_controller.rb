@@ -10,11 +10,22 @@ class IntegrationListenerController < SignedInApplicationController
       return
     end
 
-    @integration = state_app.integrations.new(integration_params)
-    @integration.providable = build_providable
+    existing_integration = existing_integration_needing_reauth
+    if existing_integration
+      # Update existing integration's tokens
+      @integration = existing_integration
+      @integration.providable.assign_attributes(providable_params)
+      @integration.status = Integration::DEFAULT_CONNECT_STATUS
+      success_message = "Integration was successfully re-authenticated."
+    else
+      # Create new integration
+      @integration = state_app.integrations.new(integration_params)
+      @integration.providable = build_providable
+      success_message = "Integration was successfully created."
+    end
 
     if @integration.save
-      redirect_to app_path(state_app), notice: "Integration was successfully created."
+      redirect_to app_path(state_app), notice: success_message
     else
       redirect_to app_integrations_path(state_app), alert: integration_create_error
     end
@@ -87,6 +98,11 @@ class IntegrationListenerController < SignedInApplicationController
 
   def code
     params[:code]
+  end
+
+  def existing_integration_needing_reauth
+    existing_integration_id = state[:integration_id]
+    state_app.integrations.needs_reauth.find(existing_integration_id)
   end
 
   def error?

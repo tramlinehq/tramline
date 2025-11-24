@@ -72,7 +72,7 @@ class Integration < ApplicationRecord
   }.freeze
 
   enum :category, ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_map_self
-  enum :status, {connected: "connected", disconnected: "disconnected"}
+  enum :status, {connected: "connected", disconnected: "disconnected", needs_reauth: "needs_reauth"}
 
   CATEGORY_DESCRIPTIONS = {
     version_control: "Automatically create release branches and tags, and merge release PRs.",
@@ -92,7 +92,7 @@ class Integration < ApplicationRecord
   validate :validate_providable, on: :create
   validate :app_variant_restriction, on: :create
   validates :category, presence: true
-  validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: -> { integrable_id.present? && connected? }}
+  validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: -> { integrable_id.present? && (connected? || needs_reauth?) }}
 
   attr_accessor :current_user, :code
 
@@ -100,13 +100,14 @@ class Integration < ApplicationRecord
   delegate :platform, to: :integrable
 
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
+  scope :linked, -> { where(category: MINIMUM_REQUIRED_SET, status: [:connected, :needs_reauth]) }
 
   before_create :set_connected
   after_create_commit -> { IntegrationMetadataJob.perform_async(id) }
 
   class << self
     def by_categories_for(app)
-      existing_integrations = app.integrations.connected.includes(:providable)
+      existing_integrations = app.integrations.linked.includes(:providable)
       integrations = ALLOWED_INTEGRATIONS_FOR_APP[app.platform]
 
       integrations.each_with_object({}) do |(category, providers), combination|
@@ -298,7 +299,6 @@ class Integration < ApplicationRecord
     def bitrise_ready?
       app = first.integrable
       return true unless app.bitrise_connected?
-
       bitrise_ci_cd_provider&.project.present?
     end
 
@@ -360,10 +360,21 @@ class Integration < ApplicationRecord
     return unless disconnectable?
     transaction do
       update!(status: :disconnected, discarded_at: Time.current)
+      # Stop any keepalive jobs if this is a GitLab integration
+      stop_keepalive_jobs if gitlab_integration?
       true
     end
   rescue ActiveRecord::RecordInvalid => e
     errors.add(:base, e.message)
+    false
+  end
+
+  def mark_needs_reauth!
+    update!(status: :needs_reauth)
+    # Stop any keepalive jobs if this is a GitLab integration
+    stop_keepalive_jobs if gitlab_integration?
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error "Failed to mark integration #{id} as needs_reauth: #{e.message}"
     false
   end
 
@@ -386,7 +397,8 @@ class Integration < ApplicationRecord
       app_id: integrable.app_id,
       integration_category: category,
       integration_provider: providable_type,
-      user_id: current_user.id
+      integration_id: id,
+      user_id: current_user&.id
     }.to_json.encode
   end
 
@@ -412,6 +424,12 @@ class Integration < ApplicationRecord
     if providable && !providable.valid?
       errors.add(:base, providable&.errors&.full_messages&.[](0))
     end
+  end
+
+  def stop_keepalive_jobs
+    # Note: This is a simple approach that relies on the job checking connection status.
+    # For more precise control, you could maintain job IDs and cancel them explicitly.
+    Rails.logger.info "Integration #{id} disconnected - keepalive jobs will stop naturally on next run"
   end
 
   def app_variant_restriction

@@ -18,11 +18,13 @@ class GitlabIntegration < ApplicationRecord
   include Vaultable
   include Providable
   include Displayable
+  include Loggable
   using RefinedHash
   using RefinedArray
 
   attr_accessor :code
   before_validation :complete_access, if: :new_record?
+  after_create_commit :start_token_keepalive
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
   delegate :cache, to: Rails
@@ -306,7 +308,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def metadata
-    installation.user_info(USER_INFO_TRANSFORMATIONS)
+    with_api_retries { installation.user_info(USER_INFO_TRANSFORMATIONS) }
   end
 
   def pull_requests_url(branch_name, open: false)
@@ -430,6 +432,10 @@ class GitlabIntegration < ApplicationRecord
     false
   end
 
+  def user_info(branch, sha_only: true)
+    with_api_retries { installation.user_info(GitlabIntegration::USER_INFO_TRANSFORMATIONS) }
+  end
+
   def bot_name
     "gitlab-bot"
   end
@@ -476,6 +482,8 @@ class GitlabIntegration < ApplicationRecord
     tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
 
     if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      # Mark integration as disconnected when refresh token is permanently expired
+      disconnect_due_to_expired_tokens!
       raise Installations::Error::TokenRefreshFailure
     end
 
@@ -500,6 +508,23 @@ class GitlabIntegration < ApplicationRecord
 
   def workflows_cache_key(branch_name = "main")
     "app/#{integrable.id}/gitlab_integration/#{id}/pipeline_jobs/#{branch_name}"
+  end
+
+  def disconnect_due_to_expired_tokens!
+    # Mark as needing reauth instead of disconnecting to preserve configuration
+    integration.mark_needs_reauth!
+  rescue => e
+    # Log the error but don't let it prevent the original TokenRefreshFailure from being raised
+    Rails.logger.error "Failed to mark GitLab integration as needs_reauth due to expired tokens: #{e.message}"
+    elog(e, level: :error)
+  end
+
+  def start_token_keepalive
+    # Start the periodic token keepalive job
+    KeepAliveIntegrations::GitlabJob.set(wait: 6.hours).perform_async(id)
+  rescue => e
+    Rails.logger.error "Failed to start GitLab token keepalive for integration #{id}: #{e.message}"
+    elog(e, level: :error)
   end
 
   def affiliated_providers

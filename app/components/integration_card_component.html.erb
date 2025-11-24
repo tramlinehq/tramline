@@ -12,7 +12,7 @@
     <footer>
       <div class="flex flex-col justify-start items-start space-y-5">
         <div class="text-xs text-slate-500">
-          <% if connected? %>
+          <% if connected? || needs_reauth? %>
             <%= connection_data -%>
           <% end %>
         </div>
@@ -36,25 +36,33 @@
                 <% end %>
               <% end %>
 
-              <% if disconnectable_categories? %>
-                <%= render ButtonComponent.new(
-                      scheme: :danger,
-                      options: app_integration_path(@app, integration),
-                      type: :button,
-                      size: :xxs,
-                      disabled: !disconnectable?,
-                      html_options: {method: :delete, data: {turbo_confirm: "Are you sure you want to disconnect this integration?"}}
-                    ) do |b|
-                      b.with_icon("trash.svg", size: :sm)
-                    end %>
-              <% end %>
+              <%= disconnect_partial %>
+            </div>
+          </div>
+        <% end %>
+
+        <% if needs_reauth? %>
+          <div class="flex justify-between w-full items-baseline">
+            <%= render BadgeComponent.new(text: "Needs Re-authorization", status: :ongoing) %>
+            <div class="flex gap-2">
+              <%= render ButtonComponent.new(
+                    scheme: :light,
+                    options: reauth_path,
+                    type: :link,
+                    size: :xxs,
+                    turbo: false,
+                    html_options: {alt: "Authorize again"}
+                  ) do |b|
+                    b.with_icon("repeat.svg", size: :sm)
+                  end %>
+
+              <%= disconnect_partial %>
             </div>
           </div>
         <% end %>
 
         <% if disconnected? %>
           <div class="flex gap-1">
-
             <% if connectable? %>
               <%= connectable_form_partial %>
             <% end %>
