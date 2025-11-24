@@ -17,10 +17,11 @@
     <% card.with_action do %>
       <%= render ButtonComponent.new(
             scheme: :default,
-            options: "javascript:window.location.reload();",
+            options: request.path,
             type: :link,
             size: :xxs,
-            label: "Refresh"
+            label: "Refresh",
+            html_options: { data: { turbo_method: :get, turbo_frame: :_top } }
           ) do |b|
             b.with_icon("repeat.svg", size: :md)
           end %>
