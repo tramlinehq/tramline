@@ -5,7 +5,16 @@ module KeepAliveIntegrations
     def perform(gitlab_integration_id)
       gitlab_integration = GitlabIntegration.find_by(id: gitlab_integration_id)
       return unless gitlab_integration
-      return unless gitlab_integration.integration.connected?
+
+      integration = gitlab_integration.integration
+      return unless integration.connected? || integration.needs_reauth?
+
+      if integration.needs_reauth?
+        # Re-enqueue with a shorter interval to check again later
+        re_enqueue(gitlab_integration_id, 3.hours)
+        return
+      end
+
       # Make a simple API call to trigger token refresh if needed
       gitlab_integration.metadata
       # Schedule the next keepalive

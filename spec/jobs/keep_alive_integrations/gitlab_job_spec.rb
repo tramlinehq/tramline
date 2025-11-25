@@ -43,12 +43,10 @@ describe KeepAliveIntegrations::GitlabJob do
     context "when integration is in needs_reauth status" do
       before { integration.update!(status: :needs_reauth) }
 
-      it "exits early without calling metadata or scheduling" do
-        allow_any_instance_of(GitlabIntegration).to receive(:metadata)
-
+      it "re-enqueues with shorter interval without calling metadata" do
         job.perform(gitlab_integration.id)
 
-        expect(described_class).not_to have_received(:perform_in)
+        expect(described_class).to have_received(:perform_in).with(3.hours, gitlab_integration.id)
       end
     end
 
