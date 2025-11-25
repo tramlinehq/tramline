@@ -101,7 +101,7 @@ class Integration < ApplicationRecord
   delegate :platform, to: :integrable
 
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
-  scope :linked, -> { where(category: MINIMUM_REQUIRED_SET, status: [:connected, :needs_reauth]) }
+  scope :linked, -> { where(status: [:connected, :needs_reauth]) }
 
   before_create :set_connected
   after_create_commit -> { IntegrationMetadataJob.perform_async(id) }

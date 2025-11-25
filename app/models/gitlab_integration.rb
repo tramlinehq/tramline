@@ -23,7 +23,7 @@ class GitlabIntegration < ApplicationRecord
 
   attr_accessor :code
   before_validation :complete_access, if: :new_record?
-  after_create_commit -> { KeepAliveIntegrations::GitlabJob.set(wait: 6.hours).perform_async(id) }
+  after_create_commit -> { KeepAliveIntegrations::GitlabJob.perform_in(6.hours, id) }
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
   delegate :cache, to: Rails

@@ -200,4 +200,112 @@ describe GitlabIntegration do
       expect(gitlab_integration.bot_name).to eq("gitlab-bot")
     end
   end
+
+  describe "#user_info" do
+    it "calls the GitLab API to get user info" do
+      allow(installation).to receive(:user_info).and_return({id: 123, username: "testuser", name: "Test User"})
+      result = gitlab_integration.user_info("main")
+      expect(installation).to have_received(:user_info).with(GitlabIntegration::USER_INFO_TRANSFORMATIONS)
+      expect(result).to eq({id: 123, username: "testuser", name: "Test User"})
+    end
+
+    it "ignores the branch parameter" do
+      allow(installation).to receive(:user_info).and_return({id: 123, username: "testuser"})
+      gitlab_integration.user_info("feature-branch", sha_only: false)
+      expect(installation).to have_received(:user_info).with(GitlabIntegration::USER_INFO_TRANSFORMATIONS)
+    end
+  end
+
+  describe "token keepalive callback" do
+    let(:new_gitlab_integration) { build(:gitlab_integration, oauth_access_token: "test_token", oauth_refresh_token: "test_refresh_token") }
+
+    before do
+      # Mock the API calls so validation passes without an integration
+      allow_any_instance_of(described_class).to receive(:complete_access)
+      allow_any_instance_of(described_class).to receive(:correct_key)
+    end
+
+    it "schedules the keepalive job after creation" do
+      allow(KeepAliveIntegrations::GitlabJob).to receive(:perform_in)
+
+      new_gitlab_integration.save!
+
+      expect(KeepAliveIntegrations::GitlabJob).to have_received(:perform_in).with(6.hours, new_gitlab_integration.id)
+    end
+  end
+
+  describe "#with_api_retries (private)" do
+    context "when token expires" do
+      let(:error) { Installations::Error.new("Token expired", reason: :token_expired) }
+
+      it "retries after refreshing token" do
+        call_count = 0
+        allow(gitlab_integration).to receive(:reset_tokens!)
+
+        result = gitlab_integration.send(:with_api_retries) do
+          call_count += 1
+          raise error if call_count == 1
+          "success"
+        end
+
+        expect(gitlab_integration).to have_received(:reset_tokens!).once
+        expect(result).to eq("success")
+      end
+    end
+
+    context "when max retries exceeded" do
+      it "raises the error" do
+        expect do
+          gitlab_integration.send(:with_api_retries) { raise Installations::Gitlab::Error.new({}) }
+        end.to raise_error(Installations::Gitlab::Error)
+      end
+    end
+  end
+
+  describe "#reset_tokens! (private)" do
+    let(:mock_api) { class_double(Installations::Gitlab::Api) }
+    let(:valid_tokens) { OpenStruct.new(access_token: "new_access", refresh_token: "new_refresh") }
+
+    before do
+      stub_const("GitlabIntegration::API", mock_api)
+      allow(gitlab_integration).to receive_messages(redirect_uri: "redirect_uri", affiliated_providers: [gitlab_integration])
+    end
+
+    context "when successful" do
+      before do
+        allow(mock_api).to receive(:oauth_refresh_token).and_return(valid_tokens)
+        allow(gitlab_integration).to receive(:set_tokens)
+        allow(gitlab_integration).to receive(:save!)
+      end
+
+      it "updates tokens and reloads" do
+        gitlab_integration.send(:reset_tokens!)
+
+        expect(gitlab_integration).to have_received(:set_tokens).with(valid_tokens)
+        expect(gitlab_integration).to have_received(:save!)
+      end
+    end
+
+    context "when token refresh fails" do
+      before do
+        allow(integration).to receive(:mark_needs_reauth!)
+      end
+
+      {
+        "response is nil" => nil,
+        "access token is missing" => OpenStruct.new(access_token: "", refresh_token: "refresh"),
+        "refresh token is missing" => OpenStruct.new(access_token: "access", refresh_token: "")
+      }.each do |case_name, invalid_tokens|
+        it "marks integration as needs_reauth when #{case_name}" do
+          allow(mock_api).to receive(:oauth_refresh_token).and_return(invalid_tokens)
+
+          expect {
+            gitlab_integration.send(:reset_tokens!)
+          }.to raise_error(Installations::Error::TokenRefreshFailure)
+
+          expect(integration).to have_received(:mark_needs_reauth!)
+        end
+      end
+    end
+  end
 end
