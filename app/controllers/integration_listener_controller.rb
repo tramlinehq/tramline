@@ -102,7 +102,8 @@ class IntegrationListenerController < SignedInApplicationController
 
   def existing_integration_needing_reauth
     existing_integration_id = state[:integration_id]
-    state_app.integrations.needs_reauth.find(existing_integration_id)
+    return if existing_integration_id.blank?
+    state_app.integrations.needs_reauth.find_by(id: existing_integration_id)
   end
 
   def error?
