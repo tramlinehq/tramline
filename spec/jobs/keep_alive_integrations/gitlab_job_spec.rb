@@ -19,8 +19,8 @@ describe KeepAliveIntegrations::GitlabJob do
 
   describe "#perform" do
     context "when integration is connected" do
-      it "calls metadata and schedules next keepalive" do
-        allow_any_instance_of(GitlabIntegration).to receive(:metadata).and_return({id: 123, username: "test"})
+      it "calls user_info and schedules next keepalive" do
+        allow_any_instance_of(GitlabIntegration).to receive(:user_info).and_return({id: 123, username: "test"})
 
         job.perform(gitlab_integration.id)
 
@@ -31,8 +31,8 @@ describe KeepAliveIntegrations::GitlabJob do
     context "when integration is not connected" do
       before { integration.update!(status: :disconnected) }
 
-      it "exits early without calling metadata or scheduling" do
-        allow_any_instance_of(GitlabIntegration).to receive(:metadata)
+      it "exits early without calling user_info or scheduling" do
+        allow_any_instance_of(GitlabIntegration).to receive(:user_info)
 
         job.perform(gitlab_integration.id)
 
@@ -43,7 +43,7 @@ describe KeepAliveIntegrations::GitlabJob do
     context "when integration is in needs_reauth status" do
       before { integration.update!(status: :needs_reauth) }
 
-      it "re-enqueues with shorter interval without calling metadata" do
+      it "re-enqueues with shorter interval without calling user_info" do
         job.perform(gitlab_integration.id)
 
         expect(described_class).to have_received(:perform_in).with(3.hours, gitlab_integration.id)
@@ -63,7 +63,7 @@ describe KeepAliveIntegrations::GitlabJob do
       let(:unexpected_error) { StandardError.new("Unexpected error") }
 
       it "handles token refresh failure by logging warning and not rescheduling" do
-        allow_any_instance_of(GitlabIntegration).to receive(:metadata).and_raise(token_error)
+        allow_any_instance_of(GitlabIntegration).to receive(:user_info).and_raise(token_error)
 
         job.perform(gitlab_integration.id)
 
@@ -72,7 +72,7 @@ describe KeepAliveIntegrations::GitlabJob do
       end
 
       it "handles API errors by logging error and rescheduling for 1 hour" do
-        allow_any_instance_of(GitlabIntegration).to receive(:metadata).and_raise(api_error)
+        allow_any_instance_of(GitlabIntegration).to receive(:user_info).and_raise(api_error)
 
         job.perform(gitlab_integration.id)
 
@@ -81,7 +81,7 @@ describe KeepAliveIntegrations::GitlabJob do
       end
 
       it "handles unexpected errors by logging error and rescheduling for 1 hour" do
-        allow_any_instance_of(GitlabIntegration).to receive(:metadata).and_raise(unexpected_error)
+        allow_any_instance_of(GitlabIntegration).to receive(:user_info).and_raise(unexpected_error)
 
         job.perform(gitlab_integration.id)
 

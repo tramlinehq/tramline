@@ -204,14 +204,14 @@ describe GitlabIntegration do
   describe "#user_info" do
     it "calls the GitLab API to get user info" do
       allow(installation).to receive(:user_info).and_return({id: 123, username: "testuser", name: "Test User"})
-      result = gitlab_integration.user_info("main")
+      result = gitlab_integration.user_info
       expect(installation).to have_received(:user_info).with(GitlabIntegration::USER_INFO_TRANSFORMATIONS)
       expect(result).to eq({id: 123, username: "testuser", name: "Test User"})
     end
 
     it "ignores the branch parameter" do
       allow(installation).to receive(:user_info).and_return({id: 123, username: "testuser"})
-      gitlab_integration.user_info("feature-branch", sha_only: false)
+      gitlab_integration.user_info
       expect(installation).to have_received(:user_info).with(GitlabIntegration::USER_INFO_TRANSFORMATIONS)
     end
   end
