@@ -306,9 +306,7 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_branch!(code_repository_name, from, to, source_type:) }
   end
 
-  def metadata
-    installation.user_info
-  end
+  def metadata = user_info
 
   def pull_requests_url(branch_name, open: false)
     state = open ? "opened" : "all"
