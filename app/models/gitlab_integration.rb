@@ -307,7 +307,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def metadata
-    with_api_retries { installation.user_info(USER_INFO_TRANSFORMATIONS) }
+    installation.user_info
   end
 
   def pull_requests_url(branch_name, open: false)
@@ -431,7 +431,7 @@ class GitlabIntegration < ApplicationRecord
     false
   end
 
-  def user_info(branch, sha_only: true)
+  def user_info
     with_api_retries { installation.user_info(GitlabIntegration::USER_INFO_TRANSFORMATIONS) }
   end
 

@@ -401,7 +401,7 @@ class Integration < ApplicationRecord
       integration_category: category,
       integration_provider: providable_type,
       integration_id: id,
-      user_id: current_user&.id
+      user_id: current_user.id
     }.to_json.encode
   end
 

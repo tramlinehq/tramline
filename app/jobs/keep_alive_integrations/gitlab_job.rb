@@ -16,7 +16,7 @@ module KeepAliveIntegrations
       end
 
       # Make a simple API call to trigger token refresh if needed
-      gitlab_integration.metadata
+      gitlab_integration.user_info
       # Schedule the next keepalive
       re_enqueue(gitlab_integration_id, 6.hours)
     rescue Installations::Error => e
