@@ -396,6 +396,8 @@ class GitlabIntegration < ApplicationRecord
 
   def enable_auto_merge!(pr_number)
     with_api_retries { installation.enable_auto_merge(code_repository_name, pr_number) }
+  rescue Installations::Error
+    false
   end
 
   def public_icon_img

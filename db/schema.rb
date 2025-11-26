@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_15_090005) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_21_222440) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -427,6 +427,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_15_090005) do
     t.datetime "accepted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["email", "organization_id"], name: "index_invites_unique_pending", unique: true, where: "(accepted_at IS NULL)"
     t.index ["organization_id"], name: "index_invites_on_organization_id"
     t.index ["recipient_id"], name: "index_invites_on_recipient_id"
     t.index ["sender_id"], name: "index_invites_on_sender_id"
@@ -819,6 +820,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_15_090005) do
     t.datetime "updated_at", null: false
     t.uuid "release_id"
     t.boolean "manually_skipped", default: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_scheduled_releases_on_discarded_at"
     t.index ["train_id"], name: "index_scheduled_releases_on_train_id"
   end
 

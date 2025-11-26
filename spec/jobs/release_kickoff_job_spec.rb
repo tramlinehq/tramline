@@ -23,4 +23,33 @@ describe ReleaseKickoffJob do
 
     expect(Coordinators::Actions).not_to have_received(:start_release!)
   end
+
+  it "skips starting the release if scheduled release is discarded" do
+    allow(Coordinators::Actions).to receive(:start_release!).and_return(GitHub::Result.new)
+    scheduled_release = create(:scheduled_release, train:, release:)
+    scheduled_release.discard!
+
+    described_class.new.perform(scheduled_release.id)
+
+    expect(Coordinators::Actions).not_to have_received(:start_release!)
+  end
+
+  it "skips starting the release if scheduled release does not exist" do
+    allow(Coordinators::Actions).to receive(:start_release!).and_return(GitHub::Result.new)
+    non_existent_id = SecureRandom.uuid
+
+    described_class.new.perform(non_existent_id)
+
+    expect(Coordinators::Actions).not_to have_received(:start_release!)
+  end
+
+  it "skips starting the release if train is inactive" do
+    allow(Coordinators::Actions).to receive(:start_release!).and_return(GitHub::Result.new)
+    inactive_train = create(:train, :inactive)
+    scheduled_release = create(:scheduled_release, train: inactive_train, release:)
+
+    described_class.new.perform(scheduled_release.id)
+
+    expect(Coordinators::Actions).not_to have_received(:start_release!)
+  end
 end

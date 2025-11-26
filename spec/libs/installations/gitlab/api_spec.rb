@@ -244,7 +244,7 @@ describe Installations::Gitlab::Api do
     let(:file_path) { "path/to/file.txt" }
     let(:file_content) { "This is the new file content." }
     let(:commit_message) { "Update file.txt" }
-    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/files/path%252Fto%252Ffile.txt" }
+    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/repository/files/path%2Fto%2Ffile.txt" }
 
     it "updates the file content" do
       stub_request(:put, url)

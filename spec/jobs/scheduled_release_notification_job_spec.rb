@@ -40,4 +40,25 @@ describe ScheduledReleaseNotificationJob do
 
     expect(inactive_train).not_to have_received(:notify!)
   end
+
+  it "does not send a notification when scheduled release is discarded" do
+    scheduled_release = create(:scheduled_release, train:, release:)
+    scheduled_release.discard!
+    allow(ScheduledRelease).to receive(:find_by).with(id: scheduled_release.id).and_return(scheduled_release)
+    allow(train).to receive(:notify!)
+
+    described_class.new.perform(scheduled_release.id)
+
+    expect(train).not_to have_received(:notify!)
+  end
+
+  it "does not send a notification when scheduled release does not exist" do
+    non_existent_id = SecureRandom.uuid
+    allow(ScheduledRelease).to receive(:find_by).with(id: non_existent_id).and_return(nil)
+    allow(train).to receive(:notify!)
+
+    described_class.new.perform(non_existent_id)
+
+    expect(train).not_to have_received(:notify!)
+  end
 end
