@@ -1,10 +1,23 @@
 class PrepareReleaseComponent < BaseComponent
   include Memery
 
+  SIZE = {
+    default: {
+      modal: :default,
+      modal_button: :xxs,
+      modal_icon: :md
+    },
+    xxs: {
+      modal: :xxs,
+      modal_button: :xxs,
+      modal_icon: :sm
+    }
+  }.freeze
+
   REVEAL_HIDE_ACTION = "reveal#hide"
   REVEAL_SHOW_ACTION = "reveal#show"
 
-  def initialize(train:, label: "Prepare new release", size: :xxs)
+  def initialize(train:, label: "Prepare new release", size: :default)
     @train = train
     @label = label
     @size = size
@@ -116,6 +129,18 @@ class PrepareReleaseComponent < BaseComponent
         ]
       )
     end
+  end
+
+  def modal_size
+    SIZE.fetch(size, SIZE[:default])[:modal]
+  end
+
+  def modal_button_size
+    SIZE.fetch(size, SIZE[:default])[:modal_button]
+  end
+
+  def modal_icon_size
+    SIZE.fetch(size, SIZE[:default])[:modal_icon]
   end
 
   private
