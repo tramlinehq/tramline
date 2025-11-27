@@ -5,12 +5,14 @@ class PrepareReleaseComponent < BaseComponent
     default: {
       modal: :default,
       modal_button: :xxs,
-      modal_icon: :md
+      modal_icon: :md,
+      branch_icon: :md
     },
     xxs: {
       modal: :xxs,
       modal_button: :xxs,
-      modal_icon: :sm
+      modal_icon: :sm,
+      branch_icon: :xl
     }
   }.freeze
 
@@ -141,6 +143,10 @@ class PrepareReleaseComponent < BaseComponent
 
   def modal_icon_size
     SIZE.fetch(size, SIZE[:default])[:modal_icon]
+  end
+
+  def branch_icon_size
+    SIZE.fetch(size, SIZE[:default])[:branch_icon]
   end
 
   private

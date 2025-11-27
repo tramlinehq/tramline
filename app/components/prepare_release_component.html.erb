@@ -3,8 +3,8 @@
        .with_icon("play.svg", size: modal_icon_size) %>
   <% modal.with_body do %>
     <% if train.almost_trunk? %>
-      <div class="mb-6 flex flex-row items-center gap-x-1 text-secondary">
-        <%= render IconComponent.new("git_branch.svg", size: :md) %>
+      <div class="mb-6 flex flex-row lg:items-center items-start gap-x-1 text-secondary">
+        <%= render IconComponent.new("git_branch.svg", size: branch_icon_size) %>
         <div class="text-sm"><%== branch_help_html %></div>
       </div>
     <% end %>
