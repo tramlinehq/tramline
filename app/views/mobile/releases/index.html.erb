@@ -28,7 +28,7 @@
             <% app.trains.each do |train| %>
               <% if train.releases.any? %>
                 <div class="px-4 py-3 flex flex-wrap items-center justify-between gap-2">
-                  <h3 class="font-semibold text-gray-500 dark:text-gray-300 truncate"><%= train.name %></h3>
+                  <h3 class="font-semibold text-gray-500 dark:text-gray-300 break-all"><%= train.name %></h3>
                   <%= render PrepareReleaseComponent.new(train:, label: "Start release", size: :xxs) %>
                 </div>
                 <% train.releases.order(scheduled_at: :desc).limit(3).each do |release| %>
