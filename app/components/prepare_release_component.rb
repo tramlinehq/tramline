@@ -1,6 +1,4 @@
 class PrepareReleaseComponent < BaseComponent
-  include Memery
-
   SIZE = {
     default: {
       modal: :default,
@@ -18,6 +16,8 @@ class PrepareReleaseComponent < BaseComponent
   REVEAL_SHOW_ACTION = "reveal#show"
 
   def initialize(train:, label: "Prepare new release", size: :default)
+    raise ArgumentError, "Invalid size" unless SIZE.key?(size)
+
     @train = train
     @label = label
     @size = size
@@ -49,7 +49,7 @@ class PrepareReleaseComponent < BaseComponent
     case train.versioning_strategy
     when "semver" then semver_options(start_major_text, start_minor_text)
     when "calver" then calver_options(start_major_text)
-    else raise
+    else raise "Unsupported versioning strategy: #{train.versioning_strategy}"
     end
   end
 
