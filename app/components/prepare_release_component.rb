@@ -4,14 +4,12 @@ class PrepareReleaseComponent < BaseComponent
   SIZE = {
     default: {
       modal: :default,
-      modal_button: :xxs,
-      modal_icon: :md,
+      play_icon: :md,
       branch_icon: :md
     },
     xxs: {
       modal: :xxs,
-      modal_button: :xxs,
-      modal_icon: :sm,
+      play_icon: :sm,
       branch_icon: :xl
     }
   }.freeze
@@ -133,22 +131,6 @@ class PrepareReleaseComponent < BaseComponent
     end
   end
 
-  def modal_size
-    SIZE.fetch(size, SIZE[:default])[:modal]
-  end
-
-  def modal_button_size
-    SIZE.fetch(size, SIZE[:default])[:modal_button]
-  end
-
-  def modal_icon_size
-    SIZE.fetch(size, SIZE[:default])[:modal_icon]
-  end
-
-  def branch_icon_size
-    SIZE.fetch(size, SIZE[:default])[:branch_icon]
-  end
-
   private
 
   def start_release_text(major: false)
@@ -172,4 +154,10 @@ class PrepareReleaseComponent < BaseComponent
     text += "release "
     text + train.ongoing_release.next_version(major_only: major)
   end
+
+  def modal_size = SIZE.dig(size, :modal)
+
+  def play_icon_size = SIZE.dig(size, :play_icon)
+
+  def branch_icon_size = SIZE.dig(size, :branch_icon)
 end

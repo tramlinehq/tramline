@@ -1,6 +1,6 @@
 <%= render ModalComponent.new(title: "Choose a release type", size: modal_size) do |modal| %>
-  <% modal.with_button(label:, scheme: :default, type: :action, size: modal_button_size, disabled: !release_startable?)
-       .with_icon("play.svg", size: modal_icon_size) %>
+  <% modal.with_button(label:, scheme: :default, type: :action, size: :xxs, disabled: !release_startable?)
+       .with_icon("play.svg", size: play_icon_size) %>
   <% modal.with_body do %>
     <% if train.almost_trunk? %>
       <div class="mb-6 flex flex-row lg:items-center items-start gap-x-1 text-secondary">
