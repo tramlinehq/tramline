@@ -178,6 +178,10 @@ Rails.application.routes.draw do
     end
 
     resources :integrations, only: %i[index create destroy] do
+      member do
+        get :reauth
+      end
+
       collection do
         post :reuse
         get :connect, to: "integrations#connect", as: :connect
