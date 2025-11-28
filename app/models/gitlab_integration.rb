@@ -23,6 +23,7 @@ class GitlabIntegration < ApplicationRecord
 
   attr_accessor :code
   before_validation :complete_access, if: :new_record?
+  after_create_commit -> { KeepAliveIntegrations::GitlabJob.perform_in(6.hours, id) }
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
   delegate :cache, to: Rails
@@ -305,9 +306,7 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_branch!(code_repository_name, from, to, source_type:) }
   end
 
-  def metadata
-    installation.user_info(USER_INFO_TRANSFORMATIONS)
-  end
+  def metadata = user_info
 
   def pull_requests_url(branch_name, open: false)
     state = open ? "opened" : "all"
@@ -430,6 +429,10 @@ class GitlabIntegration < ApplicationRecord
     false
   end
 
+  def user_info
+    with_api_retries { installation.user_info(GitlabIntegration::USER_INFO_TRANSFORMATIONS) }
+  end
+
   def bot_name
     "gitlab-bot"
   end
@@ -476,6 +479,8 @@ class GitlabIntegration < ApplicationRecord
     tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
 
     if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      # Mark integration as needing reauth instead of disconnecting to preserve configuration
+      integration.mark_needs_reauth!
       raise Installations::Error::TokenRefreshFailure
     end
 
