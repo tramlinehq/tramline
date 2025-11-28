@@ -39,21 +39,8 @@
         end %>
   <% end %>
 
-  <% container.with_action do %>
-    <%= render ModalComponent.new(title: "Choose a release type") do |modal| %>
-      <% modal.with_button(label: "Prepare new release", scheme: :default, type: :action, size: :xxs, disabled: !release_startable?)
-           .with_icon("play.svg", size: :md) %>
-      <% modal.with_body do %>
-        <% if train.almost_trunk? %>
-          <div class="mb-6 flex flex-row items-center gap-x-1 text-secondary">
-            <%= render IconComponent.new("git_branch.svg", size: :md) %>
-            <div class="text-sm"><%== branch_help_html %></div>
-          </div>
-        <% end %>
-
-        <%= render partial: release_form_partial, locals: {app:, train:, release_options:} %>
-      <% end %>
-    <% end %>
+  <%= container.with_action do %>
+    <%= render PrepareReleaseComponent.new(train:, label: "Prepare new release") %>
   <% end %>
 
   <% container.with_sub_action do %>
