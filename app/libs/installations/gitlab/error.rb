@@ -25,6 +25,10 @@ module Installations
         decorated_reason: :tag_reference_already_exists
       },
       {
+        message_matcher: /Release already exists/,
+        decorated_reason: :tagged_release_already_exists
+      },
+      {
         message_matcher: /Not found/i,
         decorated_reason: :not_found
       },
@@ -41,13 +45,21 @@ module Installations
       {
         message_matcher: /405 Method Not Allowed/i,
         decorated_reason: :pull_request_not_mergeable
+      },
+      {
+        message_matcher: /404 File Not Found/i,
+        decorated_reason: :file_not_found
+      },
+      {
+        message_matcher: /Unplayable Job/,
+        decorated_reason: :workflow_run_not_runnable
       }
     ]
 
     def initialize(response_body)
       Rails.logger.debug { "GitLab error: #{response_body}" }
       @response_body = response_body
-      super(message, reason: handle)
+      super(error_message, reason: handle)
     end
 
     def handle
@@ -65,7 +77,7 @@ module Installations
     end
 
     def matched_message
-      MESSAGES.find { |known_error_message| known_error_message[:message_matcher] =~ message }
+      MESSAGES.find { |known_error_message| known_error_message[:message_matcher] =~ error_message }
     end
 
     def matched_error
@@ -76,7 +88,7 @@ module Installations
       body["error"]
     end
 
-    def message
+    def error_message
       [*body["message"]].first
     end
   end

@@ -5,6 +5,9 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  organization_name   :string
+#  organization_url    :string
+#  project_config      :jsonb            not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #  cloud_id            :string           indexed
@@ -16,6 +19,7 @@ class JiraIntegration < ApplicationRecord
   include Vaultable
   include Providable
   include Displayable
+  include Loggable
 
   encrypts :oauth_access_token, deterministic: true
   encrypts :oauth_refresh_token, deterministic: true
@@ -58,6 +62,7 @@ class JiraIntegration < ApplicationRecord
   delegate :app, to: :integration
   delegate :cache, to: Rails
   validates :cloud_id, presence: true
+  validate :release_filters_are_valid, if: -> { project_config&.dig("release_filters").present? }
 
   def install_path
     BASE_INSTALLATION_URL
@@ -81,10 +86,20 @@ class JiraIntegration < ApplicationRecord
     set_tokens(tokens)
 
     # access is already complete if cloud_id is already set
-    return true if cloud_id.present?
+    # just set the metadata and move on
+    if cloud_id.present?
+      resource = resources.find { |resource| resource["id"] == cloud_id }
+      return false if resource.nil?
+      self.organization_url = resource["url"]
+      self.organization_name = resource["name"]
+      return true
+    end
 
     if resources.length == 1
-      self.cloud_id = resources.first["id"]
+      resource = resources.first
+      self.cloud_id = resource["id"]
+      self.organization_url = resource["url"]
+      self.organization_name = resource["name"]
       true
     else
       @available_resources = resources
@@ -117,46 +132,54 @@ class JiraIntegration < ApplicationRecord
 
     with_api_retries do
       projects_result = fetch_projects
-      return {} if projects_result[:projects].empty?
+      projects = projects_result.dig(:projects)
+      return {} if projects.empty?
 
-      statuses_data = fetch_project_statuses(projects_result[:projects])
-
+      statuses_data = fetch_project_statuses(projects)
       {
-        projects: projects_result[:projects],
+        projects: projects,
         project_statuses: statuses_data
       }
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Jira setup data for cloud_id #{cloud_id}: #{e.message}")
+  rescue Installations::Error => e
+    elog("Failed to fetch Jira setup data for cloud_id #{cloud_id}: #{e}", level: :warn)
     {}
   end
 
   def metadata = cloud_id
 
   def connection_data
-    "Cloud ID: #{integration.metadata}" if integration.metadata
+    return unless integration.metadata
+
+    if organization_name.present?
+      "Organization: #{organization_name} (#{integration.metadata})"
+    else
+      "Cloud ID: #{integration.metadata}"
+    end
   end
 
   def fetch_tickets_for_release
-    return [] if app.config.jira_config.blank?
+    return [] if project_config.blank?
 
-    project_key = app.config.jira_config["selected_projects"]&.last
-    release_filters = app.config.jira_config["release_filters"]
+    project_key = project_config["selected_projects"]&.last
+    release_filters = project_config["release_filters"]
     return [] if project_key.blank? || release_filters.blank?
 
     with_api_retries do
-      response = api.search_tickets_by_filters(
-        project_key,
-        release_filters,
-        TICKET_TRANSFORMATIONS
-      )
-      return [] if response["issues"].blank?
-
-      response["issues"]
+      response = api.search_tickets_by_filters(project_key, release_filters, TICKET_TRANSFORMATIONS)
+      issues = response["issues"]
+      return [] if issues.blank?
+      issues
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Jira tickets for release: #{e.message}")
+  rescue Installations::Error => e
+    elog("Failed to fetch Jira tickets for release: #{e}", level: :warn)
     []
+  end
+
+  def ticket_url(ticket_id)
+    return if organization_url.blank? || ticket_id.blank?
+    template = Addressable::Template.new("#{organization_url}/browse/{ticket}")
+    template.expand(ticket: ticket_id).to_s
   end
 
   def display
@@ -166,7 +189,7 @@ class JiraIntegration < ApplicationRecord
   private
 
   MAX_RETRY_ATTEMPTS = 2
-  RETRYABLE_ERRORS = []
+  RETRYABLE_ERRORS = [:server_error]
 
   def with_api_retries(attempt: 0, &)
     yield
@@ -174,7 +197,7 @@ class JiraIntegration < ApplicationRecord
     raise ex if attempt >= MAX_RETRY_ATTEMPTS
     next_attempt = attempt + 1
 
-    if ex.reason == :token_expired
+    if %i[token_expired token_refresh_failure].include?(ex.reason)
       reset_tokens!
       return with_api_retries(attempt: next_attempt, &)
     end
@@ -187,13 +210,19 @@ class JiraIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    set_tokens(API.oauth_refresh_token(oauth_refresh_token, redirect_uri))
+    tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
+
+    if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      raise Installations::Error::TokenRefreshFailure
+    end
+
+    set_tokens(tokens)
     save!
+
+    reload
   end
 
   def set_tokens(tokens)
-    return unless tokens
-
     self.oauth_access_token = tokens.access_token
     self.oauth_refresh_token = tokens.refresh_token
   end
@@ -207,18 +236,21 @@ class JiraIntegration < ApplicationRecord
   end
 
   def fetch_projects
-    return {projects: []} if cloud_id.blank?
+    projects = {projects: []}
+    return projects if cloud_id.blank?
+
     with_api_retries do
-      response = api.projects(PROJECT_TRANSFORMATIONS)
-      {projects: response}
+      projects[:projects] = api.projects(PROJECT_TRANSFORMATIONS)
+      projects
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Jira projects for cloud_id #{cloud_id}: #{e}")
-    {projects: []}
+  rescue Installations::Error => e
+    elog("Failed to fetch Jira projects for cloud_id #{cloud_id}: #{e}", level: :warn)
+    projects
   end
 
   def fetch_project_statuses(projects)
     return {} if cloud_id.blank? || projects.blank?
+
     with_api_retries do
       statuses = {}
       projects.each do |project|
@@ -227,8 +259,18 @@ class JiraIntegration < ApplicationRecord
       end
       statuses
     end
-  rescue => e
-    Rails.logger.error("Failed to fetch Jira project statuses for cloud_id #{cloud_id}: #{e}")
+  rescue Installations::Error => e
+    elog("Failed to fetch Jira project statuses for cloud_id #{cloud_id}: #{e}", level: :warn)
     {}
+  end
+
+  private
+
+  def release_filters_are_valid
+    project_config["release_filters"].each do |filter|
+      unless filter.is_a?(Hash) && VALID_FILTER_TYPES.include?(filter["type"]) && filter["value"].present?
+        errors.add(:project_config, "release filters must contain valid type and value")
+      end
+    end
   end
 end

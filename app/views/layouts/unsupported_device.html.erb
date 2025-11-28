@@ -10,19 +10,22 @@
 </head>
 
 <body>
-  <main>
-    <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-      <div class="max-w-2xl m-auto mt-16">
-        <div class="text-center px-4">
-          <div class="inline-flex mb-8">
-            <%= image_tag("desktop_computer.svg", width: 300) %>
-          </div>
-
-          <div class="mb-6">
-            <a href="https://tramline.app/" class="underline">Tramline</a> is only supported on desktop browsers at the moment.
-          </div>
+<main>
+  <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+    <div class="max-w-2xl m-auto mt-16">
+      <div class="text-center px-4">
+        <div class="inline-flex mb-8">
+          <%= image_tag("desktop_computer.svg", width: 300) %>
         </div>
+
+        <div class="mb-6">
+          <a href="https://tramline.app/" class="underline">Tramline</a> is best used on desktop browsers. A limited
+          mobile experience is available at the link below.
+        </div>
+
+        <%= link_to "Go to mobile view ↗", mobile_releases_path, class: "underline" %>
       </div>
     </div>
-  </main>
+  </div>
+</main>
 </body>

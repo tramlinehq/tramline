@@ -1,0 +1,154 @@
+<%# locals: (form:, linear_data:, current_linear_config:) %>
+
+<div class="flex flex-col gap-4" data-controller="targeted-toggle" data-targeted-toggle-reveal-outlet="#no-teams-selected">
+  <div class="flex flex-col item-gap-default">
+    <div class="heading-4 border-default-b pb-1">
+      <div class="flex flex-row place-items-center gap-1">
+        Teams
+        <%= render InfoIconComponent.new do %>
+          We will pull tickets from the selected teams and show them in a release context.
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex flex-col">
+      <% linear_data[:teams].each do |team| %>
+        <% team_id = team["id"] %>
+        <div class="flex items-center">
+          <%= form.fields_for :project_config do |sf| %>
+            <% checked =
+                 current_linear_config
+                   &.dig("selected_teams")
+                   &.include?(team["id"]) %>
+
+            <%= sf.checkbox :selected_teams,
+                            {
+                              multiple: true,
+                              include_hidden: false,
+                              id: "team_#{team["id"]}",
+                              checked:,
+                              data: {
+                                action: "targeted-toggle#toggle",
+                                section_key: team_id,
+                                targeted_toggle_target: "section"
+                              }
+                            },
+                            team["id"] %>
+          <% end %>
+
+          <label for="team_<%= team["id"] %>" class="ml-2 text-sm font-medium text-gray-900">
+            <%= team["name"] %> (<%= team["key"] %>)
+          </label>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex flex-col item-gap-default">
+    <div class="heading-4 border-default-b pb-1">
+      <div class="flex flex-row place-items-center gap-1">
+        Done states
+        <%= render InfoIconComponent.new do %>
+          Select which ticket statuses should be considered "done" for each team. This helps Tramline track completed
+          work in your releases.
+        <% end %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 item-gap-default">
+      <% linear_data[:teams].each do |team| %>
+        <% team_id = team["id"] %>
+        <% workflow_states = linear_data[:workflow_states] %>
+
+        <div data-targeted-toggle-target="subsection" data-section-key="<%= team_id %>">
+          <div class="flex flex-col item-gap-default">
+            <h3 class="heading-5">For <%= team["name"] %> (<%= team["key"] %>)</h3>
+            <div class="flex flex-col">
+              <% if workflow_states&.any? %>
+                <% workflow_states.each do |state| %>
+                  <% state_name = "state_#{team_id}_#{state["name"].parameterize}" %>
+
+                  <div class="flex items-center">
+                    <%= form.fields_for :project_config do |sf| %>
+                      <%= sf.fields_for :team_configs do |tf| %>
+                        <%= tf.fields_for team_id do |tk| %>
+                          <% checked =
+                               current_linear_config
+                                 &.dig("team_configs", team_id, "done_states")
+                                 &.include?(state["name"]) %>
+
+                          <%= tk.checkbox :done_states,
+                                          {multiple: true, include_hidden: false, id: state_name, checked:},
+                                          state["name"] %>
+                        <% end %>
+                      <% end %>
+                    <% end %>
+
+                    <label for="<%= state_name %>" class="ml-2 text-sm text-gray-600">
+                      <%= state["name"] %>
+                    </label>
+                  </div>
+                <% end %>
+              <% else %>
+                <%= render EmptyStateComponent.new(text: "No workflow states found for this team.",
+                                                   banner_image: "list_checks.svg",
+                                                   type: :tiny) %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div id="no-teams-selected" data-controller="reveal" hidden data-reveal>
+      <%= render EmptyStateComponent.new(text: "Select a team to see the done states.",
+                                         banner_image: "list_checks.svg",
+                                         type: :tiny) %>
+    </div>
+  </div>
+
+  <div class="flex flex-col item-gap-default">
+    <div class="heading-4 border-default-b pb-1">
+      <div class="flex flex-row place-items-center gap-1">
+        Release filters
+        <%= render InfoIconComponent.new do %>
+          Add release filters to narrow down the tickets pulled for a release. The release filters are applied
+          for all teams selected.
+        <% end %>
+      </div>
+    </div>
+
+    <div data-controller="nested-form-ext" class="grid item-gap-default">
+      <div>
+        <%= render ButtonComponent.new(
+              scheme: :light,
+              type: :action,
+              size: :xs,
+              label: "Add filter",
+              html_options: {data: {action: "nested-form-ext#add"}},
+              arrow: :none
+            ) do |b|
+              b.with_icon("plus.svg", rounded: false)
+            end %>
+      </div>
+
+      <ul class="flex flex-col gap-2">
+        <% release_filters = current_linear_config&.dig("release_filters") || [] %>
+
+        <% release_filters.each_with_index do |filter, index| %>
+          <li class="nested-form-wrapper" data-new-record="false">
+            <%= render partial: "linear_integration/release_filter_form", locals: {form:, filter: filter, index: index} %>
+          </li>
+        <% end %>
+
+        <template data-nested-form-ext-target="template">
+          <li class="nested-form-wrapper" data-new-record="true">
+            <%= render partial: "linear_integration/release_filter_form", locals: {form:, index: "NEW_RECORD"} %>
+          </li>
+        </template>
+
+        <div data-nested-form-ext-target="target"></div>
+      </ul>
+    </div>
+  </div>
+</div>

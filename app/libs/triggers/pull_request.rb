@@ -91,12 +91,13 @@ class Triggers::PullRequest
     GitHub::Result.new do
       repo_integration.merge_pr!(pr.number)
     rescue Installations::Error => ex
-      if ex.reason == :pull_request_not_mergeable
+      case ex.reason
+      when :pull_request_not_mergeable, :merge_commits_not_allowed
         pr.stamp_unmergeable!
         raise MergeError, "Tramline was unable to merge the (#{pr.display_attr(:phase)}) PR"
-      elsif ex.reason == :pull_request_failed_merge_check
+      when :pull_request_failed_merge_check
         raise RetryableMergeError, "Failed to merge the Pull Request because of merge checks"
-      elsif ex.reason == :pull_request_closed
+      when :pull_request_closed
         true
       else
         raise ex

@@ -3,6 +3,10 @@ class NotificationSettingsComponent < ViewComponent::Base
 
   InvalidNotificationSettings = Class.new(StandardError)
 
+  STATUS_PILL_ENABLED = BadgeComponent.new(text: "Enabled", status: :success)
+  STATUS_PILL_DISABLED = BadgeComponent.new(text: "Disabled", status: :failure)
+  STATUS_PILL_NEUTRAL = BadgeComponent.new(text: "Not Applicable", status: :neutral)
+
   NOTIFICATIONS = {
     release_scheduled: {icon: "clock.svg", description: "Your scheduled release will run in a few hours"},
     release_started: {icon: "zap.svg", description: "A new release was started for the release train"},
@@ -12,9 +16,10 @@ class NotificationSettingsComponent < ViewComponent::Base
     release_stopped: {icon: "stop_circle.svg", description: "The release was stopped before it finished"},
     release_health_events: {icon: "heart_pulse.svg", description: "A health event has occurred for the release"},
     build_available_v2: {icon: "drill.svg", description: "A new build is available for download"},
-    internal_release_finished: {icon: "sparkles.svg", description: "The release finished successfully"},
+    internal_release_finished: {icon: "sparkles.svg", description: "The internal release finished successfully"},
     internal_release_failed: {icon: "alert_circle.svg", description: "The internal build step failed"},
     beta_release_failed: {icon: "alert_circle.svg", description: "The release candidate step failed"},
+    rc_finished: {icon: "sparkles.svg", description: "The RC release finished"},
     beta_submission_finished: {icon: "sparkles.svg", description: "The beta submission finished successfully"},
     internal_submission_finished: {icon: "sparkles.svg", description: "The internal submission finished successfully"},
     submission_failed: {icon: "alert_circle.svg", description: "The submission failed"},
@@ -31,7 +36,8 @@ class NotificationSettingsComponent < ViewComponent::Base
     production_release_finished: {icon: "sparkles.svg", description: "A production release finished"},
     workflow_run_failed: {icon: "alert_circle.svg", description: "A workflow run failed"},
     workflow_run_halted: {icon: "stop_circle.svg", description: "A workflow run was halted"},
-    workflow_run_unavailable: {icon: "alert_circle.svg", description: "A workflow run was not found"}
+    workflow_run_unavailable: {icon: "alert_circle.svg", description: "A workflow run was not found"},
+    workflow_trigger_failed: {icon: "stop_circle.svg", description: "A workflow trigger failed"}
   }.map
     .with_index { |(key, value), index| [key, value.merge(number: index.succ)] }
     .to_h
@@ -54,6 +60,14 @@ class NotificationSettingsComponent < ViewComponent::Base
     NotificationSettingComponent.new(app, train, setting)
   end
 
+  def header_columns
+    if @train.notifications_release_specific_channel_enabled?
+      ["kind", "core channels", "release specific channel"]
+    else
+      %w[kind channels status]
+    end
+  end
+
   def display_settings
     settings.sort_by { |setting| NOTIFICATIONS[setting.kind][:number] }
   end
@@ -74,8 +88,8 @@ class NotificationSettingsComponent < ViewComponent::Base
       @setting = setting
     end
 
-    attr_reader :setting
-    delegate :id, :active?, :notification_channels, :notification_provider, to: :setting
+    attr_reader :setting, :app
+    delegate :id, :active?, :notification_channels, :notification_provider, :channels, to: :setting
 
     def edit_path
       edit_app_train_notification_setting_path(@app, @train, setting)
@@ -90,7 +104,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     end
 
     def needs_invite?
-      setting.kind == NotificationSetting.kinds[:build_available]
+      setting.kind == NotificationSetting.kinds[:build_available_v2]
     end
 
     def edit_frame_id
@@ -113,18 +127,22 @@ class NotificationSettingsComponent < ViewComponent::Base
       NOTIFICATIONS[setting.kind][:icon] || "aerial_lift.svg"
     end
 
-    def status_text
-      return "Enabled" if setting.active?
-      "Disabled"
-    end
-
-    def status_type
-      return :success if setting.active?
-      :neutral
-    end
-
     def status_pill
-      BadgeComponent.new(text: status_text, status: status_type)
+      if setting.active? && setting.core_enabled?
+        return STATUS_PILL_ENABLED
+      end
+
+      STATUS_PILL_DISABLED
+    end
+
+    def release_specific_status_pill
+      return STATUS_PILL_NEUTRAL unless release_specific_channel_allowed?
+
+      if setting.active? && setting.release_specific_enabled?
+        return STATUS_PILL_ENABLED
+      end
+
+      STATUS_PILL_DISABLED
     end
 
     def default_channels
@@ -133,6 +151,14 @@ class NotificationSettingsComponent < ViewComponent::Base
 
     def channel_select_options
       options_for_select(display_channels(setting.channels) { |chan| "#" + chan[:name] }, default_channels)
+    end
+
+    def core_prefix_text
+      release_specific_channel_allowed? ? "Core " : ""
+    end
+
+    def release_specific_channel_allowed?
+      setting.release_specific_channel_allowed? && @train.notifications_release_specific_channel_enabled?
     end
   end
 end

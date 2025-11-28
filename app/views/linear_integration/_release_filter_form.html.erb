@@ -1,0 +1,20 @@
+<%# locals: (form:, filter: nil, index:) %>
+
+<div class="flex items-center gap-4">
+  <%= form.fields_for :project_config do |sf| %>
+    <%= sf.fields_for :release_filters, index: index do |rf| %>
+      <%= rf.select_without_label :type, options_for_select([["Label", "label"]], filter&.dig("type")) %>
+      <%= rf.text_field_without_label :value, "e.g., release-1.0.0", value: filter&.dig("value") %>
+      <%= rf.hidden_field :_destroy %>
+    <% end %>
+  <% end %>
+
+  <% button = ButtonComponent.new(
+       scheme: :naked_icon,
+       type: :action,
+       size: :none,
+       html_options: {data: {action: "nested-form-ext#remove"}}
+     ) %>
+  <% button.with_icon("trash.svg", size: :md) %>
+  <%= render button %>
+</div>

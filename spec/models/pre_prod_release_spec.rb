@@ -84,9 +84,11 @@ describe PreProdRelease do
     it "returns the release changelog when its the first pre-prod release" do
       release_changelog = create(:release_changelog, release:)
       first_release = create(:beta_release, release_platform_run:)
+
       result = first_release.changes_since_previous
+
       expect(result.size).to be > 0
-      expect(result).to eq(release_changelog.commit_messages(true))
+      expect(result).to eq(release_changelog.commits.commit_messages(true))
     end
 
     it "returns the release changelog and the commits on the release branch when the previous releases are unfinished" do
@@ -98,6 +100,7 @@ describe PreProdRelease do
 
       result = second_release.changes_since_previous
       expected_messages = (release_changelog.commits.pluck(:message) + [first_commit.message, second_commit.message]).uniq
+
       expect(result.size).to be > 0
       expect(result).to match_array(expected_messages)
     end
@@ -110,6 +113,7 @@ describe PreProdRelease do
 
       result = release.changes_since_previous
       expected_messages = (release_changelog.commits.pluck(:message) + [first_commit.message, second_commit.message]).uniq
+
       expect(result.size).to be > 0
       expect(result).to match_array(expected_messages)
     end
@@ -120,7 +124,9 @@ describe PreProdRelease do
       first_release = create(:beta_release, :finished, release_platform_run:, commit: first_commit)
       second_commit = create(:commit, release:)
       second_release = create(:beta_release, release_platform_run:, commit: second_commit, previous: first_release)
+
       result = second_release.changes_since_previous
+
       expect(result.size).to be > 0
       expect(result).to contain_exactly(second_commit.message)
     end
@@ -133,9 +139,26 @@ describe PreProdRelease do
       _second_release = create(:beta_release, :stale, release_platform_run:, commit: second_commit, previous: first_release)
       third_commit = create(:commit, release:)
       third_release = create(:beta_release, release_platform_run:, commit: third_commit, previous: first_release)
+
       result = third_release.changes_since_previous
+
       expect(result.size).to be > 0
       expect(result).to contain_exactly(second_commit.message, third_commit.message)
+    end
+
+    context "when skip delta is true" do
+      it "returns the release changelog + all the new fixes so far" do
+        release_changelog = create(:release_changelog, release:)
+        first_commit = create(:commit, release:)
+        second_commit = create(:commit, release:)
+        release = create(:beta_release, release_platform_run:, commit: second_commit)
+
+        result = release.changes_since_previous(skip_delta: true)
+        expected_messages = (release_changelog.commits.pluck(:message) + [first_commit.message, second_commit.message]).uniq
+
+        expect(result.size).to be > 0
+        expect(result).to match_array(expected_messages)
+      end
     end
   end
 end

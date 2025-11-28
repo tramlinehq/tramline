@@ -5,6 +5,9 @@ require_relative "../config/environment"
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"
+require "stubs/vertex_ai_stubs"
+require "stubs/posthog_stubs"
+require "view_component/test_helpers"
 
 # Checks for pending migrations and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove these lines.
@@ -52,6 +55,9 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
 
   config.include FactoryBot::Syntax::Methods
+
+  # ViewComponent test configuration
+  config.include ViewComponent::TestHelpers, type: :component
 
   require "sidekiq/testing"
 

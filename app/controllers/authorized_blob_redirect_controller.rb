@@ -13,6 +13,7 @@ class AuthorizedBlobRedirectController < ActiveStorage::Blobs::RedirectControlle
 
   def unauthorized?
     return true if current_user.blank?
+    Rails.logger.info("Blob signed ID: " + blob_signed_id)
     !current_user.access_to_blob?(blob_signed_id)
   end
 

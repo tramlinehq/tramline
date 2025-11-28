@@ -171,7 +171,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def find_build(build_number, raise_on_lock_error:)
-    result = execute_with_retry(raise_on_lock_error:) { installation.find_build(build_number) }
+    apk = Flipper.enabled?(:apk_on_play_store, integrable)
+    result = execute_with_retry(raise_on_lock_error:) { installation.find_build(build_number, apk:) }
     result.ok? ? result.value! : nil
   end
 
@@ -186,9 +187,9 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
-  def build_in_progress?(channel, build_number, raise_on_lock_error:)
+  def build_active?(channel, build_number, raise_on_lock_error:)
     response = find_build_in_track(channel, build_number, raise_on_lock_error:)
-    response.present? && GooglePlayStoreIntegration::IN_PROGRESS_STORE_STATUS.include?(response[:status])
+    response.present? && GooglePlayStoreIntegration::ACTIVE_STORE_STATUSES.include?(response[:status])
   end
 
   def find_app
@@ -208,22 +209,25 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def build_channels(with_production: false)
-    default_channels = CHANNELS.map(&:with_indifferent_access)
+    all_channels = cache.fetch(tracks_cache_key, skip_nil: true, expires_in: CACHE_EXPIRY) do
+      default_channels = CHANNELS.map(&:with_indifferent_access)
 
-    cache.fetch(tracks_cache_key, skip_nil: true, expires_in: CACHE_EXPIRY) do
       channel_data&.each do |chan|
         next if default_channels.pluck(:id).map(&:to_s).include?(chan[:name])
         new_chan = {id: chan[:name], name: "Closed testing - #{chan[:name]}", is_production: false}.with_indifferent_access
         default_channels << new_chan
       end
+
+      default_channels
     end
 
-    return default_channels if with_production
-    default_channels.reject { |channel| channel[:is_production] }
+    return all_channels if with_production
+    all_channels.reject { |channel| channel[:is_production] }
   end
 
   def latest_build_number
-    result = execute_with_retry(raise_on_lock_error: false) { installation.find_latest_build_number }
+    apk = Flipper.enabled?(:apk_on_play_store, integrable)
+    result = execute_with_retry(raise_on_lock_error: false) { installation.find_latest_build_number(apk:) }
     result.ok? ? result.value! : nil
   end
 

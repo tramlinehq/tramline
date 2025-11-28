@@ -24,7 +24,7 @@ class IntegrationListeners::JiraController < IntegrationListenerController
         render "jira_integration/select_organization"
       end
     rescue => e
-      Rails.logger.error(e)
+      elog(e, level: :error)
       redirect_to app_integrations_path(state_app), alert: INTEGRATION_CREATE_ERROR
     end
   end

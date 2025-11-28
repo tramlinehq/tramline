@@ -14,7 +14,7 @@ describe Accounts::UsersController do
   describe "PATCH #update_user_role" do
     context "when the user attempts to change their own role" do
       it "does not allow the user to change their own role" do
-        patch :update_user_role, params: {email: current_user_email, role: "owner"}
+        patch :update_user_role, params: {email: current_user_email, role: :owner}
 
         expect(response).to redirect_to(accounts_organization_teams_path(organization))
         expect(flash[:alert]).to eq("User #{current_user_email} cannot change their own role.")
@@ -23,8 +23,9 @@ describe Accounts::UsersController do
 
     context "when the user is found and role is updated successfully" do
       before do
-        create(:membership, user: member, organization: organization, role: "developer")
-        patch :update_user_role, params: {email: member.email, role: "owner"}
+        create(:membership, user: current_user, organization: organization, role: :owner)
+        create(:membership, user: member, organization: organization, role: :developer)
+        patch :update_user_role, params: {email: member.email, role: :owner}
       end
 
       it "updates the user's role" do
@@ -45,10 +46,11 @@ describe Accounts::UsersController do
       before do
         organization.update!(sso: true, sso_domains: ["tramline.app"])
         sso_auth = create(:sso_authentication, email: member_email)
-        create(:membership, organization: organization, user: member, role: "developer")
+        create(:membership, user: current_user, organization: organization, role: :owner)
+        create(:membership, organization: organization, user: member, role: :developer)
         member.sso_authentications << sso_auth
 
-        patch :update_user_role, params: {email: member.email, role: "owner"}
+        patch :update_user_role, params: {email: member.email, role: :owner}
       end
 
       it "updates the user's role" do
@@ -64,7 +66,7 @@ describe Accounts::UsersController do
 
     context "when the user is found but membership is not found" do
       it "redirects to the teams path with an alert" do
-        patch :update_user_role, params: {email: member.email, role: "owner"}
+        patch :update_user_role, params: {email: member.email, role: :owner}
 
         expect(response).to redirect_to(accounts_organization_teams_path(organization))
         expect(flash[:alert]).to eq("User #{member.email} memberships not found")
@@ -73,7 +75,7 @@ describe Accounts::UsersController do
 
     context "when the user is not found" do
       it "redirects to the teams path with an alert" do
-        patch :update_user_role, params: {email: "invalid_email@example.com", role: "owner"}
+        patch :update_user_role, params: {email: "invalid_email@example.com", role: :owner}
 
         expect(response).to redirect_to(accounts_organization_teams_path(organization))
         expect(flash[:alert]).to eq("User invalid_email@example.com not found")

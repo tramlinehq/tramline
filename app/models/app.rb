@@ -29,8 +29,8 @@ class App < ApplicationRecord
   PUBLIC_IOS_ICON = "https://storage.googleapis.com/tramline-public-assets/default_ios.png"
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
-  has_one :config, class_name: "AppConfig", dependent: :destroy
-  has_many :variants, through: :config
+  # has_one :config, class_name: "AppConfig", dependent: :destroy
+  has_many :variants, class_name: "AppVariant", dependent: :destroy
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
   has_many :releases, through: :trains
@@ -38,6 +38,7 @@ class App < ApplicationRecord
   has_many :builds, through: :releases
   has_many :release_platforms, dependent: :destroy
   has_many :release_platform_runs, through: :releases
+  has_one_attached :icon, service: :google_assets
 
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
@@ -46,7 +47,6 @@ class App < ApplicationRecord
 
   enum :platform, {android: "android", ios: "ios", cross_platform: "cross_platform"}
 
-  after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
@@ -88,10 +88,6 @@ class App < ApplicationRecord
     releases.first.scheduled_at > 3.months.ago
   end
 
-  def deploy_action_enabled?
-    Flipper.enabled?(:deploy_action_enabled, self)
-  end
-
   def monitoring_disabled?
     Flipper.enabled?(:monitoring_disabled, self)
   end
@@ -130,7 +126,7 @@ class App < ApplicationRecord
   end
 
   def ready?
-    integrations.ready? and config&.ready?
+    integrations.needs_reauth.none? && integrations.ready? && integrations.configured?
   end
 
   def guided_train_setup?
@@ -196,7 +192,7 @@ class App < ApplicationRecord
       }
     }
 
-    config.further_setup_by_category?.each do |category, status_map|
+    integrations.further_setup_by_category.each do |category, status_map|
       app_config_setup[:app_config][:integrations][category] = {
         visible: true, completed: status_map[:ready]
       }
@@ -271,7 +267,7 @@ class App < ApplicationRecord
       app_name: name,
       app_platform: platform,
       platform_public_img: platform_public_img,
-      vcs_public_icon_img: vcs_provider.public_icon_img
+      vcs_public_icon_img: vcs_provider&.public_icon_img
     }
   end
 
@@ -292,6 +288,11 @@ class App < ApplicationRecord
     Flipper.enabled?(:skip_finding_builds_for_firebase, self)
   end
 
+  def icon_path
+    Rails.application.routes.url_helpers
+      .blob_redirect_path(icon.signed_id, icon.filename, disposition: "inline")
+  end
+
   private
 
   def latest_store_build_number
@@ -301,10 +302,6 @@ class App < ApplicationRecord
     ].compact.max
   rescue
     nil
-  end
-
-  def initialize_config
-    build_config
   end
 
   def no_trains_are_running

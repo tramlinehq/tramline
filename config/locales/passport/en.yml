@@ -6,12 +6,14 @@ en:
       created_html: 'Started a new release <span class="emphasize">%{version}</span>'
       release_branch_created_html: 'Created a release branch <span class="emphasize">%{release_branch}</span> from <span class="emphasize">%{working_branch}</span>'
       version_bump_branch_created_html: 'Created a branch <span class="emphasize">%{version_bump_branch}</span> to bump the version to <span class="emphasize">%{release_version}</span>'
+      version_bump_no_changes_html: 'The version <span class="emphasize">%{release_version}</span> is already updated, no version bump necessary.'
       finalizing_html: 'Finalizing the release with version <span class="emphasize">%{version}</span>'
       finalize_failed_html: 'Failed to finalize the release with version <span class="emphasize">%{version}</span>'
       vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
       stopped_html: 'Stopped the release <span class="emphasize">%{version}</span>'
       finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>'
       approvals_overwritten_html: 'Approval items were force-approved by the release captain'
+      tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
     release_platform_run:
       version_changed_html: 'Updated the release version to <span class="emphasize">%{version}</span>'
       version_corrected_html: 'Updated the release version to <span class="emphasize">%{version}</span> since the ongoing release has moved on to <span class="emphasize">%{ongoing_version}</span>'
@@ -21,8 +23,8 @@ en:
     commit:
       created_html: 'New commit <span class="emphasize">%{sha}</span> has landed'
     pull_request:
-      created_html: 'PR created (%{phase}) <a class="emphasize-link" href="%{url}">#%{number}</a> from <span class="emphasize">%{head_ref}</span> to <span class="emphasize">%{base_ref}</span>'
-      merged_html: 'PR merged (%{phase}) <a class="emphasize-link" href="%{url}">#%{number}</a> from <span class="emphasize">%{head_ref}</span> to <span class="emphasize">%{base_ref}</span>'
+      created_html: 'PR created (%{kind}) <a class="emphasize-link" href="%{url}">#%{number}</a> from <span class="emphasize">%{head_ref}</span> to <span class="emphasize">%{base_ref}</span>'
+      merged_html: 'PR merged (%{kind}) <a class="emphasize-link" href="%{url}">#%{number}</a> from <span class="emphasize">%{head_ref}</span> to <span class="emphasize">%{base_ref}</span>'
       unmergeable_html: 'The PR <a class="emphasize-link" href="%{url}">#%{number}</a> cannot be merged. Please check for any merge conflicts and/or branch protection rules.'
     internal_release:
       created_html: 'Started a new internal build step for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a>'
@@ -32,6 +34,8 @@ en:
       finished_html: 'Finished the beta release for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a>'
     production_release:
       finished_html: 'Finished the production release for <span class="emphasize">%{version} (%{build_number})</span>'
+      vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
+      tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
     workflow_run:
       triggered_html: 'A new %{kind} workflow run was triggered for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name}</span>'
       retried_html: 'The workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> was retried for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'

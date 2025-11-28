@@ -45,6 +45,25 @@
                 ) do |b|
                   b.with_icon("activity.svg")
                 end %>
+
+            <% if webhooks_available? %>
+              <%= render ModalComponent.new(title: "Outgoing Webhooks Logs",
+                                            size: :xs,
+                                            type: :drawer,
+                                            authz: false) do |modal| %>
+                <% button = modal.with_button(label: "Outgoing webhooks logs", scheme: :link, type: :action, html_options: {class: "text-sm"}, size: :none) %>
+                <% button.with_icon("webhook.svg", size: :base) %>
+                <% modal.with_body do %>
+                  <%= tag.turbo_frame id: dom_id(webhook_integration),
+                                      src: release_outgoing_webhooks_path(@release),
+                                      loading: :lazy,
+                                      class: "with-turbo-frame-loader",
+                                      target: "_top" do %>
+                    <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
           </div>
         </div>
 
@@ -84,15 +103,15 @@
           </div>
 
           <%= render SmartTextBoxComponent.new(release_branch,
-                clipboard: true,
-                clipboard_tooltip: "Copy release branch",
-                size: :compact) %>
+                                               clipboard: true,
+                                               clipboard_tooltip: "Copy release branch",
+                                               size: :compact) %>
 
           <% if tag_name.present? %>
             <%= render SmartTextBoxComponent.new(tag_name,
-                  clipboard: true,
-                  clipboard_tooltip: "Copy final release tag",
-                  size: :compact) %>
+                                                 clipboard: true,
+                                                 clipboard_tooltip: "Copy final release tag",
+                                                 size: :compact) %>
           <% end %>
         </div>
 
@@ -109,8 +128,8 @@
                   <li class="flex items-center justify-center w-full gap-2">
                     <%= status_icon(config) %>
                     <%= content_tag(sidebar_title_tag(config),
-                          class: "flex flex-row items-center justify-between w-full rounded hover:text-main-900 hover:bg-main-100 #{active_style(path)} mr-2 px-2",
-                          href: path) do %>
+                                    class: "flex flex-row items-center justify-between w-full rounded hover:text-main-900 hover:bg-main-100 #{active_style(path)} mr-2 px-2",
+                                    href: path) do %>
                       <div class="flex gap-2 items-center">
                         <span class="text-sm font-normal py-1.5 dark:bg-gray-200"><%= title %></span>
                         <%= coming_soon(config) %>

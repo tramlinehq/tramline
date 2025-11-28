@@ -42,14 +42,23 @@ FactoryBot.define do
       providable factory: :jira_integration
     end
 
+    trait :linear do
+      category { "project_management" }
+      providable { association :linear_integration }
+    end
+
     trait :with_jira do
       category { "project_management" }
-      providable factory: %i[jira_integration with_app_config]
+      providable factory: %i[jira_integration with_config]
     end
 
     trait :with_crashlytics do
       category { "monitoring" }
       providable factory: %i[crashlytics_integration skip_validate_key]
+    end
+
+    trait :needs_reauth do
+      status { "needs_reauth" }
     end
   end
 end

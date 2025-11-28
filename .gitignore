@@ -30,8 +30,6 @@ bundle/
 !/tmp/storage/
 !/tmp/storage/.keep
 
-/public/assets
-
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 /config/credentials/staging.key
@@ -45,9 +43,12 @@ bundle/
 # Ignore Local SSL certificates
 /config/certs/*.pem
 
+# Ignore asset pipeline files.
 /app/assets/builds/*
 !/app/assets/builds/.keep
+/public/assets
 
+# Ignore node modules
 /node_modules
 
 # Brew-related stuff
@@ -59,3 +60,8 @@ Brewfile.lock.json
 # Ignore temp project files
 coverage
 aasm-*.pdf
+sbom.xml
+sbom.json
+
+# Ignore LLM related files
+.claude/settings.local.json

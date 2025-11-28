@@ -1,0 +1,3 @@
+<%= render EnhancedTurboFrameComponent.new(:ci_cd_config) do %>
+  <%= render partial: "form", locals: {app: @app, bitbucket_integration: @bitbucket_integration, workspaces: @workspaces, code_repositories: @code_repositories} %>
+<% end %>

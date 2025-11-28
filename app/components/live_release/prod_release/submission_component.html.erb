@@ -181,12 +181,15 @@
     <% end %>
 
     <div class="flex flex-col item-gap-default text-secondary text-xs">
-      <%= render LiveRelease::BuildComponent.new(current_build,
-            show_metadata: false,
-            show_ci: false,
-            show_activity: false,
-            show_commit: false,
-            show_compact_metadata: true) %>
+      <div class="flex flex-row items-center">
+        <%= render LiveRelease::BuildComponent.new(current_build,
+                                                   show_metadata: false,
+                                                   show_ci: false,
+                                                   show_activity: false,
+                                                   show_commit: false,
+                                                   show_compact_metadata: true) %>
+        <%= render partial: "shared/tag_link", locals: {taggable: parent_release} %>
+      </div>
 
       <div class="flex flex-row gap-2 items-center">
         <%= render IconComponent.new(store_icon, size: :xl) %>

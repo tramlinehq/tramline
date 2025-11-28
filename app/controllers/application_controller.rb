@@ -20,7 +20,11 @@ class ApplicationController < ActionController::Base
   end
 
   def authenticated_root_path
-    apps_path
+    if mobile_device?
+      mobile_releases_path
+    else
+      apps_path
+    end
   end
 
   def current_organization
@@ -31,13 +35,24 @@ class ApplicationController < ActionController::Base
         rescue ActiveRecord::RecordNotFound
           current_user&.organizations&.first
         end
-      else
-        current_user&.organizations&.first
+      elsif current_user.present?
+        current_user.organizations.find_by(slug: cookies["current_organization"]) ||
+          current_user.organizations.first
       end
   end
 
   def current_user
-    @current_user ||= current_email_authentication&.user || @current_sso_user
+    @current_user ||= current_email_authentication&.user || @current_sso_user || demo_user
+  end
+
+  def demo_user
+    return if session[:active_organization].blank?
+    org = Accounts::Organization.find_by(slug: session[:active_organization])
+    return unless org&.demo?
+
+    demo_user_slug = ENV.fetch("DEMO_USER_SLUG", nil)
+    return if demo_user_slug.blank?
+    Accounts::User.find_by(slug: demo_user_slug)
   end
 
   protected
@@ -50,8 +65,14 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def desktop_allowed? = true
+
+  def mobile_device? = false
+
   def supported_device?
-    device_type.in?(%w[desktop])
+    send(:"#{device_type}_allowed?")
+  rescue NoMethodError
+    false
   end
 
   def device_type

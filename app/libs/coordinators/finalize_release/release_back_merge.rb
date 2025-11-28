@@ -22,7 +22,7 @@ class Coordinators::FinalizeRelease::ReleaseBackMerge
   def create_and_merge_prs
     Triggers::PullRequest.create_and_merge!(
       release: release,
-      new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
+      new_pull_request_attrs: {phase: :post_release, kind: :back_merge, release_id: release.id, state: :open},
       to_branch_ref: release_backmerge_branch,
       from_branch_ref: branch_name,
       title: release_pr_title,
@@ -30,7 +30,7 @@ class Coordinators::FinalizeRelease::ReleaseBackMerge
     ).then do
       Triggers::PullRequest.create_and_merge!(
         release: release,
-        new_pull_request_attrs: {phase: :post_release, release_id: release.id, state: :open},
+        new_pull_request_attrs: {phase: :post_release, kind: :back_merge, release_id: release.id, state: :open},
         to_branch_ref: working_branch,
         from_branch_ref: release_backmerge_branch,
         title: backmerge_pr_title,
@@ -40,7 +40,11 @@ class Coordinators::FinalizeRelease::ReleaseBackMerge
   end
 
   def create_tag
-    GitHub::Result.new { release.create_vcs_release! }
+    GitHub::Result.new do
+      if train.tag_end_of_release?
+        release.create_vcs_release!(release.last_commit.commit_hash, release.release_diff)
+      end
+    end
   end
 
   def release_pr_title

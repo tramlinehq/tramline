@@ -7,7 +7,7 @@
 #  author_login            :string
 #  author_name             :string           not null
 #  backmerge_failure       :boolean          default(FALSE)
-#  commit_hash             :string           not null, indexed => [release_id]
+#  commit_hash             :string           not null, indexed => [release_id, release_changelog_id]
 #  message                 :string           indexed
 #  parents                 :jsonb
 #  search_vector           :tsvector         indexed
@@ -16,8 +16,8 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_queue_id          :uuid             indexed
-#  release_changelog_id    :uuid             indexed
-#  release_id              :uuid             indexed => [commit_hash], indexed => [timestamp]
+#  release_changelog_id    :uuid             indexed => [commit_hash, release_id], indexed
+#  release_id              :uuid             indexed => [commit_hash, release_changelog_id], indexed => [timestamp]
 #  release_platform_id     :uuid             indexed
 #  release_platform_run_id :uuid             indexed
 #
@@ -53,8 +53,33 @@ class Commit < ApplicationRecord
     against: :message,
     **search_config
 
-  def self.commit_messages(first_parent_only = false)
-    Commit.commit_log(reorder("timestamp DESC"), first_parent_only)&.map(&:message)
+  def self.commit_messages(first_parent_only = false, exclude_irrelevant_prs = true)
+    commits = commit_log(reorder("timestamp DESC"), first_parent_only)
+    return [] if commits.blank?
+
+    release = commits.first.release
+    recent_pr_merge_commit_shas = []
+
+    if exclude_irrelevant_prs && release
+      num_of_previous_releases_to_exclude = 2
+      last_few_releases =
+        release
+          .previous_finished_releases
+          .limit(num_of_previous_releases_to_exclude)
+          .pluck(:id)
+      recent_pr_merge_commit_shas =
+        PullRequest
+          .mid_release
+          .where(release: last_few_releases)
+          .where.not(merge_commit_sha: nil)
+          .pluck(:merge_commit_sha)
+    end
+
+    if recent_pr_merge_commit_shas.any?
+      commits = commits.reject { |commit| recent_pr_merge_commit_shas.include?(commit.commit_hash) }
+    end
+
+    commits.map(&:message)
   end
 
   def self.count_by_team(org)

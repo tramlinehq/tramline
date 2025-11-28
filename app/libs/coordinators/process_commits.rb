@@ -17,11 +17,12 @@ class Coordinators::ProcessCommits
 
     release.with_lock do
       return unless release.committable?
+      close_pre_release_forward_merge_prs
 
-      release.close_pre_release_prs
       if release.may_start?
         release.start!
         release.release_platform_runs.each(&:start!)
+        Coordinators::VersionBumpJob.perform_async(release.id) if train.next_version_after_release_branch?
       end
 
       created_rest_commits, created_head_commit = create_other_commits!, create_head_commit!
@@ -94,6 +95,23 @@ class Coordinators::ProcessCommits
     return unless created_head_commit
     Commit::ContinuousBackmergeJob.perform_async(created_head_commit.id, true)
     created_rest_commits.each { |c| Commit::ContinuousBackmergeJob.perform_async(c.id, false) }
+  end
+
+  class PreReleaseUnfinishedError < StandardError; end
+
+  def close_pre_release_forward_merge_prs
+    forward_merge_prs = release.pre_release_forward_merge_prs.open
+    return if forward_merge_prs.blank?
+
+    forward_merge_prs.each do |pr|
+      created_pr = train.vcs_provider.get_pr(pr.number)
+
+      if created_pr[:state].in? %w[open opened]
+        raise PreReleaseUnfinishedError, "Pre-release pull request is not merged yet."
+      else
+        pr.safe_update!(created_pr)
+      end
+    end
   end
 
   delegate :train, to: :release

@@ -122,7 +122,15 @@ class StoreSubmission < ApplicationRecord
       submission_asset_link: provider&.public_icon_img,
       project_link: external_link,
       deep_link: deep_link,
-      submission_requires_manual_action: requires_manual_action
+      submission_requires_manual_action: requires_manual_action,
+      app: (
+        if conf.integrable.present?
+          {
+            name: conf.integrable.name,
+            bundle_identifier: conf.integrable.bundle_identifier
+          }
+        end
+      )
     )
   end
 

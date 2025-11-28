@@ -24,7 +24,7 @@ describe Triggers::VersionBump do
     context "when a version bump PR is attempted" do
       let(:project_file) { "spec/fixtures/project_files/build.1.0.0.gradle" }
       let(:updated_contents_file) { "spec/fixtures/project_files/build.1.2.0.gradle" }
-      let(:train) { create(:train, version_seeded_with: "1.1.0", version_bump_enabled: true, version_bump_file_paths: [project_file]) }
+      let(:train) { create(:train, :with_version_bump, version_seeded_with: "1.1.0", version_bump_file_paths: [project_file]) }
       let(:release) { create(:release, train:) }
       let(:vcs_provider_dbl) { instance_double(GithubIntegration) }
       let(:expected_new_branch) { "version-bump-#{release.release_version}-#{release.slug}" }
@@ -97,7 +97,7 @@ describe Triggers::VersionBump do
         project_file = "spec/fixtures/project_files/build.1.0.0.gradle"
         updated_contents_file = "spec/fixtures/project_files/build.1.2.0.gradle"
         updated_contents = File.read(updated_contents_file)
-        train = create(:train, version_seeded_with: "1.1.0", version_bump_enabled: true, version_bump_file_paths: [project_file])
+        train = create(:train, :with_version_bump, version_seeded_with: "1.1.0", version_bump_file_paths: [project_file])
         release = create(:release, train:)
         setup_mocks(train, vcs_provider_dbl, project_file, updated_contents_file)
 
@@ -110,7 +110,7 @@ describe Triggers::VersionBump do
         project_file = "spec/fixtures/project_files/build.1.0.0.dict.gradle"
         updated_contents_file = "spec/fixtures/project_files/build.1.2.0.dict.gradle"
         updated_contents = File.read(updated_contents_file)
-        train = create(:train, version_seeded_with: "1.1.0", version_bump_enabled: true, version_bump_file_paths: [project_file])
+        train = create(:train, :with_version_bump, version_seeded_with: "1.1.0", version_bump_file_paths: [project_file])
         release = create(:release, train:)
         setup_mocks(train, vcs_provider_dbl, project_file, updated_contents_file)
 
@@ -123,7 +123,7 @@ describe Triggers::VersionBump do
         project_file = "spec/fixtures/project_files/build.1.0.0.gradle.kts"
         updated_contents_file = "spec/fixtures/project_files/build.1.2.0.gradle.kts"
         updated_contents = File.read(updated_contents_file)
-        train = create(:train, version_seeded_with: "1.1.0", version_bump_enabled: true, version_bump_file_paths: [project_file])
+        train = create(:train, :with_version_bump, version_seeded_with: "1.1.0", version_bump_file_paths: [project_file])
         release = create(:release, train:)
         setup_mocks(train, vcs_provider_dbl, project_file, updated_contents_file)
 
@@ -136,7 +136,7 @@ describe Triggers::VersionBump do
         project_file = "spec/fixtures/project_files/build.1.0.0.pubspec.yaml"
         updated_contents_file = "spec/fixtures/project_files/build.1.2.0.pubspec.yaml"
         updated_contents = File.read(updated_contents_file)
-        train = create(:train, version_seeded_with: "1.1.0", version_bump_enabled: true, version_bump_file_paths: [project_file])
+        train = create(:train, :with_version_bump, version_seeded_with: "1.1.0", version_bump_file_paths: [project_file])
         release = create(:release, train:)
         setup_mocks(train, vcs_provider_dbl, project_file, updated_contents_file)
 
@@ -147,7 +147,8 @@ describe Triggers::VersionBump do
     end
 
     describe "#update_gradle_version" do
-      let(:release) { create(:release) }
+      let(:train) { create(:train, :with_version_bump) }
+      let(:release) { create(:release, train:) }
 
       before do
         allow(release).to receive(:release_version).and_return("1.2.0")
@@ -162,6 +163,7 @@ describe Triggers::VersionBump do
         ["versionName 1.", "versionName 1."],
         ["versionName 1.0", "versionName 1.0"],
         ["versionName 1.0", "versionName 1.0"],
+        ['versionName "1.0"', 'versionName "1.2.0"'],
         ['"versionName": "1.0.0",', '"versionName": "1.2.0",'],
         ['"versionName" :"1.0.0",', '"versionName" :"1.2.0",'],
         ['"versionName" : "1.0.0",', '"versionName" : "1.2.0",'],
@@ -176,7 +178,8 @@ describe Triggers::VersionBump do
     end
 
     describe "#update_gradle_kts_version" do
-      let(:release) { create(:release) }
+      let(:train) { create(:train, :with_version_bump) }
+      let(:release) { create(:release, train:) }
 
       before do
         allow(release).to receive(:release_version).and_return("1.2.0")
@@ -192,6 +195,7 @@ describe Triggers::VersionBump do
         ["versionName = 1", "versionName = 1"],
         ["versionName = 1.", "versionName = 1."],
         ["versionName = 1.0", "versionName = 1.0"],
+        ['versionName = "1.0"', 'versionName = "1.2.0"'],
         ['versionName = \n\tif', 'versionName = \n\tif'],
         ["", ""],
         ["versionCode = 1", "versionCode = 1"]
@@ -203,7 +207,8 @@ describe Triggers::VersionBump do
     end
 
     describe "#update_pubspec_version" do
-      let(:release) { create(:release) }
+      let(:train) { create(:train, :with_version_bump) }
+      let(:release) { create(:release, train:) }
 
       before do
         allow(release).to receive(:release_version).and_return("1.2.0")
@@ -213,6 +218,8 @@ describe Triggers::VersionBump do
         ["version: 1.0.0+1", "version: 1.2.0+1"],
         ["version: 1.0.0", "version: 1.2.0"],
         ['version: "1.0.0"', "version: 1.2.0"],
+        ['version: "1.0"', "version: 1.2.0"],
+        ["version: 1.0", "version: 1.2.0"],
         ['version: "1.0.0+1"', "version: 1.2.0+1"],
         ["version:", "version:"],
         ["version: ", "version: "],

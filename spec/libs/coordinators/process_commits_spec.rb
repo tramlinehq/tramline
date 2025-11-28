@@ -262,6 +262,60 @@ describe Coordinators::ProcessCommits do
       end
     end
 
+    context "when version bump job" do
+      before do
+        allow(Coordinators::VersionBumpJob).to receive(:perform_async)
+      end
+
+      context "with next_version_after_release_branch strategy" do
+        let(:train) { create(:train, :with_version_bump, version_bump_strategy: :next_version_after_release_branch) }
+
+        it "triggers VersionBumpJob when release starts" do
+          release = create(:release, :created, :with_no_platform_runs, train:)
+          _release_platform_run = create(:release_platform_run, release_platform:, release:)
+
+          described_class.call(release, head_commit_attributes, rest_commit_attributes)
+
+          expect(Coordinators::VersionBumpJob).to have_received(:perform_async).with(release.id)
+        end
+
+        it "does not trigger VersionBumpJob when release has already started" do
+          release = create(:release, :on_track, :with_no_platform_runs, train:)
+          _release_platform_run = create(:release_platform_run, release_platform:, release:)
+
+          described_class.call(release, head_commit_attributes, rest_commit_attributes)
+
+          expect(Coordinators::VersionBumpJob).not_to have_received(:perform_async)
+        end
+      end
+
+      context "with current_version_before_release_branch strategy" do
+        let(:train) { create(:train, :with_version_bump, version_bump_strategy: :current_version_before_release_branch) }
+
+        it "does not trigger VersionBumpJob" do
+          release = create(:release, :created, :with_no_platform_runs, train:)
+          _release_platform_run = create(:release_platform_run, release_platform:, release:)
+
+          described_class.call(release, head_commit_attributes, rest_commit_attributes)
+
+          expect(Coordinators::VersionBumpJob).not_to have_received(:perform_async)
+        end
+      end
+
+      context "without version bump enabled" do
+        let(:train) { create(:train) }
+
+        it "does not trigger VersionBumpJob" do
+          release = create(:release, :created, :with_no_platform_runs, train:)
+          _release_platform_run = create(:release_platform_run, release_platform:, release:)
+
+          described_class.call(release, head_commit_attributes, rest_commit_attributes)
+
+          expect(Coordinators::VersionBumpJob).not_to have_received(:perform_async)
+        end
+      end
+    end
+
     context "when fudging head commit timestamp" do
       it "adds 100 milliseconds" do
         release = create(:release, :created, :with_no_platform_runs, train:)

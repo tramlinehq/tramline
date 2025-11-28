@@ -17,10 +17,11 @@
     <% card.with_action do %>
       <%= render ButtonComponent.new(
             scheme: :default,
-            options: "javascript:window.location.reload();",
+            options: request.path,
             type: :link,
             size: :xxs,
-            label: "Refresh"
+            label: "Refresh",
+            html_options: {data: {turbo_method: :get, turbo_frame: :_top}}
           ) do |b|
             b.with_icon("repeat.svg", size: :md)
           end %>
@@ -31,7 +32,7 @@
     <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: false) %>
   <% else %>
     <div class="flex flex-col gap-2 text-sm text-secondary">
-      <% if train.tag_releases? %>
+      <% if train.tag_end_of_release? %>
         <p class="<%= strikethrough %>">
           ◦ Cut tag at <code><%= release.last_commit&.short_sha %></code> and push to <%= tag_link %> <%= checked %>
         </p>
@@ -65,18 +66,18 @@
           <%= render(PullRequestComponent.with_collection(open_post_release_prs, simple: true)) %>
         <% end %>
 
-        <% if unmerged_changes? %>
+        <% if unmerged_commits? %>
           <h3 class="heading-5">Unmerged Changes</h3>
 
           <div class="text-sm text-secondary">
-            <p>There are <%= unmerged_changes.size %> commit(s) that were not automatically merged by
+            <p>There are <%= unmerged_commits.size %> commit(s) that were not automatically merged by
               Tramline. You can find the current diff between the
               branches <%= link_to_external "here", release.compare_url, class: "underline" %>.</p>
             <p>Please ensure that these changes have been manually merged back on
               <code><%= release.train.working_branch %></code> before wrapping up this release.</p>
             <div class="mt-2">
               <%= render partial: "shared/divide_collection",
-                         locals: {collection: render(CommitComponent.with_collection(unmerged_changes))} %>
+                         locals: {collection: render(CommitComponent.with_collection(unmerged_commits))} %>
             </div>
           </div>
 

@@ -1,0 +1,21 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<%= changelog_header %>"
+      }
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_list",
+          "style": "bullet",
+          "elements": [<%= changelog_elements(changes) %>]
+        }
+      ]
+    }
+  ]
+}
