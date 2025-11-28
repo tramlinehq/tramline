@@ -15,7 +15,8 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
     failed: {text: "Submission failed", status: :failure},
     failed_with_action_required: {text: "Needs manual submission", status: :failure},
     cancelled: {text: "Removed from review", status: :inert},
-    finished: {text: "Ready to be released", status: :success}
+    finished: {text: "Ready to be released", status: :success},
+    syncing: {text: "Syncing...", status: :ongoing}
   }
 
   def initialize(submission, inactive: false, title: "Store Submission")
@@ -183,6 +184,22 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
 
   def border_style
     :dashed if inflight?
+  end
+
+  def syncable?
+    submission.syncable?
+  end
+
+  def last_sync_event
+    submission.passports
+      .where(reason: [:sync_completed, :sync_no_changes, :sync_failed])
+      .order(created_at: :desc)
+      .first
+  end
+
+  def last_sync_time
+    return nil unless last_sync_event
+    time_ago_in_words(last_sync_event.event_timestamp) + " ago"
   end
 
   # ============== Sandbox actions ==============

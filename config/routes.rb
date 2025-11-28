@@ -260,6 +260,7 @@ Rails.application.routes.draw do
       patch :resume
       patch :halt
       patch :fully_release
+      patch :sync
     end
   end
 
@@ -272,6 +273,7 @@ Rails.application.routes.draw do
       patch :cancel
       patch :remove_from_review
       patch :fully_release_previous_rollout
+      patch :sync
     end
   end
 

@@ -15,7 +15,8 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
     completed: {text: "Completed", status: :success},
     halted: {text: "Halted", status: :inert},
     fully_released: {text: "Released to all users", status: :success},
-    paused: {text: "Paused phased release", status: :ongoing}
+    paused: {text: "Paused phased release", status: :ongoing},
+    syncing: {text: "Syncing...", status: :ongoing}
   }
 
   attr_reader :store_rollout
@@ -173,5 +174,21 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
 
   def show_monitoring?
     @show_monitoring
+  end
+
+  def syncable?
+    store_rollout.syncable?
+  end
+
+  def last_sync_event
+    store_rollout.passports
+      .where(reason: [:sync_completed, :sync_no_changes, :sync_failed])
+      .order(created_at: :desc)
+      .first
+  end
+
+  def last_sync_time
+    return nil unless last_sync_event
+    time_ago_in_words(last_sync_event.event_timestamp) + " ago"
   end
 end

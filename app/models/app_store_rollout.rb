@@ -18,7 +18,7 @@ class AppStoreRollout < StoreRollout
   include Passportable
 
   ReleaseNotFullyLive = Class.new(StandardError)
-  STATES = STATES.merge(paused: "paused")
+  STATES = STATES.merge(paused: "paused", syncing: "syncing")
   STAMPABLE_REASONS = %w[
     started
     updated
@@ -27,6 +27,10 @@ class AppStoreRollout < StoreRollout
     halted
     completed
     fully_released
+    sync_initiated
+    sync_completed
+    sync_no_changes
+    sync_failed
   ]
 
   belongs_to :app_store_submission, foreign_key: :store_submission_id, inverse_of: :app_store_rollout
@@ -60,6 +64,17 @@ class AppStoreRollout < StoreRollout
     event :fully_release, after_commit: :on_complete! do
       after { set_completed_at! }
       transitions from: :started, to: :fully_released
+    end
+
+    event :start_sync do
+      transitions from: [:created, :started, :paused, :halted], to: :syncing
+    end
+
+    event :finish_sync do
+      transitions from: :syncing, to: :created, guard: :created_before_sync?
+      transitions from: :syncing, to: :started, guard: :started_before_sync?
+      transitions from: :syncing, to: :paused, guard: :paused_before_sync?
+      transitions from: :syncing, to: :halted, guard: :halted_before_sync?
     end
   end
 
@@ -175,7 +190,39 @@ class AppStoreRollout < StoreRollout
     end
   end
 
+  def sync_from_store!
+    return unless may_start_sync?
+
+    previous_status = status
+    start_sync!
+    event_stamp!(reason: :sync_initiated, kind: :notice, data: stamp_data)
+
+    StoreRollouts::AppStore::SyncStoreStatusJob.perform_async(id, previous_status)
+  end
+
+  def syncable?
+    !syncing? && may_start_sync?
+  end
+
   private
+
+  attr_accessor :status_before_sync
+
+  def created_before_sync?
+    status_before_sync == "created"
+  end
+
+  def started_before_sync?
+    status_before_sync == "started"
+  end
+
+  def paused_before_sync?
+    status_before_sync == "paused"
+  end
+
+  def halted_before_sync?
+    status_before_sync == "halted"
+  end
 
   def update_rollout(release_info)
     update_store_info!(release_info)

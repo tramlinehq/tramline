@@ -2,10 +2,11 @@ class StoreRolloutsController < SignedInApplicationController
   include Tabbable
 
   before_action :require_write_access!, except: [:index]
-  before_action :set_store_rollout, only: %i[start increase pause resume halt fully_release]
+  before_action :set_store_rollout, only: %i[start increase pause resume halt fully_release sync]
   before_action :ensure_moveable, only: %i[start increase pause resume halt fully_release]
   before_action :ensure_user_controlled_rollout, only: [:increase, :halt]
   before_action :ensure_automatic_rollout, only: [:pause]
+  before_action :ensure_syncable, only: [:sync]
   before_action :live_release!, only: %i[index]
   before_action :set_app, only: %i[index]
   around_action :set_time_zone
@@ -61,6 +62,13 @@ class StoreRolloutsController < SignedInApplicationController
     end
   end
 
+  def sync
+    @store_rollout.sync_from_store!
+    redirect_back fallback_location: root_path, notice: t(".sync.success")
+  rescue => e
+    redirect_back fallback_location: root_path, flash: {error: t(".sync.failure", errors: e.message)}
+  end
+
   private
 
   def set_store_rollout
@@ -87,6 +95,12 @@ class StoreRolloutsController < SignedInApplicationController
   def ensure_user_controlled_rollout
     unless @store_rollout.controllable_rollout?
       redirect_back fallback_location: root_path, flash: {error: t(".rollout_not_controllable")}
+    end
+  end
+
+  def ensure_syncable
+    unless @store_rollout.syncable?
+      redirect_back fallback_location: root_path, flash: {error: t(".sync.not_syncable")}
     end
   end
 end
