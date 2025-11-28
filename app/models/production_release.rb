@@ -145,7 +145,6 @@ class ProductionRelease < ApplicationRecord
     release_data = monitoring_provider.find_release(platform, version_name, build_number, store_rollout.created_at)
     return if release_data.blank?
     release_health_metrics.create!(fetched_at: Time.current, **release_data)
-    HaltUnhealthyReleaseRolloutJob.perform_async(id)
   end
 
   def latest_health_data

@@ -67,11 +67,24 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
   end
 
   context "when a staged play store rollout is halted" do
-    let(:store_rollout) { create(:store_rollout, :play_store, :halted, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission) }
+    let(:store_rollout) { create(:store_rollout, :play_store, :halted, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 1) }
 
-    it "does not rollout the release" do
+    before do
+      allow_any_instance_of(ProductionRelease).to receive(:healthy?).and_return(true)
+    end
+
+    it "resumes the rollout first, then increases it" do
       described_class.new.perform(store_rollout.id)
-      expect(play_store_integration).not_to have_received(:rollout_release)
+      expect(store_rollout.reload.status).to eq("started")
+      expect(play_store_integration).to have_received(:rollout_release).twice
+      expect(store_rollout.reload.current_stage).to eq(2)
+    end
+
+    it "schedules rollout job after 24 hours" do
+      expect {
+        described_class.new.perform(store_rollout.id)
+      }.to change(described_class.jobs, :size).by(1)
+      expect(described_class.jobs.first["at"] - Time.current.to_f).to be_within(1.minute).of(24.hours.to_i)
     end
   end
 

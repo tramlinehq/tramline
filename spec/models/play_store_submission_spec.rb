@@ -205,4 +205,57 @@ describe PlayStoreSubmission do
       end
     end
   end
+
+  describe "#auto_rollout?" do
+    let(:build) { create(:build) }
+    let(:train) { create(:train) }
+    let(:release_platform) { create(:release_platform, train:, platform: "android") }
+
+    before do
+      release_platform.platform_config.production_release.submissions.first.update!(
+        rollout_enabled: true,
+        automatic_rollout: true
+      )
+    end
+
+    context "when parent release is production" do
+      let(:production_release) { create(:production_release, :inflight, build:) }
+      let(:submission) { create(:play_store_submission, :created, build:, parent_release: production_release, release_platform_run: production_release.release_platform_run) }
+
+      context "when staged rollout and automatic rollout are enabled" do
+        it "returns true" do
+          expect(submission.auto_rollout?).to be(true)
+        end
+      end
+
+      context "when staged rollout is disabled" do
+        before do
+          allow(submission.conf).to receive(:rollout_enabled?).and_return(false)
+        end
+
+        it "returns false" do
+          expect(submission.auto_rollout?).to be(false)
+        end
+      end
+
+      context "when automatic rollout is disabled" do
+        before do
+          allow(submission.conf).to receive(:automatic_rollout?).and_return(false)
+        end
+
+        it "returns false" do
+          expect(submission.auto_rollout?).to be(false)
+        end
+      end
+    end
+
+    context "when parent release is not production" do
+      let(:pre_prod_release) { create(:beta_release) }
+      let(:submission) { create(:play_store_submission, :created, build:, parent_release: pre_prod_release) }
+
+      it "returns false" do
+        expect(submission.auto_rollout?).to be(false)
+      end
+    end
+  end
 end

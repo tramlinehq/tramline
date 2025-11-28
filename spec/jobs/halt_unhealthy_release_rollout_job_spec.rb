@@ -3,6 +3,8 @@ require "rails_helper"
 RSpec.describe HaltUnhealthyReleaseRolloutJob do
   let(:play_store_integration) { instance_double(GooglePlayStoreIntegration) }
   let(:play_store_submission) { create(:play_store_submission, :prod_release) }
+  let(:production_release) { play_store_submission.parent_release }
+  let(:release_health_event) { create(:release_health_event, :unhealthy, production_release:) }
 
   before do
     allow_any_instance_of(ReleasePlatformRun).to receive(:store_provider).and_return(play_store_integration)
@@ -18,8 +20,14 @@ RSpec.describe HaltUnhealthyReleaseRolloutJob do
       end
 
       it "does not halt the release" do
-        described_class.new.perform(store_rollout.parent_release.id)
+        described_class.new.perform(production_release.id, release_health_event.id)
         expect(play_store_integration).not_to have_received(:halt_release)
+      end
+
+      it "does not mark the event as action_triggered" do
+        expect {
+          described_class.new.perform(production_release.id, release_health_event.id)
+        }.not_to change { release_health_event.reload.action_triggered }
       end
     end
 
@@ -29,8 +37,14 @@ RSpec.describe HaltUnhealthyReleaseRolloutJob do
       end
 
       it "halts the release" do
-        described_class.new.perform(store_rollout.parent_release.id)
+        described_class.new.perform(production_release.id, release_health_event.id)
         expect(play_store_integration).to have_received(:halt_release)
+      end
+
+      it "marks the event as action_triggered" do
+        expect {
+          described_class.new.perform(production_release.id, release_health_event.id)
+        }.to change { release_health_event.reload.action_triggered }.from(false).to(true)
       end
     end
   end
@@ -44,8 +58,14 @@ RSpec.describe HaltUnhealthyReleaseRolloutJob do
       end
 
       it "does not halt the release" do
-        described_class.new.perform(store_rollout.parent_release.id)
+        described_class.new.perform(production_release.id, release_health_event.id)
         expect(play_store_integration).not_to have_received(:halt_release)
+      end
+
+      it "does not mark the event as action_triggered" do
+        expect {
+          described_class.new.perform(production_release.id, release_health_event.id)
+        }.not_to change { release_health_event.reload.action_triggered }
       end
     end
 
@@ -55,8 +75,14 @@ RSpec.describe HaltUnhealthyReleaseRolloutJob do
       end
 
       it "does not halt the release" do
-        described_class.new.perform(store_rollout.parent_release.id)
+        described_class.new.perform(production_release.id, release_health_event.id)
         expect(play_store_integration).not_to have_received(:halt_release)
+      end
+
+      it "does not mark the event as action_triggered" do
+        expect {
+          described_class.new.perform(production_release.id, release_health_event.id)
+        }.not_to change { release_health_event.reload.action_triggered }
       end
     end
   end

@@ -8,8 +8,14 @@ class IncreaseHealthyReleaseRolloutJob < ApplicationJob
 
     release = rollout.parent_release
 
-    if release.healthy? && (rollout.started? || rollout.halted?)
-      Action.increase_the_store_rollout!(rollout)
+    if release.healthy?
+      if rollout.halted?
+        Action.resume_the_store_rollout!(rollout)
+      end
+
+      if rollout.started?
+        Action.increase_the_store_rollout!(rollout)
+      end
     end
 
     # This update is necessary so that our verify rollout job does not pick this up again

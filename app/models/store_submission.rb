@@ -70,10 +70,8 @@ class StoreSubmission < ApplicationRecord
   end
 
   def auto_rollout?
-    if parent_release.production? && staged_rollout? && conf.automatic_rollout?
-      true
-    elsif !parent_release.production?
-      true
+    if parent_release.production?
+      staged_rollout? && conf.automatic_rollout?
     else
       false
     end

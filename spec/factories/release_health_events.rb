@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :release_health_event do
-    deployment_run
+    production_release
     release_health_rule
     release_health_metric
     health_status { "healthy" }
