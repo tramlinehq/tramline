@@ -137,6 +137,8 @@ Rails.application.routes.draw do
           get :wrap_up_automations
           patch :override_approvals
           post :copy_approvals
+          post :end_soak
+          post :extend_soak
         end
 
         resources :outgoing_webhooks, only: [:index]
