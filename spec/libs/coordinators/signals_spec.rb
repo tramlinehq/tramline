@@ -122,10 +122,63 @@ describe Coordinators::Signals do
       }.not_to change { release.reload.soak_started_at }
     end
 
-    it "starts production release in addition to starting soak" do
+    it "blocks production release when soak period is active" do
       described_class.beta_release_is_finished!(build)
-      expect(release_platform_run.reload.production_releases.size).to eq(1)
+      expect(release_platform_run.reload.production_releases.size).to eq(0)
       expect(release.reload.soak_started_at).to be_present
+      expect(release.reload.soak_period_active?).to be(true)
+    end
+
+    it "schedules soak period completion job" do
+      expect {
+        described_class.beta_release_is_finished!(build)
+      }.to have_enqueued_sidekiq_job(Coordinators::SoakPeriodCompletionJob)
+        .with(release.id)
+        .in(24.hours)
+    end
+
+    context "when soak period is not enabled" do
+      before { train.update!(soak_period_enabled: false) }
+
+      it "proceeds with normal workflow" do
+        described_class.beta_release_is_finished!(build)
+        expect(release_platform_run.reload.production_releases.size).to eq(1)
+        expect(release.reload.soak_started_at).to be_nil
+      end
+    end
+  end
+
+  describe ".continue_after_soak_period!" do
+    let(:train) { create(:train, soak_period_enabled: true, soak_period_hours: 24) }
+    let(:release) { create(:release, :on_track, train:) }
+    let(:release_platform_run) { create(:release_platform_run, :on_track, release:) }
+    let(:beta_release) { create(:beta_release, :finished, release_platform_run:) }
+    let(:build) { create(:build, release_platform_run:) }
+
+    before do
+      beta_release.update!(build: build)
+      release.update!(soak_started_at: 1.hour.ago)
+    end
+
+    it "continues with production release when config is present" do
+      expect {
+        described_class.continue_after_soak_period!(release)
+      }.to change { release_platform_run.reload.production_releases.count }.by(1)
+    end
+
+    it "finishes platform run when no production release config" do
+      release_platform_run.update!(config: config.merge(production_release: nil))
+
+      described_class.continue_after_soak_period!(release)
+      expect(release_platform_run.reload.finished?).to be(true)
+    end
+
+    it "skips platform runs without finished beta releases" do
+      beta_release.update!(status: "inflight")
+
+      expect {
+        described_class.continue_after_soak_period!(release)
+      }.not_to change { release_platform_run.reload.production_releases.count }
     end
   end
 end

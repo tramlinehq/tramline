@@ -9,13 +9,16 @@ class Coordinators::SoakPeriod::End
   end
 
   def call
-    return false unless release.active?
-    return false unless soak_period_active?
-    return false unless who == release.release_pilot
+    release.with_lock do
+      return false unless release.active?
+      return false unless soak_period_active?
+      # Set soak_started_at so that soak_end_time equals Time.current
+      release.update!(soak_started_at: Time.current - release.soak_period_hours.hours)
+    end
 
-    # Set soak_started_at so that soak_end_time equals Time.current
-    release.update!(soak_started_at: Time.current - release.soak_period_hours.hours)
-    release.event_stamp!(reason: :soak_period_ended_early, kind: :notice, data: {ended_by: who.id})
+    release.event_stamp!(reason: :soak_period_ended_early, kind: :notice, data: { ended_by: who.id })
+    Coordinators::Signals.continue_after_soak_period!(release)
+
     true
   end
 

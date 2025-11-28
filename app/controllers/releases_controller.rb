@@ -9,7 +9,7 @@ class ReleasesController < SignedInApplicationController
   before_action :set_train_and_app, only: %i[destroy timeline]
   before_action :ensure_approval_items_exist, only: %i[copy_approvals]
   before_action :ensure_approval_items_copyable, only: %i[copy_approvals]
-  before_action :ensure_demo_org, only: %i[regression_testing soak]
+  before_action :ensure_demo_org, only: %i[regression_testing]
   around_action :set_time_zone
 
   def index

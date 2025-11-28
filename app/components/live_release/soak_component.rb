@@ -1,9 +1,8 @@
 class LiveRelease::SoakComponent < BaseComponent
-  def initialize(release, status: nil, current_user: nil)
+  def initialize(release, status: nil)
     @release = release
     @release_platform_runs = release.release_platform_runs
     @status = status
-    @current_user = current_user
   end
 
   def success?
@@ -11,11 +10,7 @@ class LiveRelease::SoakComponent < BaseComponent
   end
 
   def show_soak_actions?
-    @release.soak_period_active? && user_is_release_pilot?
-  end
-
-  def show_pilot_only_message?
-    @release.soak_period_active? && !user_is_release_pilot?
+    @release.soak_period_active?
   end
 
   def soak_start_time_display
@@ -42,10 +37,6 @@ class LiveRelease::SoakComponent < BaseComponent
   end
 
   private
-
-  def user_is_release_pilot?
-    @current_user == @release.release_pilot
-  end
 
   def app_timezone
     @release.app.timezone

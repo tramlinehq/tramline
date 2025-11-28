@@ -67,6 +67,7 @@ class Release < ApplicationRecord
     soak_period_started
     soak_period_ended_early
     soak_period_extended
+    soak_period_completed
   ]
   STAMPABLE_REASONS.concat(%w[status_changed backmerge_pr_created pr_merged pull_request_not_mergeable post_release_pr_succeeded kickoff_pr_succeeded]) # TODO: deprecate this
   STATES = {

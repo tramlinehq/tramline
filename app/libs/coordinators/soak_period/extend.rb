@@ -10,13 +10,15 @@ class Coordinators::SoakPeriod::Extend
   end
 
   def call
-    return false unless release.active?
-    return false unless soak_period_active?
-    return false unless who == release.release_pilot
     return false if additional_hours.to_i <= 0
 
-    # Move soak_started_at forward to extend the soak_end_time
-    release.update!(soak_started_at: release.soak_started_at + additional_hours.hours)
+    release.with_lock do
+      return false unless release.active?
+      return false unless soak_period_active?
+      # Move soak_started_at forward to extend the soak_end_time
+      release.update!(soak_started_at: release.soak_started_at + additional_hours.hours)
+    end
+
     release.event_stamp!(
       reason: :soak_period_extended,
       kind: :notice,

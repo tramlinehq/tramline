@@ -1,16 +1,31 @@
 <%= render CardComponent.new(title: "Active Release Candidate", size: :full, separator: true) do |card| %>
   <% if show_soak_actions? %>
     <% card.with_action do %>
-      <%= button_to "End soak", end_soak_release_path(@release), method: :post,
-          data: {turbo_confirm: "Are you sure you want to end the soak period early?"},
-          form: {class: "inline"} %>
+      <%= render ButtonComponent.new(
+        scheme: :danger,
+        type: :link,
+        size: :xxs,
+        label: "End soak",
+        options: end_soak_release_path(@release),
+        html_options: html_opts(:post, "Are you sure you want to end the soak period early?")
+      ) do |b|
+        b.with_icon("stop.svg")
+      end %>
     <% end %>
     <% card.with_action do %>
-      <%= button_to "Extend soak", extend_soak_release_path(@release, additional_hours: 24), method: :post,
-          data: {turbo_confirm: "Extend soak period by 24 hours?"},
-          form: {class: "inline"} %>
+      <%= render ButtonComponent.new(
+        scheme: :light,
+        type: :link,
+        size: :xxs,
+        label: "Extend soak",
+        options: extend_soak_release_path(@release, additional_hours: 24),
+        html_options: html_opts(:post, "Extend soak period by 24 hours?")
+      ) do |b|
+        b.with_icon("ruler.svg")
+      end %>
     <% end %>
   <% end %>
+
   <div class="flex flex-col section-gap-default">
     <%= render PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
@@ -30,13 +45,11 @@
            data-countdown-direction-value="down"
            class="flex justify-center items-center border-default box-padding">
         <div class="flex flex-col item-gap-default items-center">
-          <div class="text-md text-secondary">Time remaining</div>
           <% if @release.soak_period_completed? %>
-            <div class="text-2xl">Soak period has ended</div>
+            <div class="text-xl">Soak period has ended</div>
           <% else %>
-            <div class="text-4xl" data-countdown-target="output">
-              <%= time_remaining_display %>
-            </div>
+            <div class="text-xl text-secondary">Soak time remaining</div>
+            <div class="text-4xl" data-countdown-target="output"><%= time_remaining_display %></div>
           <% end %>
         </div>
       </div>
@@ -44,19 +57,19 @@
       <div class="flex justify-center items-center border-default box-padding">
         <div class="flex flex-col item-gap-default items-center">
           <div class="text-md text-secondary">Soak period will start when RC is available</div>
-          <div class="text-2xl">Waiting for Release Candidate</div>
+          <div class="text-4xl"><%= time_remaining_display %></div>
         </div>
       </div>
     <% end %>
 
     <div class="flex flex-col text-secondary text-xs">
       <div>† Soak starts as soon as an active Release Candidate is available.</div>
-      <div>‡ App submission will be enabled once your configured <%= @release.soak_period_hours %>-hour soak period ends.</div>
+      <div>‡ App submission will be enabled once your configured <%= @release.soak_period_hours %>-hour soak period
+        ends.
+      </div>
+
       <% if @release.soak_started_at.present? && !@release.soak_period_completed? %>
         <div>‡ Soak period started at <%= soak_start_time_display %> and will end at <%= soak_end_time_display %>.</div>
-      <% end %>
-      <% if show_pilot_only_message? %>
-        <div class="mt-2 text-warning">Note: Only the release pilot can end or extend the soak period.</div>
       <% end %>
     </div>
   </div>

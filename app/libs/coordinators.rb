@@ -77,9 +77,13 @@ module Coordinators
 
     def self.beta_release_is_finished!(build)
       release_platform_run = build.release_platform_run
+      release = release_platform_run.release
 
       # Start soak period if enabled (cross-platform, starts when any RC is ready)
-      Coordinators::SoakPeriod::Start.call(release_platform_run.release)
+      Coordinators::SoakPeriod::Start.call(release)
+
+      # If soak period is active, block further progression
+      return if release.reload.soak_period_active?
 
       if release_platform_run.conf.production_release.present?
         Coordinators::StartProductionRelease.call(release_platform_run, build.id)
@@ -90,6 +94,23 @@ module Coordinators
 
     def self.production_release_is_complete!(release_platform_run)
       Coordinators::FinishPlatformRun.call(release_platform_run)
+    end
+
+    def self.continue_after_soak_period!(release)
+      # Continue the workflow for all platform runs that were blocked by soak period
+      release.release_platform_runs.each do |release_platform_run|
+        # Skip if this platform run doesn't have a successful beta release
+        latest_beta = release_platform_run.latest_beta_release
+        next unless latest_beta&.finished?
+        latest_beta_build = latest_beta.build
+
+        # Continue with the workflow that was blocked by soak period
+        if release_platform_run.conf.production_release.present?
+          Coordinators::StartProductionRelease.call(release_platform_run, latest_beta_build.id)
+        else
+          Coordinators::FinishPlatformRun.call(release_platform_run)
+        end
+      end
     end
 
     def self.workflow_run_trigger_failed!(workflow_run)
@@ -303,7 +324,6 @@ module Coordinators
 
     def self.end_soak_period!(release, who)
       Res.new do
-        raise "only the release pilot can end the soak period" unless who == release.release_pilot
         raise "release is not active" unless release.active?
         raise "soak period is not active" unless release.soak_period_active?
         Coordinators::SoakPeriod::End.call(release, who)
@@ -312,7 +332,6 @@ module Coordinators
 
     def self.extend_soak_period!(release, additional_hours, who)
       Res.new do
-        raise "only the release pilot can extend the soak period" unless who == release.release_pilot
         raise "release is not active" unless release.active?
         raise "soak period is not active" unless release.soak_period_active?
         raise "extension hours must be positive" if additional_hours.to_i <= 0

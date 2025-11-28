@@ -10,9 +10,8 @@ class Coordinators::SoakPeriod::Start
   def call
     return unless release.soak_period_enabled?
     return if release.soak_started_at.present?
-
     # Check if any platform run has a successful beta release
-    return unless release.release_platform_runs.any? { |rpr| rpr.latest_beta_release&.available? }
+    return unless release.release_platform_runs.any? { |rpr| rpr.latest_beta_release&.present? }
 
     release.with_lock do
       return if release.soak_started_at.present?
@@ -23,6 +22,8 @@ class Coordinators::SoakPeriod::Start
         kind: :notice,
         data: {ends_at: soak_end_time_display}
       )
+
+      Coordinators::SoakPeriodCompletionJob.perform_in(release.soak_period_hours.hours, release.id)
     end
   end
 
