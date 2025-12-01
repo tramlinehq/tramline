@@ -16,7 +16,10 @@ class Coordinators::SoakPeriod::Start
     release.with_lock do
       return if release.soak_started_at.present?
 
-      release.update!(soak_started_at: Time.current)
+      release.update!(
+        soak_started_at: Time.current,
+        soak_period_hours: release.train.soak_period_hours
+      )
       release.event_stamp!(
         reason: :soak_period_started,
         kind: :notice,

@@ -12,8 +12,8 @@ class Coordinators::SoakPeriod::End
     release.with_lock do
       return false unless release.active?
       return false unless soak_period_active?
-      # Set soak_started_at so that soak_end_time equals Time.current
-      release.update!(soak_started_at: Time.current - release.soak_period_hours.hours)
+      # Record when the soak period was manually ended
+      release.update!(soak_ended_at: Time.current)
     end
 
     release.event_stamp!(reason: :soak_period_ended_early, kind: :notice, data: { ended_by: who.id })

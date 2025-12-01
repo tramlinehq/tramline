@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_21_222440) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_26_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -793,6 +793,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_21_222440) do
     t.boolean "is_v2", default: false
     t.uuid "approval_overridden_by_id"
     t.jsonb "notification_channel"
+    t.datetime "soak_started_at"
+    t.datetime "soak_ended_at"
+    t.integer "soak_period_hours"
     t.index ["approval_overridden_by_id"], name: "index_releases_on_approval_overridden_by_id"
     t.index ["slug"], name: "index_releases_on_slug", unique: true
     t.index ["train_id"], name: "index_releases_on_train_id"
@@ -1043,6 +1046,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_21_222440) do
     t.boolean "enable_changelog_linking_in_notifications", default: false
     t.string "release_branch_pattern"
     t.boolean "webhooks_enabled", default: false, null: false
+    t.datetime "kickoff_at"
+    t.boolean "soak_period_enabled", default: false, null: false
+    t.integer "soak_period_hours", default: 24, null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

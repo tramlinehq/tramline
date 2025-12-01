@@ -15,8 +15,9 @@ class Coordinators::SoakPeriod::Extend
     release.with_lock do
       return false unless release.active?
       return false unless soak_period_active?
-      # Move soak_started_at forward to extend the soak_end_time
-      release.update!(soak_started_at: release.soak_started_at + additional_hours.hours)
+      # Add additional hours to the release's soak period duration
+      new_duration = release.soak_period_hours + additional_hours.to_i
+      release.update!(soak_period_hours: new_duration)
     end
 
     release.event_stamp!(

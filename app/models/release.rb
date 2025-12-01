@@ -15,6 +15,8 @@
 #  release_type              :string           not null
 #  scheduled_at              :datetime
 #  slug                      :string           indexed
+#  soak_ended_at             :datetime
+#  soak_period_hours         :integer
 #  soak_started_at           :datetime
 #  status                    :string           not null
 #  stopped_at                :datetime
@@ -613,7 +615,7 @@ class Release < ApplicationRecord
   delegate :soak_period_enabled?, to: :train
 
   def soak_period_hours
-    train.soak_period_hours || 24
+    read_attribute(:soak_period_hours) || train.soak_period_hours || 24
   end
 
   def soak_period_active?
@@ -622,8 +624,9 @@ class Release < ApplicationRecord
 
   def soak_period_completed?
     return false if soak_started_at.blank?
+    return true if soak_ended_at.present?  # Manually ended
     return false if soak_end_time.blank?
-    Time.current >= soak_end_time
+    Time.current >= soak_end_time  # Naturally completed
   end
 
   def soak_end_time
