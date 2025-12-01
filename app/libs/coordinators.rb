@@ -83,8 +83,24 @@ module Coordinators
       Coordinators::SoakPeriod::Start.call(release)
 
       # If soak period is active, block further progression
-      return if release.reload.soak_period_active?
+      if release.reload.soak_period_active?
+        return
+      else
+        pre_production_phase_is_complete!(release_platform_run, build)
+      end
+    end
 
+    def self.continue_after_soak_period!(release)
+      release.release_platform_runs.each do |release_platform_run|
+        # Skip if this platform run doesn't have a successful beta release
+        latest_beta = release_platform_run.latest_beta_release
+        next unless latest_beta&.finished?
+        latest_beta_build = latest_beta.build
+        pre_production_phase_is_complete!(release_platform_run, latest_beta_build)
+      end
+    end
+
+    def self.pre_production_phase_is_complete!(release_platform_run, build)
       if release_platform_run.conf.production_release.present?
         Coordinators::StartProductionRelease.call(release_platform_run, build.id)
       else
@@ -94,23 +110,6 @@ module Coordinators
 
     def self.production_release_is_complete!(release_platform_run)
       Coordinators::FinishPlatformRun.call(release_platform_run)
-    end
-
-    def self.continue_after_soak_period!(release)
-      # Continue the workflow for all platform runs that were blocked by soak period
-      release.release_platform_runs.each do |release_platform_run|
-        # Skip if this platform run doesn't have a successful beta release
-        latest_beta = release_platform_run.latest_beta_release
-        next unless latest_beta&.finished?
-        latest_beta_build = latest_beta.build
-
-        # Continue with the workflow that was blocked by soak period
-        if release_platform_run.conf.production_release.present?
-          Coordinators::StartProductionRelease.call(release_platform_run, latest_beta_build.id)
-        else
-          Coordinators::FinishPlatformRun.call(release_platform_run)
-        end
-      end
     end
 
     def self.workflow_run_trigger_failed!(workflow_run)
