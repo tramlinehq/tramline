@@ -4,6 +4,7 @@
 #
 #  id                        :uuid             not null, primary key
 #  branch_name               :string           not null
+#  commit_hash               :string
 #  completed_at              :datetime
 #  hotfixed_from             :uuid
 #  internal_notes            :jsonb

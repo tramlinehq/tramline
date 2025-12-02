@@ -37,6 +37,11 @@ module Coordinators
               ref: commit,
               type: :commit
             }
+          elsif (commit = release.commit_hash).present?
+            {
+              ref: commit,
+              type: :commit
+            }
           else
             {
               ref: working_branch,
