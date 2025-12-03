@@ -130,9 +130,9 @@ describe Coordinators::Signals do
     end
 
     it "schedules soak period completion job" do
-      allow(Coordinators::SoakPeriodCompletionJob).to receive(:perform_in)
+      allow(Coordinators::SoakPeriodExpiredJob).to receive(:perform_in)
       described_class.beta_release_is_finished!(build)
-      expect(Coordinators::SoakPeriodCompletionJob).to have_received(:perform_in).with(24.hours, anything)
+      expect(Coordinators::SoakPeriodExpiredJob).to have_received(:perform_in).with(24.hours, anything)
     end
 
     context "when soak period is not enabled" do

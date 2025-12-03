@@ -30,12 +30,12 @@ describe Coordinators::SoakPeriod::Start do
       end
 
       it "schedules completion job" do
-        allow(Coordinators::SoakPeriodCompletionJob).to receive(:perform_in)
+        allow(Coordinators::SoakPeriodExpiredJob).to receive(:perform_in)
 
         described_class.call(release)
         beta_soak = release.reload.beta_soak
 
-        expect(Coordinators::SoakPeriodCompletionJob).to have_received(:perform_in).with(24.hours, beta_soak.id)
+        expect(Coordinators::SoakPeriodExpiredJob).to have_received(:perform_in).with(24.hours, beta_soak.id)
       end
 
       it "does not create if beta soak already exists" do

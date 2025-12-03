@@ -15,7 +15,7 @@ class Coordinators::SoakPeriod::Start
 
     beta_soak = release.create_beta_soak!(started_at: Time.current, period_hours: release.train.soak_period_hours)
     event_stamp!(beta_soak)
-    Coordinators::SoakPeriodCompletionJob.perform_in(beta_soak.period_hours.hours, beta_soak.id)
+    Coordinators::SoakPeriodExpiredJob.perform_in(beta_soak.period_hours.hours, beta_soak.id)
   end
 
   private
