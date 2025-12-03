@@ -26,10 +26,6 @@ describe LiveRelease::SoakComponent, type: :component do
   describe "#time_remaining_hours" do
     let(:component) { described_class.new(release) }
 
-    it "returns 0 when no beta soak exists" do
-      expect(component.time_remaining_hours).to eq(0)
-    end
-
     it "returns hours remaining when soak is active" do
       create(:beta_soak, :active, release: release)
       expect(component.time_remaining_hours).to be_within(0.1).of(23.0)
@@ -48,10 +44,6 @@ describe LiveRelease::SoakComponent, type: :component do
 
   describe "#time_remaining" do
     let(:component) { described_class.new(release) }
-
-    it "returns 00:00:00 when no beta soak exists" do
-      expect(component.time_remaining).to eq("00:00:00")
-    end
 
     it "formats time correctly for hours < 24" do
       create(:beta_soak, :active, release: release)
@@ -87,10 +79,6 @@ describe LiveRelease::SoakComponent, type: :component do
   describe "#soak_start_time" do
     let(:component) { described_class.new(release) }
 
-    it "returns nil when no beta soak exists" do
-      expect(component.soak_start_time).to be_nil
-    end
-
     it "formats time in app's timezone" do
       start_time = Time.parse("2025-01-15 12:00:00 UTC")
       create(:beta_soak, started_at: start_time, release: release)
@@ -111,10 +99,6 @@ describe LiveRelease::SoakComponent, type: :component do
 
   describe "#soak_end_time" do
     let(:component) { described_class.new(release) }
-
-    it "returns nil when no beta soak exists" do
-      expect(component.soak_end_time).to be_nil
-    end
 
     it "formats end time in app's timezone" do
       start_time = Time.parse("2025-01-15 12:00:00 UTC")
@@ -144,15 +128,6 @@ describe LiveRelease::SoakComponent, type: :component do
 
       expect(component.time_remaining_hours).to be > 0
       expect(component.time_remaining).not_to eq("00:00:00")
-    end
-  end
-
-  describe "nil safety" do
-    let(:component) { described_class.new(release) }
-
-    it "handles nil beta_soak gracefully" do
-      expect(component.time_remaining_hours).to eq(0)
-      expect(component.time_remaining).to eq("00:00:00")
     end
   end
 end

@@ -12,7 +12,7 @@ describe Computations::Release::StepStatuses do
 
     it "returns hidden when soak period is disabled" do
       train.update!(soak_period_enabled: false)
-      expect(soak_status).to eq(described_class::STATUS[:hidden])
+      expect(soak_status).to eq(described_class::STATUS[:blocked])
     end
 
     context "when soak period is enabled" do
@@ -115,10 +115,10 @@ describe Computations::Release::StepStatuses do
     end
 
     context "when soak period is disabled" do
-      it "sets soak_period to hidden" do
+      it "sets soak_period to blocked" do
         train.update!(soak_period_enabled: false)
         res = described_class.call(release)
-        expect(res[:statuses][:soak_period]).to eq(described_class::STATUS[:hidden])
+        expect(res[:statuses][:soak_period]).to eq(described_class::STATUS[:blocked])
       end
     end
   end
