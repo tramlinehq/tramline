@@ -22,6 +22,7 @@ class Coordinators::SoakPeriod::End
     end
 
     beta_soak.event_stamp!(reason: :beta_soak_ended, kind: :notice, data: {who: who})
+    beta_soak.notify!("Soak period was ended!", :soak_period_ended, beta_soak.notification_params)
     Coordinators::Signals.continue_after_soak_period!(release)
   end
 

@@ -14,6 +14,8 @@ class BetaSoak < ApplicationRecord
   include Passportable
 
   belongs_to :release
+  delegate :train, to: :release
+  delegate :notify!, to: :train
 
   STAMPABLE_REASONS = %w[
     beta_soak_started
@@ -33,5 +35,14 @@ class BetaSoak < ApplicationRecord
     return 0 if expired? || ended_at.present?
     remaining = end_time - Time.current
     [remaining, 0].max
+  end
+
+  def notification_params
+    release.notification_params.merge(
+      {
+        beta_soak_started_at: started_at.in_time_zone(release.app.timezone),
+        beta_soak_ended_at: ended_at&.in_time_zone(release.app.timezone),
+        beta_soak_time_remaining: time_remaining,
+      })
   end
 end

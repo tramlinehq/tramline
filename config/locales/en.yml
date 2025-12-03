@@ -299,6 +299,9 @@ en:
           workflow_run_unavailable: "Workflow run unavailable"
           workflow_trigger_failed: "Workflow trigger failed"
           rc_finished: "RC finished"
+          soak_period_started: "Soak period started"
+          soak_period_ended: "Soak period ended"
+          soak_period_extended: "Soak period extended"
       release_platform_run:
         platform:
           ios: "iOS"

@@ -15,6 +15,7 @@ class Coordinators::SoakPeriod::Start
 
     beta_soak = release.create_beta_soak!(started_at: Time.current, period_hours: release.train.soak_period_hours)
     event_stamp!(beta_soak)
+    notify!(beta_soak)
     Coordinators::SoakPeriodExpiredJob.perform_in(beta_soak.period_hours.hours, beta_soak.id)
   end
 
@@ -25,5 +26,9 @@ class Coordinators::SoakPeriod::Start
   def event_stamp!(beta_soak)
     ends_at = beta_soak.end_time.in_time_zone(release.app.timezone).strftime("%Y-%m-%d %H:%M %Z")
     beta_soak.event_stamp!(reason: :beta_soak_started, kind: :notice, data: {ends_at: ends_at})
+  end
+
+  def notify!(beta_soak)
+    beta_soak.notify!("Soak period has started!", :soak_period_started, beta_soak.notification_params)
   end
 end

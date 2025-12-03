@@ -22,6 +22,7 @@ class Coordinators::SoakPeriod::Extend
 
     beta_soak.reload
     event_stamp!
+    notify!
   end
 
   private
@@ -39,5 +40,9 @@ class Coordinators::SoakPeriod::Extend
         extended_by: who.id
       }
     )
+  end
+
+  def notify!
+    beta_soak.notify!("Soak period was extended!", :soak_period_extended, beta_soak.notification_params)
   end
 end
