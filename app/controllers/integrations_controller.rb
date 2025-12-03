@@ -2,11 +2,12 @@ class IntegrationsController < SignedInApplicationController
   using RefinedString
   include Tabbable
 
-  before_action :require_write_access!, only: %i[connect create build_artifact_channels destroy]
+  before_action :require_write_access!, only: %i[connect create build_artifact_channels destroy reauth]
   before_action :set_app_config_tabs, only: %i[index]
   before_action :set_integration, only: %i[connect create reuse]
   before_action :set_existing_integration, only: %i[reuse]
   before_action :set_providable, only: %i[connect create]
+  before_action :set_reauth_integration, only: %i[reauth]
 
   def connect
     redirect_to(@integration.install_path, allow_other_host: true)
@@ -27,6 +28,10 @@ class IntegrationsController < SignedInApplicationController
     else
       redirect_to app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
     end
+  end
+
+  def reauth
+    redirect_to(@reauth_integration.install_path, allow_other_host: true)
   end
 
   def create
@@ -81,6 +86,13 @@ class IntegrationsController < SignedInApplicationController
 
   def set_existing_integration
     @existing_integration = Integration.find_by(id: params[:integration][:existing_integration_id])
+  end
+
+  def set_reauth_integration
+    @reauth_integration = @app.integrations.needs_reauth.find(params[:id])
+    @reauth_integration.current_user = current_user
+    # the current_user should be reflected correctly in the associated providable
+    @reauth_integration.providable.integration = @reauth_integration
   end
 
   def set_providable

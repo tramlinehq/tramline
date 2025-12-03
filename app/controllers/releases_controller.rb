@@ -3,6 +3,7 @@ class ReleasesController < SignedInApplicationController
   include Filterable
   include Tabbable
   include Pagy::Backend
+  include MobileDeviceAllowable
 
   before_action :require_write_access!, only: %i[create destroy update override_approvals copy_approvals post_release finish_release]
   before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals post_release finish_release regression_testing wrap_up_automations live_release ongoing_release upcoming_release hotfix_release]
@@ -170,7 +171,11 @@ class ReleasesController < SignedInApplicationController
   end
 
   def current_release_path(current_release)
-    release_path(current_release)
+    if mobile_device?
+      mobile_release_path(current_release)
+    else
+      release_path(current_release)
+    end
   end
 
   def train_path

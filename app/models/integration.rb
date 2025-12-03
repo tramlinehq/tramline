@@ -19,6 +19,7 @@ class Integration < ApplicationRecord
   using RefinedArray
   using RefinedString
   include Discard::Model
+  include Loggable
 
   self.ignored_columns += %w[app_id]
 
@@ -72,7 +73,7 @@ class Integration < ApplicationRecord
   }.freeze
 
   enum :category, ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_map_self
-  enum :status, {connected: "connected", disconnected: "disconnected"}
+  enum :status, {connected: "connected", disconnected: "disconnected", needs_reauth: "needs_reauth"}
 
   CATEGORY_DESCRIPTIONS = {
     version_control: "Automatically create release branches and tags, and merge release PRs.",
@@ -92,7 +93,7 @@ class Integration < ApplicationRecord
   validate :validate_providable, on: :create
   validate :app_variant_restriction, on: :create
   validates :category, presence: true
-  validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: -> { integrable_id.present? && connected? }}
+  validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: -> { integrable_id.present? && (connected? || needs_reauth?) }}
 
   attr_accessor :current_user, :code
 
@@ -100,13 +101,14 @@ class Integration < ApplicationRecord
   delegate :platform, to: :integrable
 
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
+  scope :linked, -> { where(status: [:connected, :needs_reauth]) }
 
   before_create :set_connected
   after_create_commit -> { IntegrationMetadataJob.perform_async(id) }
 
   class << self
     def by_categories_for(app)
-      existing_integrations = app.integrations.connected.includes(:providable)
+      existing_integrations = app.integrations.linked.includes(:providable)
       integrations = ALLOWED_INTEGRATIONS_FOR_APP[app.platform]
 
       integrations.each_with_object({}) do |(category, providers), combination|
@@ -298,7 +300,6 @@ class Integration < ApplicationRecord
     def bitrise_ready?
       app = first.integrable
       return true unless app.bitrise_connected?
-
       bitrise_ci_cd_provider&.project.present?
     end
 
@@ -358,12 +359,25 @@ class Integration < ApplicationRecord
 
   def disconnect
     return unless disconnectable?
+
     transaction do
       update!(status: :disconnected, discarded_at: Time.current)
       true
     end
   rescue ActiveRecord::RecordInvalid => e
     errors.add(:base, e.message)
+    false
+  end
+
+  def mark_needs_reauth!
+    return unless connected?
+
+    transaction do
+      update!(status: :needs_reauth)
+      true
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    elog(e, level: :error)
     false
   end
 
@@ -386,6 +400,7 @@ class Integration < ApplicationRecord
       app_id: integrable.app_id,
       integration_category: category,
       integration_provider: providable_type,
+      integration_id: id,
       user_id: current_user.id
     }.to_json.encode
   end
