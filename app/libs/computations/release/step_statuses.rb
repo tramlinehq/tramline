@@ -60,7 +60,7 @@ class Computations::Release::StepStatuses
   end
 
   def soak_period_status
-    return STATUS[:hidden] unless @release.soak_period_enabled?
+    return STATUS[:blocked] unless @release.soak_period_enabled?
     return STATUS[:blocked] if release_candidate_status != STATUS[:success]
     return STATUS[:success] if @release.beta_soak&.ended_at.present?
     return STATUS[:ongoing] unless @release.beta_soak&.expired?

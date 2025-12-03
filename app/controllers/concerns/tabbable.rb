@@ -117,7 +117,6 @@ module Tabbable
     sections[:stability][:soak_period][:icon] = "alarm_clock.svg"
     sections[:stability][:soak_period][:position] = 6
     sections[:stability][:soak_period][:status] = live_release_step_statuses[:statuses][:soak_period]
-    # sections[:stability][:soak_period][:unavailable] = (live_release_step_statuses[:statuses][:soak_period] == :hidden)
 
     sections[:metadata] = {
       notes: Release::SECTIONS[:notes],

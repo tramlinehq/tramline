@@ -1,5 +1,6 @@
 class Coordinators::SoakPeriod::End
   def self.call(beta_soak, who)
+    return unless beta_soak
     new(beta_soak, who).call
   end
 
@@ -11,7 +12,6 @@ class Coordinators::SoakPeriod::End
 
   def call
     return unless release.active?
-    return unless beta_soak
 
     # Either ends:
     # 1. Automatically by Tramline

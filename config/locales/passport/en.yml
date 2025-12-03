@@ -14,10 +14,6 @@ en:
       finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>'
       approvals_overwritten_html: 'Approval items were force-approved by the release captain'
       tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
-      soak_period_started_html: 'Soak period started and will end at <span class="emphasize">%{ends_at}</span>'
-      soak_period_ended_early_html: 'Soak period ended early by the release pilot'
-      soak_period_extended_html: 'Soak period extended by <span class="emphasize">%{additional_hours} hours</span>, new end time is <span class="emphasize">%{new_end_time}</span>'
-      soak_period_completed_html: 'Soak period completed automatically'
     release_platform_run:
       version_changed_html: 'Updated the release version to <span class="emphasize">%{version}</span>'
       version_corrected_html: 'Updated the release version to <span class="emphasize">%{version}</span> since the ongoing release has moved on to <span class="emphasize">%{ongoing_version}</span>'

@@ -1,5 +1,6 @@
 class Coordinators::SoakPeriod::Extend
   def self.call(beta_soak, additional_hours, who)
+    return unless beta_soak
     new(beta_soak, additional_hours, who).call
   end
 
@@ -12,7 +13,6 @@ class Coordinators::SoakPeriod::Extend
 
   def call
     return unless release.active?
-    return unless beta_soak
     return if additional_hours <= 0
 
     beta_soak.with_lock do

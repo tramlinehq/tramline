@@ -23,7 +23,6 @@ class BetaSoaksController < SignedInApplicationController
     additional_hours = 1 if additional_hours <= 0
 
     res = Action.extend_soak_period!(@beta_soak, additional_hours, current_user)
-
     if res.ok?
       redirect_to release_beta_soak_path(@release), notice: t(".success", hours: additional_hours)
     else

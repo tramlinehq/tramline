@@ -7,7 +7,9 @@ describe Coordinators::SoakPeriodCompletionJob do
 
   describe "#perform" do
     it "does nothing if beta soak is missing" do
-      expect { described_class.new.perform(beta_soak.id) }.not_to raise_error
+      id = beta_soak.id
+      beta_soak.destroy
+      expect { described_class.new.perform(id) }.not_to raise_error
     end
 
     it "calls Coordinators::SoakPeriod::End.call" do
