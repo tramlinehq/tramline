@@ -275,31 +275,27 @@ describe Coordinators::Actions do
 
   describe ".end_soak_period!" do
     let(:train) { create(:train, soak_period_enabled: true, soak_period_hours: 24) }
-    let(:release) { create(:release, :on_track, train:, soak_started_at: 1.hour.ago) }
-    let(:release_pilot) { release.train.app.organization.owner }
+    let(:release) { create(:release, :on_track, train:) }
+    let(:user) { release.train.app.organization.owner }
     let(:other_user) { create(:user, :as_developer, member_organization: release.train.app.organization) }
 
     it "returns ok when soak period is ended successfully" do
-      result = described_class.end_soak_period!(release, release_pilot)
+      beta_soak = create(:beta_soak, :active, release: release)
+      result = described_class.end_soak_period!(beta_soak, user)
       expect(result).to be_ok
     end
 
-    it "returns error when user is not release pilot" do
-      result = described_class.end_soak_period!(release, other_user)
-      expect(result).not_to be_ok
-      expect(result.error.message).to eq("only release pilot can end soak period")
-    end
-
     it "returns error when soak period is not active" do
-      release.update!(soak_started_at: nil)
-      result = described_class.end_soak_period!(release, release_pilot)
+      beta_soak = create(:beta_soak, :ended, release: release)
+      result = described_class.end_soak_period!(beta_soak, user)
       expect(result).not_to be_ok
-      expect(result.error.message).to eq("soak period is not active")
+      expect(result.error.message).to eq("soak period has already ended")
     end
 
     it "returns error when release is not active" do
+      beta_soak = create(:beta_soak, :active, release: release)
       release.update!(status: "stopped")
-      result = described_class.end_soak_period!(release, release_pilot)
+      result = described_class.end_soak_period!(beta_soak, user)
       expect(result).not_to be_ok
       expect(result.error.message).to eq("release is not active")
     end
@@ -307,39 +303,35 @@ describe Coordinators::Actions do
 
   describe ".extend_soak_period!" do
     let(:train) { create(:train, soak_period_enabled: true, soak_period_hours: 24) }
-    let(:release) { create(:release, :on_track, train:, soak_started_at: 1.hour.ago) }
-    let(:release_pilot) { release.train.app.organization.owner }
+    let(:release) { create(:release, :on_track, train:) }
+    let(:user) { release.train.app.organization.owner }
     let(:other_user) { create(:user, :as_developer, member_organization: release.train.app.organization) }
 
     it "returns ok when soak period is extended successfully" do
-      result = described_class.extend_soak_period!(release, 12, release_pilot)
+      beta_soak = create(:beta_soak, :active, release: release)
+      result = described_class.extend_soak_period!(beta_soak, 12, user)
       expect(result).to be_ok
     end
 
-    it "returns error when user is not release pilot" do
-      result = described_class.extend_soak_period!(release, 12, other_user)
-      expect(result).not_to be_ok
-      expect(result.error.message).to eq("only release pilot can extend soak period")
-    end
-
     it "returns error when soak period is not active" do
-      release.update!(soak_started_at: nil)
-      result = described_class.extend_soak_period!(release, 12, release_pilot)
+      beta_soak = create(:beta_soak, :ended, release: release)
+      result = described_class.extend_soak_period!(beta_soak, 12, user)
       expect(result).not_to be_ok
-      expect(result.error.message).to eq("soak period is not active")
+      expect(result.error.message).to eq("soak period has ended and cannot be extended")
     end
 
     it "returns error when release is not active" do
+      beta_soak = create(:beta_soak, :active, release: release)
       release.update!(status: "stopped")
-      result = described_class.extend_soak_period!(release, 12, release_pilot)
+      result = described_class.extend_soak_period!(beta_soak, 12, user)
       expect(result).not_to be_ok
       expect(result.error.message).to eq("release is not active")
     end
 
     it "returns error when additional_hours is invalid" do
-      result = described_class.extend_soak_period!(release, 0, release_pilot)
+      result = described_class.extend_soak_period!(release, 0, user)
       expect(result).not_to be_ok
-      expect(result.error.message).to eq("additional hours must be greater than 0")
+      expect(result.error.message).to eq("extension hours must be positive")
     end
   end
 end

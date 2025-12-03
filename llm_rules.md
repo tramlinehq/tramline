@@ -599,8 +599,8 @@ end
     </div>
 
     <% if show_soak_actions? %>
-      <%= button_to "End Early", end_soak_release_path(@release), method: :patch %>
-      <%= button_to "Extend", extend_soak_release_path(@release), method: :patch %>
+      <%= button_to "End Early", end_soak_release_beta_soak_path(@release), method: :post %>
+      <%= button_to "Extend", extend_soak_release_beta_soak_path(@release), method: :post %>
     <% elsif show_pilot_only_message? %>
       <p class="text-gray-500">Only release pilot can modify soak period</p>
     <% end %>

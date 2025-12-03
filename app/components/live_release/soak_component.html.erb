@@ -2,27 +2,27 @@
   <% if show_soak_actions? %>
     <% card.with_action do %>
       <%= render ButtonComponent.new(
-        scheme: :danger,
-        type: :link,
-        size: :xxs,
-        label: "End soak",
-        options: end_soak_release_path(@release),
-        html_options: html_opts(:post, "Are you sure you want to end the soak period early?")
-      ) do |b|
-        b.with_icon("stop.svg")
-      end %>
+            scheme: :danger,
+            type: :link,
+            size: :xxs,
+            label: "End soak",
+            options: end_soak_release_beta_soak_path(@release),
+            html_options: html_opts(:post, "Are you sure you want to end the soak period early?")
+          ) do |b|
+            b.with_icon("stop.svg")
+          end %>
     <% end %>
     <% card.with_action do %>
       <%= render ButtonComponent.new(
-        scheme: :light,
-        type: :link,
-        size: :xxs,
-        label: "Extend soak",
-        options: extend_soak_release_path(@release, additional_hours: 24),
-        html_options: html_opts(:post, "Extend soak period by 24 hours?")
-      ) do |b|
-        b.with_icon("ruler.svg")
-      end %>
+            scheme: :light,
+            type: :link,
+            size: :xxs,
+            label: "Extend soak",
+            options: extend_soak_release_beta_soak_path(@release, additional_hours: 1),
+            html_options: html_opts(:post, "Extend soak period by 1 hour?")
+          ) do |b|
+            b.with_icon("ruler.svg")
+          end %>
     <% end %>
   <% end %>
 
@@ -39,17 +39,17 @@
       <% end %>
     <% end %>
 
-    <% if @release.soak_started_at.present? %>
+    <% if beta_soak&.started_at.present? %>
       <div data-controller="countdown"
            data-countdown-count-down-hours-value="<%= time_remaining_hours %>"
            data-countdown-direction-value="down"
            class="flex justify-center items-center border-default box-padding">
         <div class="flex flex-col item-gap-default items-center">
-          <% if @release.soak_period_completed? %>
+          <% if beta_soak&.ended_at.present? %>
             <div class="text-xl">Soak period has ended</div>
           <% else %>
-            <div class="text-xl text-secondary">Soak time remaining</div>
-            <div class="text-4xl" data-countdown-target="output"><%= time_remaining_display %></div>
+            <div class="text-2xl text-secondary">Soak time remaining</div>
+            <div class="text-4xl" data-countdown-target="output"><%= time_remaining %></div>
           <% end %>
         </div>
       </div>
@@ -57,19 +57,19 @@
       <div class="flex justify-center items-center border-default box-padding">
         <div class="flex flex-col item-gap-default items-center">
           <div class="text-md text-secondary">Soak period will start when RC is available</div>
-          <div class="text-4xl"><%= time_remaining_display %></div>
+          <div class="text-4xl"><%= time_remaining %></div>
         </div>
       </div>
     <% end %>
 
     <div class="flex flex-col text-secondary text-xs">
       <div>† Soak starts as soon as an active Release Candidate is available.</div>
-      <div>‡ App submission will be enabled once your configured <%= @release.soak_period_hours %>-hour soak period
+      <div>‡ App submission will be enabled once your <%= beta_soak&.period_hours %>-hour soak period
         ends.
       </div>
 
-      <% if @release.soak_started_at.present? && !@release.soak_period_completed? %>
-        <div>‡ Soak period started at <%= soak_start_time_display %> and will end at <%= soak_end_time_display %>.</div>
+      <% if beta_soak&.started_at.present? && !beta_soak&.ended_at.present? %>
+        <div>‡ Soak period started at <strong><%= soak_start_time %></strong> and will end at <strong><%= soak_end_time %></strong>.</div>
       <% end %>
     </div>
   </div>

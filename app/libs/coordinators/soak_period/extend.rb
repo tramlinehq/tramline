@@ -1,27 +1,37 @@
 class Coordinators::SoakPeriod::Extend
-  def self.call(release, additional_hours, who)
-    new(release, additional_hours, who).call
+  def self.call(beta_soak, additional_hours, who)
+    new(beta_soak, additional_hours, who).call
   end
 
-  def initialize(release, additional_hours, who)
-    @release = release
-    @additional_hours = additional_hours
+  def initialize(beta_soak, additional_hours, who)
+    @beta_soak = beta_soak
+    @release = beta_soak.release
+    @additional_hours = additional_hours.to_i
     @who = who
   end
 
   def call
-    return false if additional_hours.to_i <= 0
+    return unless release.active?
+    return unless beta_soak
+    return if additional_hours <= 0
 
-    release.with_lock do
-      return false unless release.active?
-      return false unless soak_period_active?
-      # Add additional hours to the release's soak period duration
-      new_duration = release.soak_period_hours + additional_hours.to_i
-      release.update!(soak_period_hours: new_duration)
+    beta_soak.with_lock do
+      return if beta_soak.ended_at.present? || beta_soak.expired?
+      beta_soak.update!(period_hours: beta_soak.period_hours + additional_hours)
     end
 
-    release.event_stamp!(
-      reason: :soak_period_extended,
+    beta_soak.reload
+    event_stamp!
+  end
+
+  private
+
+  attr_reader :release, :additional_hours, :who, :beta_soak
+
+  def event_stamp!
+    new_end_time_display = beta_soak.end_time.in_time_zone(release.app.timezone).strftime("%Y-%m-%d %H:%M %Z")
+    beta_soak.event_stamp!(
+      reason: :beta_soak_extended,
       kind: :notice,
       data: {
         additional_hours: additional_hours,
@@ -29,25 +39,5 @@ class Coordinators::SoakPeriod::Extend
         extended_by: who.id
       }
     )
-    true
-  end
-
-  private
-
-  attr_reader :release, :additional_hours, :who
-
-  def soak_period_active?
-    release.soak_started_at.present? && !soak_period_completed?
-  end
-
-  def soak_period_completed?
-    return false if release.soak_started_at.blank?
-    soak_end_time = release.soak_started_at + release.soak_period_hours.hours
-    Time.current >= soak_end_time
-  end
-
-  def new_end_time_display
-    new_end_time = release.soak_started_at + additional_hours.hours + release.soak_period_hours.hours
-    new_end_time.in_time_zone(release.app.timezone).strftime("%Y-%m-%d %H:%M %Z")
   end
 end

@@ -15,9 +15,6 @@
 #  release_type              :string           not null
 #  scheduled_at              :datetime
 #  slug                      :string           indexed
-#  soak_ended_at             :datetime
-#  soak_period_hours         :integer
-#  soak_started_at           :datetime
 #  status                    :string           not null
 #  stopped_at                :datetime
 #  tag_name                  :string
@@ -66,10 +63,6 @@ class Release < ApplicationRecord
     finalize_failed
     stopped
     finished
-    soak_period_started
-    soak_period_ended_early
-    soak_period_extended
-    soak_period_completed
   ]
   STAMPABLE_REASONS.concat(%w[status_changed backmerge_pr_created pr_merged pull_request_not_mergeable post_release_pr_succeeded kickoff_pr_succeeded]) # TODO: deprecate this
   STATES = {
@@ -126,6 +119,7 @@ class Release < ApplicationRecord
   has_many :production_releases, through: :release_platform_runs
   has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
   has_many :outgoing_webhook_events, dependent: :destroy, inverse_of: :release
+  has_one :beta_soak, dependent: :destroy
 
   scope :completed, -> { where(status: TERMINAL_STATES) }
   scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
@@ -613,33 +607,6 @@ class Release < ApplicationRecord
   end
 
   delegate :soak_period_enabled?, to: :train
-
-  def soak_period_hours
-    read_attribute(:soak_period_hours) || train.soak_period_hours || 24
-  end
-
-  def soak_period_active?
-    soak_started_at.present? && !soak_period_completed?
-  end
-
-  def soak_period_completed?
-    return false if soak_started_at.blank?
-    return true if soak_ended_at.present?  # Manually ended
-    return false if soak_end_time.blank?
-    Time.current >= soak_end_time  # Naturally completed
-  end
-
-  def soak_end_time
-    return nil if soak_started_at.blank?
-    return nil if soak_period_hours.blank?
-    soak_started_at + soak_period_hours.hours
-  end
-
-  def soak_time_remaining
-    return nil unless soak_period_active?
-    return nil if soak_end_time.blank?
-    [soak_end_time - Time.current, 0].max
-  end
 
   private
 

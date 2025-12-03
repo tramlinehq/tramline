@@ -111,7 +111,7 @@ describe Coordinators::Signals do
     it "starts the soak period when beta release finishes" do
       expect {
         described_class.beta_release_is_finished!(build)
-      }.to change { release.reload.soak_started_at }.from(nil)
+      }.to change { release.reload.beta_soak&.started_at }.from(nil)
     end
 
     it "does not start soak when soak period is disabled" do
@@ -119,22 +119,20 @@ describe Coordinators::Signals do
 
       expect {
         described_class.beta_release_is_finished!(build)
-      }.not_to change { release.reload.soak_started_at }
+      }.not_to change { release.reload.beta_soak&.started_at }
     end
 
     it "blocks production release when soak period is active" do
       described_class.beta_release_is_finished!(build)
       expect(release_platform_run.reload.production_releases.size).to eq(0)
-      expect(release.reload.soak_started_at).to be_present
-      expect(release.reload.soak_period_active?).to be(true)
+      expect(release.reload.beta_soak&.started_at).to be_present
+      expect(release.reload.beta_soak&.expired?).to be(false)
     end
 
     it "schedules soak period completion job" do
-      expect {
-        described_class.beta_release_is_finished!(build)
-      }.to have_enqueued_sidekiq_job(Coordinators::SoakPeriodCompletionJob)
-        .with(release.id)
-        .in(24.hours)
+      allow(Coordinators::SoakPeriodCompletionJob).to receive(:perform_in)
+      described_class.beta_release_is_finished!(build)
+      expect(Coordinators::SoakPeriodCompletionJob).to have_received(:perform_in).with(24.hours, anything)
     end
 
     context "when soak period is not enabled" do
@@ -143,7 +141,7 @@ describe Coordinators::Signals do
       it "proceeds with normal workflow" do
         described_class.beta_release_is_finished!(build)
         expect(release_platform_run.reload.production_releases.size).to eq(1)
-        expect(release.reload.soak_started_at).to be_nil
+        expect(release.reload.beta_soak&.started_at).to be_nil
       end
     end
   end
@@ -156,8 +154,9 @@ describe Coordinators::Signals do
     let(:build) { create(:build, release_platform_run:) }
 
     before do
-      beta_release.update!(build: build)
-      release.update!(soak_started_at: 1.hour.ago)
+      workflow_run = create(:workflow_run, :rc, release_platform_run:, triggering_release: beta_release)
+      build.update!(workflow_run: workflow_run)
+      create(:beta_soak, :active, release: release)
     end
 
     it "continues with production release when config is present" do
@@ -174,7 +173,7 @@ describe Coordinators::Signals do
     end
 
     it "skips platform runs without finished beta releases" do
-      beta_release.update!(status: "inflight")
+      beta_release.update!(status: "created")
 
       expect {
         described_class.continue_after_soak_period!(release)

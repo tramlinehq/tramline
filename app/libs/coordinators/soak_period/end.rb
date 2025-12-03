@@ -1,38 +1,31 @@
 class Coordinators::SoakPeriod::End
-  def self.call(release, who)
-    new(release, who).call
+  def self.call(beta_soak, who)
+    new(beta_soak, who).call
   end
 
-  def initialize(release, who)
-    @release = release
-    @who = who
+  def initialize(beta_soak, who)
+    @beta_soak = beta_soak
+    @release = beta_soak.release
+    @who = who&.display_name || "Tramline"
   end
 
   def call
-    release.with_lock do
-      return false unless release.active?
-      return false unless soak_period_active?
-      # Record when the soak period was manually ended
-      release.update!(soak_ended_at: Time.current)
+    return unless release.active?
+    return unless beta_soak
+
+    # Either ends:
+    # 1. Automatically by Tramline
+    # 2. By user action
+    beta_soak.with_lock do
+      return if beta_soak.ended_at.present?
+      beta_soak.update!(ended_at: Time.current)
     end
 
-    release.event_stamp!(reason: :soak_period_ended_early, kind: :notice, data: { ended_by: who.id })
+    beta_soak.event_stamp!(reason: :beta_soak_ended, kind: :notice, data: {who: who})
     Coordinators::Signals.continue_after_soak_period!(release)
-
-    true
   end
 
   private
 
-  attr_reader :release, :who
-
-  def soak_period_active?
-    release.soak_started_at.present? && !soak_period_completed?
-  end
-
-  def soak_period_completed?
-    return false if release.soak_started_at.blank?
-    soak_end_time = release.soak_started_at + release.soak_period_hours.hours
-    Time.current >= soak_end_time
-  end
+  attr_reader :release, :beta_soak, :who
 end

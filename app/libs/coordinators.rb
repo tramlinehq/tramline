@@ -79,23 +79,26 @@ module Coordinators
       release_platform_run = build.release_platform_run
       release = release_platform_run.release
 
-      # Start soak period if enabled (cross-platform, starts when any RC is ready)
+      # start soak period if enabled (starts when any RC is ready across platforms)
       Coordinators::SoakPeriod::Start.call(release)
+      release.reload
+      # if soak is still running, block progression
+      return if release.beta_soak.present? && release.beta_soak.ended_at.blank?
 
-      # If soak period is active, block further progression
-      if release.reload.soak_period_active?
-        return
-      else
-        pre_production_phase_is_complete!(release_platform_run, build)
-      end
+      pre_production_phase_is_complete!(release_platform_run, build)
     end
 
     def self.continue_after_soak_period!(release)
       release.release_platform_runs.each do |release_platform_run|
-        # Skip if this platform run doesn't have a successful beta release
+        # if there are no beta/rc releases created, soak is not applicable
         latest_beta = release_platform_run.latest_beta_release
         next unless latest_beta&.finished?
         latest_beta_build = latest_beta.build
+
+        # soak only runs once in a release lifecycle,
+        # so skip if production releases already exist
+        next if release_platform_run.production_releases.any?
+
         pre_production_phase_is_complete!(release_platform_run, latest_beta_build)
       end
     end
@@ -321,20 +324,20 @@ module Coordinators
       end
     end
 
-    def self.end_soak_period!(release, who)
+    def self.end_soak_period!(beta_soak, who)
       Res.new do
-        raise "release is not active" unless release.active?
-        raise "soak period is not active" unless release.soak_period_active?
-        Coordinators::SoakPeriod::End.call(release, who)
+        raise "soak period has already ended" if beta_soak.ended_at.present?
+        raise "release is not active" unless beta_soak.release.active?
+        Coordinators::SoakPeriod::End.call(beta_soak, who)
       end
     end
 
-    def self.extend_soak_period!(release, additional_hours, who)
+    def self.extend_soak_period!(beta_soak, additional_hours, who)
       Res.new do
-        raise "release is not active" unless release.active?
-        raise "soak period is not active" unless release.soak_period_active?
         raise "extension hours must be positive" if additional_hours.to_i <= 0
-        Coordinators::SoakPeriod::Extend.call(release, additional_hours, who)
+        raise "soak period has ended and cannot be extended" if beta_soak.expired? || beta_soak.ended_at.present?
+        raise "release is not active" unless beta_soak.release.active?
+        Coordinators::SoakPeriod::Extend.call(beta_soak, additional_hours, who)
       end
     end
   end

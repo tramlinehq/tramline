@@ -204,6 +204,10 @@ class Accounts::User < ApplicationRecord
     github_login.blank? || team_for(organization).blank?
   end
 
+  def display_name
+    preferred_name.presence || full_name
+  end
+
   protected
 
   def confirmation_required?

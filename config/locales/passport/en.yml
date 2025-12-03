@@ -17,6 +17,7 @@ en:
       soak_period_started_html: 'Soak period started and will end at <span class="emphasize">%{ends_at}</span>'
       soak_period_ended_early_html: 'Soak period ended early by the release pilot'
       soak_period_extended_html: 'Soak period extended by <span class="emphasize">%{additional_hours} hours</span>, new end time is <span class="emphasize">%{new_end_time}</span>'
+      soak_period_completed_html: 'Soak period completed automatically'
     release_platform_run:
       version_changed_html: 'Updated the release version to <span class="emphasize">%{version}</span>'
       version_corrected_html: 'Updated the release version to <span class="emphasize">%{version}</span> since the ongoing release has moved on to <span class="emphasize">%{ongoing_version}</span>'
@@ -102,3 +103,7 @@ en:
         paused: 'Rollout paused'
         resumed: 'Rollout resumed'
         increased: 'Rollout increased'
+    beta_soak:
+      beta_soak_started_html: "Beta soak period started, ends at %{ends_at}"
+      beta_soak_extended_html: "Beta soak period extended by %{additional_hours} hours, new end time %{new_end_time}"
+      beta_soak_ended_html: "Beta soak period ended by %{who}"

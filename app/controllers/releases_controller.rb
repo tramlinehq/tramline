@@ -4,8 +4,8 @@ class ReleasesController < SignedInApplicationController
   include Tabbable
   include Pagy::Backend
 
-  before_action :require_write_access!, only: %i[create destroy update override_approvals copy_approvals post_release finish_release end_soak extend_soak]
-  before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals post_release finish_release regression_testing soak wrap_up_automations live_release ongoing_release upcoming_release hotfix_release end_soak extend_soak]
+  before_action :require_write_access!, only: %i[create destroy update override_approvals copy_approvals post_release finish_release]
+  before_action :set_release, only: %i[show destroy update timeline override_approvals copy_approvals post_release finish_release regression_testing wrap_up_automations live_release ongoing_release upcoming_release hotfix_release]
   before_action :set_train_and_app, only: %i[destroy timeline]
   before_action :ensure_approval_items_exist, only: %i[copy_approvals]
   before_action :ensure_approval_items_copyable, only: %i[copy_approvals]
@@ -72,25 +72,6 @@ class ReleasesController < SignedInApplicationController
     end
   end
 
-  def end_soak
-    if Action.end_soak_period!(@release, current_user).ok?
-      redirect_to soak_release_path(@release), notice: "Soak period has been ended early."
-    else
-      redirect_back fallback_location: root_path, flash: {error: "Unable to end soak period."}
-    end
-  end
-
-  def extend_soak
-    additional_hours = params[:additional_hours].to_i
-    additional_hours = 24 if additional_hours <= 0
-
-    if Action.extend_soak_period!(@release, additional_hours, current_user).ok?
-      redirect_to soak_release_path(@release), notice: "Soak period has been extended by #{additional_hours} hours."
-    else
-      redirect_back fallback_location: root_path, flash: {error: "Unable to extend soak period."}
-    end
-  end
-
   def overview
     live_release!
     set_train_and_app
@@ -102,11 +83,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   def regression_testing
-    live_release!
-    set_train_and_app
-  end
-
-  def soak
     live_release!
     set_train_and_app
   end

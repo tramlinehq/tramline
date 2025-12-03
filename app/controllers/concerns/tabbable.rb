@@ -68,7 +68,7 @@ module Tabbable
       internal_builds: release_internal_builds_path(@release),
       regression_testing: regression_testing_release_path(@release),
       release_candidate: release_release_candidates_path(@release),
-      soak_period: soak_release_path(@release),
+      soak_period: release_beta_soak_path(@release),
       notes: release_metadata_edit_path(@release),
       screenshots: root_path,
       approvals: release_approval_items_path(@release),

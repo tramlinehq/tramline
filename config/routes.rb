@@ -133,12 +133,16 @@ Rails.application.routes.draw do
           get :overview
           get :changeset_tracking
           get :regression_testing
-          get :soak
           get :wrap_up_automations
           patch :override_approvals
           post :copy_approvals
-          post :end_soak
-          post :extend_soak
+        end
+
+        resource :beta_soak, only: [:show] do
+          member do
+            post :end_soak
+            post :extend_soak
+          end
         end
 
         resources :outgoing_webhooks, only: [:index]
