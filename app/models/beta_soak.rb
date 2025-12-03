@@ -42,7 +42,8 @@ class BetaSoak < ApplicationRecord
       {
         beta_soak_started_at: started_at.in_time_zone(release.app.timezone),
         beta_soak_ended_at: ended_at&.in_time_zone(release.app.timezone),
-        beta_soak_time_remaining: time_remaining,
-      })
+        beta_soak_time_remaining: time_remaining
+      }
+    )
   end
 end
