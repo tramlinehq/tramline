@@ -13,9 +13,10 @@ describe Coordinators::SoakPeriodExpiredJob do
     end
 
     it "calls Coordinators::SoakPeriod::End.call" do
-      allow(Coordinators::SoakPeriod::End).to receive(:call).with(beta_soak, nil)
-      described_class.new.perform(beta_soak.id)
-      expect(Coordinators::SoakPeriod::End).to have_received(:call).with(beta_soak, nil)
+      expired_beta_soak = create(:beta_soak, :completed_naturally, release:)
+      allow(Coordinators::SoakPeriod::End).to receive(:call).with(expired_beta_soak, nil)
+      described_class.new.perform(expired_beta_soak.id)
+      expect(Coordinators::SoakPeriod::End).to have_received(:call).with(expired_beta_soak, nil)
     end
 
     it "reschedules the job if soak period has not expired" do

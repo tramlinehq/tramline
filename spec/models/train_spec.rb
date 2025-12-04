@@ -571,10 +571,10 @@ describe Train do
         expect(train.errors[:soak_period_hours]).to include("must be greater than 0")
       end
 
-      it "validates soak_period_hours is less than or equal to 168" do
-        train = build(:train, soak_period_enabled: true, soak_period_hours: 169)
+      it "validates soak_period_hours is less than or equal to 336" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 337)
         expect(train).not_to be_valid
-        expect(train.errors[:soak_period_hours]).to include("must be less than or equal to 168")
+        expect(train.errors[:soak_period_hours]).to include("must be less than or equal to 336")
       end
 
       it "is valid with soak_period_hours between 1 and 168" do
