@@ -46,10 +46,9 @@ class Coordinators::StartRelease
       raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix?
       raise UpcomingReleaseNotAllowed.new("Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?
       if train.almost_trunk? && commit_hash.present?
-        # TODO: Validate that the commit indeed exists on the train's working branch
-      else
-        raise NothingToRelease.new("No diff since last release") if regular_release? && !train.diff_since_last_release?
-        raise NothingToRelease.new("No diff between working and release branch") if train.parallel_working_branch? && !train.diff_for_release?
+      # TODO: Validate that the commit indeed exists on the train's working branch
+      elsif regular_release? && !train.diff_since_last_release?
+        raise NothingToRelease.new("No diff since last release")
       end
       train.activate! unless train.active?
       create_release
