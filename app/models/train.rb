@@ -26,6 +26,8 @@
 #  release_branch_pattern                         :string
 #  repeat_duration                                :interval
 #  slug                                           :string
+#  soak_period_enabled                            :boolean          default(FALSE), not null
+#  soak_period_hours                              :integer          default(24), not null
 #  status                                         :string           not null
 #  stop_automatic_releases_on_failure             :boolean          default(FALSE), not null
 #  tag_end_of_release                             :boolean          default(TRUE)
@@ -126,6 +128,7 @@ class Train < ApplicationRecord
   validate :version_bump_config
   validates :version_bump_strategy, inclusion: {in: VERSION_BUMP_STRATEGIES.keys.map(&:to_s)}, if: -> { version_bump_enabled? }
   validate :validate_token_fields, if: :validate_tokens?
+  validates :soak_period_hours, presence: true, numericality: {greater_than: 0, less_than_or_equal_to: 336}, if: -> { soak_period_enabled? }
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?

@@ -557,6 +557,55 @@ describe Train do
     end
   end
 
+  describe "soak period validations" do
+    context "when soak_period_enabled is true" do
+      it "validates presence of soak_period_hours" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: nil)
+        expect(train).not_to be_valid
+        expect(train.errors[:soak_period_hours]).to include("can't be blank")
+      end
+
+      it "validates soak_period_hours is greater than 0" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 0)
+        expect(train).not_to be_valid
+        expect(train.errors[:soak_period_hours]).to include("must be greater than 0")
+      end
+
+      it "validates soak_period_hours is less than or equal to 336" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 337)
+        expect(train).not_to be_valid
+        expect(train.errors[:soak_period_hours]).to include("must be less than or equal to 336")
+      end
+
+      it "is valid with soak_period_hours between 1 and 168" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 24)
+        expect(train).to be_valid
+      end
+
+      it "is valid with soak_period_hours at minimum boundary (1)" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 1)
+        expect(train).to be_valid
+      end
+
+      it "is valid with soak_period_hours at maximum boundary (168)" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 168)
+        expect(train).to be_valid
+      end
+    end
+
+    context "when soak_period_enabled is false" do
+      it "does not validate soak_period_hours" do
+        train = build(:train, soak_period_enabled: false, soak_period_hours: nil)
+        expect(train).to be_valid
+      end
+
+      it "is valid with out-of-range soak_period_hours when disabled" do
+        train = build(:train, soak_period_enabled: false, soak_period_hours: 200)
+        expect(train).to be_valid
+      end
+    end
+  end
+
   describe "build queue validations" do
     let(:train) { create(:train, :active) }
 

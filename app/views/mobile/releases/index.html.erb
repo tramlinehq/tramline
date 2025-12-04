@@ -31,6 +31,7 @@
                   <h3 class="font-semibold text-gray-500 dark:text-gray-300 break-all"><%= train.name %></h3>
                   <%= render PrepareReleaseComponent.new(train:, label: "Start release", size: :xxs) %>
                 </div>
+
                 <% train.releases.order(scheduled_at: :desc).limit(3).each do |release| %>
                   <% release_presenter = ReleasePresenter.new(release, self) %>
                   <a href="<%= mobile_release_path(release) %>" class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
