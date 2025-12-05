@@ -8,7 +8,7 @@ class Triggers::PatchPullRequest
     @commit = commit
     @pull_request = Triggers::PullRequest.new(
       release: release,
-      new_pull_request: (commit.build_pull_request(release:, phase: :ongoing) if commit.pull_request.blank?),
+      new_pull_request_attrs: {phase: :mid_release, kind: :back_merge, release_id: release.id, state: :open, commit_id: commit.id},
       to_branch_ref: working_branch,
       from_branch_ref: patch_branch,
       title: pr_title,
@@ -27,7 +27,7 @@ class Triggers::PatchPullRequest
 
   delegate :logger, to: Rails
   delegate :train, to: :release
-  delegate :working_branch, to: :train
+  delegate :working_branch, :continuous_backmerge_branch_prefix, to: :train
   attr_reader :release, :commit
 
   def pr_title
@@ -44,6 +44,6 @@ class Triggers::PatchPullRequest
   end
 
   def patch_branch
-    "patch-#{working_branch}-#{commit.short_sha}"
+    [continuous_backmerge_branch_prefix, "patch", working_branch, commit.short_sha].compact_blank.join("-")
   end
 end

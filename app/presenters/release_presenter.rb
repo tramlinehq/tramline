@@ -10,6 +10,8 @@ class ReleasePresenter < SimpleDelegator
     finished: {text: "Completed", status: :success},
     stopped: {text: "Stopped", status: :failure},
     created: {text: "Running", status: :ongoing},
+    pre_release_started: {text: "Preparing the release", status: :ongoing},
+    pre_release_failed: {text: "Could not prepare release", status: :failure},
     on_track: {text: "Running", status: :ongoing},
     upcoming: {text: "Upcoming", status: :inert},
     post_release: {text: "Finalizing", status: :neutral},
@@ -56,6 +58,11 @@ class ReleasePresenter < SimpleDelegator
     release_version
   end
 
+  def display_build_number
+    build_number = self.build_number
+    build_number.present? ? "(#{build_number})" : nil
+  end
+
   delegate :team_release_commits, :team_stability_commits, :reldex, to: :breakdown
 
   def hotfix_badge
@@ -78,8 +85,8 @@ class ReleasePresenter < SimpleDelegator
     badge
   end
 
-  def backmerge_pr_count
-    backmerge_prs.size
+  def mid_release_backmerge_pr_count
+    mid_release_back_merge_prs.size
   end
 
   def commit_count

@@ -1,26 +1,35 @@
 <%= render Form::SwitchComponent.new(form:,
-                                     field_name: :tag_releases,
-                                     on_label: "Release Tag enabled",
-                                     off_label: "Release Tag disabled",
-                                     hide_child: @train.tag_releases?) do |component| %>
+                                     field_name: :tag_end_of_release,
+                                     on_label: "End-of-release tagging enabled",
+                                     off_label: "End-of-release tagging disabled",
+                                     hide_child: @train.tag_end_of_release?) do |component| %>
+  <% component.with_info_icon do %>
+    Tag at the end of the release, when everything is rolled out and Tramline is just wrapping up.
+    It will tag the last good commit released from the release branch.
+  <% end %>
+
   <% component.with_child do %>
-    <section data-controller="help-text">
+    <div data-controller="help-text" class="flex flex-col item-gap-default">
       <div data-controller="string-affix"
            data-string-affix-base-string-value="<%= @train.version_current || @train.version_seeded_with || "1.0.0" %>"
            data-string-affix-common-prefix-value="v">
-        <%= form.labeled_text_field :tag_prefix, "Tag prefix",
-              placeholder: "Eg., foo",
-              autocomplete: "off",
-              data: {string_affix_target: "prefixInput", action: "string-affix#set"} %>
-        <%= form.labeled_text_field :tag_suffix, "Tag suffix",
-              placeholder: "Eg., nightly",
-              autocomplete: "off",
-              data: {string_affix_target: "suffixInput", action: "string-affix#set"} %>
-        <div class="text-sm mt-1">
-          These are appended to the <strong>tag name</strong> of the release, as follows:&nbsp;
+        <%= form.labeled_text_field :tag_end_of_release_prefix,
+                                    "Tag prefix",
+                                    placeholder: "Eg., foo",
+                                    autocomplete: "off",
+                                    data: {string_affix_target: "prefixInput", action: "string-affix#set"} %>
+        <%= form.labeled_text_field :tag_end_of_release_suffix,
+                                    "Tag suffix",
+                                    placeholder: "Eg., nightly",
+                                    autocomplete: "off",
+                                    data: {string_affix_target: "suffixInput", action: "string-affix#set"} %>
+        <div class="text-secondary text-sm mt-1">
+          These are appended to the <strong>tag name</strong> of the release (end-of-release tag only), as follows:&nbsp;
           <span class="font-mono" data-string-affix-target="helpText"></span>
         </div>
       </div>
-    </section>
+    </div>
   <% end %>
 <% end %>
+
+<%= render partial: "store_tags_form", locals: {form:} %>

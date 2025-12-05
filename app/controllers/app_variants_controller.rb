@@ -9,20 +9,17 @@ class AppVariantsController < SignedInApplicationController
   around_action :set_time_zone
 
   def index
-    @config = @app.config
-    @app_variants = @config.variants.to_a
-    @new_app_variant = @config.variants.build
+    @app_variants = @app.variants.to_a
+    @new_app_variant = @app.variants.build
     @none = @app_variants.empty?
   end
 
   def edit
-    @app_config = @app_variant.app_config
-    @app = @app_config.app
     set_firebase_app_configs
   end
 
   def create
-    @app_variant = @app.config.variants.new(create_params)
+    @app_variant = @app.variants.new(create_params)
     set_firebase_integration
 
     if @app_variant.save
@@ -52,9 +49,8 @@ class AppVariantsController < SignedInApplicationController
   private
 
   def set_app_variant
-    @app_variant = AppVariant.find(params[:id])
-    @app_config = @app_variant.app_config
-    @app = @app_config.app
+    @app_variant = AppVariant.friendly.find(params[:id])
+    @app = @app_variant.app
   end
 
   def app_variant_params
@@ -63,8 +59,6 @@ class AppVariantsController < SignedInApplicationController
         .require(:app_variant)
         .permit(:name,
           :bundle_identifier,
-          :firebase_android_config,
-          :firebase_ios_config,
           integrations: [:category, providable: [:json_key_file, :type, :project_number]])
   end
 
@@ -111,6 +105,6 @@ class AppVariantsController < SignedInApplicationController
   end
 
   def default_path
-    app_app_config_app_variants_path(@app)
+    app_app_variants_path(@app)
   end
 end

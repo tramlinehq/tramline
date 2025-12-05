@@ -5,6 +5,8 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  repository_config   :jsonb
+#  workspace           :string
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
@@ -26,8 +28,19 @@ class BitbucketIntegration < ApplicationRecord
   attr_accessor :code
   before_create :complete_access
   delegate :integrable, to: :integration
-  delegate :code_repository_name, to: :app_config
   delegate :cache, to: Rails
+
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
+
+  def code_repo_url
+    repository_config&.dig("repo_url", "href")
+  end
+
+  def code_repo_namespace = nil
+
+  def code_repo_name_only = nil
 
   def install_path
     BASE_INSTALLATION_URL
@@ -59,7 +72,7 @@ class BitbucketIntegration < ApplicationRecord
   def project_link = nil
 
   def further_setup?
-    false
+    true
   end
 
   def enable_auto_merge? = false
@@ -120,7 +133,9 @@ class BitbucketIntegration < ApplicationRecord
     state: :state,
     head_ref: [:source, :branch, :name],
     base_ref: [:destination, :branch, :name],
-    opened_at: :created_on
+    opened_at: :created_on,
+    closed_at: :updated_on,
+    merge_commit_sha: :merge_commit
   }
 
   COMMITS_TRANSFORMATIONS = {
@@ -210,6 +225,10 @@ class BitbucketIntegration < ApplicationRecord
     "https://bitbucket.org/#{code_repository_name}/pull-requests/?#{q}"
   end
 
+  def pr_url(pr_number)
+    "https://bitbucket.org/#{code_repository_name}/pull-requests/#{pr_number}"
+  end
+
   def tag_exists?(tag_name)
     with_api_retries { installation.get_tag(code_repository_name, tag_name) }.present?
   rescue Installations::Error => ex
@@ -217,7 +236,7 @@ class BitbucketIntegration < ApplicationRecord
     false
   end
 
-  def create_release!(tag_name, branch_name, _) = create_tag!(tag_name, branch_name)
+  def create_release!(tag_name, branch_name, _, _) = create_tag!(tag_name, branch_name)
 
   def create_tag!(tag_name, sha)
     with_api_retries { installation.create_tag!(code_repository_name, tag_name, sha) }
@@ -244,7 +263,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def merge_pr!(pr_number)
-    with_api_retries { installation.merge_pr!(code_repository_name, pr_number) }
+    with_api_retries { installation.merge_pr!(code_repository_name, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :bitbucket) }
   end
 
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title, pr_description)
@@ -268,7 +287,8 @@ class BitbucketIntegration < ApplicationRecord
 
   WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :uuid,
-    number: :build_number
+    number: :build_number,
+    unique_number: :build_number
   }
 
   ARTIFACTS_TRANSFORMATIONS = {
@@ -279,7 +299,9 @@ class BitbucketIntegration < ApplicationRecord
     generated_at: :created_on
   }
 
-  def workflows(branch_name)
+  def workflows(branch_name, bust_cache: false)
+    Rails.cache.delete(workflows_cache_key(branch_name)) if bust_cache
+
     cache.fetch(workflows_cache_key(branch_name), expires_in: 120.minutes) do
       with_api_retries { installation.list_pipeline_selectors(code_repository_name, branch_name) }
     end
@@ -289,7 +311,9 @@ class BitbucketIntegration < ApplicationRecord
 
   def workflow_retriable? = false
 
-  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, _deploy_action_enabled = false)
+  def workflow_retriable_in_place? = false
+
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
     with_api_retries do
       res = installation.trigger_pipeline!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
       res.merge(ci_link: "https://bitbucket.org/#{code_repository_name}/pipelines/results/#{res[:number]}")
@@ -323,7 +347,7 @@ class BitbucketIntegration < ApplicationRecord
     raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank?
 
     Rails.logger.debug { "Downloading artifact #{artifact}" }
-    artifact_file = with_api_retries { installation.download_artifact(artifact[:archive_download_url]) }
+    artifact_file = with_api_retries { installation.artifact_io_stream(artifact[:archive_download_url]) }
     raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact_file.blank?
 
     {artifact:, stream: Artifacts::Stream.new(artifact_file)}
@@ -331,6 +355,10 @@ class BitbucketIntegration < ApplicationRecord
 
   def artifact_url
     raise Integrations::UnsupportedAction
+  end
+
+  def bot_name
+    nil
   end
 
   private
@@ -363,10 +391,6 @@ class BitbucketIntegration < ApplicationRecord
 
   def set_tokens(tokens)
     assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token) if tokens
-  end
-
-  def app_config
-    integrable.config
   end
 
   def redirect_uri

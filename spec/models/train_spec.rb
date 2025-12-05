@@ -45,6 +45,91 @@ describe Train do
     expect(create(:train)).to be_valid
   end
 
+  describe "#populate_release_schedules" do
+    let(:train) { create(:train, status: :active, kickoff_at: 1.hour.from_now, repeat_duration: 1.day) }
+
+    context "when updating schedule with existing scheduled releases" do
+      before do
+        # Create existing scheduled releases
+        create(:scheduled_release, train: train, scheduled_at: 2.hours.from_now)
+        create(:scheduled_release, train: train, scheduled_at: 1.day.from_now)
+      end
+
+      it "discards existing scheduled releases and creates new one from kickoff_at" do
+        expect(train.scheduled_releases.count).to eq(2)
+
+        # Update kickoff_at to trigger populate_release_schedules
+        new_kickoff = 3.hours.from_now
+        train.update!(kickoff_at: new_kickoff)
+
+        # Should have discarded old ones and created one new one
+        expect(train.scheduled_releases.kept.count).to eq(1)
+        expect(train.scheduled_releases.unscoped.discarded.count).to eq(2)
+
+        # New schedule should be based on updated kickoff_at, not previous schedule
+        new_scheduled_release = train.scheduled_releases.kept.first
+        expect(new_scheduled_release.scheduled_at).to be_within(1.minute).of(new_kickoff)
+      end
+
+      it "calculates next run correctly within transaction" do
+        # Mock to verify transaction behavior
+        allow(train).to receive(:next_run_at).and_call_original
+
+        _old_kickoff = train.kickoff_at
+        new_kickoff = 2.days.from_now
+
+        train.update!(kickoff_at: new_kickoff)
+
+        # Should have called next_run_at after discarding
+        expect(train).to have_received(:next_run_at)
+
+        # Verify the scheduled release uses new kickoff time
+        new_scheduled_release = train.scheduled_releases.kept.first
+        expect(new_scheduled_release.scheduled_at).to be_within(1.minute).of(new_kickoff)
+      end
+    end
+
+    context "when kickoff_at is in the past" do
+      it "prevents setting kickoff_at to a past time" do
+        past_kickoff = 2.hours.ago
+
+        expect {
+          train.update!(kickoff_at: past_kickoff)
+        }.to raise_error(ActiveRecord::RecordInvalid, /the schedule kickoff should be in the future/)
+      end
+    end
+
+    context "when train is not automatic" do
+      let(:train) { create(:train, status: :draft, kickoff_at: nil, repeat_duration: nil) }
+
+      it "does not create scheduled releases" do
+        expect { train.update!(name: "Updated") }.not_to change(ScheduledRelease, :count)
+      end
+    end
+
+    context "when updating attributes other than schedule" do
+      before do
+        # Create some initial scheduled releases
+        create(:scheduled_release, train: train, scheduled_at: 1.hour.from_now)
+        create(:scheduled_release, train: train, scheduled_at: 1.day.from_now)
+      end
+
+      it "does not repopulate scheduled releases" do
+        expect(train.scheduled_releases.count).to eq(2)
+
+        original_count = train.scheduled_releases.count
+        original_scheduled_at = train.scheduled_releases.first.scheduled_at
+
+        # Update non-schedule attributes
+        train.update!(name: "Updated Name", description: "Updated Description")
+
+        # Should not have changed scheduled releases
+        expect(train.scheduled_releases.count).to eq(original_count)
+        expect(train.scheduled_releases.first.scheduled_at).to eq(original_scheduled_at)
+      end
+    end
+  end
+
   describe "#set_current_version" do
     it "sets it to the version_seeded_with" do
       ver = "1.2.3"
@@ -173,11 +258,11 @@ describe Train do
   describe "#update" do
     it "schedules the release for an automatic train" do
       train = create(:train, :with_almost_trunk, :active)
-      expect(train.scheduled_releases.count).to be(0)
+      expect(train.scheduled_releases.count).to eq(0)
 
       train.update!(kickoff_at: 2.days.from_now, repeat_duration: 2.days)
 
-      expect(train.reload.scheduled_releases.count).to be(1)
+      expect(train.reload.scheduled_releases.count).to eq(1)
       expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at)
     end
   end
@@ -203,8 +288,44 @@ describe Train do
   describe "#release_branch_name_fmt" do
     it "adds hotfix to branch name if hotfix" do
       train = create(:train, :with_almost_trunk, :active)
+      tokens = {trainName: "train", releaseStartDate: "%Y-%m-%d"}
 
-      expect(train.release_branch_name_fmt(hotfix: true)).to eq("hotfix/train/%Y-%m-%d")
+      expect(train.release_branch_name_fmt(hotfix: true, substitution_tokens: tokens)).to eq("hotfix/train/%Y-%m-%d")
+    end
+
+    it "uses default pattern when no custom pattern is set" do
+      train = create(:train, :with_almost_trunk, :active)
+      tokens = {trainName: "train", releaseStartDate: "%Y-%m-%d"}
+
+      expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("r/train/%Y-%m-%d")
+    end
+
+    it "uses custom pattern when release_branch_pattern is set" do
+      train = create(:train, :with_almost_trunk, :active, release_branch_pattern: "release/~trainName~/%Y-%m-%d-%H%M")
+      tokens = {trainName: "train"}
+
+      expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("release/train/%Y-%m-%d-%H%M")
+    end
+
+    it "substitutes trainName placeholder in custom pattern" do
+      train = create(:train, :with_almost_trunk, :active, name: "My Custom Train", release_branch_pattern: "custom/~trainName~/v%Y.%m")
+      tokens = {trainName: "My Custom Train"}
+
+      expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("custom/my-custom-train/v%Y.%m")
+    end
+
+    it "substitutes releaseVersion placeholder in custom pattern" do
+      train = create(:train, :with_almost_trunk, :active, release_branch_pattern: "r/~trainName~/~releaseVersion~")
+      tokens = {trainName: "train", releaseVersion: "1.2.3"}
+
+      expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("r/train/1.2.3")
+    end
+
+    it "substitutes multiple placeholders in custom pattern" do
+      train = create(:train, :with_almost_trunk, :active, name: "My Train", release_branch_pattern: "release/~trainName~/~releaseVersion~/~releaseStartDate~")
+      tokens = {trainName: "My Train", releaseVersion: "1.2.3", releaseStartDate: "2023-12-25"}
+
+      expect(train.release_branch_name_fmt(substitution_tokens: tokens)).to eq("release/my-train/1.2.3/2023-12-25")
     end
   end
 
@@ -347,6 +468,54 @@ describe Train do
     end
   end
 
+  describe "release_branch_pattern validation" do
+    it "is valid when pattern is blank" do
+      train = build(:train, release_branch_pattern: "")
+      expect(train).to be_valid
+    end
+
+    it "is valid when pattern is nil" do
+      train = build(:train, release_branch_pattern: nil)
+      expect(train).to be_valid
+    end
+
+    it "is valid with correct pattern format" do
+      train = build(:train, release_branch_pattern: "release/~trainName~/%Y-%m-%d")
+      expect(train).to be_valid
+    end
+
+    it "is valid with pattern containing various strftime formats" do
+      train = build(:train, release_branch_pattern: "r/~trainName~/%Y-%m-%d-%H%M%S")
+      expect(train).to be_valid
+    end
+
+    it "is valid with releaseVersion token" do
+      train = build(:train, release_branch_pattern: "r/~trainName~/~releaseVersion~")
+      expect(train).to be_valid
+    end
+
+    it "is valid with releaseStartDate token" do
+      train = build(:train, release_branch_pattern: "r/~trainName~/~releaseStartDate~")
+      expect(train).to be_valid
+    end
+
+    it "is valid with multiple tokens and strftime" do
+      train = build(:train, release_branch_pattern: "r/~trainName~/~releaseVersion~/~releaseStartDate~/%Y-%m-%d")
+      expect(train).to be_valid
+    end
+
+    it "is valid when pattern has no tokens" do
+      train = build(:train, release_branch_pattern: "release/myapp/%Y-%m-%d")
+      expect(train).to be_valid
+    end
+
+    it "is not valid when pattern has invalid tokens" do
+      train = build(:train, release_branch_pattern: "release/~invalidToken~")
+      expect(train).not_to be_valid
+      expect(train.errors[:release_branch_pattern]).to include("contains unknown tokens: ~invalidToken~")
+    end
+  end
+
   describe "version config constraints validations" do
     it "is valid when neither freeze_version nor patch_version_bump_only is true" do
       train = build(:train, freeze_version: false, patch_version_bump_only: false)
@@ -385,6 +554,141 @@ describe Train do
 
     it "returns all but last finished release" do
       expect(train.previous_releases).to match_array(finished_releases[0..3])
+    end
+  end
+
+  describe "soak period validations" do
+    context "when soak_period_enabled is true" do
+      it "validates presence of soak_period_hours" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: nil)
+        expect(train).not_to be_valid
+        expect(train.errors[:soak_period_hours]).to include("can't be blank")
+      end
+
+      it "validates soak_period_hours is greater than 0" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 0)
+        expect(train).not_to be_valid
+        expect(train.errors[:soak_period_hours]).to include("must be greater than 0")
+      end
+
+      it "validates soak_period_hours is less than or equal to 336" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 337)
+        expect(train).not_to be_valid
+        expect(train.errors[:soak_period_hours]).to include("must be less than or equal to 336")
+      end
+
+      it "is valid with soak_period_hours between 1 and 168" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 24)
+        expect(train).to be_valid
+      end
+
+      it "is valid with soak_period_hours at minimum boundary (1)" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 1)
+        expect(train).to be_valid
+      end
+
+      it "is valid with soak_period_hours at maximum boundary (168)" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 168)
+        expect(train).to be_valid
+      end
+    end
+
+    context "when soak_period_enabled is false" do
+      it "does not validate soak_period_hours" do
+        train = build(:train, soak_period_enabled: false, soak_period_hours: nil)
+        expect(train).to be_valid
+      end
+
+      it "is valid with out-of-range soak_period_hours when disabled" do
+        train = build(:train, soak_period_enabled: false, soak_period_hours: 200)
+        expect(train).to be_valid
+      end
+    end
+  end
+
+  describe "build queue validations" do
+    let(:train) { create(:train, :active) }
+
+    describe "when build_queue_enabled changes and releases are running" do
+      before do
+        # Create an active run
+        create(:release, :on_track, train: train)
+      end
+
+      it "prevents enabling build queue when releases are running" do
+        train.build_queue_enabled = true
+        train.build_queue_size = 5
+        train.build_queue_wait_time = 1.hour
+
+        expect(train).not_to be_valid
+        expect(train.errors[:build_queue_enabled]).to include("build queue cannot be enabled/disabled when releases are running")
+      end
+
+      it "prevents disabling build queue when releases are running" do
+        # Create a train with build queue already enabled (without active runs)
+        train_with_queue = create(:train, :active, build_queue_enabled: true, build_queue_size: 5, build_queue_wait_time: 1.hour)
+
+        # Now create an active run
+        create(:release, :on_track, train: train_with_queue)
+
+        # Try to disable it
+        train_with_queue.build_queue_enabled = false
+
+        expect(train_with_queue).not_to be_valid
+        expect(train_with_queue.errors[:build_queue_enabled]).to include("build queue cannot be enabled/disabled when releases are running")
+      end
+
+      it "allows other changes when build_queue_enabled doesn't change" do
+        # Create a train with build queue already enabled (without active runs)
+        train_with_queue = create(:train, :active, build_queue_enabled: true, build_queue_size: 5, build_queue_wait_time: 1.hour)
+
+        # Now create an active run
+        create(:release, :on_track, train: train_with_queue)
+
+        # Change other attributes but not build_queue_enabled
+        train_with_queue.build_queue_size = 10
+        train_with_queue.name = "Updated Train Name"
+
+        expect(train_with_queue).to be_valid
+      end
+    end
+
+    describe "when no releases are running" do
+      it "allows enabling build queue" do
+        train.build_queue_enabled = true
+        train.build_queue_size = 5
+        train.build_queue_wait_time = 1.hour
+
+        expect(train).to be_valid
+      end
+
+      it "allows disabling build queue" do
+        # First enable build queue
+        train.update!(build_queue_enabled: true, build_queue_size: 5, build_queue_wait_time: 1.hour)
+
+        # Now disable it (and clear the config to avoid validation errors)
+        train.build_queue_enabled = false
+        train.build_queue_size = nil
+        train.build_queue_wait_time = nil
+
+        expect(train).to be_valid
+      end
+    end
+
+    describe "when releases exist but are not active" do
+      before do
+        # Create finished releases (not active runs)
+        create(:release, :finished, train: train)
+        create(:release, :stopped, train: train)
+      end
+
+      it "allows changing build queue settings" do
+        train.build_queue_enabled = true
+        train.build_queue_size = 5
+        train.build_queue_wait_time = 1.hour
+
+        expect(train).to be_valid
+      end
     end
   end
 end

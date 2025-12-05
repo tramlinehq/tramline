@@ -8,7 +8,7 @@ module Tabbable
     @tab_configuration = [
       [1, "General", edit_app_path(@app), "cog.svg"],
       [2, "Integrations", app_integrations_path(@app), "blocks.svg"],
-      [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
+      [3, "App Variants", app_app_variants_path(@app), "dna.svg"]
     ]
   end
 
@@ -68,7 +68,7 @@ module Tabbable
       internal_builds: release_internal_builds_path(@release),
       regression_testing: regression_testing_release_path(@release),
       release_candidate: release_release_candidates_path(@release),
-      soak_period: soak_release_path(@release),
+      soak_period: release_beta_soak_path(@release),
       notes: release_metadata_edit_path(@release),
       screenshots: root_path,
       approvals: release_approval_items_path(@release),
@@ -117,7 +117,6 @@ module Tabbable
     sections[:stability][:soak_period][:icon] = "alarm_clock.svg"
     sections[:stability][:soak_period][:position] = 6
     sections[:stability][:soak_period][:status] = live_release_step_statuses[:statuses][:soak_period]
-    sections[:stability][:soak_period][:unavailable] = !demo_org?
 
     sections[:metadata] = {
       notes: Release::SECTIONS[:notes],

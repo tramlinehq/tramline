@@ -28,6 +28,6 @@ class Coordinators::Webhooks::PullRequest < Coordinators::Webhooks::Base
   end
 
   def valid_repo?
-    (train.app.config&.code_repository_name == repository_name)
+    (train.app.vcs_provider&.code_repository_name == repository_name)
   end
 end

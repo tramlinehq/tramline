@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_01_162057) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -58,10 +58,11 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.jsonb "bugsnag_ios_config"
     t.jsonb "bugsnag_android_config"
     t.string "bitbucket_workspace"
+    t.jsonb "ci_cd_workflows"
     t.jsonb "firebase_crashlytics_ios_config"
     t.jsonb "firebase_crashlytics_android_config"
     t.jsonb "jira_config", default: {}, null: false
-    t.jsonb "ci_cd_workflows"
+    t.jsonb "linear_config", default: {}, null: false
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -74,15 +75,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
   end
 
   create_table "app_variants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "app_config_id", null: false
+    t.uuid "app_config_id"
     t.string "name", null: false
     t.string "bundle_identifier", null: false
     t.jsonb "firebase_ios_config"
     t.jsonb "firebase_android_config"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "app_id"
+    t.string "slug"
     t.index ["app_config_id"], name: "index_app_variants_on_app_config_id"
+    t.index ["app_id"], name: "index_app_variants_on_app_id"
     t.index ["bundle_identifier", "app_config_id"], name: "index_app_variants_on_bundle_identifier_and_app_config_id", unique: true
+    t.index ["bundle_identifier", "app_id"], name: "index_app_variants_on_bundle_identifier_and_app_id", unique: true
+    t.index ["slug"], name: "index_app_variants_on_slug", unique: true
   end
 
   create_table "approval_assignees", force: :cascade do |t|
@@ -122,8 +128,19 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.datetime "updated_at", null: false
     t.string "external_id"
     t.boolean "draft"
+    t.boolean "build_number_managed_internally", default: true, null: false
     t.index ["organization_id"], name: "index_apps_on_organization_id"
     t.index ["platform", "bundle_identifier", "organization_id"], name: "index_apps_on_platform_and_bundle_id_and_org_id", unique: true
+  end
+
+  create_table "beta_soaks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_id", null: false
+    t.datetime "started_at", null: false
+    t.datetime "ended_at"
+    t.integer "period_hours", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["release_id"], name: "index_beta_soaks_on_release_id"
   end
 
   create_table "bitbucket_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -131,18 +148,23 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.string "oauth_refresh_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "repository_config"
+    t.string "workspace"
   end
 
   create_table "bitrise_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "access_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "project_config"
   end
 
   create_table "bugsnag_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "access_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "android_config"
+    t.jsonb "ios_config"
   end
 
   create_table "build_artifacts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -152,8 +174,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.datetime "generated_at", precision: nil
     t.datetime "uploaded_at", precision: nil
     t.uuid "build_id"
+    t.string "storage_service"
     t.index ["build_id"], name: "index_build_artifacts_on_build_id"
     t.index ["step_run_id"], name: "index_build_artifacts_on_step_run_id"
+    t.index ["storage_service"], name: "index_build_artifacts_on_storage_service"
   end
 
   create_table "build_queues", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -229,6 +253,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.string "project_number"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "custom_storages", force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.string "bucket", null: false
+    t.string "bucket_region", null: false
+    t.string "service", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_custom_storages_on_organization_id", unique: true
   end
 
   create_table "data_migrations", primary_key: "version", id: :string, force: :cascade do |t|
@@ -349,15 +383,15 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.string "installation_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "repository_config"
   end
 
   create_table "gitlab_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "oauth_access_token"
-    t.string "original_oauth_access_token"
     t.string "oauth_refresh_token"
-    t.string "original_oauth_refresh_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "repository_config"
   end
 
   create_table "google_firebase_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -366,6 +400,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.string "app_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "android_config"
+    t.jsonb "ios_config"
   end
 
   create_table "google_play_store_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -389,6 +425,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.string "integrable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["integrable_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
+    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying, 'disconnected'::character varying, 'needs_reauth'::character varying]::text[])", name: "chk_rails_status_enum"
   end
 
   create_table "invites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -401,6 +438,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.datetime "accepted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["email", "organization_id"], name: "index_invites_unique_pending", unique: true, where: "(accepted_at IS NULL)"
     t.index ["organization_id"], name: "index_invites_on_organization_id"
     t.index ["recipient_id"], name: "index_invites_on_recipient_id"
     t.index ["sender_id"], name: "index_invites_on_sender_id"
@@ -412,7 +450,22 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.string "cloud_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "organization_name"
+    t.string "organization_url"
+    t.jsonb "project_config", default: {}, null: false
     t.index ["cloud_id"], name: "index_jira_integrations_on_cloud_id"
+  end
+
+  create_table "linear_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "oauth_access_token"
+    t.string "oauth_refresh_token"
+    t.string "workspace_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "workspace_name"
+    t.string "workspace_url_key"
+    t.jsonb "project_config", default: {}, null: false
+    t.index ["workspace_id"], name: "index_linear_integrations_on_workspace_id"
   end
 
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -437,8 +490,13 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.jsonb "user_groups"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "release_specific_channel"
+    t.boolean "release_specific_enabled", default: false
+    t.boolean "core_enabled", default: false, null: false
+    t.text "user_content"
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
+    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))"
   end
 
   create_table "onboarding_states", force: :cascade do |t|
@@ -466,6 +524,22 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.string "sso_configuration_link"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["status"], name: "index_organizations_on_status"
+  end
+
+  create_table "outgoing_webhook_events", force: :cascade do |t|
+    t.uuid "release_id", null: false
+    t.string "event_type", null: false
+    t.datetime "event_timestamp", null: false
+    t.string "status", null: false
+    t.jsonb "event_payload", null: false
+    t.jsonb "response_data"
+    t.text "error_message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_timestamp"], name: "index_outgoing_webhook_events_on_event_timestamp"
+    t.index ["event_type"], name: "index_outgoing_webhook_events_on_event_type"
+    t.index ["release_id"], name: "index_outgoing_webhook_events_on_release_id"
+    t.index ["status"], name: "index_outgoing_webhook_events_on_status"
   end
 
   create_table "passports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -513,6 +587,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.string "status", default: "inflight", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "tag_name"
     t.index ["build_id"], name: "index_production_releases_on_build_id"
     t.index ["previous_id"], name: "index_production_releases_on_previous_id"
     t.index ["release_platform_run_id", "status"], name: "index_unique_active_production_release", unique: true, where: "((status)::text = 'active'::text)"
@@ -541,12 +616,17 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.uuid "commit_id"
     t.jsonb "labels"
     t.tsvector "search_vector"
+    t.string "merge_commit_sha"
+    t.string "kind"
     t.index ["body"], name: "index_pull_requests_on_body", opclass: :gin_trgm_ops, using: :gin
     t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
+    t.index ["merge_commit_sha"], name: "index_pull_requests_on_merge_commit_sha", where: "(merge_commit_sha IS NOT NULL)"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
     t.index ["release_id", "head_ref"], name: "index_pull_requests_on_release_id_and_head_ref"
+    t.index ["release_id", "kind"], name: "index_pull_requests_on_release_id_and_kind", unique: true, where: "(((kind)::text = 'version_bump'::text) AND ((state)::text = 'open'::text))"
     t.index ["release_id", "phase", "number"], name: "idx_prs_on_release_id_and_phase_and_number", unique: true
+    t.index ["release_id", "phase"], name: "index_pull_requests_on_release_id_and_phase", unique: true, where: "(((phase)::text = 'pre_release'::text) AND ((kind)::text = 'version_bump'::text))"
     t.index ["search_vector"], name: "index_pull_requests_on_search_vector", using: :gin
     t.index ["source"], name: "index_pull_requests_on_source"
     t.index ["source_id"], name: "index_pull_requests_on_source_id"
@@ -600,6 +680,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.uuid "production_release_id"
     t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
     t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
+    t.index ["production_release_id", "fetched_at"], name: "idx_on_production_release_id_fetched_at_0e35dbfce7", order: { fetched_at: :desc }
     t.index ["production_release_id"], name: "index_release_health_metrics_on_production_release_id"
   end
 
@@ -730,6 +811,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.string "slug"
     t.boolean "is_v2", default: false
     t.uuid "approval_overridden_by_id"
+    t.jsonb "notification_channel"
     t.index ["approval_overridden_by_id"], name: "index_releases_on_approval_overridden_by_id"
     t.index ["slug"], name: "index_releases_on_slug", unique: true
     t.index ["train_id"], name: "index_releases_on_train_id"
@@ -756,6 +838,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "release_id"
+    t.boolean "manually_skipped", default: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_scheduled_releases_on_discarded_at"
     t.index ["train_id"], name: "index_scheduled_releases_on_train_id"
   end
 
@@ -909,6 +994,19 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.index ["submission_config_id"], name: "index_submission_external_configs_on_submission_config_id"
   end
 
+  create_table "svix_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.string "svix_app_id"
+    t.string "svix_app_uid"
+    t.string "svix_app_name"
+    t.string "status", default: "inactive"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["status"], name: "index_svix_integrations_on_status"
+    t.index ["svix_app_id"], name: "index_svix_integrations_on_svix_app_id", unique: true
+    t.index ["train_id"], name: "index_svix_integrations_on_train_id", unique: true
+  end
+
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "organization_id", null: false
     t.string "name", null: false
@@ -941,11 +1039,11 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.integer "build_queue_size", limit: 2
     t.string "backmerge_strategy", default: "on_finalize", null: false
     t.boolean "manual_release", default: false
-    t.boolean "tag_platform_releases", default: false
-    t.boolean "tag_all_store_releases", default: false
+    t.boolean "tag_store_releases_with_platform_names", default: false
+    t.boolean "tag_store_releases", default: false
     t.boolean "compact_build_notes", default: false
-    t.boolean "tag_releases", default: true
-    t.string "tag_suffix"
+    t.boolean "tag_end_of_release", default: true
+    t.string "tag_end_of_release_suffix"
     t.string "versioning_strategy", default: "semver"
     t.boolean "stop_automatic_releases_on_failure", default: false, null: false
     t.boolean "patch_version_bump_only", default: false, null: false
@@ -953,7 +1051,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.boolean "freeze_version", default: false
     t.boolean "copy_approvals", default: false
     t.boolean "auto_apply_patch_changes", default: true
-    t.string "tag_prefix"
+    t.string "tag_end_of_release_prefix"
+    t.boolean "version_bump_enabled", default: false
+    t.string "version_bump_file_paths", default: [], array: true
+    t.string "version_bump_branch_prefix"
+    t.string "continuous_backmerge_branch_prefix"
+    t.boolean "tag_end_of_release_vcs_release", default: false
+    t.boolean "tag_store_releases_vcs_release", default: false
+    t.boolean "notifications_release_specific_channel_enabled", default: false
+    t.string "version_bump_strategy"
+    t.boolean "enable_changelog_linking_in_notifications", default: false
+    t.string "release_branch_pattern"
+    t.boolean "webhooks_enabled", default: false, null: false
+    t.boolean "soak_period_enabled", default: false, null: false
+    t.integer "soak_period_hours", default: 24, null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
@@ -1046,6 +1157,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
     t.datetime "finished_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "external_unique_number"
     t.index ["commit_id"], name: "index_workflow_runs_on_commit_id"
     t.index ["pre_prod_release_id", "commit_id"], name: "index_workflow_runs_on_pre_prod_release_id_and_commit_id", unique: true
     t.index ["pre_prod_release_id"], name: "index_workflow_runs_on_pre_prod_release_id"
@@ -1054,14 +1166,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "app_configs", "apps"
-  add_foreign_key "app_variants", "app_configs"
+  add_foreign_key "app_variants", "apps"
   add_foreign_key "approval_assignees", "approval_items"
   add_foreign_key "approval_assignees", "users", column: "assignee_id"
   add_foreign_key "approval_items", "releases"
   add_foreign_key "approval_items", "users", column: "author_id"
   add_foreign_key "approval_items", "users", column: "status_changed_by_id"
   add_foreign_key "apps", "organizations"
+  add_foreign_key "beta_soaks", "releases"
   add_foreign_key "build_queues", "releases"
   add_foreign_key "builds", "commits"
   add_foreign_key "builds", "release_platform_runs"
@@ -1071,6 +1183,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
   add_foreign_key "commits", "release_changelogs"
   add_foreign_key "commits", "release_platform_runs"
   add_foreign_key "commits", "release_platforms"
+  add_foreign_key "custom_storages", "organizations"
   add_foreign_key "deployment_runs", "deployments"
   add_foreign_key "deployment_runs", "step_runs"
   add_foreign_key "deployments", "steps"
@@ -1084,6 +1197,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
   add_foreign_key "onboarding_states", "apps"
+  add_foreign_key "outgoing_webhook_events", "releases"
   add_foreign_key "pre_prod_releases", "commits"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "parent_internal_release_id"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "previous_id"
@@ -1121,6 +1235,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_10_151011) do
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "submission_configs", "release_step_configs"
   add_foreign_key "submission_external_configs", "submission_configs"
+  add_foreign_key "svix_integrations", "trains"
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
   add_foreign_key "user_authentications", "users"

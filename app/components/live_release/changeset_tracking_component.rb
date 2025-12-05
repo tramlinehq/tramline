@@ -5,12 +5,13 @@ class LiveRelease::ChangesetTrackingComponent < BaseComponent
     @release = release
     @build_queue = release.active_build_queue
     @applied_commits = release.applied_commits.sequential
-    @mid_release_prs = release.mid_release_prs.open
-    @open_backmerge_prs = release.pull_requests.ongoing.open
+    @mid_release_stability_prs = release.mid_release_stability_prs.open
+    @open_backmerge_prs = release.mid_release_back_merge_prs.open
     @change_queue_commits = @build_queue&.commits&.sequential
+    @version_bump_prs = release.pull_requests.version_bump_type
   end
 
-  attr_reader :release, :build_queue, :applied_commits, :change_queue_commits, :mid_release_prs, :open_backmerge_prs
+  attr_reader :release, :build_queue, :applied_commits, :change_queue_commits, :mid_release_stability_prs, :open_backmerge_prs, :version_bump_prs
 
   def change_queue_commits_count
     change_queue_commits&.size || 0

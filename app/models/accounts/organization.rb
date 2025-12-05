@@ -28,6 +28,7 @@ class Accounts::Organization < ApplicationRecord
   has_many :apps, -> { sequential }, dependent: :destroy, inverse_of: :organization
   has_many :releases, through: :apps
   has_many :invites, dependent: :destroy
+  has_one :custom_storage, class_name: "Accounts::CustomStorage", dependent: :destroy, inverse_of: :organization
 
   enum :status, {active: "active", dormant: "dormant", guest: "guest"}
 
@@ -65,10 +66,6 @@ class Accounts::Organization < ApplicationRecord
 
   def merge_only_build_notes?
     Flipper.enabled?(:merge_only_build_notes, self)
-  end
-
-  def deploy_action_enabled?
-    Flipper.enabled?(:deploy_action_enabled, self)
   end
 
   def tester_notes_in_beta_releases?

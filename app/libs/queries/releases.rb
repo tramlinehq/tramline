@@ -13,8 +13,8 @@ class Queries::Releases
 
   def initialize(app:, params:)
     @app = app
-    @params = params
-    params.sort_column ||= DEFAULT_SORT_COLUMN
+    @params = params.dup
+    @params.sort_column ||= DEFAULT_SORT_COLUMN
   end
 
   attr_reader :app, :sort_column, :sort_direction, :params
@@ -69,7 +69,7 @@ class Queries::Releases
 
   def selected_records
     records
-      .order(:created_at)
+      .order(created_at: :desc)
       .limit(params.limit)
       .offset(params.offset)
   end
@@ -201,6 +201,10 @@ class Queries::Releases
 
     def show_avatar?
       false
+    end
+
+    def short_sha
+      commit_hash[0, 7]
     end
 
     def inspect

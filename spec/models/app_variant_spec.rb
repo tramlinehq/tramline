@@ -5,7 +5,7 @@ describe AppVariant do
     parent = "com.example"
     variant = "com.example.com"
     app = create(:app, :android, bundle_identifier: parent)
-    expect(create(:app_variant, app_config: app.config, bundle_identifier: variant)).to be_valid
-    expect(build(:app_variant, app_config: app.config, bundle_identifier: variant)).not_to be_valid
+    expect(create(:app_variant, app: app, bundle_identifier: variant)).to be_valid
+    expect(build(:app_variant, app: app, bundle_identifier: variant)).not_to be_valid
   end
 end

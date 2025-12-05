@@ -41,8 +41,12 @@
 module Coordinators
   module Signals
     def self.release_has_started!(release)
+      Coordinators::SetupReleaseSpecificChannel.call(release)
+
       release.notify!("New release has commenced!", :release_started, release.notification_params)
-      Releases::PreReleaseJob.perform_async(release.id)
+      release.trigger_webhook!("release.started")
+
+      Coordinators::PreReleaseJob.perform_async(release.id)
       Releases::FetchCommitLogJob.perform_async(release.id)
       RefreshReportsJob.perform_async(release.hotfixed_from.id) if release.hotfix?
     end
@@ -56,7 +60,11 @@ module Coordinators
     end
 
     def self.workflow_run_finished!(workflow_run_id)
-      TriggerSubmissionsJob.perform_async(workflow_run_id)
+      Coordinators::AttachBuildJob.perform_async(workflow_run_id)
+    end
+
+    def self.build_is_available!(workflow_run_id)
+      Coordinators::TriggerSubmissionsJob.perform_async(workflow_run_id)
     end
 
     def self.internal_release_finished!(build)
@@ -68,8 +76,34 @@ module Coordinators
     end
 
     def self.beta_release_is_finished!(build)
-      # start soak, or
       release_platform_run = build.release_platform_run
+      release = release_platform_run.release
+
+      # start soak period if enabled (starts when any RC is ready across platforms)
+      Coordinators::SoakPeriod::Start.call(release)
+      release.reload
+      # if soak is still running, block progression
+      return if release.beta_soak.present? && release.beta_soak.ended_at.blank?
+
+      pre_production_phase_is_complete!(release_platform_run, build)
+    end
+
+    def self.continue_after_soak_period!(release)
+      release.release_platform_runs.each do |release_platform_run|
+        # if there are no beta/rc releases created, soak is not applicable
+        latest_beta = release_platform_run.latest_beta_release
+        next unless latest_beta&.finished?
+        latest_beta_build = latest_beta.build
+
+        # soak only runs once in a release lifecycle,
+        # so skip if production releases already exist
+        next if release_platform_run.production_releases.any?
+
+        pre_production_phase_is_complete!(release_platform_run, latest_beta_build)
+      end
+    end
+
+    def self.pre_production_phase_is_complete!(release_platform_run, build)
       if release_platform_run.conf.production_release.present?
         Coordinators::StartProductionRelease.call(release_platform_run, build.id)
       else
@@ -83,6 +117,18 @@ module Coordinators
 
     def self.workflow_run_trigger_failed!(workflow_run)
       workflow_run.triggering_release.fail!
+    end
+
+    def self.pull_request_closed!(pr)
+      release = pr.release
+
+      if release.post_release_failed?
+        Actions.complete_release!(release)
+      end
+
+      if release.pre_release? && pr.pre_release_version_bump?
+        Coordinators::PreReleaseJob.perform_async(release.id)
+      end
     end
   end
 
@@ -275,6 +321,23 @@ module Coordinators
         end
 
         FinalizeReleaseJob.perform_async(release.id)
+      end
+    end
+
+    def self.end_soak_period!(beta_soak, who)
+      Res.new do
+        raise "soak period has already ended" if beta_soak.ended_at.present?
+        raise "release is not active" unless beta_soak.release.active?
+        Coordinators::SoakPeriod::End.call(beta_soak, who)
+      end
+    end
+
+    def self.extend_soak_period!(beta_soak, additional_hours, who)
+      Res.new do
+        raise "extension hours must be positive" if additional_hours.to_i <= 0
+        raise "soak period has ended and cannot be extended" if beta_soak.expired? || beta_soak.ended_at.present?
+        raise "release is not active" unless beta_soak.release.active?
+        Coordinators::SoakPeriod::Extend.call(beta_soak, additional_hours, who)
       end
     end
   end

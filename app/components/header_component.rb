@@ -13,4 +13,12 @@ class HeaderComponent < BaseComponent
   def user_full_name
     current_user.full_name
   end
+
+  def app_icon
+    if default_app.icon.attached?
+      default_app.icon_path
+    else
+      "art/cross_platform_default.png"
+    end
+  end
 end

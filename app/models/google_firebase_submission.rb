@@ -49,7 +49,8 @@ class GoogleFirebaseSubmission < StoreSubmission
   }
 
   enum :failure_reason, {
-    unknown_failure: "unknown_failure"
+    unknown_failure: "unknown_failure",
+    build_not_found: "build_not_found"
   }.merge(Installations::Google::Firebase::Error.reasons.zip_map_self).merge(Installations::Google::Firebase::OpError.reasons.zip_map_self)
 
   enum :status, STATES
@@ -75,32 +76,72 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
-  def retryable? = failed?
+  def retryable? = failed? && last_stable_status != STATES[:created]
 
   def trigger!
     return unless actionable?
     return unless may_prepare?
-
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
-    # return mock_upload_to_firebase if sandbox_mode?
 
-    preprocess!
+    if build.has_artifact?
+      # try and find/upload the build if we have it
+      preprocess!
+    elsif app.skip_finding_builds_for_firebase?
+      # we do not want to find builds in firebase in this case
+      # fail with error since we have no way of completing this submission
+      fail_with_error!(BuildNotFound)
+    else
+      # move to preprocessing regardless and hopefully find it eventually
+      preprocess!
+    end
   end
 
   def upload_build!
     return unless may_prepare?
-    return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
+    # try to find before uploading and return early if found
+    unless app.skip_finding_builds_for_firebase?
+      release_info = provider.find_build(build.build_number, build_version_name, release_platform_run.platform)
+      if release_info.ok?
+        prepare_and_update!(release_info.value!)
+        return
+      end
+    end
+
+    # if we don't have the build artifact, and we couldn't find it previously, we fail
+    unless build.has_artifact?
+      fail_with_error!(BuildNotFound)
+      return
+    end
+
+    # if we have the build artifact, we can try and upload it
     result = nil
     filename = build.artifact.file.filename.to_s
     build.artifact.with_open do |file|
       result = provider.upload(file, filename, platform:)
-      unless result.ok?
-        fail_with_error!(result.error)
-      end
     end
+    if result&.ok?
+      # start tracking the upload status asynchronously
+      StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob.perform_async(id, result.value!)
+    else
+      # if we couldn't upload the build artifact, we fail
+      fail_with_error!(result&.error)
+    end
+  end
 
-    StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob.perform_async(id, result.value!) if result&.ok?
+  # TODO: This should eventually become some sort of config or a generalized feature
+  # But for now, this allows us to find the build in Firebase with the version 1.0.0+1 instead of just 1.0.0
+  # Note: this is only the case for when the submission is for an AppVariant
+  # Note: this will only find by 1.0.0+1, uploads from tramline (if possible) will continue to be 1.0.0
+  def build_version_name
+    # intentionally referencing the flag here directly, so we can remove this hack easily later
+    flag = Flipper.enabled?(:append_build_number_to_version_name, release_platform_run.organization)
+
+    if flag && provider.integrable.is_a?(AppVariant)
+      "#{build.version_name}+#{build.build_number}"
+    else
+      build.version_name
+    end
   end
 
   def update_upload_status!(op_name)
@@ -115,7 +156,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     raise UploadNotComplete unless op_info.done?
 
     prepare_and_update!(op_info.release, op_info.status)
-    StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, op_info.release.id)
   end
 
   def update_build_notes!(release_name)
@@ -124,8 +164,6 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def prepare_for_release!
     return unless may_finish?
-    # return mock_finish_firebase_release if sandbox_mode?
-
     return finish! if submission_channel_id == GoogleFirebaseIntegration::EMPTY_CHANNEL[:id].to_s
 
     deployment_channels = [submission_channel_id]
@@ -137,11 +175,16 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
-  # app.firebase_build_channel_provider
   def provider = conf.integrable.firebase_build_channel_provider
 
   def notification_params(failure_message: nil)
     super.merge(submission_channel: "#{display} - #{submission_channel.name}")
+  end
+
+  def deep_link
+    return if external_id.blank?
+    parsed_external_id = external_id.split("apps/").last
+    DEEP_LINK + parsed_external_id
   end
 
   private
@@ -157,6 +200,8 @@ class GoogleFirebaseSubmission < StoreSubmission
       prepare!
       update_store_info!(release_info, build_status)
     end
+
+    StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_async(id, external_id)
   end
 
   def on_preprocess!
@@ -187,12 +232,6 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def external_id
     store_release.try(:[], "id")
-  end
-
-  def deep_link
-    return if external_id.blank?
-    parsed_external_id = external_id.split("apps/").last
-    DEEP_LINK + parsed_external_id
   end
 
   def stamp_data(failure_message: nil)

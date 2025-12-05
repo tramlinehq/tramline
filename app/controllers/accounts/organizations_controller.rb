@@ -1,5 +1,5 @@
 class Accounts::OrganizationsController < SignedInApplicationController
-  before_action :require_write_access!, only: %i[edit]
+  before_action :require_write_access!, only: %i[edit teams]
 
   def edit
     @organization = current_user.organizations.friendly.find(params[:id])
@@ -28,6 +28,7 @@ class Accounts::OrganizationsController < SignedInApplicationController
   end
 
   def switch
+    cookies["current_organization"] = {value: params[:id], expires: 30.days}
     session[:active_organization] = params[:id]
     redirect_to :root
   end

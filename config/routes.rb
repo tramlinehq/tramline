@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   mount ActionCable.server => "/cable"
   mount Easymon::Engine => "/up"
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+  get "demo", to: "demo#index" if Rails.env.development? || ENV["RAILS_PIPELINE_ENV"].eql?("staging")
   # get "up" => "rails/health#show", as: :rails_health_check
 
   root "authentication/sessions#root"
@@ -61,8 +62,36 @@ Rails.application.routes.draw do
   end
 
   resources :apps do
-    resource :app_config, only: %i[edit update], path: :config do
-      resources :app_variants, only: %i[index edit create update destroy]
+    member do
+      delete :remove_icon
+    end
+
+    resources :app_variants, only: %i[index edit create update destroy]
+
+    namespace :version_control do
+      resource :github_config, only: %i[edit update]
+      resource :gitlab_config, only: %i[edit update]
+      resource :bitbucket_config, only: %i[edit update]
+    end
+
+    namespace :ci_cd do
+      resource :bitrise_config, only: %i[edit update]
+      resource :github_config, only: %i[edit update]
+      resource :gitlab_config, only: %i[edit update]
+      resource :bitbucket_config, only: %i[edit update]
+    end
+
+    namespace :build_channel do
+      resource :google_firebase_config, only: %i[edit update]
+    end
+
+    namespace :monitoring do
+      resource :bugsnag_config, only: %i[edit update]
+    end
+
+    namespace :project_management do
+      resource :jira_config, only: %i[edit update]
+      resource :linear_config, only: %i[edit update]
     end
 
     member do
@@ -97,12 +126,23 @@ Rails.application.routes.draw do
         patch :deactivate
       end
 
+      resources :scheduled_releases do
+        member do
+          patch :skip
+          patch :resume
+        end
+      end
+
       resource :release_index, only: %i[edit update]
       resources :notification_settings, only: %i[index update edit]
 
       resources :release_platforms, path: :platforms, as: :platforms do
         resources :release_health_rules, path: :rules
-        resource :release_platform_configs, only: %i[edit update], path: :submissions, as: :submission_config, controller: "config/release_platforms"
+        resource :release_platform_configs, only: %i[edit update], path: :submissions, as: :submission_config, controller: "config/release_platforms" do
+          collection do
+            post :refresh_workflows
+          end
+        end
       end
 
       resources :releases, only: %i[show create destroy index update], shallow: true do
@@ -110,12 +150,19 @@ Rails.application.routes.draw do
           get :overview
           get :changeset_tracking
           get :regression_testing
-          get :soak
           get :wrap_up_automations
           patch :override_approvals
           post :copy_approvals
         end
 
+        resource :beta_soak, only: [:show] do
+          member do
+            post :end_soak
+            post :extend_soak
+          end
+        end
+
+        resources :outgoing_webhooks, only: [:index]
         resources :approval_items, only: %i[index create update destroy], shallow: false
 
         get :edit, to: "release_metadata#index", path: :metadata, as: :metadata_edit
@@ -145,9 +192,19 @@ Rails.application.routes.draw do
           post :finish_release
         end
       end
+
+      resources :outgoing_webhooks, only: [] do
+        collection do
+          get :portal
+        end
+      end
     end
 
     resources :integrations, only: %i[index create destroy] do
+      member do
+        get :reauth
+      end
+
       collection do
         post :reuse
         get :connect, to: "integrations#connect", as: :connect
@@ -269,6 +326,10 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :mobile do
+    resources :releases, only: %i[index show]
+  end
+
   scope :github do
     get :callback, controller: "integration_listeners/github", as: :github_callback
     post "/events/:train_id", to: "integration_listeners/github#events", as: :github_events
@@ -292,6 +353,12 @@ Rails.application.routes.draw do
     get :callback, controller: "integration_listeners/jira", as: :jira_callback
     post :callback, controller: "integration_listeners/jira", as: :resend_jira_callback
     get :select_organization, to: "integration_listeners/jira#select_organization", as: :jira_select_organization
+  end
+
+  scope :linear do
+    get :callback, controller: "integration_listeners/linear", as: :linear_callback
+    post :callback, controller: "integration_listeners/linear", as: :resend_linear_callback
+    post "/events", to: "integration_listeners/linear#events", as: :linear_events
   end
 
   get "/rails/active_storage/blobs/redirect/:signed_id/*filename",

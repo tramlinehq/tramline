@@ -10,7 +10,9 @@ class LiveRelease::ContainerComponent < BaseComponent
     review: ["Under store review", :ongoing],
     rollout: ["Rolling out to users", :inert],
     approvals: ["Requires approvals", :inert],
-    stopped: ["Stopped", :failure]
+    stopped: ["Stopped", :failure],
+    pre_release_started: ["Preparing the release", :routine],
+    pre_release_failed: ["Could not prepare release", :inert]
   }
   SELECTED_TAB_STYLE = "active text-main bg-main-100 border-l-2 border-main-400"
   TAB_STATUS_ICON = {
@@ -79,5 +81,13 @@ class LiveRelease::ContainerComponent < BaseComponent
 
   def hotfix_background
     "bg-diagonal-stripes-soft-red" if hotfix?
+  end
+
+  def webhook_integration
+    release.train.webhook_integration
+  end
+
+  def webhooks_available?
+    release.train.webhooks_available?
   end
 end

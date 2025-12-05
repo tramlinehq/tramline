@@ -3,12 +3,14 @@ module Installations
 
   class Github::Api
     include Vaultable
+    include Loggable
     attr_reader :app_name, :installation_id, :jwt, :client
 
     WEBHOOK_NAME = "web"
     WEBHOOK_EVENTS = %w[push pull_request]
     LIST_WORKFLOWS_LIMIT = 99
     RERUN_FAILED_JOBS_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/actions/runs/{run_id}/rerun-failed-jobs"
+    GENERATE_RELEASE_NOTES_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/releases/generate-notes"
 
     def initialize(installation_id)
       @app_name = creds.integrations.github.app_name
@@ -80,8 +82,8 @@ module Installations
       end
     end
 
-    def run_workflow!(repo, id, ref, inputs, commit_hash, json_inputs_enabled = false)
-      inputs = if json_inputs_enabled
+    def run_workflow!(repo, id, ref, inputs, commit_hash)
+      inputs =
         inputs
           .slice(:version_code, :build_notes)
           .merge(version_name: inputs[:build_version], commit_ref: commit_hash)
@@ -89,17 +91,10 @@ module Installations
           .to_json
           .then { {"tramline-input" => _1} }
           .merge(inputs[:parameters])
-      else
-        {
-          versionCode: inputs[:version_code],
-          versionName: inputs[:build_version],
-          buildNotes: inputs[:build_notes]
-        }.merge(inputs[:parameters]).compact
-      end
 
       execute do
         @client
-          .workflow_dispatch(repo, id, ref, inputs: inputs)
+          .workflow_dispatch(repo, id, ref, inputs:)
           .then { |ok| ok.presence || raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed)) }
       end
     end
@@ -190,25 +185,14 @@ module Installations
       end
     end
 
-    def create_annotated_tag!(repo, name, branch_name, message, tagger_name, tagger_email)
-      execute do
-        object_sha = head(repo, branch_name)
-        type = "commit"
-        tagged_at = Time.current
-
-        @client
-          .create_tag(repo, name, message, object_sha, type, tagger_name, tagger_email, tagged_at)
-          .then { |resp| @client.create_ref(repo, "refs/tags/#{name}", resp[:sha]) }
-      end
-    end
-
     # creates a lightweight tag and a GitHub release simultaneously
-    def create_release!(repo, tag_name, branch_name, release_notes = nil)
+    def create_release!(repo, tag_name, branch_name, previous_tag_name, release_notes = nil)
+      generated_release_notes = generate_release_notes(repo, tag_name, previous_tag_name, branch_name)
       options = {
         target_commitish: branch_name,
         name: tag_name,
-        body: release_notes.presence,
-        generate_release_notes: release_notes.blank?
+        body: generated_release_notes.presence || release_notes.presence,
+        generate_release_notes: false
       }.compact
       execute do
         raise Installations::Error.new("Should not create a tag", reason: :tag_reference_already_exists) if tag_exists?(repo, tag_name)
@@ -262,9 +246,11 @@ module Installations
       end
     end
 
-    def merge_pr!(repo, pr_number)
+    def merge_pr!(repo, pr_number, transforms)
       execute do
-        @client.merge_pull_request(repo, pr_number)
+        @client
+          .merge_pull_request(repo, pr_number)
+          .then { get_pr(repo, pr_number, transforms) }
       end
     end
 
@@ -316,8 +302,8 @@ module Installations
       # create cherry picked commit - 1 api call
       # force update ref of patch branch - 1 api call
       # create a PR - 1 api call
-
       # TOTAL - 7 api calls
+      #
       execute do
         branch_head = @client.branch(repo, branch)[:commit]
         branch_tree_sha = branch_head[:commit][:tree][:sha]
@@ -335,11 +321,18 @@ module Installations
         cherry_commit = @client.create_commit(repo, commit_to_pick_msg, merge_tree, branch_head[:sha], cherry_commit_authors)[:sha]
         @client.update_ref(repo, "heads/#{patch_branch_name}", cherry_commit, true)
 
-        @client
+        pr = @client
           .create_pull_request(repo, branch, patch_branch_name, patch_pr_title, patch_pr_description)
           .then { |response| Installations::Response::Keys.transform([response], transforms) }
           .first
-          .tap { |pr| assign_pr(repo, pr[:number], commit_to_pick_login) }
+
+        begin
+          assign_pr(repo, pr[:number], commit_to_pick_login)
+        rescue => e
+          elog(e, level: :warn)
+        end
+
+        pr
       end
     rescue Installations::Error => e
       @client.delete_branch(repo, patch_branch_name) if e.reason == :merge_conflict
@@ -395,6 +388,70 @@ module Installations
         .then { |parsed_resp| Installations::Response::Keys.transform(parsed_resp["artifacts"], transforms) }
     end
 
+    def get_file_content(repo, branch, path)
+      execute do
+        response = @client.contents(repo, path: path, ref: branch)
+
+        # ignore directories
+        if response.is_a?(Array)
+          raise Installations::Error.new("Could not get file contents", reason: :not_found)
+        end
+
+        # ignore symlinks, submodules, large files, etc.
+        if response.type == "file" && response.encoding == "base64"
+          Base64.decode64(response.content)
+        else
+          raise Installations::Error.new("Could not get file contents", reason: :not_found)
+        end
+      end
+    end
+
+    def update_file!(repo, branch, path, content, message, author_name: nil, author_email: nil)
+      execute do
+        # first, get the current file to get its blob SHA
+        current_file = @client.contents(repo, path: path, ref: branch)
+
+        commit_info = {
+          message: message,
+          content: Base64.strict_encode64(content),
+          sha: current_file.sha,
+          branch: branch
+        }
+
+        if author_name && author_email
+          commit_info[:author] = {name: author_name, email: author_email}
+          commit_info[:committer] = {name: author_name, email: author_email}
+        end
+
+        @client.update_contents(repo, path, message, current_file.sha, content, branch: branch)
+      end
+    end
+
+    private
+
+    def generate_release_notes(repo, tag_name, previous_tag_name, branch)
+      params = {
+        json: {
+          tag_name:,
+          previous_tag_name:,
+          target_commitish: branch
+        }
+      }
+      resp_body = execute_custom do |custom_client|
+        custom_client.post(
+          GENERATE_RELEASE_NOTES_URL
+            .expand(repo:)
+            .to_s
+            .then { |url| URI.decode_www_form_component(url) },
+          params
+        )
+      end
+      JSON.parse(resp_body).dig("body")
+    rescue => e
+      elog(e, level: :warn)
+      nil
+    end
+
     def execute
       yield
     rescue Octokit::Unauthorized
@@ -414,15 +471,19 @@ module Installations
 
         response = yield(new_client)
 
+        response_headers = response.headers.to_h.with_indifferent_access
         response_params = {
           status: response.status,
           body: response.body,
-          response_headers: response.headers.to_h.with_indifferent_access
+          response_headers: response_headers
         }
 
         if (error = Octokit::Error.from_response(response_params))
           raise error
         end
+
+        Rails.logger.info "GitHub API (execute_custom): #{response_headers}"
+        response_params[:body]
       end
     end
 

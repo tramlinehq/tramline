@@ -1,7 +1,7 @@
 <% production_releases.each do |production_release| %>
   <% release = ProductionReleasePresenter.new(production_release, view_context) %>
 
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between flex-wrap gap-y-1">
     <div class="flex items-center gap-1.5 text-center text-secondary">
       <%= render BadgeComponent.new(kind: :badge) do |badge| %>
         <% badge.with_icon(release.store_icon) %>

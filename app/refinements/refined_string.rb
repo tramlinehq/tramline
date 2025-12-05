@@ -45,8 +45,16 @@ module RefinedString
       {}
     end
 
-    def safe_csv_parse
-      split(",").reject(&:empty?).map { |v| Float(v) }
+    def safe_csv_parse(coerce_float: false, coerce_string: false)
+      split(",").reject(&:empty?).map do |v|
+        if coerce_float
+          Float(v)
+        elsif coerce_string
+          String(v.squish)
+        else
+          v
+        end
+      end
     rescue ArgumentError
       []
     end
@@ -55,8 +63,8 @@ module RefinedString
       VersioningStrategies::Semverish.new(to_s)
     end
 
-    def ver_bump(term, strategy:)
-      to_semverish.bump!(term, strategy:).to_s
+    def ver_bump(term, strategy:, relative_time: Time.current)
+      to_semverish.bump!(term, strategy:, relative_time:).to_s
     end
 
     def better_titleize

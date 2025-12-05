@@ -2,19 +2,20 @@
 #
 # Table name: apps
 #
-#  id                :uuid             not null, primary key
-#  build_number      :bigint           not null
-#  bundle_identifier :string           not null, indexed => [platform, organization_id]
-#  description       :string
-#  draft             :boolean
-#  name              :string           not null
-#  platform          :string           not null, indexed => [bundle_identifier, organization_id]
-#  slug              :string
-#  timezone          :string           not null
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  external_id       :string
-#  organization_id   :uuid             not null, indexed, indexed => [platform, bundle_identifier]
+#  id                              :uuid             not null, primary key
+#  build_number                    :bigint           not null
+#  build_number_managed_internally :boolean          default(TRUE), not null
+#  bundle_identifier               :string           not null, indexed => [platform, organization_id]
+#  description                     :string
+#  draft                           :boolean
+#  name                            :string           not null
+#  platform                        :string           not null, indexed => [bundle_identifier, organization_id]
+#  slug                            :string
+#  timezone                        :string           not null
+#  created_at                      :datetime         not null
+#  updated_at                      :datetime         not null
+#  external_id                     :string
+#  organization_id                 :uuid             not null, indexed, indexed => [platform, bundle_identifier]
 #
 class App < ApplicationRecord
   has_paper_trail
@@ -30,7 +31,7 @@ class App < ApplicationRecord
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_one :config, class_name: "AppConfig", dependent: :destroy
   has_one :onboarding_state, dependent: :destroy
-  has_many :variants, through: :config
+  has_many :variants, class_name: "AppVariant", dependent: :destroy
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
   has_many :releases, through: :trains
@@ -38,6 +39,7 @@ class App < ApplicationRecord
   has_many :builds, through: :releases
   has_many :release_platforms, dependent: :destroy
   has_many :release_platform_runs, through: :releases
+  has_one_attached :icon, service: :google_assets
 
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
@@ -46,9 +48,14 @@ class App < ApplicationRecord
 
   enum :platform, {android: "android", ios: "ios", cross_platform: "cross_platform"}
 
-  after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
+  end
+
+  before_validation do
+    if new_record? && build_number_managed_externally?
+      self.build_number = 0
+    end
   end
 
   friendly_id :name, use: :slugged
@@ -82,12 +89,12 @@ class App < ApplicationRecord
     releases.first.scheduled_at > 3.months.ago
   end
 
-  def deploy_action_enabled?
-    Flipper.enabled?(:deploy_action_enabled, self)
-  end
-
   def monitoring_disabled?
     Flipper.enabled?(:monitoring_disabled, self)
+  end
+
+  def custom_bitrise_pipelines?
+    Flipper.enabled?(:custom_bitrise_pipelines, self)
   end
 
   def variant_options
@@ -100,7 +107,7 @@ class App < ApplicationRecord
   end
 
   def bitrise_connected?
-    integrations.bitrise_integrations.any?
+    integrations.connected.bitrise_integrations.any?
   end
 
   def bugsnag_connected?
@@ -120,7 +127,7 @@ class App < ApplicationRecord
   end
 
   def ready?
-    integrations.ready? and config&.ready?
+    integrations.needs_reauth.none? && integrations.ready? && integrations.configured?
   end
 
   def guided_train_setup?
@@ -139,20 +146,25 @@ class App < ApplicationRecord
     trains.first if trains.size == 1
   end
 
+  def build_number_managed_externally? = !build_number_managed_internally
+
   # NOTE: fetches and uses latest build numbers from the stores, if added,
   # to reduce build upload rejection probability
-  def bump_build_number!(release_version: nil)
-    store_build_number = latest_store_build_number
-
+  def bump_build_number!(release_version: nil, workflow_build_number: nil)
     with_lock do
-      self.build_number =
-        VersioningStrategies::Codes.bump(
-          {
-            value: [store_build_number, build_number].compact.max,
-            release_version: release_version
-          },
-          strategy: build_number_increment_strategy
-        )
+      if workflow_build_number.present?
+        self.build_number = workflow_build_number
+      else
+        store_build_number = latest_store_build_number
+        self.build_number =
+          VersioningStrategies::Codes.bump(
+            {
+              value: [store_build_number, build_number].compact.max,
+              release_version: release_version
+            },
+            strategy: build_number_increment_strategy
+          )
+      end
 
       save!
       build_number.to_s
@@ -189,7 +201,7 @@ class App < ApplicationRecord
       }
     }
 
-    config.further_setup_by_category?.each do |category, status_map|
+    integrations.further_setup_by_category.each do |category, status_map|
       app_config_setup[:app_config][:integrations][category] = {
         visible: true, completed: status_map[:ready]
       }
@@ -264,7 +276,7 @@ class App < ApplicationRecord
       app_name: name,
       app_platform: platform,
       platform_public_img: platform_public_img,
-      vcs_public_icon_img: vcs_provider.public_icon_img
+      vcs_public_icon_img: vcs_provider&.public_icon_img
     }
   end
 
@@ -281,6 +293,15 @@ class App < ApplicationRecord
     :increment
   end
 
+  def skip_finding_builds_for_firebase?
+    Flipper.enabled?(:skip_finding_builds_for_firebase, self)
+  end
+
+  def icon_path
+    Rails.application.routes.url_helpers
+      .blob_redirect_path(icon.signed_id, icon.filename, disposition: "inline")
+  end
+
   private
 
   def latest_store_build_number
@@ -290,10 +311,6 @@ class App < ApplicationRecord
     ].compact.max
   rescue
     nil
-  end
-
-  def initialize_config
-    build_config
   end
 
   def no_trains_are_running

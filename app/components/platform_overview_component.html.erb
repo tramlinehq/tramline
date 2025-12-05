@@ -1,7 +1,7 @@
 <%= render PlatformViewComponent.new(release, occupy:, detail: false) do |platform| %>
   <% if store_versions? %>
     <% platform.runs do |run| %>
-      <div class="grid gap-2">
+      <div class="grid gap-3">
         <%= render partial: "shared/store_versions",
                    locals: {production_releases: run.production_releases, show_build:, view_context:} %>
       </div>

@@ -1,40 +1,49 @@
 import {Controller} from "@hotwired/stimulus";
-import parameterize from "parameterize-string";
 import strftime from "strftime";
 
 const baseHelpText = "The release branch will follow the pattern of:"
 
 export default class extends Controller {
-  static values = {
-    current: String,
-  }
-
   static targets = [
     "input",
     "helpTextTitle",
     "helpTextVal"
   ]
 
-  initialize() {
-    this.__set(this.currentValue);
+  connect() {
+    this.updatePreview();
   }
 
-  set() {
-    this.__set(this.inputTarget.value);
-  }
+  updatePreview() {
+    const patternValue = this.inputTarget.value.trim();
 
-  __set(value) {
-    if (value.length === 0) {
+    if (patternValue.length === 0) {
       this.helpTextTitleTarget.innerHTML = ""
       this.helpTextValTarget.innerHTML = ""
       return;
     }
 
     this.helpTextTitleTarget.innerHTML = baseHelpText
-    this.helpTextValTarget.innerHTML = this.__release_branch_name(value);
+    this.helpTextValTarget.innerHTML = this.interpolateTokens(patternValue);
   }
 
-  __release_branch_name(value) {
-    return "r/" + parameterize(value) + "/" + strftime('%Y-%m-%d');
+  interpolateTokens(pattern) {
+    if (!pattern) return "";
+
+    const exampleValues = {
+      trainName: "my-train",
+      releaseVersion: "1.2.3",
+      releaseStartDate: strftime('%Y-%m-%d')
+    };
+
+    let result = pattern;
+
+    // replace placeholders
+    Object.entries(exampleValues).forEach(([token, value]) => {
+      const tokenPattern = new RegExp(`~${token}~`, 'g');
+      result = result.replace(tokenPattern, value);
+    });
+
+    return result;
   }
 }

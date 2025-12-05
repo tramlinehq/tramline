@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scan_js:
     runs-on: ubuntu-latest
@@ -13,6 +17,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install additional dependencies
+        run: sudo apt-get update && sudo apt-get install -y libvips
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -35,6 +42,23 @@ jobs:
         with:
           ruby-version: .ruby-version
           bundler-cache: true
+
+      - name: Generate a valid CycloneDX BOM
+        run: |
+          gem install cyclonedx-ruby
+          wget https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64 -O cyclonedx-cli
+          chmod +x cyclonedx-cli
+
+          cyclonedx-ruby -p . -o sbom.xml
+          ./cyclonedx-cli validate --input-file sbom.xml --fail-on-errors
+
+      - name: Upload CycloneDX BOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: |
+            sbom.xml
+          retention-days: 7
 
       - name: Security bundler audit dependencies
         run: bundle exec bundler-audit --update
@@ -64,6 +88,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install additional dependencies
+        run: sudo apt-get update && sudo apt-get install -y libvips
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -83,7 +110,7 @@ jobs:
         run: bundle exec rails zeitwerk:check
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.ref != 'refs/heads/main' && 'warp-ubuntu-latest-x64-16x' || 'ubuntu-latest' }}
     services:
       postgres:
         image: postgres:14-alpine
@@ -100,9 +127,14 @@ jobs:
     env:
       RAILS_ENV: test
       DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
+      WORKERS: ${{ github.ref != 'refs/heads/main' && '8' || '4' }}
+      DEFAULT_REDIS_URL: redis://localhost:6379
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install additional dependencies
+        run: sudo apt-get update && sudo apt-get install -y libvips
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -116,5 +148,8 @@ jobs:
       - name: Run asset pre compilation
         run: bundle exec rails assets:precompile
 
+      - name: Setup Parallel Rspec DBs
+        run: bundle exec rake db:parallel:create db:parallel:prepare
+
       - name: Run tests
-        run: bundle exec rspec
+        run: bundle exec rake parallel_rspec

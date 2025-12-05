@@ -2,10 +2,11 @@
 #
 # Table name: github_integrations
 #
-#  id              :uuid             not null, primary key
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  installation_id :string           not null
+#  id                :uuid             not null, primary key
+#  repository_config :jsonb
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  installation_id   :string           not null
 #
 class GithubIntegration < ApplicationRecord
   has_paper_trail
@@ -18,7 +19,6 @@ class GithubIntegration < ApplicationRecord
 
   validates :installation_id, presence: true
 
-  delegate :code_repository_name, :code_repo_namespace, :code_repo_name_only, to: :app_config
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
   delegate :cache, to: Rails
@@ -47,7 +47,8 @@ class GithubIntegration < ApplicationRecord
   WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :id,
     ci_link: :html_url,
-    number: :run_number
+    number: :run_number,
+    unique_number: :run_number
   }
 
   INSTALLATION_TRANSFORMATIONS = {
@@ -90,6 +91,7 @@ class GithubIntegration < ApplicationRecord
     base_ref: [:base, :ref],
     opened_at: :created_at,
     closed_at: :closed_at,
+    merge_commit_sha: :merge_commit_sha,
     labels: {
       labels: {
         id: :id,
@@ -108,6 +110,22 @@ class GithubIntegration < ApplicationRecord
     generated_at: :created_at
   }
 
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
+
+  def code_repo_url
+    repository_config&.fetch("repo_url", nil)
+  end
+
+  def code_repo_namespace
+    repository_config&.fetch("namespace", nil)
+  end
+
+  def code_repo_name_only
+    repository_config&.fetch("name", nil)
+  end
+
   def install_path
     BASE_INSTALLATION_URL
       .expand(app_name: creds.integrations.github.app_name, params: {
@@ -117,7 +135,7 @@ class GithubIntegration < ApplicationRecord
 
   def workspaces = nil
 
-  def repos(_)
+  def repos(_ = nil)
     installation.list_repos(REPOS_TRANSFORMATIONS)
   end
 
@@ -145,11 +163,8 @@ class GithubIntegration < ApplicationRecord
     end
   end
 
-  def create_release!(tag_name, branch, release_notes)
-    installation.create_release!(code_repository_name, tag_name, branch)
-  rescue Installations::Error => ex
-    raise ex unless ex.reason == :release_notes_too_long
-    installation.create_release!(code_repository_name, tag_name, branch, release_notes)
+  def create_release!(tag_name, branch, previous_tag_name, release_notes)
+    installation.create_release!(code_repository_name, tag_name, branch, previous_tag_name, release_notes)
   end
 
   def create_tag!(tag_name, sha)
@@ -179,6 +194,10 @@ class GithubIntegration < ApplicationRecord
     "https://github.com/#{code_repository_name}/compare/#{to_branch}..#{from_branch}"
   end
 
+  def pr_url(pr_number)
+    "https://github.com/#{code_repository_name}/pull/#{pr_number}"
+  end
+
   def installation
     API.new(installation_id)
   end
@@ -202,7 +221,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def further_setup?
-    false
+    true
   end
 
   def enable_auto_merge? = true
@@ -230,14 +249,16 @@ class GithubIntegration < ApplicationRecord
 
   ## CI/CD
 
-  def workflows(_ = nil)
+  def workflows(_ = nil, bust_cache: false)
+    Rails.cache.delete(workflows_cache_key) if bust_cache
+
     cache.fetch(workflows_cache_key, expires_in: 120.minutes) do
       installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
     end
   end
 
-  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil, deploy_action_enabled = false)
-    installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash, deploy_action_enabled)
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
+    installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash)
   end
 
   def cancel_workflow_run!(ci_ref)
@@ -257,17 +278,26 @@ class GithubIntegration < ApplicationRecord
   end
 
   def artifact_url
-    raise Integrations::UnsupportedAction
+    raise Integration::UnsupportedAction
   end
 
   # we currently only select the largest artifact from github, since we have no information about the file types
   # in the future, this could be smarter and/or a user input
   def get_artifact(artifacts_url, artifact_name_pattern, _)
-    artifact = select_artifact(artifacts_url, artifact_name_pattern)
+    raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifacts_url.blank?
 
-    artifact_stream = installation.artifact_download_url(artifact)
-      .then { |url| installation.artifact_io_stream(url) }
-      .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
+    artifact =
+      installation
+        .artifacts(artifacts_url, ARTIFACTS_TRANSFORMATIONS)
+        .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
+        .then { |artifacts| API.find_biggest(artifacts) }
+        .tap { |artifact| raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank? }
+
+    artifact_stream =
+      installation
+        .artifact_download_url(artifact)
+        .then { |url| installation.artifact_io_stream(url) }
+        .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
 
     {artifact:, stream: artifact_stream}
   end
@@ -309,7 +339,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def merge_pr!(pr_number)
-    installation.merge_pr!(code_repository_name, pr_number)
+    installation.merge_pr!(code_repository_name, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
   def commit_log(from_branch, to_branch)
@@ -331,23 +361,23 @@ class GithubIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
-  def workflow_retriable?
-    true
-  end
+  def workflow_retriable? = false
+
+  def workflow_retriable_in_place? = true
 
   def branch_head_sha(branch, sha_only: true)
     installation.head(code_repository_name, branch, sha_only:, commit_transforms: COMMITS_TRANSFORMATIONS)
   end
 
-  private
-
-  def select_artifact(artifacts_url, artifact_name_pattern)
-    installation
-      .artifacts(artifacts_url, ARTIFACTS_TRANSFORMATIONS)
-      .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
-      .then { |artifacts| API.find_biggest(artifacts) }
-      .tap { |artifact| raise Installations::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank? }
+  def get_file_content(branch_name, file_path)
+    installation.get_file_content(code_repository_name, branch_name, file_path)
   end
+
+  def update_file!(branch_name, file_path, content, commit_message, author_name: nil, author_email: nil)
+    installation.update_file!(code_repository_name, branch_name, file_path, content, commit_message, author_name:, author_email:)
+  end
+
+  private
 
   def namespaced_branch(branch_name)
     [code_repo_namespace, ":", branch_name].join
@@ -359,10 +389,6 @@ class GithubIntegration < ApplicationRecord
 
   def update_webhook!(id, url_params)
     installation.update_repo_webhook!(code_repository_name, id, events_url(url_params), WEBHOOK_TRANSFORMATIONS)
-  end
-
-  def app_config
-    integrable.config
   end
 
   def events_url(params)

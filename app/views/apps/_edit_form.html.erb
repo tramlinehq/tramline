@@ -2,6 +2,21 @@
   <% f.with_section(heading: "Basics") do |section| %>
     <div><%= section.F.labeled_text_field :name, "Name", required: true %></div>
     <div><%= section.F.labeled_textarea :description, "Description" %></div>
+    <% if @app.icon.attached? %>
+      <div>
+        <%= render IconComponent.new(@app.icon_path, size: :xxl, rounded: false) %>
+        <%= render ButtonComponent.new(
+              scheme: :danger,
+              label: "Remove icon",
+              options: remove_icon_app_path(@app),
+              type: :link,
+              html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to remove this icon?"}}
+            ) do |b|
+              b.with_icon("trash.svg", size: :sm)
+            end %>
+      </div>
+    <% end %>
+    <div><%= section.F.labeled_file_field :icon, "Choose icon", "512x512 or 1024x1024, square only. Under 1 MiB.", accept: "image/png,image/jpeg,image/jpg,image/webp" %></div>
   <% end %>
 
   <% f.with_section(heading: "Build Settings") do |section| %>
@@ -11,22 +26,37 @@
         the identifier in the store listing.
       </div>
       <div class="mt-4">
-        The <strong>build number</strong> must be the same or higher than the build number of the last build you
-        deployed to the store.
+        <%= render partial: "apps/build_number_management_help" %>
       </div>
     <% end %>
 
     <div><%= section.F.labeled_text_field :bundle_identifier, "Bundle Identifier", required: true %></div>
 
-    <div data-controller="domain--build-number-help"
-         data-domain--build-number-help-number-current-value="<%= @app.build_number.presence %>">
-      <%= section.F.labeled_number_field :build_number, "Build Number", data: {domain__build_number_help_target: "input",
-                                                                               action: "domain--build-number-help#increment"} %>
-      <div class="text-sm mt-1">
-        <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
-        <span class="font-mono" data-domain--build-number-help-target="helpTextVal"></span>
-      </div>
-    </div>
+    <%= render Form::SwitchComponent.new(form: section.F,
+                                         field_name: :build_number_managed_internally,
+                                         on_label: "Build number managed by Tramline",
+                                         off_label: "Build number managed externally (using CI pipelines)",
+                                         hide_child: @app.build_number_managed_externally?,
+                                         html_options: {disabled: true},
+                                         switch_id: "edit_build_number_managed_internally") do |component| %>
+
+      <% component.with_info_icon do %>
+        This setting cannot be changed after the app is created.
+      <% end %>
+
+      <% component.with_child do %>
+        <div data-controller="domain--build-number-help"
+             data-domain--build-number-help-number-current-value="<%= @app.build_number.presence %>">
+
+          <%= section.F.labeled_number_field :build_number, "Build Number", data: {domain__build_number_help_target: "input",
+                                                                                   action: "domain--build-number-help#increment"} %>
+          <div class="text-sm mt-1">
+            <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
+            <span class="font-mono" data-domain--build-number-help-target="helpTextVal"></span>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
   <% end %>
 
   <% f.with_action do %>

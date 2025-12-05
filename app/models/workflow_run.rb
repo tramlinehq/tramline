@@ -5,6 +5,7 @@
 #  id                      :uuid             not null, primary key
 #  artifacts_url           :string
 #  external_number         :string
+#  external_unique_number  :string
 #  external_url            :string
 #  finished_at             :datetime
 #  kind                    :string           default("release_candidate"), not null
@@ -89,9 +90,10 @@ class WorkflowRun < ApplicationRecord
     end
 
     event :unavailable, after_commit: :on_unavailable! do
-      transitions from: [:created, :triggered], to: :unavailable
+      transitions from: [:created, :triggered, :triggering], to: :unavailable
     end
 
+    # this is when the actual workflow run has failed (exit 1)
     event :fail, after_commit: :on_fail! do
       transitions from: :started, to: :failed
     end
@@ -130,7 +132,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def allow_error?
-    train.temporarily_allow_workflow_errors?
+    train.temporary_allow_workflow_errors?
   end
 
   def active?
@@ -143,7 +145,10 @@ class WorkflowRun < ApplicationRecord
 
   def find_and_update_external
     return if workflow_found?
-    find_external_run.then { |wr| update_external_metadata!(wr) }
+
+    find_external_run
+      .then { |external_workflow_run| check_external_data(external_workflow_run) }
+      .then { |external_workflow_run| update_external_metadata!(external_workflow_run) }
   end
 
   def get_external_run
@@ -180,7 +185,7 @@ class WorkflowRun < ApplicationRecord
     if retrigger
       retrigger_external_run!
     else
-      update_build_number!
+      update_internally_managed_build_number! if app.build_number_managed_internally?
       trigger_external_run!
     end
 
@@ -189,6 +194,12 @@ class WorkflowRun < ApplicationRecord
 
   def retrigger_external_run!
     if ci_cd_provider.workflow_retriable?
+      ci_cd_provider
+        .retry_workflow_run!(external_id)
+        .then { |external_workflow_run| check_external_data(external_workflow_run) }
+        .then { |external_workflow_run| update_external_metadata!(external_workflow_run) }
+    elsif ci_cd_provider.workflow_retriable_in_place?
+      # if the retry is in-place (the id doesn't change), we don't need to update anything for ourselves
       ci_cd_provider.retry_workflow_run!(external_id)
     else
       trigger_external_run!
@@ -211,16 +222,39 @@ class WorkflowRun < ApplicationRecord
 
   private
 
-  def trigger_external_run!
-    deploy_action_enabled = organization.deploy_action_enabled? || app.deploy_action_enabled? || train.deploy_action_enabled?
+  class ExternalUniqueNumberNotFound < StandardError
+    def initialize(message = "External unique number not found")
+      super
+    end
 
-    ci_cd_provider
-      .trigger_workflow_run!(conf.identifier, release_branch, workflow_inputs, commit_hash, deploy_action_enabled)
-      .then { |wr| update_external_metadata!(wr) }
+    def reason = nil
   end
 
-  def update_build_number!
+  def check_external_data(external_workflow_run)
+    return unless external_workflow_run.is_a?(Hash)
+
+    if app.build_number_managed_externally?
+      external_unique_number = external_workflow_run[:unique_number]
+      raise ExternalUniqueNumberNotFound if external_unique_number.blank?
+    end
+
+    external_workflow_run
+  end
+
+  def trigger_external_run!
+    ci_cd_provider
+      .trigger_workflow_run!(conf.identifier, release_branch, workflow_inputs, commit_hash)
+      .then { |external_workflow_run| check_external_data(external_workflow_run) }
+      .then { |external_workflow_run| update_external_metadata!(external_workflow_run) }
+  end
+
+  def update_internally_managed_build_number!
     build.update!(build_number: app.bump_build_number!(release_version: build.release_version))
+  end
+
+  def update_build_number_from_external_metadata!
+    build.update!(build_number: external_unique_number)
+    app.bump_build_number!(release_version: build.release_version, workflow_build_number: external_unique_number)
   end
 
   def workflow_inputs
@@ -233,14 +267,17 @@ class WorkflowRun < ApplicationRecord
     data
   end
 
-  def update_external_metadata!(workflow_run)
-    return if workflow_run.try(:[], :ci_ref).blank?
+  def update_external_metadata!(external_workflow_run)
+    return if external_workflow_run.try(:[], :ci_ref).blank?
 
     update!(
-      external_id: workflow_run[:ci_ref],
-      external_url: workflow_run[:ci_link],
-      external_number: workflow_run[:number]
+      external_id: external_workflow_run[:ci_ref],
+      external_url: external_workflow_run[:ci_link],
+      external_number: external_workflow_run[:number],
+      external_unique_number: external_workflow_run[:unique_number]
     )
+
+    update_build_number_from_external_metadata! if app.build_number_managed_externally?
   end
 
   def find_external_run

@@ -5,6 +5,20 @@ module Integrable
     has_many :integrations, as: :integrable, dependent: :destroy
   end
 
+  def self.find(org, id)
+    ApplicationRecord::INTEGRABLE_TYPES.each do |type|
+      record = type.constantize.friendly.find(id)
+      if record
+        raise ActiveRecord::RecordNotFound, "Couldn't find integrable with id=#{id}" if record.organization != org
+        return record
+      end
+    rescue ActiveRecord::RecordNotFound
+      next
+    end
+
+    raise ActiveRecord::RecordNotFound, "Couldn't find integrable with id=#{id}"
+  end
+
   delegate :ios_store_provider,
     :android_store_provider,
     :slack_build_channel_provider,
@@ -12,10 +26,10 @@ module Integrable
   delegate :draft_check?, to: :android_store_provider, allow_nil: true
 
   def firebase_connected?
-    integrations.google_firebase_integrations.any?
+    integrations.connected.google_firebase_integrations.any?
   end
 
   def firebase_crashlytics_connected?
-    integrations.crashlytics_integrations.any?
+    integrations.connected.crashlytics_integrations.any?
   end
 end

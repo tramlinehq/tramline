@@ -1,9 +1,8 @@
 class Authentication::Sso::SessionsController < ApplicationController
   include Authenticatable
+  include MobileDeviceAllowable
 
   before_action :skip_authentication, only: [:new, :create]
-  after_action :prepare_intercom_shutdown, only: [:destroy]
-  after_action :intercom_shutdown, only: [:new]
 
   def new
     set_invite
@@ -19,7 +18,7 @@ class Authentication::Sso::SessionsController < ApplicationController
         redirect_to sso_new_sso_session_path, flash: {error: t(".connect_failure")}
       end
     else
-      redirect_to sso_new_sso_session_path, flash: {error: t(".no_account")}
+      redirect_to sso_new_sso_session_path, flash: {error: t(".invalid_login")}
     end
   rescue Accounts::SsoAuthentication::AuthException
     redirect_to sso_new_sso_session_path, flash: {error: t(".failure")}
@@ -61,14 +60,6 @@ class Authentication::Sso::SessionsController < ApplicationController
   def set_invite
     invite_token = params[:invite_token]
     @invite = Accounts::Invite.find_by(token: invite_token) if invite_token.present?
-  end
-
-  def prepare_intercom_shutdown
-    IntercomRails::ShutdownHelper.prepare_intercom_shutdown(session)
-  end
-
-  def intercom_shutdown
-    IntercomRails::ShutdownHelper.intercom_shutdown(session, cookies, request.domain)
   end
 
   def track_login

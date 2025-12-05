@@ -8,8 +8,8 @@ class LiveRelease::OverviewComponent < BaseComponent
     :hotfixed_from,
     :team_stability_commits,
     :team_release_commits,
-    :backmerge_pr_count,
-    :backmerge_failure_count,
+    :mid_release_backmerge_pr_count,
+    :mid_release_backmerge_failure_count,
     :display_start_time,
     :display_end_time,
     :duration,
@@ -22,7 +22,7 @@ class LiveRelease::OverviewComponent < BaseComponent
     to: :release
 
   def backmerge_summary
-    "#{backmerge_pr_count} merged, #{backmerge_failure_count} failed"
+    "#{mid_release_backmerge_pr_count} merged, #{mid_release_backmerge_failure_count} failed"
   end
 
   def team_stability_chart
@@ -51,5 +51,11 @@ class LiveRelease::OverviewComponent < BaseComponent
 
   def hotfix_banner?
     hotfix? && release.all_commits.exists? && release.pre_prod_releases.none?
+  end
+
+  def version_bump_prs_banner?
+    release.pre_release? &&
+      release.train.version_bump_enabled? &&
+      release.pull_requests.version_bump_type.open.any?
   end
 end

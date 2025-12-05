@@ -191,162 +191,6 @@ describe Release do
     expect(create_list(:release, 5).map(&:slug).uniq.size).to eq(5)
   end
 
-  describe "#set_version" do
-    {
-      "1.2.3" => {major: "2.0.0", minor: "1.3.0"},
-      "1.2" => {major: "2.0", minor: "1.3"}
-    }.each do |ver, expect|
-      it "minor bump: sets the original_release_version to next version of the train" do
-        train = create(:train, version_seeded_with: ver)
-        run = build(:release, original_release_version: nil, train:)
-
-        expect(run.original_release_version).to be_nil
-        run.save!
-        expect(run.original_release_version).to eq(expect[:minor])
-      end
-
-      it "major bump: sets the original_release_version to next version of the train" do
-        train = create(:train, version_seeded_with: ver)
-        run = build(:release, original_release_version: nil, train:)
-        run.has_major_bump = true
-
-        expect(run.original_release_version).to be_nil
-        run.save!
-        expect(run.original_release_version).to eq(expect[:major])
-      end
-
-      it "fixed version: sets the original_release_version to train's current version" do
-        train = create(:train, version_seeded_with: ver, freeze_version: true)
-        run = build(:release, original_release_version: nil, train:)
-
-        expect(run.original_release_version).to be_nil
-        run.save!
-        expect(run.original_release_version).to eq(ver)
-      end
-
-      it "sets the original_release_version to the custom_version" do
-        train = create(:train, version_seeded_with: ver)
-        run = build(:release, original_release_version: nil, train:, custom_version: "2.0.0")
-
-        expect(run.original_release_version).to be_nil
-        run.save!
-        expect(run.original_release_version).to eq("2.0.0")
-      end
-    end
-
-    context "when hotfix release" do
-      it "patch bump: sets the original_release_version to the next version of a the previous good run" do
-        train = create(:train, :with_almost_trunk, :with_no_platforms, :active, version_seeded_with: "1.2.3")
-        release = create(:release, :finished, :with_no_platform_runs, train:)
-        release_platform = create(:release_platform, train:)
-        _finished_release_run = create(:release_platform_run, release:, release_platform:, release_version: "1.2.3")
-
-        hotfix_run = build(:release, :hotfix, :with_no_platform_runs, original_release_version: nil, train:)
-
-        expect(hotfix_run.original_release_version).to be_nil
-        hotfix_run.save!
-        expect(hotfix_run.original_release_version).to eq("1.2.4")
-      end
-
-      it "minor bump: sets the original_release_version to the next version of a the previous good run" do
-        train = create(:train, :with_almost_trunk, :with_no_platforms, :active, version_seeded_with: "1.2")
-        release = create(:release, :finished, :with_no_platform_runs, train:)
-        release_platform = create(:release_platform, train:)
-        _finished_release_run = create(:release_platform_run, release:, release_platform:, release_version: "1.2")
-
-        hotfix_run = build(:release, :hotfix, :with_no_platform_runs, original_release_version: nil, train:)
-
-        expect(hotfix_run.original_release_version).to be_nil
-        hotfix_run.save!
-        expect(hotfix_run.original_release_version).to eq("1.3")
-      end
-    end
-
-    context "when ongoing release" do
-      {
-        "1.2.3" => {major: "2.0.0", minor: "1.4.0"},
-        "1.2" => {major: "2.0", minor: "1.4"}
-      }.each do |ver, expect|
-        it "minor bump: sets the original_release_version to next version of the ongoing release" do
-          train = create(:train, version_seeded_with: ver)
-          _ongoing_release = create(:release, :on_track, train:)
-          run = build(:release, original_release_version: nil, train:)
-
-          expect(run.original_release_version).to be_nil
-          run.save!
-          expect(run.original_release_version).to eq(expect[:minor])
-        end
-
-        it "major bump: sets the original_release_version to next version of the ongoing release" do
-          train = create(:train, version_seeded_with: ver)
-          _ongoing_release = create(:release, :on_track, train:)
-          run = build(:release, original_release_version: nil, train:)
-          run.has_major_bump = true
-
-          expect(run.original_release_version).to be_nil
-          run.save!
-          expect(run.original_release_version).to eq(expect[:major])
-        end
-      end
-    end
-
-    context "when ongoing hotfix release" do
-      {
-        "1.2.3" => {major: "2.0.0", minor: "1.4.0"},
-        "1.2" => {major: "2.0", minor: "1.5"}
-      }.each do |ver, expect|
-        it "minor bump: sets the original_release_version to next version of the hotfix release" do
-          train = create(:train, version_seeded_with: ver)
-          old_release = create(:release, :finished, train:)
-          _ongoing_release = create(:release, :on_track, :hotfix, train:, hotfixed_from: old_release)
-          run = build(:release, original_release_version: nil, train:)
-
-          expect(run.original_release_version).to be_nil
-          run.save!
-          expect(run.original_release_version).to eq(expect[:minor])
-        end
-
-        it "major bump: sets the original_release_version to next version of the hotfix release" do
-          train = create(:train, version_seeded_with: ver)
-          old_release = create(:release, :finished, train:)
-          _ongoing_release = create(:release, :on_track, :hotfix, train:, hotfixed_from: old_release)
-          run = build(:release, original_release_version: nil, train:)
-          run.has_major_bump = true
-
-          expect(run.original_release_version).to be_nil
-          run.save!
-          expect(run.original_release_version).to eq(expect[:major])
-        end
-      end
-    end
-
-    context "when train has patch_version_bump_only" do
-      {
-        "1.2.3" => {major: "2.0.0", minor: "1.2.4"},
-        "1.2" => {major: "2.0", minor: "1.3"}
-      }.each do |ver, expect|
-        it "minor bump: sets the original_release_version to next version of the train with patch bump only for proper" do
-          train = create(:train, version_seeded_with: ver, patch_version_bump_only: true)
-          run = build(:release, original_release_version: nil, train:)
-
-          expect(run.original_release_version).to be_nil
-          run.save!
-          expect(run.original_release_version).to eq(expect[:minor])
-        end
-
-        it "major bump: sets the original_release_version to next version of the train with major bump" do
-          train = create(:train, version_seeded_with: ver, patch_version_bump_only: true)
-          run = build(:release, original_release_version: nil, train:)
-          run.has_major_bump = true
-
-          expect(run.original_release_version).to be_nil
-          run.save!
-          expect(run.original_release_version).to eq(expect[:major])
-        end
-      end
-    end
-  end
-
   describe ".create" do
     it "creates the release platform run for android platform" do
       app = create(:app, :android)
@@ -431,7 +275,7 @@ describe Release do
     it "saves a new tag with the base name" do
       allow_any_instance_of(GithubIntegration).to receive(:create_release!)
 
-      release.create_vcs_release!
+      release.create_vcs_release!(anything, anything)
       expect(release.tag_name).to eq("v1.2.3")
     end
 
@@ -439,7 +283,7 @@ describe Release do
       raise_times(GithubIntegration, tag_exists_error, :create_release!, 1)
       commit = create(:commit, release:)
 
-      release.create_vcs_release!
+      release.create_vcs_release!(commit.commit_hash, anything)
       expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}")
     end
 
@@ -450,19 +294,19 @@ describe Release do
         now = Time.now.to_i
         commit = create(:commit, release:)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(commit.commit_hash, anything)
         expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}-#{now}")
       end
     end
 
     context "when tag suffix" do
       let(:suffix) { "nightly" }
-      let(:train) { create(:train, :active, tag_suffix: suffix) }
+      let(:train) { create(:train, :active, tag_end_of_release_suffix: suffix) }
 
       it "saves a new tag with the base name + suffix" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(anything, anything)
         expect(release.tag_name).to eq("v1.2.3-#{suffix}")
       end
 
@@ -470,7 +314,7 @@ describe Release do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
         commit = create(:commit, release:)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(commit.commit_hash, anything)
         expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}")
       end
 
@@ -481,7 +325,7 @@ describe Release do
           now = Time.now.to_i
           commit = create(:commit, release:)
 
-          release.create_vcs_release!
+          release.create_vcs_release!(commit.commit_hash, anything)
           expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
         end
       end
@@ -489,12 +333,12 @@ describe Release do
 
     context "when tag prefix" do
       let(:prefix) { "foo" }
-      let(:train) { create(:train, :active, tag_prefix: prefix) }
+      let(:train) { create(:train, :active, tag_end_of_release_prefix: prefix) }
 
       it "saves a new tag with the prefix + base name" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(anything, anything)
         expect(release.tag_name).to eq("#{prefix}-v1.2.3")
       end
 
@@ -502,7 +346,7 @@ describe Release do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
         commit = create(:commit, release:)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(commit.commit_hash, anything)
         expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{commit.short_sha}")
       end
 
@@ -513,7 +357,7 @@ describe Release do
           now = Time.now.to_i
           commit = create(:commit, release:)
 
-          release.create_vcs_release!
+          release.create_vcs_release!(commit.commit_hash, anything)
           expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{commit.short_sha}-#{now}")
         end
       end
@@ -522,12 +366,12 @@ describe Release do
     context "when tag prefix and tag suffix" do
       let(:prefix) { "foo" }
       let(:suffix) { "nightly" }
-      let(:train) { create(:train, :active, tag_prefix: prefix, tag_suffix: suffix) }
+      let(:train) { create(:train, :active, tag_end_of_release_prefix: prefix, tag_end_of_release_suffix: suffix) }
 
       it "saves a new tag with the prefix + base name + suffix" do
         allow_any_instance_of(GithubIntegration).to receive(:create_release!)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(anything, anything)
         expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}")
       end
 
@@ -535,7 +379,7 @@ describe Release do
         raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
         commit = create(:commit, release:)
 
-        release.create_vcs_release!
+        release.create_vcs_release!(commit.commit_hash, anything)
         expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}-#{commit.short_sha}")
       end
 
@@ -546,21 +390,9 @@ describe Release do
           now = Time.now.to_i
           commit = create(:commit, release:)
 
-          release.create_vcs_release!
+          release.create_vcs_release!(commit.commit_hash, anything)
           expect(release.tag_name).to eq("#{prefix}-v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
         end
-      end
-    end
-
-    context "when release tag disabled" do
-      let(:train) { create(:train, :active, tag_releases: false) }
-
-      it "does not create tag" do
-        allow_any_instance_of(GithubIntegration).to receive(:create_release!)
-
-        release.create_vcs_release!
-        expect_any_instance_of(GithubIntegration).not_to receive(:create_release!)
-        expect(release.tag_name).to be_nil
       end
     end
   end
@@ -599,19 +431,19 @@ describe Release do
     it "is true when hotfix release and existing hotfix branch" do
       run = create(:release, :hotfix, :created, new_hotfix_branch: false)
 
-      expect(run.retrigger_for_hotfix?).to be(true)
+      expect(run.hotfix_with_existing_branch?).to be(true)
     end
 
     it "is false when hotfix release and new hotfix branch" do
       run = create(:release, :hotfix, :created, new_hotfix_branch: true)
 
-      expect(run.retrigger_for_hotfix?).to be(false)
+      expect(run.hotfix_with_existing_branch?).to be(false)
     end
 
     it "is false when not hotfix release" do
       run = create(:release, :created)
 
-      expect(run.retrigger_for_hotfix?).to be(false)
+      expect(run.hotfix_with_existing_branch?).to be(false)
     end
   end
 
@@ -1004,6 +836,34 @@ describe Release do
       commit_in_queue = create(:commit, release:, build_queue:)
 
       expect(release.last_applicable_commit).to eq(commit_in_queue)
+    end
+  end
+
+  describe "soak period delegation" do
+    let(:train) { create(:train, soak_period_enabled: true, soak_period_hours: 24) }
+    let(:release) { create(:release, train:) }
+
+    describe "#soak_period_enabled?" do
+      it "delegates to train" do
+        expect(release.soak_period_enabled?).to be(true)
+      end
+
+      it "returns false when train has soak disabled" do
+        release.train.update!(soak_period_enabled: false)
+        expect(release.soak_period_enabled?).to be(false)
+      end
+    end
+
+    describe "beta_soak association" do
+      it "can create a beta_soak" do
+        beta_soak = release.create_beta_soak!(started_at: Time.current, period_hours: 24)
+        expect(beta_soak).to be_persisted
+        expect(release.reload.beta_soak).to eq(beta_soak)
+      end
+
+      it "returns nil when no beta_soak exists" do
+        expect(release.beta_soak).to be_nil
+      end
     end
   end
 end

@@ -10,6 +10,7 @@
 #  is_automatic              :boolean          default(FALSE)
 #  is_v2                     :boolean          default(FALSE)
 #  new_hotfix_branch         :boolean          default(FALSE)
+#  notification_channel      :jsonb
 #  original_release_version  :string
 #  release_type              :string           not null
 #  scheduled_at              :datetime
@@ -32,6 +33,7 @@ class Release < ApplicationRecord
   include Versionable
   include Displayable
   include Linkable
+  include Sanitizable
 
   using RefinedString
 
@@ -49,25 +51,24 @@ class Release < ApplicationRecord
   STAMPABLE_REASONS = %w[
     created
     release_branch_created
-    kickoff_pr_succeeded
+    version_bump_branch_created
+    version_bump_no_changes
     version_changed
     approvals_overwritten
     finalizing
-    pre_release_pr_not_creatable
-    pull_request_not_mergeable
-    post_release_pr_succeeded
-    backmerge_pr_created
-    pr_merged
+    pre_release_failed
     backmerge_failure
+    tag_created
     vcs_release_created
     finalize_failed
     stopped
     finished
   ]
-  # TODO: deprecate this
-  STAMPABLE_REASONS.concat(["status_changed"])
+  STAMPABLE_REASONS.concat(%w[status_changed backmerge_pr_created pr_merged pull_request_not_mergeable post_release_pr_succeeded kickoff_pr_succeeded]) # TODO: deprecate this
   STATES = {
     created: "created",
+    pre_release_started: "pre_release_started",
+    pre_release_failed: "pre_release_failed",
     on_track: "on_track",
     post_release: "post_release",
     post_release_started: "post_release_started",
@@ -112,12 +113,13 @@ class Release < ApplicationRecord
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
   has_many :approval_items, -> { order(:created_at) }, inverse_of: :release, dependent: :destroy
-
   has_many :store_rollouts, through: :release_platform_runs
   has_many :store_submissions, through: :release_platform_runs
   has_many :pre_prod_releases, through: :release_platform_runs
   has_many :production_releases, through: :release_platform_runs
   has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
+  has_many :outgoing_webhook_events, dependent: :destroy, inverse_of: :release
+  has_one :beta_soak, dependent: :destroy
 
   scope :completed, -> { where(status: TERMINAL_STATES) }
   scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
@@ -131,8 +133,16 @@ class Release < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
+    event :start_pre_release_phase do
+      transitions from: [:created, :pre_release_failed, :pre_release_started], to: :pre_release_started
+    end
+
+    event :fail_pre_release_phase do
+      transitions from: :pre_release_started, to: :pre_release_failed
+    end
+
     event :start do
-      transitions from: :created, to: :on_track
+      transitions from: [:created, :pre_release_started], to: :on_track
     end
 
     event :start_post_release_phase do
@@ -150,7 +160,7 @@ class Release < ApplicationRecord
     event :stop do
       before { self.stopped_at = Time.current }
       transitions from: :partially_finished, to: :stopped_after_partial_finish
-      transitions from: [:created, :on_track, :post_release_started, :post_release_failed], to: :stopped
+      transitions from: [:created, :on_track, :post_release_started, :post_release_failed, :pre_release_started, :pre_release_failed], to: :stopped
     end
 
     event :finish do
@@ -159,19 +169,44 @@ class Release < ApplicationRecord
     end
   end
 
-  before_create :set_version
   before_create :set_internal_notes
   after_create :create_platform_runs!
   after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::CopyPreviousApprovalsJob.perform_async(id) }, on: :create, if: :copy_approvals_enabled?
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
-  attr_accessor :has_major_bump, :hotfix_platform, :custom_version
+  attr_accessor :hotfix_platform
   friendly_id :human_slug, use: :slugged
 
   delegate :versioning_strategy, :patch_version_bump_only, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, :approvals_enabled?, :copy_approvals?, to: :train
-  delegate :platform, :organization, to: :app
+  delegate :platform, :organization, :notification_provider, to: :app
+
+  def set_notification_channel!(notification_channel)
+    self.notification_channel = {
+      id: notification_channel["id"],
+      name: notification_channel["name"]
+    }
+
+    save!
+  end
+
+  def release_specific_channel_deep_link
+    notification_provider.channel_deep_link(release_specific_channel_id) if release_specific_channel_id.present?
+  end
+
+  def release_specific_channel_name
+    notification_channel&.fetch("name")
+  end
+
+  def release_specific_channel_id
+    notification_channel&.fetch("id")
+  end
+
+  def pre_release_error_message
+    last_error = passports.where(reason: :pre_release_failed, kind: :error).last
+    last_error&.message
+  end
 
   def copy_previous_approvals
     previous_release = train.previously_finished_release
@@ -230,38 +265,37 @@ class Release < ApplicationRecord
     false
   end
 
-  def production_release_happened?
-    release_platform_runs.all?(&:production_release_happened?)
+  def production_release_attempted?
+    release_platform_runs.any? { |rpr| rpr.latest_production_release.present? }
   end
 
   def production_release_active?
     release_platform_runs.all?(&:production_release_active?)
   end
 
-  def production_release_started?
-    # TODO: check if the submission has been sent for review and not just the presence of the latest production release
-    release_platform_runs.all? { |rpr| rpr.latest_production_release.present? }
-  end
-
-  def backmerge_failure_count
+  def mid_release_backmerge_failure_count
     return 0 unless continuous_backmerge?
-    all_commits.size - backmerge_prs.size - 1
+    all_commits.size - mid_release_back_merge_prs.size - 1
   end
 
-  def backmerge_prs
-    pull_requests.ongoing
+  def mid_release_back_merge_prs
+    pull_requests.mid_release.back_merge_type
   end
 
-  def post_release_prs
-    pull_requests.post_release
+  def post_release_back_merge_prs
+    pull_requests.post_release.back_merge_type
   end
 
-  def pre_release_prs
-    pull_requests.pre_release
+  def pre_release_forward_merge_prs
+    pull_requests.pre_release.forward_merge_type
   end
 
-  def mid_release_prs
-    pull_requests.mid_release
+  def mid_release_stability_prs
+    pull_requests.mid_release.stability_type
+  end
+
+  def pre_release?
+    pre_release_started? || pre_release_failed?
   end
 
   def duration
@@ -301,7 +335,7 @@ class Release < ApplicationRecord
   end
 
   def committable?
-    created? || on_track? || partially_finished?
+    created? || pre_release_started? || on_track? || partially_finished?
   end
 
   def active?
@@ -369,35 +403,21 @@ class Release < ApplicationRecord
     release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
 
+  def build_number
+    builds.order(created_at: :desc).pick(:build_number)
+  end
+
   alias_method :version_current, :release_version
 
   def release_branch
     branch_name
   end
 
-  # recursively attempt to create a release until a unique one gets created
-  # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
-  def create_vcs_release!(input_tag_name = base_tag_name)
-    return unless train.tag_releases?
-    return if tag_name.present?
-    train.create_vcs_release!(release_branch, input_tag_name, release_diff)
-    update!(tag_name: input_tag_name)
-    event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
-  rescue Installations::Error => ex
-    raise unless [:tag_reference_already_exists, :tagged_release_already_exists].include?(ex.reason)
-    create_vcs_release!(unique_tag_name(input_tag_name, last_commit.short_sha))
-  end
-
   def release_diff
-    changes_since_last_release = release_changelog&.commit_messages(true)
+    changes_since_last_release = release_changelog&.commits&.commit_messages(true)
     changes_since_last_run = all_commits.commit_messages(true)
-
-    ((changes_since_last_run || []) + (changes_since_last_release || []))
-      .map { |str| str&.strip }
-      .flat_map { |line| line.split("\n").first }
-      .map { |line| line.gsub('"', "\\\"") }
-      .compact_blank
-      .uniq
+    combined = ((changes_since_last_run || []) + (changes_since_last_release || []))
+    sanitize_commit_messages(combined)
       .map { |str| "- #{str}" }
       .join("\n")
   end
@@ -412,22 +432,6 @@ class Release < ApplicationRecord
 
   def pull_requests_url(open = false)
     train.vcs_provider&.pull_requests_url(branch_name, open:)
-  end
-
-  class PreReleaseUnfinishedError < StandardError; end
-
-  def close_pre_release_prs
-    return if pull_requests.pre_release.blank?
-
-    pull_requests.pre_release.each do |pr|
-      created_pr = train.vcs_provider.get_pr(pr.number)
-
-      if created_pr[:state].in? %w[open opened]
-        raise PreReleaseUnfinishedError, "Pre-release pull request is not merged yet."
-      else
-        pr.close!
-      end
-    end
   end
 
   def ready_to_be_finalized?
@@ -449,10 +453,19 @@ class Release < ApplicationRecord
         is_release_unhealthy: unhealthy?,
         release_completed_at: completed_at,
         release_started_at: scheduled_at,
+        final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?),
         final_android_release_version: (android_release_platform_run.release_version if android_release_platform_run&.finished?),
-        final_ios_release_version: (ios_release_platform_run.release_version if ios_release_platform_run&.finished?)
+        release_specific_channel_id:
       }
     )
+  end
+
+  def webhook_params
+    {
+      release_branch:,
+      release_version:,
+      platform:
+    }
   end
 
   def last_commit
@@ -481,7 +494,11 @@ class Release < ApplicationRecord
     approvals_blocking?
   end
 
-  def retrigger_for_hotfix?
+  def hotfix_with_new_branch?
+    hotfix? && new_hotfix_branch?
+  end
+
+  def hotfix_with_existing_branch?
     hotfix? && !new_hotfix_branch?
   end
 
@@ -528,12 +545,12 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:failure?)
   end
 
-  def previous_release
-    base_conditions = train.releases
-      .where(status: "finished")
-      .where.not(id: id)
-      .reorder(completed_at: :desc)
+  def previous_finished_releases
+    train.releases.where(status: "finished").where.not(id: id).reorder(completed_at: :desc)
+  end
 
+  def previous_release
+    base_conditions = previous_finished_releases
     return base_conditions.first if completed_at.blank?
 
     base_conditions
@@ -576,13 +593,28 @@ class Release < ApplicationRecord
     train.previously_finished_release.present? && !hotfix?
   end
 
+  # either the previous release's end-of-release tag, or
+  # it's the previous release's rollout tag
+  def previous_tag_name
+    prev = previous_release
+    return if prev.blank?
+
+    prev.tag_name.presence || prev.production_releases.last&.tag_name
+  end
+
+  def trigger_webhook!(event_type)
+    Triggers::OutgoingWebhook.call(self, event_type, webhook_params)
+  end
+
+  delegate :soak_period_enabled?, to: :train
+
   private
 
   def base_tag_name
     tag = "v#{release_version}"
-    tag = train.tag_prefix + "-" + tag if train.tag_prefix.present?
+    tag = train.tag_end_of_release_prefix + "-" + tag if train.tag_end_of_release_prefix.present?
     tag += "-hotfix" if hotfix?
-    tag += "-" + train.tag_suffix if train.tag_suffix.present?
+    tag += "-" + train.tag_end_of_release_suffix if train.tag_end_of_release_suffix.present?
     tag
   end
 
@@ -597,25 +629,6 @@ class Release < ApplicationRecord
         release_platform: release_platform
       )
     end
-  end
-
-  def set_version
-    if custom_version.present?
-      self.original_release_version = custom_version
-      return
-    end
-
-    if train.freeze_version?
-      self.original_release_version = train.version_current
-      return
-    end
-
-    self.original_release_version =
-      if hotfix?
-        train.hotfix_from&.next_version(patch_only: hotfix?)
-      else
-        (train.ongoing_release.presence || train.hotfix_release.presence || train).next_version(major_only: has_major_bump)
-      end
   end
 
   def set_internal_notes

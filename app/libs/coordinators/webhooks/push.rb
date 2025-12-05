@@ -25,6 +25,6 @@ class Coordinators::Webhooks::Push < Coordinators::Webhooks::Base
   end
 
   def valid_repo_and_branch?
-    (train.app.config&.code_repository_name == repository_name) if branch_name
+    (train.app.vcs_provider&.code_repository_name == repository_name) if branch_name
   end
 end

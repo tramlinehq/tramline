@@ -1,38 +1,78 @@
 <%= render CardComponent.new(title: "Active Release Candidate", size: :full, separator: true) do |card| %>
-  <% card.with_action do %>
-    <%= render ButtonComponent.new(label: "End soak", scheme: :danger, type: :action, size: :xxs) %>
+  <% if show_soak_actions? %>
+    <% card.with_action do %>
+      <%= render ButtonComponent.new(
+            scheme: :danger,
+            type: :link,
+            size: :xxs,
+            label: "End soak",
+            options: end_soak_release_beta_soak_path(@release),
+            html_options: html_opts(:post, "Are you sure you want to end the soak period early?")
+          ) do |b|
+            b.with_icon("stop.svg")
+          end %>
+    <% end %>
+
+    <% card.with_action do %>
+      <%= render ButtonComponent.new(
+            scheme: :light,
+            type: :link,
+            size: :xxs,
+            label: "Extend soak",
+            options: extend_soak_release_beta_soak_path(@release, additional_hours: 1),
+            html_options: html_opts(:post, "Extend soak period by 1 hour?")
+          ) do |b|
+            b.with_icon("ruler.svg")
+          end %>
+    <% end %>
   <% end %>
-  <% card.with_action do %>
-    <%= render ButtonComponent.new(label: "Extend soak", scheme: :light, type: :action, size: :xxs) %>
-  <% end %>
+
   <div class="flex flex-col section-gap-default">
     <%= render PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
-        <div class="grid grid-cols-1">
-          <div class="flex flex-col item-gap-default">
-            <%= render LiveRelease::BuildComponent.new(Build.first) %>
+        <% if run.latest_beta_release.present? %>
+          <div class="grid grid-cols-1">
+            <div class="flex flex-col item-gap-default">
+              <%= render LiveRelease::BuildComponent.new(run.latest_beta_release.build) %>
+            </div>
           </div>
-        </div>
+        <% end %>
       <% end %>
     <% end %>
 
-    <div data-controller="countdown"
-         data-countdown-count-down-hours-value="2.34"
-         data-countdown-direction-value="down"
-         class="flex justify-center items-center border-default box-padding">
-      <div class="flex flex-col item-gap-default items-center">
-        <div class="text-md text-secondary">Time remaining</div>
-        <% if success? %>
-          <div class="text-2xl">Soak period has ended</div>
-        <% else %>
-          <div class="text-4xl" data-countdown-target="output">24:00:00</div>
+    <% if beta_soak.present? %>
+      <div data-controller="countdown"
+           data-countdown-count-down-hours-value="<%= time_remaining_hours %>"
+           data-countdown-direction-value="down"
+           class="flex justify-center items-center border-default box-padding">
+        <div class="flex flex-col item-gap-default items-center">
+          <% if beta_soak.ended_at.present? %>
+            <div class="text-2xl text-secondary">Soak period has ended</div>
+          <% else %>
+            <div class="text-2xl text-secondary">Soak time remaining</div>
+            <div class="text-4xl" data-countdown-target="output"><%= time_remaining %></div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="flex flex-col text-secondary text-xs">
+        <div>† Soak starts as soon as an active Release Candidate is available</div>
+        <div>‡ Store submissions will be available once your soak period finishes</div>
+
+        <% if beta_soak.started_at.present? && !beta_soak.ended_at.present? %>
+          <div>
+            ‡ Soak period started at <strong><%= soak_start_time %></strong> and will end at
+            <strong><%= soak_end_time %></strong>
+          </div>
         <% end %>
       </div>
-    </div>
-
-    <div class="flex flex-col text-secondary text-xs">
-      <div>† Soak starts as soon as an active Release Candidate is available.</div>
-      <div>‡ App submission will be enabled once your configured 23-hour soak period ends.</div>
-    </div>
+    <% else %>
+      <%= render EmptyStateComponent.new(
+            title: "No soak available",
+            text: "If you have configured a soak period, it will appear here once a Release Candidate is available.",
+            banner_image: "alarm_clock.svg",
+            type: :subdued
+          ) %>
+    <% end %>
   </div>
 <% end %>

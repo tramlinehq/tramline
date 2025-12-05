@@ -1,0 +1,25 @@
+{
+  "blocks": [
+    <% if @user_content.present? %>
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "verbatim": false,
+        "text": "*Additional Notes*"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "verbatim": false,
+        "text": "<%= safe_string(@user_content) %>"
+      }
+    }
+    <% end %>
+  ]
+}

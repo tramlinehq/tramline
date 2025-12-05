@@ -1,9 +1,8 @@
 <% url = train.new_record? ? app_trains_path(app) : app_train_path(app, train) %>
 
 <% if @edit_not_allowed %>
-  <%= render AlertComponent.new(kind: :banner, type: :notice, title: "Train not editable", full_screen: false) do %>
-    The train settings can not be edited while there are active releases. Please stop or finish the releases to make
-    changes.
+  <%= render AlertComponent.new(kind: :banner, type: :notice, title: "Updates when releases are running", full_screen: false) do %>
+    Some release settings are restricted while active releases are running. Please review updates carefully.
   <% end %>
 <% end %>
 
@@ -15,17 +14,7 @@
       <% end %>
 
       <div class="grid gap-4">
-        <div data-controller="domain--branch-name-help"
-             data-domain--branch-name-help-current-value="<%= train.display_name %>">
-          <%= section.F.labeled_text_field :name, "Name",
-                required: true,
-                data: {domain__branch_name_help_target: "input",
-                       action: "domain--branch-name-help#set"} %>
-          <div class="text-sm mt-1">
-            <span data-domain--branch-name-help-target="helpTextTitle"></span>
-            <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
-          </div>
-        </div>
+        <div><%= section.F.labeled_text_field :name, "Name", required: true %></div>
         <div><%= section.F.labeled_textarea :description, "Description" %></div>
       </div>
     <% end %>
@@ -38,75 +27,81 @@
             <%= link_to_external "SemVer", "https://semver.org", class: "underline" %>-like scheme, for eg.
             <code>X.Y.Z</code> and <code>X.Y</code>. Or a CalVer scheme, for eg. <code>YYYY.0M.0D</code>.
             Refer to the
-            <%= link_to_external "docs", "https://docs.tramline.app/automations#version-name", class: "underline" %>
+            <%= link_to_external "docs", "https://docs.tramline.app/automations#bumping-versions-and-build-numbers", class: "underline" %>
             to learn more about versioning.
           </span>
       <% end %>
 
       <div>
         <%= section.F.labeled_select :versioning_strategy, "Versioning Strategy",
-              options_for_select(TrainPresenter::VERSIONING_STRATEGIES, train.versioning_strategy),
-              {},
-              {disabled: train.persisted?,
-               data: {domain__version_name_help_strategy_value: train.versioning_strategy,
-                      domain__version_name_help_target: "versioningStrategy",
-                      action: "domain--version-name-help#updateStrategy"}} %>
+                                     options_for_select(TrainPresenter::VERSIONING_STRATEGIES, train.versioning_strategy),
+                                     {},
+                                     {disabled: @edit_not_allowed || train.persisted?,
+                                      data: {domain__version_name_help_strategy_value: train.versioning_strategy,
+                                             domain__version_name_help_target: "versioningStrategy",
+                                             action: "domain--version-name-help#updateStrategy"}} %>
       </div>
 
-      <div data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
-        <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>
-
-        <div class="flex flex-row gap-x-2 items-center">
-          <%= section.F.text_field_without_label :major_version_seed, "major",
-                disabled: train.persisted?,
-                data: {domain__version_name_help_target: "majorInput",
-                       action: "domain--version-name-help#bump"} %>
-          <span class="mx-1">
-            <%= render IconComponent.new("circle.svg", size: :xs) %>
-          </span>
-          <%= section.F.text_field_without_label :minor_version_seed, "minor",
-                disabled: train.persisted?,
-                data: {domain__version_name_help_target: "minorInput",
-                       action: "domain--version-name-help#bump"} %>
-          <span class="mx-1">
-            <%= render IconComponent.new("circle.svg", size: :xs) %>
-          </span>
-          <%= section.F.text_field_without_label :patch_version_seed, "patch (optional)",
-                disabled: train.persisted?,
-                data: {domain__version_name_help_target: "patchInput",
-                       action: "domain--version-name-help#bump"} %>
+      <% if @edit_not_allowed %>
+        <div class="text-sm text-secondary-50">
+          Versioning strategy cannot be edited once it is set. Create a new train to choose a different strategy.
         </div>
+      <% else %>
+        <div data-domain--version-name-help-disabled-value="<%= @edit_not_allowed || train.persisted? %>">
+          <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>
 
-        <% unless train.persisted? %>
-          <div class="text-sm my-1">
-            <p class="text-rose-700" hidden data-domain--version-name-help-target="helpTextVal"></p>
-            <div class="mt-2">
-              <div class="grid gap-x-4 md:grid-cols-2">
-                <div class="flex flex-col bg-slate-50 rounded-sm items-center justify-center py-2">
-                  <div class="flex-grow mb-2">
-                    <div class="uppercase tracking-wider text-xl drop-shadow-sm font-mono">
-                      <span data-domain--version-name-help-target="currentVersion">x.x</span>
+          <div class="flex flex-row gap-x-2 items-center">
+            <%= section.F.text_field_without_label :major_version_seed, "major",
+                                                   disabled: @edit_not_allowed || train.persisted?,
+                                                   data: {domain__version_name_help_target: "majorInput",
+                                                          action: "domain--version-name-help#bump"} %>
+            <span class="mx-1">
+              <%= render IconComponent.new("circle.svg", size: :xs) %>
+            </span>
+            <%= section.F.text_field_without_label :minor_version_seed, "minor",
+                                                   disabled: @edit_not_allowed || train.persisted?,
+                                                   data: {domain__version_name_help_target: "minorInput",
+                                                          action: "domain--version-name-help#bump"} %>
+            <span class="mx-1">
+              <%= render IconComponent.new("circle.svg", size: :xs) %>
+            </span>
+            <%= section.F.text_field_without_label :patch_version_seed, "patch (optional)",
+                                                   disabled: @edit_not_allowed || train.persisted?,
+                                                   data: {domain__version_name_help_target: "patchInput",
+                                                          action: "domain--version-name-help#bump"} %>
+          </div>
+
+          <% unless @edit_not_allowed || train.persisted? %>
+            <div class="text-sm my-1">
+              <p class="text-rose-700" hidden data-domain--version-name-help-target="helpTextVal"></p>
+              <div class="mt-2">
+                <div class="grid gap-x-4 md:grid-cols-2">
+                  <div class="flex flex-col bg-slate-50 rounded-sm items-center justify-center py-2">
+                    <div class="flex-grow mb-2">
+                      <div class="uppercase tracking-wider text-xl drop-shadow-sm font-mono">
+                        <span data-domain--version-name-help-target="currentVersion">x.x</span>
+                      </div>
+                    </div>
+                    <div class="mt-2 text-stone text-xs drop-shadow-sm">
+                      Your <strong>current</strong> release version
                     </div>
                   </div>
-                  <div class="mt-2 text-stone text-xs drop-shadow-sm">
-                    Your <strong>current</strong> release version
-                  </div>
-                </div>
-                <div class="flex flex-col bg-slate-50 rounded-sm items-center justify-center py-2">
-                  <div class="flex-grow mb-2">
-                    <div class="uppercase tracking-wider text-xl drop-shadow-sm font-mono">
-                      <span data-domain--version-name-help-target="nextVersion">x.x</span>
+                  <div class="flex flex-col bg-slate-50 rounded-sm items-center justify-center py-2">
+                    <div class="flex-grow mb-2">
+                      <div class="uppercase tracking-wider text-xl drop-shadow-sm font-mono">
+                        <span data-domain--version-name-help-target="nextVersion">x.x</span>
+                      </div>
                     </div>
-                  </div>
-                  <div class="mt-2 text-stone text-xs drop-shadow-sm">
-                    Your <strong>next</strong> release will start with this version
+                    <div class="mt-2 text-stone text-xs drop-shadow-sm">
+                      Your <strong>next</strong> release will start with this version
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        <% end %>
-      </div>
+          <% end %>
+        </div>
+      <% end %>
     <% end %>
 
     <% if app.notifications_set_up? %>
@@ -118,32 +113,55 @@
           <% else %>
             Notification Settings
           <% end %>for the train.
+          <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
         <% end %>
         <%= render partial: "notifications_config_form", locals: {form: section.F} %>
       <% end %>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Outgoing Webhooks") do |section| %>
+      <% section.with_description do %>
+        Enable outgoing webhooks to receive real-time notifications about release events and updates.
+        When enabled, Tramline will send HTTP POST requests to configured webhook endpoints with release data.
+        <%= link_to_external "Read more in docs", "https://docs.tramline.app/using-tramline/quality-and-monitoring/outgoing-webhooks", class: "underline" %>
+        .
+      <% end %>
+
+      <%= render Form::SwitchComponent.new(form: section.F,
+                                           field_name: :webhooks_enabled,
+                                           on_label: "Outgoing webhooks enabled",
+                                           off_label: "Outgoing webhooks disabled") do |component| %>
+        <% component.with_child do %>
+          <% render partial: "configure_svix_webhooks", locals: {app: @app, train: @train} %>
+        <% end %>
+      <% end %>
+    <% end %>
+
     <%= f.with_section(heading: "Branching strategy") do |section| %>
       <% section.with_description do %>
-        Refer to
-        the <%= link_to_external "docs", "https://docs.tramline.app/branching-strategies", class: "underline" %>
-        to learn more about our supported branching strategies.
+        Learn more about our supported branching strategies in the
+        <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/release-management/branching-strategies", class: "underline" %>
+        .
+        You can use dynamic values in release branch patterns with embeddable tokens.
+        See
+        which <%= link_to_external "tokens are available", "https://docs.tramline.app/using-tramline/release-management/embeddable-tokens", class: "underline" %>
+        for branches.
       <% end %>
       <div class="grid gap-x-5 md:grid-cols-2">
         <div>
           <%= section.F.labeled_select :branching_strategy, "Strategy",
-                options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
-                {},
-                {data: {action: "domain--branching-selector#change",
-                        domain__branching_selector_target: "branchingStrategy"},
-                 disabled: train.persisted?} %>
+                                       options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
+                                       {},
+                                       {data: {action: "domain--branching-selector#change",
+                                               domain__branching_selector_target: "branchingStrategy"},
+                                        disabled: @edit_not_allowed || train.persisted?} %>
         </div>
 
         <div>
           <%= section.F.labeled_text_field :working_branch, "Working Branch",
-                required: true,
-                placeholder: "eg., master, main",
-                disabled: train.persisted? %>
+                                           required: true,
+                                           placeholder: "eg., master, main",
+                                           disabled: @edit_not_allowed || train.persisted? %>
         </div>
 
         <div hidden data-domain--branching-selector-target="almostTrunk"></div>
@@ -152,19 +170,38 @@
         <div hidden data-domain--branching-selector-target="releaseBackMerge">
           <div class="mt-2">
             <%= section.F.labeled_text_field :release_backmerge_branch, "Release Backmerge Branch",
-                  placeholder: "eg., dev",
-                  disabled: train.persisted? %>
+                                             placeholder: "eg., dev",
+                                             disabled: @edit_not_allowed || train.persisted? %>
           </div>
         </div>
 
         <div hidden data-domain--branching-selector-target="parallelBranches">
           <div class="mt-2">
             <%= section.F.labeled_text_field :release_branch, "Release Branch",
-                  placeholder: "eg., production",
-                  disabled: train.persisted? %>
+                                             placeholder: "eg., production",
+                                             disabled: @edit_not_allowed || train.persisted? %>
           </div>
         </div>
       </div>
+
+      <div data-controller="domain--branch-name-help">
+        <%= section.F.labeled_text_field :release_branch_pattern, "Release Branch Pattern",
+                                         placeholder: "default is r/~trainName~/~releaseStartDate~",
+                                         help_text: "Use ~trainName~ for the train name, ~releaseVersion~ for version, and ~releaseStartDate~ for date. Default: r/~trainName~/~releaseStartDate~",
+                                         disabled: @edit_not_allowed || train.persisted?,
+                                         data: {domain__branch_name_help_target: "input",
+                                                action: "domain--branch-name-help#updatePreview"} %>
+        <div class="text-sm mt-1">
+          <span data-domain--branch-name-help-target="helpTextTitle"></span>
+          <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
+        </div>
+      </div>
+
+      <% if @edit_not_allowed %>
+        <div class="text-sm text-secondary-50">
+          Branching strategy cannot be edited once it is set. Create a new train to choose a different strategy.
+        </div>
+      <% end %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Release Schedule",
@@ -199,6 +236,28 @@
       <% end %>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Soak Period") do |section| %>
+      <% section.with_description do %>
+        Configure a soak period that starts automatically when a Release Candidate becomes available.
+        During the soak period, app submissions are blocked, allowing time to monitor the RC before proceeding to production.
+        The soak period is cross-platform and continues even if new RCs are created.
+      <% end %>
+
+      <%= render Form::SwitchComponent.new(form: section.F,
+                                           field_name: :soak_period_enabled,
+                                           on_label: "Soak period enabled",
+                                           off_label: "Soak period disabled",
+                                           hide_child: !train.soak_period_enabled?) do |component| %>
+        <% component.with_child do %>
+          <%= section.F.labeled_number_field :soak_period_hours,
+                                             "Soak Period Duration (hours)",
+                                             min: 1,
+                                             max: 336,
+                                             help_text: "Duration in hours (1-336). Default is 24 hours." %>
+        <% end %>
+      <% end %>
+    <% end %>
+
     <%= f.with_advanced_section(heading: "Build Queue") do |section| %>
       <% section.with_description do %>
         Control when commits are applied to trigger new builds in your release.
@@ -208,19 +267,32 @@
       <%= render partial: "build_queue_form", locals: {form: section.F} %>
     <% end %>
 
-    <%= f.with_advanced_section(heading: "Continuous Backmerge",
+    <%= f.with_advanced_section(heading: "Back-merges",
                                 html_options: {hidden: true,
-                                               data: {domain__branching_selector_target: "backmerge"}}) do |section| %>
+                                               data: {domain__branching_selector_target: "backmerge",
+                                                      controller: "domain--backmerge-selector"}}) do |section| %>
       <% section.with_description do %>
-        Enable backmerging of release branch commits into the working branch as they arrive.
-        By default, merge happens at the end of the release.
+        Configure how changes from the release branch are merged back to the working branch.
       <% end %>
 
-      <%= render Form::SwitchComponent.new(form: section.F,
-                                           field_name: :continuous_backmerge_enabled,
-                                           on_label: "Continuous Backmerge enabled",
-                                           off_label: "Continuous Backmerge disabled",
-                                           html_options: {disabled: train.backmerge_disabled?}) %>
+      <div>
+        <%= section.F.labeled_select :backmerge_strategy, "Backmerge Strategy",
+                                     options_for_select([
+                                       ["Continuously back-merge", "continuous"],
+                                       ["Back-merge once at the end of release", "on_finalize"],
+                                       ["Disable all back-merges", "disabled"]
+                                     ], train.backmerge_strategy),
+                                     {},
+                                     {data: {action: "domain--backmerge-selector#change",
+                                             domain__backmerge_selector_target: "backmergeStrategy"}} %>
+      </div>
+
+      <div hidden data-domain--backmerge-selector-target="continuousOptions">
+        <%= section.F.labeled_text_field :continuous_backmerge_branch_prefix,
+                                         "Branch Prefix",
+                                         placeholder: "e.g., <your prefix>-patch-main-08bcbb",
+                                         help_text: "" %>
+      </div>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Auto-apply patch changes") do |section| %>
@@ -242,33 +314,33 @@
 
       <%= render Form::SwitchComponent.new(form: section.F,
                                            field_name: :compact_build_notes,
-                                           on_label: "Compact Build Notes enabled",
-                                           off_label: "Compact Build Notes disabled") %>
+                                           on_label: "Compact build notes enabled",
+                                           off_label: "Compact build notes disabled") %>
     <% end %>
 
     <%= f.with_advanced_section(heading: "Tag Your Releases") do |section| %>
       <% section.with_description do %>
-        By default, a tag is created at the end of the release with the final version of the release.
-        You can turn off creation of tag. Or, you can add an optional prefix or suffix to your tags.
+        <div class="flex flex-col item-gap-default">
+          <p>
+            By default, a tag (as well as a VCS release) is created at the end of the release with the final version.
+            You can turn off creation of tag. Or, you can add an optional prefix or suffix to your tags.
+          </p>
+
+          <p>
+            In addition, you can also create tags (as well as VCS releases) for every commit that reaches production,
+            i.e. when the rollout begins. This is helpful when you want to tag as soon as something goes to production
+            instead of waiting till the end.
+          </p>
+        </div>
       <% end %>
 
       <%= render partial: "release_tag_form", locals: {form: section.F} %>
     <% end %>
 
-    <% if @app.cross_platform? %>
-      <%= f.with_advanced_section(heading: "Platform Specific Tags", html_options: {data: {controller: "reveal"}}) do |section| %>
-        <% section.with_description do %>
-          Tag each platform release separately. By default, only one tag is created at the end of the release.
-        <% end %>
-
-        <%= render partial: "store_tags_form", locals: {form: section.F} %>
-      <% end %>
-    <% end %>
-
     <%= f.with_advanced_section(heading: "Freeze release version") do |section| %>
       <% section.with_description do %>
         Versions are automatically managed and bumped by Tramline.
-        Turn this on if you want to keep a single static release version for all releases.
+        Turn this on if you want to keep a single static release version for all releases. Changes to this config will only be applicable for a new release.
       <% end %>
       <%= render Form::SwitchComponent.new(form: section.F,
                                            field_name: :freeze_version,
@@ -291,10 +363,55 @@
                                            switch_data: {dependent_disable_target: "secondary", action: "dependent-disable#change"}) %>
     <% end %>
 
+    <!--
+    temporarily disable automatic version bumps for non-github integrations
+    TODO: remove this once we've implemented this for all integrations
+    -->
+    <% if train.vcs_provider.is_a?(GithubIntegration) || train.vcs_provider.is_a?(GitlabIntegration) %>
+      <%= f.with_advanced_section(heading: "Automatic Version Bumps") do |section| %>
+        <% section.with_description do %>
+          When enabled, Tramline will create and merge a Pull Request to update the version name (eg. 1.0.0) directly
+          in your configured build files before starting a new release or cutting a release branch. You can supply more
+          than one path and Tramline will update all of them.
+        <% end %>
+
+        <%= render Form::SwitchComponent.new(form: section.F,
+                                             field_name: :version_bump_enabled,
+                                             on_label: "Automatic version bumps enabled",
+                                             off_label: "Automatic version bump disabled",
+                                             hide_child: !train.version_bump_enabled?) do |component| %>
+
+          <% component.with_info_icon do %>
+            The following file extensions are allowed —
+            <code><%= Train::ALLOWED_VERSION_BUMP_FILE_TYPES.values.join(" ") %></code>
+          <% end %>
+
+          <% component.with_child do %>
+            <%= section.F.labeled_select :version_bump_strategy,
+                                         "Version Bump Strategy",
+                                         options_for_select(Train::VERSION_BUMP_STRATEGIES.invert, train.version_bump_strategy),
+                                         {disabled: !train.version_bump_enabled?},
+                                         {} %>
+
+            <%= section.F.labeled_text_field :version_bump_file_paths,
+                                             "Build File Paths",
+                                             value: list_to_csv(section.F.object.version_bump_file_paths),
+                                             placeholder: "e.g., pubspec.yaml, android/app/build.gradle (comma-separated)",
+                                             help_text: "Comma-separated list of file paths to update versions in" %>
+
+            <%= section.F.labeled_text_field :version_bump_branch_prefix,
+                                             "Branch Prefix",
+                                             placeholder: "e.g. <your prefix>-version-bump-1.2.3-2025-04-02-quiet-snow",
+                                             help_text: "" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
     <% f.with_action do %>
       <%= f.F.authz_submit (train.persisted? ? "Update" : "Create"),
                            (train.persisted? ? "archive.svg" : "plus.svg"),
-                           disabled: @edit_not_allowed || !@app.ready? %>
+                           disabled: !@app.ready? %>
     <% end %>
   <% end %>
 </div>

@@ -55,6 +55,7 @@ class PlayStoreSubmission < StoreSubmission
   PRE_PREPARE_STATES = %w[created preprocessing review_failed failed]
   CHANGEABLE_STATES = %w[created preprocessing failed prepared]
   MAX_NOTES_LENGTH = 500
+  DEEP_LINK_BASE = "https://play.google.com/store/apps/details?id="
 
   enum :failure_reason, {
     unknown_failure: "unknown_failure"
@@ -65,11 +66,11 @@ class PlayStoreSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :preprocess, after: :on_preprocess! do
+    event :preprocess, after_commit: :on_preprocess! do
       transitions from: CHANGEABLE_STATES, to: :preprocessing
     end
 
-    event :start_prepare, after: :on_start_prepare! do
+    event :start_prepare, after_commit: :on_start_prepare! do
       transitions from: [:created, :preprocessing, :prepared, :failed], to: :preparing
     end
 
@@ -142,8 +143,17 @@ class PlayStoreSubmission < StoreSubmission
   def trigger!
     return unless actionable?
 
-    preprocess!
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
+
+    if build.has_artifact?
+      # upload build only if we have it
+      preprocess!
+    elsif provider.find_build(build.build_number, raise_on_lock_error: false).present?
+      # skip upload step and go directly to start_prepare
+      start_prepare!
+    else
+      fail_with_error!(BuildNotFound)
+    end
   end
 
   def retry!
@@ -157,7 +167,6 @@ class PlayStoreSubmission < StoreSubmission
 
     with_lock do
       return unless may_start_prepare?
-      return fail_with_error!(BuildNotFound) if build&.artifact.blank?
 
       build.artifact.with_open do |file|
         result = provider.upload(file, raise_on_lock_error:)
@@ -256,8 +265,12 @@ class PlayStoreSubmission < StoreSubmission
     return if previous_run.blank?
 
     previous_rollout = previous_run.finished_production_release.store_rollout
-    previous_rollout.release_fully! if previous_rollout.rollout_in_progress?
+    previous_rollout.release_fully! if previous_rollout.rollout_active?
     previous_rollout
+  end
+
+  def deep_link
+    DEEP_LINK_BASE + app.bundle_identifier
   end
 
   private

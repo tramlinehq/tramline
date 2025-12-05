@@ -2,6 +2,7 @@
 
 class ConvertChangelogCommitsToCommitObjects < ActiveRecord::Migration[7.0]
   def up
+    return
     commits_processed = 0
     ActiveRecord::Base.transaction do
       ReleaseChangelog.pluck(:id, :release_id, :commits).each do |changelog_id, release_id, changelog_commits|

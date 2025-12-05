@@ -15,6 +15,8 @@ module Installations
     WORKFLOW_RUN_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}")
     WORKFLOW_RUN_ARTIFACTS_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}/artifacts")
     WORKFLOW_RUN_ARTIFACT_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}/artifacts/{artifact_slug}")
+    PIPELINE_RUN_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/pipelines/{pipeline_id}")
+    CANCEL_PIPELINE_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/pipelines/{pipeline_id}/abort")
 
     VALID_ARTIFACT_TYPES = %w[android-apk ios-ipa].freeze
 
@@ -33,7 +35,15 @@ module Installations
       end
 
       def find_biggest(artifacts)
-        artifacts.max_by { |artifact| artifact.dig("artifact_meta", "file_size_bytes")&.safe_float }
+        artifacts.max_by do |artifact|
+          file_size_bytes = artifact.dig("artifact_meta", "file_size_bytes")
+          case file_size_bytes.class
+          when Integer
+            file_size_bytes
+          when String
+            file_size_bytes.safe_integer
+          end
+        end
       end
 
       def filter_by_name(artifacts, name_pattern)
@@ -62,20 +72,21 @@ module Installations
         .then { |workflows| Installations::Response::Keys.transform(workflows, transforms) }
     end
 
-    def run_workflow!(app_slug, workflow_id, branch, inputs, commit_hash, transforms)
+    def run_workflow!(app_slug, workflow_id, pipeline_id, branch, inputs, commit_hash, transforms)
       params = {
         json: {
           build_params: {
             branch: branch,
             commit_hash: commit_hash,
             workflow_id: workflow_id,
+            pipeline_id: pipeline_id,
             environments: [
               {mapped_to: "versionName", value: inputs[:build_version]},
               {mapped_to: "versionCode", value: inputs[:version_code]},
               {mapped_to: "buildNotes", value: inputs[:build_notes] || ""},
               *inputs[:parameters].map { |mapped_to, value| {mapped_to:, value:} }
-            ]
-          },
+            ].reject { |param| param[:value].nil? }
+          }.compact,
 
           hook_info: {
             type: "bitrise"
@@ -100,9 +111,25 @@ module Installations
       execute(:post, CANCEL_WORKFLOW_URL.expand(app_slug:, build_slug:).to_s, params)
     end
 
+    def cancel_pipeline!(app_slug, pipeline_id)
+      params = {
+        json: {
+          abort_reason: "build for a newer commit has started",
+          abort_with_success: true,
+          skip_notifications: true
+        }
+      }
+      execute(:post, CANCEL_PIPELINE_URL.expand(app_slug:, pipeline_id:).to_s, params)
+    end
+
     def get_workflow_run(app_slug, build_slug)
       execute(:get, WORKFLOW_RUN_URL.expand(app_slug:, build_slug:).to_s, {})
         &.fetch("data", nil)
+        &.with_indifferent_access
+    end
+
+    def get_pipeline_run(app_slug, pipeline_id)
+      execute(:get, PIPELINE_RUN_URL.expand(app_slug:, pipeline_id:).to_s, {})
         &.with_indifferent_access
     end
 

@@ -2,16 +2,19 @@
 #
 # Table name: scheduled_releases
 #
-#  id             :uuid             not null, primary key
-#  failure_reason :string
-#  is_success     :boolean          default(FALSE)
-#  scheduled_at   :datetime         not null
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  release_id     :uuid
-#  train_id       :uuid             not null, indexed
+#  id               :uuid             not null, primary key
+#  discarded_at     :datetime         indexed
+#  failure_reason   :string
+#  is_success       :boolean          default(FALSE)
+#  manually_skipped :boolean          default(FALSE)
+#  scheduled_at     :datetime         not null
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  release_id       :uuid
+#  train_id         :uuid             not null, indexed
 #
 class ScheduledRelease < ApplicationRecord
+  include Discard::Model
   has_paper_trail
 
   self.implicit_order_column = :scheduled_at
@@ -21,6 +24,11 @@ class ScheduledRelease < ApplicationRecord
   delegate :app, to: :train
 
   scope :pending, -> { where("scheduled_at > ?", Time.current) }
+  scope :past, ->(n, before:, include_discarded: true) do
+    query = include_discarded ? with_discarded : kept
+    query.where(scheduled_at: ...before).order(scheduled_at: :asc).last(n)
+  end
+  scope :future, ->(n = 1) { pending.order(scheduled_at: :asc).limit(n) }
 
   after_create_commit :schedule_kickoff!
 
@@ -31,6 +39,24 @@ class ScheduledRelease < ApplicationRecord
     ScheduledReleaseNotificationJob.set(wait_until: scheduled_at - NOTIFICATION_WINDOW).perform_async(id)
   end
 
+  def manually_skip
+    return if manually_skipped == true
+    return unless skip_or_resume?
+
+    update(manually_skipped: true)
+  end
+
+  def manually_resume
+    return if manually_skipped == false
+    return unless skip_or_resume?
+
+    update(manually_skipped: false)
+  end
+
+  def skip_or_resume?
+    train.active? && to_be_scheduled?
+  end
+
   def notification_params
     train.notification_params.merge(
       {
@@ -39,7 +65,11 @@ class ScheduledRelease < ApplicationRecord
     )
   end
 
-  def pending?
+  def to_be_scheduled?
     scheduled_at > Time.current
+  end
+
+  def pending?
+    to_be_scheduled? && !manually_skipped?
   end
 end

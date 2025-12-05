@@ -2,31 +2,75 @@
   <%= render FormComponent.new(@setting.edit_form_params) do |f| %>
     <% f.with_section(heading: "Select") do |section| %>
       <% section.with_description do %>
-        <div>One or more channel names for this type of notification.</div>
-      <% end %>
-
-      <%= render Form::SwitchComponent.new(form: section.F,
-                                           field_name: :active,
-                                           switch_id: "active-switch-#{@setting.id}",
-                                           on_label: "Notifications enabled",
-                                           off_label: "Notifications disabled") do |switch| %>
-        <% switch.with_child do %>
-          <%= section.F.labeled_select :notification_channels,
-                "Channels",
-                @setting.channel_select_options,
-                {},
-                {multiple: true, data: {controller: "input-select"}} %>
+        <p>One or more channel names for this type of notification.</p>
+        <p class="mt-1">You can optionally add custom content to include in this notification. Even if the notification
+          is disabled, your custom content will be safely kept in Tramline for posterity.
+          See <%= link_to_external "docs", "https://docs.tramline.app/using-tramline/quality-and-monitoring/notifications#custom-content", class: "underline" %>
+          for more info.</p>
+        <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
+        <% if @setting.needs_invite? %>
+          <div class="text-secondary mt-1">
+            To allow file uploads in channels, invite <strong>@Tramline</strong> into your channels.
+          </div>
         <% end %>
       <% end %>
 
-      <% if @setting.needs_invite? %>
-        <span class="text-secondary">To allow file uploads in channels, invite <strong>@Tramline</strong> into your channels.</span>
+      <%= render Form::SwitchComponent.new(form: section.F,
+                                           field_name: :core_enabled,
+                                           switch_id: "core-switch-#{@setting.id}",
+                                           on_label: "#{@setting.core_prefix_text}Notifications enabled",
+                                           off_label: "#{@setting.core_prefix_text}Notifications disabled") do |switch| %>
+        <% switch.with_child do %>
+          <div class="flex flex-col gap-1">
+            <%= render partial: "shared/notifications_form",
+                       locals: {
+                         form: section.F,
+                         channels: @setting.channels,
+                         current: @setting.default_channels,
+                         multiple: true,
+                         field_name: :notification_channels,
+                         field_title: "#{@setting.core_prefix_text}Channels"
+                       } %>
+          </div>
+        <% end %>
       <% end %>
-      <%= render partial: "shared/notifications_refresh", locals: {app: @app} %>
+
+      <% if @setting.release_specific_channel_allowed? %>
+        <%= render Form::SwitchComponent.new(form: section.F,
+                                             field_name: :release_specific_enabled,
+                                             switch_id: "release-specific-enabled-#{@setting.id}",
+                                             on_label: "Release-specific channel enabled",
+                                             off_label: "Release-specific channel disabled") do |switch| %>
+          <% switch.with_info_icon do %>
+            <span class="text-secondary">
+              Channels like <strong><%= release_specific_channel_pattern(@setting.app) %></strong> will be automatically created for each release.
+              </span>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <div>
+        <%= section.F.labeled_textarea :user_content, "Custom Content", placeholder: "Add any additional information you'd like to include in notifications..." %>
+      </div>
     <% end %>
 
-    <% f.with_action do %>
-      <% f.F.authz_submit "Save", "archive.svg", size: :xs %>
+    <% if @setting.release_specific_channel_allowed? %>
+      <% if @setting.active? %>
+        <% f.with_action do %>
+          <% f.F.authz_submit "Save", "archive.svg", size: :xs, name: f.F.field_name(:active), value: true %>
+        <% end %>
+        <% f.with_action do %>
+          <% f.F.authz_submit "Disable", "archive_x.svg", size: :xs, scheme: :danger, name: f.F.field_name(:active), value: false %>
+        <% end %>
+      <% else %>
+        <% f.with_action do %>
+          <% f.F.authz_submit "Enable", "archive.svg", size: :xs, name: f.F.field_name(:active), value: true %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <% f.with_action do %>
+        <% f.F.authz_submit "Save", "archive.svg", size: :xs, name: f.F.field_name(:active), value: true %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

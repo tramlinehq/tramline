@@ -13,17 +13,35 @@
       "elements": [
         {
           "type": "mrkdwn",
-          "text": "<%= initial_rollout_percentage_text %>"
-        },
+          "text": "<%= requires_review_text %>"
+        }
+      ]
+    }
+    <% end %>,
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<%= changelog_header %>"
+      }
+    },
+    {
+      "type": "rich_text",
+      "elements": [
         {
-          "type": "plain_text",
-          "text": "<%= google_managed_publishing_text %>",
-          "emoji": false
-        },
+          "type": "rich_text_list",
+          "style": "bullet",
+          "elements": [<%= changelog_elements(@changelog[:first_part]) %>]
+        }
+      ]
+    }
+    <% if @changelog[:total_parts] > 1 %>,
+    {
+      "type": "context",
+      "elements": [
         {
-          "type": "plain_text",
-          "text": "<%= google_unmanaged_publishing_text %>",
-          "emoji": false
+          "type": "mrkdwn",
+          "text": "Changes in release, continued in thread :thread:"
         }
       ]
     }
