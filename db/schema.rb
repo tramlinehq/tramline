@@ -499,6 +499,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_01_162057) do
     t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))"
   end
 
+  create_table "onboarding_states", force: :cascade do |t|
+    t.uuid "app_id", null: false
+    t.jsonb "data", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_id"], name: "index_onboarding_states_on_app_id"
+  end
+
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "status", null: false
     t.string "name", null: false
@@ -927,6 +935,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_01_162057) do
     t.boolean "is_staged_rollout", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "auto_rollout_enabled", default: false
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
     t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
   end
@@ -1187,6 +1196,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_01_162057) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
+  add_foreign_key "onboarding_states", "apps"
   add_foreign_key "outgoing_webhook_events", "releases"
   add_foreign_key "pre_prod_releases", "commits"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "parent_internal_release_id"
