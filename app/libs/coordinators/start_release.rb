@@ -45,10 +45,8 @@ class Coordinators::StartRelease
       raise AppInDraftMode.new("App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
       raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix?
       raise UpcomingReleaseNotAllowed.new("Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?
-      if train.almost_trunk? && commit_hash.present?
-      # TODO: Validate that the commit indeed exists on the train's working branch
-      elsif regular_release? && !train.diff_since_last_release?
-        raise NothingToRelease.new("No diff since last release")
+      unless train.almost_trunk? && commit_hash.present?
+        raise NothingToRelease.new("No diff since last release") if regular_release? && !train.diff_since_last_release?
       end
       train.activate! unless train.active?
       create_release
@@ -67,7 +65,7 @@ class Coordinators::StartRelease
       hotfix_platform: (hotfix_platform if hotfix?),
       original_release_version: new_release_version,
       release_pilot_id: Current.user&.id,
-      commit_hash:
+      commit_hash: commit_hash.presence
     )
   end
 
