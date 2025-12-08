@@ -1,0 +1,77 @@
+<div class="space-y-6">
+  <div>
+    <h3 class="text-lg font-medium text-gray-900 mb-4">CI/CD Workflow Configuration</h3>
+    <p class="text-sm text-gray-600 mb-6">Configure your continuous integration and deployment workflows.</p>
+  </div>
+
+  <%= form_with model: onboarding_state, url: save_workflows_app_onboarding_path(app), method: :post, local: true, data: {controller: "onboarding-form", turbo: true} do |form| %>
+    <div class="grid grid-cols-1 gap-6">
+      <!-- CI/CD Provider -->
+      <div>
+        <%= form.label :ci_cd_provider, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+          CI/CD Provider
+        <% end %>
+        <%= form.select :ci_cd_provider,
+            options_for_select([
+              ["GitHub Actions", "github_actions"],
+              ["Bitrise", "bitrise"],
+              ["GitLab CI", "gitlab_ci"],
+              ["Jenkins", "jenkins"],
+              ["CircleCI", "circleci"]
+            ], onboarding_state.ci_cd_provider),
+            {prompt: "Select your CI/CD provider"},
+            {class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"} %>
+      </div>
+
+      <!-- Workflow Name/Path -->
+      <div>
+        <%= form.label :ci_cd_workflow, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+          Workflow Name/ID
+        <% end %>
+        <%= form.text_field :ci_cd_workflow,
+            class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+        <p class="mt-1 text-xs text-gray-500">The name or ID of your build workflow (e.g., 'build.yml' for GitHub Actions)</p>
+      </div>
+
+      <!-- Workflow Path (for file-based CI) -->
+      <div id="workflow_path_section" class="<%= ['github_actions', 'gitlab_ci'].include?(onboarding_state.ci_cd_provider) ? '' : 'hidden' %>">
+        <%= form.label :ci_cd_workflow_path, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+          Workflow File Path
+        <% end %>
+        <%= form.text_field :ci_cd_workflow_path,
+            class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+        <p class="mt-1 text-xs text-gray-500">Path to workflow file (e.g., '.github/workflows/build.yml')</p>
+      </div>
+
+      <!-- Branch Pattern -->
+      <div>
+        <%= form.label :ci_cd_branch_pattern, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+          Branch Pattern
+        <% end %>
+        <%= form.text_field :ci_cd_branch_pattern,
+            value: onboarding_state.ci_cd_branch_pattern || "release/*",
+            class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+        <p class="mt-1 text-xs text-gray-500">Pattern for branches that should trigger builds (e.g., 'release/*', 'main')</p>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <%= form.submit "Save & Continue", class: "bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500", data: {onboarding_form_target: "submitButton"} %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const provider = document.getElementById('<%= dom_id(onboarding_state, :ci_cd_provider) %>')
+    const workflowPathSection = document.getElementById('workflow_path_section')
+    
+    function toggleSections() {
+      const isFileBased = ['github_actions', 'gitlab_ci'].includes(provider.value)
+      workflowPathSection.classList.toggle('hidden', !isFileBased)
+    }
+    
+    provider.addEventListener('change', toggleSections)
+    toggleSections() // Set initial state
+  })
+</script>

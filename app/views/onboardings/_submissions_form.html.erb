@@ -1,0 +1,99 @@
+<div class="space-y-6">
+  <div>
+    <h3 class="text-lg font-medium text-gray-900 mb-4">App Store Submissions</h3>
+    <p class="text-sm text-gray-600 mb-6">Configure how your releases will be submitted to app stores.</p>
+  </div>
+
+  <%= form_with model: onboarding_state, url: save_submissions_app_onboarding_path(app), method: :post, local: true, data: {controller: "onboarding-form", turbo: true} do |form| %>
+    <div class="grid grid-cols-1 gap-6">
+      <!-- RC Submission -->
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="text-md font-medium text-gray-900 mb-4">Release Candidate (RC) Distribution</h4>
+        
+        <div class="flex items-start mb-4">
+          <div class="flex items-center h-5">
+            <%= form.check_box :rc_submission_enabled,
+                class: "focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" %>
+          </div>
+          <div class="ml-3 text-sm">
+            <%= form.label :rc_submission_enabled, class: "font-medium text-gray-700" do %>
+              Enable RC distribution
+            <% end %>
+            <p class="text-gray-500">Distribute release candidates to internal teams for testing</p>
+          </div>
+        </div>
+
+        <div id="rc_config_section" class="<%= onboarding_state.rc_submission_enabled ? '' : 'hidden' %>">
+          <div class="mb-4">
+            <%= form.label :rc_submission_provider, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+              RC Distribution Provider
+            <% end %>
+            <%= form.select :rc_submission_provider,
+                options_for_select([
+                  ["TestFlight (iOS)", "testflight"],
+                  ["Firebase App Distribution", "firebase"],
+                  ["Internal Distribution", "internal"]
+                ], onboarding_state.rc_submission_provider),
+                {prompt: "Select distribution method"},
+                {class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"} %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Production Submission -->
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="text-md font-medium text-gray-900 mb-4">Production Distribution</h4>
+        
+        <div class="flex items-start mb-4">
+          <div class="flex items-center h-5">
+            <%= form.check_box :production_submission_enabled,
+                class: "focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" %>
+          </div>
+          <div class="ml-3 text-sm">
+            <%= form.label :production_submission_enabled, class: "font-medium text-gray-700" do %>
+              Enable production submission
+            <% end %>
+            <p class="text-gray-500">Submit releases to app stores for public distribution</p>
+          </div>
+        </div>
+
+        <div id="production_config_section" class="<%= onboarding_state.production_submission_enabled ? '' : 'hidden' %>">
+          <div class="mb-4">
+            <%= form.label :production_submission_provider, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+              Production Store
+            <% end %>
+            <%= form.select :production_submission_provider,
+                options_for_select([
+                  ["App Store (iOS)", "app_store"],
+                  ["Google Play Store (Android)", "google_play_store"]
+                ], onboarding_state.production_submission_provider),
+                {prompt: "Select app store"},
+                {class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"} %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <%= form.submit "Save & Continue", class: "bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500", data: {onboarding_form_target: "submitButton"} %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const rcEnabled = document.getElementById('<%= dom_id(onboarding_state, :rc_submission_enabled) %>')
+    const rcConfigSection = document.getElementById('rc_config_section')
+    const productionEnabled = document.getElementById('<%= dom_id(onboarding_state, :production_submission_enabled) %>')
+    const productionConfigSection = document.getElementById('production_config_section')
+    
+    function toggleSections() {
+      rcConfigSection.classList.toggle('hidden', !rcEnabled.checked)
+      productionConfigSection.classList.toggle('hidden', !productionEnabled.checked)
+    }
+    
+    rcEnabled.addEventListener('change', toggleSections)
+    productionEnabled.addEventListener('change', toggleSections)
+    toggleSections() // Set initial state
+  })
+</script>

@@ -1,0 +1,72 @@
+<div class="space-y-6">
+  <div>
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Git Tagging Configuration</h3>
+    <p class="text-sm text-gray-600 mb-6">Configure automatic git tagging for your releases.</p>
+  </div>
+
+  <%= form_with model: onboarding_state, url: save_tags_app_onboarding_path(app), method: :post, local: true, data: {controller: "onboarding-form", turbo: true} do |form| %>
+    <div class="grid grid-cols-1 gap-6">
+      <!-- Enable Tagging -->
+      <div class="flex items-start">
+        <div class="flex items-center h-5">
+          <%= form.check_box :tagging_enabled,
+              class: "focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" %>
+        </div>
+        <div class="ml-3 text-sm">
+          <%= form.label :tagging_enabled, class: "font-medium text-gray-700" do %>
+            Enable automatic git tagging
+          <% end %>
+          <p class="text-gray-500">Automatically create git tags when releases are completed</p>
+        </div>
+      </div>
+
+      <!-- Tag Format -->
+      <div id="tag_format_section" class="<%= onboarding_state.tagging_enabled ? '' : 'hidden' %>">
+        <%= form.label :tag_format, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+          Tag Format
+        <% end %>
+        <%= form.text_field :tag_format,
+            value: onboarding_state.tag_format || "v{version}",
+            class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+        <p class="mt-1 text-xs text-gray-500">Use {version} as placeholder. Example: v{version} becomes v1.2.0</p>
+      </div>
+
+      <!-- Tag All Releases -->
+      <div id="tag_all_section" class="<%= onboarding_state.tagging_enabled ? '' : 'hidden' %>">
+        <div class="flex items-start">
+          <div class="flex items-center h-5">
+            <%= form.check_box :tag_all_releases,
+                class: "focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" %>
+          </div>
+          <div class="ml-3 text-sm">
+            <%= form.label :tag_all_releases, class: "font-medium text-gray-700" do %>
+              Tag all releases
+            <% end %>
+            <p class="text-gray-500">Tag both RC and production releases. If disabled, only production releases are tagged.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <%= form.submit "Save & Continue", class: "bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500", data: {onboarding_form_target: "submitButton"} %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const taggingEnabled = document.getElementById('<%= dom_id(onboarding_state, :tagging_enabled) %>')
+    const tagFormatSection = document.getElementById('tag_format_section')
+    const tagAllSection = document.getElementById('tag_all_section')
+    
+    function toggleSections() {
+      const isEnabled = taggingEnabled.checked
+      tagFormatSection.classList.toggle('hidden', !isEnabled)
+      tagAllSection.classList.toggle('hidden', !isEnabled)
+    }
+    
+    taggingEnabled.addEventListener('change', toggleSections)
+    toggleSections() // Set initial state
+  })
+</script>

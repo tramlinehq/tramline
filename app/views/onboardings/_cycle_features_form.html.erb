@@ -1,0 +1,56 @@
+<div class="space-y-6">
+  <div>
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Release Cycle Features</h3>
+    <p class="text-sm text-gray-600 mb-6">Configure automation and features for your release cycles.</p>
+  </div>
+
+  <%= form_with model: onboarding_state, url: save_cycle_features_app_onboarding_path(app), method: :post, local: true, data: {controller: "onboarding-form", turbo: true} do |form| %>
+    <div class="grid grid-cols-1 gap-6">
+      <!-- Auto Deployment -->
+      <div class="flex items-start">
+        <div class="flex items-center h-5">
+          <%= form.check_box :auto_deployment,
+              class: "focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" %>
+        </div>
+        <div class="ml-3 text-sm">
+          <%= form.label :auto_deployment, class: "font-medium text-gray-700" do %>
+            Enable automatic deployment
+          <% end %>
+          <p class="text-gray-500">Automatically trigger deployments when builds are ready</p>
+        </div>
+      </div>
+
+      <!-- Auto Version Increment -->
+      <div class="flex items-start">
+        <div class="flex items-center h-5">
+          <%= form.check_box :auto_increment_version,
+              class: "focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" %>
+        </div>
+        <div class="ml-3 text-sm">
+          <%= form.label :auto_increment_version, class: "font-medium text-gray-700" do %>
+            Auto-increment version numbers
+          <% end %>
+          <p class="text-gray-500">Automatically increment version numbers when creating new releases</p>
+        </div>
+      </div>
+
+      <!-- Copy Changelog -->
+      <div class="flex items-start">
+        <div class="flex items-center h-5">
+          <%= form.check_box :copy_changelog,
+              class: "focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" %>
+        </div>
+        <div class="ml-3 text-sm">
+          <%= form.label :copy_changelog, class: "font-medium text-gray-700" do %>
+            Copy changelog to release notes
+          <% end %>
+          <p class="text-gray-500">Automatically copy commit messages and PR descriptions to release notes</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <%= form.submit "Save & Continue", class: "bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500", data: {onboarding_form_target: "submitButton"} %>
+    </div>
+  <% end %>
+</div>

@@ -16,6 +16,27 @@
   <% container.with_body do %>
     <% if @app.ready? %>
       <%= render partial: "shared/draft_mode_notice", locals: {app: @app} %>
+
+      <% if @app.trains.none? && Flipper.enabled?(:new_onboarding_flow, @app) %>
+        <div class="mb-8">
+          <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="flex flex-col items-center">
+              <h3 class="text-2xl font-bold mb-4">Welcome to Tramline</h3>
+              <p class="text-gray-600 mb-6 text-center max-w-3xl">
+                Let's get you set up with a streamlined release process. Our guided setup will help you configure versioning,
+                branching, CI/CD workflows, and app store submissions.
+              </p>
+              <%= link_to app_onboarding_path(@app), class: "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-base px-6 py-3 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" do %>
+                <div class="flex items-center gap-2">
+                  <span>Start Guided Setup</span>
+                  <%= render IconComponent.new("arrow_right.svg", size: :sm, classes: "fill-current") %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
       <%= render partial: "trains/setup_progress", locals: {app: @app, train_in_creation: @train_in_creation} %>
     <% else %>
       <%= render partial: "apps/setup_progress", locals: {setup_instructions: @app_setup_instructions} %>

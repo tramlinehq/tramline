@@ -1,0 +1,93 @@
+<div class="space-y-6">
+  <div>
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Version Strategy Configuration</h3>
+    <p class="text-sm text-gray-600 mb-6">Configure how your app versions will be managed and incremented.</p>
+  </div>
+
+  <%= form_with model: onboarding_state, url: save_version_app_onboarding_path(app), method: :post, local: true, data: {controller: "onboarding-form", turbo: true} do |form| %>
+    <div class="grid grid-cols-1 gap-6">
+      <!-- Version Strategy -->
+      <div>
+        <%= form.label :version_strategy, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+          Version Strategy <span class="text-red-500">*</span>
+        <% end %>
+        <%= form.select :version_strategy, 
+            options_for_select([
+              ["Semantic Versioning (X.Y.Z)", "semantic"],
+              ["Date-based (YYYY.MM.DD)", "date_based"],
+              ["Build Number Only", "build_only"]
+            ], onboarding_state.version_strategy),
+            {prompt: "Select a version strategy"},
+            {class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"} %>
+        <p class="mt-1 text-xs text-gray-500">Choose how your app versions will be structured</p>
+      </div>
+
+      <!-- Minor Version Bump Strategy -->
+      <div id="minor_version_section" class="<%= onboarding_state.version_strategy == 'semantic' ? '' : 'hidden' %>">
+        <%= form.label :minor_version_bump_strategy, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+          Minor Version Bump Strategy
+        <% end %>
+        <%= form.select :minor_version_bump_strategy,
+            options_for_select([
+              ["Automatic on every release", "automatic"],
+              ["Manual when needed", "manual"],
+              ["Never bump minor version", "never"]
+            ], onboarding_state.minor_version_bump_strategy),
+            {prompt: "Select minor version strategy"},
+            {class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"} %>
+      </div>
+
+      <!-- Patch Version Bump Strategy -->
+      <div id="patch_version_section" class="<%= onboarding_state.version_strategy == 'semantic' ? '' : 'hidden' %>">
+        <%= form.label :patch_version_bump_strategy, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+          Patch Version Bump Strategy
+        <% end %>
+        <%= form.select :patch_version_bump_strategy,
+            options_for_select([
+              ["Automatic on hotfixes", "hotfix_only"],
+              ["Manual when needed", "manual"],
+              ["Automatic on every release", "automatic"]
+            ], onboarding_state.patch_version_bump_strategy),
+            {prompt: "Select patch version strategy"},
+            {class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"} %>
+      </div>
+
+      <!-- Build Version Strategy -->
+      <div>
+        <%= form.label :build_version_strategy, class: "block text-sm font-medium text-gray-700 mb-2" do %>
+          Build Version Strategy
+        <% end %>
+        <%= form.select :build_version_strategy,
+            options_for_select([
+              ["Automatic increment", "automatic"],
+              ["Use timestamp", "timestamp"],
+              ["Manual", "manual"]
+            ], onboarding_state.build_version_strategy),
+            {prompt: "Select build version strategy"},
+            {class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"} %>
+        <p class="mt-1 text-xs text-gray-500">Build numbers are used for internal tracking and app store submissions</p>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <%= form.submit "Save & Continue", class: "bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500", data: {onboarding_form_target: "submitButton"} %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const versionStrategy = document.getElementById('<%= dom_id(onboarding_state, :version_strategy) %>')
+    const minorSection = document.getElementById('minor_version_section')
+    const patchSection = document.getElementById('patch_version_section')
+    
+    function toggleSections() {
+      const isSemantic = versionStrategy.value === 'semantic'
+      minorSection.classList.toggle('hidden', !isSemantic)
+      patchSection.classList.toggle('hidden', !isSemantic)
+    }
+    
+    versionStrategy.addEventListener('change', toggleSections)
+    toggleSections() // Set initial state
+  })
+</script>

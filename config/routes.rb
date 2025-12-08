@@ -68,6 +68,25 @@ Rails.application.routes.draw do
 
     resources :app_variants, only: %i[index edit create update destroy]
 
+    # Onboarding wizard
+    resource :onboarding, only: [:show] do
+      member do
+        get :version
+        get :branching
+        get :tags
+        get :workflows
+        get :cycle_features
+        get :submissions
+        post :save_version
+        post :save_branching
+        post :save_tags
+        post :save_workflows
+        post :save_cycle_features
+        post :save_submissions
+        post :complete
+      end
+    end
+
     namespace :version_control do
       resource :github_config, only: %i[edit update]
       resource :gitlab_config, only: %i[edit update]

@@ -1,0 +1,38 @@
+<%
+  # Define all steps with their titles and descriptions
+  all_steps = [
+    {title: "Version Strategy", description: "Configure how versions are managed"},
+    {title: "Branching", description: "Set up your branching strategy"},
+    {title: "Tags", description: "Configure release tagging"},
+    {title: "Workflows", description: "Set up CI/CD workflows"},
+    {title: "Cycle Features", description: "Configure release cycle options"},
+    {title: "Submissions", description: "Set up app store submissions"}
+  ]
+%>
+
+<%= render ContainerComponent.new(title: "Tell us how you release your apps") do |container| %>
+  <% container.with_body do %>
+    <div id="onboarding_wizard">
+      <%= render Onboarding::WizardComponent.new(current_step: @step, onboarding_state: @onboarding_state) do |wizard| %>
+        <% all_steps.each_with_index do |step_info, index| %>
+          <% wizard.with_step(title: step_info[:title], description: step_info[:description]) do %>
+            <% case index %>
+            <% when 0 %>
+              <%= render partial: "version_form", locals: {app: @app, onboarding_state: @onboarding_state} %>
+            <% when 1 %>
+              <%= render partial: "branching_form", locals: {app: @app, onboarding_state: @onboarding_state} %>
+            <% when 2 %>
+              <%= render partial: "tags_form", locals: {app: @app, onboarding_state: @onboarding_state} %>
+            <% when 3 %>
+              <%= render partial: "workflows_form", locals: {app: @app, onboarding_state: @onboarding_state} %>
+            <% when 4 %>
+              <%= render partial: "cycle_features_form", locals: {app: @app, onboarding_state: @onboarding_state} %>
+            <% when 5 %>
+              <%= render partial: "submissions_form", locals: {app: @app, onboarding_state: @onboarding_state} %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
