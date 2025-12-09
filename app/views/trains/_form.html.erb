@@ -236,6 +236,28 @@
       <% end %>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Soak Period") do |section| %>
+      <% section.with_description do %>
+        Configure a soak period that starts automatically when a Release Candidate becomes available.
+        During the soak period, app submissions are blocked, allowing time to monitor the RC before proceeding to production.
+        The soak period is cross-platform and continues even if new RCs are created.
+      <% end %>
+
+      <%= render Form::SwitchComponent.new(form: section.F,
+                                           field_name: :soak_period_enabled,
+                                           on_label: "Soak period enabled",
+                                           off_label: "Soak period disabled",
+                                           hide_child: !train.soak_period_enabled?) do |component| %>
+        <% component.with_child do %>
+          <%= section.F.labeled_number_field :soak_period_hours,
+                                             "Soak Period Duration (hours)",
+                                             min: 1,
+                                             max: 336,
+                                             help_text: "Duration in hours (1-336). Default is 24 hours." %>
+        <% end %>
+      <% end %>
+    <% end %>
+
     <%= f.with_advanced_section(heading: "Build Queue") do |section| %>
       <% section.with_description do %>
         Control when commits are applied to trigger new builds in your release.

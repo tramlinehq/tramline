@@ -176,6 +176,87 @@ end
 - `Coordinators::CreateBetaRelease` - Create internal distribution
 - `Coordinators::PreRelease::*` - Strategy pattern by branching strategy
 - `Coordinators::Webhooks::*` - Process external webhooks
+- `Coordinators::SoakPeriod::*` - Nested coordinators for feature-specific logic
+
+**Model Bloat Prevention:**
+Models should contain ONLY:
+- Query methods (return data/state without side effects)
+- Delegation to related objects
+- Validations and associations
+- State machine definitions
+
+Models should NOT contain:
+- Bang methods that modify state (`start!`, `complete!`, etc. go in coordinators)
+- Complex business logic (use coordinators)
+- Multi-step workflows (use coordinators)
+
+```ruby
+# BAD - Bang methods in model
+class Release < ApplicationRecord
+  def end_soak_period!(user)
+    return false unless user_is_pilot?(user)
+    with_lock do
+      update!(soak_started_at: calculated_time)
+      event_stamp!(reason: :soak_ended)
+    end
+  end
+end
+
+# GOOD - Query methods in model, actions in coordinators
+class Release < ApplicationRecord
+  # Query methods only
+  def soak_period_active?
+    soak_started_at.present? && !soak_period_completed?
+  end
+
+  def soak_end_time
+    return nil if soak_started_at.blank?
+    soak_started_at + soak_period_hours.hours
+  end
+end
+
+# Business logic in coordinator
+class Coordinators::SoakPeriod::End
+  def initialize(release, user)
+    @release = release
+    @user = user
+  end
+
+  def call
+    return false unless authorized?
+    return false unless @release.soak_period_active?
+
+    @release.with_lock do
+      @release.update!(soak_started_at: calculated_time)
+      @release.event_stamp!(reason: :soak_period_ended_early)
+    end
+    true
+  end
+end
+
+# Exposed via Actions module
+module Coordinators::Actions
+  def self.end_soak_period!(release, user)
+    result = SoakPeriod::End.new(release, user).call
+    return Res.ok(release) if result
+    Res.err(error_message)
+  end
+end
+```
+
+**Race Condition Prevention:**
+Always use `with_lock` in coordinators for concurrent operations:
+```ruby
+def call
+  @release.with_lock do
+    # Double-check conditions inside lock
+    return false if @release.soak_started_at.present?
+
+    @release.update!(soak_started_at: Time.current)
+    @release.event_stamp!(reason: :soak_started)
+  end
+end
+```
 
 ### 2. Passport System (Event Tracking & Audit Trail)
 
@@ -449,6 +530,262 @@ end
 - `Queries::PlatformBreakdown` - Platform-specific metrics
 - `Queries::Releases` - Filtered release lists
 - `Queries::Builds` - Build search and filtering
+
+### 6. ViewComponent Pattern (`app/components/`)
+
+**Purpose**: Encapsulate UI logic and authorization in reusable, testable components.
+
+**Key Principles:**
+- Components fully encapsulate their logic (no logic in views)
+- Pass `current_user` when authorization is needed
+- Methods return safe defaults (never nil for display methods)
+- Use private methods for internal logic
+- Test components like Ruby classes (not integration tests)
+
+**Pattern:**
+```ruby
+# app/components/live_release/soak_component.rb
+class LiveRelease::SoakComponent < ViewComponent::Base
+  def initialize(release, current_user)
+    @release = release
+    @current_user = current_user
+  end
+
+  # Public methods for view
+  def show_soak_actions?
+    @release.soak_period_active? && user_is_release_pilot?
+  end
+
+  def show_pilot_only_message?
+    @release.soak_period_active? && !user_is_release_pilot?
+  end
+
+  # Display methods with nil safety
+  def time_remaining_display
+    soak_seconds = (@release.soak_time_remaining || 0).to_i
+    hours = soak_seconds / 3600
+    minutes = (soak_seconds % 3600) / 60
+    seconds = soak_seconds % 60
+    sprintf("%02d:%02d:%02d", hours, minutes, seconds)
+  end
+
+  def soak_start_time_display
+    return nil unless @release.soak_started_at.present?
+    @release.soak_started_at.in_time_zone(app_timezone).strftime("%Y-%m-%d %H:%M %Z")
+  end
+
+  private
+
+  def user_is_release_pilot?
+    return false if @current_user.blank?
+    @current_user.id == @release.release_pilot_id
+  end
+
+  def app_timezone
+    @release.train.app.timezone
+  end
+end
+```
+
+**View Template:**
+```erb
+<!-- app/components/live_release/soak_component.html.erb -->
+<div class="soak-period">
+  <% if @release.soak_period_active? %>
+    <div class="timer">
+      <span data-controller="countdown" data-countdown-seconds-value="<%= time_remaining_hours * 3600 %>">
+        <%= time_remaining_display %>
+      </span>
+    </div>
+
+    <% if show_soak_actions? %>
+      <%= button_to "End Early", end_soak_release_beta_soak_path(@release), method: :post %>
+      <%= button_to "Extend", extend_soak_release_beta_soak_path(@release), method: :post %>
+    <% elsif show_pilot_only_message? %>
+      <p class="text-gray-500">Only release pilot can modify soak period</p>
+    <% end %>
+  <% end %>
+</div>
+```
+
+**Usage in Controller/View:**
+```ruby
+# In controller
+def soak
+  @release = Release.find(params[:id])
+  render
+end
+```
+
+```erb
+<!-- In view -->
+<%= render LiveRelease::SoakComponent.new(@release, current_user) %>
+```
+
+**Testing Components:**
+```ruby
+RSpec.describe LiveRelease::SoakComponent, type: :component do
+  let(:release) { create(:release, :with_soak) }
+  let(:pilot) { release.release_pilot }
+  let(:other_user) { create(:user) }
+  let(:component) { described_class.new(release, pilot) }
+
+  describe "#show_soak_actions?" do
+    it "returns true when user is pilot and soak is active" do
+      expect(component.show_soak_actions?).to eq(true)
+    end
+
+    it "returns false when user is not pilot" do
+      component = described_class.new(release, other_user)
+      expect(component.show_soak_actions?).to eq(false)
+    end
+  end
+
+  describe "#time_remaining_display" do
+    it "returns formatted time without wrapping at 24 hours" do
+      release.update!(soak_started_at: 1.hour.ago, soak_period_hours: 48)
+      expect(component.time_remaining_display).to match(/^47:\d{2}:\d{2}$/)
+    end
+
+    it "returns 00:00:00 for nil values" do
+      allow(release).to receive(:soak_time_remaining).and_return(nil)
+      expect(component.time_remaining_display).to eq("00:00:00")
+    end
+  end
+end
+```
+
+**Key Conventions:**
+- Component class file: `app/components/namespace/name_component.rb`
+- Component view file: `app/components/namespace/name_component.html.erb`
+- Component JS controller: `app/components/namespace/name_component_controller.js` (if needed)
+- Always encapsulate authorization logic in component
+- Never return nil from display methods (use safe defaults)
+- Test all authorization paths and nil cases
+
+### 7. Computations Pattern (`app/libs/computations/`)
+
+**Purpose**: Calculate complex derived state and step statuses for releases.
+
+**Main Use Case**: `Computations::Release::StepStatuses` - Determines visibility and state of each release step.
+
+**Status Types:**
+```ruby
+STATUS = {
+  blocked: :blocked,      # Step cannot proceed (dependency not met)
+  unblocked: :unblocked,  # Step is available but not started
+  ongoing: :ongoing,      # Step is in progress
+  success: :success,      # Step completed successfully
+  none: :none,           # Step has no data yet
+  hidden: :hidden        # Step not visible for this configuration
+}
+```
+
+**Pattern:**
+```ruby
+class Computations::Release::StepStatuses
+  def self.call(release)
+    new(release).call
+  end
+
+  def initialize(release)
+    @release = release
+  end
+
+  def call
+    {
+      statuses: {
+        changeset_tracking: changeset_tracking_status,
+        release_candidate: release_candidate_status,
+        soak_period: soak_period_status,
+        app_submission: app_submission_status,
+        rollout_to_users: rollout_to_users_status
+      }.compact,
+      current_overall_status: current_overall_status
+    }
+  end
+
+  def soak_period_status
+    # Hidden if feature not enabled
+    return STATUS[:hidden] unless @release.soak_period_enabled?
+
+    # Blocked if RC not ready
+    return STATUS[:blocked] if release_candidate_status != STATUS[:success]
+
+    # Success if completed
+    return STATUS[:success] if @release.soak_period_completed?
+
+    # Ongoing if active
+    return STATUS[:ongoing] if @release.soak_period_active?
+
+    # Otherwise blocked (not started)
+    STATUS[:blocked]
+  end
+
+  def app_submission_status
+    # Soak period blocks submission
+    return STATUS[:blocked] if @release.soak_period_enabled? && !@release.soak_period_completed?
+
+    # Other blocking conditions
+    return STATUS[:blocked] if @release.approvals_blocking?
+    return STATUS[:blocked] if all_platforms? { |rp| rp.production_releases.none? }
+
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.inflight_production_release.present? }
+
+    STATUS[:success]
+  end
+end
+```
+
+**Key Concepts:**
+- Steps can be `hidden` based on configuration (e.g., soak period disabled)
+- Steps can `block` other steps (e.g., soak blocks app submission)
+- Status determination flows from dependencies (RC → Soak → Submission)
+- Pure computation - no side effects, only reading state
+
+**Usage:**
+```ruby
+statuses = Computations::Release::StepStatuses.call(release)
+
+# Check specific step status
+if statuses[:statuses][:soak_period] == :ongoing
+  # Show countdown timer
+end
+
+# Use for UI styling
+step_class = case statuses[:statuses][:app_submission]
+  when :blocked then "text-gray-400"
+  when :ongoing then "text-blue-500"
+  when :success then "text-green-500"
+end
+```
+
+**Testing Computations:**
+```ruby
+RSpec.describe Computations::Release::StepStatuses do
+  let(:release) { create(:release, :with_soak) }
+
+  describe "#soak_period_status" do
+    it "returns hidden when soak disabled" do
+      release.train.update!(soak_period_enabled: false)
+      result = described_class.call(release)
+      expect(result[:statuses][:soak_period]).to eq(:hidden)
+    end
+
+    it "returns blocked when RC not ready" do
+      result = described_class.call(release)
+      expect(result[:statuses][:soak_period]).to eq(:blocked)
+    end
+
+    it "returns ongoing when soak active" do
+      setup_rc_ready(release)
+      release.update!(soak_started_at: 1.hour.ago)
+      result = described_class.call(release)
+      expect(result[:statuses][:soak_period]).to eq(:ongoing)
+    end
+  end
+end
+```
 
 ---
 
@@ -848,6 +1185,129 @@ spec/
 └── components/
 ```
 
+### Testing Best Practices
+
+**Test Authorization at All Levels:**
+```ruby
+RSpec.describe Coordinators::SoakPeriod::End do
+  let(:release) { create(:release, :with_active_soak) }
+  let(:pilot) { release.release_pilot }
+  let(:other_user) { create(:user, :as_developer) }
+
+  context "authorization" do
+    it "succeeds when user is release pilot" do
+      result = described_class.new(release, pilot).call
+      expect(result).to be_truthy
+    end
+
+    it "fails when user is not release pilot" do
+      result = described_class.new(release, other_user).call
+      expect(result).to be_falsey
+    end
+
+    it "fails when user is nil" do
+      result = described_class.new(release, nil).call
+      expect(result).to be_falsey
+    end
+  end
+end
+```
+
+**Test Nil Safety:**
+```ruby
+describe "#time_remaining_display" do
+  it "returns safe default when time_remaining is nil" do
+    allow(release).to receive(:time_remaining).and_return(nil)
+    expect(component.time_remaining_display).to eq("00:00:00")  # Not nil
+  end
+
+  it "handles nil timestamps" do
+    release.update!(soak_started_at: nil)
+    expect(component.soak_start_time_display).to be_nil  # Explicit nil is OK
+  end
+end
+```
+
+**Test Edge Cases and Boundaries:**
+```ruby
+describe "validations" do
+  it "validates minimum boundary (1 hour)" do
+    train = build(:train, soak_period_enabled: true, soak_period_hours: 1)
+    expect(train).to be_valid
+  end
+
+  it "validates maximum boundary (168 hours)" do
+    train = build(:train, soak_period_enabled: true, soak_period_hours: 168)
+    expect(train).to be_valid
+  end
+
+  it "rejects below minimum (0 hours)" do
+    train = build(:train, soak_period_enabled: true, soak_period_hours: 0)
+    expect(train).not_to be_valid
+  end
+
+  it "rejects above maximum (169 hours)" do
+    train = build(:train, soak_period_enabled: true, soak_period_hours: 169)
+    expect(train).not_to be_valid
+  end
+
+  it "rejects negative values" do
+    train = build(:train, soak_period_enabled: true, soak_period_hours: -5)
+    expect(train).not_to be_valid
+  end
+end
+```
+
+**Test State Transitions:**
+```ruby
+describe "soak period status transitions" do
+  it "transitions from blocked to ongoing when soak starts" do
+    statuses_before = Computations::Release::StepStatuses.call(release)
+    expect(statuses_before[:statuses][:soak_period]).to eq(:blocked)
+
+    release.update!(soak_started_at: 1.hour.ago)
+
+    statuses_after = Computations::Release::StepStatuses.call(release)
+    expect(statuses_after[:statuses][:soak_period]).to eq(:ongoing)
+  end
+
+  it "transitions from ongoing to success when soak completes" do
+    release.update!(soak_started_at: 1.hour.ago)
+    expect(release.soak_period_active?).to eq(true)
+
+    travel 24.hours do
+      expect(release.soak_period_active?).to eq(false)
+      expect(release.soak_period_completed?).to eq(true)
+    end
+  end
+end
+```
+
+**Test Time Calculations:**
+```ruby
+describe "#soak_end_time" do
+  it "calculates correctly with default hours (24)" do
+    start_time = Time.current
+    release.update!(soak_started_at: start_time)
+    expected_end = start_time + 24.hours
+    expect(release.soak_end_time).to be_within(1.second).of(expected_end)
+  end
+
+  it "calculates correctly with custom hours" do
+    start_time = Time.current
+    release.train.update!(soak_period_hours: 48)
+    release.update!(soak_started_at: start_time)
+    expected_end = start_time + 48.hours
+    expect(release.soak_end_time).to be_within(1.second).of(expected_end)
+  end
+
+  it "returns 0 when time has passed" do
+    release.update!(soak_started_at: 25.hours.ago)
+    expect(release.soak_time_remaining).to eq(0)
+  end
+end
+```
+
 ---
 
 ## Common Patterns and Gotchas
@@ -927,6 +1387,85 @@ Use `.to_semverish` extension:
 ```ruby
 "1.2.0".to_semverish >= "1.1.0".to_semverish  # => true
 "1.10.0".to_semverish > "1.9.0".to_semverish  # => true
+```
+
+### Time Handling
+
+**Use Time.current (not Time.now):**
+```ruby
+# CORRECT - Rails timezone-aware
+release.update!(started_at: Time.current)
+deadline = Time.current + 24.hours
+
+# WRONG - Not timezone-aware
+release.update!(started_at: Time.now)  # Don't use!
+```
+
+**Display Times in App Timezone:**
+```ruby
+# Store times in UTC, display in app's configured timezone
+def formatted_deadline
+  return nil unless deadline.present?
+  deadline.in_time_zone(app.timezone).strftime("%Y-%m-%d %H:%M %Z")
+end
+
+# Example output: "2025-01-15 14:30 EST"
+```
+
+**Duration Display (Don't Use Time.at for Long Durations):**
+```ruby
+# BAD - Wraps at 24 hours!
+def time_remaining_display
+  seconds = 100_000  # 27.7 hours
+  Time.at(seconds).utc.strftime("%H:%M:%S")  # Returns "03:46:40" (wrong!)
+end
+
+# GOOD - Manual calculation for durations
+def time_remaining_display
+  seconds = (@release.time_remaining || 0).to_i
+  hours = seconds / 3600
+  minutes = (seconds % 3600) / 60
+  secs = seconds % 60
+  sprintf("%02d:%02d:%02d", hours, minutes, secs)  # Returns "27:46:40" (correct!)
+end
+```
+
+**Conditional Validations with Time:**
+```ruby
+class Train < ApplicationRecord
+  # Validate only when feature is enabled
+  validates :soak_period_hours,
+    presence: true,
+    numericality: {greater_than: 0, less_than_or_equal_to: 168},
+    if: -> { soak_period_enabled? }
+end
+```
+
+**Time Calculations:**
+```ruby
+# Adding duration
+end_time = start_time + 24.hours
+end_time = start_time + hours.hours  # Dynamic hours
+
+# Time remaining (with safe minimum)
+time_left = [end_time - Time.current, 0].max
+
+# Checking if time has passed
+completed? = Time.current >= end_time
+```
+
+**Nil Safety:**
+Always provide safe defaults for display methods:
+```ruby
+def time_remaining_hours
+  seconds = @release.time_remaining || 0  # Default to 0
+  seconds / 3600.0
+end
+
+def formatted_time
+  return nil unless timestamp.present?  # Return nil if no data
+  timestamp.in_time_zone(timezone).strftime(format)
+end
 ```
 
 ### Common Pitfalls
@@ -1453,16 +1992,37 @@ export default class extends Controller {
 
 ### Key Conventions Summary
 
+**Architecture:**
 1. **Always use string enums**: `enum status: {active: "active"}`
 2. **Create stamps for events**: `event_stamp!(reason: :..., kind: :...)`
 3. **Use coordinators for orchestration**: Not models/controllers
-4. **Lock state transitions**: `with_lock { release.start! }`
-5. **Use Result monad**: `result.on_success { }.on_error { }`
-6. **Platform-aware code**: Check `ios?` / `android?` / `cross_platform?`
+4. **Models have query methods only**: No bang methods or business logic
+5. **Lock state transitions**: `with_lock { release.start! }`
+6. **Use Result monad**: `result.on_success { }.on_error { }`
 7. **Scope by organization**: Prevent multi-tenant leaks
-8. **Reload in jobs**: Records may be stale
-9. **Declarative Stimulus**: Actions in HTML, not addEventListener
-10. **Test with factories**: Use traits for variations
+
+**Components & Views:**
+8. **Encapsulate all logic in components**: Including authorization
+9. **Components return safe defaults**: Never nil for display methods
+10. **Pass current_user to components**: When authorization is needed
+
+**Time & Data:**
+11. **Use Time.current (not Time.now)**: Rails timezone-aware
+12. **Display in app timezone**: `in_time_zone(app.timezone)`
+13. **Manual calculation for long durations**: Don't use Time.at for > 24 hours
+14. **Conditional validations**: Use `if:` lambda for feature flags
+
+**Testing:**
+15. **Test authorization at all levels**: Coordinator, component, controller
+16. **Test nil safety**: All display methods with nil inputs
+17. **Test edge cases**: Boundaries, negatives, zero values
+18. **Test state transitions**: Before/after state changes
+19. **Test with factories**: Use traits for variations
+
+**Frontend:**
+20. **Platform-aware code**: Check `ios?` / `android?` / `cross_platform?`
+21. **Reload in jobs**: Records may be stale
+22. **Declarative Stimulus**: Actions in HTML, not addEventListener
 
 ---
 

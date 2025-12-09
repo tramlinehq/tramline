@@ -68,7 +68,7 @@ services:
     ports:
       - '4040:4040'
     healthcheck:
-      test: /bin/bash -c "</dev/tcp/ngrok/4040"
+      test: bash -c "</dev/tcp/ngrok/4040"
       interval: 60s
       timeout: 1s
       retries: 2
@@ -115,6 +115,7 @@ services:
 
   redis:
     image: redis:6.2-alpine
+#    command: RUN chmod 1777 /tmp
     volumes:
       - redis:/data
     ports:

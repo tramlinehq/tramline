@@ -119,6 +119,7 @@ class Release < ApplicationRecord
   has_many :production_releases, through: :release_platform_runs
   has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
   has_many :outgoing_webhook_events, dependent: :destroy, inverse_of: :release
+  has_one :beta_soak, dependent: :destroy
 
   scope :completed, -> { where(status: TERMINAL_STATES) }
   scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
@@ -604,6 +605,8 @@ class Release < ApplicationRecord
   def trigger_webhook!(event_type)
     Triggers::OutgoingWebhook.call(self, event_type, webhook_params)
   end
+
+  delegate :soak_period_enabled?, to: :train
 
   private
 

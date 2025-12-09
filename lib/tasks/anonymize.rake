@@ -396,6 +396,14 @@ namespace :anonymize do
         whitelist "integrable_id", "integrable_type", "category", "providable_id", "providable_type"
         whitelist_timestamps
       end
+
+      table "beta_soaks" do
+        continue { |index, record| Release.exists?(record["release_id"]) && !BetaSoak.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "release_id", "started_at", "ended_at", "period_hours"
+        whitelist_timestamps
+      end
     end
 
     RefreshReldexJob.perform_async(train_id)

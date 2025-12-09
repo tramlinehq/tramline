@@ -32,6 +32,11 @@ class Queries::Events
         FROM "pull_requests"
         WHERE "pull_requests"."release_id" = :release_id
       ),
+      "beta_soak_data" AS (
+        SELECT "beta_soaks".id
+        FROM "beta_soaks"
+        WHERE "beta_soaks"."release_id" = :release_id
+      ),
       "prod_release_data" AS (
         SELECT "production_releases".id
         FROM "production_releases"
@@ -63,6 +68,8 @@ class Queries::Events
         WHERE release_platform_run_id IN :run_ids
       )
       SELECT pull_request_data.id FROM pull_request_data
+      UNION
+      SELECT beta_soak_data.id FROM beta_soak_data
       UNION
       SELECT prod_release_data.id FROM prod_release_data
       UNION

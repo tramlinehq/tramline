@@ -838,4 +838,32 @@ describe Release do
       expect(release.last_applicable_commit).to eq(commit_in_queue)
     end
   end
+
+  describe "soak period delegation" do
+    let(:train) { create(:train, soak_period_enabled: true, soak_period_hours: 24) }
+    let(:release) { create(:release, train:) }
+
+    describe "#soak_period_enabled?" do
+      it "delegates to train" do
+        expect(release.soak_period_enabled?).to be(true)
+      end
+
+      it "returns false when train has soak disabled" do
+        release.train.update!(soak_period_enabled: false)
+        expect(release.soak_period_enabled?).to be(false)
+      end
+    end
+
+    describe "beta_soak association" do
+      it "can create a beta_soak" do
+        beta_soak = release.create_beta_soak!(started_at: Time.current, period_hours: 24)
+        expect(beta_soak).to be_persisted
+        expect(release.reload.beta_soak).to eq(beta_soak)
+      end
+
+      it "returns nil when no beta_soak exists" do
+        expect(release.beta_soak).to be_nil
+      end
+    end
+  end
 end
