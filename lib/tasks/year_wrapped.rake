@@ -53,9 +53,9 @@ namespace :year_wrapped do
     puts "💾 Total Commits Shipped: #{stats[:total_commits]}"
     puts "🔨 Total Builds Generated: #{stats[:total_builds]}"
     puts "🔧 Patch/Hotfixes per Release: #{stats[:patch_fixes_per_release]}"
-    puts "📈 Reldex Average: #{stats[:reldex_average]&.round(2) || 'N/A'}"
-    puts "🏆 Best Reldex: #{stats[:reldex_best]&.round(2) || 'N/A'} (#{stats[:reldex_best_release] || 'N/A'})"
-    puts "📉 Worst Reldex: #{stats[:reldex_worst]&.round(2) || 'N/A'} (#{stats[:reldex_worst_release] || 'N/A'})"
+    puts "📈 Reldex Average: #{stats[:reldex_average]&.round(2) || "N/A"}"
+    puts "🏆 Best Reldex: #{stats[:reldex_best]&.round(2) || "N/A"} (#{stats[:reldex_best_release] || "N/A"})"
+    puts "📉 Worst Reldex: #{stats[:reldex_worst]&.round(2) || "N/A"} (#{stats[:reldex_worst_release] || "N/A"})"
     puts "🔥 Month with Most Releases: #{stats[:busiest_month]} (#{stats[:busiest_month_count]} releases)"
     puts "😴 Month with Least Releases: #{stats[:quietest_month]} (#{stats[:quietest_month_count]} releases)"
     puts "📝 Release with Most Changes: #{stats[:most_changes_release]} (#{stats[:most_changes_count]} commits)"
@@ -79,7 +79,7 @@ namespace :year_wrapped do
   end
 
   def format_duration(duration_seconds)
-    return 'N/A' unless duration_seconds&.positive?
+    return "N/A" unless duration_seconds&.positive?
 
     # Convert to integer to avoid decimal precision issues
     total_seconds = duration_seconds.round

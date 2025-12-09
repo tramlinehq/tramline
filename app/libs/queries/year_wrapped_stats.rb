@@ -58,13 +58,13 @@ class Queries::YearWrappedStats
     app.trains.filter(&:has_production_deployment?)
   end
 
+  # .includes(:release_platform_runs, :all_commits, :release_index, :train)
   memoize def year_releases
     Release
       .joins(:train)
       .where(train: trains_with_production)
       .where(completed_at: start_date..end_date)
       .finished
-      # .includes(:release_platform_runs, :all_commits, :release_index, :train)
   end
 
   memoize def production_releases_count
@@ -102,7 +102,7 @@ class Queries::YearWrappedStats
     year_releases.filter_map do |release|
       score = release.index_score&.value
       next unless score
-      { release: release.release_version, score: score }
+      {release: release.release_version, score: score}
     end
   end
 
@@ -136,7 +136,7 @@ class Queries::YearWrappedStats
   end
 
   memoize def busiest_month
-    return 'N/A' if releases_by_month.empty?
+    return "N/A" if releases_by_month.empty?
     releases_by_month.max_by { |_, releases| releases.count }.first
   end
 
@@ -146,7 +146,7 @@ class Queries::YearWrappedStats
   end
 
   memoize def quietest_month
-    return 'N/A' if releases_by_month.empty?
+    return "N/A" if releases_by_month.empty?
     # Only consider months that had releases
     releases_by_month.min_by { |_, releases| releases.count }.first
   end
@@ -172,11 +172,11 @@ class Queries::YearWrappedStats
   end
 
   memoize def regular_releases_with_commits
-    releases_with_commit_counts.select { |r| r[:release_type] == 'release' }
+    releases_with_commit_counts.select { |r| r[:release_type] == "release" }
   end
 
   memoize def most_changes_release
-    return 'N/A' if regular_releases_with_commits.empty?
+    return "N/A" if regular_releases_with_commits.empty?
     regular_releases_with_commits.max_by { |r| r[:commits] }&.dig(:release)
   end
 
@@ -186,7 +186,7 @@ class Queries::YearWrappedStats
   end
 
   memoize def least_changes_release
-    return 'N/A' if regular_releases_with_commits.empty?
+    return "N/A" if regular_releases_with_commits.empty?
     regular_releases_with_commits.min_by { |r| r[:commits] }&.dig(:release)
   end
 
@@ -196,11 +196,11 @@ class Queries::YearWrappedStats
   end
 
   memoize def releases_with_duration
-    releases_with_commit_counts.select { |r| r[:duration]&.positive? && r[:release_type] == 'release' }
+    releases_with_commit_counts.select { |r| r[:duration]&.positive? && r[:release_type] == "release" }
   end
 
   memoize def longest_release
-    return 'N/A' if releases_with_duration.empty?
+    return "N/A" if releases_with_duration.empty?
     releases_with_duration.max_by { |r| r[:duration] }&.dig(:release)
   end
 
@@ -210,7 +210,7 @@ class Queries::YearWrappedStats
   end
 
   memoize def shortest_release
-    return 'N/A' if releases_with_duration.empty?
+    return "N/A" if releases_with_duration.empty?
     releases_with_duration.min_by { |r| r[:duration] }&.dig(:release)
   end
 
@@ -230,7 +230,7 @@ class Queries::YearWrappedStats
       .group_by(&:itself)
       .transform_values(&:count)
 
-    return 'N/A' if pilots_with_count.empty?
+    return "N/A" if pilots_with_count.empty?
 
     most_active = pilots_with_count.max_by { |pilot, count| count }
     most_active.first.name
@@ -266,10 +266,10 @@ class Queries::YearWrappedStats
 
   memoize def velocity_improvement
     previous_durations = previous_year_releases
-      .select { |release| release.duration&.seconds&.positive? && release.release_type == 'release' }
+      .select { |release| release.duration&.seconds&.positive? && release.release_type == "release" }
       .map { |release| release.duration.seconds }
 
-    current_durations = releases_with_duration.map { |r| r[:duration] }
+    current_durations = releases_with_duration.pluck(:duration)
 
     return nil if previous_durations.empty? || current_durations.empty?
 
@@ -294,16 +294,14 @@ class Queries::YearWrappedStats
       .group_by(&:author_name)
       .transform_values(&:count)
 
-    return 'N/A' if contributor_commits.empty?
+    return "N/A" if contributor_commits.empty?
 
     top_email = contributor_commits.max_by { |email, count| count }.first
 
     # Try to get a cleaner name from the email or commits
     sample_commit = year_releases.flat_map(&:all_commits).find { |c| c.author_email == top_email }
-    sample_commit&.author_name || top_email.split('@').first.humanize
+    sample_commit&.author_name || top_email.split("@").first.humanize
   end
-
-  private
 
   def bot_email?(name)
     return false if name.blank?
@@ -323,7 +321,7 @@ class Queries::YearWrappedStats
   end
 
   memoize def data_period
-    return "#{year}" if year_releases.empty?
+    return year.to_s if year_releases.empty?
 
     earliest_release = year_releases.min_by(&:completed_at)
     latest_release = year_releases.max_by(&:completed_at)
@@ -332,7 +330,7 @@ class Queries::YearWrappedStats
     latest_month = latest_release.completed_at.strftime("%b")
 
     if earliest_month == "Jan" && latest_month == "Dec"
-      "#{year}"
+      year.to_s
     elsif earliest_month == latest_month
       "#{year} (#{earliest_month})"
     else
