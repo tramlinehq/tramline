@@ -251,19 +251,19 @@ class Train < ApplicationRecord
   end
 
   def kickoff_at=(time)
-    return write_attribute(:kickoff_at, nil) if time.nil?
-    
+    write_attribute(:kickoff_at, nil) if time.nil?
+
     if time.is_a?(String)
       # Parse the string to extract date/time components, then create naive timestamp
       # This ensures we store exactly what the user intended regardless of timezones
       parsed = Time.zone.parse(time)
       naive_time = Time.utc(parsed.year, parsed.month, parsed.day, parsed.hour, parsed.min, parsed.sec)
-      write_attribute(:kickoff_at, naive_time)
     else
       # For Time objects, extract components and create naive timestamp
       naive_time = Time.utc(time.year, time.month, time.day, time.hour, time.min, time.sec)
-      write_attribute(:kickoff_at, naive_time)
     end
+
+    write_attribute(:kickoff_at, naive_time)
   end
 
   def kickoff_datetime
