@@ -691,4 +691,128 @@ describe Train do
       end
     end
   end
+
+  describe "DST-safe scheduling behavior" do
+    let(:app) { create(:app, :android, timezone: "America/New_York") } # EST/EDT timezone
+    let(:train) { create(:train, app: app) }
+
+    describe "#kickoff_datetime" do
+      it "interprets naive datetime in app timezone" do
+        travel_to Time.zone.parse("2024-07-15 10:00:00") do
+          train.update!(kickoff_at: "2024-07-15 14:30:00", repeat_duration: 1.week)
+
+          result = train.kickoff_datetime
+
+          expect(result.hour).to eq(14)
+          expect(result.min).to eq(30)
+          expect(result.zone).to eq("EDT")
+        end
+      end
+
+      it "returns nil when kickoff_at is nil" do
+        train.update!(kickoff_at: nil)
+        expect(train.kickoff_datetime).to be_nil
+      end
+
+      it "uses app timezone for interpretation" do
+        pacific_app = create(:app, :android, timezone: "America/Los_Angeles")
+        pacific_train = create(:train, app: pacific_app)
+
+        travel_to Time.zone.parse("2024-07-15 10:00:00") do
+          pacific_train.update!(kickoff_at: "2024-07-15 14:30:00", repeat_duration: 1.week)
+          result = pacific_train.kickoff_datetime
+          expect(result.zone).to eq("PDT")
+        end
+      end
+    end
+
+    describe "maintains consistent local time across DST transitions" do
+      it "keeps the same hour during spring DST transition (EST -> EDT)" do
+        # Set schedule before spring transition
+        travel_to Time.zone.parse("2024-03-01 10:00:00") do # EST
+          train.update!(kickoff_at: "2024-03-01 14:00:00", repeat_duration: 1.week) # 2 PM EST
+        end
+
+        # Check before transition - should be 2 PM in EST
+        travel_to Time.zone.parse("2024-03-01 10:00:00") do
+          result = train.kickoff_datetime
+          expect(result.hour).to eq(14) # Same local hour
+          expect(result.zone).to eq("EST") # Timezone reflects the date context
+        end
+
+        # Check after DST transition - should still be 2 PM
+        # Note: timezone reflects the stored date (March 1 = EST), not current date
+        travel_to Time.zone.parse("2024-03-15 10:00:00") do # After DST spring forward
+          result = train.kickoff_datetime
+          expect(result.hour).to eq(14) # Same local hour maintained!
+          expect(result.zone).to eq("EST") # Zone based on stored date (March 1)
+        end
+      end
+
+      it "keeps the same hour during fall DST transition (EDT -> EST)" do
+        # Set schedule during EDT
+        travel_to Time.zone.parse("2024-10-01 10:00:00") do # EDT
+          train.update!(kickoff_at: "2024-10-01 14:00:00", repeat_duration: 1.week) # 2 PM EDT
+        end
+
+        # Check before transition - should be 2 PM in EDT
+        travel_to Time.zone.parse("2024-10-01 10:00:00") do
+          result = train.kickoff_datetime
+          expect(result.hour).to eq(14) # Same local hour
+          expect(result.zone).to eq("EDT") # Timezone reflects the date context
+        end
+
+        # Check after DST fall back - should still be 2 PM
+        # Note: timezone reflects the stored date (October 1 = EDT), not current date
+        travel_to Time.zone.parse("2024-11-15 10:00:00") do # After DST ends
+          result = train.kickoff_datetime
+          expect(result.hour).to eq(14) # Same local hour maintained!
+          expect(result.zone).to eq("EDT") # Zone based on stored date (October 1)
+        end
+      end
+    end
+
+    describe "#last_run_at uses kickoff_datetime" do
+      it "returns timezone-aware kickoff_datetime when no scheduled releases" do
+        travel_to Time.zone.parse("2024-07-15 10:00:00") do
+          train.update!(kickoff_at: "2024-07-15 14:30:00", repeat_duration: 1.week)
+
+          # Test that last_run_at uses kickoff_datetime method
+          expect(train.last_run_at).to eq(train.kickoff_datetime)
+          # Test that kickoff_datetime returns timezone-aware time
+          expect(train.kickoff_datetime.zone).to eq("EDT")
+        end
+      end
+    end
+
+    describe "validation uses kickoff_datetime for future time check" do
+      it "correctly validates future times" do
+        travel_to Time.zone.parse("2024-01-15 10:00:00") do
+          train.assign_attributes(
+            kickoff_at: "2024-01-15 15:00:00", # 3 PM same day (future)
+            repeat_duration: 1.day
+          )
+
+          expect(train).to be_valid
+        end
+      end
+
+      it "correctly rejects past times" do
+        travel_to Time.zone.parse("2024-01-15 16:00:00") do # Current time: 4 PM
+          train.assign_attributes(
+            kickoff_at: "2024-01-15 15:00:00", # Scheduled time: 3 PM (1 hour in past)
+            repeat_duration: 1.day
+          )
+
+          # Debug: check what kickoff_datetime returns
+          puts "Current time: #{Time.current}"
+          puts "kickoff_datetime: #{train.kickoff_datetime}"
+          puts "Is past?: #{train.kickoff_datetime <= Time.current}"
+
+          expect(train).not_to be_valid
+          expect(train.errors[:kickoff_at]).to include("the schedule kickoff should be in the future")
+        end
+      end
+    end
+  end
 end

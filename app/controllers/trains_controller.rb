@@ -256,7 +256,7 @@ class TrainsController < SignedInApplicationController
 
     {
       repeat_duration: parsed_duration(config_params[:repeat_duration_value], config_params[:repeat_duration_unit]),
-      kickoff_at: config_params[:kickoff_at]&.time_in_utc,
+      kickoff_at: config_params[:kickoff_at], # Store as-is (naive datetime)
       stop_automatic_releases_on_failure: config_params[:stop_automatic_releases_on_failure]
     }
   end
