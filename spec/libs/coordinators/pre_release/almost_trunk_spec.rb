@@ -41,6 +41,7 @@ describe Coordinators::PreRelease::AlmostTrunk do
 
       it "creates a new release branch from the release's commit hash when present" do
         commit_hash = "abc123456789"
+        train = build(:train, :with_almost_trunk)
         release = create(:release, train: train, commit_hash:)
         release_branch = release.release_branch
 

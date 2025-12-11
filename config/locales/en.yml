@@ -514,6 +514,10 @@ en:
               blank_file: "it should be a valid comma-separated list of files"
               invalid_file_type: "files should have a valid extension — %{valid_extensions}"
               invalid_file_extension: "files should have an extension, like build.gradle or pubspec.yaml"
+        release:
+          attributes:
+            commit_hash:
+              not_allowed: "specifying a custom commit hash to start a release is not allowed"
         notification_setting:
           attributes:
             notification_channels:
