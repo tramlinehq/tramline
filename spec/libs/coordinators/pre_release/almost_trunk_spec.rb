@@ -38,6 +38,17 @@ describe Coordinators::PreRelease::AlmostTrunk do
 
         expect(Triggers::Branch).to have_received(:call).with(hotfix_release, working_branch, release_branch, :branch, anything, anything)
       end
+
+      it "creates a new release branch from the release's commit hash when present" do
+        commit_hash = "abc123456789"
+        train = build(:train, :with_almost_trunk)
+        release = create(:release, train: train, commit_hash:)
+        release_branch = release.release_branch
+
+        described_class.call(release, release_branch)
+
+        expect(Triggers::Branch).to have_received(:call).with(release, commit_hash, release_branch, :commit, anything, anything)
+      end
     end
 
     context "when version bump is enabled" do

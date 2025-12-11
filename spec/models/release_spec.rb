@@ -866,4 +866,14 @@ describe Release do
       end
     end
   end
+
+  describe "commit hash validations" do
+    it "returns an error if custom commit hashes are not allowed but specified" do
+      train = build(:train, :with_almost_trunk, :with_version_bump)
+      release = build(:release, train:, commit_hash: "abc123")
+
+      expect(release).not_to be_valid
+      expect(release.errors[:commit_hash]).to include("specifying a custom commit hash to start a release is not allowed")
+    end
+  end
 end
