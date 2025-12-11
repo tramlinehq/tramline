@@ -9,11 +9,10 @@ RSpec.describe HaltUnhealthyReleaseRolloutJob do
   before do
     allow_any_instance_of(ReleasePlatformRun).to receive(:store_provider).and_return(play_store_integration)
     allow(play_store_integration).to receive(:halt_release).and_return(GitHub::Result.new { true })
+    create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 1)
   end
 
   context "when job is run for a release with automatic staged rollout" do
-    let(:store_rollout) { create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 1) }
-
     context "when release is healthy" do
       before do
         allow_any_instance_of(ProductionRelease).to receive(:healthy?).and_return(true)
@@ -50,7 +49,9 @@ RSpec.describe HaltUnhealthyReleaseRolloutJob do
   end
 
   context "when job is run for release without automatic staged rollout" do
-    let(:store_rollout) { create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: false, store_submission: play_store_submission, current_stage: 1) }
+    before do
+      production_release.store_rollout.update!(automatic_rollout: false)
+    end
 
     context "when release is healthy" do
       before do

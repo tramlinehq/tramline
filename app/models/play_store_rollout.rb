@@ -163,6 +163,10 @@ class PlayStoreRollout < StoreRollout
     end
   end
 
+  def rollout_active?
+    provider.build_active?(submission_channel_id, build_number, raise_on_lock_error: true)
+  end
+
   def pause_release!
     with_lock do
       return unless may_pause?

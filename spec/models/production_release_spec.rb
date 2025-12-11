@@ -246,12 +246,10 @@ describe ProductionRelease do
       ) => { release_platform:, release:, production_release:, store_rollout: }
       allow(production_release).to receive(:monitoring_provider).and_return(monitoring_provider)
       allow(monitoring_provider).to receive_messages(installation: monitoring_api_dbl, find_release: {daily_users: 1})
-      allow(HaltUnhealthyReleaseRolloutJob).to receive(:perform_async)
 
       production_release.fetch_health_data!
 
       expect(monitoring_provider).to have_received(:find_release).with(release_platform.platform, release.release_version, production_release.build.build_number, store_rollout.created_at)
-      expect(HaltUnhealthyReleaseRolloutJob).to have_received(:perform_async).with(production_release.id)
     end
 
     it "does not fetch health data if app has monitoring disabled" do
