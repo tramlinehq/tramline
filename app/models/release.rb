@@ -4,6 +4,7 @@
 #
 #  id                        :uuid             not null, primary key
 #  branch_name               :string           not null
+#  commit_hash               :string
 #  completed_at              :datetime
 #  hotfixed_from             :uuid
 #  internal_notes            :jsonb
@@ -128,6 +129,8 @@ class Release < ApplicationRecord
 
   enum :status, STATES
   enum :release_type, {hotfix: "hotfix", release: "release"}
+
+  validate :commit_hash_input
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
@@ -633,5 +636,11 @@ class Release < ApplicationRecord
 
   def set_internal_notes
     self.internal_notes = DEFAULT_INTERNAL_NOTES.to_json
+  end
+
+  def commit_hash_input
+    if !train.custom_commit_hash_input? && commit_hash.present?
+      errors.add(:commit_hash, :not_allowed)
+    end
   end
 end

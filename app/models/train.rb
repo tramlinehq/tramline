@@ -433,6 +433,10 @@ class Train < ApplicationRecord
     !almost_trunk?
   end
 
+  def custom_commit_hash_input?
+    almost_trunk? && !version_bump_enabled?
+  end
+
   def create_vcs_release!(branch_name, tag_name, previous_tag_name, release_diff = nil)
     return false unless active?
     vcs_provider.create_release!(tag_name, branch_name, previous_tag_name, release_diff)

@@ -426,7 +426,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_08_102246) do
     t.string "integrable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["integrable_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
-    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying, 'disconnected'::character varying, 'needs_reauth'::character varying]::text[])", name: "chk_rails_status_enum"
+    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying::text, 'disconnected'::character varying::text, 'needs_reauth'::character varying::text])", name: "chk_rails_status_enum"
   end
 
   create_table "invites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -813,6 +813,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_08_102246) do
     t.boolean "is_v2", default: false
     t.uuid "approval_overridden_by_id"
     t.jsonb "notification_channel"
+    t.string "commit_hash"
     t.index ["approval_overridden_by_id"], name: "index_releases_on_approval_overridden_by_id"
     t.index ["slug"], name: "index_releases_on_slug", unique: true
     t.index ["train_id"], name: "index_releases_on_train_id"

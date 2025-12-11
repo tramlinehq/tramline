@@ -10,7 +10,7 @@ class Coordinators::StartRelease
   AppInDraftMode = Class.new(StandardError)
   UpcomingReleaseNotAllowed = Class.new(StandardError)
 
-  def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil, custom_version: nil)
+  def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil, custom_version: nil, commit_hash: nil)
     @train = train
     @starting_time = Time.current
     @has_major_bump = has_major_bump
@@ -19,6 +19,7 @@ class Coordinators::StartRelease
     @new_hotfix_branch = new_hotfix_branch
     @hotfix_platform = hotfix_platform
     @custom_version = custom_version
+    @commit_hash = commit_hash
   end
 
   def call
@@ -36,7 +37,7 @@ class Coordinators::StartRelease
     release
   end
 
-  attr_reader :train, :starting_time, :automatic, :release, :release_type, :new_hotfix_branch, :hotfix_platform, :custom_version
+  attr_reader :train, :starting_time, :automatic, :release, :release_type, :new_hotfix_branch, :hotfix_platform, :custom_version, :commit_hash
   delegate :branching_strategy, :hotfix_from, to: :train
 
   def kickoff
@@ -44,8 +45,9 @@ class Coordinators::StartRelease
       raise AppInDraftMode.new("App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
       raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix?
       raise UpcomingReleaseNotAllowed.new("Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?
-      raise NothingToRelease.new("No diff since last release") if regular_release? && !train.diff_since_last_release?
-      raise NothingToRelease.new("No diff between working and release branch") if train.parallel_working_branch? && !train.diff_for_release?
+      unless train.almost_trunk? && commit_hash.present?
+        raise NothingToRelease.new("No diff since last release") if regular_release? && !train.diff_since_last_release?
+      end
       train.activate! unless train.active?
       create_release
       train.create_webhook!
@@ -62,7 +64,8 @@ class Coordinators::StartRelease
       new_hotfix_branch: new_hotfix_branch,
       hotfix_platform: (hotfix_platform if hotfix?),
       original_release_version: new_release_version,
-      release_pilot_id: Current.user&.id
+      release_pilot_id: Current.user&.id,
+      commit_hash: commit_hash.presence
     )
   end
 
