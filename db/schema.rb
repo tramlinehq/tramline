@@ -928,6 +928,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_02_195615) do
     t.boolean "is_staged_rollout", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "automatic_rollout", default: false, null: false
+    t.datetime "automatic_rollout_updated_at"
+    t.datetime "automatic_rollout_next_update_at"
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
     t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
   end
@@ -971,6 +974,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_02_195615) do
     t.uuid "integrable_id"
     t.string "integrable_type"
     t.boolean "finish_rollout_in_next_release", default: false, null: false
+    t.boolean "automatic_rollout", default: false
     t.index ["number"], name: "index_submission_configs_on_number"
     t.index ["release_step_config_id", "number"], name: "index_submission_configs_on_release_step_config_id_and_number", unique: true
     t.index ["release_step_config_id"], name: "index_submission_configs_on_release_step_config_id"

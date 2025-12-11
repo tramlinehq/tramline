@@ -30,6 +30,7 @@ class ReleaseHealthEvent < ApplicationRecord
   delegate :notify!, to: :production_release
 
   after_create_commit :notify_health_rule_triggered
+  after_create_commit :trigger_halt_on_unhealthy
 
   private
 
@@ -58,5 +59,10 @@ class ReleaseHealthEvent < ApplicationRecord
 
   def previous_event
     production_release.release_health_events.for_rule(release_health_rule).where.not(id:).reorder("event_timestamp").last
+  end
+
+  def trigger_halt_on_unhealthy
+    return unless unhealthy?
+    HaltUnhealthyReleaseRolloutJob.perform_async(production_release.id, id)
   end
 end
