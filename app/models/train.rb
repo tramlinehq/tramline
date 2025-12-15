@@ -251,7 +251,10 @@ class Train < ApplicationRecord
   end
 
   def kickoff_at=(time)
-    write_attribute(:kickoff_at, nil) if time.nil?
+    if time.blank?
+      write_attribute(:kickoff_at, nil)
+      return
+    end
 
     if time.is_a?(String)
       # Parse the string to extract date/time components, then create naive timestamp
