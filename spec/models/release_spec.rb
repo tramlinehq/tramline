@@ -913,6 +913,7 @@ describe Release do
       end
 
       it "does not return the release" do
+        release = create(:release, :on_track, train: train, branch_name: "release/1.2.3")
         expect(release.conflicting_branch_releases).to be_empty
       end
     end
@@ -928,6 +929,7 @@ describe Release do
       end
 
       it "does not return the release" do
+        release = create(:release, :on_track, train: train, branch_name: "release/1.2.3")
         expect(release.conflicting_branch_releases).to be_empty
       end
     end
@@ -946,6 +948,7 @@ describe Release do
       end
 
       it "does not return the release" do
+        release = create(:release, :on_track, train: train, branch_name: "release/1.2.3")
         expect(release.conflicting_branch_releases).to be_empty
       end
     end
@@ -960,6 +963,7 @@ describe Release do
       end
 
       it "does not return the release" do
+        release = create(:release, :on_track, train: train, branch_name: "release/1.2.3")
         expect(release.conflicting_branch_releases).to be_empty
       end
     end
