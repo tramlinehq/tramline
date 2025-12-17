@@ -100,11 +100,10 @@ describe KeepAliveIntegrations::GitlabJob do
 
   describe "after_create_commit callback" do
     it "schedules keepalive job when GitlabIntegration is created" do
-      new_gitlab_integration = build(:gitlab_integration, oauth_access_token: "test_token", oauth_refresh_token: "test_refresh_token")
-
-      # Mock validations
-      allow(new_gitlab_integration).to receive(:complete_access)
-      allow(new_gitlab_integration).to receive(:correct_key)
+      new_gitlab_integration = build(:gitlab_integration,
+        :without_callbacks_and_validations,
+        oauth_access_token: "test_token",
+        oauth_refresh_token: "test_refresh_token")
 
       new_gitlab_integration.save!
 
