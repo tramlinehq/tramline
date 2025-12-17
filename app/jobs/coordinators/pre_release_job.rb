@@ -11,8 +11,13 @@ class Coordinators::PreReleaseJob < ApplicationJob
   sidekiq_retry_in do |count, ex, msg|
     if retryable_failure?(ex)
       backoff_in(attempt: count + 1, period: :minutes, type: :static, factor: 1).to_i
+    elsif existing_branch?(ex)
+      release = Release.find(msg["args"].first)
+      signal_commits_have_landed!(release)
+      :kill
     elsif trigger_failure?(ex)
-      mark_failed!(msg, ex)
+      release = Release.find(msg["args"].first)
+      mark_failed!(release, ex)
       :kill
     else
       :kill
@@ -21,7 +26,8 @@ class Coordinators::PreReleaseJob < ApplicationJob
 
   sidekiq_retries_exhausted do |msg, ex|
     if retryable_failure?(ex)
-      mark_failed!(msg, ex)
+      release = Release.find(msg["args"].first)
+      mark_failed!(release, ex)
     end
   end
 
@@ -32,16 +38,16 @@ class Coordinators::PreReleaseJob < ApplicationJob
     branching_strategy = train.branching_strategy
 
     if release.hotfix_with_existing_branch?
-      latest_commit = release.latest_commit_hash(sha_only: false)
-      return Signal.commits_have_landed!(release, latest_commit, [])
+      return signal_commits_have_landed!(release)
     end
 
     release.start_pre_release_phase!
-    RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
+    result = RELEASE_HANDLERS[branching_strategy].call(release, release_branch)
+
+    result.value!
   end
 
-  def self.mark_failed!(msg, ex)
-    release = Release.find(msg["args"].first)
+  def self.mark_failed!(release, ex)
     elog(ex, level: :warn)
     release.fail_pre_release_phase!
     release.event_stamp!(reason: :pre_release_failed, kind: :error, data: {error: ex.message})
@@ -54,4 +60,15 @@ class Coordinators::PreReleaseJob < ApplicationJob
   def self.retryable_failure?(ex)
     ex.is_a?(Triggers::Branch::RetryableBranchCreateError)
   end
+
+  def self.existing_branch?(ex)
+    ex.is_a?(Triggers::Branch::BranchAlreadyExistsError)
+  end
+
+  def self.signal_commits_have_landed!(release)
+    latest_commit = release.latest_commit_hash(sha_only: false)
+    Signal.commits_have_landed!(release, latest_commit, [])
+  end
+
+  delegate :signal_commits_have_landed!, to: :class
 end

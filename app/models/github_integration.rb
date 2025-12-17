@@ -110,6 +110,10 @@ class GithubIntegration < ApplicationRecord
     generated_at: :created_at
   }
 
+  def repository_id
+    repository_config&.fetch("id", nil)
+  end
+
   def code_repository_name
     repository_config&.fetch("full_name", nil)
   end
