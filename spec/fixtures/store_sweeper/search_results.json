@@ -1,0 +1,47 @@
+{
+  "results": [
+    {
+      "id": 310633997,
+      "name": "WhatsApp Messenger",
+      "bundleId": "net.whatsapp.WhatsApp",
+      "developerName": "WhatsApp Inc.",
+      "version": "24.1.80",
+      "averageRating": 4.6,
+      "iconUrl": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/3d/3d/3d/3d3d3d3d.png",
+      "description": "WhatsApp Messenger is a FREE messaging app available for Android and other smartphones.",
+      "country": "us",
+      "appUrl": "https://apps.apple.com/us/app/whatsapp-messenger/id310633997",
+      "store": "app-store"
+    },
+    {
+      "id": "com.whatsapp",
+      "name": "WhatsApp Messenger",
+      "bundleId": "com.whatsapp",
+      "developerName": "WhatsApp LLC",
+      "version": "2.24.1.80",
+      "averageRating": 4.2,
+      "iconUrl": "https://play-lh.googleusercontent.com/bYtqbOcTYOlgc6gqZ2rwb8lptHuwlNE75zYJu6Bn076-hTmvd96HH-6v7S0YUAAJXoJN",
+      "description": "Simple. Secure. Reliable messaging. Message your friends and family for free.",
+      "country": "us",
+      "appUrl": "https://play.google.com/store/apps/details?id=com.whatsapp",
+      "store": "play-store"
+    }
+  ],
+  "metadata": {
+    "query": {
+      "app_store": {
+        "term": "whatsapp",
+        "limit": 50,
+        "lang": "en",
+        "country": "us"
+      },
+      "play_store": {
+        "term": "whatsapp",
+        "num": 50,
+        "lang": "en",
+        "country": "us"
+      }
+    },
+    "count": 2
+  }
+}
