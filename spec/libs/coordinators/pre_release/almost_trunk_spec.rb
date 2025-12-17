@@ -19,7 +19,7 @@ describe Coordinators::PreRelease::AlmostTrunk do
       it "creates a new release branch" do
         described_class.call(release, release_branch)
 
-        expect(Triggers::Branch).to have_received(:call).with(release, working_branch, release_branch, :branch, anything, anything)
+        expect(Triggers::Branch).to have_received(:call).with(release, working_branch, release_branch, :branch, anything, anything, raise_on_duplicate: true)
       end
 
       it "uses the hotfix ref for a hotfix release when creating the release branch" do
@@ -28,7 +28,7 @@ describe Coordinators::PreRelease::AlmostTrunk do
 
         described_class.call(hotfix_release, hotfix_release_branch)
 
-        expect(Triggers::Branch).to have_received(:call).with(hotfix_release, release_tag_name, hotfix_release_branch, :tag, anything, anything)
+        expect(Triggers::Branch).to have_received(:call).with(hotfix_release, release_tag_name, hotfix_release_branch, :tag, anything, anything, raise_on_duplicate: true)
       end
 
       it "does not use the hotfix ref if there is no new hotfix branch" do
@@ -36,7 +36,7 @@ describe Coordinators::PreRelease::AlmostTrunk do
 
         described_class.call(hotfix_release, release_branch)
 
-        expect(Triggers::Branch).to have_received(:call).with(hotfix_release, working_branch, release_branch, :branch, anything, anything)
+        expect(Triggers::Branch).to have_received(:call).with(hotfix_release, working_branch, release_branch, :branch, anything, anything, raise_on_duplicate: true)
       end
 
       it "creates a new release branch from the release's commit hash when present" do
@@ -47,7 +47,17 @@ describe Coordinators::PreRelease::AlmostTrunk do
 
         described_class.call(release, release_branch)
 
-        expect(Triggers::Branch).to have_received(:call).with(release, commit_hash, release_branch, :commit, anything, anything)
+        expect(Triggers::Branch).to have_received(:call).with(release, commit_hash, release_branch, :commit, anything, anything, raise_on_duplicate: true)
+      end
+
+      it "bubbles up BranchAlreadyExistsError when release branch already exists" do
+        error = Triggers::Branch::BranchAlreadyExistsError.new("Branch already exists: #{release_branch}")
+        allow(Triggers::Branch).to receive(:call).and_return(GitHub::Result.new { raise error })
+
+        result = described_class.call(release, release_branch)
+
+        expect(result.ok?).to be(false)
+        expect(result.error).to be_a(Triggers::Branch::BranchAlreadyExistsError)
       end
     end
 
@@ -75,7 +85,7 @@ describe Coordinators::PreRelease::AlmostTrunk do
 
         described_class.call(release, release_branch)
 
-        expect(Triggers::Branch).to have_received(:call).with(release, commit.commit_hash, release_branch, :commit, anything, anything)
+        expect(Triggers::Branch).to have_received(:call).with(release, commit.commit_hash, release_branch, :commit, anything, anything, raise_on_duplicate: true)
       end
 
       it "defaults to the working branch if no version bump commit is found" do
@@ -85,7 +95,7 @@ describe Coordinators::PreRelease::AlmostTrunk do
 
         described_class.call(release, release_branch)
 
-        expect(Triggers::Branch).to have_received(:call).with(release, working_branch, release_branch, :branch, anything, anything)
+        expect(Triggers::Branch).to have_received(:call).with(release, working_branch, release_branch, :branch, anything, anything, raise_on_duplicate: true)
       end
 
       it "does not version bump if it is a hotfix release" do
@@ -97,7 +107,7 @@ describe Coordinators::PreRelease::AlmostTrunk do
         described_class.call(hotfix_release, hotfix_release_branch)
 
         expect(Triggers::VersionBump).not_to have_received(:call)
-        expect(Triggers::Branch).to have_received(:call).with(hotfix_release, release_tag_name, hotfix_release_branch, :tag, anything, anything)
+        expect(Triggers::Branch).to have_received(:call).with(hotfix_release, release_tag_name, hotfix_release_branch, :tag, anything, anything, raise_on_duplicate: true)
       end
 
       it "only allows one pre release version bump per release" do

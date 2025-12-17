@@ -185,11 +185,11 @@ Organization (multi-tenant root)
 2. **Check existing patterns** - Look for similar features
 3. **Plan data model changes** - Migrations follow Rails conventions
 4. **Implement in layers**:
-  - Models (business logic, validations, state machines)
-  - Coordinators (orchestration)
-  - Jobs (async processing)
-  - Controllers (user input boundary)
-  - Views/Components (UI)
+- Models (business logic, validations, state machines)
+- Coordinators (orchestration)
+- Jobs (async processing)
+- Controllers (user input boundary)
+- Views/Components (UI)
 5. **Add stamps** - Event tracking for visibility
 6. **Write tests** - Factories, specs following existing patterns
 7. **Update docs** - If adding new patterns/conventions

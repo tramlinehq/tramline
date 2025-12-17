@@ -3,6 +3,12 @@
     <%= render AlertComponent.new(type: :error, title: raw(release.pre_release_error_message), full_screen: false) %>
   <% end %>
 
+  <% if conflicting_branch_releases.present? %>
+    <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "Release branches are shared", full_screen: false) do %>
+      This release branch is shared with other active release(s): <%= conflicting_branch_release_links %>
+    <% end %>
+  <% end %>
+
   <% unless version_bump_prs.empty? %>
     <%= render CardComponent.new(title: "Version Bumps",
                                  fold: false,

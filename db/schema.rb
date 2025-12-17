@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_02_195615) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_17_083817) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -806,7 +806,9 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_02_195615) do
     t.jsonb "notification_channel"
     t.string "commit_hash"
     t.index ["approval_overridden_by_id"], name: "index_releases_on_approval_overridden_by_id"
+    t.index ["branch_name"], name: "index_releases_on_branch_name"
     t.index ["slug"], name: "index_releases_on_slug", unique: true
+    t.index ["status"], name: "index_releases_on_status"
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
 
