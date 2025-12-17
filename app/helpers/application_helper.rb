@@ -155,8 +155,7 @@ module ApplicationHelper
 
   def release_schedule(train)
     if train.automatic?
-      # Use kickoff_datetime which properly handles timezone
-      kickoff_time = train.kickoff_datetime
+      kickoff_time = train.kickoff_at_app_time
       date = time_format(kickoff_time, with_year: true, with_time: false)
       duration = train.repeat_duration.inspect
       time = kickoff_time.strftime("%I:%M%p (%Z)")

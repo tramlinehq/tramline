@@ -247,7 +247,7 @@ class Train < ApplicationRecord
   end
 
   def last_run_at
-    scheduled_releases.last&.scheduled_at || kickoff_datetime
+    scheduled_releases.last&.scheduled_at || kickoff_at_app_time
   end
 
   def kickoff_at=(time)
@@ -269,21 +269,17 @@ class Train < ApplicationRecord
     write_attribute(:kickoff_at, naive_time)
   end
 
-  def kickoff_datetime
+  # Treat kickoff_at as a naive local datetime and interpret it in the app's timezone
+  # This prevents DST shifts since we always use the same local time
+  def kickoff_at_app_time
     return unless kickoff_at
-
-    # Treat kickoff_at as a naive local datetime and interpret it in the app's timezone
-    # This prevents DST shifts since we always use the same local time
-    app_timezone = app.timezone || Time.zone
-
     # Extract time components and rebuild in the current timezone context
-    # This ensures the timezone reflects current DST rules rather than stored date
-    Time.use_zone(app_timezone) do
+    Time.use_zone(app.timezone) do
       Time.zone.local(
-        kickoff_at.year,   # Keep the original scheduled date
+        kickoff_at.year,
         kickoff_at.month,
         kickoff_at.day,
-        kickoff_at.hour,   # But interpret the time in current timezone context
+        kickoff_at.hour,
         kickoff_at.min,
         kickoff_at.sec
       )
@@ -641,7 +637,7 @@ class Train < ApplicationRecord
   def valid_schedule
     if release_schedule_changed?
       errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless kickoff_at.present? && repeat_duration.present?
-      errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_datetime <= Time.current
+      errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at_app_time <= Time.current
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
     end
   end
