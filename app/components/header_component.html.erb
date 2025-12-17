@@ -126,6 +126,19 @@
                 <%= render partial: "apps/form", locals: {app: new_app} %>
               <% end %>
             <% end %>
+
+            <%= render ModalComponent.new(title: "Add from store search", dismissable: true) do |modal| %>
+              <% sb = modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none) %>
+              <% sb.with_tooltip("Add via search") %>
+              <% sb.with_icon("search.svg", size: :md) %>
+              <% modal.with_body do %>
+                <% search = SearchBarComponent.new(search_name: :apps_search, search_value: params[:apps_search_pattern], search_placeholder: "Search App Store and Play Store", turbo_frame: :app_search_results, query_field: :app_search_pattern) %>
+                <%= search.with_search_stream_form url: search_apps_path(apps_search_pattern: params[:apps_search_pattern]) %>
+                <%= render search do %>
+                  <div class="text-xs text-secondary">Search both stores; results appear below.</div>
+                <% end %>
+              <% end %>
+            <% end %>
           <% end %>
         </div>
       </div>

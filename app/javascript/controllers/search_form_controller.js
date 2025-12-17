@@ -31,12 +31,9 @@ export default class extends ApplicationController {
     const queryLength = query.value.length
 
     if (queryLength > 0) {
+      this.__shadowQuery().value = ""
       query.value = ""
-    }
-
-    // don't bother running an empty search if it is less than MIN_CHARACTERS
-    if (queryLength > MIN_CHARACTERS) {
-      this.formTarget.requestSubmit();
+      this.formTarget.requestSubmit() // clear the search results
     }
   }
 

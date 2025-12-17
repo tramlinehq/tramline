@@ -73,6 +73,12 @@ class AppsController < SignedInApplicationController
     redirect_to search_releases_app_path(@app)
   end
 
+  def search_apps
+    api = Installations::StoreSweeper::Api.new
+    results = api.tsearch(search_term: params[:app_search_pattern])
+    @apps = results["results"]
+  end
+
   def search_releases
     @search_params = filterable_params.except(:id)
     gen_query_filters(:release_status, Release.statuses[:finished])

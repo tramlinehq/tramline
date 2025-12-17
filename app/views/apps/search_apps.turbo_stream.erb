@@ -1,0 +1,50 @@
+<%= turbo_stream.replace :app_search_results do %>
+  <% frame = EnhancedTurboFrameComponent.new(:app_search_results, classes: "with-turbo-frame-loader") %>
+  <% frame.with_loading_indicator %>
+  <%= render frame do %>
+    <% if @apps.present? %>
+      <div class="text-xs text-secondary mb-3">Showing <%= @apps.size %> result<%= "s" unless @apps.size == 1 %></div>
+      <div class="divide-y">
+        <% @apps.each do |app| %>
+          <div class="py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <% if app["iconUrl"].present? %>
+                <img src="<%= app["iconUrl"] %>" alt="icon" class="w-10 h-10 rounded" />
+              <% else %>
+                <%= image_tag "app.svg", class: "w-10 h-10" %>
+              <% end %>
+              <div>
+                <div class="font-medium text-sm"><%= app["name"] %></div>
+                <div class="text-xs text-secondary">
+                  <%= app["developerName"] %>
+                  • <%= (app["store"] == "app-store" ? "App Store" : "Play Store") %>
+                  <% if app["averageRating"] %>
+                    • ⭐ <%= number_with_precision(app["averageRating"], precision: 1) %>
+                  <% end %>
+                </div>
+                <% if app["bundleId"].present? %>
+                  <div class="text-xs text-secondary font-mono"><%= app["bundleId"] %></div>
+                <% end %>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <% if app["appUrl"].present? %>
+                <%= link_to "View in store", app["appUrl"], target: "_blank", rel: "noopener", class: "text-xs underline" %>
+              <% end %>
+              <%= button_to "Add", apps_path, method: :post, params: {
+                    app: {
+                      name: app["name"],
+                      description: (app["description"] || "").truncate(500),
+                      bundle_identifier: app["bundleId"],
+                      platform: (app["store"] == "app-store" ? "ios" : "android")
+                    }
+                  }, class: "button button-sm", form: { data: { turbo: false } } %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-xs text-secondary">Search both stores; results appear below.</div>
+    <% end %>
+  <% end %>
+<% end %>

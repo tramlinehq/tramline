@@ -1,4 +1,4 @@
-<div data-controller="search-form" data-search-form-query-value="<%= QUERY_FIELD %>">
+<div data-controller="search-form" data-search-form-query-value="<%= query_field %>">
   <div class="flex flex-col item-gap-default">
     <div class="flex flex-row justify-between">
       <div class="flex flex-row items-end">
@@ -10,7 +10,7 @@
               data: {search_form_target: "searchInput", action: "input->search-form#search"}
             } %>
 
-        <%= link_to "clear", "#", class: "underline hover:cursor-pointer text-xs ml-2", data: {action: "search-form#clear"} %>
+        <%= tag.div "clear", class: "underline hover:cursor-pointer text-xs ml-2", data: {action: "click->search-form#clear"} %>
       </div>
 
       <div class="flex items-end">
@@ -18,7 +18,9 @@
       </div>
     </div>
 
-    <% frame = EnhancedTurboFrameComponent.new(FRAME, classes: "with-turbo-frame-loader") %>
+    <%= search %>
+
+    <% frame = EnhancedTurboFrameComponent.new(turbo_frame, classes: "with-turbo-frame-loader") %>
     <% frame.with_loading_indicator %>
     <%= render frame do %>
       <%= content %>

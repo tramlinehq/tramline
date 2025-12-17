@@ -62,6 +62,10 @@ Rails.application.routes.draw do
   end
 
   resources :apps do
+    collection do
+      get :search, to: "apps#search_apps"
+    end
+
     member do
       delete :remove_icon
     end
