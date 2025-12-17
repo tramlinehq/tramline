@@ -3,8 +3,8 @@ class Triggers::Branch
   RetryableBranchCreateError = Class.new(Triggers::Errors)
   BranchAlreadyExistsError = Class.new(Triggers::Errors)
 
-  def self.call(release, source_branch, new_branch, source_type, stamp_data, stamp_type)
-    new(release, source_branch, new_branch, source_type, stamp_data, stamp_type).call
+  def self.call(release, source_branch, new_branch, source_type, stamp_data, stamp_type, raise_on_duplicate: false)
+    new(release, source_branch, new_branch, source_type, stamp_data, stamp_type, raise_on_duplicate:).call
   end
 
   def initialize(release, source_branch, new_branch, source_type, stamp_data, stamp_type, raise_on_duplicate: false)

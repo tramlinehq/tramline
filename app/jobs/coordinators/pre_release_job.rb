@@ -12,10 +12,12 @@ class Coordinators::PreReleaseJob < ApplicationJob
     if retryable_failure?(ex)
       backoff_in(attempt: count + 1, period: :minutes, type: :static, factor: 1).to_i
     elsif existing_branch?(ex)
-      signal_commits_have_landed!(msg)
+      release = Release.find(msg["args"].first)
+      signal_commits_have_landed!(release)
       :kill
     elsif trigger_failure?(ex)
-      mark_failed!(msg, ex)
+      release = Release.find(msg["args"].first)
+      mark_failed!(release, ex)
       :kill
     else
       :kill
@@ -24,7 +26,8 @@ class Coordinators::PreReleaseJob < ApplicationJob
 
   sidekiq_retries_exhausted do |msg, ex|
     if retryable_failure?(ex)
-      mark_failed!(msg, ex)
+      release = Release.find(msg["args"].first)
+      mark_failed!(release, ex)
     end
   end
 
@@ -41,15 +44,10 @@ class Coordinators::PreReleaseJob < ApplicationJob
     release.start_pre_release_phase!
     result = RELEASE_HANDLERS[branching_strategy].call(release, release_branch)
 
-    if !result.ok? && result.error.is_a?(Triggers::Branch::BranchAlreadyExistsError)
-      return signal_commits_have_landed!(release)
-    end
-
     result.value!
   end
 
-  def self.mark_failed!(msg, ex)
-    release = Release.find(msg["args"].first)
+  def self.mark_failed!(release, ex)
     elog(ex, level: :warn)
     release.fail_pre_release_phase!
     release.event_stamp!(reason: :pre_release_failed, kind: :error, data: {error: ex.message})
@@ -67,15 +65,10 @@ class Coordinators::PreReleaseJob < ApplicationJob
     ex.is_a?(Triggers::Branch::BranchAlreadyExistsError)
   end
 
-  def self.signal_commits_have_landed!(msg)
-    release = Release.find(msg["args"].first)
-    new.signal_commits_have_landed!(release)
-  end
-
-  private
-
-  def signal_commits_have_landed!(release)
+  def self.signal_commits_have_landed!(release)
     latest_commit = release.latest_commit_hash(sha_only: false)
-    Signals.commits_have_landed!(release, latest_commit, [])
+    Signal.commits_have_landed!(release, latest_commit, [])
   end
+
+  delegate :signal_commits_have_landed!, to: :class
 end

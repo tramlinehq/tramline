@@ -47,5 +47,24 @@ describe Triggers::Branch do
       expect(result.ok?).to be(true)
       expect(result.value!).to be_nil
     end
+
+    it "raises BranchAlreadyExistsError when branch already exists and raise_on_duplicate is true" do
+      allow(train).to receive(:create_branch!).and_raise(Installations::Error.new("Branch already exists", reason: :tag_reference_already_exists))
+
+      result = described_class.call(release, source_branch, new_branch, :branch, anything, anything, raise_on_duplicate: true)
+
+      expect(result.ok?).to be(false)
+      expect(result.error).to be_a(Triggers::Branch::BranchAlreadyExistsError)
+      expect(result.error.message).to eq("Branch already exists: #{new_branch}")
+    end
+
+    it "raises RetryableBranchCreateError for ref update failures" do
+      allow(train).to receive(:create_branch!).and_raise(Installations::Error.new("Ref cannot be updated", reason: :ref_cannot_be_updated))
+
+      result = described_class.call(release, source_branch, new_branch, :branch, anything, anything)
+
+      expect(result.ok?).to be(false)
+      expect(result.error).to be_a(Triggers::Branch::RetryableBranchCreateError)
+    end
   end
 end
