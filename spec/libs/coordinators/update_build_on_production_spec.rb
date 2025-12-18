@@ -145,7 +145,7 @@ describe Coordinators::UpdateBuildOnProduction do
 
       expect(production_release).to have_received(:event_stamp!).with(reason: :build_updated,
         kind: :notice,
-        data: {build_number: "125", version: "1.2.3"})
+        data: {build_number: build.build_number, version: "1.2.3"})
     end
   end
 
@@ -301,7 +301,7 @@ describe Coordinators::UpdateBuildOnProduction do
 
       expect(production_release).to have_received(:event_stamp!).with(reason: :build_updated,
         kind: :notice,
-        data: {build_number: "165", version: "1.2.3"})
+        data: {build_number: build.build_number, version: "1.2.3"})
     end
   end
 end
