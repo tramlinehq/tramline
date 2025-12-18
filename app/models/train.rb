@@ -234,12 +234,11 @@ class Train < ApplicationRecord
 
     base_time = last_run_at
     now = Time.current
-
     return base_time if now < base_time
 
-    time_difference = now - base_time
-    elapsed_durations = (time_difference / repeat_duration.to_i).ceil
-    base_time + (repeat_duration.to_i * elapsed_durations)
+    elapsed = ((now - base_time) / repeat_duration.to_i).ceil
+    # Use duration object (not seconds) for DST-safe addition
+    base_time + (repeat_duration * elapsed)
   end
 
   def runnable?
@@ -247,7 +246,7 @@ class Train < ApplicationRecord
   end
 
   def last_run_at
-    scheduled_releases.last&.scheduled_at || kickoff_at_app_time
+    scheduled_releases.last&.scheduled_at_in_app_time || kickoff_at_app_time
   end
 
   def kickoff_at=(time)

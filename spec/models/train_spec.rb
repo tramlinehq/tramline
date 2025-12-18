@@ -729,7 +729,8 @@ describe Train do
     describe "maintains consistent local time across DST transitions" do
       it "keeps the same hour during spring DST transition (EST -> EDT)" do
         # Set schedule before spring transition
-        travel_to Time.zone.parse("2024-03-01 10:00:00") do # EST
+        travel_to Time.zone.parse("2024-03-01 10:00:00") do
+          # EST
           train.update!(kickoff_at: "2024-03-01 14:00:00", repeat_duration: 1.week) # 2 PM EST
         end
 
@@ -742,7 +743,8 @@ describe Train do
 
         # Check after DST transition - should still be 2 PM
         # Note: timezone reflects the stored date (March 1 = EST), not current date
-        travel_to Time.zone.parse("2024-03-15 10:00:00") do # After DST spring forward
+        travel_to Time.zone.parse("2024-03-15 10:00:00") do
+          # After DST spring forward
           result = train.kickoff_at_app_time
           expect(result.hour).to eq(14) # Same local hour maintained!
           expect(result.zone).to eq("EST") # Zone based on stored date (March 1)
@@ -751,7 +753,8 @@ describe Train do
 
       it "keeps the same hour during fall DST transition (EDT -> EST)" do
         # Set schedule during EDT
-        travel_to Time.zone.parse("2024-10-01 10:00:00") do # EDT
+        travel_to Time.zone.parse("2024-10-01 10:00:00") do
+          # EDT
           train.update!(kickoff_at: "2024-10-01 14:00:00", repeat_duration: 1.week) # 2 PM EDT
         end
 
@@ -764,12 +767,98 @@ describe Train do
 
         # Check after DST fall back - should still be 2 PM
         # Note: timezone reflects the stored date (October 1 = EDT), not current date
-        travel_to Time.zone.parse("2024-11-15 10:00:00") do # After DST ends
+        travel_to Time.zone.parse("2024-11-15 10:00:00") do
+          # After DST ends
           result = train.kickoff_at_app_time
           expect(result.hour).to eq(14) # Same local hour maintained!
           expect(result.zone).to eq("EDT") # Zone based on stored date (October 1)
         end
       end
+    end
+
+    describe "#next_run_at maintains local time across DST transitions" do
+      it "maintains same local hour when crossing fall DST (clocks fall back)" do
+        # DST ends Nov 3, 2024 at 2am in America/New_York (EDT -> EST)
+        # Schedule: 6pm daily
+        # EDT is UTC-4, so 6pm EDT = 10pm UTC
+        travel_to Time.zone.parse("2024-11-02 14:00:00") do
+          # 10am EDT
+          train.update!(kickoff_at: "2024-11-02 18:00:00", repeat_duration: 1.day)
+        end
+
+        # Current time after kickoff: 11pm UTC = 7pm EDT (after 6pm EDT kickoff)
+        travel_to Time.zone.parse("2024-11-02 23:00:00") do
+          next_run = train.next_run_at
+
+          # Should be Nov 3, 6pm EST (not 5pm or 7pm)
+          expect(next_run.hour).to eq(18)
+          expect(next_run.day).to eq(3)
+          expect(next_run.zone).to eq("EST") # Now in EST after DST ended
+        end
+      end
+
+      it "maintains same local hour when crossing spring DST (clocks spring forward)" do
+        # DST starts Mar 10, 2024 at 2am in America/New_York (EST -> EDT)
+        # Schedule: 6pm daily
+        # EST is UTC-5, so 6pm EST = 11pm UTC
+        travel_to Time.zone.parse("2024-03-09 15:00:00") do
+          # 10am EST
+          train.update!(kickoff_at: "2024-03-09 18:00:00", repeat_duration: 1.day)
+        end
+
+        # Current time after kickoff: midnight UTC = 7pm EST (after 6pm EST kickoff)
+        travel_to Time.zone.parse("2024-03-10 00:00:00") do
+          next_run = train.next_run_at
+
+          # Should be Mar 10, 6pm EDT (not 5pm or 7pm)
+          expect(next_run.hour).to eq(18)
+          expect(next_run.day).to eq(10)
+          expect(next_run.zone).to eq("EDT") # Now in EDT after DST started
+        end
+      end
+
+      # rubocop:disable RSpec/MultipleExpectations
+      it "maintains local time across multiple DST transitions with scheduled_releases" do
+        # Start before fall DST, create a scheduled release, then check after DST
+        # Oct 26 is still EDT (UTC-4), 6pm EDT = 10pm UTC
+        travel_to Time.zone.parse("2024-10-26 14:00:00") do
+          # 10am EDT
+          train.update!(kickoff_at: "2024-10-26 18:00:00", repeat_duration: 1.week)
+          # Create first scheduled release (stored as UTC in DB)
+          train.scheduled_releases.create!(scheduled_at: train.kickoff_at_app_time)
+        end
+
+        # After first kickoff: 11pm UTC = 7pm EDT
+        travel_to Time.zone.parse("2024-10-26 23:00:00") do
+          next_run = train.next_run_at
+
+          # Should be Nov 2, 6pm EDT (still EDT, DST hasn't ended yet)
+          expect(next_run.hour).to eq(18)
+          expect(next_run.month).to eq(11)
+          expect(next_run.day).to eq(2)
+        end
+
+        # Create scheduled release for Nov 2 and check next week
+        # Nov 2 is still EDT, 6pm EDT = 10pm UTC
+        travel_to Time.zone.parse("2024-11-02 23:00:00") do
+          # 7pm EDT
+          train.scheduled_releases.create!(scheduled_at: train.next_run_at)
+        end
+
+        # After DST ended (Nov 3), check next run
+        # Nov 9 is EST (UTC-5), 6pm EST = 11pm UTC
+        travel_to Time.zone.parse("2024-11-03 15:00:00") do
+          # 10am EST
+          next_run = train.next_run_at
+
+          # Should be Nov 9, 6pm EST (DST ended, now EST)
+          expect(next_run.hour).to eq(18)
+          expect(next_run.month).to eq(11)
+          expect(next_run.day).to eq(9)
+          expect(next_run.zone).to eq("EST")
+        end
+      end
+      # rubocop:enable RSpec/MultipleExpectations
     end
 
     describe "#last_run_at uses kickoff_at_app_time" do

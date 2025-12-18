@@ -57,10 +57,14 @@ class ScheduledRelease < ApplicationRecord
     train.active? && to_be_scheduled?
   end
 
+  def scheduled_at_in_app_time
+    scheduled_at.in_time_zone(app.timezone)
+  end
+
   def notification_params
     train.notification_params.merge(
       {
-        release_scheduled_at: scheduled_at.in_time_zone(app.timezone).strftime("%I:%M%p (%Z)")
+        release_scheduled_at: scheduled_at_in_app_time.strftime("%I:%M%p (%Z)")
       }
     )
   end

@@ -182,7 +182,8 @@ describe ScheduledTrainComponent, type: :component do
       context "when there is no ongoing release" do
         [
           [Time.new(2025, 8, 18, 8, 0, 0, "+00:00"), Time.new(2025, 8, 19, 9, 0, 0, "+00:00"), "2025.08.20"],
-          [Time.new(2025, 8, 31, 21, 0, 0, "+00:00"), Time.new(2025, 9, 1, 22, 0, 0, "+00:00"), "2025.09.02"],
+          # Sep 1 22:00 UTC = Sep 2 03:30 IST, + 1 day = Sep 3 03:30 IST
+          [Time.new(2025, 8, 31, 21, 0, 0, "+00:00"), Time.new(2025, 9, 1, 22, 0, 0, "+00:00"), "2025.09.03"],
           [Time.new(2025, 12, 31, 12, 0, 0, "+00:00"), Time.new(2026, 1, 1, 13, 0, 0, "+00:00"), "2026.01.02"]
         ].each do |creation_time, scheduled_time, expected_version|
           it "returns the train's next-next version with releases scheduled every day" do
@@ -234,7 +235,8 @@ describe ScheduledTrainComponent, type: :component do
       context "when there is an ongoing release" do
         [
           [Time.new(2025, 8, 18, 8, 0, 0, "+00:00"), Time.new(2025, 8, 20, 9, 0, 0, "+00:00"), "2025.08.21"],
-          [Time.new(2025, 8, 31, 21, 0, 0, "+00:00"), Time.new(2025, 9, 1, 22, 0, 0, "+00:00"), "2025.09.02"],
+          # Sep 1 22:00 UTC = Sep 2 03:30 IST, + 1 day = Sep 3 03:30 IST
+          [Time.new(2025, 8, 31, 21, 0, 0, "+00:00"), Time.new(2025, 9, 1, 22, 0, 0, "+00:00"), "2025.09.03"],
           [Time.new(2025, 12, 31, 12, 0, 0, "+00:00"), Time.new(2026, 1, 1, 13, 0, 0, "+00:00"), "2026.01.02"]
         ].each do |creation_time, scheduled_time, expected_version|
           it "returns the ongoing release's next-next version with releases scheduled every day" do
