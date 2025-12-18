@@ -141,11 +141,12 @@ describe Coordinators::UpdateBuildOnProduction do
       allow(production_release).to receive(:event_stamp!)
       new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
       new_build = create(:build, :with_artifact, release_platform_run:, workflow_run: new_workflow_run)
+
       described_class.call(store_submission, new_build.id)
 
       expect(production_release).to have_received(:event_stamp!).with(reason: :build_updated,
         kind: :notice,
-        data: {build_number: build.build_number, version: "1.2.3"})
+        data: {build_number: new_build.build_number, version: "1.2.3"})
     end
   end
 
@@ -297,11 +298,14 @@ describe Coordinators::UpdateBuildOnProduction do
       allow(production_release).to receive(:event_stamp!)
       new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
       new_build = create(:build, :with_artifact, release_platform_run:, workflow_run: new_workflow_run)
+
       described_class.call(store_submission, new_build.id)
 
-      expect(production_release).to have_received(:event_stamp!).with(reason: :build_updated,
+      expect(production_release).to have_received(:event_stamp!).with(
+        reason: :build_updated,
         kind: :notice,
-        data: {build_number: build.build_number, version: "1.2.3"})
+        data: {build_number: new_build.build_number, version: "1.2.3"}
+      )
     end
   end
 end
