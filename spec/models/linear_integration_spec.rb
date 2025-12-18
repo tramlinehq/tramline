@@ -9,6 +9,40 @@ describe LinearIntegration do
       expect(linear_integration).not_to be_valid
       expect(linear_integration.errors[:workspace_id]).to include("can't be blank")
     end
+
+    describe "release filters" do
+      context "with invalid filter type" do
+        it "is invalid" do
+          linear_integration.project_config = {
+            "release_filters" => [{"type" => "invalid", "value" => "test"}]
+          }
+          expect(linear_integration).not_to be_valid
+          expect(linear_integration.errors[:project_config]).to include("release filters must contain valid type and value")
+        end
+      end
+
+      context "with empty filter value" do
+        it "is invalid" do
+          linear_integration.project_config = {
+            "release_filters" => [{"type" => "label", "value" => ""}]
+          }
+          expect(linear_integration).not_to be_valid
+          expect(linear_integration.errors[:project_config]).to include("release filters must contain valid type and value")
+        end
+      end
+
+      context "with valid filters" do
+        it "is valid" do
+          linear_integration.project_config = {
+            "release_filters" => [
+              {"type" => "label", "value" => "release-1.0"},
+              {"type" => "state", "value" => "v1.0.0"}
+            ]
+          }
+          expect(linear_integration).to be_valid
+        end
+      end
+    end
   end
 
   describe "#install_path" do

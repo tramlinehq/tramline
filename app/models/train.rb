@@ -26,6 +26,8 @@
 #  release_branch_pattern                         :string
 #  repeat_duration                                :interval
 #  slug                                           :string
+#  soak_period_enabled                            :boolean          default(FALSE), not null
+#  soak_period_hours                              :integer          default(24), not null
 #  status                                         :string           not null
 #  stop_automatic_releases_on_failure             :boolean          default(FALSE), not null
 #  tag_end_of_release                             :boolean          default(TRUE)
@@ -50,6 +52,7 @@
 #  vcs_webhook_id                                 :string
 #
 class Train < ApplicationRecord
+  self.skip_time_zone_conversion_for_attributes = [:kickoff_at]
   has_paper_trail
   using RefinedArray
   using RefinedString
@@ -84,7 +87,7 @@ class Train < ApplicationRecord
   has_many :release_platforms, -> { sequential }, dependent: :destroy, inverse_of: :train
   has_many :release_platform_runs, -> { sequential }, through: :releases
   has_many :integrations, through: :app
-  has_many :scheduled_releases, dependent: :destroy
+  has_many :scheduled_releases, -> { kept }, dependent: :destroy, inverse_of: :train
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
   has_one :release_index, dependent: :destroy
   has_one :webhook_integration, class_name: "SvixIntegration", dependent: :destroy
@@ -116,7 +119,7 @@ class Train < ApplicationRecord
   validates :release_branch, presence: true, if: -> { branching_strategy == "parallel_working" }
   validate :version_compatibility, on: :create
   validate :ready?, on: :create
-  validate :valid_schedule, if: -> { kickoff_at_changed? || repeat_duration_changed? }
+  validate :valid_schedule, if: :release_schedule_changed?
   validate :build_queue_config
   validate :backmerge_config
   validate :working_branch_presence, on: :create
@@ -126,6 +129,7 @@ class Train < ApplicationRecord
   validate :version_bump_config
   validates :version_bump_strategy, inclusion: {in: VERSION_BUMP_STRATEGIES.keys.map(&:to_s)}, if: -> { version_bump_enabled? }
   validate :validate_token_fields, if: :validate_tokens?
+  validates :soak_period_hours, presence: true, numericality: {greater_than: 0, less_than_or_equal_to: 336}, if: -> { soak_period_enabled? }
 
   after_initialize :set_branching_strategy, if: :new_record?
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -140,13 +144,11 @@ class Train < ApplicationRecord
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_create :create_release_index
+  before_update :disable_copy_approvals, unless: :approvals_enabled?
+  before_update :create_default_notification_settings, if: :notification_channels_config_changed?
   after_create_commit :create_webhook_integration
   after_update_commit :update_webhook_integration
-  before_update :disable_copy_approvals, unless: :approvals_enabled?
-  before_update :create_default_notification_settings, if: -> do
-    notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
-  end
-  after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
+  after_update_commit :populate_release_schedules, if: :saved_release_schedule_changed?
 
   def disable_copy_approvals
     self.copy_approvals = false
@@ -204,6 +206,17 @@ class Train < ApplicationRecord
     scheduled_releases.create!(scheduled_at: next_run_at) if automatic?
   end
 
+  def populate_release_schedules
+    transaction do
+      scheduled_releases.discard_all
+      # as long as the schedule_release creation in this transaction is the last thing
+      # the callbacks (if any) from the creation should be safe
+      # if there's other stuff that happens after this, that fails
+      # the callbacks from scheduled_release could get fired for a rolled-back record
+      schedule_release!
+    end
+  end
+
   def hotfix_from
     releases.finished.reorder(completed_at: :desc).first
   end
@@ -221,12 +234,11 @@ class Train < ApplicationRecord
 
     base_time = last_run_at
     now = Time.current
-
     return base_time if now < base_time
 
-    time_difference = now - base_time
-    elapsed_durations = (time_difference / repeat_duration.to_i).ceil
-    base_time + (repeat_duration.to_i * elapsed_durations)
+    elapsed = ((now - base_time) / repeat_duration.to_i).ceil
+    # Use duration object (not seconds) for DST-safe addition
+    base_time + (repeat_duration * elapsed)
   end
 
   def runnable?
@@ -234,7 +246,43 @@ class Train < ApplicationRecord
   end
 
   def last_run_at
-    scheduled_releases.last&.scheduled_at || kickoff_at
+    scheduled_releases.last&.scheduled_at_in_app_time || kickoff_at_app_time
+  end
+
+  def kickoff_at=(time)
+    if time.blank?
+      write_attribute(:kickoff_at, nil)
+      return
+    end
+
+    if time.is_a?(String)
+      # Parse the string to extract date/time components, then create naive timestamp
+      # This ensures we store exactly what the user intended regardless of timezones
+      parsed = Time.zone.parse(time)
+      naive_time = Time.utc(parsed.year, parsed.month, parsed.day, parsed.hour, parsed.min, parsed.sec)
+    else
+      # For Time objects, extract components and create naive timestamp
+      naive_time = Time.utc(time.year, time.month, time.day, time.hour, time.min, time.sec)
+    end
+
+    write_attribute(:kickoff_at, naive_time)
+  end
+
+  # Treat kickoff_at as a naive local datetime and interpret it in the app's timezone
+  # This prevents DST shifts since we always use the same local time
+  def kickoff_at_app_time
+    return unless kickoff_at
+    # Extract time components and rebuild in the current timezone context
+    Time.use_zone(app.timezone) do
+      Time.zone.local(
+        kickoff_at.year,
+        kickoff_at.month,
+        kickoff_at.day,
+        kickoff_at.hour,
+        kickoff_at.min,
+        kickoff_at.sec
+      )
+    end
   end
 
   def diff_since_last_release?
@@ -347,7 +395,7 @@ class Train < ApplicationRecord
   def upcoming_release_startable?
     !inactive? &&
       ongoing_release.present? &&
-      ongoing_release.production_release_started? &&
+      ongoing_release.production_release_attempted? &&
       upcoming_release.blank?
   end
 
@@ -381,6 +429,10 @@ class Train < ApplicationRecord
 
   def backmerge_disabled?
     !almost_trunk?
+  end
+
+  def custom_commit_hash_input?
+    almost_trunk? && !version_bump_enabled?
   end
 
   def create_vcs_release!(branch_name, tag_name, previous_tag_name, release_diff = nil)
@@ -441,10 +493,6 @@ class Train < ApplicationRecord
     # Some notifications are not supported (do not make sense) in release-specific mode.
     # So, this does not check for the release-specific flag.
     app.notifications_set_up? && notification_channel.present?
-  end
-
-  def schedule_editable?
-    draft? || !automatic? || !persisted?
   end
 
   def hotfixable?
@@ -586,9 +634,9 @@ class Train < ApplicationRecord
   end
 
   def valid_schedule
-    if kickoff_at.present? || repeat_duration.present?
+    if release_schedule_changed?
       errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless kickoff_at.present? && repeat_duration.present?
-      errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at <= Time.current
+      errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at_app_time <= Time.current
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
     end
   end
@@ -606,6 +654,11 @@ class Train < ApplicationRecord
   end
 
   def build_queue_config
+    if build_queue_enabled_changed? && active_runs.exists?
+      errors.add(:build_queue_enabled, :cannot_edit_when_releases_are_running)
+      return
+    end
+
     if build_queue_enabled?
       errors.add(:build_queue_size, :config_required) unless build_queue_size.present? && build_queue_wait_time.present?
       errors.add(:build_queue_size, :invalid_size) if build_queue_size && build_queue_size < 1
@@ -661,5 +714,18 @@ class Train < ApplicationRecord
   def update_webhook_integration
     return unless saved_change_to_webhooks_enabled?
     UpdateOutgoingWebhookIntegrationJob.perform_async(id, webhooks_enabled?)
+  end
+
+  def notification_channels_config_changed?
+    notification_channel_changed? || notifications_release_specific_channel_enabled_changed?
+  end
+
+  def release_schedule_changed?
+    (kickoff_at.present? && kickoff_at_changed?) ||
+      (repeat_duration.present? && repeat_duration_changed?)
+  end
+
+  def saved_release_schedule_changed?
+    saved_change_to_kickoff_at? || saved_change_to_repeat_duration?
   end
 end

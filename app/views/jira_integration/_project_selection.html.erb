@@ -16,7 +16,7 @@
         <% project_key = project["key"] %>
 
         <div class="flex items-center">
-          <%= form.fields_for :jira_config do |sf| %>
+          <%= form.fields_for :project_config do |sf| %>
             <% checked =
                  current_jira_config
                    &.dig("selected_projects")
@@ -70,7 +70,7 @@
                   <% status_name = "status_#{project_key}_#{status["name"].parameterize}" %>
 
                   <div class="flex items-center">
-                    <%= form.fields_for :jira_config do |sf| %>
+                    <%= form.fields_for :project_config do |sf| %>
                       <%= sf.fields_for :project_configs do |pf| %>
                         <%= pf.fields_for project_key do |pk| %>
                           <% checked =

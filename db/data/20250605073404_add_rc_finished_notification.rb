@@ -2,6 +2,8 @@
 
 class AddRcFinishedNotification < ActiveRecord::Migration[7.2]
   def up
+    return
+
     Train.find_each do |train|
       next unless train.send_notifications?
 

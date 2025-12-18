@@ -2,10 +2,11 @@
 #
 # Table name: bitrise_integrations
 #
-#  id           :uuid             not null, primary key
-#  access_token :string
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
+#  id             :uuid             not null, primary key
+#  access_token   :string
+#  project_config :jsonb
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
 #
 class BitriseIntegration < ApplicationRecord
   has_paper_trail
@@ -58,9 +59,11 @@ class BitriseIntegration < ApplicationRecord
   encrypts :access_token, deterministic: true
 
   delegate :integrable, to: :integration
-  delegate :bitrise_project, to: :app_config
-  alias_method :project, :bitrise_project
   delegate :cache, to: Rails
+
+  def project
+    project_config&.fetch("id", nil)
+  end
 
   def installation
     API.new(access_token)
@@ -191,10 +194,6 @@ class BitriseIntegration < ApplicationRecord
   rescue OpenURI::HTTPError, SocketError => e
     elog(e, level: :warn)
     []
-  end
-
-  def app_config
-    integrable.config
   end
 
   def correct_key

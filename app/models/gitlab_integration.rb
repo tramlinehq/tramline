@@ -5,6 +5,7 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  repository_config   :jsonb
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
@@ -22,9 +23,9 @@ class GitlabIntegration < ApplicationRecord
 
   attr_accessor :code
   before_validation :complete_access, if: :new_record?
+  after_create_commit -> { KeepAliveIntegrations::GitlabJob.perform_in(6.hours, id) }
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
-  delegate :code_repository_name, :code_repo_namespace, to: :app_config
   delegate :cache, to: Rails
   validate :correct_key, on: :create
 
@@ -156,6 +157,22 @@ class GitlabIntegration < ApplicationRecord
     generated_at: :created_at
   }
 
+  def repository_id
+    repository_config&.fetch("id", nil)
+  end
+
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
+
+  def code_repo_url
+    repository_config&.fetch("repo_url", nil)
+  end
+
+  def code_repo_namespace = nil
+
+  def code_repo_name_only = nil
+
   def install_path
     BASE_INSTALLATION_URL
       .expand(params: {
@@ -174,7 +191,8 @@ class GitlabIntegration < ApplicationRecord
 
   def correct_key
     if integration.ci_cd?
-      errors.add(:base, :workflows) if workflows(bust_cache: true).blank?
+      # NOTE: relaxing this validation temporarily since it depends on config that's not yet setup
+      # errors.add(:base, :workflows) if workflows(bust_cache: true).blank?
     elsif integration.version_control?
       errors.add(:base, :repos) if repos.blank?
     end
@@ -253,7 +271,7 @@ class GitlabIntegration < ApplicationRecord
   def workflow_retriable_in_place? = false
 
   def further_setup?
-    false
+    true
   end
 
   def enable_auto_merge? = true
@@ -292,9 +310,7 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_branch!(code_repository_name, from, to, source_type:) }
   end
 
-  def metadata
-    installation.user_info(USER_INFO_TRANSFORMATIONS)
-  end
+  def metadata = user_info
 
   def pull_requests_url(branch_name, open: false)
     state = open ? "opened" : "all"
@@ -346,7 +362,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def get_commit(sha)
-    with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMITS_TRANSFORMATIONS) }
+    with_api_retries { installation.get_commit(repository_id, sha, COMMITS_TRANSFORMATIONS) }
   end
 
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
@@ -383,6 +399,8 @@ class GitlabIntegration < ApplicationRecord
 
   def enable_auto_merge!(pr_number)
     with_api_retries { installation.enable_auto_merge(code_repository_name, pr_number) }
+  rescue Installations::Error
+    false
   end
 
   def public_icon_img
@@ -413,6 +431,10 @@ class GitlabIntegration < ApplicationRecord
   rescue Installations::Error => ex
     raise ex unless ex.reason == :not_found
     false
+  end
+
+  def user_info
+    with_api_retries { installation.user_info(GitlabIntegration::USER_INFO_TRANSFORMATIONS) }
   end
 
   def bot_name
@@ -461,6 +483,8 @@ class GitlabIntegration < ApplicationRecord
     tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
 
     if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      # Mark integration as needing reauth instead of disconnecting to preserve configuration
+      integration.mark_needs_reauth!
       raise Installations::Error::TokenRefreshFailure
     end
 
@@ -473,10 +497,6 @@ class GitlabIntegration < ApplicationRecord
     end
 
     reload
-  end
-
-  def app_config
-    integrable.config
   end
 
   def redirect_uri

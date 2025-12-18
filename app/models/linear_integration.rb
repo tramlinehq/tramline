@@ -5,6 +5,7 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  project_config      :jsonb            not null
 #  workspace_name      :string
 #  workspace_url_key   :string
 #  created_at          :datetime         not null
@@ -59,6 +60,7 @@ class LinearIntegration < ApplicationRecord
   delegate :app, to: :integration
   delegate :cache, to: Rails
   validates :workspace_id, presence: true
+  validate :release_filters_are_valid, if: -> { project_config&.dig("release_filters").present? }
 
   def install_path
     BASE_INSTALLATION_URL
@@ -142,10 +144,10 @@ class LinearIntegration < ApplicationRecord
   end
 
   def fetch_issues_for_release
-    return [] if app.config.linear_config.blank?
+    return [] if project_config.blank?
 
-    team_id = app.config.linear_config["selected_teams"]&.last
-    release_filters = app.config.linear_config["release_filters"]
+    team_id = project_config["selected_teams"]&.last
+    release_filters = project_config["release_filters"]
     return [] if team_id.blank? || release_filters.blank?
 
     with_api_retries do
@@ -237,5 +239,15 @@ class LinearIntegration < ApplicationRecord
   rescue Installations::Error => e
     elog("Failed to fetch Linear workflow states for workspace_id #{workspace_id}: #{e}", level: :warn)
     {}
+  end
+
+  private
+
+  def release_filters_are_valid
+    project_config["release_filters"].each do |filter|
+      unless filter.is_a?(Hash) && VALID_FILTER_TYPES.include?(filter["type"]) && filter["value"].present?
+        errors.add(:project_config, "release filters must contain valid type and value")
+      end
+    end
   end
 end

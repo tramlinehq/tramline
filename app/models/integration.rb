@@ -19,6 +19,7 @@ class Integration < ApplicationRecord
   using RefinedArray
   using RefinedString
   include Discard::Model
+  include Loggable
 
   self.ignored_columns += %w[app_id]
 
@@ -72,7 +73,7 @@ class Integration < ApplicationRecord
   }.freeze
 
   enum :category, ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_map_self
-  enum :status, {connected: "connected", disconnected: "disconnected"}
+  enum :status, {connected: "connected", disconnected: "disconnected", needs_reauth: "needs_reauth"}
 
   CATEGORY_DESCRIPTIONS = {
     version_control: "Automatically create release branches and tags, and merge release PRs.",
@@ -92,7 +93,7 @@ class Integration < ApplicationRecord
   validate :validate_providable, on: :create
   validate :app_variant_restriction, on: :create
   validates :category, presence: true
-  validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: -> { integrable_id.present? && connected? }}
+  validates :providable_type, uniqueness: {scope: [:integrable_id, :category, :status], message: :unique_connected_integration_category, if: -> { integrable_id.present? && (connected? || needs_reauth?) }}
 
   attr_accessor :current_user, :code
 
@@ -100,13 +101,14 @@ class Integration < ApplicationRecord
   delegate :platform, to: :integrable
 
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
+  scope :linked, -> { where(status: [:connected, :needs_reauth]) }
 
   before_create :set_connected
   after_create_commit -> { IntegrationMetadataJob.perform_async(id) }
 
   class << self
     def by_categories_for(app)
-      existing_integrations = app.integrations.connected.includes(:providable)
+      existing_integrations = app.integrations.linked.includes(:providable)
       integrations = ALLOWED_INTEGRATIONS_FOR_APP[app.platform]
 
       integrations.each_with_object({}) do |(category, providers), combination|
@@ -145,10 +147,12 @@ class Integration < ApplicationRecord
     def category_ready?(category)
       app = ready.first&.app
 
+      # if it's not a build channel or single-platform, any of the platforms need to be ready
       if category != :build_channel || !app&.cross_platform?
         return ready.any? { |i| i.category.eql?(category.to_s) }
       end
 
+      # if it's a build channel and cross-platform, both platforms need to be ready
       [:ios, :android].all? do |platform|
         ready
           .build_channel
@@ -161,6 +165,15 @@ class Integration < ApplicationRecord
       MINIMUM_REQUIRED_SET.all? { |category| category_ready?(category) }
     end
 
+    def configured?
+      return false if none? # need at least one integration
+
+      further_setup_by_category
+        .values
+        .pluck(:ready)
+        .all?
+    end
+
     def slack_notifications?
       kept.notification.first&.slack_integration?
     end
@@ -170,7 +183,11 @@ class Integration < ApplicationRecord
     end
 
     def ci_cd_provider
-      kept.ci_cd.connected.first&.providable
+      kept.ci_cd.first&.providable
+    end
+
+    def bitrise_ci_cd_provider
+      kept.ci_cd.find(&:bitrise_integration?)&.providable
     end
 
     def monitoring_provider
@@ -211,10 +228,124 @@ class Integration < ApplicationRecord
       kept.build_channel.filter { |b| ALLOWED_INTEGRATIONS_FOR_APP[platform.to_sym][:build_channel].include?(b.providable_type) }
     end
 
+    def further_setup_by_category
+      connected_integrations = connected
+      categories = {}.with_indifferent_access
+
+      if connected_integrations.version_control.present?
+        categories[:version_control] = {
+          further_setup: connected_integrations.version_control.any?(&:further_setup?),
+          ready: code_repository.present?
+        }
+      end
+
+      if connected_integrations.ci_cd.present?
+        categories[:ci_cd] = {
+          further_setup: connected_integrations.ci_cd.any?(&:further_setup?),
+          ready: ci_cd_ready?
+        }
+      end
+
+      if connected_integrations.build_channel.present?
+        categories[:build_channel] = {
+          further_setup: connected_integrations.build_channel.map(&:providable).any?(&:further_setup?),
+          ready: firebase_ready?
+        }
+      end
+
+      if connected_integrations.monitoring.present?
+        categories[:monitoring] = {
+          further_setup: connected_integrations.monitoring.any?(&:further_setup?),
+          ready: bugsnag_ready?
+        }
+      end
+
+      if connected_integrations.project_management.present?
+        categories[:project_management] = {
+          further_setup: connected_integrations.project_management.map(&:providable).any?(&:further_setup?),
+          ready: project_management_ready?
+        }
+      end
+
+      categories
+    end
+
     private
 
     def providable_error_message(meta)
       meta[:value].errors.full_messages[0]
+    end
+
+    def code_repository
+      vcs_provider&.repository_config
+    end
+
+    def ci_cd_code_repository
+      ci_cd_provider&.repository_config
+    end
+
+    def ci_cd_ready?
+      return false if ci_cd_provider.blank?
+
+      case ci_cd_provider
+      when GithubIntegration, GitlabIntegration, BitbucketIntegration
+        ci_cd_code_repository.present?
+      when BitriseIntegration
+        bitrise_ready?
+      else
+        false
+      end
+    end
+
+    def bitrise_ready?
+      app = first.integrable
+      return true unless app.bitrise_connected?
+      bitrise_ci_cd_provider&.project.present?
+    end
+
+    def firebase_ready?
+      app = first.integrable
+      return true unless app.firebase_connected?
+
+      firebase_build_channel = firebase_build_channel_provider
+      configs_ready?(app, firebase_build_channel&.android_config, firebase_build_channel&.ios_config)
+    end
+
+    def bugsnag_ready?
+      app = first.integrable
+      return true unless app.bugsnag_connected?
+
+      monitoring = monitoring_provider
+      configs_ready?(app, monitoring&.android_config, monitoring&.ios_config)
+    end
+
+    def project_management_ready?
+      return false if project_management.blank?
+
+      jira = project_management.find(&:jira_integration?)&.providable
+      linear = project_management.find(&:linear_integration?)&.providable
+
+      if jira
+        return jira.project_config.present? &&
+            jira.project_config["selected_projects"].present? &&
+            jira.project_config["selected_projects"].any? &&
+            jira.project_config["project_configs"].present?
+      end
+
+      if linear
+        return linear.project_config.present? &&
+            linear.project_config["selected_teams"].present? &&
+            linear.project_config["selected_teams"].any? &&
+            linear.project_config["team_configs"].present?
+      end
+
+      false
+    end
+
+    def configs_ready?(app, android_config, ios_config)
+      return ios_config.present? if app.ios?
+      return android_config.present? if app.android?
+      ios_config.present? && android_config.present? if app.cross_platform?
     end
   end
 
@@ -228,13 +359,25 @@ class Integration < ApplicationRecord
 
   def disconnect
     return unless disconnectable?
+
     transaction do
-      integrable.config.disconnect!(self)
       update!(status: :disconnected, discarded_at: Time.current)
       true
     end
   rescue ActiveRecord::RecordInvalid => e
     errors.add(:base, e.message)
+    false
+  end
+
+  def mark_needs_reauth!
+    return unless connected?
+
+    transaction do
+      update!(status: :needs_reauth)
+      true
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    elog(e, level: :error)
     false
   end
 
@@ -257,6 +400,7 @@ class Integration < ApplicationRecord
       app_id: integrable.app_id,
       integration_category: category,
       integration_provider: providable_type,
+      integration_id: id,
       user_id: current_user.id
     }.to_json.encode
   end

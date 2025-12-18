@@ -34,6 +34,9 @@ module Notifiers
         workflow_run_unavailable: Renderers::WorkflowRunUnavailable,
         workflow_trigger_failed: Renderers::WorkflowTriggerFailed,
         rc_finished: Renderers::RcFinished,
+        soak_period_started: Renderers::SoakPeriodStarted,
+        soak_period_extended: Renderers::SoakPeriodExtended,
+        soak_period_ended: Renderers::SoakPeriodEnded,
         changelog: Renderers::Changelog
       }.with_indifferent_access
 

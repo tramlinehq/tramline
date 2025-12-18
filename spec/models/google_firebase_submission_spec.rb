@@ -342,7 +342,7 @@ describe GoogleFirebaseSubmission do
 
   describe "#provider" do
     let(:app) { create(:app, :android) }
-    let(:app_variant) { create(:app_variant, bundle_identifier: "variant_identifier", app_config: app.config) }
+    let(:app_variant) { create(:app_variant, bundle_identifier: "variant_identifier", app: app) }
     let(:submission) { create(:google_firebase_submission) }
 
     it "return the variant's integration" do

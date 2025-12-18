@@ -111,6 +111,13 @@ en:
     create:
       success: "Beta release was successfully created."
       failure: "Failed to create beta release — %{errors}."
+  beta_soaks:
+    end_soak:
+      success: "Soak period has been ended early."
+      failure: "Unable to end soak period."
+    extend_soak:
+      success: "Soak period has been extended by %{hours} hour(s)."
+      failure: "Unable to extend soak period."
   internal_releases:
     create:
       success: "Internal release was successfully created."
@@ -203,7 +210,7 @@ en:
     sso:
       sessions:
         create:
-          no_account: "No Single Sign-On account found."
+          invalid_login: "Invalid Email."
           connect_failure: "Failed to connect to the Single Sign-On provider."
           failure: "Failed to login via Single Sign-On! Please contact support if the issue persists."
         saml_redeem:
@@ -292,6 +299,9 @@ en:
           workflow_run_unavailable: "Workflow run unavailable"
           workflow_trigger_failed: "Workflow trigger failed"
           rc_finished: "RC finished"
+          soak_period_started: "Soak period started"
+          soak_period_ended: "Soak period ended"
+          soak_period_extended: "Soak period extended"
       release_platform_run:
         platform:
           ios: "iOS"
@@ -480,6 +490,8 @@ en:
               ci_cd_workflows_not_available: "Your working branch / release does not have any CI workflows available. Please add at least one workflow to continue."
             tag_store_releases:
               not_allowed: "cannot enable tags for all store releases without enabling platform-specific tags"
+            build_queue_enabled:
+              cannot_edit_when_releases_are_running: "build queue cannot be enabled/disabled when releases are running"
             build_queue_size:
               config_required: "invalid config, provide both size and wait time for the queue"
               config_not_allowed: "build queue size cannot be configured when queue is disabled"
@@ -502,6 +514,10 @@ en:
               blank_file: "it should be a valid comma-separated list of files"
               invalid_file_type: "files should have a valid extension — %{valid_extensions}"
               invalid_file_extension: "files should have an extension, like build.gradle or pubspec.yaml"
+        release:
+          attributes:
+            commit_hash:
+              not_allowed: "specifying a custom commit hash to start a release is not allowed"
         notification_setting:
           attributes:
             notification_channels:
@@ -776,3 +792,46 @@ en:
         done_states:
           select: "Select Done States"
           help_text: "Choose which states represent completed work"
+
+  version_control:
+    github_configs:
+      update:
+        success: "Version control configuration was successfully updated."
+    gitlab_configs:
+      update:
+        success: "Version control configuration was successfully updated."
+    bitbucket_configs:
+      update:
+        success: "Version control configuration was successfully updated."
+
+  ci_cd:
+    bitrise_configs:
+      update:
+        success: "CI/CD configuration was successfully updated."
+    github_configs:
+      update:
+        success: "CI/CD configuration was successfully updated."
+    gitlab_configs:
+      update:
+        success: "CI/CD configuration was successfully updated."
+    bitbucket_configs:
+      update:
+        success: "CI/CD configuration was successfully updated."
+
+  build_channel:
+    google_firebase_configs:
+      update:
+        success: "Build channel configuration was successfully updated."
+
+  monitoring:
+    bugsnag_configs:
+      update:
+        success: "Monitoring configuration was successfully updated."
+
+  project_management:
+    jira_configs:
+      update:
+        success: "Project management configuration was successfully updated."
+    linear_configs:
+      update:
+        success: "Project management configuration was successfully updated."

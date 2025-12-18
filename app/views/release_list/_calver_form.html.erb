@@ -6,14 +6,28 @@
     <%= render OptionCardsComponent.new(form: form.F, options: release_options) %>
     <div class="mt-2" hidden data-reveal>
       <%= form.F.labeled_text_field :custom_release_version,
-            "Version Name",
-            autocomplete: "off",
-            placeholder: "Eg. 1970.01.01" %>
+                                    "Version Name",
+                                    autocomplete: "off",
+                                    placeholder: "Eg. 1970.01.01" %>
       <p class="mt-1 text-secondary text-xs">
-        Be careful when using custom versions with CalVer, since Tramline's automatic versioning will always pick the calendar date when starting a new release.
+        Be careful when using custom versions with CalVer, since Tramline's automatic versioning will always pick the
+        calendar date when starting a new release.
       </p>
     </div>
   </div>
+
+  <% if train.custom_commit_hash_input? %>
+    <div class="mt-2">
+      <%= form.F.labeled_text_field :commit_hash,
+                                    "Commit SHA (optional)",
+                                    pattern: "[a-fA-F0-9]{40}",
+                                    autocomplete: "off",
+                                    placeholder: nil %>
+      <p class="mt-1 text-secondary text-xs">
+        The SHA to cut the release branch from <%= train.working_branch %>.
+      </p>
+    </div>
+  <% end %>
 
   <% form.with_action do %>
     <%= form.F.authz_submit "Start", "zap.svg" %>

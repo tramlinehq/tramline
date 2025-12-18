@@ -110,13 +110,13 @@ module ApplicationHelper
       .tap { |list| with_none ? list.unshift(["None", nil]) : nil }
   end
 
-  def time_format(timestamp, with_year: false, with_time: true, only_time: false, only_date: false, dash_empty: false, only_day: false)
+  def time_format(timestamp, with_year: false, with_tz: false, with_time: true, only_time: false, only_date: false, dash_empty: false, only_day: false)
     return "--" if dash_empty && timestamp.nil?
     return unless timestamp
     return timestamp.strftime("%-l:%M %P") if only_time
     return timestamp.strftime("#{timestamp.day.ordinalize} %b") if only_day
     return timestamp.strftime("%A #{timestamp.day.ordinalize} %B, %Y") if only_date
-    timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year}#{" at %-l:%M %P" if with_time}")
+    timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year}#{" at %-l:%M %P" if with_time}#{" (%Z)" if with_tz}")
   end
 
   def short_sha(sha)
@@ -151,5 +151,17 @@ module ApplicationHelper
     platform = app.cross_platform? ? "" : "-#{app.platform}"
     channel_pattern = "release-#{app.name}#{platform}".downcase.gsub(/\W/, "-")
     "#{channel_pattern}-{version}"
+  end
+
+  def release_schedule(train)
+    if train.automatic?
+      kickoff_time = train.kickoff_at_app_time
+      date = time_format(kickoff_time, with_year: true, with_time: false)
+      duration = train.repeat_duration.inspect
+      time = kickoff_time.strftime("%I:%M%p (%Z)")
+      "Kickoff at #{date} – runs every #{duration} at #{time}"
+    else
+      "No release schedule"
+    end
   end
 end

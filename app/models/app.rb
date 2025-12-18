@@ -29,8 +29,8 @@ class App < ApplicationRecord
   PUBLIC_IOS_ICON = "https://storage.googleapis.com/tramline-public-assets/default_ios.png"
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
-  has_one :config, class_name: "AppConfig", dependent: :destroy
-  has_many :variants, through: :config
+  # has_one :config, class_name: "AppConfig", dependent: :destroy
+  has_many :variants, class_name: "AppVariant", dependent: :destroy
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
   has_many :releases, through: :trains
@@ -47,7 +47,6 @@ class App < ApplicationRecord
 
   enum :platform, {android: "android", ios: "ios", cross_platform: "cross_platform"}
 
-  after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
@@ -127,7 +126,7 @@ class App < ApplicationRecord
   end
 
   def ready?
-    integrations.ready? and config&.ready?
+    integrations.needs_reauth.none? && integrations.ready? && integrations.configured?
   end
 
   def guided_train_setup?
@@ -193,7 +192,7 @@ class App < ApplicationRecord
       }
     }
 
-    config.further_setup_by_category?.each do |category, status_map|
+    integrations.further_setup_by_category.each do |category, status_map|
       app_config_setup[:app_config][:integrations][category] = {
         visible: true, completed: status_map[:ready]
       }
@@ -268,7 +267,7 @@ class App < ApplicationRecord
       app_name: name,
       app_platform: platform,
       platform_public_img: platform_public_img,
-      vcs_public_icon_img: vcs_provider.public_icon_img
+      vcs_public_icon_img: vcs_provider&.public_icon_img
     }
   end
 
@@ -303,10 +302,6 @@ class App < ApplicationRecord
     ].compact.max
   rescue
     nil
-  end
-
-  def initialize_config
-    build_config
   end
 
   def no_trains_are_running

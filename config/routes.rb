@@ -65,8 +65,33 @@ Rails.application.routes.draw do
     member do
       delete :remove_icon
     end
-    resource :app_config, only: %i[edit update], path: :config do
-      resources :app_variants, only: %i[index edit create update destroy]
+
+    resources :app_variants, only: %i[index edit create update destroy]
+
+    namespace :version_control do
+      resource :github_config, only: %i[edit update]
+      resource :gitlab_config, only: %i[edit update]
+      resource :bitbucket_config, only: %i[edit update]
+    end
+
+    namespace :ci_cd do
+      resource :bitrise_config, only: %i[edit update]
+      resource :github_config, only: %i[edit update]
+      resource :gitlab_config, only: %i[edit update]
+      resource :bitbucket_config, only: %i[edit update]
+    end
+
+    namespace :build_channel do
+      resource :google_firebase_config, only: %i[edit update]
+    end
+
+    namespace :monitoring do
+      resource :bugsnag_config, only: %i[edit update]
+    end
+
+    namespace :project_management do
+      resource :jira_config, only: %i[edit update]
+      resource :linear_config, only: %i[edit update]
     end
 
     member do
@@ -108,10 +133,16 @@ Rails.application.routes.draw do
           get :overview
           get :changeset_tracking
           get :regression_testing
-          get :soak
           get :wrap_up_automations
           patch :override_approvals
           post :copy_approvals
+        end
+
+        resource :beta_soak, only: [:show] do
+          member do
+            post :end_soak
+            post :extend_soak
+          end
         end
 
         resources :outgoing_webhooks, only: [:index]
@@ -153,6 +184,10 @@ Rails.application.routes.draw do
     end
 
     resources :integrations, only: %i[index create destroy] do
+      member do
+        get :reauth
+      end
+
       collection do
         post :reuse
         get :connect, to: "integrations#connect", as: :connect

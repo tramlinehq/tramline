@@ -4,12 +4,12 @@
 #
 #  id              :uuid             not null, primary key
 #  accepted_at     :datetime
-#  email           :string
+#  email           :string           indexed => [organization_id]
 #  role            :string
 #  token           :string
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  organization_id :uuid             not null, indexed
+#  organization_id :uuid             not null, indexed, indexed => [email]
 #  recipient_id    :uuid             indexed
 #  sender_id       :uuid             not null, indexed
 #
@@ -47,15 +47,15 @@ class Accounts::Invite < ApplicationRecord
   def make
     result = GitHub::Result.new do
       transaction do
-        return unless save
+        save!
+      end
 
-        if organization.sso?
-          InvitationMailer.sso_user(self).deliver
-        elsif recipient.present?
-          InvitationMailer.existing_user(self).deliver
-        else
-          InvitationMailer.new_user(self).deliver
-        end
+      if organization.sso?
+        InvitationMailer.sso_user(self).deliver_now!
+      elsif recipient.present?
+        InvitationMailer.existing_user(self).deliver_now!
+      else
+        InvitationMailer.new_user(self).deliver_now!
       end
     end
 
@@ -117,10 +117,10 @@ class Accounts::Invite < ApplicationRecord
       invite_token: token
     }
 
-    if Rails.env.development?
-      sso_new_sso_session_url(params.merge(port: ENV["PORT_NUM"]))
-    else
+    if Rails.env.production?
       sso_new_sso_session_url(params)
+    else
+      sso_new_sso_session_url(params.merge(port: ENV["PORT_NUM"]))
     end
   end
 
@@ -131,10 +131,10 @@ class Accounts::Invite < ApplicationRecord
       invite_token: token
     }
 
-    if Rails.env.development?
-      new_email_authentication_registration_url(params.merge(port: ENV["PORT_NUM"]))
-    else
+    if Rails.env.production?
       new_email_authentication_registration_url(params)
+    else
+      new_email_authentication_registration_url(params.merge(port: ENV["PORT_NUM"]))
     end
   end
 
@@ -145,10 +145,10 @@ class Accounts::Invite < ApplicationRecord
       invite_token: token
     }
 
-    if Rails.env.development?
-      new_authentication_invite_confirmation_url(params.merge(port: ENV["PORT_NUM"]))
-    else
+    if Rails.env.production?
       new_authentication_invite_confirmation_url(params)
+    else
+      new_authentication_invite_confirmation_url(params.merge(port: ENV["PORT_NUM"]))
     end
   end
 end

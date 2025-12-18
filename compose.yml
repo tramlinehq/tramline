@@ -68,7 +68,7 @@ services:
     ports:
       - '4040:4040'
     healthcheck:
-      test: /bin/bash -c "</dev/tcp/ngrok/4040"
+      test: bash -c "</dev/tcp/ngrok/4040"
       interval: 60s
       timeout: 1s
       retries: 2
@@ -115,6 +115,7 @@ services:
 
   redis:
     image: redis:6.2-alpine
+#    command: RUN chmod 1777 /tmp
     volumes:
       - redis:/data
     ports:
@@ -128,12 +129,14 @@ services:
 
   spec:
     <<: *backend
-    command: bash -c "RAILS_ENV=test bin/rails db:create"
+    command: bash -c "RAILS_ENV=test bin/rails db:create || true"
     environment:
       <<: *env
       RAILS_ENV: test
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/tramline_site_test
     depends_on:
+      setup:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       postgres:

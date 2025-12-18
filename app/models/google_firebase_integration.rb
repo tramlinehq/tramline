@@ -3,6 +3,8 @@
 # Table name: google_firebase_integrations
 #
 #  id             :uuid             not null, primary key
+#  android_config :jsonb
+#  ios_config     :jsonb
 #  json_key       :string
 #  project_number :string
 #  created_at     :datetime         not null
@@ -21,12 +23,18 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   encrypts :json_key, deterministic: true
 
+  PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
+
   validate :correct_key, on: :create
+  validates :ios_config,
+    allow_blank: true,
+    json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
+  validates :android_config,
+    allow_blank: true,
+    json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
 
   delegate :cache, to: Rails
   delegate :integrable, to: :integration
-  delegate :config, to: :integrable
-  delegate :firebase_app, to: :config
 
   after_create_commit :fetch_channels
 
@@ -47,6 +55,17 @@ class GoogleFirebaseIntegration < ApplicationRecord
   EMPTY_CHANNEL = {id: :no_testers, name: "No testers (upload only)"}
 
   CACHE_EXPIRY = 1.month
+
+  INVALID_PLATFORM_ERROR = "platform must be valid"
+
+  def firebase_app(platform)
+    case platform
+    when "android" then android_config["app_id"]
+    when "ios" then ios_config["app_id"]
+    else
+      raise ArgumentError, INVALID_PLATFORM_ERROR
+    end
+  end
 
   def installation
     Installations::Google::Firebase::Api.new(project_number, access_key)

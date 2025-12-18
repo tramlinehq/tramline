@@ -1,0 +1,14 @@
+<%= render ModalComponent.new(title: "Choose a release type", size: modal_size) do |modal| %>
+  <% modal.with_button(label:, scheme: :default, type: :action, size: :xxs, disabled: !release_startable?)
+       .with_icon("play.svg", size: play_icon_size) %>
+  <% modal.with_body do %>
+    <% if train.almost_trunk? %>
+      <div class="mb-6 flex flex-row lg:items-center items-start gap-x-1 text-secondary">
+        <%= render IconComponent.new("git_branch.svg", size: branch_icon_size) %>
+        <div class="text-sm"><%== branch_help_html %></div>
+      </div>
+    <% end %>
+
+    <%= render partial: release_form_partial, locals: {app:, train:, release_options:} %>
+  <% end %>
+<% end %>

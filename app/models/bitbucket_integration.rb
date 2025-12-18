@@ -5,6 +5,8 @@
 #  id                  :uuid             not null, primary key
 #  oauth_access_token  :string
 #  oauth_refresh_token :string
+#  repository_config   :jsonb
+#  workspace           :string
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
@@ -26,8 +28,23 @@ class BitbucketIntegration < ApplicationRecord
   attr_accessor :code
   before_create :complete_access
   delegate :integrable, to: :integration
-  delegate :code_repository_name, to: :app_config
   delegate :cache, to: Rails
+
+  def repository_id
+    repository_config&.fetch("id", nil)
+  end
+
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
+
+  def code_repo_url
+    repository_config&.dig("repo_url", "href")
+  end
+
+  def code_repo_namespace = nil
+
+  def code_repo_name_only = nil
 
   def install_path
     BASE_INSTALLATION_URL
@@ -59,7 +76,7 @@ class BitbucketIntegration < ApplicationRecord
   def project_link = nil
 
   def further_setup?
-    false
+    true
   end
 
   def enable_auto_merge? = false
@@ -378,10 +395,6 @@ class BitbucketIntegration < ApplicationRecord
 
   def set_tokens(tokens)
     assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token) if tokens
-  end
-
-  def app_config
-    integrable.config
   end
 
   def redirect_uri

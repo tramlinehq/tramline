@@ -2,10 +2,11 @@
 #
 # Table name: github_integrations
 #
-#  id              :uuid             not null, primary key
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  installation_id :string           not null
+#  id                :uuid             not null, primary key
+#  repository_config :jsonb
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  installation_id   :string           not null
 #
 class GithubIntegration < ApplicationRecord
   has_paper_trail
@@ -18,7 +19,6 @@ class GithubIntegration < ApplicationRecord
 
   validates :installation_id, presence: true
 
-  delegate :code_repository_name, :code_repo_namespace, :code_repo_name_only, to: :app_config
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
   delegate :cache, to: Rails
@@ -110,6 +110,26 @@ class GithubIntegration < ApplicationRecord
     generated_at: :created_at
   }
 
+  def repository_id
+    repository_config&.fetch("id", nil)
+  end
+
+  def code_repository_name
+    repository_config&.fetch("full_name", nil)
+  end
+
+  def code_repo_url
+    repository_config&.fetch("repo_url", nil)
+  end
+
+  def code_repo_namespace
+    repository_config&.fetch("namespace", nil)
+  end
+
+  def code_repo_name_only
+    repository_config&.fetch("name", nil)
+  end
+
   def install_path
     BASE_INSTALLATION_URL
       .expand(app_name: creds.integrations.github.app_name, params: {
@@ -119,7 +139,7 @@ class GithubIntegration < ApplicationRecord
 
   def workspaces = nil
 
-  def repos(_)
+  def repos(_ = nil)
     installation.list_repos(REPOS_TRANSFORMATIONS)
   end
 
@@ -205,7 +225,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def further_setup?
-    false
+    true
   end
 
   def enable_auto_merge? = true
@@ -373,10 +393,6 @@ class GithubIntegration < ApplicationRecord
 
   def update_webhook!(id, url_params)
     installation.update_repo_webhook!(code_repository_name, id, events_url(url_params), WEBHOOK_TRANSFORMATIONS)
-  end
-
-  def app_config
-    integrable.config
   end
 
   def events_url(params)
