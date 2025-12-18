@@ -21,6 +21,8 @@ class Coordinators::UpdateBuildOnProduction
         submission.retrigger!
       end
     end
+
+    production_release.event_stamp!(reason: :build_updated, kind: :notice, data: production_release.stamp_data)
   end
 
   attr_reader :submission, :production_release, :build
