@@ -16,9 +16,8 @@ class WebHandlers::UpdateReleasePlatformConfig
   attr_reader :config, :errors
 
   def call
-    params = transform_params(@original_params.deep_dup)
-
     ActiveRecord::Base.transaction do
+      params = transform_params(@original_params.deep_dup)
       config.update!(params)
     end
 
