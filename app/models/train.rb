@@ -52,6 +52,7 @@
 #  vcs_webhook_id                                 :string
 #
 class Train < ApplicationRecord
+  self.skip_time_zone_conversion_for_attributes = [:kickoff_at]
   has_paper_trail
   using RefinedArray
   using RefinedString
@@ -233,12 +234,11 @@ class Train < ApplicationRecord
 
     base_time = last_run_at
     now = Time.current
-
     return base_time if now < base_time
 
-    time_difference = now - base_time
-    elapsed_durations = (time_difference / repeat_duration.to_i).ceil
-    base_time + (repeat_duration.to_i * elapsed_durations)
+    elapsed = ((now - base_time) / repeat_duration.to_i).ceil
+    # Use duration object (not seconds) for DST-safe addition
+    base_time + (repeat_duration * elapsed)
   end
 
   def runnable?
@@ -246,7 +246,43 @@ class Train < ApplicationRecord
   end
 
   def last_run_at
-    scheduled_releases.last&.scheduled_at || kickoff_at
+    scheduled_releases.last&.scheduled_at_in_app_time || kickoff_at_app_time
+  end
+
+  def kickoff_at=(time)
+    if time.blank?
+      write_attribute(:kickoff_at, nil)
+      return
+    end
+
+    if time.is_a?(String)
+      # Parse the string to extract date/time components, then create naive timestamp
+      # This ensures we store exactly what the user intended regardless of timezones
+      parsed = Time.zone.parse(time)
+      naive_time = Time.utc(parsed.year, parsed.month, parsed.day, parsed.hour, parsed.min, parsed.sec)
+    else
+      # For Time objects, extract components and create naive timestamp
+      naive_time = Time.utc(time.year, time.month, time.day, time.hour, time.min, time.sec)
+    end
+
+    write_attribute(:kickoff_at, naive_time)
+  end
+
+  # Treat kickoff_at as a naive local datetime and interpret it in the app's timezone
+  # This prevents DST shifts since we always use the same local time
+  def kickoff_at_app_time
+    return unless kickoff_at
+    # Extract time components and rebuild in the current timezone context
+    Time.use_zone(app.timezone) do
+      Time.zone.local(
+        kickoff_at.year,
+        kickoff_at.month,
+        kickoff_at.day,
+        kickoff_at.hour,
+        kickoff_at.min,
+        kickoff_at.sec
+      )
+    end
   end
 
   def diff_since_last_release?
@@ -600,7 +636,7 @@ class Train < ApplicationRecord
   def valid_schedule
     if release_schedule_changed?
       errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless kickoff_at.present? && repeat_duration.present?
-      errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at <= Time.current
+      errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at_app_time <= Time.current
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
     end
   end

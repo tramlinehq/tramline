@@ -74,8 +74,12 @@ class ScheduledTrainComponent < BaseComponent
 
   def time_text(scheduled_release)
     return unless scheduled_release
-    return "Scheduled for #{time_format(scheduled_release.scheduled_at, only_time: true)}" if scheduled_release.scheduled_at.past? || scheduled_release.scheduled_at.future?
-    "Running"
+
+    if scheduled_release.scheduled_at.past? || scheduled_release.scheduled_at.future?
+      "Scheduled for #{time_format(scheduled_release.scheduled_at_in_app_time, only_time: true)}"
+    else
+      "Running"
+    end
   end
 
   def ongoing_text
@@ -85,8 +89,12 @@ class ScheduledTrainComponent < BaseComponent
 
   def past_text(past_release)
     return unless past_release
-    return "Originally scheduled for #{time_format(past_release.scheduled_at, only_time: true)}" unless past_release.is_success?
-    "Started at #{time_format(past_release.scheduled_at, only_time: true)}"
+
+    if past_release.is_success?
+      "Started at #{time_format(past_release.scheduled_at_in_app_time, only_time: true)}"
+    else
+      "Originally scheduled for #{time_format(past_release.scheduled_at_in_app_time, only_time: true)}"
+    end
   end
 
   def past_title(past_release)
@@ -101,7 +109,7 @@ class ScheduledTrainComponent < BaseComponent
 
   def next_to_next_run_at
     return unless future_release
-    future_release.scheduled_at + train.repeat_duration
+    future_release.scheduled_at_in_app_time + train.repeat_duration
   end
 
   def next_version
