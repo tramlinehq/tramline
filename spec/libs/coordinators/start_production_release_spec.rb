@@ -56,11 +56,27 @@ describe Coordinators::StartProductionRelease do
       }.not_to change(release_platform_run.production_releases, :size)
     end
 
-    it "does nothing if there the previous production release is inflight" do
-      _previous_production_release = create(:production_release, :inflight, release_platform_run:)
+    it "changes the build to the latest release candidate if production release is inflight and submission is in pre_review state" do
+      previous_production_release = create(:production_release, :inflight, release_platform_run:)
+      store_submission = create(:play_store_submission, :created, parent_release: previous_production_release)
+      expect(store_submission).to be_pre_review
+      original_build = previous_production_release.build
+
+      described_class.call(release_platform_run, build.id)
+      expect(previous_production_release.reload.build).to eq(build)
+      expect(previous_production_release.reload.build).not_to eq(original_build)
+    end
+
+    it "does nothing if production release is inflight but submission is not in pre_review state" do
+      previous_production_release = create(:production_release, :inflight, release_platform_run:)
+      store_submission = create(:play_store_submission, :prepared, parent_release: previous_production_release)
+      expect(store_submission).not_to be_pre_review
+
+      original_build = previous_production_release.build
       expect {
         described_class.call(release_platform_run, build.id)
       }.not_to change(release_platform_run.reload.production_releases, :size)
+      expect(previous_production_release.reload.build).to eq(original_build)
     end
 
     it "creates a production release" do
