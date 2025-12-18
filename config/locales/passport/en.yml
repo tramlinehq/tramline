@@ -36,6 +36,7 @@ en:
       finished_html: 'Finished the production release for <span class="emphasize">%{version} (%{build_number})</span>'
       vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
       tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
+      build_updated_html: 'In-flight production release was updated with a new build <span class="emphasize">%{version} (%{build_number})</span>'
     workflow_run:
       triggered_html: 'A new %{kind} workflow run was triggered for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name}</span>'
       retried_html: 'The workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> was retried for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
