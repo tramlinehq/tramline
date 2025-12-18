@@ -1,0 +1,11 @@
+<% frame = EnhancedTurboFrameComponent.new(:app_search_results, classes: "with-turbo-frame-loader") %>
+<% frame.with_loading_indicator %>
+<%= render frame do %>
+  <div class="max-h-80 overflow-y-auto pr-3">
+    <% if @apps.present? %>
+      <%= render AppListComponent.new(apps: @apps) %>
+    <% else %>
+      <div class="text-xs text-secondary">Search both stores; results appear below.</div>
+    <% end %>
+  </div>
+<% end %>

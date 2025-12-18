@@ -5,17 +5,10 @@ class SearchBarComponent < BaseComponent
   DEFAULT_QUERY_FIELD = "search_pattern"
 
   renders_one :notice
-  renders_one :search, types: {
-    form: ->(url:, **options) {
-      form_with url:, method: :get, data: {search_form_target: "form", turbo_frame:, turbo_action: "advance"}, **options.except(:data) do |form|
-        form.hidden_field query_field
-      end
-    },
-    stream_form: ->(url:, **options) {
-      form_with url:, method: :get, data: {search_form_target: "form", turbo_frame:, turbo_stream: true}, **options.except(:data) do |form|
-        form.hidden_field query_field
-      end
-    }
+  renders_one :search_form, ->(url:, turbo_action: nil) {
+    form_with url:, method: :get, data: {search_form_target: "form", turbo_frame:, turbo_action:} do |form|
+      form.hidden_field query_field
+    end
   }
 
   def initialize(search_name:, search_value:, search_placeholder:, turbo_frame: DEFAULT_FRAME, query_field: DEFAULT_QUERY_FIELD)

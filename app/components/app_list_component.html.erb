@@ -1,0 +1,8 @@
+<% if apps.present? %>
+  <div class="text-xs text-secondary mb-3">Showing <%= apps.size %> <%= 'result'.pluralize(apps.size) %></div>
+  <div class="grid grid-cols-12 gap-6">
+    <% apps.each do |app| %>
+      <%= render AppListItemComponent.new(app: app) %>
+    <% end %>
+  </div>
+<% end %>
