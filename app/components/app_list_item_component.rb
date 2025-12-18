@@ -12,7 +12,7 @@ class AppListItemComponent < BaseComponent
   end
 
   def description
-    app["description"].truncate(50)
+    app["description"].truncate(100)
   end
 
   def icon_url
@@ -36,6 +36,10 @@ class AppListItemComponent < BaseComponent
   end
 
   def platform
-    store == "app-store" ? "ios" : "android"
+    (store == "app-store") ? "ios" : "android"
+  end
+
+  def app_id
+    "app_#{bundle_id&.parameterize}"
   end
 end

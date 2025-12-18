@@ -1,11 +1,66 @@
 <% frame = EnhancedTurboFrameComponent.new(:app_search_results, classes: "with-turbo-frame-loader") %>
 <% frame.with_loading_indicator %>
 <%= render frame do %>
-  <div class="max-h-80 overflow-y-auto pr-3">
-    <% if @apps.present? %>
-      <%= render AppListComponent.new(apps: @apps) %>
-    <% else %>
-      <div class="text-xs text-secondary">Search both stores; results appear below.</div>
-    <% end %>
-  </div>
+  <% if @apps.present? %>
+    <div data-controller="reveal">
+      <div class="text-xs text-secondary mb-3">Showing <%= @apps.size %> <%= "result".pluralize(@apps.size) %></div>
+      <div class="max-h-80 overflow-y-auto pr-3">
+        <%= render AppListComponent.new(apps: @apps) %>
+      </div>
+
+      <div data-reveal hidden class="mt-6">
+        <%= render FormComponent.new(model: [new_app], free_form: true) do |form| %>
+          <div class="grid gap-4 mb-4 sm:grid-cols-2">
+            <div class="sm:col-span-2"
+                data-controller="domain--build-number-help"
+                data-domain--build-number-help-number-current-value="">
+
+              <%= render Form::SwitchComponent.new(form: form.F,
+                                                   field_name: :build_number_managed_internally,
+                                                   on_label: "Build number managed by Tramline",
+                                                   off_label: "Build number managed externally (using CI pipelines)",
+                                                   hide_child: @app&.build_number_managed_externally?,
+                                                   switch_id: "add_build_number_managed_internally") do |component| %>
+
+                <% component.with_info_icon do %>
+                  <%= render partial: "apps/build_number_management_help" %>
+                <% end %>
+
+                <% component.with_child do %>
+                  <%= form.F.labeled_number_field :build_number,
+                                                  "Build Number",
+                                                  {data: {domain__build_number_help_target: "input",
+                                                          action: "domain--build-number-help#increment"}} %>
+                  <div class="text-secondary text-sm my-1 dark:text-main-200">
+                    <p>
+                      <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
+                      <span class="font-semibold" data-domain--build-number-help-target="helpTextVal"></span>
+                    </p>
+                    <p class="pt-1">
+                      This number
+                      <strong>must be</strong> the same or higher than the build number of the last build you
+                      deployed to the store.
+                      If you make a mistake, you can edit this later.
+                    </p>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+
+            <div><%= form.F.labeled_select :platform, "Mobile Platform", options_for_select(App.allowed_platforms, "Android") %></div>
+            <div><%= form.F.labeled_tz_select :timezone, "Timezone", default_timezones, {model: ActiveSupport::TimeZone} %></div>
+          </div>
+
+          <%# TODO: add hidden fields for name, bundle identifier, description, icon %>
+          <%# TODO: figure out how to validate and attach the app icon via the searched app's image URL %>
+
+          <% form.with_action do %>
+            <%= form.F.authz_submit "Add an app", "plus.svg" %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="text-xs text-secondary">Search both stores; results appear below.</div>
+  <% end %>
 <% end %>
