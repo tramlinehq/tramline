@@ -2,14 +2,14 @@
 <% frame.with_loading_indicator %>
 <%= render frame do %>
   <% if @apps.present? %>
-    <div data-controller="reveal">
+    <div data-controller="reveal domain--app-selector">
       <div class="text-xs text-secondary mb-3">Showing <%= @apps.size %> <%= "result".pluralize(@apps.size) %></div>
       <div class="max-h-80 overflow-y-auto pr-3">
         <%= render AppListComponent.new(apps: @apps) %>
       </div>
 
       <div data-reveal hidden class="mt-6">
-        <%= render FormComponent.new(model: [new_app], free_form: true) do |form| %>
+        <%= render FormComponent.new(model: [new_app], free_form: true, data: {domain__app_selector_target: :form}) do |form| %>
           <div class="grid gap-4 mb-4 sm:grid-cols-2">
             <div class="sm:col-span-2"
                 data-controller="domain--build-number-help"
@@ -51,8 +51,10 @@
             <div><%= form.F.labeled_tz_select :timezone, "Timezone", default_timezones, {model: ActiveSupport::TimeZone} %></div>
           </div>
 
-          <%# TODO: add hidden fields for name, bundle identifier, description, icon %>
           <%# TODO: figure out how to validate and attach the app icon via the searched app's image URL %>
+          <%= form.F.hidden_field :name %>
+          <%= form.F.hidden_field :bundle_identifier %>
+          <%= form.F.hidden_field :description %>
 
           <% form.with_action do %>
             <%= form.F.authz_submit "Add an app", "plus.svg" %>
