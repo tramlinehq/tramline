@@ -5,4 +5,4 @@ FactoryBot.define do
     sequence(:name) { |n| "Channel #{n}" }
     internal { true }
   end
-end 
+end

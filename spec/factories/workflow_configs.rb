@@ -14,4 +14,4 @@ FactoryBot.define do
       kind { "release_candidate" }
     end
   end
-end 
+end

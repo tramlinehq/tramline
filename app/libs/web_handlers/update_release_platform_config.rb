@@ -1,6 +1,3 @@
-# TODO: ensure the maps are consistently mutated or copied
-# TODO: write tests for this service
-# TODO: list down scenarios this doesn't solve for
 class WebHandlers::UpdateReleasePlatformConfig
   using RefinedString
 
@@ -17,8 +14,8 @@ class WebHandlers::UpdateReleasePlatformConfig
 
   def call
     ActiveRecord::Base.transaction do
-      params = transform_params(@original_params.deep_dup)
-      config.update!(params)
+      new_params = transform_params(@original_params.deep_dup)
+      config.update!(new_params)
     end
 
     errors.empty?
@@ -32,107 +29,84 @@ class WebHandlers::UpdateReleasePlatformConfig
   attr_reader :submission_types, :ci_actions, :release_platform
 
   def transform_params(params)
+    mark_for_conditional_destruction(params)
+    transform_workflow_data(params)
+    transform_submission_data(params)
+    transform_production_data(params)
     params
-      .then { |p| transform_conditional_destruction(p.deep_dup) }
-      .then { |p| transform_workflow_data(p.deep_dup) }
-      .then { |p| transform_submission_data(p.deep_dup) }
-      .then { |p| transform_production_data(p.deep_dup) }
   end
 
-  def transform_conditional_destruction(params)
-    internal_enabled = params[:internal_release_enabled] == "true"
-    beta_enabled = params[:beta_release_submissions_enabled] == "true"
-    prod_enabled = params[:production_release_enabled] == "true"
-
-    # if internal releases were shut off, remove all previous internal data
-    if !internal_enabled && params[:internal_release_attributes].present?
-      mark_for_destruction(params[:internal_release_attributes])
-      mark_for_destruction(params[:internal_workflow_attributes])
-    end
-
-    # if beta releases were shut off, remove all previous beta data
-    if !beta_enabled && params[:beta_release_attributes].present?
-      params[:beta_release_attributes][:submissions_attributes]&.each do |_, submission|
-        mark_for_destruction(submission)
-        if submission[:submission_external_attributes]
-          mark_for_destruction(submission[:submission_external_attributes])
-        end
+  def mark_for_conditional_destruction(params)
+    unless enabled?(params, :internal_release_enabled)
+      if params[:internal_release_attributes].present?
+        mark_for_destruction(params[:internal_release_attributes])
+      end
+      if params[:internal_workflow_attributes].present?
+        mark_for_destruction(params[:internal_workflow_attributes])
       end
     end
 
-    # if prod release was shut off, remove all previous prod data
-    if !prod_enabled && params[:production_release_attributes].present?
-      mark_for_destruction(params[:production_release_attributes])
+    unless enabled?(params, :beta_release_submissions_enabled)
+      params[:beta_release_attributes]&.dig(:submissions_attributes)&.each_value do |submission|
+        mark_for_destruction(submission)
+        mark_for_destruction(submission[:submission_external_attributes])
+      end
     end
 
-    params
+    unless enabled?(params, :production_release_enabled)
+      if params[:production_release_attributes].present?
+        mark_for_destruction(params[:production_release_attributes])
+      end
+    end
   end
 
-  # assign workflow names based on identifiers from the form
   def transform_workflow_data(params)
-    params[:internal_workflow_attributes] = add_workflow_name(params[:internal_workflow_attributes])
-    params[:release_candidate_workflow_attributes] = add_workflow_name(params[:release_candidate_workflow_attributes])
-    params
+    add_workflow_name(params[:internal_workflow_attributes])
+    add_workflow_name(params[:release_candidate_workflow_attributes])
   end
 
   def transform_submission_data(params)
-    params[:internal_release_attributes] = transform_submissions(params[:internal_release_attributes])
-    params[:beta_release_attributes] = transform_submissions(params[:beta_release_attributes])
-
-    params[:internal_release_attributes] = reorder_submissions(@config.internal_release&.submissions, params[:internal_release_attributes])
-    params[:beta_release_attributes] = reorder_submissions(@config.beta_release&.submissions, params[:beta_release_attributes])
-    params
+    transform_submissions(params[:internal_release_attributes])
+    transform_submissions(params[:beta_release_attributes])
   end
 
   def transform_production_data(params)
-    return params unless release_platform.android? && params[:production_release_attributes].present?
+    return unless release_platform.android?
 
-    submission = params[:production_release_attributes][:submissions_attributes]&.fetch("0", nil)
-    return params if submission.blank?
+    submission = params.dig(:production_release_attributes, :submissions_attributes, "0")
+    return if submission.blank?
 
-    params[:production_release_attributes][:submissions_attributes]["0"] = transform_rollout_data(submission.deep_dup)
-    params
+    transform_rollout_data(submission)
   end
 
   def transform_rollout_data(submission)
-    if submission[:rollout_enabled] == "true"
+    if enabled?(submission, :rollout_enabled)
       submission[:rollout_stages] = submission[:rollout_stages].safe_csv_parse(coerce_float: true)
     else
       submission[:rollout_stages] = []
       submission[:finish_rollout_in_next_release] = false
     end
-
-    submission
   end
 
   def transform_submissions(release_attrs)
-    return nil if release_attrs.blank?
-    new_release_attrs = release_attrs.deep_dup
+    return if release_attrs.blank?
 
-    new_release_attrs[:submissions_attributes]&.transform_values! do |submission|
+    release_attrs[:submissions_attributes]&.each_value do |submission|
       transform_single_submission(submission)
     end
-
-    new_release_attrs
   end
 
   def transform_single_submission(submission)
-    new_submission = submission.deep_dup
     variant = find_variant(submission[:integrable_id])
-    return new_submission unless variant
+    return unless variant
 
-    new_submission[:integrable_type] = variant[:type]
-    ext_sub = find_external_submission(new_submission, variant)
+    submission[:integrable_type] = variant[:type]
+    ext_sub = find_external_submission(submission, variant)
 
-    if ext_sub.present? && new_submission[:submission_external_attributes].present?
-      new_submission[:submission_external_attributes] = {
-        **new_submission[:submission_external_attributes],
-        name: ext_sub[:name],
-        internal: ext_sub[:is_internal]
-      }
+    if ext_sub.present? && submission[:submission_external_attributes].present?
+      submission[:submission_external_attributes][:name] = ext_sub[:name]
+      submission[:submission_external_attributes][:internal] = ext_sub[:is_internal]
     end
-
-    new_submission
   end
 
   def find_variant(integrable_id)
@@ -144,51 +118,24 @@ class WebHandlers::UpdateReleasePlatformConfig
     identifier = submission.dig(:submission_external_attributes, :identifier)
     return nil unless identifier
 
-    variant[:submissions]
-      .find { |type| type[:type].to_s == submission[:submission_type].to_s }
-      &.then { |sub| sub.dig(:channels) }
-      &.then { |channels| channels.find { |channel| channel[:id].to_s == identifier } }
+    submission_type = submission[:submission_type].to_s
+    matching_type = variant[:submissions].find { |t| t[:type].to_s == submission_type }
+    matching_type&.dig(:channels)&.find { |c| c[:id].to_s == identifier }
   end
 
   def add_workflow_name(workflow_attrs)
-    return workflow_attrs if workflow_attrs.blank?
+    return if workflow_attrs.blank?
+    return if workflow_attrs[:identifier].blank?
 
-    new_attrs = workflow_attrs.deep_dup
-    if new_attrs[:identifier].present?
-      new_attrs[:name] = ci_actions.find { |action| action[:id] == new_attrs[:identifier] }&.dig(:name)
-    end
-    new_attrs
+    workflow_attrs[:name] = ci_actions.find { |a| a[:id] == workflow_attrs[:identifier] }&.dig(:name)
+  end
+
+  def enabled?(params, key)
+    params[key] == "true"
   end
 
   def mark_for_destruction(attrs)
     attrs[:_destroy] = "1" if attrs.present?
-  end
-
-  def reorder_submissions(existing_submissions_relation, release_attrs)
-    return release_attrs if existing_submissions_relation.blank? || release_attrs.blank?
-
-    # Sort submissions by their current number order
-    sorted_submissions = release_attrs[:submissions_attributes].to_h
-      .reject { |_, attrs| attrs["_destroy"] == "1" }
-      .sort_by { |_, attrs| attrs["number"].to_i }
-
-    # Temporarily update existing submission numbers to negative values to avoid conflicts
-    existing_submissions = existing_submissions_relation.index_by(&:id)
-    existing_submissions.each { |_, sub| sub.update!(number: -sub.number) }
-
-    # Re-assign numbers based on sorted order (starting from 1, 2, 3, ...)
-    new_release_attrs = release_attrs.deep_dup
-    sorted_submissions.each_with_index do |(id, submission_attrs), index|
-      new_number = index + 1
-      new_release_attrs[:submissions_attributes][id]["number"] = new_number.to_s
-
-      if submission_attrs["id"].present?
-        existing_sub = existing_submissions[submission_attrs["id"].to_i]
-        existing_sub&.update!(number: new_number)
-      end
-    end
-
-    new_release_attrs
   end
 
   def copy_errors_from(record)

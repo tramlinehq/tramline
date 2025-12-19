@@ -1,6 +1,16 @@
 require "rails_helper"
 
 RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
+  subject(:service) do
+    described_class.new(
+      config,
+      params,
+      submission_types,
+      ci_actions,
+      release_platform
+    )
+  end
+
   let(:config) { create(:release_platform_config) }
   let(:submission_types) do
     {
@@ -12,7 +22,7 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
             {
               type: "internal",
               channels: [
-                { id: "internal_channel", name: "Internal", is_internal: true }
+                {id: "internal_channel", name: "Internal", is_internal: true}
               ]
             }
           ]
@@ -22,20 +32,10 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
   end
   let(:ci_actions) do
     [
-      { id: "workflow_1", name: "Build and Deploy" }
+      {id: "workflow_1", name: "Build and Deploy"}
     ]
   end
   let(:release_platform) { create(:release_platform, :android) }
-
-  subject(:service) do
-    described_class.new(
-      config,
-      params,
-      submission_types,
-      ci_actions,
-      release_platform
-    )
-  end
 
   describe "#call" do
     context "when updating internal release settings" do
@@ -188,7 +188,7 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
 
           it "clears rollout data" do
             expect(service.call).to be true
-            
+
             config.reload
             submission = config.production_release.submissions.first
             expect(submission.rollout_stages).to be_empty
@@ -200,13 +200,16 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
 
     context "when reordering submissions" do
       let!(:existing_config) { create(:release_platform_config) }
-      let!(:submission1) { create(:submission, number: 1, release: existing_config.internal_release) }
-      let!(:submission2) { create(:submission, number: 2, release: existing_config.internal_release) }
+      let!(:internal_release) { create(:release_step_config, :internal, release_platform_config: existing_config) }
+      let!(:internal_workflow) { create(:workflow_config, :internal, release_platform_config: existing_config) }
+      let!(:submission1) { create(:submission_config, release_step_config: internal_release) }
+      let!(:submission2) { create(:submission_config, release_step_config: internal_release) }
 
       let(:params) do
         {
           internal_release_enabled: "true",
           internal_release_attributes: {
+            id: internal_release.id,
             submissions_attributes: {
               "0" => {
                 id: submission2.id,
@@ -226,13 +229,13 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
         expect(service.call).to be true
 
         existing_config.reload
-        expect(existing_config.internal_release.submissions.order(:number).pluck(:id))
+        expect(internal_release.submissions.order(:number).pluck(:id))
           .to eq([submission2.id, submission1.id])
       end
     end
 
     context "with invalid params" do
-      let(:params) { { internal_release_enabled: nil } }
+      let(:params) { {internal_release_enabled: nil} }
 
       it "returns false and adds errors" do
         expect(service.call).to be false
@@ -240,4 +243,4 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
       end
     end
   end
-end 
+end
