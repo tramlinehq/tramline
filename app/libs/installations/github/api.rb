@@ -10,6 +10,7 @@ module Installations
     WEBHOOK_EVENTS = %w[push pull_request]
     LIST_WORKFLOWS_LIMIT = 99
     RERUN_FAILED_JOBS_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/actions/runs/{run_id}/rerun-failed-jobs"
+    WORKFLOW_DISPATCH_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/actions/workflows/{workflow_id}/dispatches"
     GENERATE_RELEASE_NOTES_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/releases/generate-notes"
 
     def initialize(installation_id)
@@ -82,6 +83,11 @@ module Installations
       end
     end
 
+    # Disabling the Octokit version, since GH is now sending 200 as success status message instead of 204,
+    # in which the library fails to interpret it as success.
+    #
+    # What the library is doing is technically correct as per the docs: https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event
+    # This custom execute will work even if they realize this mistake and revert back to 204.
     def run_workflow!(repo, id, ref, inputs, commit_hash)
       inputs =
         inputs
@@ -92,11 +98,33 @@ module Installations
           .then { {"tramline-input" => _1} }
           .merge(inputs[:parameters])
 
-      execute do
-        @client
-          .workflow_dispatch(repo, id, ref, inputs:)
-          .then { |ok| ok.presence || raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed)) }
+      params = {
+        json: {
+          inputs: inputs,
+          ref: ref
+        }
+      }
+
+      # execute do
+      #     @client
+      #       .workflow_dispatch(repo, id, ref, inputs:)
+      #       .then { |ok| ok.presence || raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed)) }
+
+      begin
+        execute_custom do |custom_client|
+          custom_client.post(
+            WORKFLOW_DISPATCH_URL
+              .expand(repo: repo, workflow_id: id)
+              .to_s
+              .then { |url| URI.decode_www_form_component(url) },
+            params
+          )
+        end
+      rescue
+        raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed))
       end
+
+      true
     end
 
     def cancel_workflow!(repo, run_id)
