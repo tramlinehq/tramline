@@ -7,6 +7,7 @@ class Triggers::VersionBump
 
   def self.call(release)
     return unless release.train.version_bump_enabled?
+    return if release.hotfix?
     new(release).call
   end
 
