@@ -55,6 +55,7 @@
           <%= form.F.hidden_field :name %>
           <%= form.F.hidden_field :bundle_identifier %>
           <%= form.F.hidden_field :description %>
+          <%= form.F.hidden_field :icon_url %>
 
           <% form.with_action do %>
             <%= form.F.authz_submit "Add an app", "plus.svg" %>

@@ -20,10 +20,12 @@ export default class extends Controller {
       const nameField = form.querySelector('[name*="name"]')
       const bundleIdField = form.querySelector('[name*="bundle_identifier"]')
       const descriptionField = form.querySelector('[name*="description"]')
+      const iconUrlField = form.querySelector('[name*="icon_url"]')
 
       if (nameField) nameField.value = appData.name || ""
       if (bundleIdField) bundleIdField.value = appData.bundleId || ""
       if (descriptionField) descriptionField.value = appData.description || ""
+      if (iconUrlField) iconUrlField.value = appData.iconUrl || ""
     } catch (e) {
       console.error("Failed to parse app data:", e)
     }
