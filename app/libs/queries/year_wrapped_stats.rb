@@ -46,7 +46,8 @@ class Queries::YearWrappedStats
       most_active_pilot: most_active_pilot,
       growth_vs_previous_year: growth_vs_previous_year,
       velocity_improvement: velocity_improvement,
-      top_contributor: top_contributor
+      top_contributor: top_contributor,
+      mean_time_to_recovery: mean_time_to_recovery
     }
   end
 
@@ -96,6 +97,45 @@ class Queries::YearWrappedStats
     end
 
     (total_patch_fixes.to_f / production_releases_count).round(2)
+  end
+
+  memoize def mean_time_to_recovery
+    # Collect all recovery times (time between fixes)
+    recovery_times = []
+
+    # 1. Get time between patch fixes (production releases)
+    year_releases.each do |release|
+      release.release_platform_runs.each do |run|
+        prod_releases = run.production_releases.reorder(:created_at).to_a
+        next if prod_releases.count < 2
+
+        # Calculate time between consecutive production releases (patches)
+        prod_releases.each_cons(2) do |prev_release, next_release|
+          time_diff = next_release.created_at - prev_release.created_at
+          recovery_times << time_diff
+        end
+      end
+    end
+
+    # 2. Get time between hotfixes
+    hotfix_releases = year_releases.where(release_type: :hotfix).reorder(:created_at).to_a
+    hotfix_releases.group_by(&:hotfixed_from).each do |_original_id, hotfixes|
+      next if hotfixes.count < 2
+
+      hotfixes.sort_by!(&:created_at)
+      hotfixes.each_cons(2) do |prev_hotfix, next_hotfix|
+        time_diff = next_hotfix.created_at - prev_hotfix.created_at
+        recovery_times << time_diff
+      end
+    end
+
+    return "N/A" if recovery_times.empty?
+
+    # Calculate average in days
+    average_seconds = recovery_times.sum / recovery_times.size.to_f
+    average_days = (average_seconds / 1.day).round(2)
+
+    "#{average_days} days"
   end
 
   memoize def reldex_scores
@@ -225,15 +265,24 @@ class Queries::YearWrappedStats
   end
 
   memoize def most_active_pilot
-    pilots_with_count = year_releases
-      .filter_map(&:release_pilot)
-      .group_by(&:itself)
+    # Get all events for all releases in the year
+    all_events = year_releases.flat_map do |release|
+      Queries::Events.all(release: release, params: Queries::Helpers::Parameters.new)
+    end
+
+    # Group by author and count activities, excluding Tramline (automatic events)
+    user_activity_count = all_events
+      .reject { |event| event.automatic? }
+      .group_by(&:author_id)
       .transform_values(&:count)
 
-    return "N/A" if pilots_with_count.empty?
+    return "N/A" if user_activity_count.empty?
 
-    most_active = pilots_with_count.max_by { |pilot, count| count }
-    most_active.first.name
+    # Find the most active user
+    most_active_user_id = user_activity_count.max_by { |user_id, count| count }.first
+    most_active_user = Accounts::User.find_by(id: most_active_user_id)
+
+    most_active_user&.preferred_name || most_active_user&.full_name || "N/A"
   end
 
   memoize def previous_year_releases
@@ -288,19 +337,24 @@ class Queries::YearWrappedStats
   end
 
   memoize def top_contributor
-    # Get all commits from year releases and group by author email
-    contributor_commits = year_releases.flat_map(&:all_commits)
+    # Get all commits from year releases (both all_commits and changelog commits)
+    all_commits = year_releases.flat_map do |release|
+      commits = release.all_commits.to_a
+      changelog_commits = release.release_changelog&.commits&.to_a || []
+      commits + changelog_commits
+    end
+
+    contributor_commits = all_commits
       .reject { |commit| bot_email?(commit.author_name) }
       .group_by(&:author_name)
       .transform_values(&:count)
 
     return "N/A" if contributor_commits.empty?
 
-    top_email = contributor_commits.max_by { |email, count| count }.first
+    top_names = contributor_commits.sort_by { |name, count| -count }.first(3).map(&:first)
 
-    # Try to get a cleaner name from the email or commits
-    sample_commit = year_releases.flat_map(&:all_commits).find { |c| c.author_email == top_email }
-    sample_commit&.author_name || top_email.split("@").first.humanize
+    # Names are already clean from author_name
+    top_names
   end
 
   def bot_email?(name)

@@ -53,6 +53,7 @@ namespace :year_wrapped do
     puts "💾 Total Commits Shipped: #{stats[:total_commits]}"
     puts "🔨 Total Builds Generated: #{stats[:total_builds]}"
     puts "🔧 Patch/Hotfixes per Release: #{stats[:patch_fixes_per_release]}"
+    puts "⏱️  Mean Time to Recovery: #{stats[:mean_time_to_recovery]}"
     puts "📈 Reldex Average: #{stats[:reldex_average]&.round(2) || "N/A"}"
     puts "🏆 Best Reldex: #{stats[:reldex_best]&.round(2) || "N/A"} (#{stats[:reldex_best_release] || "N/A"})"
     puts "📉 Worst Reldex: #{stats[:reldex_worst]&.round(2) || "N/A"} (#{stats[:reldex_worst_release] || "N/A"})"

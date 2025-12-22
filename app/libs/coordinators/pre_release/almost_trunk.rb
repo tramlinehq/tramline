@@ -22,7 +22,7 @@ module Coordinators
       private
 
       attr_reader :release, :release_branch
-      delegate :train, :hotfix?, :hotfix_with_new_branch?, to: :release
+      delegate :train, :hotfix_with_new_branch?, to: :release
       delegate :working_branch, :version_bump_enabled?, :current_version_before_release_branch?, :custom_commit_hash_input?, to: :train
 
       def create_default_release_branch
@@ -56,7 +56,6 @@ module Coordinators
       def version_bump_required?
         version_bump_enabled? &&
           current_version_before_release_branch? &&
-          !hotfix? &&
           @pre_release_version_bump_pr.blank?
       end
     end
