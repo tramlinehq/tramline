@@ -118,23 +118,19 @@
 
             <span class="mx-2 w-px h-5 bg-main-200 dark:bg-main-600"></span>
 
-            <%= render ModalComponent.new(title: "Add a new app", dismissable: false) do |modal| %>
-              <% mb = modal.with_button(scheme: :light, type: :action, size: :xxs) %>
-              <% mb.with_tooltip("Add a new app") %>
-              <% mb.with_icon("plus.svg", size: :md) %>
-              <% modal.with_body do %>
-                <%= render partial: "apps/form", locals: {app: new_app} %>
-              <% end %>
-            <% end %>
-
-            <%= render ModalComponent.new(title: "Add from store search", dismissable: true, size: :xl_4) do |modal| %>
+            <%= render ModalComponent.new(title: "Add a new app", dismissable: true) do |modal| %>
               <% sb = modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none) %>
-              <% sb.with_tooltip("Add via search") %>
-              <% sb.with_icon("search.svg", size: :md) %>
+              <% sb.with_tooltip("Add a new app") %>
+              <% sb.with_icon("plus.svg", size: :md) %>
               <% modal.with_body do %>
-                <% render SearchBarComponent.new(search_name: :apps_search, search_value: params[:apps_search_pattern], search_placeholder: "Search App Store and Play Store", turbo_frame: :app_search_results, query_field: :app_search_pattern) do |search| %>
-                  <% search.with_search_form url: search_apps_path(apps_search_pattern: params[:apps_search_pattern]) %>
-                  <div class="text-xs text-secondary mb-3">Search both stores; results appear below.</div>
+                <%= tag.turbo_frame id: :new_app_form do %>
+                  <%= render SearchBarComponent.new(search_name: :apps_search, search_value: params[:apps_search_pattern], search_placeholder: "Search App Store and Play Store", turbo_frame: :app_search_results, query_field: :app_search_pattern) do |search| %>
+                    <% search.with_search_form url: search_apps_path(apps_search_pattern: params[:apps_search_pattern]) %>
+                    <% search.with_notice do %>
+                      <%= link_to "Add manually", new_app_path, class: "underline hover:cursor-pointer text-xs ml-2" %>
+                    <% end %>
+                    <div class="text-xs text-secondary mb-3">Search both stores; results appear below.</div>
+                  <% end %>
                 <% end %>
               <% end %>
             <% end %>

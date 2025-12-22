@@ -1,0 +1,4 @@
+<%= turbo_frame_tag :new_app_form do %>
+  <%= link_to "Search your app", new_via_search_apps_path, class: "underline hover:cursor-pointer text-xs" %>
+  <%= render partial: "apps/form", locals: {app: new_app} %>
+<% end %>

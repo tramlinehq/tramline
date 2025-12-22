@@ -64,6 +64,7 @@ Rails.application.routes.draw do
   resources :apps do
     collection do
       get :search, to: "apps#search_apps"
+      get :new_via_search
     end
 
     member do

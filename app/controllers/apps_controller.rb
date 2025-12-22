@@ -31,7 +31,13 @@ class AppsController < SignedInApplicationController
     end
   end
 
+  def new
+  end
+
   def edit
+  end
+
+  def new_via_search
   end
 
   def create
