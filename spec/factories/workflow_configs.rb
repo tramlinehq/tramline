@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :workflow_config, class: "Config::Workflow" do
-    association :release_platform_config
+    release_platform_config
     sequence(:name) { |n| "Workflow #{n}" }
     sequence(:identifier) { |n| "workflow_#{n}" }
     kind { "release_candidate" }

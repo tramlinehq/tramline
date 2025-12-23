@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :release_step_config, class: "Config::ReleaseStep" do
-    association :release_platform_config
+    release_platform_config
     auto_promote { false }
     kind { "beta" }  # Default to beta since it's required
 

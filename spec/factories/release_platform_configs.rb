@@ -1,13 +1,11 @@
 FactoryBot.define do
   factory :release_platform_config, class: "Config::ReleasePlatform" do
-    association :release_platform
+    release_platform
 
     after(:build) do |config|
       # Required associations for a valid config
       config.release_candidate_workflow ||= build(:workflow_config, :release_candidate, release_platform_config: config)
       config.beta_release ||= build(:release_step_config, :beta, release_platform_config: config)
-      # Production release is required for a valid config (at least one release step)
-      config.production_release ||= build(:release_step_config, :production, release_platform_config: config)
     end
 
     trait :with_internal_release do
@@ -24,8 +22,8 @@ FactoryBot.define do
     end
 
     trait :with_production_release do
-      after(:create) do |config|
-        create(:release_step_config, :production, :with_submissions, release_platform_config: config)
+      after(:build) do |config|
+        config.production_release ||= build(:release_step_config, :production, release_platform_config: config)
       end
     end
   end

@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :submission_config, class: "Config::Submission" do
-    association :release_step_config
-    add_attribute(:submission_type) { "PlayStoreSubmission" }
+    release_step_config
+    submission_type { "PlayStoreSubmission" }
     rollout_enabled { false }
     rollout_stages { [] }
     auto_promote { false }

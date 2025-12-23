@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
+describe WebHandlers::UpdateReleasePlatformConfig do
   subject(:service) do
     described_class.new(config, params, submission_types, ci_actions, release_platform)
   end
@@ -8,7 +8,6 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
   let(:release_platform) { create(:release_platform) }
   let(:config) { release_platform.platform_config }
   let(:app) { release_platform.app }
-
   let(:submission_types) do
     {
       variants: [
@@ -28,7 +27,6 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
       ]
     }
   end
-
   let(:ci_actions) do
     [
       {id: "workflow_1", name: "Build and Deploy"},
@@ -101,16 +99,17 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
 
       context "when disabling production release" do
         before do
-          # Add internal release so we have at least one valid release step after disabling production
-          config.update!(
-            internal_workflow: Config::Workflow.new(kind: "internal", name: "Internal", identifier: "workflow_1"),
-            internal_release: Config::ReleaseStep.new(kind: "internal")
+          # Add beta submissions so beta_valid? returns true after disabling production
+          config.beta_release.submissions.create!(
+            submission_type: "PlayStoreSubmission",
+            integrable: app,
+            submission_external: Config::SubmissionExternal.new(identifier: "beta_channel", name: "Beta Channel")
           )
         end
 
         let(:params) do
           {
-            internal_release_enabled: "true",
+            beta_release_submissions_enabled: "true",
             production_release_enabled: "false",
             production_release_attributes: {id: config.production_release.id}
           }
@@ -409,7 +408,7 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
       end
     end
 
-    describe "error handling" do
+    describe "basic error handling (covers some validation errors)" do
       context "when validation fails due to missing release steps" do
         before do
           # Add internal release so we can try to disable all release steps
@@ -489,32 +488,76 @@ RSpec.describe WebHandlers::UpdateReleasePlatformConfig do
         )
       end
 
-      let(:params) do
-        {
-          production_release_enabled: "true",
-          beta_release_submissions_enabled: "true",
-          beta_release_attributes: {
-            id: config.beta_release.id,
-            submissions_attributes: {
-              "0" => {
-                id: second_submission.id,
-                number: "1"
-              },
-              "1" => {
-                id: first_submission.id,
-                number: "2"
+      context "when swapping two submissions" do
+        let(:params) do
+          {
+            production_release_enabled: "true",
+            beta_release_submissions_enabled: "true",
+            beta_release_attributes: {
+              id: config.beta_release.id,
+              submissions_attributes: {
+                "0" => {
+                  id: second_submission.id,
+                  number: "1"
+                },
+                "1" => {
+                  id: first_submission.id,
+                  number: "2"
+                }
               }
             }
           }
-        }
+        end
+
+        it "reorders submissions based on number param" do
+          expect(service.call).to be true
+
+          config.reload
+          ordered_ids = config.beta_release.submissions.order(:number).pluck(:id)
+          expect(ordered_ids).to eq([second_submission.id, first_submission.id])
+        end
       end
 
-      it "reorders submissions based on number param" do
-        expect(service.call).to be true
+      context "when moving third submission to first position" do
+        let!(:third_submission) do
+          config.beta_release.submissions.create!(
+            submission_type: "PlayStoreSubmission",
+            integrable: app,
+            submission_external: Config::SubmissionExternal.new(identifier: "channel_third", name: "Channel Third")
+          )
+        end
 
-        config.reload
-        ordered_ids = config.beta_release.submissions.order(:number).pluck(:id)
-        expect(ordered_ids).to eq([second_submission.id, first_submission.id])
+        let(:params) do
+          {
+            production_release_enabled: "true",
+            beta_release_submissions_enabled: "true",
+            beta_release_attributes: {
+              id: config.beta_release.id,
+              submissions_attributes: {
+                "0" => {
+                  id: third_submission.id,
+                  number: "1"
+                },
+                "1" => {
+                  id: first_submission.id,
+                  number: "2"
+                },
+                "2" => {
+                  id: second_submission.id,
+                  number: "3"
+                }
+              }
+            }
+          }
+        end
+
+        it "reorders all three submissions correctly" do
+          expect(service.call).to be true
+
+          config.reload
+          ordered_ids = config.beta_release.submissions.order(:number).pluck(:id)
+          expect(ordered_ids).to eq([third_submission.id, first_submission.id, second_submission.id])
+        end
       end
     end
   end

@@ -125,6 +125,59 @@ describe Config::ReleasePlatform do
         end
       end
     end
+
+    describe "submission uniqueness across release steps" do
+      let(:app) { create(:app, :android) }
+      let(:release_platform) { create(:release_platform, app:, platform: "android") }
+      let(:shared_channel) { {id: "internal", name: "Internal testing", is_internal: true} }
+
+      before do
+        base_config[:workflows][:internal] = {
+          name: "Internal Workflow",
+          id: Faker::Number.number(digits: 8),
+          artifact_name_pattern: nil
+        }
+        base_config[:internal_release] = {
+          submissions: [
+            {
+              number: 1,
+              integrable_id: app.id,
+              integrable_type: "App",
+              submission_type: "PlayStoreSubmission",
+              submission_config: shared_channel,
+              rollout_config: {enabled: false},
+              auto_promote: false
+            }
+          ]
+        }
+        base_config[:beta_release] = {
+          submissions: [
+            {
+              number: 1,
+              integrable_id: app.id,
+              integrable_type: "App",
+              submission_type: "PlayStoreSubmission",
+              submission_config: shared_channel,
+              rollout_config: {enabled: false},
+              auto_promote: false
+            }
+          ]
+        }
+        base_config[:production_release] = nil
+      end
+
+      it "is not valid when internal and beta use the same channel" do
+        config = described_class.from_json(base_config.merge(release_platform:))
+        expect(config).not_to be_valid
+        expect(config.errors[:base]).to include("a build can not be submitted to the same channel more than once")
+      end
+
+      it "is valid when internal and beta use different channels" do
+        base_config[:beta_release][:submissions].first[:submission_config] = {id: "alpha", name: "Alpha testing", is_internal: false}
+        config = described_class.from_json(base_config.merge(release_platform:))
+        expect(config).to be_valid
+      end
+    end
   end
 
   describe "#has_restricted_public_channels?" do
