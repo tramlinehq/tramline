@@ -375,7 +375,8 @@ describe GooglePlayStoreIntegration do
           {"name" => "beta", "releases" => nil},
           {"name" => "alpha", "releases" => nil},
           {"name" => "internal", "releases" => nil},
-          {"name" => "Pre-Alpha", "releases" => nil}
+          {"name" => "Pre-Alpha", "releases" => nil},
+          {"name" => "Pre-Alpha:1", "releases" => nil}
         ].map(&:with_indifferent_access)
       end
 
@@ -400,6 +401,11 @@ describe GooglePlayStoreIntegration do
           {
             "id" => "Pre-Alpha",
             "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha:1",
+            "name" => "Closed testing - Pre-Alpha:1",
             "is_production" => false
           }
         ]
@@ -434,6 +440,11 @@ describe GooglePlayStoreIntegration do
             "id" => "Pre-Alpha",
             "name" => "Closed testing - Pre-Alpha",
             "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha:1",
+            "name" => "Closed testing - Pre-Alpha:1",
+            "is_production" => false
           }
         ]
 
@@ -451,7 +462,7 @@ describe GooglePlayStoreIntegration do
       ["Google Play Games On PC", "google_play_games_pc", false],
       ["Google Play Instant", "google_play_instant", true]
     ].each do |form_factor_name, form_factor_key, pending|
-      context "when #{form_factor_name} tracks are present", (pending ? {pending: "Skipping tests for #{form_factor_name} due to unknown form-factor prefix"} : {}) do
+      context "when #{form_factor_name} tracks are present along with default form-factor tracks", (pending ? {pending: "Skipping tests for #{form_factor_name} due to unknown form-factor prefix"} : {}) do
         let(:list_tracks_response) do
           [
             {"name" => "production", "releases" => nil},
@@ -462,12 +473,13 @@ describe GooglePlayStoreIntegration do
             {"name" => "#{form_factor_key}:beta", "releases" => nil},
             {"name" => "#{form_factor_key}:internal", "releases" => nil},
             {"name" => "#{form_factor_key}:production", "releases" => nil},
-            {"name" => "#{form_factor_key}:Pre-Alpha", "releases" => nil}
+            {"name" => "#{form_factor_key}:Pre-Alpha", "releases" => nil},
+            {"name" => "#{form_factor_key}:Pre-Alpha:1", "releases" => nil}
           ].map(&:with_indifferent_access)
         end
 
         it "returns build channels without production track" do
-          channels = google_integration.build_channels
+          channels = google_integration.build_channels(with_production: false)
           expected_channels = [
             {"id" => :beta, "name" => "Open testing", "is_production" => false},
             {"id" => :alpha, "name" => "Closed testing - Alpha", "is_production" => false},
@@ -475,7 +487,8 @@ describe GooglePlayStoreIntegration do
             {"id" => "Pre-Alpha", "name" => "Closed testing - Pre-Alpha", "is_production" => false},
             {"id" => "#{form_factor_key}:beta", "name" => "#{form_factor_name} - Open testing", "is_production" => false},
             {"id" => "#{form_factor_key}:internal", "name" => "#{form_factor_name} - Internal testing", "is_production" => false},
-            {"id" => "#{form_factor_key}:Pre-Alpha", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha", "is_production" => false}
+            {"id" => "#{form_factor_key}:Pre-Alpha", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha", "is_production" => false},
+            {"id" => "#{form_factor_key}:Pre-Alpha:1", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha:1", "is_production" => false}
           ]
 
           expect(channels).to eq(expected_channels)
@@ -492,7 +505,8 @@ describe GooglePlayStoreIntegration do
             {"id" => "#{form_factor_key}:beta", "name" => "#{form_factor_name} - Open testing", "is_production" => false},
             {"id" => "#{form_factor_key}:internal", "name" => "#{form_factor_name} - Internal testing", "is_production" => false},
             {"id" => "#{form_factor_key}:production", "name" => "#{form_factor_name} - Production", "is_production" => true},
-            {"id" => "#{form_factor_key}:Pre-Alpha", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha", "is_production" => false}
+            {"id" => "#{form_factor_key}:Pre-Alpha", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha", "is_production" => false},
+            {"id" => "#{form_factor_key}:Pre-Alpha:1", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha:1", "is_production" => false}
           ]
 
           expect(channels).to eq(expected_channels)

@@ -50,7 +50,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   # Refer to https://developers.google.com/android-publisher/tracks#ff-track-name
   # uncomment commented form-factors when prefixes become known
-  FORM_FACTOR_TRACK_NAMES = {
+  FORM_FACTOR_TRACKS = {
     "automotive" => "Android Automotive OS",
     # "auto" => "Android Auto",
     "wear" => "Wear OS",
@@ -226,29 +226,19 @@ class GooglePlayStoreIntegration < ApplicationRecord
       default_channels = CHANNELS.map(&:with_indifferent_access)
       default_channels_ids = default_channels.index_by { _1[:id].to_s }
 
-      channel_data&.each do |channel|
+      new_channels = Array.wrap(channel_data).filter_map do |channel|
         next if default_channels_ids.include?(channel[:name])
 
         channel_name = channel[:name]
-        form_factor_prefix, track_name = channel_name.split(":")
-        new_channel = if FORM_FACTOR_TRACK_NAMES.key?(form_factor_prefix)
-          if default_channels_ids.include?(track_name)
-            {id: channel_name,
-             name: "#{FORM_FACTOR_TRACK_NAMES[form_factor_prefix]} - #{default_channels_ids[track_name][:name]}",
-             is_production: default_channels_ids[track_name][:is_production]}.with_indifferent_access
-          else
-            {id: channel_name,
-             name: "#{FORM_FACTOR_TRACK_NAMES[form_factor_prefix]} - Closed testing - #{track_name}",
-             is_production: false}.with_indifferent_access
-          end
+        form_factor_prefix, track_name = channel_name.split(":", 2)
+        if FORM_FACTOR_TRACKS.include?(form_factor_prefix)
+          form_factor_channel(form_factor_prefix, track_name, default_channels_ids)
         else
           {id: channel_name, name: "Closed testing - #{channel_name}", is_production: false}.with_indifferent_access
         end
-
-        default_channels << new_channel
       end
 
-      default_channels
+      default_channels + new_channels
     end
 
     return all_channels if with_production
@@ -328,5 +318,18 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def tracks_cache_key
     "google_play_store_integration/#{id}/tracks"
+  end
+
+  def form_factor_channel(form_factor_prefix, track_name, default_channels_ids)
+    channel_id = "#{form_factor_prefix}:#{track_name}"
+    form_factor_name = FORM_FACTOR_TRACKS[form_factor_prefix]
+
+    channel_name = if default_channels_ids.include?(track_name)
+      "#{form_factor_name} - #{default_channels_ids[track_name][:name]}"
+    else
+      "#{form_factor_name} - Closed testing - #{track_name}"
+    end
+
+    {id: channel_id, name: channel_name, is_production: track_name == "production"}.with_indifferent_access
   end
 end
