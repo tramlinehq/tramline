@@ -54,7 +54,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     "wear" => "Wear OS",
     "tv" => "Android TV",
     "android_xr" => "Android XR",
-    "google_play_games_pc" => "Google Play Games On PC",
+    "google_play_games_pc" => "Google Play Games On PC"
     # uncomment when form-factors become known
     # "auto" => "Android Auto",
     # "google_play_instant" => "Google Play Instant"
