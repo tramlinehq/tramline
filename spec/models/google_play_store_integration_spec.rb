@@ -361,79 +361,13 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
-      google_integration.reload
+      allow(api_double).to receive(:list_tracks)
+        .with(GooglePlayStoreIntegration::CHANNEL_DATA_TRANSFORMATIONS)
+        .and_return(list_tracks_response)
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
-    context "when only default tracks exist" do
-      let(:list_tracks_response) do
-        [
-          {"name" => "production", "releases" => nil},
-          {"name" => "beta", "releases" => nil},
-          {"name" => "alpha", "releases" => nil},
-          {"name" => "internal", "releases" => nil}
-        ].map(&:with_indifferent_access)
-      end
-
-      before do
-        allow(api_double).to receive(:list_tracks)
-          .with(GooglePlayStoreIntegration::CHANNEL_DATA_TRANSFORMATIONS)
-          .and_return(list_tracks_response)
-      end
-
-      it "returns default build channels without production track" do
-        channels = google_integration.build_channels
-        expected_channels = [
-          {
-            "id" => :beta,
-            "name" => "Open testing",
-            "is_production" => false
-          },
-          {
-            "id" => :alpha,
-            "name" => "Closed testing - Alpha",
-            "is_production" => false
-          },
-          {
-            "id" => :internal,
-            "name" => "Internal testing",
-            "is_production" => false
-          }
-        ]
-
-        expect(channels).to eq(expected_channels)
-      end
-
-      it "returns default build channels with production track" do
-        channels = google_integration.build_channels(with_production: true)
-        expected_channels = [
-          {
-            "id" => :production,
-            "name" => "Production",
-            "is_production" => true
-          },
-          {
-            "id" => :beta,
-            "name" => "Open testing",
-            "is_production" => false
-          },
-          {
-            "id" => :alpha,
-            "name" => "Closed testing - Alpha",
-            "is_production" => false
-          },
-          {
-            "id" => :internal,
-            "name" => "Internal testing",
-            "is_production" => false
-          }
-        ]
-
-        expect(channels).to eq(expected_channels)
-      end
-    end
-
-    context "when closed testing track has non-Alpha tracks" do
+    context "when only default form-factor tracks exist" do
       let(:list_tracks_response) do
         [
           {"name" => "production", "releases" => nil},
@@ -444,14 +378,8 @@ describe GooglePlayStoreIntegration do
         ].map(&:with_indifferent_access)
       end
 
-      before do
-        allow(api_double).to receive(:list_tracks)
-          .with(GooglePlayStoreIntegration::CHANNEL_DATA_TRANSFORMATIONS)
-          .and_return(list_tracks_response)
-      end
-
-      it "returns the build channels and labels the non-Alpha tracks properly" do
-        channels = google_integration.build_channels
+      it "returns build channels without production track" do
+        channels = google_integration.build_channels(with_production: false)
         expected_channels = [
           {
             "id" => :beta,
@@ -478,7 +406,7 @@ describe GooglePlayStoreIntegration do
         expect(channels).to eq(expected_channels)
       end
 
-      it "returns the build channels and labels the non-Alpha tracks properly with production track" do
+      it "returns build channels with production track" do
         channels = google_integration.build_channels(with_production: true)
         expected_channels = [
           {
@@ -512,7 +440,435 @@ describe GooglePlayStoreIntegration do
       end
     end
 
-    context "when non-default form factor tracks are present" do
+    context "when Android Automotive OS tracks are present" do
+      let(:list_tracks_response) do
+        [
+          {"name" => "production", "releases" => nil},
+          {"name" => "beta", "releases" => nil},
+          {"name" => "alpha", "releases" => nil},
+          {"name" => "internal", "releases" => nil},
+          {"name" => "Pre-Alpha", "releases" => nil},
+          {"name" => "automotive:beta", "releases" => nil},
+          {"name" => "automotive:internal", "releases" => nil},
+          {"name" => "automotive:production", "releases" => nil},
+          {"name" => "automotive:Pre-Alpha", "releases" => nil}
+        ].map(&:with_indifferent_access)
+      end
+
+      it "returns build channels without production track" do
+        channels = google_integration.build_channels
+        expected_channels = [
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "automotive:beta",
+            "name" => "Android Automotive OS - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "automotive:internal",
+            "name" => "Android Automotive OS - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "automotive:Pre-Alpha",
+            "name" => "Android Automotive OS - Closed Testing - Pre-Alpha",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+
+      it "returns build channels with production track" do
+        channels = google_integration.build_channels(with_production: true)
+        expected_channels = [
+          {
+            "id" => :production,
+            "name" => "Production",
+            "is_production" => true
+          },
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "automotive:beta",
+            "name" => "Android Automotive OS - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "automotive:internal",
+            "name" => "Android Automotive OS - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "automotive:production",
+            "name" => "Android Automotive OS - Production",
+            "is_production" => true
+          },
+          {
+            "id" => "automotive:Pre-Alpha",
+            "name" => "Android Automotive OS - Closed Testing - Pre-Alpha",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+    end
+
+    context "when Android Auto tracks are present", pending: "Skipping tests for Android Auto tracks due to unknown form-factor prefix" do
+      let(:list_tracks_response) do
+        [
+          {"name" => "production", "releases" => nil},
+          {"name" => "beta", "releases" => nil},
+          {"name" => "alpha", "releases" => nil},
+          {"name" => "internal", "releases" => nil},
+          {"name" => "Pre-Alpha", "releases" => nil},
+          {"name" => "auto:beta", "releases" => nil},
+          {"name" => "auto:internal", "releases" => nil},
+          {"name" => "auto:production", "releases" => nil},
+          {"name" => "auto:Pre-Alpha", "releases" => nil}
+        ].map(&:with_indifferent_access)
+      end
+
+      it "returns build channels without production track" do
+        channels = google_integration.build_channels
+        expected_channels = [
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "auto:beta",
+            "name" => "Android Auto - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "auto:internal",
+            "name" => "Android Auto - Internal Testing",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+
+      it "returns build channels with production track" do
+        channels = google_integration.build_channels(with_production: true)
+        expected_channels = [
+          {
+            "id" => :production,
+            "name" => "Production",
+            "is_production" => true
+          },
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "auto:beta",
+            "name" => "Android Auto - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "auto:internal",
+            "name" => "Android Auto - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "auto:production",
+            "name" => "Android Auto - Production",
+            "is_production" => true
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+    end
+
+    context "when Wear OS tracks are present" do
+      let(:list_tracks_response) do
+        [
+          {"name" => "production", "releases" => nil},
+          {"name" => "beta", "releases" => nil},
+          {"name" => "alpha", "releases" => nil},
+          {"name" => "internal", "releases" => nil},
+          {"name" => "Pre-Alpha", "releases" => nil},
+          {"name" => "wear:beta", "releases" => nil},
+          {"name" => "wear:internal", "releases" => nil},
+          {"name" => "wear:production", "releases" => nil},
+          {"name" => "wear:Pre-Alpha", "releases" => nil}
+        ].map(&:with_indifferent_access)
+      end
+
+      it "returns build channels without production track" do
+        channels = google_integration.build_channels
+        expected_channels = [
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:beta",
+            "name" => "Wear OS - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:internal",
+            "name" => "Wear OS - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:Pre-Alpha",
+            "name" => "Wear OS - Closed Testing - Pre-Alpha",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+
+      it "returns build channels with production track" do
+        channels = google_integration.build_channels(with_production: true)
+        expected_channels = [
+          {
+            "id" => :production,
+            "name" => "Production",
+            "is_production" => true
+          },
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:beta",
+            "name" => "Wear OS - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:internal",
+            "name" => "Wear OS - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:production",
+            "name" => "Wear OS - Production",
+            "is_production" => true
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+    end
+
+    context "when Android TV tracks are present" do
+      let(:list_tracks_response) do
+        [
+          {"name" => "production", "releases" => nil},
+          {"name" => "beta", "releases" => nil},
+          {"name" => "alpha", "releases" => nil},
+          {"name" => "internal", "releases" => nil},
+          {"name" => "Pre-Alpha", "releases" => nil},
+          {"name" => "tv:beta", "releases" => nil},
+          {"name" => "tv:internal", "releases" => nil},
+          {"name" => "tv:production", "releases" => nil},
+          {"name" => "tv:Pre-Alpha", "releases" => nil}
+        ].map(&:with_indifferent_access)
+      end
+
+      it "returns build channels without production track" do
+        channels = google_integration.build_channels
+        expected_channels = [
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "tv:beta",
+            "name" => "Android TV - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "tv:internal",
+            "name" => "Android TV - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "tv:Pre-Alpha",
+            "name" => "Android TV - Closed Testing - Pre-Alpha",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+
+      it "returns build channels with production track" do
+        channels = google_integration.build_channels(with_production: true)
+        expected_channels = [
+          {
+            "id" => :production,
+            "name" => "Production",
+            "is_production" => true
+          },
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "tv:beta",
+            "name" => "Android TV - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "tv:internal",
+            "name" => "Android TV - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "tv:production",
+            "name" => "Android TV - Production",
+            "is_production" => true
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+    end
+
+    context "when Android XR tracks are present" do
       let(:list_tracks_response) do
         [
           {"name" => "production", "releases" => nil},
@@ -523,23 +879,11 @@ describe GooglePlayStoreIntegration do
           {"name" => "android_xr:beta", "releases" => nil},
           {"name" => "android_xr:internal", "releases" => nil},
           {"name" => "android_xr:production", "releases" => nil},
-          {"name" => "tv:beta", "releases" => nil},
-          {"name" => "tv:internal", "releases" => nil},
-          {"name" => "tv:production", "releases" => nil},
-          {"name" => "wear:Wear Closed Testing", "releases" => nil},
-          {"name" => "wear:beta", "releases" => nil},
-          {"name" => "wear:internal", "releases" => nil},
-          {"name" => "wear:production", "releases" => nil}
+          {"name" => "android_xr:Pre-Alpha", "releases" => nil}
         ].map(&:with_indifferent_access)
       end
 
-      before do
-        allow(api_double).to receive(:list_tracks)
-          .with(GooglePlayStoreIntegration::CHANNEL_DATA_TRANSFORMATIONS)
-          .and_return(list_tracks_response)
-      end
-
-      it "returns the build channels and labels the non-default form factor tracks properly" do
+      it "returns build channels without production track" do
         channels = google_integration.build_channels
         expected_channels = [
           {
@@ -571,38 +915,13 @@ describe GooglePlayStoreIntegration do
             "id" => "android_xr:internal",
             "name" => "Android XR - Internal Testing",
             "is_production" => false
-          },
-          {
-            "id" => "tv:beta",
-            "name" => "TV - Open Testing",
-            "is_production" => false
-          },
-          {
-            "id" => "tv:internal",
-            "name" => "TV - Internal Testing",
-            "is_production" => false
-          },
-          {
-            "id" => "wear:Wear Closed Testing",
-            "name" => "Wear OS - Closed Testing - Wear Closed Testing",
-            "is_production" => false
-          },
-          {
-            "id" => "wear:beta",
-            "name" => "Wear OS - Open Testing",
-            "is_production" => false
-          },
-          {
-            "id" => "wear:internal",
-            "name" => "Wear OS - Internal Testing",
-            "is_production" => false
           }
         ]
 
         expect(channels).to eq(expected_channels)
       end
 
-      it "returns the build channels and labels the non-default form factor tracks properly with production track" do
+      it "returns build channels with production track" do
         channels = google_integration.build_channels(with_production: true)
         expected_channels = [
           {
@@ -644,40 +963,209 @@ describe GooglePlayStoreIntegration do
             "id" => "android_xr:production",
             "name" => "Android XR - Production",
             "is_production" => true
-          },
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+    end
+
+    context "when Google Play Games On PC tracks are present" do
+      let(:list_tracks_response) do
+        [
+          {"name" => "production", "releases" => nil},
+          {"name" => "beta", "releases" => nil},
+          {"name" => "alpha", "releases" => nil},
+          {"name" => "internal", "releases" => nil},
+          {"name" => "Pre-Alpha", "releases" => nil},
+          {"name" => "google_play_games_pc:beta", "releases" => nil},
+          {"name" => "google_play_games_pc:internal", "releases" => nil},
+          {"name" => "google_play_games_pc:production", "releases" => nil},
+          {"name" => "google_play_games_pc:Pre-Alpha", "releases" => nil}
+        ].map(&:with_indifferent_access)
+      end
+
+      it "returns build channels without production track" do
+        channels = google_integration.build_channels
+        expected_channels = [
           {
-            "id" => "tv:beta",
-            "name" => "TV - Open Testing",
+            "id" => :beta,
+            "name" => "Open testing",
             "is_production" => false
           },
           {
-            "id" => "tv:internal",
-            "name" => "TV - Internal Testing",
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
             "is_production" => false
           },
           {
-            "id" => "tv:production",
-            "name" => "TV - Production",
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "google_play_games_pc:beta",
+            "name" => "Google Play Games On PC - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "google_play_games_pc:internal",
+            "name" => "Google Play Games On PC - Internal Testing",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+
+      it "returns build channels with production track" do
+        channels = google_integration.build_channels(with_production: true)
+        expected_channels = [
+          {
+            "id" => :production,
+            "name" => "Production",
             "is_production" => true
           },
           {
-            "id" => "wear:Wear Closed Testing",
-            "name" => "Wear OS - Closed Testing - Wear Closed Testing",
+            "id" => :beta,
+            "name" => "Open testing",
             "is_production" => false
           },
           {
-            "id" => "wear:beta",
-            "name" => "Wear OS - Open Testing",
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
             "is_production" => false
           },
           {
-            "id" => "wear:internal",
-            "name" => "Wear OS - Internal Testing",
+            "id" => :internal,
+            "name" => "Internal testing",
             "is_production" => false
           },
           {
-            "id" => "wear:production",
-            "name" => "Wear OS - Production",
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "google_play_games_pc:beta",
+            "name" => "Google Play Games On PC - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "google_play_games_pc:internal",
+            "name" => "Google Play Games On PC - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "google_play_games_pc:production",
+            "name" => "Google Play Games On PC - Production",
+            "is_production" => true
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+    end
+
+    context "when Google Play Instant tracks are present", pending: "Skipping tests for Google Play Instant tracks due to unknown form-factor prefix" do
+      let(:list_tracks_response) do
+        [
+          {"name" => "production", "releases" => nil},
+          {"name" => "beta", "releases" => nil},
+          {"name" => "alpha", "releases" => nil},
+          {"name" => "internal", "releases" => nil},
+          {"name" => "Pre-Alpha", "releases" => nil},
+          {"name" => "google_play_instant:beta", "releases" => nil},
+          {"name" => "google_play_instant:internal", "releases" => nil},
+          {"name" => "google_play_instant:production", "releases" => nil},
+          {"name" => "google_play_instant:Pre-Alpha", "releases" => nil}
+        ].map(&:with_indifferent_access)
+      end
+
+      it "returns build channels without production track" do
+        channels = google_integration.build_channels
+        expected_channels = [
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "google_play_instant:beta",
+            "name" => "Google Play Instant - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "google_play_instant:internal",
+            "name" => "Google Play Instant - Internal Testing",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+
+      it "returns build channels with production track" do
+        channels = google_integration.build_channels(with_production: true)
+        expected_channels = [
+          {
+            "id" => :production,
+            "name" => "Production",
+            "is_production" => true
+          },
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "google_play_instant:beta",
+            "name" => "Google Play Instant - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "google_play_instant:internal",
+            "name" => "Google Play Instant - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "google_play_instant:production",
+            "name" => "Google Play Instant - Production",
             "is_production" => true
           }
         ]

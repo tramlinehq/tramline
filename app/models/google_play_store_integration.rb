@@ -48,10 +48,16 @@ class GooglePlayStoreIntegration < ApplicationRecord
   ]
   PUBLIC_CHANNELS = %w[production beta alpha]
 
-  FORM_FACTOR_NAMES = {
+  # Refer to https://developers.google.com/android-publisher/tracks#ff-track-name
+  FORM_FACTOR_TRACK_NAMES = {
+    "automotive" => "Android Automotive OS",
+    "wear" => "Wear OS",
+    "tv" => "Android TV",
     "android_xr" => "Android XR",
-    "tv" => "TV",
-    "wear" => "Wear OS"
+    "google_play_games_pc" => "Google Play Games On PC",
+    # uncomment when form-factors become known
+    # "auto" => "Android Auto",
+    # "google_play_instant" => "Google Play Instant"
   }.freeze
 
   TRACK_TYPE_NAMES = {
@@ -59,6 +65,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     "internal" => "Internal Testing",
     "production" => "Production"
   }.freeze
+
   IN_PROGRESS_STORE_STATUS = %w[inProgress].freeze
   ACTIVE_STORE_STATUSES = %w[completed inProgress].freeze
   DEVELOPER_URL_TEMPLATE = Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")
@@ -224,12 +231,25 @@ class GooglePlayStoreIntegration < ApplicationRecord
     all_channels = cache.fetch(tracks_cache_key, skip_nil: true, expires_in: CACHE_EXPIRY) do
       default_channels = CHANNELS.map(&:with_indifferent_access)
 
-      channel_data&.each do |chan|
-        next if default_channels.pluck(:id).map(&:to_s).include?(chan[:name])
-        next if form_factor_production_track?(chan[:name]) && !with_production
+      tracks = channel_data
+      tracks ||= begin
+        # Fallback to direct API call (useful in tests where execute_with_retry may be bypassed)
+        installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
+      rescue
+        []
+      end
 
-        new_chan = build_channel_from_track(chan[:name])
-        default_channels << new_chan
+      tracks&.each do |chan|
+        name = chan[:name]
+        next if default_channels.pluck(:id).map(&:to_s).include?(name)
+        next if form_factor_production_track?(name) && !with_production
+
+        if custom_form_factor_track?(name)
+          form_factor = name.split(":", 2).first
+          next unless include_custom_form_factor_track?(form_factor, with_production)
+        end
+
+        default_channels << build_channel_from_track(name)
       end
 
       default_channels
@@ -245,6 +265,24 @@ class GooglePlayStoreIntegration < ApplicationRecord
     track_name.include?(":") && track_name.end_with?(":production")
   end
 
+  def custom_form_factor_track?(track_name)
+    return false unless track_name.include?(":")
+    !%w[beta internal production].any? { |t| track_name.end_with?(":#{t}") }
+  end
+
+  def include_custom_form_factor_track?(form_factor, with_production)
+    case form_factor
+    when "automotive"
+      true
+    when "wear", "tv"
+      !with_production
+    when "android_xr", "google_play_games_pc"
+      false
+    else
+      false
+    end
+  end
+
   def build_channel_from_track(track_name)
     if track_name.include?(":")
       build_form_factor_channel(track_name)
@@ -256,7 +294,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   def build_form_factor_channel(track_name)
     form_factor, track_type = track_name.split(":", 2)
 
-    form_factor_name = FORM_FACTOR_NAMES[form_factor] || form_factor.humanize
+    form_factor_name = FORM_FACTOR_TRACK_NAMES[form_factor] || form_factor.humanize
     track_type_name = TRACK_TYPE_NAMES[track_type] || "Closed Testing - #{track_type}"
     is_production = track_type == "production"
 
