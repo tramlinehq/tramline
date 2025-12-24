@@ -60,12 +60,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
     # "google_play_instant" => "Google Play Instant"
   }.freeze
 
-  TRACK_TYPE_NAMES = {
-    "beta" => "Open Testing",
-    "internal" => "Internal Testing",
-    "production" => "Production"
-  }.freeze
-
   IN_PROGRESS_STORE_STATUS = %w[inProgress].freeze
   ACTIVE_STORE_STATUSES = %w[completed inProgress].freeze
   DEVELOPER_URL_TEMPLATE = Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")
@@ -230,13 +224,28 @@ class GooglePlayStoreIntegration < ApplicationRecord
   def build_channels(with_production: false)
     all_channels = cache.fetch(tracks_cache_key, skip_nil: true, expires_in: CACHE_EXPIRY) do
       default_channels = CHANNELS.map(&:with_indifferent_access)
+      default_channels_ids = default_channels.index_by { _1[:id].to_s }
 
-      channel_data&.each do |chan|
-        name = chan[:name]
-        next if default_channels.pluck(:id).map(&:to_s).include?(name)
-        next if form_factor_production_track?(name) && !with_production
+      channel_data&.each do |channel|
+        next if default_channels_ids.include?(channel[:name])
 
-        default_channels << build_channel_from_track(name)
+        channel_name = channel[:name]
+        form_factor_prefix, track_name = channel_name.split(":")
+        new_channel = if FORM_FACTOR_TRACK_NAMES.key?(form_factor_prefix)
+          if default_channels_ids.include?(track_name)
+            {id: channel_name,
+             name: "#{FORM_FACTOR_TRACK_NAMES[form_factor_prefix]} - #{default_channels_ids[track_name][:name]}",
+             is_production: default_channels_ids[track_name][:is_production]}.with_indifferent_access
+          else
+            {id: channel_name,
+             name: "#{FORM_FACTOR_TRACK_NAMES[form_factor_prefix]} - Closed testing - #{track_name}",
+             is_production: false}.with_indifferent_access
+          end
+        else
+          {id: channel_name, name: "Closed testing - #{channel_name}", is_production: false}.with_indifferent_access
+        end
+
+        default_channels << new_channel
       end
 
       default_channels
@@ -244,47 +253,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
     return all_channels if with_production
     all_channels.reject { |channel| channel[:is_production] }
-  end
-
-  private
-
-  def form_factor_production_track?(track_name)
-    track_name.include?(":") && track_name.end_with?(":production")
-  end
-
-  def custom_form_factor_track?(track_name)
-    return false unless track_name.include?(":")
-    !%w[beta internal production].any? { |t| track_name.end_with?(":#{t}") }
-  end
-
-  def build_channel_from_track(track_name)
-    if track_name.include?(":")
-      build_form_factor_channel(track_name)
-    else
-      build_custom_channel(track_name)
-    end
-  end
-
-  def build_form_factor_channel(track_name)
-    form_factor, track_type = track_name.split(":", 2)
-
-    form_factor_name = FORM_FACTOR_TRACK_NAMES[form_factor] || form_factor.humanize
-    track_type_name = TRACK_TYPE_NAMES[track_type] || "Closed Testing - #{track_type}"
-    is_production = track_type == "production"
-
-    {
-      id: track_name,
-      name: "#{form_factor_name} - #{track_type_name}",
-      is_production: is_production
-    }.with_indifferent_access
-  end
-
-  def build_custom_channel(track_name)
-    {
-      id: track_name,
-      name: "Closed testing - #{track_name}",
-      is_production: false
-    }.with_indifferent_access
   end
 
   def latest_build_number

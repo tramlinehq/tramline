@@ -473,9 +473,9 @@ describe GooglePlayStoreIntegration do
             {"id" => :alpha, "name" => "Closed testing - Alpha", "is_production" => false},
             {"id" => :internal, "name" => "Internal testing", "is_production" => false},
             {"id" => "Pre-Alpha", "name" => "Closed testing - Pre-Alpha", "is_production" => false},
-            {"id" => "#{form_factor_key}:beta", "name" => "#{form_factor_name} - Open Testing", "is_production" => false},
-            {"id" => "#{form_factor_key}:internal", "name" => "#{form_factor_name} - Internal Testing", "is_production" => false},
-            {"id" => "#{form_factor_key}:Pre-Alpha", "name" => "#{form_factor_name} - Closed Testing - Pre-Alpha", "is_production" => false}
+            {"id" => "#{form_factor_key}:beta", "name" => "#{form_factor_name} - Open testing", "is_production" => false},
+            {"id" => "#{form_factor_key}:internal", "name" => "#{form_factor_name} - Internal testing", "is_production" => false},
+            {"id" => "#{form_factor_key}:Pre-Alpha", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha", "is_production" => false}
           ]
 
           expect(channels).to eq(expected_channels)
@@ -489,10 +489,10 @@ describe GooglePlayStoreIntegration do
             {"id" => :alpha, "name" => "Closed testing - Alpha", "is_production" => false},
             {"id" => :internal, "name" => "Internal testing", "is_production" => false},
             {"id" => "Pre-Alpha", "name" => "Closed testing - Pre-Alpha", "is_production" => false},
-            {"id" => "#{form_factor_key}:beta", "name" => "#{form_factor_name} - Open Testing", "is_production" => false},
-            {"id" => "#{form_factor_key}:internal", "name" => "#{form_factor_name} - Internal Testing", "is_production" => false},
+            {"id" => "#{form_factor_key}:beta", "name" => "#{form_factor_name} - Open testing", "is_production" => false},
+            {"id" => "#{form_factor_key}:internal", "name" => "#{form_factor_name} - Internal testing", "is_production" => false},
             {"id" => "#{form_factor_key}:production", "name" => "#{form_factor_name} - Production", "is_production" => true},
-            {"id" => "#{form_factor_key}:Pre-Alpha", "name" => "#{form_factor_name} - Closed Testing - Pre-Alpha", "is_production" => false}
+            {"id" => "#{form_factor_key}:Pre-Alpha", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha", "is_production" => false}
           ]
 
           expect(channels).to eq(expected_channels)
