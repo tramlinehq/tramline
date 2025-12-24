@@ -353,4 +353,165 @@ describe GooglePlayStoreIntegration do
       expect(r.error).to be_a(GooglePlayStoreIntegration::LockAcquisitionError)
     end
   end
+
+  describe "#build_channels" do
+    let(:app) { create(:app, platform: :android) }
+    let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
+    let(:google_integration) { integration.providable }
+    let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
+
+    before do
+      google_integration.reload
+      allow(google_integration).to receive(:installation).and_return(api_double)
+    end
+
+    context "when only default tracks are present" do
+      let(:list_tracks_response) do
+        [
+          {"name" => "production", "releases" => nil},
+          {"name" => "beta", "releases" => nil},
+          {"name" => "alpha", "releases" => nil},
+          {"name" => "internal", "releases" => nil}
+        ].map(&:with_indifferent_access)
+      end
+
+      before do
+        allow(api_double).to receive(:list_tracks)
+          .with(GooglePlayStoreIntegration::CHANNEL_DATA_TRANSFORMATIONS)
+          .and_return(list_tracks_response)
+      end
+
+      it "returns default build channels without production when with_production is false" do
+        channels = google_integration.build_channels(with_production: false)
+        expected_channels = [
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+
+      it "returns default build channels including production when with_production is true" do
+        channels = google_integration.build_channels(with_production: true)
+        expected_channels = [
+          {
+            "id" => :production,
+            "name" => "Production",
+            "is_production" => true
+          },
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+    end
+
+    context "when closed testing track has custom tracks" do
+      let(:list_tracks_response) do
+        [
+          {"name" => "production", "releases" => nil},
+          {"name" => "beta", "releases" => nil},
+          {"name" => "alpha", "releases" => nil},
+          {"name" => "internal", "releases" => nil},
+          {"name" => "Pre-Alpha", "releases" => nil}
+        ].map(&:with_indifferent_access)
+      end
+
+      before do
+        allow(api_double).to receive(:list_tracks)
+          .with(GooglePlayStoreIntegration::CHANNEL_DATA_TRANSFORMATIONS)
+          .and_return(list_tracks_response)
+      end
+
+      it "returns all build channels and labels the custom closed testing tracks properly" do
+        channels = google_integration.build_channels(with_production: true)
+        expected_channels = [
+          {
+            "id" => :production,
+            "name" => "Production",
+            "is_production" => true
+          },
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+    end
+
+    context "when non-base form factors are present", skip: "The fix is yet to be implemented" do
+      let(:list_tracks_response) do
+        [
+          {"name" => "production", "releases" => nil},
+          {"name" => "beta", "releases" => nil},
+          {"name" => "alpha", "releases" => nil},
+          {"name" => "internal", "releases" => nil},
+          {"name" => "Pre-Alpha", "releases" => nil},
+          {"name" => "android_xr:beta", "releases" => nil},
+          {"name" => "android_xr:internal", "releases" => nil},
+          {"name" => "android_xr:production", "releases" => nil},
+          {"name" => "tv:beta", "releases" => nil},
+          {"name" => "tv:internal", "releases" => nil},
+          {"name" => "tv:production", "releases" => nil},
+          {"name" => "wear:Wear Closed Testing", "releases" => nil},
+          {"name" => "wear:beta", "releases" => nil},
+          {"name" => "wear:internal", "releases" => nil},
+          {"name" => "wear:production", "releases" => nil}
+        ].map(&:with_indifferent_access)
+      end
+
+      before do
+        allow(api_double).to receive(:list_tracks)
+          .with(GooglePlayStoreIntegration::CHANNEL_DATA_TRANSFORMATIONS)
+          .and_return(list_tracks_response)
+      end
+
+      xit "returns all build channels and labels the custom closed testing tracks properly"
+    end
+  end
 end
