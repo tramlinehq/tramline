@@ -351,10 +351,9 @@ class Queries::YearWrappedStats
 
     return "N/A" if contributor_commits.empty?
 
-    top_names = contributor_commits.sort_by { |name, count| -count }.first(3).map(&:first)
+    contributor_commits.sort_by { |name, count| -count }.first(3).map(&:first)
 
     # Names are already clean from author_name
-    top_names
   end
 
   def bot_email?(name)
