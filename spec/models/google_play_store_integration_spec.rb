@@ -361,6 +361,7 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
 
     before do
+      google_integration.reload
       allow(api_double).to receive(:list_tracks)
         .with(GooglePlayStoreIntegration::CHANNEL_DATA_TRANSFORMATIONS)
         .and_return(list_tracks_response)

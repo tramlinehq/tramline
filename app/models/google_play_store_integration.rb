@@ -231,15 +231,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     all_channels = cache.fetch(tracks_cache_key, skip_nil: true, expires_in: CACHE_EXPIRY) do
       default_channels = CHANNELS.map(&:with_indifferent_access)
 
-      tracks = channel_data
-      tracks ||= begin
-        # Fallback to direct API call (useful in tests where execute_with_retry may be bypassed)
-        installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
-      rescue
-        []
-      end
-
-      tracks&.each do |chan|
+      channel_data&.each do |chan|
         name = chan[:name]
         next if default_channels.pluck(:id).map(&:to_s).include?(name)
         next if form_factor_production_track?(name) && !with_production
