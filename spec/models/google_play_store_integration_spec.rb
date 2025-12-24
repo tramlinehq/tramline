@@ -365,7 +365,7 @@ describe GooglePlayStoreIntegration do
       allow(google_integration).to receive(:installation).and_return(api_double)
     end
 
-    context "when only default tracks are present" do
+    context "when only default tracks exist" do
       let(:list_tracks_response) do
         [
           {"name" => "production", "releases" => nil},
@@ -381,8 +381,8 @@ describe GooglePlayStoreIntegration do
           .and_return(list_tracks_response)
       end
 
-      it "returns default build channels without production when with_production is false" do
-        channels = google_integration.build_channels(with_production: false)
+      it "returns default build channels without production track" do
+        channels = google_integration.build_channels
         expected_channels = [
           {
             "id" => :beta,
@@ -404,7 +404,7 @@ describe GooglePlayStoreIntegration do
         expect(channels).to eq(expected_channels)
       end
 
-      it "returns default build channels including production when with_production is true" do
+      it "returns default build channels with production track" do
         channels = google_integration.build_channels(with_production: true)
         expected_channels = [
           {
@@ -433,7 +433,7 @@ describe GooglePlayStoreIntegration do
       end
     end
 
-    context "when closed testing track has custom tracks" do
+    context "when closed testing track has non-Alpha tracks" do
       let(:list_tracks_response) do
         [
           {"name" => "production", "releases" => nil},
@@ -450,7 +450,35 @@ describe GooglePlayStoreIntegration do
           .and_return(list_tracks_response)
       end
 
-      it "returns all build channels and labels the custom closed testing tracks properly" do
+      it "returns the build channels and labels the non-Alpha tracks properly" do
+        channels = google_integration.build_channels
+        expected_channels = [
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+
+      it "returns the build channels and labels the non-Alpha tracks properly with production track" do
         channels = google_integration.build_channels(with_production: true)
         expected_channels = [
           {
@@ -484,7 +512,7 @@ describe GooglePlayStoreIntegration do
       end
     end
 
-    context "when non-base form factors are present", skip: "The fix is yet to be implemented" do
+    context "when non-default form factor tracks are present" do
       let(:list_tracks_response) do
         [
           {"name" => "production", "releases" => nil},
@@ -511,7 +539,151 @@ describe GooglePlayStoreIntegration do
           .and_return(list_tracks_response)
       end
 
-      xit "returns all build channels and labels the custom closed testing tracks properly"
+      it "returns the build channels and labels the non-default form factor tracks properly" do
+        channels = google_integration.build_channels
+        expected_channels = [
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "android_xr:beta",
+            "name" => "Android XR - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "android_xr:internal",
+            "name" => "Android XR - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "tv:beta",
+            "name" => "TV - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "tv:internal",
+            "name" => "TV - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:Wear Closed Testing",
+            "name" => "Wear OS - Closed Testing - Wear Closed Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:beta",
+            "name" => "Wear OS - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:internal",
+            "name" => "Wear OS - Internal Testing",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
+
+      it "returns the build channels and labels the non-default form factor tracks properly with production track" do
+        channels = google_integration.build_channels(with_production: true)
+        expected_channels = [
+          {
+            "id" => :production,
+            "name" => "Production",
+            "is_production" => true
+          },
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "android_xr:beta",
+            "name" => "Android XR - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "android_xr:internal",
+            "name" => "Android XR - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "android_xr:production",
+            "name" => "Android XR - Production",
+            "is_production" => true
+          },
+          {
+            "id" => "tv:beta",
+            "name" => "TV - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "tv:internal",
+            "name" => "TV - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "tv:production",
+            "name" => "TV - Production",
+            "is_production" => true
+          },
+          {
+            "id" => "wear:Wear Closed Testing",
+            "name" => "Wear OS - Closed Testing - Wear Closed Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:beta",
+            "name" => "Wear OS - Open Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:internal",
+            "name" => "Wear OS - Internal Testing",
+            "is_production" => false
+          },
+          {
+            "id" => "wear:production",
+            "name" => "Wear OS - Production",
+            "is_production" => true
+          }
+        ]
+
+        expect(channels).to eq(expected_channels)
+      end
     end
   end
 end

@@ -214,7 +214,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
       channel_data&.each do |chan|
         next if default_channels.pluck(:id).map(&:to_s).include?(chan[:name])
-        new_chan = {id: chan[:name], name: "Closed testing - #{chan[:name]}", is_production: false}.with_indifferent_access
+
+        # Skip form factor production tracks unless with_production is true
+        if chan[:name].include?(":") && chan[:name].end_with?(":production")
+          next unless with_production
+        end
+
+        new_chan = build_channel_from_track(chan[:name])
         default_channels << new_chan
       end
 
@@ -223,6 +229,50 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
     return all_channels if with_production
     all_channels.reject { |channel| channel[:is_production] }
+  end
+
+  private
+
+  def build_channel_from_track(track_name)
+    if track_name.include?(":")
+      form_factor, track_type = track_name.split(":", 2)
+
+      form_factor_name = case form_factor
+      when "android_xr"
+        "Android XR"
+      when "tv"
+        "TV"
+      when "wear"
+        "Wear OS"
+      else
+        form_factor.humanize
+      end
+
+      track_type_name = case track_type
+      when "beta"
+        "Open Testing"
+      when "internal"
+        "Internal Testing"
+      when "production"
+        "Production"
+      else
+        "Closed Testing - #{track_type}"
+      end
+
+      is_production = track_type == "production"
+
+      {
+        id: track_name,
+        name: "#{form_factor_name} - #{track_type_name}",
+        is_production: is_production
+      }.with_indifferent_access
+    else
+      {
+        id: track_name,
+        name: "Closed testing - #{track_name}",
+        is_production: false
+      }.with_indifferent_access
+    end
   end
 
   def latest_build_number
