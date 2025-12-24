@@ -47,6 +47,18 @@ class GooglePlayStoreIntegration < ApplicationRecord
     {id: :internal, name: "Internal testing", is_production: false}
   ]
   PUBLIC_CHANNELS = %w[production beta alpha]
+
+  FORM_FACTOR_NAMES = {
+    "android_xr" => "Android XR",
+    "tv" => "TV",
+    "wear" => "Wear OS"
+  }.freeze
+
+  TRACK_TYPE_NAMES = {
+    "beta" => "Open Testing",
+    "internal" => "Internal Testing",
+    "production" => "Production"
+  }.freeze
   IN_PROGRESS_STORE_STATUS = %w[inProgress].freeze
   ACTIVE_STORE_STATUSES = %w[completed inProgress].freeze
   DEVELOPER_URL_TEMPLATE = Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")
@@ -214,11 +226,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
       channel_data&.each do |chan|
         next if default_channels.pluck(:id).map(&:to_s).include?(chan[:name])
-
-        # Skip form factor production tracks unless with_production is true
-        if chan[:name].include?(":") && chan[:name].end_with?(":production")
-          next unless with_production
-        end
+        next if form_factor_production_track?(chan[:name]) && !with_production
 
         new_chan = build_channel_from_track(chan[:name])
         default_channels << new_chan
@@ -233,46 +241,38 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   private
 
+  def form_factor_production_track?(track_name)
+    track_name.include?(":") && track_name.end_with?(":production")
+  end
+
   def build_channel_from_track(track_name)
     if track_name.include?(":")
-      form_factor, track_type = track_name.split(":", 2)
-
-      form_factor_name = case form_factor
-      when "android_xr"
-        "Android XR"
-      when "tv"
-        "TV"
-      when "wear"
-        "Wear OS"
-      else
-        form_factor.humanize
-      end
-
-      track_type_name = case track_type
-      when "beta"
-        "Open Testing"
-      when "internal"
-        "Internal Testing"
-      when "production"
-        "Production"
-      else
-        "Closed Testing - #{track_type}"
-      end
-
-      is_production = track_type == "production"
-
-      {
-        id: track_name,
-        name: "#{form_factor_name} - #{track_type_name}",
-        is_production: is_production
-      }.with_indifferent_access
+      build_form_factor_channel(track_name)
     else
-      {
-        id: track_name,
-        name: "Closed testing - #{track_name}",
-        is_production: false
-      }.with_indifferent_access
+      build_custom_channel(track_name)
     end
+  end
+
+  def build_form_factor_channel(track_name)
+    form_factor, track_type = track_name.split(":", 2)
+
+    form_factor_name = FORM_FACTOR_NAMES[form_factor] || form_factor.humanize
+    track_type_name = TRACK_TYPE_NAMES[track_type] || "Closed Testing - #{track_type}"
+    is_production = track_type == "production"
+
+    {
+      id: track_name,
+      name: "#{form_factor_name} - #{track_type_name}",
+      is_production: is_production
+    }.with_indifferent_access
+  end
+
+  def build_custom_channel(track_name)
+    {
+      id: track_name,
+      name: "Closed testing - #{track_name}",
+      is_production: false
+    }.with_indifferent_access
   end
 
   def latest_build_number
