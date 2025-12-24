@@ -221,7 +221,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
     channel_data&.find { |c| PUBLIC_CHANNELS.include?(c[:name]) && c[:releases].present? }.blank?
   end
 
-  def build_channels(with_production: false)
+  def build_channels(with_production: false, bust_cache: false)
+    cache.delete(tracks_cache_key) if bust_cache
     all_channels = cache.fetch(tracks_cache_key, skip_nil: true, expires_in: CACHE_EXPIRY) do
       default_channels = CHANNELS.map(&:with_indifferent_access)
       default_channels_ids = default_channels.index_by { _1[:id].to_s }
@@ -229,6 +230,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
       new_channels = Array.wrap(channel_data).filter_map do |channel|
         next if default_channels_ids.include?(channel[:name])
 
+        # NOTE: perhaps this can be moved to a separate, labelling-only method?
         channel_name = channel[:name]
         form_factor_prefix, track_name = channel_name.split(":", 2)
         if FORM_FACTOR_TRACKS.include?(form_factor_prefix)
