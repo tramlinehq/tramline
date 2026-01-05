@@ -136,6 +136,18 @@ describe Coordinators::UpdateBuildOnProduction do
       expect(store_submission.reload.created?).to be(true)
       expect(StoreSubmissions::PlayStore::UploadJob).not_to have_received(:perform_async).with(store_submission.id)
     end
+
+    it "stamps an event for production release" do
+      allow(production_release).to receive(:event_stamp!)
+      new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
+      new_build = create(:build, :with_artifact, release_platform_run:, workflow_run: new_workflow_run)
+
+      described_class.call(store_submission, new_build.id)
+
+      expect(production_release).to have_received(:event_stamp!).with(reason: :build_updated,
+        kind: :notice,
+        data: {build_number: new_build.build_number, version: "1.2.3"})
+    end
   end
 
   context "when ios" do
@@ -280,6 +292,20 @@ describe Coordinators::UpdateBuildOnProduction do
       described_class.call(store_submission, new_build.id)
       expect(store_submission.reload.created?).to be(true)
       expect(StoreSubmissions::AppStore::FindBuildJob).not_to have_received(:perform_async).with(store_submission.id)
+    end
+
+    it "stamps an event for production release" do
+      allow(production_release).to receive(:event_stamp!)
+      new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
+      new_build = create(:build, :with_artifact, release_platform_run:, workflow_run: new_workflow_run)
+
+      described_class.call(store_submission, new_build.id)
+
+      expect(production_release).to have_received(:event_stamp!).with(
+        reason: :build_updated,
+        kind: :notice,
+        data: {build_number: new_build.build_number, version: "1.2.3"}
+      )
     end
   end
 end

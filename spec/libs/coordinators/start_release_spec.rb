@@ -30,6 +30,15 @@ describe Coordinators::StartRelease do
       expect(train.reload.releases.last.release_type).to eq("release")
     end
 
+    it "creates a new release with the provided commit hash" do
+      train = create(:train, :with_almost_trunk, version_seeded_with: "1.1")
+
+      commit_hash = "abc123def456"
+      new_release = described_class.call(train.reload, release_type: "release", commit_hash:)
+
+      expect(new_release.commit_hash).to eq(commit_hash)
+    end
+
     describe "#new_release_version" do
       context "when no existing releases" do
         {"1.2.3" => {major: "2.0.0", minor: "1.3.0"},

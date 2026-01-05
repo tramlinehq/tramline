@@ -19,6 +19,7 @@ class Coordinators::UpdateBuildOnProduction
       if submission.attach_build(build)
         production_release.update!(build:)
         submission.retrigger!
+        production_release.event_stamp!(reason: :build_updated, kind: :notice, data: production_release.stamp_data)
       end
     end
   end

@@ -47,6 +47,19 @@ class GooglePlayStoreIntegration < ApplicationRecord
     {id: :internal, name: "Internal testing", is_production: false}
   ]
   PUBLIC_CHANNELS = %w[production beta alpha]
+
+  # Refer to https://developers.google.com/android-publisher/tracks#ff-track-name
+  # uncomment commented form-factors when prefixes become known
+  FORM_FACTOR_TRACKS = {
+    "automotive" => "Android Automotive OS",
+    # "auto" => "Android Auto",
+    "wear" => "Wear OS",
+    "tv" => "Android TV",
+    "android_xr" => "Android XR",
+    "google_play_games_pc" => "Google Play Games On PC"
+    # "google_play_instant" => "Google Play Instant"
+  }.freeze
+
   IN_PROGRESS_STORE_STATUS = %w[inProgress].freeze
   ACTIVE_STORE_STATUSES = %w[completed inProgress].freeze
   DEVELOPER_URL_TEMPLATE = Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")
@@ -208,17 +221,19 @@ class GooglePlayStoreIntegration < ApplicationRecord
     channel_data&.find { |c| PUBLIC_CHANNELS.include?(c[:name]) && c[:releases].present? }.blank?
   end
 
-  def build_channels(with_production: false)
+  def build_channels(with_production: false, bust_cache: false)
+    cache.delete(tracks_cache_key) if bust_cache
     all_channels = cache.fetch(tracks_cache_key, skip_nil: true, expires_in: CACHE_EXPIRY) do
       default_channels = CHANNELS.map(&:with_indifferent_access)
+      default_channels_ids = default_channels.index_by { _1[:id].to_s }
 
-      channel_data&.each do |chan|
-        next if default_channels.pluck(:id).map(&:to_s).include?(chan[:name])
-        new_chan = {id: chan[:name], name: "Closed testing - #{chan[:name]}", is_production: false}.with_indifferent_access
-        default_channels << new_chan
+      new_channels = Array.wrap(channel_data).filter_map do |channel|
+        channel_name = channel[:name]
+        next if default_channels_ids.include?(channel_name)
+        label_channel(channel_name, default_channels_ids)
       end
 
-      default_channels
+      default_channels + new_channels
     end
 
     return all_channels if with_production
@@ -298,5 +313,28 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def tracks_cache_key
     "google_play_store_integration/#{id}/tracks"
+  end
+
+  def label_channel(channel_name, default_channels_ids)
+    form_factor_prefix, track_name = channel_name.split(":", 2)
+
+    if FORM_FACTOR_TRACKS.include?(form_factor_prefix)
+      form_factor_channel(form_factor_prefix, track_name, default_channels_ids)
+    else
+      {id: channel_name, name: "Closed testing - #{channel_name}", is_production: false}.with_indifferent_access
+    end
+  end
+
+  def form_factor_channel(form_factor_prefix, track_name, default_channels_ids)
+    channel_id = "#{form_factor_prefix}:#{track_name}"
+    form_factor_name = FORM_FACTOR_TRACKS[form_factor_prefix]
+
+    channel_name = if default_channels_ids.include?(track_name)
+      "#{form_factor_name} - #{default_channels_ids[track_name][:name]}"
+    else
+      "#{form_factor_name} - Closed testing - #{track_name}"
+    end
+
+    {id: channel_id, name: channel_name, is_production: track_name == "production"}.with_indifferent_access
   end
 end

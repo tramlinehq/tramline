@@ -88,13 +88,13 @@
     <% end %>
   <% end %>
 
-  <% if train.releases.blank? %>
+  <% if no_releases? %>
     <% container.with_sub_action do %>
       <%= render ButtonComponent.new(
             scheme: :supporting,
             label: "Remove",
             options: app_train_path(app, train),
-            type: :link,
+            type: :button,
             html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to remove this train?"}}
           ) do |b|
             b.with_icon("trash.svg")

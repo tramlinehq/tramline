@@ -49,7 +49,7 @@ FactoryBot.define do
 
     trait :with_schedule do
       branching_strategy { "almost_trunk" }
-      kickoff_at { 2.hours.from_now }
+      kickoff_at { 7.hours.from_now }
       repeat_duration { 1.day }
     end
 
