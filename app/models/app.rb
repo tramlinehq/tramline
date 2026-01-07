@@ -5,17 +5,17 @@
 #  id                              :uuid             not null, primary key
 #  build_number                    :bigint           not null
 #  build_number_managed_internally :boolean          default(TRUE), not null
-#  bundle_identifier               :string           not null, indexed => [platform, organization_id]
+#  bundle_identifier               :string           not null, indexed => [platform, organization_id, name]
 #  description                     :string
 #  draft                           :boolean
-#  name                            :string           not null
-#  platform                        :string           not null, indexed => [bundle_identifier, organization_id]
+#  name                            :string           not null, indexed => [platform, bundle_identifier, organization_id]
+#  platform                        :string           not null, indexed => [bundle_identifier, organization_id, name]
 #  slug                            :string
 #  timezone                        :string           not null
 #  created_at                      :datetime         not null
 #  updated_at                      :datetime         not null
 #  external_id                     :string
-#  organization_id                 :uuid             not null, indexed, indexed => [platform, bundle_identifier]
+#  organization_id                 :uuid             not null, indexed, indexed => [platform, bundle_identifier, name]
 #
 class App < ApplicationRecord
   has_paper_trail
@@ -41,7 +41,7 @@ class App < ApplicationRecord
   has_one_attached :icon, service: :google_assets
 
   validate :no_trains_are_running, on: :update
-  validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
+  validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id, :name]}
   validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
   validates :build_number, numericality: {less_than: 2100000000}
 
