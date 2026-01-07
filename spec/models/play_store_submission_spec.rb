@@ -5,6 +5,46 @@ describe PlayStoreSubmission do
     expect(create(:play_store_submission)).to be_valid
   end
 
+  describe "#submission_channel_id" do
+    let(:pre_prod_release) { create(:beta_release) }
+    let(:workflow_run) { create(:workflow_run, :rc, :finished, triggering_release: pre_prod_release) }
+    let(:build) { create(:build, workflow_run:, release_platform_run: pre_prod_release.release_platform_run) }
+
+    context "when identifier has no form factor prefix" do
+      let(:submission) { create(:play_store_submission, parent_release: pre_prod_release, build:) }
+
+      it "returns the base identifier" do
+        expect(submission.submission_channel_id).to eq("production")
+      end
+    end
+
+    context "when identifier has a form factor prefix" do
+      it "returns the full identifier with wear prefix" do
+        submission = create(:play_store_submission, parent_release: pre_prod_release, build:)
+        submission.config["submission_config"]["id"] = "wear:production"
+        submission.save!
+
+        expect(submission.submission_channel_id).to eq("wear:production")
+      end
+
+      it "returns the full identifier with tv prefix" do
+        submission = create(:play_store_submission, parent_release: pre_prod_release, build:)
+        submission.config["submission_config"]["id"] = "tv:production"
+        submission.save!
+
+        expect(submission.submission_channel_id).to eq("tv:production")
+      end
+
+      it "returns the full identifier with automotive prefix" do
+        submission = create(:play_store_submission, parent_release: pre_prod_release, build:)
+        submission.config["submission_config"]["id"] = "automotive:production"
+        submission.save!
+
+        expect(submission.submission_channel_id).to eq("automotive:production")
+      end
+    end
+  end
+
   describe ".start_release!" do
     let(:pre_prod_release) { create(:beta_release) }
     let(:workflow_run) { create(:workflow_run, :rc, :finished, triggering_release: pre_prod_release) }
@@ -25,6 +65,20 @@ describe PlayStoreSubmission do
       submission.prepare_for_release!
       expect(providable_dbl).to have_received(:create_draft_release)
         .with("production",
+          build.build_number,
+          build.version_name,
+          [{language: "en-US",
+            text: "The latest version contains bug fixes and performance improvements."}], anything)
+    end
+
+    it "creates draft release with form factor prefixed track" do
+      submission.config["submission_config"]["id"] = "wear:production"
+      submission.save!
+
+      allow(providable_dbl).to receive_messages(create_draft_release: GitHub::Result.new, rollout_release: GitHub::Result.new)
+      submission.prepare_for_release!
+      expect(providable_dbl).to have_received(:create_draft_release)
+        .with("wear:production",
           build.build_number,
           build.version_name,
           [{language: "en-US",
