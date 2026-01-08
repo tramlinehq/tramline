@@ -178,6 +178,6 @@ class Config::Submission < ApplicationRecord
   def base_production_identifier
     current = submission_external.identifier.to_s
     prefix, track = current.split(":", 2)
-    GooglePlayStoreIntegration::FORM_FACTOR_TRACKS.key?(prefix) ? (track || "production") : current
+    GooglePlayStoreIntegration::FORM_FACTOR_TRACKS.key?(prefix) ? (track.presence || "production") : current
   end
 end
