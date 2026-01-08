@@ -60,6 +60,22 @@
             <% prod_fields.fields_for :submissions, prod_fields.object.submissions.first || prod_fields.object.submissions.build(submission_type: platform.production_submission_type, auto_promote: false) do |sub_fields| %>
               <%= sub_fields.hidden_field :submission_type, value: sub_fields.object.submission_type %>
               <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
+
+              <% if platform.android? %>
+                <div class="mb-4">
+                  <%= render Form::RadioCardsComponent.new(
+                        form: sub_fields,
+                        field_name: :production_form_factor,
+                        options: [
+                          {value: "", label: "Default (mobile or single-track)"},
+                          *GooglePlayStoreIntegration::FORM_FACTOR_TRACKS.map { |key, label| {value: key, label: label} }
+                        ],
+                        selected_value: sub_fields.object.parsed_production_form_factor || "",
+                        description: "Select the device form factor for production release. The track will be prefixed accordingly (e.g., wear:production)."
+                      ) %>
+                </div>
+              <% end %>
+
               <%= render Form::SwitchComponent.new(form: sub_fields,
                                                    field_name: :rollout_enabled,
                                                    on_label: t("store_rollouts.switcher.#{platform_name}.enable"),
