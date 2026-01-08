@@ -11,9 +11,8 @@
         <%= form.radio_button field_name, option.value,
               checked: selected?(option),
               class: "hidden peer",
-              id: "#{form.object_name}_#{field_name}_#{option.value.presence || "default"}" %>
-        <label for="<%= "#{form.object_name}_#{field_name}_#{option.value.presence || "default"}" %>"
-               class="<%= radio_card_classes %>">
+              id: option_id(option) %>
+        <label for="<%= option_id(option) %>" class="<%= radio_card_classes %>">
           <span><%= option.label %></span>
         </label>
       </div>

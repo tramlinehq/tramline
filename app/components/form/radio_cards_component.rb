@@ -20,6 +20,10 @@ class Form::RadioCardsComponent < ViewComponent::Base
     option.value.to_s == selected_value.to_s
   end
 
+  def option_id(option)
+    "#{form.object_name}_#{field_name}_#{option.value.presence || "default"}"
+  end
+
   def radio_card_classes
     "#{BASE_CLASSES} #{CHECKED_CLASSES}"
   end
