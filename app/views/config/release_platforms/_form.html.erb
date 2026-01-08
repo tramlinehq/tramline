@@ -62,42 +62,17 @@
               <%= sub_fields.hidden_field :id, value: sub_fields.object.id %>
 
               <% if platform.android? %>
-                <div class="flex flex-col gap-2 mb-4">
-                  <label class="text-sm font-medium text-main-700 dark:text-main-200">Form Factor</label>
-                  <div class="text-xs text-secondary mb-2">
-                    Select the device form factor for production release. The track will be prefixed accordingly (e.g., "wear:production").
-                  </div>
-                  <div class="flex flex-wrap gap-3">
-                    <div>
-                      <%= sub_fields.radio_button :production_form_factor, "",
-                            checked: sub_fields.object.parsed_production_form_factor.blank?,
-                            class: "hidden peer",
-                            id: "#{sub_fields.object_name}_production_form_factor_default" %>
-                      <label for="<%= "#{sub_fields.object_name}_production_form_factor_default" %>"
-                             class="inline-flex items-center px-3 py-2 text-sm border rounded-lg cursor-pointer
-                                    peer-checked:border-blue-600 peer-checked:text-blue-600 peer-checked:bg-blue-50
-                                    dark:peer-checked:bg-blue-900/20
-                                    border-main-200 dark:border-main-600 hover:bg-main-50 dark:hover:bg-main-700">
-                        <span>Default (Mobile)</span>
-                      </label>
-                    </div>
-
-                    <% GooglePlayStoreIntegration::FORM_FACTOR_TRACKS.each do |key, label| %>
-                      <div>
-                        <%= sub_fields.radio_button :production_form_factor, key,
-                              checked: sub_fields.object.parsed_production_form_factor == key,
-                              class: "hidden peer",
-                              id: "#{sub_fields.object_name}_production_form_factor_#{key}" %>
-                        <label for="<%= "#{sub_fields.object_name}_production_form_factor_#{key}" %>"
-                               class="inline-flex items-center px-3 py-2 text-sm border rounded-lg cursor-pointer
-                                      peer-checked:border-blue-600 peer-checked:text-blue-600 peer-checked:bg-blue-50
-                                      dark:peer-checked:bg-blue-900/20
-                                      border-main-200 dark:border-main-600 hover:bg-main-50 dark:hover:bg-main-700">
-                          <span><%= label %></span>
-                        </label>
-                      </div>
-                    <% end %>
-                  </div>
+                <div class="mb-4">
+                  <%= render Form::RadioCardsComponent.new(
+                        form: sub_fields,
+                        field_name: :production_form_factor,
+                        options: [
+                          {value: "", label: "Default (mobile or single-track)"},
+                          *GooglePlayStoreIntegration::FORM_FACTOR_TRACKS.map { |key, label| {value: key, label: label} }
+                        ],
+                        selected_value: sub_fields.object.parsed_production_form_factor || "",
+                        description: "Select the device form factor for production release. The track will be prefixed accordingly (e.g., wear:production)."
+                      ) %>
                 </div>
               <% end %>
 
