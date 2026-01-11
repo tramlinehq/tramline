@@ -3,8 +3,8 @@ class OnboardingController < SignedInApplicationController
   before_action :set_onboarding_state
 
   steps :step_1,
-        :step_2,
-        :step_3
+    :step_2,
+    :step_3
 
   def show
     render_wizard
