@@ -15,6 +15,6 @@
       <%= f.F.authz_submit "Continue", "arrow_right.svg", size: :sm %>
     <% end %>
   <% end %>
-  <%= link_to :step_1, wizard_path(:step_1) %>
-  <%= link_to :step_3, wizard_path(:step_3) %>
+  <%= link_to @previous_step, wizard_path(@previous_step), data: {turbo_action: :advance} %>
+  <%= link_to @next_step, wizard_path(@next_step), data: {turbo_action: :advance} %>
 <% end %>

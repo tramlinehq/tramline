@@ -85,7 +85,7 @@ gem "pg_search", "~> 2.3"
 gem "redlock", "~> 2.0"
 gem "svix", "~> 1.0"
 gem "ruby-vips", "~> 2.2"
-gem 'wicked', '~> 2.0'
+gem "wicked", "~> 2.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
