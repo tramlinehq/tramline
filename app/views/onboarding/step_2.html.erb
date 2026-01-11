@@ -1,0 +1,20 @@
+<%= turbo_frame_tag :onboarding_step do %>
+  <h1>Step 2</h1>
+  <%= render FormComponent.new(model: [@app, @onboarding_state], url: wizard_path, method: :put) do |f| %>
+    <% f.with_section(heading: "Setup Information") do |section| %>
+      <% section.with_description do %>
+        Provide the required information to complete the first step of the onboarding process.
+      <% end %>
+
+      <div class="grid gap-4">
+        <div><%= section.F.labeled_text_field :field_2, "Field 2", required: true %></div>
+      </div>
+    <% end %>
+
+    <% f.with_action do %>
+      <%= f.F.authz_submit "Continue", "arrow_right.svg", size: :sm %>
+    <% end %>
+  <% end %>
+  <%= link_to :step_1, wizard_path(:step_1) %>
+  <%= link_to :step_3, wizard_path(:step_3) %>
+<% end %>

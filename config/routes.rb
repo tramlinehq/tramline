@@ -66,6 +66,8 @@ Rails.application.routes.draw do
       delete :remove_icon
     end
 
+    resources :onboarding
+
     resources :app_variants, only: %i[index edit create update destroy]
 
     namespace :version_control do
