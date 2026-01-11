@@ -53,7 +53,7 @@ class PlayStoreSubmission < StoreSubmission
   }
   FINAL_STATES = %w[prepared]
   PRE_PREPARE_STATES = %w[created preprocessing failed_with_action_required review_failed failed]
-  CHANGEABLE_STATES = %w[created preprocessing failed prepared]
+  CHANGEABLE_STATES = %w[created preprocessing failed_with_action_required failed prepared]
   MAX_NOTES_LENGTH = 500
   DEEP_LINK_BASE = "https://play.google.com/store/apps/details?id="
 
