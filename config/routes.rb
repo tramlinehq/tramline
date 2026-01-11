@@ -89,6 +89,8 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :onboarding
+
     namespace :version_control do
       resource :github_config, only: %i[edit update]
       resource :gitlab_config, only: %i[edit update]
