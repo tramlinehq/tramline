@@ -1,0 +1,23 @@
+<li class="<%= item_classes %> <%= is_active? ? 'active' : '' %> <%= is_completed? ? 'completed' : '' %>"
+    data-onboarding-wizard-target="step"
+    data-action="click->onboarding-wizard#navigateTo"
+    data-step-index="<%= index %>">
+  <span data-onboarding-wizard-target="indicator"
+        class="<%= point_classes %> <%= is_completed? ? 'bg-green-500' : (is_active? ? 'bg-blue-500' : 'bg-gray-200') %> transition-colors duration-300">
+    <% if is_completed? %>
+      <%= render IconComponent.new("check.svg", size: :sm, classes: "text-white") %>
+    <% else %>
+      <span class="text-white text-sm"><%= index %></span>
+    <% end %>
+  </span>
+
+  <h3 class="flex items-center mb-1 text-lg font-semibold text-gray-900 dark:text-white <%= is_active? ? 'text-blue-500' : '' %>">
+    <%= title %>
+    <% if is_active? %>
+      <span class="bg-blue-100 text-blue-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 ml-3">Current</span>
+    <% elsif is_completed? %>
+      <span class="bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300 ml-3">Completed</span>
+    <% end %>
+  </h3>
+  <p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400"><%= description %></p>
+</li>
