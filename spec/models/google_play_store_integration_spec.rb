@@ -325,27 +325,25 @@ describe GooglePlayStoreIntegration do
     end
 
     it "ensures that subsequent requests wait if there's already a lock" do
-      expect(redis_connection.get(lock_name)).to be_nil
+      lock_acquired = Queue.new
 
-      # first long-running api call
-      allow(api_double).to receive(:halt_release) { sleep 10 }
+      allow(api_double).to receive(:halt_release) do
+        lock_acquired << true  # Signal that we're inside the locked section
+        sleep 10
+      end
+
       Thread.new { google_integration.halt_release(anything, anything, anything, anything, raise_on_lock_error:) }
 
-      # Poll until lock appears
-      Timeout.timeout(5) do
-        sleep 0.1 until redis_connection.get(lock_name).present?
-        expect(redis_connection.get(lock_name)).not_to be_nil
-      end
+      # Wait for signal that lock is acquired (blocks until queue has item)
+      Timeout.timeout(5) { lock_acquired.pop }
 
-      # second blocked call
-      allow(api_double).to receive(:create_release) { sleep 1 }
-      Thread.new { google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:) }
+      # Now the lock is definitely held - second call should fail
+      allow(google_integration).to receive(:api_lock_params).and_return(ttl: 100, retry_count: 1, retry_delay: 0.1)
+      allow(api_double).to receive(:create_release)
 
-      # Poll until lock appears
-      Timeout.timeout(5) do
-        sleep 0.1 until redis_connection.get(lock_name).present?
-        expect(redis_connection.get(lock_name)).not_to be_nil
-      end
+      r = google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:)
+      expect(r.ok?).to be false
+      expect(r.error).to be_a(GooglePlayStoreIntegration::LockAcquisitionError)
     end
 
     it "allows the retries to drain out if the lock could not be acquired on time" do
