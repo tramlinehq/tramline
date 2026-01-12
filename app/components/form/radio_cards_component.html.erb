@@ -1,0 +1,21 @@
+<div class="flex flex-col gap-3">
+  <% if description.present? %>
+    <div class="text-xs text-secondary">
+      <%= description %>
+    </div>
+  <% end %>
+
+  <div class="flex flex-wrap gap-3">
+    <% options.each do |option| %>
+      <div>
+        <%= form.radio_button field_name, option.value,
+              checked: selected?(option),
+              class: "hidden peer",
+              id: option_id(option) %>
+        <label for="<%= option_id(option) %>" class="<%= radio_card_classes %>">
+          <span><%= option.label %></span>
+        </label>
+      </div>
+    <% end %>
+  </div>
+</div>

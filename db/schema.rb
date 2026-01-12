@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_17_083817) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -130,7 +130,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_17_083817) do
     t.boolean "draft"
     t.boolean "build_number_managed_internally", default: true, null: false
     t.index ["organization_id"], name: "index_apps_on_organization_id"
-    t.index ["platform", "bundle_identifier", "organization_id"], name: "index_apps_on_platform_and_bundle_id_and_org_id", unique: true
+    t.index ["platform", "bundle_identifier", "organization_id", "name"], name: "index_apps_on_platform_bundle_id_org_id_and_name", unique: true
   end
 
   create_table "beta_soaks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

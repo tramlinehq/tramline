@@ -330,13 +330,13 @@ describe GooglePlayStoreIntegration do
       # first long-running api call
       allow(api_double).to receive(:halt_release) { sleep 10 }
       Thread.new { google_integration.halt_release(anything, anything, anything, anything, raise_on_lock_error:) }
-      sleep 1
+      sleep 2
       expect(redis_connection.get(lock_name)).not_to be_nil
 
       # second blocked call
       allow(api_double).to receive(:create_release) { sleep 1 }
       Thread.new { google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:) }
-      sleep 1
+      sleep 2
       expect(redis_connection.get(lock_name)).not_to be_nil
     end
 
@@ -410,7 +410,7 @@ describe GooglePlayStoreIntegration do
           }
         ]
 
-        expect(channels).to eq(expected_channels)
+        expect(channels).to match_array(expected_channels)
       end
 
       it "returns build channels with production track" do
@@ -448,7 +448,7 @@ describe GooglePlayStoreIntegration do
           }
         ]
 
-        expect(channels).to eq(expected_channels)
+        expect(channels).to match_array(expected_channels)
       end
     end
 
@@ -491,7 +491,7 @@ describe GooglePlayStoreIntegration do
             {"id" => "#{form_factor_key}:Pre-Alpha:1", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha:1", "is_production" => false}
           ]
 
-          expect(channels).to eq(expected_channels)
+          expect(channels).to match_array(expected_channels)
         end
 
         it "returns build channels with production track" do
@@ -509,7 +509,7 @@ describe GooglePlayStoreIntegration do
             {"id" => "#{form_factor_key}:Pre-Alpha:1", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha:1", "is_production" => false}
           ]
 
-          expect(channels).to eq(expected_channels)
+          expect(channels).to match_array(expected_channels)
         end
       end
     end

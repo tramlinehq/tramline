@@ -192,7 +192,12 @@
       </div>
 
       <div class="flex flex-row gap-2 items-center">
-        <%= render IconComponent.new(store_icon, size: :xl) %>
+        <%= render IconComponent.new(store_icon, size: :xxl) %>
+        <% if form_factor.present? %>
+          <%= render BadgeComponent.new(text: form_factor[:text], kind: :badge) do |badge| %>
+            <% badge.with_icon(form_factor[:icon], size: :xxl) %>
+          <% end %>
+        <% end %>
         <%= render BadgeComponent.new(**status) %>
       </div>
 
