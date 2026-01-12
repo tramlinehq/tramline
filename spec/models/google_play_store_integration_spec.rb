@@ -349,6 +349,9 @@ describe GooglePlayStoreIntegration do
     end
 
     it "allows the retries to drain out if the lock could not be acquired on time" do
+      p "Test lock_name: #{lock_name}"
+      p "Integration app_id: #{google_integration.integrable.id}"
+
       # pre-acquire lock
       lock_info = Rails.application.config.distributed_lock_client.lock(lock_name, 3600 * 1000)
       expect(lock_info).to be_truthy
