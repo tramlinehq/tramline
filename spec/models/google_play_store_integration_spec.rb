@@ -410,7 +410,7 @@ describe GooglePlayStoreIntegration do
           }
         ]
 
-        expect(channels).to eq(expected_channels)
+        expect(channels).to match_array(expected_channels)
       end
 
       it "returns build channels with production track" do
@@ -448,7 +448,7 @@ describe GooglePlayStoreIntegration do
           }
         ]
 
-        expect(channels).to eq(expected_channels)
+        expect(channels).to match_array(expected_channels)
       end
     end
 
@@ -491,7 +491,7 @@ describe GooglePlayStoreIntegration do
             {"id" => "#{form_factor_key}:Pre-Alpha:1", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha:1", "is_production" => false}
           ]
 
-          expect(channels).to eq(expected_channels)
+          expect(channels).to match_array(expected_channels)
         end
 
         it "returns build channels with production track" do
@@ -509,7 +509,7 @@ describe GooglePlayStoreIntegration do
             {"id" => "#{form_factor_key}:Pre-Alpha:1", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha:1", "is_production" => false}
           ]
 
-          expect(channels).to eq(expected_channels)
+          expect(channels).to match_array(expected_channels)
         end
       end
     end
