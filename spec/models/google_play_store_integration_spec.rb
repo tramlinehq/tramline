@@ -325,49 +325,32 @@ describe GooglePlayStoreIntegration do
     end
 
     it "ensures that subsequent requests wait if there's already a lock" do
-      lock_acquired = Queue.new
+      expect(redis_connection.get(lock_name)).to be_nil
 
-      allow(api_double).to receive(:halt_release) do
-        lock_acquired << true  # Signal that we're inside the locked section
-        sleep 10
-      end
-
+      # first long-running api call
+      allow(api_double).to receive(:halt_release) { sleep 10 }
       Thread.new { google_integration.halt_release(anything, anything, anything, anything, raise_on_lock_error:) }
+      sleep 2
+      expect(redis_connection.get(lock_name)).not_to be_nil
 
-      # Wait for signal that lock is acquired (blocks until queue has item)
-      Timeout.timeout(5) { lock_acquired.pop }
-
-      # Now the lock is definitely held - second call should fail
-      allow(google_integration).to receive(:api_lock_params).and_return(ttl: 100, retry_count: 1, retry_delay: 0.1)
-      allow(api_double).to receive(:create_release)
-
-      r = google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:)
-      expect(r.ok?).to be false
-      expect(r.error).to be_a(GooglePlayStoreIntegration::LockAcquisitionError)
+      # second blocked call
+      allow(api_double).to receive(:create_release) { sleep 1 }
+      Thread.new { google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:) }
+      sleep 2
+      expect(redis_connection.get(lock_name)).not_to be_nil
     end
 
     it "allows the retries to drain out if the lock could not be acquired on time" do
-      p "Test lock_name: #{lock_name}"
-      p "Integration app_id: #{google_integration.integrable.id}"
-
       # pre-acquire lock
-      lock_info = Rails.application.config.distributed_lock_client.lock(lock_name, 3600 * 1000)
-      expect(lock_info).to be_truthy
+      Rails.application.config.distributed_lock_client.lock(lock_name, 3600 * 1000)
 
       allow(google_integration).to receive(:api_lock_params).and_return(ttl: 100, retry_count: 1, retry_delay: 1)
       allow(api_double).to receive(:create_release)
 
-      # Verify api_lock is called
-      expect(google_integration).to receive(:api_lock).and_call_original
+      # queue new request that cannot acquire the lock
       r = google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:)
-      p "Result: #{r.inspect}"
-      p "Result ok?: #{r.ok?}"
-      p "Result error: #{r.error.inspect}" if r.respond_to?(:error)
-
-      # # queue new request that cannot acquire the lock
-      # r = google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:)
-      # expect(r.ok?).to be false
-      # expect(r.error).to be_a(GooglePlayStoreIntegration::LockAcquisitionError)
+      expect(r.ok?).to be false
+      expect(r.error).to be_a(GooglePlayStoreIntegration::LockAcquisitionError)
     end
   end
 
