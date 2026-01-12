@@ -330,19 +330,33 @@ describe GooglePlayStoreIntegration do
       # first long-running api call
       allow(api_double).to receive(:halt_release) { sleep 10 }
       Thread.new { google_integration.halt_release(anything, anything, anything, anything, raise_on_lock_error:) }
-      sleep 1
+      sleep 2
       expect(redis_connection.get(lock_name)).not_to be_nil
 
       # second blocked call
       allow(api_double).to receive(:create_release) { sleep 1 }
       Thread.new { google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:) }
-      sleep 1
+      sleep 2
       expect(redis_connection.get(lock_name)).not_to be_nil
     end
 
     it "allows the retries to drain out if the lock could not be acquired on time" do
       # pre-acquire lock
-      Rails.application.config.distributed_lock_client.lock(lock_name, 3600 * 1000)
+
+      lock_client = Rails.application.config.distributed_lock_client
+      p lock_client.class
+      p lock_client.inspect
+
+      # Does basic Redis work?
+      p redis_connection.set("test_key", "test_value")
+      p redis_connection.get("test_key")
+
+      # Does the lock client's Redis work?
+      p lock_client.try(:redis)
+
+      # Rails.application.config.distributed_lock_client.lock!(lock_name, 3600 * 1000)
+      lock_info = Rails.application.config.distributed_lock_client.lock(lock_name, 3600 * 1000)
+      expect(lock_info).to be_truthy
 
       allow(google_integration).to receive(:api_lock_params).and_return(ttl: 100, retry_count: 1, retry_delay: 1)
       allow(api_double).to receive(:create_release)
