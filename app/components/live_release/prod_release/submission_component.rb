@@ -94,6 +94,16 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
     "integrations/logo_#{submission.provider}.png"
   end
 
+  def form_factor
+    return nil unless submission.is_a?(PlayStoreSubmission)
+    form_factor_key = submission.conf.parsed_production_form_factor
+    return nil unless form_factor_key
+    {
+      text: GooglePlayStoreIntegration::FORM_FACTOR_TRACKS[form_factor_key],
+      icon: "form_factors/#{form_factor_key}.svg"
+    }
+  end
+
   def submission_logo_bw
     "logo_#{submission.provider}_bw.svg"
   end
