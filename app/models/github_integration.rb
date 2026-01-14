@@ -262,7 +262,12 @@ class GithubIntegration < ApplicationRecord
   end
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
-    installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash)
+    # GitHub API now returns workflow_run_id directly
+    workflow_run_id = installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash)
+
+    # Fetch the full workflow run metadata using the returned ID
+    get_workflow_run(workflow_run_id)
+      .then { |run| Installations::Response::Keys.transform(run, WORKFLOW_RUN_TRANSFORMATIONS) }
   end
 
   def cancel_workflow_run!(ci_ref)

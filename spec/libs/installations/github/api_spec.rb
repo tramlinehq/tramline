@@ -104,6 +104,35 @@ describe Installations::Github::Api, type: :integration do
     end
   end
 
+  describe "#run_workflow!" do
+    let(:repo) { Faker::Lorem.characters(number: 8) }
+    let(:workflow_id) { Faker::Lorem.characters(number: 8) }
+    let(:ref) { "main" }
+    let(:commit_hash) { Faker::Crypto.sha1 }
+    let(:inputs) { {build_version: "1.0.0", version_code: 1, parameters: {}} }
+
+    it "returns workflow_run_id from GitHub API response" do
+      workflow_run_id = Faker::Number.number(digits: 10)
+      response_body = {"workflow_run_id" => workflow_run_id}.to_json
+
+      allow_any_instance_of(described_class).to receive(:execute_custom).and_return(response_body)
+
+      result = described_class.new(installation_id).run_workflow!(repo, workflow_id, ref, inputs, commit_hash)
+
+      expect(result).to eq(workflow_run_id)
+    end
+
+    it "raises error when workflow_run_id is not in response" do
+      response_body = {}.to_json
+
+      allow_any_instance_of(described_class).to receive(:execute_custom).and_return(response_body)
+
+      expect {
+        described_class.new(installation_id).run_workflow!(repo, workflow_id, ref, inputs, commit_hash)
+      }.to raise_error(Installations::Error, "Workflow run ID not returned")
+    end
+  end
+
   describe "#head" do
     let(:payload) { JSON.parse(File.read("spec/fixtures/github/get_ref.json")).to_h.with_indifferent_access }
     let(:commit_payload) { JSON.parse(File.read("spec/fixtures/github/get_commit.json")).to_h.with_indifferent_access }
