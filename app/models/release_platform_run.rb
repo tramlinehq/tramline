@@ -173,9 +173,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def available_rc_builds(after: nil)
-    builds = rc_builds
-      .left_joins(:production_releases)
-      .where(production_releases: {build_id: nil})
+    builds = rc_builds.without_production_releases
 
     if after
       builds.where("generated_at > ?", after.generated_at).where.not(id: after.id)

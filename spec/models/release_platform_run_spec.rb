@@ -192,6 +192,39 @@ describe ReleasePlatformRun do
     end
   end
 
+  describe "#available_rc_builds" do
+    let(:release_platform_run) { create(:release_platform_run) }
+
+    it "returns rc builds without production releases" do
+      build = create(:build, :rc, release_platform_run:)
+
+      expect(release_platform_run.available_rc_builds).to include(build)
+    end
+
+    it "excludes builds with production releases" do
+      build = create(:build, :rc, release_platform_run:)
+      create(:production_release, release_platform_run:, build:)
+
+      expect(release_platform_run.available_rc_builds).not_to include(build)
+    end
+
+    context "with after parameter" do
+      it "returns only builds generated after the given build" do
+        older_build = create(:build, :rc, release_platform_run:, generated_at: 2.hours.ago)
+        newer_build = create(:build, :rc, release_platform_run:, generated_at: 1.hour.ago)
+
+        expect(release_platform_run.available_rc_builds(after: older_build)).to include(newer_build)
+        expect(release_platform_run.available_rc_builds(after: older_build)).not_to include(older_build)
+      end
+
+      it "excludes the reference build itself" do
+        build = create(:build, :rc, release_platform_run:)
+
+        expect(release_platform_run.available_rc_builds(after: build)).not_to include(build)
+      end
+    end
+  end
+
   describe ".previously_completed_rollout_run" do
     let(:train) { create(:train) }
 

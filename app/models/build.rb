@@ -37,6 +37,7 @@ class Build < ApplicationRecord
   scope :internal, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:internal]}) }
   scope :release_candidate, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:release_candidate]}) }
   scope :ready, -> { where.not(generated_at: nil) }
+  scope :without_production_releases, -> { left_joins(:production_releases).where(production_releases: {build_id: nil}) }
 
   delegate :android?, :ios?, :ci_cd_provider, :train, to: :release_platform_run
   delegate :artifacts_url, :artifact_name_pattern, :build_suffix, :kind, to: :workflow_run
