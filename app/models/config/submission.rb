@@ -25,7 +25,6 @@ class Config::Submission < ApplicationRecord
   delegated_type :integrable, types: INTEGRABLE_TYPES, validate: false
 
   before_validation :set_default_production_config, if: -> { !read_only? && production? }
-  before_validation :set_number_one, if: -> { !read_only? && new_record? && production? }
   before_validation :set_default_rollout_for_ios, if: -> { !read_only? && new_record? && ios? && rollout_enabled? }
 
   validates :submission_type, presence: true
