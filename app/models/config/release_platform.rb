@@ -181,8 +181,12 @@ class Config::ReleasePlatform < ApplicationRecord
     all_submissions = Set.new
 
     [internal_release, beta_release, production_release].compact.each do |release_step|
-      release_step.submissions.each do |submission|
-        submission_key = [submission.integrable_id, submission.submission_type, submission.submission_external&.identifier].join("-")
+      release_step.submissions.reject(&:marked_for_destruction?).each do |submission|
+        submission_key = [
+          submission.integrable_id,
+          submission.submission_type,
+          submission.submission_external&.identifier
+        ].join("-")
 
         unless all_submissions.add?(submission_key)
           errors.add(:base, :unique_submissions)

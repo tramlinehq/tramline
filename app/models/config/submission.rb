@@ -20,15 +20,14 @@ class Config::Submission < ApplicationRecord
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
   belongs_to :release_step_config, class_name: "Config::ReleaseStep"
+  positioned on: :release_step_config, column: :number
   has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
   delegated_type :integrable, types: INTEGRABLE_TYPES, validate: false
 
   before_validation :set_default_production_config, if: -> { !read_only? && production? }
-  before_validation :set_number_one, if: -> { !read_only? && new_record? && production? }
   before_validation :set_default_rollout_for_ios, if: -> { !read_only? && new_record? && ios? && rollout_enabled? }
 
   validates :submission_type, presence: true
-  validates :number, presence: true, uniqueness: {scope: :release_step_config_id}
   validate :correct_rollout_stages, if: :rollout_enabled?
   validate :production_release_submission
   validate :cascading_rollout_applicability, if: :finish_rollout_in_next_release?
@@ -67,7 +66,7 @@ class Config::Submission < ApplicationRecord
   end
 
   def next
-    release_step_config.submissions.where("number > ?", number).order(:number).first
+    subsequent_number
   end
 
   def app_variant?
@@ -130,10 +129,6 @@ class Config::Submission < ApplicationRecord
 
   def set_default_rollout_for_ios
     self.rollout_stages = AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE
-  end
-
-  def set_number_one
-    self.number = 1
   end
 
   def set_default_production_config
