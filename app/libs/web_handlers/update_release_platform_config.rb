@@ -131,7 +131,7 @@ class WebHandlers::UpdateReleasePlatformConfig
   end
 
   def enabled?(params, key)
-    params[key] == "true"
+    ActiveModel::Type::Boolean.new.cast(params[key])
   end
 
   def mark_for_destruction(attrs)
