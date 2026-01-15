@@ -1,33 +1,21 @@
-<div class="container mx-auto my-8 max-w-6xl">
-  <h1 class="text-3xl font-bold mb-8">Set Up Your Release Process</h1>
-  <%= turbo_frame_tag :onboarding_step do %>
-    <%= render Onboarding::WizardComponent.new(current_step: @step) do |wizard| %>
-      <% wizard.with_step(key: :step_1, title: "Step 1", index: 1, description: "Step 1 description", active: current_step?(:step_1), completed: @onboarding_state.step_completed?(:step_1)) %>
-      <% wizard.with_step(key: :step_2, title: "Step 2", index: 2, description: "Step 2 description", active: current_step?(:step_2), completed: @onboarding_state.step_completed?(:step_2)) %>
-      <% wizard.with_step(key: :step_3, title: "Step 3", index: 3, description: "Step 3 description", active: current_step?(:step_3), completed: @onboarding_state.step_completed?(:step_3)) %>
-      <% wizard.with_active_step do %>
-        <%= render FormComponent.new(model: [@app, @onboarding_state], url: wizard_path, method: :put) do |f| %>
-      <% f.with_section(heading: "Setup Information") do |section| %>
-        <% section.with_description do %>
-          Provide the required information to complete the first step of the onboarding process.
-        <% end %>
-
-        <div class="grid gap-4">
-          <div><%= section.F.labeled_text_field :field_2, "Field 2" %></div>
-        </div>
+<%= render AppOnboarding::WizardComponent.new(
+  app: @app,
+  onboarding_state: @onboarding_state,
+  current_step: :step_2,
+  show_back: true,
+  show_next: true
+) do %>
+  <%= render FormComponent.new(model: [@app, @onboarding_state], url: wizard_path, method: :put) do |f| %>
+    <% f.with_section(heading: "Setup Information") do |section| %>
+      <% section.with_description do %>
+        Provide the required information to complete the first step of the onboarding process.
       <% end %>
-
-      <% f.with_action do %>
-        <%= f.F.authz_submit "Continue", "arrow_right.svg", size: :sm %>
-      <% end %>
+      <div class="grid gap-4">
+        <div><%= section.F.labeled_text_field :field_2, "Field 2" %></div>
+      </div>
     <% end %>
-      <% end %>
-      <% wizard.with_navigation_buttons do %>
-        <div class="flex justify-between mt-4">
-          <%= link_to "Back", wizard_path(@previous_step), data: {turbo_action: :advance}, class: "px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg focus:outline-none hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700" %>
-          <%= link_to "Next Step", wizard_path(@next_step), data: {turbo_action: :advance}, class: "text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" %>
-        </div>
-      <% end %>
+    <% f.with_action do %>
+      <%= f.F.authz_submit "Continue", "arrow_right.svg", size: :sm %>
     <% end %>
   <% end %>
-</div>
+<% end %>
