@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_09_035215) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -497,6 +497,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
     t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))"
+  end
+
+  create_table "onboarding_states", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "app_id", null: false
+    t.string "field_1"
+    t.string "field_2"
+    t.string "field_3"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_id"], name: "index_onboarding_states_on_app_id"
   end
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1190,6 +1200,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
+  add_foreign_key "onboarding_states", "apps"
   add_foreign_key "outgoing_webhook_events", "releases"
   add_foreign_key "pre_prod_releases", "commits"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "parent_internal_release_id"

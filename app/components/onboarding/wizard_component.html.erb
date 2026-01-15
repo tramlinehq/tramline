@@ -1,0 +1,40 @@
+<div
+     data-onboarding-wizard-current-step-value="<%= current_step %>"
+     data-onboarding-wizard-total-steps-value="<%= steps.size %>"
+     class="flex flex-col">
+
+  <!-- Progress Bar -->
+  <!--
+  <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6 dark:bg-gray-700">
+    <div data-onboarding-wizard-target="progress"
+         class="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+         style="width: <%#= (current_step / (steps.size - 1).to_f * 100).round %>%"
+         aria-valuenow="<%#= (current_step / (steps.size - 1).to_f * 100).round %>"
+         aria-valuemin="0"
+         aria-valuemax="100"></div>
+  </div>
+  -->
+
+  <div class="flex flex-col md:flex-row gap-6">
+    <!-- Left sidebar with vertical stepper -->
+    <div class="w-full md:w-1/4">
+      <ol class="relative border-l border-gray-200 dark:border-gray-700">
+        <% steps.each do |step| %>
+          <%= step %>
+        <% end %>
+      </ol>
+    </div>
+
+    <!-- Right content area -->
+    <div class="w-full md:w-3/4">
+      <div class="bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+        <div data-onboarding-wizard-target="content" class="p-6 rounded-lg">
+          <%= active_step %>
+        </div>
+      </div>
+
+      <!-- Navigation buttons -->
+      <%= navigation_buttons %>
+    </div>
+  </div>
+</div>
