@@ -53,12 +53,6 @@ class Coordinators::ApplyCommit
     run.with_lock do
       run.start! if run.concluded?
     end
-
-    run.event_stamp!(
-      reason: :reactivated,
-      kind: :notice,
-      data: {version: run.release_version, commit: commit.short_sha}
-    )
   end
 
   attr_reader :release, :commit

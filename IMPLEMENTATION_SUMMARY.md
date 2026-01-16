@@ -39,7 +39,6 @@ created → on_track → concluded → finished
    - Updated `finish!` to transition from `concluded` → `finished`
    - Kept `active?` as only `created` and `on_track` (workflow states)
    - Added `committable?` to check if commits can be applied (created, on_track, or concluded)
-   - Added `reactivated` to `STAMPABLE_REASONS`
 
 2. **`app/models/release.rb`**
    - Updated `ready_to_be_finalized?` to include `concluded` state
@@ -66,7 +65,6 @@ created → on_track → concluded → finished
    - Changed `next unless run.on_track?` → `next unless run.committable?`
    - Now applies commits to platforms where `committable?` returns true (created, on_track, or concluded)
    - Added `reactivate_if_concluded` method to transition `concluded` → `on_track` when new commit lands
-   - Emits `reactivated` event stamp when platform is reactivated
 
 8. **`app/libs/coordinators/finalize_release.rb`**
    - Added finalization of all `concluded` platform runs when release finishes
