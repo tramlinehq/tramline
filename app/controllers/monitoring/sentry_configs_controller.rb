@@ -28,7 +28,7 @@ class Monitoring::SentryConfigsController < SignedInApplicationController
   def set_sentry_integration
     @sentry_integration = @app.monitoring_provider
     unless @sentry_integration.is_a?(SentryIntegration)
-      redirect_to app_integrations_path(@app), flash: {error: "Monitoring integration not found."}
+      redirect_to app_integrations_path(@app), flash: {error: "Monitoring integration not found."} and return
     end
   end
 

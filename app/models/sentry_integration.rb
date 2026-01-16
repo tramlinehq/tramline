@@ -88,7 +88,7 @@ class SentryIntegration < ApplicationRecord
 
   def list_projects
     cache.fetch(list_projects_cache_key, expires_in: CACHE_EXPIRY) do
-      list_organizations.flat_map { |org| installation.list_projects(org[:slug], PROJECTS_TRANSFORMATIONS) }
+      (list_organizations || []).flat_map { |org| installation.list_projects(org[:slug], PROJECTS_TRANSFORMATIONS) }
     end
   end
 
@@ -116,7 +116,7 @@ class SentryIntegration < ApplicationRecord
     return if project_url(platform).blank?
     org_slug = organization_slug_from_config(platform)
     proj_slug = project_slug(platform)
-    return "#{project_url(platform)}/releases/#{release_id}/" if release_id.present?
+    return "#{project_url(platform)}/releases/#{CGI.escape(release_id)}/" if release_id.present?
     "https://sentry.io/organizations/#{org_slug}/projects/#{proj_slug}/"
   end
 

@@ -46,9 +46,9 @@ module Installations
     private
 
     def fetch_release_stats(org_slug, project_slug, environment, version)
-      # Calculate time window - last 7 days
+      # Calculate time window using configured monitoring period
       end_time = Time.current
-      start_time = end_time - 7.days
+      start_time = end_time - ProductionRelease::RELEASE_MONITORING_PERIOD_IN_DAYS[SentryIntegration].days
 
       # Build query parameters for session statistics
       params = {
@@ -67,8 +67,7 @@ module Installations
         interval: "1d"
       }
 
-      response = get_request("/organizations/#{org_slug}/sessions/", params)
-      response
+      get_request("/organizations/#{org_slug}/sessions/", params)
     end
 
     def build_release_data(stats, version)
@@ -103,11 +102,6 @@ module Installations
         end
       end
 
-      # Calculate stability rates
-      # Sentry provides crash_free_rate, we need to calculate stability
-      session_stability = total_sessions > 0 ? ((total_sessions - errored_sessions).to_f / total_sessions * 100) : 100
-      user_stability = total_users > 0 ? ((total_users - users_with_errors).to_f / total_users * 100) : 100
-
       {
         version: version,
         total_sessions_count: total_sessions,
@@ -129,7 +123,7 @@ module Installations
       request["Authorization"] = "Bearer #{access_token}"
       request["Content-Type"] = "application/json"
 
-      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true, open_timeout: 10, read_timeout: 30) do |http|
         http.request(request)
       end
 

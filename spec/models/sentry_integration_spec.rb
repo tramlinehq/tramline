@@ -17,8 +17,8 @@ describe SentryIntegration do
 
   describe "#installation" do
     it "returns an API instance with the access token" do
-      expect(Installations::Sentry::Api).to receive(:new).with(sentry_integration.access_token)
       sentry_integration.installation
+      expect(Installations::Sentry::Api).to have_received(:new).with(sentry_integration.access_token)
     end
 
     it "returns the API instance" do
@@ -63,8 +63,10 @@ describe SentryIntegration do
     end
 
     before do
-      allow(api_instance).to receive(:list_organizations).and_return(organizations)
-      allow(api_instance).to receive(:list_projects).and_return(projects)
+      allow(api_instance).to receive_messages(
+        list_organizations: organizations,
+        list_projects: projects
+      )
     end
 
     it "calls the API list_projects for each organization" do
@@ -295,7 +297,7 @@ describe SentryIntegration do
       expect(sentry_integration.errors[:access_token]).to include("can't be blank")
     end
 
-    context "on create" do
+    context "when creating" do
       let(:new_integration) { build(:sentry_integration, access_token: "test_token") }
 
       before do
