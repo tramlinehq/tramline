@@ -11,16 +11,15 @@ class Coordinators::ApplyCommit
   def call
     return unless commit.applicable?
     release.release_platform_runs.each do |run|
-      # Apply commits to platform runs that can accept commits (created, on_track, or concluded without supersede)
-      next unless run.committable?
+      run.with_lock do
+        next unless run.committable?
+        run.start!
 
-      # If platform was concluded, transition back to on_track since there's new work
-      reactivate_if_concluded(run)
-
-      if release.hotfix?
-        Coordinators::CreateBetaRelease.call(run, commit) if trigger_hotfix?
-      else
-        trigger(run)
+        if release.hotfix?
+          Coordinators::CreateBetaRelease.call(run, commit) if trigger_hotfix?
+        else
+          trigger(run)
+        end
       end
     end
   end
@@ -43,16 +42,7 @@ class Coordinators::ApplyCommit
 
   def apply_change?(run)
     return true if run.train.auto_apply_patch_changes?
-
     !run.version_bump_required?
-  end
-
-  def reactivate_if_concluded(run)
-    return unless run.concluded?
-
-    run.with_lock do
-      run.start! if run.concluded?
-    end
   end
 
   attr_reader :release, :commit

@@ -11,6 +11,7 @@ class Coordinators::StartProductionRelease
   def call
     with_lock do
       return unless release_platform_run.on_track?
+      return if release.blocked_for_production_release?(for_platform_run: release_platform_run)
 
       if previous&.inflight?
         # If the latest production release is still inflight, attach the new RC build to it
@@ -24,7 +25,7 @@ class Coordinators::StartProductionRelease
 
       # If this is an upcoming release starting production,
       # finalize the corresponding platform run in the ongoing release
-      finalize_previous_release_platform_run!
+      finalize_ongoing_release_platform_run!
 
       release_platform_run
         .production_releases
@@ -35,25 +36,15 @@ class Coordinators::StartProductionRelease
 
   private
 
-  def finalize_previous_release_platform_run!
+  def finalize_ongoing_release_platform_run!
     return unless release.upcoming?
 
     ongoing_release = train.ongoing_release
     return unless ongoing_release
 
     # Find the corresponding platform run in the ongoing release
-    corresponding_run = ongoing_release.release_platform_runs.find_by(
-      release_platform_id: release_platform_run.release_platform_id
-    )
-
-    # If it's in concluded state, transition it to finished
-    # This ensures only one active rollout per platform at a time
-    if corresponding_run&.concluded?
-      # Ensure no active production releases before finalizing
-      return if corresponding_run.active_production_release.present?
-
-      Coordinators::FinalizePlatformRun.call(corresponding_run)
-    end
+    corresponding_run = ongoing_release.release_platform_runs.find_by(release_platform_id: release_platform_id)
+    Coordinators::FinalizePlatformRun.call(corresponding_run)
   end
 
   def previous
@@ -65,5 +56,5 @@ class Coordinators::StartProductionRelease
   end
 
   attr_reader :release_platform_run, :build
-  delegate :with_lock, :release, :train, to: :release_platform_run
+  delegate :with_lock, :release, :train, :release_platform_id, to: :release_platform_run
 end

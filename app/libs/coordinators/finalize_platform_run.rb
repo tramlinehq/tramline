@@ -8,10 +8,7 @@ class Coordinators::FinalizePlatformRun
   end
 
   def call
-    return unless release_platform_run.concluded?
-
     release_platform_run.finish!
-
     release_platform_run.event_stamp!(
       reason: :finished,
       kind: :success,
