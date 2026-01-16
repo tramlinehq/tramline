@@ -14,6 +14,9 @@ class Coordinators::ApplyCommit
       # Apply commits to platform runs that can accept commits (created, on_track, or concluded without supersede)
       next unless run.committable?
 
+      # If platform was concluded, transition back to on_track since there's new work
+      reactivate_if_concluded(run)
+
       if release.hotfix?
         Coordinators::CreateBetaRelease.call(run, commit) if trigger_hotfix?
       else
@@ -42,6 +45,20 @@ class Coordinators::ApplyCommit
     return true if run.train.auto_apply_patch_changes?
 
     !run.version_bump_required?
+  end
+
+  def reactivate_if_concluded(run)
+    return unless run.concluded?
+
+    run.with_lock do
+      run.start! if run.concluded?
+    end
+
+    run.event_stamp!(
+      reason: :reactivated,
+      kind: :notice,
+      data: {version: run.release_version, commit: commit.short_sha}
+    )
   end
 
   attr_reader :release, :commit

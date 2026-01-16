@@ -13,7 +13,8 @@ This implementation adds a new `concluded` state to `ReleasePlatformRun` to enab
 
 ```
 created → on_track → concluded → finished
-                  ↘ stopped
+            ↑ ________|
+          ↘ stopped
 ```
 
 ### State Semantics
@@ -22,6 +23,7 @@ created → on_track → concluded → finished
 - **`concluded`**: Production rollout complete, but release still active
   - ✅ Can accept patch fix commits (for critical issues)
   - ✅ Unblocks upcoming release for this platform
+  - ✅ Automatically transitions back to `on_track` when a new commit lands
   - ❌ Automatically transitions to `finished` when upcoming release starts production
 - **`finished`**: Release is finalized, completely done, no more work
 
@@ -33,10 +35,12 @@ created → on_track → concluded → finished
    - Added `concluded` to `STATES` enum
    - Updated `pending_release` scope to exclude `concluded`
    - Added `conclude!` method to transition from `on_track` → `concluded`
+   - Updated `start!` to allow transition from `concluded` → `on_track` (reactivation)
    - Updated `finish!` to transition from `concluded` → `finished`
    - Kept `active?` as only `created` and `on_track` (workflow states)
    - Added `committable?` to check if commits can be applied (includes `concluded` with supersede check)
    - Added `has_active_rollout_in_other_release?` to detect conflicts
+   - Added `reactivated` to `STAMPABLE_REASONS`
 
 2. **`app/models/release.rb`**
    - Updated `ready_to_be_finalized?` to include `concluded` state
@@ -62,6 +66,8 @@ created → on_track → concluded → finished
 7. **`app/libs/coordinators/apply_commit.rb`**
    - Changed `next unless run.on_track?` → `next unless run.committable?`
    - Now applies commits to platforms where `committable?` returns true (created, on_track, or concluded without supersede)
+   - Added `reactivate_if_concluded` method to transition `concluded` → `on_track` when new commit lands
+   - Emits `reactivated` event stamp when platform is reactivated
 
 8. **`app/libs/coordinators/finalize_release.rb`**
    - Added finalization of all `concluded` platform runs when release finishes
@@ -92,6 +98,7 @@ T1: Android production rollout completes
 ├─ iOS: on_track
 ├─ Release: on_track → partially_finished
 ├─ New commits: Apply to BOTH Android and iOS ✅
+├─ Android: concluded → on_track (reactivated) ✅
 
 T2: Upcoming release starts production for Android
 ├─ Current Release Android: concluded → finished ✅
