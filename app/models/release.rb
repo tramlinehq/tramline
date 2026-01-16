@@ -506,7 +506,7 @@ class Release < ApplicationRecord
   end
 
   def blocked_by_ongoing_platform?(for_platform_run)
-    return false unless upcoming? && for_platform_run
+    return false if !upcoming? || !for_platform_run
 
     ongoing = train.ongoing_release
     return true unless ongoing
