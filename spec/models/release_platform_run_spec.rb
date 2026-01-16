@@ -222,6 +222,164 @@ describe ReleasePlatformRun do
 
         expect(release_platform_run.available_rc_builds(after: build)).not_to include(build)
       end
+
+      context "when combined with version filtering" do
+        let(:train) { create(:train, :with_no_platforms) }
+        let(:release_platform) { create(:release_platform, platform: "ios", train:) }
+        let(:release) { create(:release, :with_no_platform_runs, train:) }
+        let(:release_platform_run) { create(:release_platform_run, release_platform:, release:, release_version: "10.44.0") }
+
+        it "filters by both time and version" do
+          # Build with version 10.44.0
+          active_build = create(:build, :rc, release_platform_run:)
+          create(:production_release, :active, release_platform_run:, build: active_build)
+
+          # Bump version to 10.44.1
+          release_platform_run.update!(release_version: "10.44.1")
+
+          # Create multiple builds at 10.44.1
+          build_1 = create(:build, :rc, release_platform_run:, generated_at: 3.hours.ago)
+          build_2 = create(:build, :rc, release_platform_run:, generated_at: 2.hours.ago)
+          build_3 = create(:build, :rc, release_platform_run:, generated_at: 1.hour.ago)
+
+          # Get builds after build_1 (should only include build_2 and build_3)
+          available = release_platform_run.available_rc_builds(after: build_1)
+          expect(available).not_to include(build_1)
+          expect(available).to include(build_2)
+          expect(available).to include(build_3)
+          expect(available.count).to eq(2)
+        end
+      end
+    end
+
+    context "with version filtering" do
+      let(:train) { create(:train, :with_no_platforms) }
+      let(:release_platform) { create(:release_platform, platform: "ios", train:) }
+      let(:release) { create(:release, :with_no_platform_runs, train:) }
+      let(:release_platform_run) { create(:release_platform_run, release_platform:, release:, release_version: "10.44.0") }
+
+      it "includes all builds when no production release" do
+        # Two builds with the same version (both should be available)
+        build_1 = create(:build, :rc, release_platform_run:)
+        build_2 = create(:build, :rc, release_platform_run:)
+
+        available = release_platform_run.available_rc_builds
+        expect(available).to include(build_1)
+        expect(available).to include(build_2)
+      end
+
+      context "with active production release" do
+        it "excludes builds with version <= active rollout version" do
+          # Build with version 10.44.0 (created when run was at 10.44.0)
+          active_build = create(:build, :rc, release_platform_run:)
+          create(:production_release, :active, release_platform_run:, build: active_build)
+
+          # Another build with same version 10.44.0 (should be excluded)
+          older_build = create(:build, :rc, release_platform_run:, generated_at: 1.day.ago)
+
+          # Bump version to 10.44.1 (simulating version bump after approval)
+          release_platform_run.update!(release_version: "10.44.1")
+
+          # New build with version 10.44.1 (should be included)
+          newer_build = create(:build, :rc, release_platform_run:, generated_at: 1.hour.ago)
+
+          available = release_platform_run.available_rc_builds
+          expect(available).not_to include(older_build)
+          expect(available).to include(newer_build)
+        end
+
+        it "includes multiple newer builds as patch fix options" do
+          # Build with version 10.44.0 (created when run was at 10.44.0)
+          active_build = create(:build, :rc, release_platform_run:)
+          create(:production_release, :active, release_platform_run:, build: active_build)
+
+          # Bump version to 10.44.1 (simulating version bump after approval)
+          release_platform_run.update!(release_version: "10.44.1")
+
+          # Multiple new builds with version 10.44.1 (all should be included as patch fix options)
+          patch_build_1 = create(:build, :rc, release_platform_run:, generated_at: 3.hours.ago)
+          patch_build_2 = create(:build, :rc, release_platform_run:, generated_at: 2.hours.ago)
+          patch_build_3 = create(:build, :rc, release_platform_run:, generated_at: 1.hour.ago)
+
+          available = release_platform_run.available_rc_builds
+          expect(available).to include(patch_build_1)
+          expect(available).to include(patch_build_2)
+          expect(available).to include(patch_build_3)
+          expect(available.count).to eq(3)
+        end
+
+        it "handles partial semver comparison" do
+          # Start with partial semver version 10.44
+          release_platform_run.update!(release_version: "10.44")
+
+          # Build with version 10.44 (partial semver)
+          active_build = create(:build, :rc, release_platform_run:)
+          create(:production_release, :active, release_platform_run:, build: active_build)
+
+          # Another build with same version 10.44 (should be excluded)
+          older_build = create(:build, :rc, release_platform_run:, generated_at: 1.day.ago)
+
+          # Bump version to 10.45 (partial semver)
+          release_platform_run.update!(release_version: "10.45")
+
+          # New build with version 10.45 (should be included)
+          newer_build = create(:build, :rc, release_platform_run:)
+
+          available = release_platform_run.available_rc_builds
+          expect(available).not_to include(older_build)
+          expect(available).to include(newer_build)
+        end
+      end
+
+      context "with finished production release" do
+        it "filters against finished production release when no active release" do
+          # Build with version 10.44.0
+          finished_build = create(:build, :rc, release_platform_run:)
+          create(:production_release, :finished, release_platform_run:, build: finished_build)
+
+          # Another build with same version 10.44.0 (should be excluded)
+          older_build = create(:build, :rc, release_platform_run:, generated_at: 1.day.ago)
+
+          # Bump version to 10.44.1
+          release_platform_run.update!(release_version: "10.44.1")
+
+          # New build with version 10.44.1 (should be included)
+          newer_build = create(:build, :rc, release_platform_run:)
+
+          available = release_platform_run.available_rc_builds
+          expect(available).not_to include(older_build)
+          expect(available).to include(newer_build)
+        end
+
+        it "prefers active production release over finished when both exist" do
+          # Build with version 10.44.0 (finished)
+          finished_build = create(:build, :rc, release_platform_run:)
+          create(:production_release, :finished, release_platform_run:, build: finished_build)
+
+          # Bump version to 10.44.1
+          release_platform_run.update!(release_version: "10.44.1")
+
+          # Build with version 10.44.1 (active)
+          active_build = create(:build, :rc, release_platform_run:)
+          create(:production_release, :active, release_platform_run:, build: active_build)
+
+          # Build with version 10.44.0 (should be excluded based on finished release)
+          old_build = create(:build, :rc, release_platform_run:)
+          old_build.update!(version_name: "10.44.0")
+
+          # Bump version to 10.44.2
+          release_platform_run.update!(release_version: "10.44.2")
+
+          # New build with version 10.44.2 (should be included)
+          newer_build = create(:build, :rc, release_platform_run:)
+
+          available = release_platform_run.available_rc_builds
+          # Should filter based on active (10.44.1), not finished (10.44.0)
+          # So 10.44.2 > 10.44.1, should be included
+          expect(available).to include(newer_build)
+          expect(available.count).to eq(1)
+        end
+      end
     end
   end
 
