@@ -21,27 +21,7 @@ describe WorkflowRun do
       allow(api_double).to receive(:find_latest_build_number).and_return(123)
     end
 
-    context "when workflow not found" do
-      before do
-        allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return(nil)
-      end
-
-      it "transitions state to triggered" do
-        workflow_run.trigger!
-
-        expect(workflow_run.triggered?).to be(true)
-      end
-
-      it "triggers find workflow run" do
-        allow(WorkflowRuns::FindJob).to receive(:perform_async)
-
-        workflow_run.trigger!
-
-        expect(WorkflowRuns::FindJob).to have_received(:perform_async).with(workflow_run.id).once
-      end
-    end
-
-    context "when workflow found (github)" do
+    context "when workflow triggered (github)" do
       before do
         allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number:, unique_number:})
       end
