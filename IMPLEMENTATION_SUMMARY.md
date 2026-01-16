@@ -34,8 +34,8 @@ created → on_track → concluded → finished
    - Updated `pending_release` scope to exclude `concluded`
    - Added `conclude!` method to transition from `on_track` → `concluded`
    - Updated `finish!` to transition from `concluded` → `finished`
-   - Updated `active?` to include `concluded` state
-   - Added `committable?` to check if commits can be applied
+   - Kept `active?` as only `created` and `on_track` (workflow states)
+   - Added `committable?` to check if commits can be applied (includes `concluded` with supersede check)
    - Added `has_active_rollout_in_other_release?` to detect conflicts
 
 2. **`app/models/release.rb`**
@@ -60,8 +60,8 @@ created → on_track → concluded → finished
    - Automatically finalizes corresponding platform run in ongoing release when upcoming release starts production
 
 7. **`app/libs/coordinators/apply_commit.rb`**
-   - Changed `next unless run.on_track?` → `next unless run.active?`
-   - Now applies commits to both `on_track` and `concluded` platforms
+   - Changed `next unless run.on_track?` → `next unless run.committable?`
+   - Now applies commits to platforms where `committable?` returns true (created, on_track, or concluded without supersede)
 
 8. **`app/libs/coordinators/finalize_release.rb`**
    - Added finalization of all `concluded` platform runs when release finishes
@@ -106,6 +106,22 @@ T3: Current iOS finishes
 ├─ Current Release iOS: concluded → finished
 ├─ Upcoming Release iOS: can now start ✅
 ```
+
+## Semantic Separation: active? vs committable?
+
+To prevent semantic confusion, we maintain two separate query methods:
+
+- **`active?`**: Returns true for `created` and `on_track` states only
+  - Used for workflow state checks (can start internal/beta/production releases?)
+  - Used by coordinators to determine if platform run is in active development
+  - Used by UI to show platform status
+
+- **`committable?`**: Returns true for `created`, `on_track`, and `concluded` (with supersede check)
+  - Used specifically for commit application logic
+  - Includes supersede check to prevent commits when a newer release has taken over
+  - Allows patch fixes to be applied even after platform rollout completes
+
+This separation ensures that `concluded` platforms can accept commits but won't inadvertently trigger new internal/beta releases.
 
 ## Key Constraints Enforced
 

@@ -106,7 +106,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def active?
-    STATES.slice(:created, :on_track, :concluded).value?(status)
+    STATES.slice(:created, :on_track).value?(status)
   end
 
   def committable?

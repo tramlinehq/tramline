@@ -11,8 +11,8 @@ class Coordinators::ApplyCommit
   def call
     return unless commit.applicable?
     release.release_platform_runs.each do |run|
-      # Apply commits to platform runs that are active (on_track or rolled_out)
-      next unless run.active?
+      # Apply commits to platform runs that can accept commits (created, on_track, or concluded without supersede)
+      next unless run.committable?
 
       if release.hotfix?
         Coordinators::CreateBetaRelease.call(run, commit) if trigger_hotfix?
