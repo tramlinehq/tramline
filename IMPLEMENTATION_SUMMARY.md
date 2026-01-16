@@ -38,8 +38,7 @@ created → on_track → concluded → finished
    - Updated `start!` to allow transition from `concluded` → `on_track` (reactivation)
    - Updated `finish!` to transition from `concluded` → `finished`
    - Kept `active?` as only `created` and `on_track` (workflow states)
-   - Added `committable?` to check if commits can be applied (includes `concluded` with supersede check)
-   - Added `has_active_rollout_in_other_release?` to detect conflicts
+   - Added `committable?` to check if commits can be applied (created, on_track, or concluded)
    - Added `reactivated` to `STAMPABLE_REASONS`
 
 2. **`app/models/release.rb`**
@@ -65,7 +64,7 @@ created → on_track → concluded → finished
 
 7. **`app/libs/coordinators/apply_commit.rb`**
    - Changed `next unless run.on_track?` → `next unless run.committable?`
-   - Now applies commits to platforms where `committable?` returns true (created, on_track, or concluded without supersede)
+   - Now applies commits to platforms where `committable?` returns true (created, on_track, or concluded)
    - Added `reactivate_if_concluded` method to transition `concluded` → `on_track` when new commit lands
    - Emits `reactivated` event stamp when platform is reactivated
 
@@ -77,7 +76,6 @@ created → on_track → concluded → finished
 9. **`app/components/platform_view_component.html.erb`**
    - Added conditional rendering for `concluded` state
    - Shows success message: "rollout is complete, but critical fixes can still be applied"
-   - Shows warning if superseded by newer release
 
 ### Database
 
@@ -123,17 +121,19 @@ To prevent semantic confusion, we maintain two separate query methods:
   - Used by coordinators to determine if platform run is in active development
   - Used by UI to show platform status
 
-- **`committable?`**: Returns true for `created`, `on_track`, and `concluded` (with supersede check)
+- **`committable?`**: Returns true for `created`, `on_track`, and `concluded`
   - Used specifically for commit application logic
-  - Includes supersede check to prevent commits when a newer release has taken over
   - Allows patch fixes to be applied even after platform rollout completes
+  - When a commit lands on a `concluded` platform, it automatically transitions back to `on_track`
 
 This separation ensures that `concluded` platforms can accept commits but won't inadvertently trigger new internal/beta releases.
 
+**Note:** Supersession is handled automatically through state transitions. When an upcoming release starts production for a platform, the corresponding `concluded` platform run in the ongoing release is transitioned to `finished` by `StartProductionRelease`, making it no longer `committable?`.
+
 ## Key Constraints Enforced
 
-1. **Only one active rollout per platform at a time** - When upcoming release starts production, the corresponding platform run in ongoing release is automatically finalized
-2. **No commits to superseded platforms** - `has_active_rollout_in_other_release?` prevents commits when a newer release has taken over
+1. **Only one active rollout per platform at a time** - When upcoming release starts production, the corresponding platform run in ongoing release is automatically finalized (`concluded` → `finished`)
+2. **No commits to superseded platforms** - Enforced through state transitions (only `created`, `on_track`, and `concluded` are committable; superseded platforms are `finished`)
 3. **Atomic state transitions** - All state changes use `with_lock` for consistency
 
 ## Testing Recommendations

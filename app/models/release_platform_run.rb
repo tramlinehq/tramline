@@ -110,18 +110,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def committable?
-    return false if has_active_rollout_in_other_release?
     created? || on_track? || concluded?
-  end
-
-  def has_active_rollout_in_other_release?
-    # Check if any other release (ongoing, upcoming, or hotfix) has an active rollout for this platform
-    [train.ongoing_release, train.upcoming_release, train.hotfix_release].compact.any? do |other_release|
-      next if other_release.id == release.id
-
-      other_run = other_release.release_platform_runs.find_by(release_platform_id: release_platform_id)
-      other_run&.inflight_production_release.present? || other_run&.active_production_release.present?
-    end
   end
 
   def metadata_for(language, platform)
