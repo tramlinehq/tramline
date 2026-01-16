@@ -493,7 +493,7 @@ class Release < ApplicationRecord
     train.ongoing_release == self
   end
 
-  def blocked_for_production_release?(for_platform_run: nil)
+  def blocked_for_production_release?(for_platform_run:)
     return true if blocked_by_hotfix?
     return true if blocked_by_ongoing_platform?(for_platform_run)
     approvals_blocking?
@@ -506,14 +506,13 @@ class Release < ApplicationRecord
   end
 
   def blocked_by_ongoing_platform?(for_platform_run)
-    return false if !upcoming? || !for_platform_run
+    return false if ongoing? || !for_platform_run
 
     ongoing = train.ongoing_release
     return true unless ongoing
 
-    corresponding_run = ongoing.release_platform_runs.find_by(
-      release_platform_id: for_platform_run.release_platform_id
-    )
+    release_platform_id = for_platform_run.release_platform_id
+    corresponding_run = ongoing.release_platform_runs.find_by(release_platform_id:)
 
     return false if corresponding_run&.concluded? || corresponding_run&.finished?
     return true if corresponding_run&.active_production_release.present?

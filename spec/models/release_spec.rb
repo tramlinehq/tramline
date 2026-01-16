@@ -754,8 +754,9 @@ describe Release do
       train = create(:train)
       _ongoing = create(:release, :on_track, train:)
       upcoming = create(:release, :on_track, train:)
+      platform_run = upcoming.release_platform_runs.first
 
-      expect(upcoming.blocked_for_production_release?).to be(true)
+      expect(upcoming.blocked_for_production_release?(for_platform_run: platform_run)).to be(true)
     end
 
     it "is true when it is an hotfix release is simultaneously ongoing" do
@@ -763,8 +764,9 @@ describe Release do
       finished_release = create(:release, :finished, train:, completed_at: 2.days.ago, tag_name: "foo")
       _hotfix_release = create(:release, :on_track, :hotfix, train:, hotfixed_from: finished_release)
       ongoing_release = create(:release, :on_track, train:)
+      platform_run = ongoing_release.release_platform_runs.first
 
-      expect(ongoing_release.blocked_for_production_release?).to be(true)
+      expect(ongoing_release.blocked_for_production_release?(for_platform_run: platform_run)).to be(true)
     end
 
     context "when approvals are enabled" do
@@ -774,8 +776,9 @@ describe Release do
         release = create(:release, release_pilot: pilot, train:)
         _approval_items = create_list(:approval_item, 5, release:, author: pilot)
         release.reload
+        platform_run = release.release_platform_runs.first
 
-        expect(release.blocked_for_production_release?).to be(true)
+        expect(release.blocked_for_production_release?(for_platform_run: platform_run)).to be(true)
       end
 
       it "is false when approvals are non-blocking" do
@@ -784,8 +787,9 @@ describe Release do
         release = create(:release, release_pilot: pilot, train:)
         _approval_items = create_list(:approval_item, 5, :approved, release:, author: pilot)
         release.reload
+        platform_run = release.release_platform_runs.first
 
-        expect(release.blocked_for_production_release?).to be(false)
+        expect(release.blocked_for_production_release?(for_platform_run: platform_run)).to be(false)
       end
 
       it "is true when approvals are not overridden" do
@@ -793,8 +797,9 @@ describe Release do
         pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
         release = create(:release, release_pilot: pilot, train:, approval_overridden_by: nil)
         _approval_items = create_list(:approval_item, 5, release:, author: pilot)
+        platform_run = release.release_platform_runs.first
 
-        expect(release.blocked_for_production_release?).to be(true)
+        expect(release.blocked_for_production_release?(for_platform_run: platform_run)).to be(true)
       end
 
       it "is false when approvals are overridden (regardless of actual approvals)" do
@@ -804,8 +809,97 @@ describe Release do
 
         create_list(:approval_item, 5, release:, author: pilot)
         create_list(:approval_item, 5, :approved, release:, author: pilot)
+        platform_run = release.release_platform_runs.first
 
-        expect(release.blocked_for_production_release?).to be(false)
+        expect(release.blocked_for_production_release?(for_platform_run: platform_run)).to be(false)
+      end
+    end
+
+    context "when upcoming release with cross-platform train" do
+      let(:train) { create(:train, :with_no_platforms) }
+      let(:android_platform) { create(:release_platform, train:, platform: "android") }
+      let(:ios_platform) { create(:release_platform, train:, platform: "ios") }
+
+      it "is false when corresponding platform run in ongoing release is concluded" do
+        ongoing_release = create(:release, :with_no_platform_runs, train:)
+        ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
+        _ongoing_ios_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: ios_platform)
+
+        # Conclude the Android platform run in ongoing release
+        ongoing_android_run.conclude!
+
+        upcoming_release = create(:release, :with_no_platform_runs, train:)
+        upcoming_android_run = create(:release_platform_run, release: upcoming_release, release_platform: android_platform)
+        _upcoming_ios_run = create(:release_platform_run, release: upcoming_release, release_platform: ios_platform)
+
+        # Android platform should be unblocked since its ongoing counterpart is concluded
+        expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_android_run)).to be(false)
+      end
+
+      it "is false when corresponding platform run in ongoing release is finished" do
+        ongoing_release = create(:release, :with_no_platform_runs, train:)
+        ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
+        _ongoing_ios_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: ios_platform)
+
+        # Finish the Android platform run in ongoing release
+        ongoing_android_run.conclude!
+        ongoing_android_run.finish!
+
+        upcoming_release = create(:release, :with_no_platform_runs, train:)
+        upcoming_android_run = create(:release_platform_run, release: upcoming_release, release_platform: android_platform)
+        _upcoming_ios_run = create(:release_platform_run, release: upcoming_release, release_platform: ios_platform)
+
+        # Android platform should be unblocked since its ongoing counterpart is finished
+        expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_android_run)).to be(false)
+      end
+
+      it "is true when corresponding platform run in ongoing release has active production release" do
+        ongoing_release = create(:release, :with_no_platform_runs, train:)
+        ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
+        _ongoing_ios_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: ios_platform)
+
+        # Create active production release for Android in ongoing release
+        build = create(:build, release_platform_run: ongoing_android_run)
+        create(:production_release, :active, release_platform_run: ongoing_android_run, build:)
+
+        upcoming_release = create(:release, :with_no_platform_runs, train:)
+        upcoming_android_run = create(:release_platform_run, release: upcoming_release, release_platform: android_platform)
+        _upcoming_ios_run = create(:release_platform_run, release: upcoming_release, release_platform: ios_platform)
+
+        # Android platform should be blocked since ongoing has active production release
+        expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_android_run)).to be(true)
+      end
+
+      it "is true when corresponding platform run in ongoing release is still on_track" do
+        ongoing_release = create(:release, :with_no_platform_runs, train:)
+        _ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
+        _ongoing_ios_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: ios_platform)
+
+        upcoming_release = create(:release, :with_no_platform_runs, train:)
+        upcoming_android_run = create(:release_platform_run, release: upcoming_release, release_platform: android_platform)
+        _upcoming_ios_run = create(:release_platform_run, release: upcoming_release, release_platform: ios_platform)
+
+        # Android platform should be blocked since ongoing is still on_track
+        expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_android_run)).to be(true)
+      end
+
+      it "allows iOS to proceed independently while Android is blocked" do
+        ongoing_release = create(:release, :with_no_platform_runs, train:)
+        ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
+        ongoing_ios_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: ios_platform)
+
+        # Conclude only the iOS platform run in ongoing release
+        ongoing_ios_run.conclude!
+
+        upcoming_release = create(:release, :with_no_platform_runs, train:)
+        upcoming_android_run = create(:release_platform_run, release: upcoming_release, release_platform: android_platform)
+        upcoming_ios_run = create(:release_platform_run, release: upcoming_release, release_platform: ios_platform)
+
+        # iOS platform should be unblocked (concluded)
+        expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_ios_run)).to be(false)
+
+        # Android platform should still be blocked (on_track)
+        expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_android_run)).to be(true)
       end
     end
   end
