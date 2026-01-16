@@ -8,10 +8,9 @@ class Coordinators::FinalizePlatformRun
   end
 
   def call
-    with_lock do
-      return unless release_platform_run.concluded?
-      release_platform_run.finish!
-    end
+    return unless release_platform_run.concluded?
+
+    release_platform_run.finish!
 
     release_platform_run.event_stamp!(
       reason: :finished,
@@ -21,5 +20,4 @@ class Coordinators::FinalizePlatformRun
   end
 
   attr_reader :release_platform_run
-  delegate :with_lock, to: :release_platform_run
 end
