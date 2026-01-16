@@ -78,7 +78,12 @@ class ReleasePlatformRun < ApplicationRecord
   def start!
     with_lock do
       return unless created? || concluded?
-      update!(status: STATES[:on_track])
+
+      if concluded?
+        update!(status: STATES[:on_track], completed_at: nil)
+      else
+        update!(status: STATES[:on_track])
+      end
     end
   end
 
