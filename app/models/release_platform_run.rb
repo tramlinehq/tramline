@@ -179,28 +179,22 @@ class ReleasePlatformRun < ApplicationRecord
       builds = builds.where("generated_at > ?", after.generated_at).where.not(id: after.id)
     end
 
-    # Filter builds based on platform-specific constraints:
-    # - iOS (App Store): version name must be higher than last rolled out version
-    # - Android (Play Store): build number must be higher than last rolled out build number
-    # Check active production release first, fall back to finished if no active release
-    reference_release = active_production_release || finished_production_release
+    builds.select { |build| valid_build_for_production?(build) }
+  end
 
-    if reference_release.present?
-      if ios?
-        # iOS: Filter by version name (semver comparison)
-        last_rollout_version = reference_release.build.release_version.to_semverish
-        builds.select do |build|
-          build.release_version.to_semverish > last_rollout_version
-        end
-      else
-        # Android: Filter by build number (numeric comparison)
-        last_rollout_build_number = reference_release.build.build_number.to_i
-        builds.select do |build|
-          build.build_number.to_i > last_rollout_build_number
-        end
-      end
+  # Validates if a build can be used for production release based on platform-specific constraints
+  # - iOS (App Store): version name must be higher than last rolled out version
+  # - Android (Play Store): build number must be higher than last rolled out build number
+  def valid_build_for_production?(build)
+    reference_release = last_rollout_reference
+    return true if reference_release.blank?
+
+    if ios?
+      # iOS: Compare by version name (semver comparison)
+      build.release_version.to_semverish > reference_release.build.release_version.to_semverish
     else
-      builds
+      # Android: Compare by build number (numeric comparison)
+      build.build_number.to_i > reference_release.build.build_number.to_i
     end
   end
 
@@ -367,6 +361,12 @@ class ReleasePlatformRun < ApplicationRecord
   def conf = Config::ReleasePlatform.from_json(config)
 
   private
+
+  # Returns the production release to use as reference for version/build number constraints
+  # Prefers active rollout, falls back to finished rollout if no active release exists
+  def last_rollout_reference
+    active_production_release || finished_production_release
+  end
 
   def set_config
     self.config = release_platform.platform_config.as_json
