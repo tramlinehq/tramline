@@ -22,6 +22,10 @@ class Coordinators::StartProductionRelease
         return Coordinators::UpdateBuildOnProduction.call(submission, build.id)
       end
 
+      # If this is an upcoming release starting production,
+      # finalize the corresponding platform run in the ongoing release
+      finalize_previous_release_platform_run!
+
       release_platform_run
         .production_releases
         .create!(build:, config:, previous:, status: ProductionRelease::INITIAL_STATE)
@@ -30,6 +34,27 @@ class Coordinators::StartProductionRelease
   end
 
   private
+
+  def finalize_previous_release_platform_run!
+    return unless release.upcoming?
+
+    ongoing_release = train.ongoing_release
+    return unless ongoing_release
+
+    # Find the corresponding platform run in the ongoing release
+    corresponding_run = ongoing_release.release_platform_runs.find_by(
+      release_platform_id: release_platform_run.release_platform_id
+    )
+
+    # If it's in concluded state, transition it to finished
+    # This ensures only one active rollout per platform at a time
+    if corresponding_run&.concluded?
+      # Ensure no active production releases before finalizing
+      return if corresponding_run.active_production_release.present?
+
+      Coordinators::FinalizePlatformRun.call(corresponding_run)
+    end
+  end
 
   def previous
     release_platform_run.latest_production_release
@@ -40,5 +65,5 @@ class Coordinators::StartProductionRelease
   end
 
   attr_reader :release_platform_run, :build
-  delegate :with_lock, to: :release_platform_run
+  delegate :with_lock, :release, :train, to: :release_platform_run
 end

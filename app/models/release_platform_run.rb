@@ -52,11 +52,12 @@ class ReleasePlatformRun < ApplicationRecord
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_submitted_production, -> { on_track.reject(&:production_release_submitted?) }
 
-  STAMPABLE_REASONS = %w[version_changed tag_created version_corrected finished stopped]
+  STAMPABLE_REASONS = %w[version_changed tag_created version_corrected concluded finished stopped]
 
   STATES = {
     created: "created",
     on_track: "on_track",
+    concluded: "concluded",
     stopped: "stopped",
     finished: "finished"
   }
@@ -65,7 +66,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   before_create :set_config
   after_create :set_default_release_metadata
-  scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
+  scope :pending_release, -> { where.not(status: [:concluded, :finished, :stopped]) }
 
   delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, :release_branch, to: :release
   delegate :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
@@ -90,15 +91,42 @@ class ReleasePlatformRun < ApplicationRecord
     event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
   end
 
-  def finish!
+  def conclude!
     with_lock do
       return unless on_track?
-      update!(status: STATES[:finished], completed_at: Time.current)
+      update!(status: STATES[:concluded], completed_at: Time.current)
+    end
+  end
+
+  def finish!
+    with_lock do
+      return unless concluded?
+      update!(status: STATES[:finished])
     end
   end
 
   def active?
-    STATES.slice(:created, :on_track).value?(status)
+    STATES.slice(:created, :on_track, :concluded).value?(status)
+  end
+
+  def committable?
+    return false if has_active_rollout_in_other_release?
+    created? || on_track? || concluded?
+  end
+
+  def has_active_rollout_in_other_release?
+    # Check if any other release has an inflight or active production release for this platform
+    train.release_platform_runs
+         .where.not(id: id)
+         .where(release_platform_id: release_platform_id)
+         .where.associated(:inflight_production_release)
+         .or(
+           train.release_platform_runs
+                .where.not(id: id)
+                .where(release_platform_id: release_platform_id)
+                .where.associated(:active_production_release)
+         )
+         .exists?
   end
 
   def metadata_for(language, platform)
