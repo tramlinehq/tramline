@@ -105,6 +105,7 @@ class SentryIntegration < ApplicationRecord
       organization_slug_from_config(platform),
       project_slug(platform),
       environment(platform),
+      integrable.bundle_identifier,
       version,
       build_number,
       RELEASE_TRANSFORMATIONS

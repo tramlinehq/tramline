@@ -25,10 +25,13 @@ module Installations
       end
     end
 
-    def find_release(org_slug, project_slug, environment, app_version, app_version_code, transforms)
+    def find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
       execute do
-        # Construct version string: version-buildnumber
-        version_string = "#{app_version}-#{app_version_code}"
+        # Construct Sentry release identifier: <bundle_id>@<version>+<build_number>
+        # Format documented at:
+        # iOS: https://docs.sentry.io/platforms/apple/guides/ios/configuration/releases/#bind-the-version
+        # Android: https://docs.sentry.io/platforms/android/configuration/releases/#bind-the-version
+        version_string = "#{bundle_identifier}@#{app_version}+#{app_version_code}"
 
         # Fetch session stats for this release
         stats = fetch_release_stats(org_slug, project_slug, environment, version_string)
