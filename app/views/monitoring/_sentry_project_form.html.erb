@@ -1,0 +1,32 @@
+<% form.with_section(heading: platform) do |section| %>
+  <% section.with_description do %>
+    For your connected Sentry organization.
+    <%= image_tag "integrations/logo_sentry.png", title: "Sentry", width: 22, class: "mt-2" %>
+  <% end %>
+
+  <div class="grid gap-y-4">
+    <div>
+      <%= section.F.labeled_select "#{platform.downcase}_project",
+            "Project",
+            options_for_select(
+              display_channels(projects) { |proj| "#{proj[:name]} (#{proj[:slug]})" },
+              projects.find { |p| p[:slug] == project&.dig("slug") }&.to_json
+            ),
+            {},
+            {} %>
+    </div>
+    <div>
+      <%= section.F.labeled_text_field "#{platform.downcase}_organization_slug",
+            "Organization Slug",
+            value: org_slug,
+            required: true %>
+    </div>
+    <div>
+      <%= section.F.labeled_text_field "#{platform.downcase}_environment",
+            "Environment",
+            value: environment,
+            placeholder: "production",
+            required: true %>
+    </div>
+  </div>
+<% end %>
