@@ -179,15 +179,25 @@ class ReleasePlatformRun < ApplicationRecord
       builds = builds.where("generated_at > ?", after.generated_at).where.not(id: after.id)
     end
 
-    # Exclude builds with release_version <= last rolled out production release version
-    # Both App Store and Play Store reject submissions with versions <= previously rolled out versions
+    # Filter builds based on platform-specific constraints:
+    # - iOS (App Store): version name must be higher than last rolled out version
+    # - Android (Play Store): build number must be higher than last rolled out build number
     # Check active production release first, fall back to finished if no active release
     reference_release = active_production_release || finished_production_release
 
     if reference_release.present?
-      last_rollout_version = reference_release.build.release_version.to_semverish
-      builds.select do |build|
-        build.release_version.to_semverish > last_rollout_version
+      if ios?
+        # iOS: Filter by version name (semver comparison)
+        last_rollout_version = reference_release.build.release_version.to_semverish
+        builds.select do |build|
+          build.release_version.to_semverish > last_rollout_version
+        end
+      else
+        # Android: Filter by build number (numeric comparison)
+        last_rollout_build_number = reference_release.build.build_number.to_i
+        builds.select do |build|
+          build.build_number.to_i > last_rollout_build_number
+        end
       end
     else
       builds
