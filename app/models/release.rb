@@ -486,7 +486,11 @@ class Release < ApplicationRecord
   end
 
   def upcoming?
-    train.upcoming_release == self
+    if Flipper.enabled?(:allow_multiple_upcoming_releases, train)
+      active? && !ongoing?
+    else
+      train.upcoming_release == self
+    end
   end
 
   def ongoing?

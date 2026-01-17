@@ -396,7 +396,7 @@ class Train < ApplicationRecord
     !inactive? &&
       ongoing_release.present? &&
       ongoing_release.production_release_attempted? &&
-      upcoming_release.blank?
+      (upcoming_release.blank? || Flipper.enabled?(:allow_multiple_upcoming_releases, self))
   end
 
   def continuous_backmerge?
