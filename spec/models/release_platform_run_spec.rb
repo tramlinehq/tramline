@@ -375,4 +375,194 @@ describe ReleasePlatformRun do
       end
     end
   end
+
+  describe "state transitions" do
+    let(:release) { create(:release) }
+    let(:release_platform_run) { create(:release_platform_run, release:) }
+
+    describe "#start!" do
+      it "transitions from created to on_track" do
+        expect(release_platform_run.status).to eq("created")
+        release_platform_run.start!
+        expect(release_platform_run.reload.status).to eq("on_track")
+      end
+
+      it "transitions from concluded to on_track (reactivation)" do
+        release_platform_run.update!(status: ReleasePlatformRun::STATES[:on_track])
+        release_platform_run.conclude!
+        expect(release_platform_run.reload.status).to eq("concluded")
+
+        release_platform_run.start!
+        expect(release_platform_run.reload.status).to eq("on_track")
+      end
+
+      it "does not transition from finished" do
+        release_platform_run.update!(status: ReleasePlatformRun::STATES[:finished])
+        release_platform_run.start!
+        expect(release_platform_run.reload.status).to eq("finished")
+      end
+
+      it "does not transition from stopped" do
+        release_platform_run.update!(status: ReleasePlatformRun::STATES[:stopped])
+        release_platform_run.start!
+        expect(release_platform_run.reload.status).to eq("stopped")
+      end
+    end
+
+    describe "#conclude!" do
+      it "transitions from on_track to concluded" do
+        release_platform_run.start!
+        expect(release_platform_run.reload.status).to eq("on_track")
+
+        release_platform_run.conclude!
+        expect(release_platform_run.reload.status).to eq("concluded")
+      end
+
+      it "does not set completed_at timestamp" do
+        release_platform_run.start!
+        release_platform_run.conclude!
+        expect(release_platform_run.reload.completed_at).to be_nil
+      end
+
+      it "does not transition from created" do
+        expect(release_platform_run.status).to eq("created")
+        release_platform_run.conclude!
+        expect(release_platform_run.reload.status).to eq("created")
+      end
+
+      it "does not transition from finished" do
+        release_platform_run.update!(status: ReleasePlatformRun::STATES[:finished])
+        release_platform_run.conclude!
+        expect(release_platform_run.reload.status).to eq("finished")
+      end
+    end
+
+    describe "#finish!" do
+      it "transitions from concluded to finished" do
+        release_platform_run.start!
+        release_platform_run.conclude!
+        expect(release_platform_run.reload.status).to eq("concluded")
+
+        release_platform_run.finish!
+        expect(release_platform_run.reload.status).to eq("finished")
+      end
+
+      it "sets completed_at timestamp" do
+        release_platform_run.start!
+        release_platform_run.conclude!
+        release_platform_run.finish!
+
+        expect(release_platform_run.reload.completed_at).to be_present
+        expect(release_platform_run.completed_at).to be_within(1.second).of(Time.current)
+      end
+
+      it "does not transition from on_track" do
+        release_platform_run.start!
+        expect(release_platform_run.reload.status).to eq("on_track")
+
+        release_platform_run.finish!
+        expect(release_platform_run.reload.status).to eq("on_track")
+      end
+
+      it "does not transition from created" do
+        expect(release_platform_run.status).to eq("created")
+        release_platform_run.finish!
+        expect(release_platform_run.reload.status).to eq("created")
+      end
+    end
+
+    describe "#stop!" do
+      it "transitions from created to stopped" do
+        expect(release_platform_run.status).to eq("created")
+        release_platform_run.stop!
+        expect(release_platform_run.reload.status).to eq("stopped")
+      end
+
+      it "transitions from on_track to stopped" do
+        release_platform_run.start!
+        release_platform_run.stop!
+        expect(release_platform_run.reload.status).to eq("stopped")
+      end
+
+      it "transitions from concluded to stopped" do
+        release_platform_run.start!
+        release_platform_run.conclude!
+        release_platform_run.stop!
+        expect(release_platform_run.reload.status).to eq("stopped")
+      end
+
+      it "sets stopped_at timestamp" do
+        release_platform_run.stop!
+        expect(release_platform_run.reload.stopped_at).to be_present
+      end
+
+      it "does not transition from finished" do
+        release_platform_run.update!(status: ReleasePlatformRun::STATES[:finished])
+        release_platform_run.stop!
+        expect(release_platform_run.reload.status).to eq("finished")
+      end
+    end
+  end
+
+  describe "#active?" do
+    let(:release) { create(:release) }
+    let(:release_platform_run) { create(:release_platform_run, release:) }
+
+    it "is true when created" do
+      expect(release_platform_run.status).to eq("created")
+      expect(release_platform_run.active?).to be(true)
+    end
+
+    it "is true when on_track" do
+      release_platform_run.start!
+      expect(release_platform_run.active?).to be(true)
+    end
+
+    it "is false when concluded" do
+      release_platform_run.start!
+      release_platform_run.conclude!
+      expect(release_platform_run.active?).to be(false)
+    end
+
+    it "is false when finished" do
+      release_platform_run.update!(status: ReleasePlatformRun::STATES[:finished])
+      expect(release_platform_run.active?).to be(false)
+    end
+
+    it "is false when stopped" do
+      release_platform_run.stop!
+      expect(release_platform_run.active?).to be(false)
+    end
+  end
+
+  describe "#committable?" do
+    let(:release) { create(:release) }
+    let(:release_platform_run) { create(:release_platform_run, release:) }
+
+    it "is true when created" do
+      expect(release_platform_run.status).to eq("created")
+      expect(release_platform_run.committable?).to be(true)
+    end
+
+    it "is true when on_track" do
+      release_platform_run.start!
+      expect(release_platform_run.committable?).to be(true)
+    end
+
+    it "is true when concluded (allows reactivation)" do
+      release_platform_run.start!
+      release_platform_run.conclude!
+      expect(release_platform_run.committable?).to be(true)
+    end
+
+    it "is false when finished" do
+      release_platform_run.update!(status: ReleasePlatformRun::STATES[:finished])
+      expect(release_platform_run.committable?).to be(false)
+    end
+
+    it "is false when stopped" do
+      release_platform_run.stop!
+      expect(release_platform_run.committable?).to be(false)
+    end
+  end
 end

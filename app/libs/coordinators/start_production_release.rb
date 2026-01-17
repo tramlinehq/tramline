@@ -11,6 +11,7 @@ class Coordinators::StartProductionRelease
   def call
     with_lock do
       return unless release_platform_run.on_track?
+      return if release.blocked_for_production_release?(for_platform_run: release_platform_run)
 
       if previous&.inflight?
         # If the latest production release is still inflight, attach the new RC build to it
@@ -22,6 +23,10 @@ class Coordinators::StartProductionRelease
         return Coordinators::UpdateBuildOnProduction.call(submission, build.id)
       end
 
+      # If this is an upcoming release starting production,
+      # finalize the corresponding platform run in the ongoing release
+      finalize_ongoing_release_platform_run!
+
       release_platform_run
         .production_releases
         .create!(build:, config:, previous:, status: ProductionRelease::INITIAL_STATE)
@@ -30,6 +35,17 @@ class Coordinators::StartProductionRelease
   end
 
   private
+
+  def finalize_ongoing_release_platform_run!
+    return unless release.upcoming?
+
+    ongoing_release = train.ongoing_release
+    return unless ongoing_release
+
+    # Find the corresponding platform run in the ongoing release
+    corresponding_run = ongoing_release.release_platform_runs.find_by(release_platform_id: release_platform_id)
+    Coordinators::FinalizePlatformRun.call(corresponding_run)
+  end
 
   def previous
     release_platform_run.latest_production_release
@@ -40,5 +56,5 @@ class Coordinators::StartProductionRelease
   end
 
   attr_reader :release_platform_run, :build
-  delegate :with_lock, to: :release_platform_run
+  delegate :with_lock, :release, :train, :release_platform_id, to: :release_platform_run
 end

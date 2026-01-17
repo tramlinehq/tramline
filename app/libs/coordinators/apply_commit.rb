@@ -11,12 +11,15 @@ class Coordinators::ApplyCommit
   def call
     return unless commit.applicable?
     release.release_platform_runs.each do |run|
-      next unless run.on_track?
+      run.with_lock do
+        next unless run.committable?
+        run.start!
 
-      if release.hotfix?
-        Coordinators::CreateBetaRelease.call(run, commit) if trigger_hotfix?
-      else
-        trigger(run)
+        if release.hotfix?
+          Coordinators::CreateBetaRelease.call(run, commit) if trigger_hotfix?
+        else
+          trigger(run)
+        end
       end
     end
   end
@@ -39,7 +42,6 @@ class Coordinators::ApplyCommit
 
   def apply_change?(run)
     return true if run.train.auto_apply_patch_changes?
-
     !run.version_bump_required?
   end
 

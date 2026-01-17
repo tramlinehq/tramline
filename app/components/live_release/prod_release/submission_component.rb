@@ -38,7 +38,7 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   end
 
   def blocked?
-    release.blocked_for_production_release?
+    release.blocked_for_production_release?(for_platform_run: release_platform_run)
   end
 
   def actionable?
