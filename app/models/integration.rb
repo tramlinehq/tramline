@@ -25,7 +25,7 @@ class Integration < ApplicationRecord
 
   belongs_to :app, optional: true
 
-  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration CrashlyticsIntegration JiraIntegration LinearIntegration]
+  PROVIDER_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration BitbucketIntegration CrashlyticsIntegration JiraIntegration LinearIntegration SentryIntegration]
   delegated_type :providable, types: PROVIDER_TYPES, autosave: true, validate: false
   delegated_type :integrable, types: INTEGRABLE_TYPES, autosave: true, validate: false
 
@@ -40,7 +40,7 @@ class Integration < ApplicationRecord
       "ci_cd" => %w[BitriseIntegration GithubIntegration GitlabIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
-      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
+      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration SentryIntegration],
       "project_management" => %w[JiraIntegration LinearIntegration]
     },
     android: {
@@ -48,7 +48,7 @@ class Integration < ApplicationRecord
       "ci_cd" => %w[BitriseIntegration GithubIntegration GitlabIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
-      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
+      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration SentryIntegration],
       "project_management" => %w[JiraIntegration LinearIntegration]
     },
     cross_platform: {
@@ -56,7 +56,7 @@ class Integration < ApplicationRecord
       "ci_cd" => %w[BitriseIntegration GithubIntegration GitlabIntegration BitbucketIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
-      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration],
+      "monitoring" => %w[BugsnagIntegration CrashlyticsIntegration SentryIntegration],
       "project_management" => %w[JiraIntegration LinearIntegration]
     }
   }.with_indifferent_access

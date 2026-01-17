@@ -57,6 +57,11 @@ FactoryBot.define do
       providable factory: %i[crashlytics_integration skip_validate_key]
     end
 
+    trait :with_sentry do
+      category { "monitoring" }
+      providable factory: %i[sentry_integration skip_validate]
+    end
+
     trait :needs_reauth do
       status { "needs_reauth" }
     end

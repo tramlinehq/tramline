@@ -117,6 +117,10 @@ class App < ApplicationRecord
     integrations.crashlytics_integrations.any?
   end
 
+  def sentry_connected?
+    integrations.sentry_integrations.any?
+  end
+
   def bitbucket_connected?
     integrations.bitbucket_integrations.any?
   end

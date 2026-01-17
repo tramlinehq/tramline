@@ -51,11 +51,13 @@ class ProductionRelease < ApplicationRecord
 
   JOB_FREQUENCY = {
     BugsnagIntegration => 5.minutes,
-    CrashlyticsIntegration => 120.minutes
+    CrashlyticsIntegration => 120.minutes,
+    SentryIntegration => 5.minutes
   }
   RELEASE_MONITORING_PERIOD_IN_DAYS = {
     BugsnagIntegration => 15,
-    CrashlyticsIntegration => 5
+    CrashlyticsIntegration => 5,
+    SentryIntegration => 15
   }
 
   enum :status, STATES
