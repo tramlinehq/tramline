@@ -27,7 +27,7 @@ class Coordinators::StartRelease
     raise "Could not kickoff a hotfix because the source tag does not exist" if hotfix_from_new_branch? && !hotfix_tag_exists?
     raise "Could not kickoff a hotfix because the source release branch does not exist" if hotfix_from_previous_branch? && !hotfix_branch_exists?
     raise "Cannot start a train that is not active!" if train.inactive?
-    raise "No more releases can be started until the ongoing release is finished!" if train.upcoming_release.present? && !hotfix?
+    raise "No more releases can be started until the ongoing release is finished!" if train.upcoming_release.present? && !hotfix? && !Flipper.enabled?(:allow_multiple_upcoming_releases, train)
     raise "Upcoming releases are not allowed for your train." if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?
     raise "App is in draft mode, cannot start a release to public channels!" if train.app.in_draft_mode? && train.has_restricted_public_channels?
     raise "Hotfix platform - #{hotfix_platform} is not valid!" if invalid_hotfix_platform?
@@ -43,7 +43,7 @@ class Coordinators::StartRelease
   def kickoff
     train.with_lock do
       raise AppInDraftMode.new("App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
-      raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix?
+      raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix? && !Flipper.enabled?(:allow_multiple_upcoming_releases, train)
       raise UpcomingReleaseNotAllowed.new("Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?
       unless train.almost_trunk? && commit_hash.present?
         raise NothingToRelease.new("No diff since last release") if regular_release? && !train.diff_since_last_release?

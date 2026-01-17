@@ -198,6 +198,10 @@ class Train < ApplicationRecord
     active_runs.where(release_type: Release.release_types[:release]).order(:scheduled_at).second
   end
 
+  def upcoming_releases
+    active_runs.where(release_type: Release.release_types[:release]).order(:scheduled_at).offset(1)
+  end
+
   def hotfix_release
     active_runs.where(release_type: Release.release_types[:hotfix]).first
   end
