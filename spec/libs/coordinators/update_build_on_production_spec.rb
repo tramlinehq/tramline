@@ -148,6 +148,21 @@ describe Coordinators::UpdateBuildOnProduction do
         kind: :notice,
         data: {build_number: new_build.build_number, version: "1.2.3"})
     end
+
+    it "returns an error if build number is not higher than active rollout" do
+      # Create an active production release with build_number 126
+      active_workflow = create(:workflow_run, :rc, release_platform_run:)
+      active_build = create(:build, release_platform_run:, workflow_run: active_workflow, build_number: "126")
+      create(:production_release, :active, release_platform_run:, build: active_build)
+
+      # Try to change to build with build_number 125 (lower)
+      older_workflow = create(:workflow_run, :rc, release_platform_run:)
+      older_build = create(:build, release_platform_run:, workflow_run: older_workflow, build_number: "125")
+
+      expect {
+        described_class.call(store_submission, older_build.id)
+      }.to raise_error("build is not valid for production")
+    end
   end
 
   context "when ios" do
@@ -306,6 +321,24 @@ describe Coordinators::UpdateBuildOnProduction do
         kind: :notice,
         data: {build_number: new_build.build_number, version: "1.2.3"}
       )
+    end
+
+    it "returns an error if version name is not higher than active rollout" do
+      # Create an older build with version 10.44.0 first
+      release_platform_run.update!(release_version: "10.44.0")
+      older_workflow = create(:workflow_run, :rc, release_platform_run:)
+      older_build = create(:build, release_platform_run:, workflow_run: older_workflow, generated_at: 2.days.ago)
+
+      # Bump version to 10.44.1 and create active production release
+      release_platform_run.update!(release_version: "10.44.1")
+      active_workflow = create(:workflow_run, :rc, release_platform_run:)
+      active_build = create(:build, release_platform_run:, workflow_run: active_workflow, generated_at: 1.day.ago)
+      create(:production_release, :active, release_platform_run:, build: active_build)
+
+      # Try to change to the older build (10.44.0 < 10.44.1)
+      expect {
+        described_class.call(store_submission, older_build.id)
+      }.to raise_error("build is not valid for production")
     end
   end
 end

@@ -53,6 +53,7 @@ class AppStoreSubmission < StoreSubmission
   PRE_PREPARE_STATES = %w[created cancelled review_failed failed]
   CHANGEABLE_STATES = %w[created prepared failed_prepare cancelled review_failed failed approved]
   CANCELABLE_STATES = %w[submitted_for_review]
+  TRANSITIONING_STATES = %w[preparing submitting_for_review cancelling]
   STAMPABLE_REASONS = %w[
     triggered
     prepared
@@ -142,6 +143,8 @@ class AppStoreSubmission < StoreSubmission
   def post_review? = FINAL_STATES.include?(status)
 
   def reviewable? = prepared? && editable?
+
+  def transitioning? = TRANSITIONING_STATES.include?(status)
 
   def external_link
     return provider.inflight_store_link if parent_release.inflight?
