@@ -1,10 +1,10 @@
 <%= render AppOnboarding::WizardComponent.new(
-  app: @app,
-  onboarding_state: @onboarding_state,
-  current_step: :step_2,
-  show_back: true,
-  show_next: true
-) do %>
+      app: @app,
+      onboarding_state: @onboarding_state,
+      current_step: :step_2,
+      show_back: true,
+      show_next: true
+    ) do %>
   <%= render FormComponent.new(model: [@app, @onboarding_state], url: wizard_path, method: :put) do |f| %>
     <% f.with_section(heading: "Setup Information") do |section| %>
       <% section.with_description do %>

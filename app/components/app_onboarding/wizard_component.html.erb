@@ -4,13 +4,13 @@
     <%= render Onboarding::WizardComponent.new(current_step: current_step_config[:key]) do |wizard| %>
       <% steps.each do |step| %>
         <% wizard.with_step(
-          key: step[:key],
-          title: step[:title],
-          index: step[:index],
-          description: step[:description],
-          active: step[:key] == @current_step,
-          completed: @onboarding_state.step_completed?(step[:key])
-        ) %>
+             key: step[:key],
+             title: step[:title],
+             index: step[:index],
+             description: step[:description],
+             active: step[:key] == @current_step,
+             completed: @onboarding_state.step_completed?(step[:key])
+           ) %>
       <% end %>
       <% wizard.with_active_step do %>
         <%= content %>
