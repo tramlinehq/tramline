@@ -2,16 +2,16 @@ class OnboardingController < SignedInApplicationController
   include Wicked::Wizard
   before_action :set_onboarding_state
 
-  steps :step_1,
-    :step_2,
-    :step_3
+  steps :vcs_provider,
+    :connect_vcs_provider,
+    :configure_vcs_provider
 
   def show
     render_wizard
   end
 
   def update
-    handle_step_2 and return if step == :step_2
+    handle_vcs_provider and return if step == :vcs_provider
 
     @onboarding_state.update(onboarding_state_params)
     flash[:notice] = I18n.t("onboarding.completed") if step == steps.last
@@ -20,12 +20,11 @@ class OnboardingController < SignedInApplicationController
 
   private
 
-  def handle_step_2
-    if onboarding_state_params[:field_2].present?
-      @onboarding_state.update(onboarding_state_params)
+  def handle_vcs_provider
+    @onboarding_state.assign_attributes(onboarding_state_params)
+    if @onboarding_state.save(context: :vcs_provider_setup)
       render_wizard @onboarding_state
     else
-      @onboarding_state.errors.add(:field_2, "can't be blank")
       # redirect or render the same step with error, subsequently render the error in the view in the apt place
       redirect_back fallback_location: wizard_url(step), flash: {error: "#{@onboarding_state.errors.full_messages.to_sentence}."}
     end
@@ -36,7 +35,7 @@ class OnboardingController < SignedInApplicationController
   end
 
   def onboarding_state_params
-    params.require(:onboarding_state).permit(:field_1, :field_2, :field_3)
+    params.require(:onboarding_state).permit(:vcs_provider)
   end
 
   def finish_wizard_path
