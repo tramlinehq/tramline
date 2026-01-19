@@ -14,7 +14,7 @@ class OnboardingController < SignedInApplicationController
     handle_step_2 and return if step == :step_2
 
     @onboarding_state.update(onboarding_state_params)
-    flash[:notice] = "Onboarding completed!" if step == steps.last
+    flash[:notice] = I18n.t("onboarding.completed") if step == steps.last
     render_wizard @onboarding_state
   end
 
