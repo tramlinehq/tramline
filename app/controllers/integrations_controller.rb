@@ -24,9 +24,9 @@ class IntegrationsController < SignedInApplicationController
     update_new_integration!
 
     if @integration.save
-      redirect_to app_integrations_path(@app), notice: "#{@existing_integration.providable_type} integration reused successfully."
+      redirect_back fallback_location: app_integrations_path(@app), notice: "#{@existing_integration.providable_type} integration reused successfully."
     else
-      redirect_to app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
+      redirect_back fallback_location: app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
     end
   end
 
@@ -36,9 +36,9 @@ class IntegrationsController < SignedInApplicationController
 
   def create
     if @integration.save
-      redirect_to app_path(@app), notice: "Integration was successfully created."
+      redirect_back fallback_location: app_path(@app), notice: "Integration was successfully created."
     else
-      redirect_to app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
+      redirect_back fallback_location: app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
     end
   end
 
@@ -60,9 +60,9 @@ class IntegrationsController < SignedInApplicationController
     end
 
     if @integration.disconnect
-      redirect_to app_integrations_path(@app), notice: "Integration was successfully disconnected."
+      redirect_back fallback_location: app_integrations_path(@app), notice: "Integration was successfully disconnected."
     else
-      redirect_to app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
+      redirect_back fallback_location: app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
     end
   end
 

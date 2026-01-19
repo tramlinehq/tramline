@@ -1,0 +1,17 @@
+<%= render AppOnboarding::WizardComponent.new(
+      app: @app,
+      onboarding_state: @onboarding_state,
+      current_step: :configure_vcs_provider,
+      show_back: true,
+      show_next: false
+    ) do %>
+  <% if @onboarding_state.connect_vcs_provider_completed? %>
+    <% github_integration = Integration.by_categories_for(@app)['version_control'].find { _1.providable_type == @onboarding_state.vcs_provider.titleize + 'Integration' } %>
+    <%= render partial: 'version_control/github_configs/form', locals: { github_integration: github_integration.providable, app: @app, code_repositories: github_integration.providable.repos } %>
+  <% else %>
+    <%# otherwise, render a notice to direct the user to the previous step %>
+    <div class="p-4 mb-4 text-blue-700 bg-blue-100 rounded-lg" role="alert">
+      <span class="font-medium">Notice:</span> Please connect your version control provider in the previous step to proceed.
+    </div>
+  <% end %>
+<% end %>

@@ -1,9 +1,9 @@
 module AppOnboarding
   class WizardComponent < ViewComponent::Base
     STEPS = [
-      {key: :step_1, title: "Step 1", index: 1, description: "Step 1 description"},
-      {key: :step_2, title: "Step 2", index: 2, description: "Step 2 description"},
-      {key: :step_3, title: "Step 3", index: 3, description: "Step 3 description"}
+      {key: :vcs_provider, title: "Version Control Provider", index: 1, description: "Select your preferred version control provider."},
+      {key: :connect_vcs_provider, title: "Connect Version Control Integration", index: 2, description: "Connect to your version control provider."},
+      {key: :configure_vcs_provider, title: "Configure Version Control Integration", index: 3, description: "Configure your version control provider integration."}
     ].freeze
 
     def initialize(app:, onboarding_state:, current_step:, show_back: false, show_next: false)

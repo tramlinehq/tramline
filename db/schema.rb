@@ -501,9 +501,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_26_100000) do
 
   create_table "onboarding_states", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
-    t.string "field_1"
-    t.string "field_2"
-    t.string "field_3"
+    t.string "vcs_provider"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["app_id"], name: "index_onboarding_states_on_app_id"
