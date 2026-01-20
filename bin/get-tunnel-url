@@ -6,7 +6,7 @@ set -e
 
 # Detect if we're in a worktree
 if [ -f .git ]; then
-  WORKTREE_NAME=$(basename $(pwd))
+  WORKTREE_NAME="$(basename "$(pwd)")"
   COMPOSE_CMD="docker compose -f compose.yml -f compose.worktree.yml"
 else
   WORKTREE_NAME="main"
