@@ -9,7 +9,7 @@ _web_port := `if [ -f .git ]; then echo $((3000 + $(printf '%s' "$(basename $(pw
 
 # Build the compose command with environment variables
 _worktree_name := `basename $(pwd)`
-_compose_cmd := if _is_worktree == "true" { "WEB_PORT=" + _web_port + " WORKTREE_NAME=" + _worktree_name + " docker compose -f compose.yml -f compose.worktree.yml --env-file .env.development" } else { "docker compose --env-file .env.development" }
+_compose_cmd := if _is_worktree == "true" { "WEB_PORT=" + _web_port + " WORKTREE_NAME=" + _worktree_name + " docker compose -f compose.yml -f compose.worktree.yml" } else { "docker compose" }
 
 # show the ports and URLs assigned to this worktree
 ports:
