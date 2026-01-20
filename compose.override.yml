@@ -10,6 +10,9 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
       REDIS_URL: redis://host.docker.internal:6389/
+      SIDEKIQ_REDIS_URL: redis://host.docker.internal:6389
+      DEFAULT_REDIS_URL: redis://host.docker.internal:6389
+      SESSION_REDIS_URL: redis://host.docker.internal:6389/0/session
       TUNNELED_HOST_NAME: "http://localhost:3001"  # Override ngrok dependency
       WEBHOOK_HOST_NAME: "http://localhost:3001"  # Override ngrok dependency
     extra_hosts:
@@ -18,8 +21,6 @@ services:
       setup:
         condition: service_completed_successfully
       # ngrok removed from dependencies - not needed for worktree
-    ports: !reset
-      - '3001:3000'  # Use different port to avoid conflict
     healthcheck:
       test: ["CMD", "curl", "-k", "-f", "-H", "X-Monitor-Allowed: 1", "https://localhost:3000/up"]
       interval: 60s
@@ -31,6 +32,9 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
       REDIS_URL: redis://host.docker.internal:6389/
+      SIDEKIQ_REDIS_URL: redis://host.docker.internal:6389
+      DEFAULT_REDIS_URL: redis://host.docker.internal:6389
+      SESSION_REDIS_URL: redis://host.docker.internal:6389/0/session
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

@@ -78,7 +78,7 @@ services:
     <<: *backend
     command: bundle exec rails server -p 3000 -b 'ssl://0.0.0.0:3000?key=config/certs/localhost-key.pem&cert=config/certs/localhost.pem'
     ports:
-      - '3000:3000'
+      - '3001:3000'  # Changed to 3001 for worktree to avoid conflict with main repo
     healthcheck:
       test: [ "CMD", "curl", "-k", "-f", "-H", "X-Monitor-Allowed: 1", "https://localhost:3000/up" ]
       interval: 60s
