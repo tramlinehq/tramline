@@ -1,37 +1,18 @@
 #!/bin/bash
-# Get the Tailscale Funnel URL for this worktree/main repo
+# Get the Tailscale Funnel URL from the file written by the tailscale container
 # Usage: bin/get-tunnel-url
 
 set -e
 
-# Detect if we're in a worktree
-if [ -f .git ]; then
-  WORKTREE_NAME="$(basename "$(pwd)")"
-  COMPOSE_CMD="docker compose -f compose.yml -f compose.worktree.yml"
-else
-  WORKTREE_NAME="main"
-  COMPOSE_CMD="docker compose"
-fi
+TUNNEL_FILE="tmp/tunnel_url"
 
-# Try to get the Tailscale status
-HOSTNAME="tramline-${WORKTREE_NAME}"
-TAILSCALE_URL=$(${COMPOSE_CMD} exec -T tailscale tailscale funnel status 2>/dev/null | grep -o 'https://[^ ]*' | head -1 || echo "")
-
-if [ -n "$TAILSCALE_URL" ]; then
-  echo "$TAILSCALE_URL"
+if [ -f "$TUNNEL_FILE" ]; then
+  cat "$TUNNEL_FILE"
 else
-  # Fallback: try to get from tailscale status
-  TAILSCALE_URL=$(${COMPOSE_CMD} exec -T tailscale tailscale status --json 2>/dev/null | jq -r '.Self.DNSName' 2>/dev/null || echo "")
-  if [ -n "$TAILSCALE_URL" ]; then
-    # Remove trailing dot and add https
-    echo "https://${TAILSCALE_URL%.}"
-  else
-    # Tailscale is not running or not configured
-    echo "ERROR: Tailscale Funnel URL not available" >&2
-    echo "Make sure:" >&2
-    echo "  1. Services are running: just start" >&2
-    echo "  2. TAILSCALE_AUTHKEY is set in .env.development" >&2
-    echo "  3. Tailscale Funnel is enabled on your tailnet" >&2
-    exit 1
-  fi
+  echo "ERROR: Tailscale Funnel URL not available" >&2
+  echo "Make sure:" >&2
+  echo "  1. Services are running: just start" >&2
+  echo "  2. TAILSCALE_AUTHKEY is set in .env.development" >&2
+  echo "  3. Tailscale Funnel is enabled on your tailnet" >&2
+  exit 1
 fi
