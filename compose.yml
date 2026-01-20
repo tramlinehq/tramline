@@ -60,7 +60,7 @@ services:
   # Tailscale container for public URLs via Funnel
   # Optional - requires TAILSCALE_AUTHKEY in .env.development
   # Get an authkey from https://login.tailscale.com/admin/settings/keys
-  # See docs/TAILSCALE_SETUP.md for setup instructions
+  # See README.md for setup instructions
   tailscale:
     image: tailscale/tailscale:latest
     hostname: tramline-${WORKTREE_NAME:-main}
@@ -85,7 +85,7 @@ services:
           sleep 2;
         done;
         echo 'Tailscale connected!';
-        tailscale funnel --bg --https=443 --set-path=/ $$WEB_PORT;
+        tailscale funnel --bg --https=443 --set-path=/ https+insecure://127.0.0.1:$$WEB_PORT;
         echo \"Tailscale Funnel started on port $$WEB_PORT\";
         echo 'Find your URL at https://login.tailscale.com/admin/machines';
         sleep infinity;
