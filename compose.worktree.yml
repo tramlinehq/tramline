@@ -64,50 +64,8 @@ services:
       web:
         condition: service_healthy
 
-  # Tailscale container for public URLs via Funnel
-  # Requires TAILSCALE_AUTHKEY in .env.development
-  # Get an authkey from https://login.tailscale.com/admin/settings/keys
-  tailscale:
-    image: tailscale/tailscale:latest
-    hostname: tramline-${WORKTREE_NAME:-worktree}
-    environment:
-      - TS_AUTHKEY=${TAILSCALE_AUTHKEY:-}
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_USERSPACE=true
-      - WORKTREE_NAME=${WORKTREE_NAME:-worktree}
-      - WEB_PORT=${WEB_PORT:-3001}
-    volumes:
-      - tailscale-state:/var/lib/tailscale
-    command: sh -c "
-      if [ -z \"$$TS_AUTHKEY\" ]; then
-        echo 'TAILSCALE_AUTHKEY not set in .env.development - Tailscale disabled';
-        echo 'Get an authkey from https://login.tailscale.com/admin/settings/keys';
-        sleep infinity;
-      else
-        tailscaled --tun=userspace-networking --socks5-server=localhost:1055 &
-        until tailscale status 2>/dev/null; do
-          echo 'Waiting for tailscaled to start...';
-          tailscale up --authkey=\"$$TS_AUTHKEY\" --hostname=\"tramline-$$WORKTREE_NAME\" || true;
-          sleep 2;
-        done;
-        echo 'Tailscale connected!';
-        tailscale funnel --bg --https=443 --set-path=/ $$WEB_PORT;
-        echo \"Tailscale Funnel started on port $$WEB_PORT\";
-        echo 'Find your URL at https://login.tailscale.com/admin/machines';
-        sleep infinity;
-      fi
-      "
-    network_mode: host
-    restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
-    healthcheck:
-      test: ["CMD", "sh", "-c", "tailscale status || true"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+  # Tailscale inherits from compose.yml - no overrides needed
+  # The base config uses WORKTREE_NAME and WEB_PORT env vars which are set by Justfile
 
   # Ngrok disabled in worktrees - using Tailscale instead
   ngrok:

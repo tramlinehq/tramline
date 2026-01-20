@@ -63,28 +63,30 @@ services:
   # See docs/TAILSCALE_SETUP.md for setup instructions
   tailscale:
     image: tailscale/tailscale:latest
-    hostname: tramline-main
+    hostname: tramline-${WORKTREE_NAME:-main}
     environment:
       - TS_AUTHKEY=${TAILSCALE_AUTHKEY:-}
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_USERSPACE=true
+      - WORKTREE_NAME=${WORKTREE_NAME:-main}
+      - WEB_PORT=${WEB_PORT:-3000}
     volumes:
       - tailscale-state:/var/lib/tailscale
     command: sh -c "
       if [ -z \"$$TS_AUTHKEY\" ]; then
-        echo 'TAILSCALE_AUTHKEY not set - Tailscale disabled';
-        echo 'Set TAILSCALE_AUTHKEY in .env.development to enable';
+        echo 'TAILSCALE_AUTHKEY not set in .env.development - Tailscale disabled';
+        echo 'Get an authkey from https://login.tailscale.com/admin/settings/keys';
         sleep infinity;
       else
         tailscaled --tun=userspace-networking --socks5-server=localhost:1055 &
         until tailscale status 2>/dev/null; do
           echo 'Waiting for tailscaled to start...';
-          tailscale up --authkey=\"$$TS_AUTHKEY\" --hostname=\"tramline-main\" || true;
+          tailscale up --authkey=\"$$TS_AUTHKEY\" --hostname=\"tramline-$$WORKTREE_NAME\" || true;
           sleep 2;
         done;
         echo 'Tailscale connected!';
-        tailscale funnel --bg --https=443 --set-path=/ 3000;
-        echo 'Tailscale Funnel started!';
+        tailscale funnel --bg --https=443 --set-path=/ $$WEB_PORT;
+        echo \"Tailscale Funnel started on port $$WEB_PORT\";
         echo 'Find your URL at https://login.tailscale.com/admin/machines';
         sleep infinity;
       fi
