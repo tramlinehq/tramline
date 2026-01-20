@@ -81,6 +81,7 @@ services:
     command: sh -c "
       if [ -z \"$$TS_AUTHKEY\" ]; then
         echo 'TAILSCALE_AUTHKEY not set - tailscale disabled';
+        rm -f /rails/tmp/tunnel_url;
         touch /tmp/tailscale_ready;
         sleep infinity;
       else
@@ -94,6 +95,7 @@ services:
         echo 'Tailscale connected!';
         tailscale funnel --bg --https=443 --set-path=/ https+insecure://127.0.0.1:$$WEB_PORT;
         FUNNEL_URL=$$(tailscale funnel status 2>/dev/null | grep -o 'https://[^ ]*' | head -1);
+        echo \"$$FUNNEL_URL\" > /rails/tmp/tunnel_url;
         echo \"Tailscale Funnel URL is $$FUNNEL_URL\";
         touch /tmp/tailscale_ready;
         sleep infinity;
