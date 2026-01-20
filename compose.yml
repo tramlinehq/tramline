@@ -80,18 +80,8 @@ services:
       - tailscale-state:/var/lib/tailscale
       - .:/rails
     command: sh -c "
-      update_env() {
-        KEY=$$1; VALUE=$$2; FILE=/rails/.env.development;
-        if grep -q \"^$$KEY=\" $$FILE 2>/dev/null; then
-          sed -i \"s|^$$KEY=.*|$$KEY=$$VALUE|\" $$FILE;
-        else
-          echo \"$$KEY=$$VALUE\" >> $$FILE;
-        fi;
-      };
       if [ -z \"$$TS_AUTHKEY\" ]; then
-        echo 'TAILSCALE_AUTHKEY not set - using localhost fallback';
-        update_env TUNNELED_HOST_NAME \"https://localhost:$$WEB_PORT\";
-        update_env WEBHOOK_HOST_NAME \"https://localhost:$$WEB_PORT\";
+        echo 'TAILSCALE_AUTHKEY not set - tailscale disabled';
         touch /tmp/tailscale_ready;
         sleep infinity;
       else
@@ -105,8 +95,6 @@ services:
         echo 'Tailscale connected!';
         tailscale funnel --bg --https=443 --set-path=/ https+insecure://127.0.0.1:$$WEB_PORT;
         FUNNEL_URL=$$(tailscale funnel status 2>/dev/null | grep -o 'https://[^ ]*' | head -1);
-        update_env TUNNELED_HOST_NAME \"$$FUNNEL_URL\";
-        update_env WEBHOOK_HOST_NAME \"$$FUNNEL_URL\";
         echo \"Tailscale Funnel URL is $$FUNNEL_URL\";
         touch /tmp/tailscale_ready;
         sleep infinity;
