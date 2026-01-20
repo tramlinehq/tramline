@@ -1,15 +1,3 @@
-# Load worktree-specific ports for all docker compose commands
-set dotenv-load := false
-
-# Helper to export worktree ports (only web and ngrok - other services are shared)
-export WEB_PORT := `./bin/worktree-ports | grep WEB_PORT | cut -d= -f2`
-export NGROK_PORT := `./bin/worktree-ports | grep NGROK_PORT | cut -d= -f2`
-export HOST_NAME := `./bin/worktree-ports | grep HOST_NAME | cut -d= -f2`
-
-# show ports for this worktree
-ports:
-  @./bin/worktree-ports --print
-
 # start all services in the background
 start:
   docker compose up -d --remove-orphans
@@ -72,10 +60,3 @@ attach service="web":
 # open a bash shell in the web service container
 shell service="web":
   docker compose exec {{ service }} /bin/bash
-
-# show docker compose status with worktree info
-status:
-  @./bin/worktree-ports --print
-  @echo ""
-  @echo "Container Status:"
-  @docker compose ps
