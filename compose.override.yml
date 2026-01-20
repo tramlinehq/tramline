@@ -1,0 +1,97 @@
+# This override file makes the worktree use the same postgres and redis
+# containers from the main tramline repository instead of creating new ones.
+#
+# Make sure the main tramline repository's postgres and redis containers are running
+# before starting services in this worktree.
+
+services:
+  # Point all services to the main repo's postgres (port 5442) and redis (port 6389)
+  web:
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
+      REDIS_URL: redis://host.docker.internal:6389/
+      TUNNELED_HOST_NAME: "http://localhost:3001"  # Override ngrok dependency
+      WEBHOOK_HOST_NAME: "http://localhost:3001"  # Override ngrok dependency
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+      # ngrok removed from dependencies - not needed for worktree
+    ports: !reset
+      - '3001:3000'  # Use different port to avoid conflict
+    healthcheck:
+      test: ["CMD", "curl", "-k", "-f", "-H", "X-Monitor-Allowed: 1", "https://localhost:3000/up"]
+      interval: 60s
+      timeout: 1s
+      retries: 2
+      start_period: 3s
+
+  worker:
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
+      REDIS_URL: redis://host.docker.internal:6389/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  setup:
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
+      REDIS_URL: redis://host.docker.internal:6389/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on: {}
+
+  spec:
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442/tramline_site_test
+      REDIS_URL: redis://host.docker.internal:6389/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  css:
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
+      REDIS_URL: redis://host.docker.internal:6389/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      web:
+        condition: service_healthy
+
+  # Completely disable ngrok in worktree
+  ngrok:
+    entrypoint: ["sh", "-c", "while true; do sleep 3600; done"]  # Keep container running
+    restart: "no"
+    ports: !reset
+      - '4041:4040'
+    healthcheck:
+      test: ["CMD", "true"]  # Always healthy
+      interval: 1s
+      retries: 1
+
+  # Override postgres and redis to do nothing - just use the main repo's containers
+  postgres:
+    image: alpine:latest
+    command: ["sh", "-c", "while true; do sleep 3600; done"]
+    restart: "no"
+    ports: !reset []
+    volumes: !reset []
+    environment: {}
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 1s
+      retries: 1
+      start_period: 1s
+
+  redis:
+    image: alpine:latest
+    command: ["sh", "-c", "while true; do sleep 3600; done"]
+    restart: "no"
+    ports: !reset []
+    volumes: !reset []
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 1s
+      retries: 1
+      start_period: 1s
