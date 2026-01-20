@@ -34,6 +34,8 @@ x-backend: &backend
       condition: service_healthy
     setup:
       condition: service_completed_successfully
+    tailscale:
+      condition: service_healthy
 
 services:
   pre-setup:
@@ -72,10 +74,12 @@ services:
       - WEB_PORT=${WEB_PORT:-3000}
     volumes:
       - tailscale-state:/var/lib/tailscale
+      - .:/rails
     command: sh -c "
       if [ -z \"$$TS_AUTHKEY\" ]; then
-        echo 'TAILSCALE_AUTHKEY not set in .env.development - Tailscale disabled';
-        echo 'Get an authkey from https://login.tailscale.com/admin/settings/keys';
+        echo 'TAILSCALE_AUTHKEY not set - using localhost fallback';
+        echo 'https://localhost:$$WEB_PORT' > /rails/tmp/tailscale_url;
+        touch /tmp/tailscale_ready;
         sleep infinity;
       else
         SOCKS_PORT=$$(($$WEB_PORT + 5000));
@@ -87,8 +91,10 @@ services:
         done;
         echo 'Tailscale connected!';
         tailscale funnel --bg --https=443 --set-path=/ https+insecure://127.0.0.1:$$WEB_PORT;
-        echo \"Tailscale Funnel started on port $$WEB_PORT\";
-        echo 'Find your URL at https://login.tailscale.com/admin/machines';
+        FUNNEL_URL=$$(tailscale funnel status 2>/dev/null | grep -o 'https://[^ ]*' | head -1);
+        echo \"$$FUNNEL_URL\" > /rails/tmp/tailscale_url;
+        echo \"Tailscale Funnel URL is $$FUNNEL_URL\";
+        touch /tmp/tailscale_ready;
         sleep infinity;
       fi
       "
@@ -98,11 +104,11 @@ services:
       - NET_ADMIN
       - SYS_MODULE
     healthcheck:
-      test: ["CMD", "sh", "-c", "tailscale status || true"]
-      interval: 30s
+      test: ["CMD", "sh", "-c", "test -f /tmp/tailscale_ready"]
+      interval: 5s
       timeout: 5s
-      retries: 3
-      start_period: 10s
+      retries: 30
+      start_period: 5s
 
   web:
     <<: *backend

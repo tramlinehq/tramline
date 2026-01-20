@@ -280,10 +280,8 @@ Follow the instructions [here](https://docs.docker.com/engine/install/) to insta
 1. Create a free account at [tailscale.com](https://login.tailscale.com/start)
 2. Generate an auth key at [admin/settings/keys](https://login.tailscale.com/admin/settings/keys) (enable "Reusable" and "Ephemeral")
 3. Add your key in `.env.development` under `TAILSCALE_AUTHKEY`
-4. Start the environment with `just start`
-5. Run `just ports` to get your tunnel URL
-6. Update `TUNNELED_HOST_NAME` and `WEBHOOK_HOST_NAME` in `.env.development` with your tunnel URL
-7. Restart to pick up the new URL: `just restart web && just restart worker`
+
+The tunnel URL is automatically configured when you start the environment. Run `just ports` to see your URL.
 
 **justfile**
 
