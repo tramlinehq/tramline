@@ -198,6 +198,10 @@ class Train < ApplicationRecord
     active_runs.where(release_type: Release.release_types[:release]).order(:scheduled_at).second
   end
 
+  def upcoming_releases
+    active_runs.where(release_type: Release.release_types[:release]).order(:scheduled_at).offset(1)
+  end
+
   def hotfix_release
     active_runs.where(release_type: Release.release_types[:hotfix]).first
   end
@@ -396,7 +400,7 @@ class Train < ApplicationRecord
     !inactive? &&
       ongoing_release.present? &&
       ongoing_release.production_release_attempted? &&
-      upcoming_release.blank?
+      (upcoming_release.blank? || Flipper.enabled?(:allow_multiple_upcoming_releases, self))
   end
 
   def continuous_backmerge?

@@ -1,0 +1,18 @@
+#!/bin/bash
+# Get the Tailscale Funnel URL from the file written by the tailscale container
+# Usage: bin/get-tunnel-url
+
+set -e
+
+TUNNEL_FILE="tmp/tunnel_url"
+
+if [ -f "$TUNNEL_FILE" ]; then
+  cat "$TUNNEL_FILE"
+else
+  echo "ERROR: Tailscale Funnel URL not available" >&2
+  echo "Make sure:" >&2
+  echo "  1. Services are running: just start" >&2
+  echo "  2. TAILSCALE_AUTHKEY is set in .env.development" >&2
+  echo "  3. Tailscale Funnel is enabled on your tailnet" >&2
+  exit 1
+fi
