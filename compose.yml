@@ -78,7 +78,8 @@ services:
         echo 'Get an authkey from https://login.tailscale.com/admin/settings/keys';
         sleep infinity;
       else
-        tailscaled --tun=userspace-networking --socks5-server=localhost:1055 &
+        SOCKS_PORT=$$(($$WEB_PORT + 5000));
+        tailscaled --tun=userspace-networking --socks5-server=localhost:$$SOCKS_PORT &
         until tailscale status 2>/dev/null; do
           echo 'Waiting for tailscaled to start...';
           tailscale up --authkey=\"$$TS_AUTHKEY\" --hostname=\"tramline-$$WORKTREE_NAME\" || true;
