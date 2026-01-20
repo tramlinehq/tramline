@@ -5,7 +5,6 @@
 # before starting services in this worktree.
 #
 # Ports are dynamically assigned based on worktree name hash via WEB_PORT and NGROK_PORT.
-
 services:
   web:
     ports: !override
@@ -44,20 +43,6 @@ services:
       web:
         condition: service_healthy
 
-  # Tailscale inherits from compose.yml - no overrides needed
-  # The base config uses WORKTREE_NAME and WEB_PORT env vars which are set by Justfile
-
-  # Ngrok disabled in worktrees - using Tailscale instead
-  ngrok:
-    image: alpine:latest
-    command: ["sh", "-c", "echo 'Ngrok disabled in worktrees - using Tailscale Funnel' && sleep infinity"]
-    restart: "no"
-    healthcheck:
-      test: ["CMD", "true"]
-      interval: 1s
-      retries: 1
-      start_period: 1s
-
   # Override postgres and redis to do nothing (use main repo's containers)
   postgres:
     image: alpine:latest
@@ -83,5 +68,3 @@ services:
       interval: 1s
       retries: 1
       start_period: 1s
-
-# No volumes needed - all volumes inherit from compose.yml
