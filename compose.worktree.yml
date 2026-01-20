@@ -3,12 +3,15 @@
 #
 # Make sure the main tramline repository's postgres and redis containers are running
 # before starting services in this worktree.
+#
+# Ports are dynamically assigned based on worktree name hash via WEB_PORT and NGROK_PORT
+# environment variables set by the Justfile.
 
 services:
   # Point all services to the main repo's postgres (port 5442) and redis (port 6389)
   web:
-    ports:
-      - '3001:3000'  # Map to 3001 to avoid conflict with main repo's 3000
+    ports: !override
+      - '${WEB_PORT:-3001}:3000'  # Dynamic port based on worktree name
     environment:
       DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
       REDIS_URL: redis://host.docker.internal:6389
@@ -97,11 +100,11 @@ services:
   # Configure ngrok for worktree on different port
   # Ngrok will start automatically if NGROK_AUTHTOKEN is set in .env.development
   # Otherwise it will fail but won't block other services (restart: "no")
-  # Tunnels to host.docker.internal:3001 (the worktree's exposed web port)
+  # Tunnels to the worktree's exposed web port (dynamically assigned)
   ngrok:
-    command: ["http", "https://host.docker.internal:3001", "--log=stdout", "--host-header=rewrite"]
+    command: ["http", "https://host.docker.internal:${WEB_PORT:-3001}", "--log=stdout", "--host-header=rewrite"]
     ports: !reset
-      - '4041:4040'  # Use different port to avoid conflict with main repo
+      - '${NGROK_PORT:-4041}:4040'  # Dynamic port based on worktree name
     restart: "no"  # Don't restart on failure (e.g., missing authtoken)
     extra_hosts:
       - "host.docker.internal:host-gateway"
