@@ -11,31 +11,21 @@ services:
       - '${WEB_PORT:-3001}:3000'
     environment:
       PORT_NUM: ${WEB_PORT:-3001}
-      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
-      REDIS_URL: redis://host.docker.internal:6389
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
   worker:
     environment:
       PORT_NUM: ${WEB_PORT:-3001}
-      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
-      REDIS_URL: redis://host.docker.internal:6389
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
   setup:
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
-      REDIS_URL: redis://host.docker.internal:6389
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on: {}
 
   spec:
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
-      REDIS_URL: redis://host.docker.internal:6389
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
