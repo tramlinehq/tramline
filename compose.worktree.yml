@@ -4,22 +4,14 @@
 # Make sure the main tramline repository's postgres and redis containers are running
 # before starting services in this worktree.
 #
-# Ports are dynamically assigned based on worktree name hash via WEB_PORT and NGROK_PORT
-# environment variables set by the Justfile.
+# Ports are dynamically assigned based on worktree name hash via WEB_PORT and NGROK_PORT.
 
 services:
-  # Point all services to the main repo's postgres (port 5442) and redis (port 6389)
   web:
     ports: !override
-      - '${WEB_PORT:-3001}:3000'  # Dynamic port based on worktree name
+      - '${WEB_PORT:-3001}:3000'
     environment:
-      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
-      REDIS_URL: redis://host.docker.internal:6389
-      SIDEKIQ_REDIS_URL: redis://host.docker.internal:6389
-      DEFAULT_REDIS_URL: redis://host.docker.internal:6389
-      SESSION_REDIS_URL: redis://host.docker.internal:6389/0/session
-      # Ngrok URLs - will use ngrok if running, otherwise localhost
-      # To use ngrok, add NGROK_AUTHTOKEN to .env.development and start ngrok manually
+      PORT_NUM: ${WEB_PORT:-3001}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -29,9 +21,6 @@ services:
         condition: service_healthy
       setup:
         condition: service_completed_successfully
-      ngrok:
-        condition: service_started
-        required: false  # Make ngrok optional - won't block if it fails
     healthcheck:
       test: ["CMD", "curl", "-k", "-f", "-H", "X-Monitor-Allowed: 1", "https://localhost:3000/up"]
       interval: 60s
@@ -41,11 +30,7 @@ services:
 
   worker:
     environment:
-      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
-      REDIS_URL: redis://host.docker.internal:6389/
-      SIDEKIQ_REDIS_URL: redis://host.docker.internal:6389
-      DEFAULT_REDIS_URL: redis://host.docker.internal:6389
-      SESSION_REDIS_URL: redis://host.docker.internal:6389/0/session
+      PORT_NUM: ${WEB_PORT:-3001}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -55,22 +40,13 @@ services:
         condition: service_healthy
       setup:
         condition: service_completed_successfully
-      ngrok:
-        condition: service_started
-        required: false
 
   setup:
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
-      REDIS_URL: redis://host.docker.internal:6389/
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on: {}
 
   spec:
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442/tramline_site_test
-      REDIS_URL: redis://host.docker.internal:6389/
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -80,42 +56,71 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-      ngrok:
-        condition: service_started
-        required: false
 
   css:
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
-      REDIS_URL: redis://host.docker.internal:6389/
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
       web:
         condition: service_healthy
-      ngrok:
-        condition: service_started
-        required: false
 
-  # Configure ngrok for worktree on different port
-  # Ngrok will start automatically if NGROK_AUTHTOKEN is set in .env.development
-  # Otherwise it will fail but won't block other services (restart: "no")
-  # Tunnels to the worktree's exposed web port (dynamically assigned)
-  ngrok:
-    command: ["http", "https://host.docker.internal:${WEB_PORT:-3001}", "--log=stdout", "--host-header=rewrite"]
-    ports: !reset
-      - '${NGROK_PORT:-4041}:4040'  # Dynamic port based on worktree name
-    restart: "no"  # Don't restart on failure (e.g., missing authtoken)
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+  # Tailscale container for public URLs via Funnel
+  # Requires TAILSCALE_AUTHKEY in .env.development
+  # Get an authkey from https://login.tailscale.com/admin/settings/keys
+  tailscale:
+    image: tailscale/tailscale:latest
+    hostname: tramline-${WORKTREE_NAME:-worktree}
+    environment:
+      - TS_AUTHKEY=${TAILSCALE_AUTHKEY:-}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=true
+      - WORKTREE_NAME=${WORKTREE_NAME:-worktree}
+      - WEB_PORT=${WEB_PORT:-3001}
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+    command: sh -c "
+      if [ -z \"$$TS_AUTHKEY\" ]; then
+        echo 'TAILSCALE_AUTHKEY not set in .env.development - Tailscale disabled';
+        echo 'Get an authkey from https://login.tailscale.com/admin/settings/keys';
+        sleep infinity;
+      else
+        tailscaled --tun=userspace-networking --socks5-server=localhost:1055 &
+        until tailscale status 2>/dev/null; do
+          echo 'Waiting for tailscaled to start...';
+          tailscale up --authkey=\"$$TS_AUTHKEY\" --hostname=\"tramline-$$WORKTREE_NAME\" || true;
+          sleep 2;
+        done;
+        echo 'Tailscale connected!';
+        tailscale funnel --bg --https=443 --set-path=/ $$WEB_PORT;
+        echo \"Tailscale Funnel started on port $$WEB_PORT\";
+        echo 'Find your URL at https://login.tailscale.com/admin/machines';
+        sleep infinity;
+      fi
+      "
+    network_mode: host
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
     healthcheck:
-      test: bash -c "</dev/tcp/ngrok/4040"
-      interval: 60s
-      timeout: 1s
-      retries: 2
-      start_period: 3s
+      test: ["CMD", "sh", "-c", "tailscale status || true"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
-  # Override postgres and redis to do nothing - just use the main repo's containers
+  # Ngrok disabled in worktrees - using Tailscale instead
+  ngrok:
+    image: alpine:latest
+    command: ["sh", "-c", "echo 'Ngrok disabled in worktrees - using Tailscale Funnel' && sleep infinity"]
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 1s
+      retries: 1
+      start_period: 1s
+
+  # Override postgres and redis to do nothing (use main repo's containers)
   postgres:
     image: alpine:latest
     command: ["sh", "-c", "while true; do sleep 3600; done"]
@@ -140,3 +145,6 @@ services:
       interval: 1s
       retries: 1
       start_period: 1s
+
+volumes:
+  tailscale-state:
