@@ -93,7 +93,22 @@ services:
         done;
         echo 'Tailscale connected!';
         tailscale funnel --bg --https=443 --set-path=/ https+insecure://127.0.0.1:$$WEB_PORT;
-        FUNNEL_URL=$$(tailscale funnel status 2>/dev/null | grep -o 'https://[^ ]*' | head -1);
+        echo 'Waiting for Funnel URL to become available...';
+        RETRIES=0;
+        MAX_RETRIES=30;
+        FUNNEL_URL='';
+        while [ -z \"$$FUNNEL_URL\" ] && [ $$RETRIES -lt $$MAX_RETRIES ]; do
+          FUNNEL_URL=$$(tailscale funnel status --json 2>/dev/null | grep -o 'https://[^\"]*' | head -1);
+          if [ -z \"$$FUNNEL_URL\" ]; then
+            RETRIES=$$((RETRIES + 1));
+            echo \"Funnel URL not ready yet (attempt $$RETRIES/$$MAX_RETRIES)...\";
+            sleep 2;
+          fi;
+        done;
+        if [ -z \"$$FUNNEL_URL\" ]; then
+          echo 'ERROR: Failed to get Funnel URL after $$MAX_RETRIES attempts';
+          exit 1;
+        fi;
         echo \"$$FUNNEL_URL\" > /rails/tmp/tunnel_url;
         echo \"Tailscale Funnel URL is $$FUNNEL_URL\";
         touch /tmp/tailscale_ready;
