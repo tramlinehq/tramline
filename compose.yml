@@ -21,7 +21,6 @@ x-backend: &backend
     - .:/rails:cached
     - bundle:/usr/local/bundle
     - rails_cache:/app/tmp/cache
-  env_file: .env.development
   environment:
     <<: *env
     REDIS_URL: redis://host.docker.internal:6389
