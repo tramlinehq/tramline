@@ -21,7 +21,10 @@ x-backend: &backend
     - .:/rails:cached
     - bundle:/usr/local/bundle
     - rails_cache:/app/tmp/cache
-  env_file: .env.development
+  env_file:
+    - .env.development
+    - path: tmp/tailscale.env
+      required: false
   environment:
     <<: *env
     BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
@@ -79,8 +82,8 @@ services:
     command: sh -c "
       if [ -z \"$$TS_AUTHKEY\" ]; then
         echo 'TAILSCALE_AUTHKEY not set - using localhost fallback';
-        echo \"export TUNNELED_HOST_NAME=https://localhost:$$WEB_PORT\" > /rails/tmp/tailscale.env;
-        echo \"export WEBHOOK_HOST_NAME=https://localhost:$$WEB_PORT\" >> /rails/tmp/tailscale.env;
+        echo \"TUNNELED_HOST_NAME=https://localhost:$$WEB_PORT\" > /rails/tmp/tailscale.env;
+        echo \"WEBHOOK_HOST_NAME=https://localhost:$$WEB_PORT\" >> /rails/tmp/tailscale.env;
         touch /tmp/tailscale_ready;
         sleep infinity;
       else
@@ -94,8 +97,8 @@ services:
         echo 'Tailscale connected!';
         tailscale funnel --bg --https=443 --set-path=/ https+insecure://127.0.0.1:$$WEB_PORT;
         FUNNEL_URL=$$(tailscale funnel status 2>/dev/null | grep -o 'https://[^ ]*' | head -1);
-        echo \"export TUNNELED_HOST_NAME=$$FUNNEL_URL\" > /rails/tmp/tailscale.env;
-        echo \"export WEBHOOK_HOST_NAME=$$FUNNEL_URL\" >> /rails/tmp/tailscale.env;
+        echo \"TUNNELED_HOST_NAME=$$FUNNEL_URL\" > /rails/tmp/tailscale.env;
+        echo \"WEBHOOK_HOST_NAME=$$FUNNEL_URL\" >> /rails/tmp/tailscale.env;
         echo \"Tailscale Funnel URL is $$FUNNEL_URL\";
         touch /tmp/tailscale_ready;
         sleep infinity;
@@ -115,7 +118,7 @@ services:
 
   web:
     <<: *backend
-    command: bash -c "source /rails/tmp/tailscale.env 2>/dev/null || true && bundle exec rails server -p 3000 -b 'ssl://0.0.0.0:3000?key=config/certs/localhost-key.pem&cert=config/certs/localhost.pem'"
+    command: bundle exec rails server -p 3000 -b 'ssl://0.0.0.0:3000?key=config/certs/localhost-key.pem&cert=config/certs/localhost.pem'
     ports:
       - '3000:3000'
     healthcheck:
@@ -134,7 +137,7 @@ services:
 
   worker:
     <<: *backend
-    command: bash -c "source /rails/tmp/tailscale.env 2>/dev/null || true && bundle exec sidekiq -C config/sidekiq.yml"
+    command: bundle exec sidekiq -C config/sidekiq.yml
 
   postgres:
     image: postgres:14
