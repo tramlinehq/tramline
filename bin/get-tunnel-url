@@ -26,12 +26,12 @@ else
     # Remove trailing dot and add https
     echo "https://${TAILSCALE_URL%.}"
   else
-    # Fallback to localhost
-    if [ -f .git ]; then
-      WEB_PORT=$(printf '%s' "$WORKTREE_NAME" | cksum | cut -d' ' -f1 | awk '{print (($1 % 999) + 1 + 3000)}')
-      echo "https://localhost:${WEB_PORT}"
-    else
-      echo "https://localhost:3000"
-    fi
+    # Tailscale is not running or not configured
+    echo "ERROR: Tailscale Funnel URL not available" >&2
+    echo "Make sure:" >&2
+    echo "  1. Services are running: just start" >&2
+    echo "  2. TAILSCALE_AUTHKEY is set in .env.development" >&2
+    echo "  3. Tailscale Funnel is enabled on your tailnet" >&2
+    exit 1
   fi
 fi

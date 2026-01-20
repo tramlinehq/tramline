@@ -98,15 +98,23 @@ Visit [https://login.tailscale.com/admin/machines](https://login.tailscale.com/a
 The `.env.development` file is configured to **automatically fetch your Tailscale Funnel URL**:
 
 ```bash
-TUNNELED_HOST_NAME=$(bin/get-tunnel-url)
-WEBHOOK_HOST_NAME=$(bin/get-tunnel-url)
+TUNNELED_HOST_NAME=$(bin/get-tunnel-url || echo "https://localhost:3000")
+WEBHOOK_HOST_NAME=$(bin/get-tunnel-url || echo "https://localhost:3000")
 ```
 
 This means:
 - ✅ If Tailscale is running → uses your Funnel URL
-- ✅ If Tailscale is not running → falls back to localhost
+- ✅ If Tailscale is not running → falls back to localhost (via `|| echo`)
 - ✅ Works in both main repo and worktrees
-- ✅ No manual configuration needed
+- ✅ Shows helpful error message when Tailscale is misconfigured
+
+**To check your tunnel URL:**
+
+```bash
+bin/get-tunnel-url
+```
+
+If Tailscale is not configured properly, you'll see an error with troubleshooting steps.
 
 **Optional: Use static URLs instead**
 
