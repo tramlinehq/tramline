@@ -273,9 +273,15 @@ For local development, clone this repository and install the following pre-requi
 
 Follow the instructions [here](https://docs.docker.com/engine/install/) to install docker on your machine if you don't have it already. We recommend using [Podman](https://podman.io) or [OrbStack](https://orbstack.dev) for managing containers locally.
 
-**ngrok**
+**Tailscale Funnel (optional)**
 
-Setup an account (free or otherwise) [here](https://ngrok.com/). ngrok is required for using [webhooks](#webhooks) from our third-party integrations like GitHub, GitLab, Bitbucket, etc. Follow the instructions [here](https://ngrok.com/download) to install ngrok on your machine if you don't have it already. Add your token in `.env.development` under `NGROK_AUTHTOKEN`.
+[Tailscale Funnel](https://tailscale.com/kb/1223/funnel) is used for public URLs and [webhooks](#webhooks) from third-party integrations like GitHub, GitLab, Bitbucket, etc. To set it up:
+
+1. Create a free account at [tailscale.com](https://login.tailscale.com/start)
+2. Generate an auth key at [admin/settings/keys](https://login.tailscale.com/admin/settings/keys) (enable "Reusable" and "Ephemeral")
+3. Add your key in `.env.development` under `TAILSCALE_AUTHKEY`
+
+The tunnel URL is automatically configured when you start the environment. Run `just ports` to see your URL.
 
 **justfile**
 
@@ -345,7 +351,7 @@ integrations:
 
 ### Webhooks
 
-Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We use ngrok and it is started in the local development environment using Docker Compose.
+Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We use Tailscale Funnel which is started automatically in the local development environment using Docker Compose. See [Tailscale Funnel](#tailscale-funnel-optional) for setup instructions.
 
 ### Adding or updating gems
 

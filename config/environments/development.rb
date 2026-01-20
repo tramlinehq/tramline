@@ -78,10 +78,10 @@ Rails.application.configure do
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
 
-  # Allow tunnelled DNSes to access localhost, like ngrok or local.gd
+  # Allow tunnelled DNSes to access localhost, like Tailscale Funnel or local.gd
   config.hosts << /tunnel[0-9]+.tramline.dev/
   config.hosts << /[a-z0-9-]+\.local\.gd/
-  config.hosts << /.*.ngrok-free.app/
+  config.hosts << /.*\.ts\.net/
   config.hosts << /web:3000/
 
   # Allow web console to be triggered when fired against external webhooks

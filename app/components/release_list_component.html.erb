@@ -111,7 +111,13 @@
 
     <%= render ReleaseOverviewComponent.new(hotfix_release) %>
     <%= render ReleaseOverviewComponent.new(ongoing_release) %>
-    <%= render ReleaseOverviewComponent.new(upcoming_release) %>
+    <% if Flipper.enabled?(:allow_multiple_upcoming_releases, train) %>
+      <% train.upcoming_releases.each do |rel| %>
+        <%= render ReleaseOverviewComponent.new(rel) %>
+      <% end %>
+    <% else %>
+      <%= render ReleaseOverviewComponent.new(upcoming_release) %>
+    <% end %>
     <%= render ReleaseOverviewComponent.new(last_finished_release) %>
 
     <% if devops_report.present? %>
