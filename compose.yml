@@ -23,8 +23,6 @@ x-backend: &backend
     - rails_cache:/app/tmp/cache
   environment:
     <<: *env
-    REDIS_URL: redis://redis:6379/
-    DATABASE_URL: postgres://postgres:postgres@postgres:5432
     BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
     XDG_DATA_HOME: /app/tmp/caches
     EDITOR: vim
@@ -36,8 +34,6 @@ x-backend: &backend
       condition: service_healthy
     setup:
       condition: service_completed_successfully
-    ngrok:
-      condition: service_healthy
 
 services:
   pre-setup:
@@ -61,12 +57,62 @@ services:
       redis:
         condition: service_healthy
 
+  # Tailscale container for public URLs via Funnel
+  # Optional - requires TAILSCALE_AUTHKEY in .env.development
+  # Get an authkey from https://login.tailscale.com/admin/settings/keys
+  # See docs/TAILSCALE_SETUP.md for setup instructions
+  tailscale:
+    image: tailscale/tailscale:latest
+    hostname: tramline-${WORKTREE_NAME:-main}
+    environment:
+      - TS_AUTHKEY=${TAILSCALE_AUTHKEY:-}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=true
+      - WORKTREE_NAME=${WORKTREE_NAME:-main}
+      - WEB_PORT=${WEB_PORT:-3000}
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+    command: sh -c "
+      if [ -z \"$$TS_AUTHKEY\" ]; then
+        echo 'TAILSCALE_AUTHKEY not set in .env.development - Tailscale disabled';
+        echo 'Get an authkey from https://login.tailscale.com/admin/settings/keys';
+        sleep infinity;
+      else
+        tailscaled --tun=userspace-networking --socks5-server=localhost:1055 &
+        until tailscale status 2>/dev/null; do
+          echo 'Waiting for tailscaled to start...';
+          tailscale up --authkey=\"$$TS_AUTHKEY\" --hostname=\"tramline-$$WORKTREE_NAME\" || true;
+          sleep 2;
+        done;
+        echo 'Tailscale connected!';
+        tailscale funnel --bg --https=443 --set-path=/ $$WEB_PORT;
+        echo \"Tailscale Funnel started on port $$WEB_PORT\";
+        echo 'Find your URL at https://login.tailscale.com/admin/machines';
+        sleep infinity;
+      fi
+      "
+    network_mode: host
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    healthcheck:
+      test: ["CMD", "sh", "-c", "tailscale status || true"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Ngrok - deprecated, use Tailscale instead
+  # Keep for backwards compatibility but mark as optional
   ngrok:
     image: ngrok/ngrok:latest
     command: [ "http", "https://web:3000", "--log=stdout", "--host-header=rewrite" ]
     env_file: .env.development
     ports:
       - '4040:4040'
+    profiles:
+      - ngrok
     healthcheck:
       test: bash -c "</dev/tcp/ngrok/4040"
       interval: 60s
@@ -160,3 +206,4 @@ volumes:
   rails_cache:
   postgres:
   redis:
+  tailscale-state:
