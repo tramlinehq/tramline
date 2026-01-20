@@ -14,32 +14,12 @@ services:
       PORT_NUM: ${WEB_PORT:-3001}
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      setup:
-        condition: service_completed_successfully
-    healthcheck:
-      test: ["CMD", "curl", "-k", "-f", "-H", "X-Monitor-Allowed: 1", "https://localhost:3000/up"]
-      interval: 60s
-      timeout: 1s
-      retries: 2
-      start_period: 3s
 
   worker:
     environment:
       PORT_NUM: ${WEB_PORT:-3001}
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      setup:
-        condition: service_completed_successfully
 
   setup:
     extra_hosts:
@@ -104,5 +84,4 @@ services:
       retries: 1
       start_period: 1s
 
-volumes:
-  tailscale-state:
+# No volumes needed - all volumes inherit from compose.yml
