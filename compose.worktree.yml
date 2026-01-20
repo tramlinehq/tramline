@@ -13,14 +13,20 @@ services:
       SIDEKIQ_REDIS_URL: redis://host.docker.internal:6389
       DEFAULT_REDIS_URL: redis://host.docker.internal:6389
       SESSION_REDIS_URL: redis://host.docker.internal:6389/0/session
-      TUNNELED_HOST_NAME: "http://localhost:3001"  # Override ngrok dependency
-      WEBHOOK_HOST_NAME: "http://localhost:3001"  # Override ngrok dependency
+      # Ngrok URLs - will use ngrok if running, otherwise localhost
+      # To use ngrok, add NGROK_AUTHTOKEN to .env.development and start ngrok manually
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
       setup:
         condition: service_completed_successfully
-      # ngrok removed from dependencies - not needed for worktree
+      ngrok:
+        condition: service_started
+        required: false  # Make ngrok optional - won't block if it fails
     healthcheck:
       test: ["CMD", "curl", "-k", "-f", "-H", "X-Monitor-Allowed: 1", "https://localhost:3000/up"]
       interval: 60s
@@ -37,6 +43,16 @@ services:
       SESSION_REDIS_URL: redis://host.docker.internal:6389/0/session
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      setup:
+        condition: service_completed_successfully
+      ngrok:
+        condition: service_started
+        required: false
 
   setup:
     environment:
@@ -52,6 +68,16 @@ services:
       REDIS_URL: redis://host.docker.internal:6389/
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      ngrok:
+        condition: service_started
+        required: false
 
   css:
     environment:
@@ -62,17 +88,24 @@ services:
     depends_on:
       web:
         condition: service_healthy
+      ngrok:
+        condition: service_started
+        required: false
 
-  # Completely disable ngrok in worktree
+  # Configure ngrok for worktree on different port
+  # Ngrok will start automatically if NGROK_AUTHTOKEN is set in .env.development
+  # Otherwise it will fail but won't block other services (restart: "no")
   ngrok:
-    entrypoint: ["sh", "-c", "while true; do sleep 3600; done"]  # Keep container running
-    restart: "no"
+    command: ["http", "https://web:3000", "--log=stdout", "--host-header=rewrite"]
     ports: !reset
-      - '4041:4040'
+      - '4041:4040'  # Use different port to avoid conflict with main repo
+    restart: "no"  # Don't restart on failure (e.g., missing authtoken)
     healthcheck:
-      test: ["CMD", "true"]  # Always healthy
-      interval: 1s
-      retries: 1
+      test: bash -c "</dev/tcp/ngrok/4040"
+      interval: 60s
+      timeout: 1s
+      retries: 2
+      start_period: 3s
 
   # Override postgres and redis to do nothing - just use the main repo's containers
   postgres:
