@@ -83,7 +83,7 @@ class ReleasePlatformRun < ApplicationRecord
   def stop!
     return if finished?
     update!(status: STATES[:stopped], stopped_at: Time.current)
-    event_stamp!(reason: :stopped, kind: :notice, data: { version: release_version })
+    event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
   end
 
   def conclude!
@@ -126,7 +126,7 @@ class ReleasePlatformRun < ApplicationRecord
   # TODO: eager loading here is too expensive
   def latest_internal_release(finished: false)
     (finished ? internal_releases.finished : internal_releases)
-      .includes(:commit, :store_submissions, triggered_workflow_run: { build: [:commit, :artifact] }, release_platform_run: [:release])
+      .includes(:commit, :store_submissions, triggered_workflow_run: {build: [:commit, :artifact]}, release_platform_run: [:release])
       .order(created_at: :desc)
       .first
   end
@@ -155,7 +155,7 @@ class ReleasePlatformRun < ApplicationRecord
   def older_internal_releases
     internal_releases
       .order(created_at: :desc)
-      .includes(:commit, :store_submissions, triggered_workflow_run: { build: [:commit, :artifact] }, release_platform_run: [:release])
+      .includes(:commit, :store_submissions, triggered_workflow_run: {build: [:commit, :artifact]}, release_platform_run: [:release])
       .offset(1)
   end
 
@@ -241,7 +241,7 @@ class ReleasePlatformRun < ApplicationRecord
     event_stamp!(
       reason: :version_corrected,
       kind: :notice,
-      data: { version: release_version, ongoing_version: version }
+      data: {version: release_version, ongoing_version: version}
     )
   end
 
@@ -275,7 +275,7 @@ class ReleasePlatformRun < ApplicationRecord
     event_stamp!(
       reason: :version_changed,
       kind: :notice,
-      data: { version: release_version }
+      data: {version: release_version}
     )
   end
 
@@ -333,13 +333,13 @@ class ReleasePlatformRun < ApplicationRecord
 
   def previously_completed_rollout_run
     run = train
-            .release_platform_runs
-            .includes(finished_production_release: { store_submission: :store_rollout })
-            .where.not(id: id)
-            .where(release_platform_id: release_platform_id)
-            .where(finished_production_release: { store_submission: { store_rollouts: { status: %w[completed fully_released] } } })
-            .reorder(completed_at: :desc, scheduled_at: :desc)
-            .first
+      .release_platform_runs
+      .includes(finished_production_release: {store_submission: :store_rollout})
+      .where.not(id: id)
+      .where(release_platform_id: release_platform_id)
+      .where(finished_production_release: {store_submission: {store_rollouts: {status: %w[completed fully_released]}}})
+      .reorder(completed_at: :desc, scheduled_at: :desc)
+      .first
 
     return unless run
     previous = run.finished_production_release.store_rollout

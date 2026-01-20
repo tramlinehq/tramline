@@ -499,8 +499,6 @@ class Release < ApplicationRecord
     approvals_blocking?
   end
 
-  private
-
   def blocked_by_hotfix?
     ongoing? && train.hotfix_release.present?
   end
