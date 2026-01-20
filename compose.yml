@@ -23,8 +23,8 @@ x-backend: &backend
     - rails_cache:/app/tmp/cache
   environment:
     <<: *env
-    REDIS_URL: redis://redis:6379/
-    DATABASE_URL: postgres://postgres:postgres@postgres:5432
+    DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
+    REDIS_URL: redis://host.docker.internal:6389
     BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
     XDG_DATA_HOME: /app/tmp/caches
     EDITOR: vim
@@ -36,7 +36,7 @@ x-backend: &backend
       condition: service_healthy
     setup:
       condition: service_completed_successfully
-    ngrok:
+    tailscale:
       condition: service_healthy
 
 services:
@@ -61,18 +61,35 @@ services:
       redis:
         condition: service_healthy
 
-  ngrok:
-    image: ngrok/ngrok:latest
-    command: [ "http", "https://web:3000", "--log=stdout", "--host-header=rewrite" ]
+  # Tailscale container for public URLs via Funnel
+  # Optional - requires TAILSCALE_AUTHKEY in .env.development
+  # Get an authkey from https://login.tailscale.com/admin/settings/keys
+  # See README.md for setup instructions
+  tailscale:
+    image: tailscale/tailscale:latest
+    hostname: tramline-${WORKTREE_NAME:-main}
     env_file: .env.development
-    ports:
-      - '4040:4040'
+    environment:
+      - TS_AUTHKEY=${TAILSCALE_AUTHKEY:-}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=true
+      - WORKTREE_NAME=${WORKTREE_NAME:-main}
+      - WEB_PORT=${WEB_PORT:-3000}
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+      - .:/rails
+    command: /rails/bin/tailscale-funnel.sh
+    network_mode: host
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
     healthcheck:
-      test: bash -c "</dev/tcp/ngrok/4040"
-      interval: 60s
-      timeout: 1s
-      retries: 2
-      start_period: 3s
+      test: ["CMD", "sh", "-c", "test -f /tmp/tailscale_ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 5s
 
   web:
     <<: *backend
@@ -160,3 +177,4 @@ volumes:
   rails_cache:
   postgres:
   redis:
+  tailscale-state:
