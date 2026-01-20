@@ -66,7 +66,7 @@ services:
     command: [ "http", "https://web:3000", "--log=stdout", "--host-header=rewrite" ]
     env_file: .env.development
     ports:
-      - '4040:4040'
+      - '${NGROK_PORT:-4040}:4040'
     healthcheck:
       test: bash -c "</dev/tcp/ngrok/4040"
       interval: 60s
@@ -78,7 +78,7 @@ services:
     <<: *backend
     command: bundle exec rails server -p 3000 -b 'ssl://0.0.0.0:3000?key=config/certs/localhost-key.pem&cert=config/certs/localhost.pem'
     ports:
-      - '3000:3000'
+      - '${WEB_PORT:-3000}:3000'
     healthcheck:
       test: [ "CMD", "curl", "-k", "-f", "-H", "X-Monitor-Allowed: 1", "https://localhost:3000/up" ]
       interval: 60s
@@ -115,7 +115,7 @@ services:
 
   redis:
     image: redis:6.2-alpine
-#    command: RUN chmod 1777 /tmp
+    #    command: RUN chmod 1777 /tmp
     volumes:
       - redis:/data
     ports:
