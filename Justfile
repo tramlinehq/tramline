@@ -20,7 +20,12 @@ ports:
   @echo "Tunnel URL: $(bin/get-tunnel-url)"
 
 # start all services in the background
+# Tailscale starts first so tunnel URL is available for other services
 start:
+  {{ _compose_cmd }} up -d tailscale
+  @echo "Waiting for Tailscale to initialize..."
+  @sleep 3
+  @until {{ _compose_cmd }} exec -T tailscale test -f /tmp/tailscale_ready 2>/dev/null; do sleep 1; done
   {{ _compose_cmd }} up -d --remove-orphans
 
 # stop all services
