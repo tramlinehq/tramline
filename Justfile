@@ -1,24 +1,21 @@
+# Helper to get docker compose command with worktree override if applicable
 # In a worktree, .git is a file (not a directory), so we use the worktree compose override
 _is_worktree := `if [ -f .git ]; then echo "true"; else echo "false"; fi`
 
 # Generate unique port numbers based on worktree name hash
-# Uses CRC32 to generate a consistent hash, then maps to different port ranges
+# Uses CRC32 to generate a consistent hash, then maps to port range 3001-3999
 _port_offset := `printf '%s' "$(basename $(pwd))" | cksum | cut -d' ' -f1 | awk '{print ($1 % 999) + 1}'`
 _web_port := `if [ -f .git ]; then echo $((3000 + $(printf '%s' "$(basename $(pwd))" | cksum | cut -d' ' -f1 | awk '{print ($1 % 999) + 1}'))); else echo "3000"; fi`
 _ngrok_port := `if [ -f .git ]; then echo $((4000 + $(printf '%s' "$(basename $(pwd))" | cksum | cut -d' ' -f1 | awk '{print ($1 % 999) + 1}'))); else echo "4040"; fi`
-_postgres_port := `if [ -f .git ]; then echo $((5000 + $(printf '%s' "$(basename $(pwd))" | cksum | cut -d' ' -f1 | awk '{print ($1 % 999) + 1}'))); else echo "5432"; fi`
-_redis_port := `if [ -f .git ]; then echo $((6000 + $(printf '%s' "$(basename $(pwd))" | cksum | cut -d' ' -f1 | awk '{print ($1 % 999) + 1}'))); else echo "6379"; fi`
 
 # Build the compose command with environment variables
-_compose_cmd := if _is_worktree == "true" { "WEB_PORT=" + _web_port + " NGROK_PORT=" + _ngrok_port + " POSTGRES_PORT=" + _postgres_port + " REDIS_PORT=" + _redis_port + " docker compose -f compose.yml -f compose.worktree.yml" } else { "docker compose" }
+_compose_cmd := if _is_worktree == "true" { "WEB_PORT=" + _web_port + " NGROK_PORT=" + _ngrok_port + " docker compose -f compose.yml -f compose.worktree.yml" } else { "docker compose" }
 
 # show the ports assigned to this worktree
 ports:
   @echo "Worktree: {{ `basename $(pwd)` }}"
   @echo "Web port: {{ _web_port }}"
   @echo "Ngrok port: {{ _ngrok_port }}"
-  @echo "Postgres port: {{ _postgres_port }}"
-  @echo "Redis port: {{ _redis_port }}"
   @echo ""
   @echo "Access web at: https://localhost:{{ _web_port }}"
   @echo "Access ngrok dashboard at: http://localhost:{{ _ngrok_port }}"
