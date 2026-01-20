@@ -885,7 +885,7 @@ describe Release do
 
       it "allows iOS to proceed independently while Android is blocked" do
         ongoing_release = create(:release, :with_no_platform_runs, train:)
-        ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
+        _ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
         ongoing_ios_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: ios_platform)
 
         # Conclude only the iOS platform run in ongoing release
