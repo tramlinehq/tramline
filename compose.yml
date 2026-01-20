@@ -22,11 +22,12 @@ x-backend: &backend
     - bundle:/usr/local/bundle
     - rails_cache:/app/tmp/cache
   env_file:
-    - .env.development
     - path: tmp/tailscale.env
       required: false
   environment:
     <<: *env
+    REDIS_URL: redis://host.docker.internal:6389
+    DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
     BOOTSNAP_CACHE_DIR: /usr/local/bundle/_bootsnap
     XDG_DATA_HOME: /app/tmp/caches
     EDITOR: vim
@@ -70,6 +71,7 @@ services:
   tailscale:
     image: tailscale/tailscale:latest
     hostname: tramline-${WORKTREE_NAME:-main}
+    env_file: .env.development
     environment:
       - TS_AUTHKEY=${TAILSCALE_AUTHKEY:-}
       - TS_STATE_DIR=/var/lib/tailscale
