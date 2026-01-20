@@ -9,7 +9,7 @@ services:
   web:
     environment:
       DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442
-      REDIS_URL: redis://host.docker.internal:6389/
+      REDIS_URL: redis://host.docker.internal:6389
       SIDEKIQ_REDIS_URL: redis://host.docker.internal:6389
       DEFAULT_REDIS_URL: redis://host.docker.internal:6389
       SESSION_REDIS_URL: redis://host.docker.internal:6389/0/session

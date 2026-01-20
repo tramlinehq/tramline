@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_16_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -58,11 +58,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.jsonb "bugsnag_ios_config"
     t.jsonb "bugsnag_android_config"
     t.string "bitbucket_workspace"
-    t.jsonb "ci_cd_workflows"
     t.jsonb "firebase_crashlytics_ios_config"
     t.jsonb "firebase_crashlytics_android_config"
     t.jsonb "jira_config", default: {}, null: false
+    t.jsonb "ci_cd_workflows"
     t.jsonb "linear_config", default: {}, null: false
+    t.jsonb "codemagic_project_id"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -239,7 +240,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.tsvector "search_vector"
     t.uuid "release_changelog_id"
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
-    t.index ["commit_hash", "release_id", "release_changelog_id"], name: "idx_on_commit_hash_release_id_release_changelog_id_29200d00c2", unique: true
+    t.index ["commit_hash", "release_id"], name: "index_commits_on_commit_hash_and_release_id", unique: true
     t.index ["message"], name: "index_commits_on_message", opclass: :gin_trgm_ops, using: :gin
     t.index ["release_changelog_id"], name: "index_commits_on_release_changelog_id"
     t.index ["release_id", "timestamp"], name: "index_commits_on_release_id_and_timestamp"
@@ -425,7 +426,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.string "integrable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["integrable_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
-    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying::text, 'disconnected'::character varying::text, 'needs_reauth'::character varying::text])", name: "chk_rails_status_enum"
+    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying, 'disconnected'::character varying, 'needs_reauth'::character varying]::text[])", name: "chk_rails_status_enum"
   end
 
   create_table "invites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -496,7 +497,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.text "user_content"
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
-    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))"
+    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))", validate: false
   end
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -930,6 +931,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.boolean "is_staged_rollout", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "auto_rollout_enabled", default: false
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
     t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
   end
@@ -1025,7 +1027,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.string "version_current"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.datetime "kickoff_at"
     t.interval "repeat_duration"
     t.jsonb "notification_channel"
     t.boolean "build_queue_enabled", default: false
@@ -1059,6 +1060,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.boolean "webhooks_enabled", default: false, null: false
     t.boolean "soak_period_enabled", default: false, null: false
     t.integer "soak_period_hours", default: 24, null: false
+    t.datetime "kickoff_at"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
