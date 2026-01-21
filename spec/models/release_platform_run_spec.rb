@@ -378,7 +378,7 @@ describe ReleasePlatformRun do
 
   describe "state transitions" do
     let(:release) { create(:release) }
-    let(:release_platform_run) { create(:release_platform_run, release:) }
+    let(:release_platform_run) { create(:release_platform_run, :created, release:) }
 
     describe "#start!" do
       it "transitions from created to on_track" do
@@ -506,7 +506,7 @@ describe ReleasePlatformRun do
 
   describe "#active?" do
     let(:release) { create(:release) }
-    let(:release_platform_run) { create(:release_platform_run, release:) }
+    let(:release_platform_run) { create(:release_platform_run, :created, release:) }
 
     it "is true when created" do
       expect(release_platform_run.status).to eq("created")
@@ -537,7 +537,7 @@ describe ReleasePlatformRun do
 
   describe "#committable?" do
     let(:release) { create(:release) }
-    let(:release_platform_run) { create(:release_platform_run, release:) }
+    let(:release_platform_run) { create(:release_platform_run, :created, release:) }
 
     it "is true when created" do
       expect(release_platform_run.status).to eq("created")
