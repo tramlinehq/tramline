@@ -35,12 +35,11 @@ describe Coordinators::FinalizePlatformRun do
       release_platform_run.start!
       release_platform_run.conclude!
 
-      expect {
-        described_class.call(release_platform_run)
-      }.to change { release_platform_run.passports.count }.by(1)
+      allow(release_platform_run).to receive(:event_stamp!)
 
-      event = release_platform_run.passports.last
-      expect(event.reason).to eq("finished")
+      described_class.call(release_platform_run)
+
+      expect(release_platform_run).to have_received(:event_stamp!).with(hash_including(reason: :finished))
     end
   end
 end

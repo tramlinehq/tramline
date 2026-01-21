@@ -539,11 +539,6 @@ describe ReleasePlatformRun do
     let(:release) { create(:release) }
     let(:release_platform_run) { create(:release_platform_run, :created, release:) }
 
-    it "is true when created" do
-      expect(release_platform_run.status).to eq("created")
-      expect(release_platform_run.committable?).to be(true)
-    end
-
     it "is true when on_track" do
       release_platform_run.start!
       expect(release_platform_run.committable?).to be(true)
@@ -553,6 +548,11 @@ describe ReleasePlatformRun do
       release_platform_run.start!
       release_platform_run.conclude!
       expect(release_platform_run.committable?).to be(true)
+    end
+
+    it "is false when created" do
+      expect(release_platform_run.status).to eq("created")
+      expect(release_platform_run.committable?).to be(false)
     end
 
     it "is false when finished" do

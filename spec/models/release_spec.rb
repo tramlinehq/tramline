@@ -756,9 +756,9 @@ describe Release do
       ongoing = create(:release, :with_no_platform_runs, :on_track, train:)
       ongoing_rpr = create(:release_platform_run, release: ongoing, release_platform:)
       _ongoing_production_release = create(:production_release,
-                                           :active,
-                                           release_platform_run: ongoing_rpr,
-                                           build: create(:build, release_platform_run: ongoing_rpr))
+        :active,
+        release_platform_run: ongoing_rpr,
+        build: create(:build, release_platform_run: ongoing_rpr))
       upcoming = create(:release, :with_no_platform_runs, :on_track, train:)
 
       upcoming_platform_run = create(:release_platform_run, release: ongoing, release_platform:)
