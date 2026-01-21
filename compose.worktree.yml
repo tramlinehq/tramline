@@ -68,3 +68,11 @@ services:
       interval: 1s
       retries: 1
       start_period: 1s
+
+  # Override applelink to do nothing (use main repo's container)
+  applelink:
+    image: alpine:latest
+    command: ["sh", "-c", "while true; do sleep 3600; done"]
+    restart: "no"
+    ports: !reset []
+    volumes: !reset []

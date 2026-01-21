@@ -1,5 +1,6 @@
 class Triggers::PullRequest
   include Memery
+  include Loggable
 
   CreateError = Class.new(Triggers::Errors)
   MergeError = Class.new(Triggers::Errors)
@@ -41,10 +42,10 @@ class Triggers::PullRequest
       if result.ok?
         pr_in_work = new_pull_request(result.value!)
         pr_in_work.stamp_create!
-
       else
         # ignore the specific create error if PRs are allowed without diffs
         if @allow_without_diff && pr_without_commits_error?(result)
+          elog(result.error, level: :warn)
           return GitHub::Result.new { true }
         end
 

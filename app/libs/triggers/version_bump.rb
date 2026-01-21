@@ -171,7 +171,7 @@ class Triggers::VersionBump
   end
 
   def pr_attributes(title, description)
-    base = {release:, title:, description:, error_result_on_auto_merge: true}
+    base = {release:, title:, description:, error_result_on_auto_merge: true, allow_without_diff: false}
     new =
       case strategy
       when :current_version_before_release_branch

@@ -368,6 +368,44 @@ and safer update path through bundler for future users.
 
 Doing this for development/test groups is optional.
 
+### Git Worktrees
+
+Tramline supports running multiple worktrees simultaneously for parallel development. Each worktree gets a unique port automatically assigned based on its directory name.
+
+**Prerequisites:**
+- The main repository must be running (`just start` in the main repo)
+- Worktrees share the main repo's postgres, redis, and applelink containers
+
+**Setting up a worktree:**
+
+1. Create a worktree from the main repo:
+   ```bash
+   git worktree add ../tramline-feature-branch feature-branch
+   ```
+
+2. Run the setup script from the main repo to copy configuration files:
+   ```bash
+   bin/setup.worktree ../tramline-feature-branch
+   ```
+
+3. Start the main repo if not already running:
+   ```bash
+   just start
+   ```
+
+4. Start the worktree:
+   ```bash
+   cd ../tramline-feature-branch
+   just start
+   ```
+
+5. Check your assigned port:
+   ```bash
+   just ports
+   ```
+
+Each worktree will be accessible at `https://tramline.local.gd:<assigned-port>`.
+
 ### Using pry
 
 You can attach to a running container using the `just attach <service-name>` command.

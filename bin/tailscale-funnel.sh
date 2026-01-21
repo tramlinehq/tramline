@@ -4,7 +4,10 @@
 
 set -e
 
-if [ -z "$TS_AUTHKEY" ]; then
+# Support both TS_AUTHKEY (from compose env) and TAILSCALE_AUTHKEY (from env_file)
+AUTH_KEY="${TS_AUTHKEY:-$TAILSCALE_AUTHKEY}"
+
+if [ -z "$AUTH_KEY" ]; then
   echo 'TAILSCALE_AUTHKEY not set - tailscale disabled'
   rm -f /rails/tmp/tunnel_url
   touch /tmp/tailscale_ready
@@ -19,7 +22,7 @@ tailscaled --tun=userspace-networking --socks5-server=localhost:$SOCKS_PORT &
 # Wait for tailscaled to be ready and authenticate
 until tailscale status 2>/dev/null; do
   echo 'Waiting for tailscaled to start...'
-  tailscale up --authkey="$TS_AUTHKEY" --hostname="tramline-$WORKTREE_NAME" || true
+  tailscale up --authkey="$AUTH_KEY" --hostname="tramline-$WORKTREE_NAME" || true
   sleep 2
 done
 
@@ -34,8 +37,11 @@ MAX_RETRIES=30
 FUNNEL_URL=''
 
 while [ -z "$FUNNEL_URL" ] && [ $RETRIES -lt $MAX_RETRIES ]; do
-  FUNNEL_URL=$(tailscale funnel status --json 2>/dev/null | grep -o 'https://[^"]*' | head -1)
-  if [ -z "$FUNNEL_URL" ]; then
+  # Extract the hostname from the Web section key (e.g., "tramline-main.tail524f2.ts.net:443")
+  HOSTNAME=$(tailscale funnel status --json 2>/dev/null | grep -o '"[^"]*\.ts\.net:443"' | head -1 | tr -d '"' | sed 's/:443$//')
+  if [ -n "$HOSTNAME" ]; then
+    FUNNEL_URL="https://$HOSTNAME"
+  else
     RETRIES=$((RETRIES + 1))
     echo "Funnel URL not ready yet (attempt $RETRIES/$MAX_RETRIES)..."
     sleep 2
