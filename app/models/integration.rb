@@ -128,6 +128,9 @@ class Integration < ApplicationRecord
           # Do not allow any new Slack integrations as build channels.
           next if category == "build_channel" && provider == "SlackIntegration"
 
+          # Skip Sentry integration if feature flag is disabled
+          next if provider == "SentryIntegration" && !Flipper.enabled?(:sentry_integration, app.organization)
+
           integration =
             app
               .integrations
