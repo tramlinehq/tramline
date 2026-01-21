@@ -104,7 +104,6 @@ module Installations
       total_users = 0
       errored_sessions = 0
       users_with_errors = 0
-      crashed_sessions = 0
 
       groups.each do |group|
         totals = group["totals"] || {}
@@ -121,7 +120,6 @@ module Installations
           errored_sessions += sessions
           users_with_errors += users
         elsif session_status == "crashed"
-          crashed_sessions += sessions
           errored_sessions += sessions # crashed sessions are also errored
           users_with_errors += users
         end

@@ -26,7 +26,7 @@ describe Installations::Sentry::Api do
 
     before do
       stub_request(:get, "#{base_url}/organizations/")
-        .with(headers: {"Authorization" => "Bearer #{access_token}", "Content-Type" => "application/json"})
+        .with(headers: {"Authorization" => "Bearer #{access_token}"})
         .to_return(status: 200, body: organizations_response.to_json, headers: {"Content-Type" => "application/json"})
     end
 
@@ -68,7 +68,7 @@ describe Installations::Sentry::Api do
 
     before do
       stub_request(:get, "#{base_url}/organizations/#{org_slug}/projects/")
-        .with(headers: {"Authorization" => "Bearer #{access_token}", "Content-Type" => "application/json"})
+        .with(headers: {"Authorization" => "Bearer #{access_token}"})
         .to_return(status: 200, body: projects_response.to_json, headers: {"Content-Type" => "application/json"})
     end
 
@@ -154,7 +154,7 @@ describe Installations::Sentry::Api do
             "environment" => environment,
             "query" => "release:#{version_string}"
           ),
-          headers: {"Authorization" => "Bearer #{access_token}", "Content-Type" => "application/json"}
+          headers: {"Authorization" => "Bearer #{access_token}"}
         )
         .to_return(status: 200, body: sessions_response.to_json, headers: {"Content-Type" => "application/json"})
 
@@ -162,7 +162,7 @@ describe Installations::Sentry::Api do
       stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
         .with(
           query: {"query" => "release:#{version_string}"},
-          headers: {"Authorization" => "Bearer #{access_token}", "Content-Type" => "application/json"}
+          headers: {"Authorization" => "Bearer #{access_token}"}
         )
         .to_return(status: 200, body: all_issues_response.to_json, headers: {"Content-Type" => "application/json"})
 
@@ -170,7 +170,7 @@ describe Installations::Sentry::Api do
       stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
         .with(
           query: {"query" => "firstRelease:#{version_string}"},
-          headers: {"Authorization" => "Bearer #{access_token}", "Content-Type" => "application/json"}
+          headers: {"Authorization" => "Bearer #{access_token}"}
         )
         .to_return(status: 200, body: new_issues_response.to_json, headers: {"Content-Type" => "application/json"})
     end
