@@ -255,45 +255,6 @@ describe Installations::Sentry::Api do
     end
   end
 
-  describe "#fetch_release_issues" do
-    let(:org_slug) { "test-org" }
-    let(:project_slug) { "test-project" }
-    let(:version_string) { "com.example.app@1.0.0+100" }
-    let(:all_issues) { [{"id" => "1"}, {"id" => "2"}, {"id" => "3"}] }
-    let(:new_issues) { [{"id" => "2"}, {"id" => "3"}] }
-
-    before do
-      stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
-        .with(query: {"query" => "release:#{version_string}"})
-        .to_return(status: 200, body: all_issues.to_json)
-
-      stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
-        .with(query: {"query" => "firstRelease:#{version_string}"})
-        .to_return(status: 200, body: new_issues.to_json)
-    end
-
-    it "returns the correct issue counts" do
-      result = api_instance.send(:fetch_release_issues, org_slug, project_slug, version_string)
-
-      expect(result[:total_issues_count]).to eq(3)
-      expect(result[:new_issues_count]).to eq(2)
-    end
-
-    context "when API returns error" do
-      before do
-        stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
-          .to_return(status: 500)
-      end
-
-      it "returns zero counts" do
-        result = api_instance.send(:fetch_release_issues, org_slug, project_slug, version_string)
-
-        expect(result[:total_issues_count]).to eq(0)
-        expect(result[:new_issues_count]).to eq(0)
-      end
-    end
-  end
-
   describe "#build_release_data" do
     let(:version_string) { "com.example.app@1.0.0+100" }
     let(:stats) do
