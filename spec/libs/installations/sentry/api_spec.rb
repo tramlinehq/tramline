@@ -196,13 +196,18 @@ describe Installations::Sentry::Api do
         )
     end
 
-    it "returns the transformed release data" do
+    it "returns the transformed release data with correct structure" do
       result = api_instance.find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
 
       expect(result).to be_a(Hash)
       expect(result["external_release_id"]).to eq(version_string)
       expect(result["total_sessions_count"]).to eq(10000) # 9500 + 400 + 100
       expect(result["total_users_count"]).to eq(1000) # 800 + 150 + 50
+    end
+
+    it "includes error and issue counts in release data" do
+      result = api_instance.find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+
       expect(result["errored_sessions_count"]).to eq(500) # 400 errored + 100 crashed
       expect(result["users_with_errors_count"]).to eq(200) # 150 + 50
       expect(result["total_issues_count"]).to eq(3) # All issues in release
