@@ -131,6 +131,19 @@ describe Installations::Sentry::Api do
         ]
       }
     end
+    let(:all_issues_response) do
+      [
+        {"id" => "1", "title" => "Issue 1", "count" => "100"},
+        {"id" => "2", "title" => "Issue 2", "count" => "50"},
+        {"id" => "3", "title" => "Issue 3", "count" => "25"}
+      ]
+    end
+    let(:new_issues_response) do
+      [
+        {"id" => "2", "title" => "Issue 2", "count" => "50"},
+        {"id" => "3", "title" => "Issue 3", "count" => "25"}
+      ]
+    end
 
     before do
       # Stub the sessions API call with query parameters
@@ -144,6 +157,22 @@ describe Installations::Sentry::Api do
           headers: {"Authorization" => "Bearer #{access_token}", "Content-Type" => "application/json"}
         )
         .to_return(status: 200, body: sessions_response.to_json, headers: {"Content-Type" => "application/json"})
+
+      # Stub the issues API call for all issues in release
+      stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
+        .with(
+          query: {"query" => "release:#{version_string}"},
+          headers: {"Authorization" => "Bearer #{access_token}", "Content-Type" => "application/json"}
+        )
+        .to_return(status: 200, body: all_issues_response.to_json, headers: {"Content-Type" => "application/json"})
+
+      # Stub the issues API call for new issues first seen in release
+      stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
+        .with(
+          query: {"query" => "firstRelease:#{version_string}"},
+          headers: {"Authorization" => "Bearer #{access_token}", "Content-Type" => "application/json"}
+        )
+        .to_return(status: 200, body: new_issues_response.to_json, headers: {"Content-Type" => "application/json"})
     end
 
     it "constructs the correct Sentry release identifier" do
@@ -176,6 +205,18 @@ describe Installations::Sentry::Api do
       expect(result["total_users_count"]).to eq(1000) # 800 + 150 + 50
       expect(result["errored_sessions_count"]).to eq(500) # 400 errored + 100 crashed
       expect(result["users_with_errors_count"]).to eq(200) # 150 + 50
+      expect(result["total_issues_count"]).to eq(3) # All issues in release
+      expect(result["new_issues_count"]).to eq(2) # Issues first seen in release
+    end
+
+    it "fetches issue counts from the issues API" do
+      api_instance.find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+
+      expect(WebMock).to have_requested(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
+        .with(query: {"query" => "release:#{version_string}"})
+
+      expect(WebMock).to have_requested(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
+        .with(query: {"query" => "firstRelease:#{version_string}"})
     end
 
     context "when the API returns an error" do
@@ -214,6 +255,45 @@ describe Installations::Sentry::Api do
     end
   end
 
+  describe "#fetch_release_issues" do
+    let(:org_slug) { "test-org" }
+    let(:project_slug) { "test-project" }
+    let(:version_string) { "com.example.app@1.0.0+100" }
+    let(:all_issues) { [{"id" => "1"}, {"id" => "2"}, {"id" => "3"}] }
+    let(:new_issues) { [{"id" => "2"}, {"id" => "3"}] }
+
+    before do
+      stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
+        .with(query: {"query" => "release:#{version_string}"})
+        .to_return(status: 200, body: all_issues.to_json)
+
+      stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
+        .with(query: {"query" => "firstRelease:#{version_string}"})
+        .to_return(status: 200, body: new_issues.to_json)
+    end
+
+    it "returns the correct issue counts" do
+      result = api_instance.send(:fetch_release_issues, org_slug, project_slug, version_string)
+
+      expect(result[:total_issues_count]).to eq(3)
+      expect(result[:new_issues_count]).to eq(2)
+    end
+
+    context "when API returns error" do
+      before do
+        stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
+          .to_return(status: 500)
+      end
+
+      it "returns zero counts" do
+        result = api_instance.send(:fetch_release_issues, org_slug, project_slug, version_string)
+
+        expect(result[:total_issues_count]).to eq(0)
+        expect(result[:new_issues_count]).to eq(0)
+      end
+    end
+  end
+
   describe "#build_release_data" do
     let(:version_string) { "com.example.app@1.0.0+100" }
     let(:stats) do
@@ -234,29 +314,42 @@ describe Installations::Sentry::Api do
         ]
       }
     end
+    let(:issues_data) { {new_issues_count: 5, total_issues_count: 10} }
 
     it "calculates total sessions correctly" do
-      result = api_instance.send(:build_release_data, stats, version_string)
+      result = api_instance.send(:build_release_data, stats, version_string, issues_data)
       expect(result[:total_sessions_count]).to eq(1000)
     end
 
     it "calculates total users correctly" do
-      result = api_instance.send(:build_release_data, stats, version_string)
+      result = api_instance.send(:build_release_data, stats, version_string, issues_data)
       expect(result[:total_users_count]).to eq(120)
     end
 
     it "calculates errored sessions including crashed sessions" do
-      result = api_instance.send(:build_release_data, stats, version_string)
+      result = api_instance.send(:build_release_data, stats, version_string, issues_data)
       expect(result[:errored_sessions_count]).to eq(100) # 80 errored + 20 crashed
     end
 
     it "calculates users with errors correctly" do
-      result = api_instance.send(:build_release_data, stats, version_string)
+      result = api_instance.send(:build_release_data, stats, version_string, issues_data)
       expect(result[:users_with_errors_count]).to eq(20) # 15 + 5
     end
 
-    it "sets the version string as the external release ID" do
+    it "includes issue counts from issues_data" do
+      result = api_instance.send(:build_release_data, stats, version_string, issues_data)
+      expect(result[:new_issues_count]).to eq(5)
+      expect(result[:total_issues_count]).to eq(10)
+    end
+
+    it "defaults to zero when issues_data is not provided" do
       result = api_instance.send(:build_release_data, stats, version_string)
+      expect(result[:new_issues_count]).to eq(0)
+      expect(result[:total_issues_count]).to eq(0)
+    end
+
+    it "sets the version string as the external release ID" do
+      result = api_instance.send(:build_release_data, stats, version_string, issues_data)
       expect(result[:version]).to eq(version_string)
     end
 

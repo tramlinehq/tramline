@@ -37,8 +37,11 @@ module Installations
         stats = fetch_release_stats(org_slug, project_slug, environment, version_string)
         return nil if stats.blank?
 
+        # Fetch issue counts for this release
+        issues_data = fetch_release_issues(org_slug, project_slug, version_string)
+
         # Transform stats to match expected format
-        release_data = build_release_data(stats, version_string)
+        release_data = build_release_data(stats, version_string, issues_data)
         Installations::Response::Keys.transform([release_data], transforms).first
       end
     end
@@ -70,7 +73,24 @@ module Installations
       get_request("/organizations/#{org_slug}/sessions/", params)
     end
 
-    def build_release_data(stats, version)
+    def fetch_release_issues(org_slug, project_slug, version)
+      # Fetch all issues for this release
+      all_issues = get_request("/projects/#{org_slug}/#{project_slug}/issues/", {
+        query: "release:#{version}"
+      }) || []
+
+      # Fetch new issues (first seen in this release)
+      new_issues = get_request("/projects/#{org_slug}/#{project_slug}/issues/", {
+        query: "firstRelease:#{version}"
+      }) || []
+
+      {
+        total_issues_count: all_issues.size,
+        new_issues_count: new_issues.size
+      }
+    end
+
+    def build_release_data(stats, version, issues_data = {})
       # Parse session statistics from Sentry response
       groups = stats["groups"] || []
 
@@ -108,10 +128,8 @@ module Installations
         errored_sessions_count: errored_sessions,
         total_users_count: total_users,
         users_with_errors_count: users_with_errors,
-        # Note: Sentry doesn't provide "new issues" in session stats
-        # This would require a separate issues API call
-        new_issues_count: 0,
-        total_issues_count: 0
+        new_issues_count: issues_data[:new_issues_count] || 0,
+        total_issues_count: issues_data[:total_issues_count] || 0
       }
     end
 
