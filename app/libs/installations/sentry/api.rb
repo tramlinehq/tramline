@@ -1,7 +1,4 @@
 module Installations
-  require "net/http"
-  require "json"
-
   class Sentry::Api
     include Loggable
     attr_reader :access_token, :base_url
@@ -142,20 +139,14 @@ module Installations
     end
 
     def get_request(path, params = {})
-      uri = URI("#{base_url}#{path}")
-      uri.query = URI.encode_www_form(flatten_params(params)) unless params.empty?
+      url = "#{base_url}#{path}"
+      response = HTTP
+        .auth("Bearer #{access_token}")
+        .timeout(connect: 10, read: 30)
+        .get(url, params: flatten_params(params))
 
-      request = Net::HTTP::Get.new(uri)
-      request["Authorization"] = "Bearer #{access_token}"
-      request["Content-Type"] = "application/json"
-
-      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true, open_timeout: 10, read_timeout: 30) do |http|
-        http.request(request)
-      end
-
-      case response
-      when Net::HTTPSuccess
-        JSON.parse(response.body)
+      if response.status.success?
+        JSON.parse(response.body.to_s)
       else
         elog("Sentry API error: #{response.code} - #{response.body}", level: :warn)
         nil
