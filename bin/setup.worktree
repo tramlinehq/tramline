@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Setup script for git worktrees
+# Copies necessary configuration files from the main repository to a worktree
+
+set -e
+
+usage() {
+  echo "Usage: $0 <worktree-path>"
+  echo ""
+  echo "Copies .env.development and config/master.key to the specified worktree."
+  echo ""
+  echo "Example:"
+  echo "  $0 ../tramline-feature-branch"
+  exit 1
+}
+
+if [ -z "$1" ]; then
+  echo "Error: Worktree path is required"
+  echo ""
+  usage
+fi
+
+WORKTREE_PATH="$1"
+
+# Get the directory where this script lives (the main repo's bin directory)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAIN_REPO_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Validate worktree path exists
+if [ ! -d "$WORKTREE_PATH" ]; then
+  echo "Error: Worktree path does not exist: $WORKTREE_PATH"
+  exit 1
+fi
+
+# Validate it's actually a git worktree (has a .git file, not directory)
+if [ ! -f "$WORKTREE_PATH/.git" ]; then
+  echo "Error: $WORKTREE_PATH does not appear to be a git worktree"
+  echo "Worktrees have a .git file, not a .git directory"
+  exit 1
+fi
+
+echo "Setting up worktree at: $WORKTREE_PATH"
+echo "Copying files from: $MAIN_REPO_DIR"
+echo ""
+
+# Copy .env.development
+if [ -f "$MAIN_REPO_DIR/.env.development" ]; then
+  cp "$MAIN_REPO_DIR/.env.development" "$WORKTREE_PATH/.env.development"
+  echo "✓ Copied .env.development"
+else
+  echo "⚠ Warning: .env.development not found in main repo"
+fi
+
+# Copy config/master.key
+if [ -f "$MAIN_REPO_DIR/config/master.key" ]; then
+  mkdir -p "$WORKTREE_PATH/config"
+  cp "$MAIN_REPO_DIR/config/master.key" "$WORKTREE_PATH/config/master.key"
+  echo "✓ Copied config/master.key"
+else
+  echo "⚠ Warning: config/master.key not found in main repo"
+fi
+
+echo ""
+echo "Worktree setup complete!"
+echo ""
+echo "Next steps:"
+echo "  1. Ensure the main repo is running: cd $MAIN_REPO_DIR && just start"
+echo "  2. Start the worktree: cd $WORKTREE_PATH && just start"
+echo ""
+echo "Run 'just ports' in the worktree to see the assigned port."
