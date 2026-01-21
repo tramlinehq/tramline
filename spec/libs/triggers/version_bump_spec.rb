@@ -98,7 +98,8 @@ describe Triggers::VersionBump do
           existing_pr: nil,
           title: "Bump version to #{release.release_version}",
           description: expected_description,
-          error_result_on_auto_merge: true
+          error_result_on_auto_merge: true,
+          allow_without_diff: false
         ).once
       end
     end
