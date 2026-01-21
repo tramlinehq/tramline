@@ -34,13 +34,8 @@ module Installations
         version_string = "#{bundle_identifier}@#{app_version}+#{app_version_code}"
 
         # Fetch session stats and issue counts in parallel for efficiency
-        stats_thread = Thread.new do
-          fetch_release_stats(org_slug, project_slug, environment, version_string)
-        end
-
-        issues_thread = Thread.new do
-          fetch_release_issues(org_slug, project_slug, version_string)
-        end
+        stats_thread = fetch_release_stats_async(org_slug, project_slug, environment, version_string)
+        issues_thread = fetch_release_issues_async(org_slug, project_slug, version_string)
 
         # Wait for both threads to complete
         stats = stats_thread.value
@@ -81,28 +76,34 @@ module Installations
       get_request("/organizations/#{org_slug}/sessions/", params)
     end
 
+    def fetch_release_stats_async(org_slug, project_slug, environment, version)
+      Thread.new { fetch_release_stats(org_slug, project_slug, environment, version) }
+    end
+
     def fetch_release_issues(org_slug, project_slug, version)
       # Fetch both issue queries in parallel for efficiency
-      all_issues_thread = Thread.new do
-        get_request("/projects/#{org_slug}/#{project_slug}/issues/", {
-          query: "release:#{version}"
-        }) || []
-      end
+      all_issues_thread = get_request_async(
+        "/projects/#{org_slug}/#{project_slug}/issues/",
+        {query: "release:#{version}"}
+      )
 
-      new_issues_thread = Thread.new do
-        get_request("/projects/#{org_slug}/#{project_slug}/issues/", {
-          query: "firstRelease:#{version}"
-        }) || []
-      end
+      new_issues_thread = get_request_async(
+        "/projects/#{org_slug}/#{project_slug}/issues/",
+        {query: "firstRelease:#{version}"}
+      )
 
       # Wait for both threads to complete
-      all_issues = all_issues_thread.value
-      new_issues = new_issues_thread.value
+      all_issues = all_issues_thread.value || []
+      new_issues = new_issues_thread.value || []
 
       {
         total_issues_count: all_issues.size,
         new_issues_count: new_issues.size
       }
+    end
+
+    def fetch_release_issues_async(org_slug, project_slug, version)
+      Thread.new { fetch_release_issues(org_slug, project_slug, version) }
     end
 
     def build_release_data(stats, version, issues_data = {})
@@ -167,6 +168,10 @@ module Installations
         elog("Sentry API error: #{response.code} - #{response.body}", level: :warn)
         nil
       end
+    end
+
+    def get_request_async(path, params = {})
+      Thread.new { get_request(path, params) }
     end
 
     # Flatten array parameters for URL encoding
