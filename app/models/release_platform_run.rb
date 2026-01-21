@@ -101,7 +101,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def committable?
-    created? || on_track? || concluded?
+    on_track? || concluded?
   end
 
   def metadata_for(language, platform)
