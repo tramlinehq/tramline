@@ -37,10 +37,10 @@ describe Coordinators::FinalizePlatformRun do
 
       expect {
         described_class.call(release_platform_run)
-      }.to change { release_platform_run.reload.release_changelog.events.count }.by(1)
+      }.to change { release_platform_run.passports.count }.by(1)
 
-      event = release_platform_run.release_changelog.events.last
-      expect(event.name).to eq("finished")
+      event = release_platform_run.passports.last
+      expect(event.reason).to eq("finished")
     end
   end
 end

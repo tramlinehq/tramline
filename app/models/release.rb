@@ -516,10 +516,9 @@ class Release < ApplicationRecord
     release_platform_id = for_platform_run.release_platform_id
     corresponding_run = ongoing.release_platform_runs.find_by(release_platform_id:)
 
-    return false if corresponding_run&.concluded? || corresponding_run&.finished?
-    return true if corresponding_run&.active_production_release.present?
-
-    !Flipper.enabled?(:temporary_unblock_upcoming, self)
+    return false unless corresponding_run
+    return false if corresponding_run.concluded? || corresponding_run.finished?
+    corresponding_run.active_production_release.present?
   end
 
   def hotfix_with_new_branch?
