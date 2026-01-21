@@ -33,12 +33,20 @@ module Installations
         # Android: https://docs.sentry.io/platforms/android/configuration/releases/#bind-the-version
         version_string = "#{bundle_identifier}@#{app_version}+#{app_version_code}"
 
-        # Fetch session stats for this release
-        stats = fetch_release_stats(org_slug, project_slug, environment, version_string)
-        return nil if stats.blank?
+        # Fetch session stats and issue counts in parallel for efficiency
+        stats_thread = Thread.new do
+          fetch_release_stats(org_slug, project_slug, environment, version_string)
+        end
 
-        # Fetch issue counts for this release
-        issues_data = fetch_release_issues(org_slug, project_slug, version_string)
+        issues_thread = Thread.new do
+          fetch_release_issues(org_slug, project_slug, version_string)
+        end
+
+        # Wait for both threads to complete
+        stats = stats_thread.value
+        issues_data = issues_thread.value
+
+        return nil if stats.blank?
 
         # Transform stats to match expected format
         release_data = build_release_data(stats, version_string, issues_data)
