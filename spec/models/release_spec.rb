@@ -750,13 +750,20 @@ describe Release do
     let(:organization) { create(:organization, :with_owner_membership) }
     let(:app) { create(:app, :android, organization:) }
 
-    it "is true when release is upcoming" do
+    it "is true when release is upcoming and an ongoing release has an active production release" do
       train = create(:train)
-      _ongoing = create(:release, :on_track, train:)
-      upcoming = create(:release, :on_track, train:)
-      platform_run = upcoming.release_platform_runs.first
+      release_platform = create(:release_platform)
+      ongoing = create(:release, :with_no_platform_runs, :on_track, train:)
+      ongoing_rpr = create(:release_platform_run, release: ongoing, release_platform:)
+      _ongoing_production_release = create(:production_release,
+                                           :active,
+                                           release_platform_run: ongoing_rpr,
+                                           build: create(:build, release_platform_run: ongoing_rpr))
+      upcoming = create(:release, :with_no_platform_runs, :on_track, train:)
 
-      expect(upcoming.blocked_for_production_release?(for_platform_run: platform_run)).to be(true)
+      upcoming_platform_run = create(:release_platform_run, release: ongoing, release_platform:)
+
+      expect(upcoming.blocked_for_production_release?(for_platform_run: upcoming_platform_run)).to be(true)
     end
 
     it "is true when it is an hotfix release is simultaneously ongoing" do
@@ -870,7 +877,7 @@ describe Release do
         expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_android_run)).to be(true)
       end
 
-      it "is true when corresponding platform run in ongoing release is still on_track" do
+      it "is false when corresponding platform run in ongoing release is on_track without active production release" do
         ongoing_release = create(:release, :with_no_platform_runs, train:)
         _ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
         _ongoing_ios_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: ios_platform)
@@ -879,14 +886,18 @@ describe Release do
         upcoming_android_run = create(:release_platform_run, release: upcoming_release, release_platform: android_platform)
         _upcoming_ios_run = create(:release_platform_run, release: upcoming_release, release_platform: ios_platform)
 
-        # Android platform should be blocked since ongoing is still on_track
-        expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_android_run)).to be(true)
+        # Android platform should NOT be blocked - blocking only happens with active production release
+        expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_android_run)).to be(false)
       end
 
       it "allows iOS to proceed independently while Android is blocked" do
         ongoing_release = create(:release, :with_no_platform_runs, train:)
-        _ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
+        ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
         ongoing_ios_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: ios_platform)
+
+        # Create active production release for Android in ongoing release
+        build = create(:build, release_platform_run: ongoing_android_run)
+        create(:production_release, :active, release_platform_run: ongoing_android_run, build:)
 
         # Conclude only the iOS platform run in ongoing release
         ongoing_ios_run.conclude!
@@ -898,7 +909,7 @@ describe Release do
         # iOS platform should be unblocked (concluded)
         expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_ios_run)).to be(false)
 
-        # Android platform should still be blocked (on_track)
+        # Android platform should still be blocked (has active production release)
         expect(upcoming_release.blocked_for_production_release?(for_platform_run: upcoming_android_run)).to be(true)
       end
     end
