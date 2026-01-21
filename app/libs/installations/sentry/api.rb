@@ -33,15 +33,23 @@ module Installations
         # Android: https://docs.sentry.io/platforms/android/configuration/releases/#bind-the-version
         version_string = "#{bundle_identifier}@#{app_version}+#{app_version_code}"
 
-        # Fetch session stats and issue counts in parallel for efficiency
+        # Fetch all data in parallel for efficiency
         stats_thread = fetch_release_stats_async(org_slug, project_slug, environment, version_string)
-        issues_thread = fetch_release_issues_async(org_slug, project_slug, version_string)
+        all_issues_thread = fetch_all_issues_async(org_slug, project_slug, version_string)
+        new_issues_thread = fetch_new_issues_async(org_slug, project_slug, version_string)
 
-        # Wait for both threads to complete
+        # Wait for all threads to complete
         stats = stats_thread.value
-        issues_data = issues_thread.value
+        all_issues = all_issues_thread.value || []
+        new_issues = new_issues_thread.value || []
 
         return nil if stats.blank?
+
+        # Build issue counts
+        issues_data = {
+          total_issues_count: all_issues.size,
+          new_issues_count: new_issues.size
+        }
 
         # Transform stats to match expected format
         release_data = build_release_data(stats, version_string, issues_data)
@@ -51,7 +59,7 @@ module Installations
 
     private
 
-    def fetch_release_stats(org_slug, project_slug, environment, version)
+    def fetch_release_stats_async(org_slug, project_slug, environment, version)
       # Calculate time window using configured monitoring period
       end_time = Time.current
       start_time = end_time - ProductionRelease::RELEASE_MONITORING_PERIOD_IN_DAYS[SentryIntegration].days
@@ -73,37 +81,21 @@ module Installations
         interval: "1d"
       }
 
-      get_request("/organizations/#{org_slug}/sessions/", params)
+      get_request_async("/organizations/#{org_slug}/sessions/", params)
     end
 
-    def fetch_release_stats_async(org_slug, project_slug, environment, version)
-      Thread.new { fetch_release_stats(org_slug, project_slug, environment, version) }
-    end
-
-    def fetch_release_issues(org_slug, project_slug, version)
-      # Fetch both issue queries in parallel for efficiency
-      all_issues_thread = get_request_async(
+    def fetch_all_issues_async(org_slug, project_slug, version)
+      get_request_async(
         "/projects/#{org_slug}/#{project_slug}/issues/",
         {query: "release:#{version}"}
       )
+    end
 
-      new_issues_thread = get_request_async(
+    def fetch_new_issues_async(org_slug, project_slug, version)
+      get_request_async(
         "/projects/#{org_slug}/#{project_slug}/issues/",
         {query: "firstRelease:#{version}"}
       )
-
-      # Wait for both threads to complete
-      all_issues = all_issues_thread.value || []
-      new_issues = new_issues_thread.value || []
-
-      {
-        total_issues_count: all_issues.size,
-        new_issues_count: new_issues.size
-      }
-    end
-
-    def fetch_release_issues_async(org_slug, project_slug, version)
-      Thread.new { fetch_release_issues(org_slug, project_slug, version) }
     end
 
     def build_release_data(stats, version, issues_data = {})
