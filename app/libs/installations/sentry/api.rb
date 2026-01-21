@@ -74,15 +74,22 @@ module Installations
     end
 
     def fetch_release_issues(org_slug, project_slug, version)
-      # Fetch all issues for this release
-      all_issues = get_request("/projects/#{org_slug}/#{project_slug}/issues/", {
-        query: "release:#{version}"
-      }) || []
+      # Fetch both issue queries in parallel for efficiency
+      all_issues_thread = Thread.new do
+        get_request("/projects/#{org_slug}/#{project_slug}/issues/", {
+          query: "release:#{version}"
+        }) || []
+      end
 
-      # Fetch new issues (first seen in this release)
-      new_issues = get_request("/projects/#{org_slug}/#{project_slug}/issues/", {
-        query: "firstRelease:#{version}"
-      }) || []
+      new_issues_thread = Thread.new do
+        get_request("/projects/#{org_slug}/#{project_slug}/issues/", {
+          query: "firstRelease:#{version}"
+        }) || []
+      end
+
+      # Wait for both threads to complete
+      all_issues = all_issues_thread.value
+      new_issues = new_issues_thread.value
 
       {
         total_issues_count: all_issues.size,
