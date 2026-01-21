@@ -132,7 +132,6 @@ services:
 
   redis:
     image: redis:6.2-alpine
-#    command: RUN chmod 1777 /tmp
     volumes:
       - redis:/data
     ports:
@@ -150,7 +149,7 @@ services:
     environment:
       <<: *env
       RAILS_ENV: test
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/tramline_site_test
+      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442/tramline_site_test
     depends_on:
       setup:
         condition: service_completed_successfully
