@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_16_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -58,10 +58,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.jsonb "bugsnag_ios_config"
     t.jsonb "bugsnag_android_config"
     t.string "bitbucket_workspace"
-    t.jsonb "ci_cd_workflows"
     t.jsonb "firebase_crashlytics_ios_config"
     t.jsonb "firebase_crashlytics_android_config"
     t.jsonb "jira_config", default: {}, null: false
+    t.jsonb "ci_cd_workflows"
     t.jsonb "linear_config", default: {}, null: false
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
@@ -425,7 +425,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.string "integrable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["integrable_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
-    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying::text, 'disconnected'::character varying::text, 'needs_reauth'::character varying::text])", name: "chk_rails_status_enum"
+    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying, 'disconnected'::character varying, 'needs_reauth'::character varying]::text[])", name: "chk_rails_status_enum"
   end
 
   create_table "invites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -496,7 +496,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.text "user_content"
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
-    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))"
+    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))", validate: false
   end
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -839,6 +839,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.index ["train_id"], name: "index_scheduled_releases_on_train_id"
   end
 
+  create_table "sentry_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "access_token"
+    t.jsonb "android_config"
+    t.jsonb "ios_config"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "slack_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "oauth_access_token"
     t.string "original_oauth_access_token"
@@ -1025,7 +1033,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.string "version_current"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.datetime "kickoff_at"
     t.interval "repeat_duration"
     t.jsonb "notification_channel"
     t.boolean "build_queue_enabled", default: false
@@ -1059,6 +1066,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.boolean "webhooks_enabled", default: false, null: false
     t.boolean "soak_period_enabled", default: false, null: false
     t.integer "soak_period_hours", default: 24, null: false
+    t.datetime "kickoff_at"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
