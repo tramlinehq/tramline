@@ -280,11 +280,12 @@ Follow the instructions [here](https://docs.docker.com/engine/install/) to insta
 One-time setup:
 1. Sign up for free at [ngrok.com](https://ngrok.com)
 2. Get your authtoken from [dashboard.ngrok.com/get-started/your-authtoken](https://dashboard.ngrok.com/get-started/your-authtoken)
-3. Add to `.env.development`: `NGROK_AUTHTOKEN=your_token_here`
+3. Add to `.env.development`: `LOCALTUNNEL_AUTHTOKEN=your_token_here`
+4. (Optional) Reserve a domain in ngrok dashboard and add: `LOCALTUNNEL_DOMAIN=https://your-domain.ngrok.dev`
 
 Run `just ports` to see your tunnel URL.
 
-To disable the tunnel, set `NGROK_DISABLED=true` in `.env.development`.
+To disable the tunnel, set `LOCALTUNNEL_DISABLED=true` in `.env.development`.
 
 **justfile**
 
@@ -354,7 +355,7 @@ integrations:
 
 ### Webhooks
 
-Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We use ngrok which is started automatically in the local development environment using Docker Compose. See [ngrok](#ngrok-optional) for setup instructions.
+Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. ngrok is started automatically in the local development environment using Docker Compose. See [ngrok](#ngrok) for setup instructions.
 
 ### Adding or updating gems
 
