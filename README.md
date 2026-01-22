@@ -273,15 +273,18 @@ For local development, clone this repository and install the following pre-requi
 
 Follow the instructions [here](https://docs.docker.com/engine/install/) to install docker on your machine if you don't have it already. We recommend using [Podman](https://podman.io) or [OrbStack](https://orbstack.dev) for managing containers locally.
 
-**Tailscale Funnel (optional)**
+**ngrok**
 
-[Tailscale Funnel](https://tailscale.com/kb/1223/funnel) is used for public URLs and [webhooks](#webhooks) from third-party integrations like GitHub, GitLab, Bitbucket, etc. To set it up:
+[ngrok](https://ngrok.com) is used for public URLs and [webhooks](#webhooks) from third-party integrations like GitHub, GitLab, Bitbucket, etc.
 
-1. Create a free account at [tailscale.com](https://login.tailscale.com/start)
-2. Generate an auth key at [admin/settings/keys](https://login.tailscale.com/admin/settings/keys) (enable "Reusable" and "Ephemeral")
-3. Add your key in `.env.development` under `TAILSCALE_AUTHKEY`
+One-time setup:
+1. Sign up for free at [ngrok.com](https://ngrok.com)
+2. Get your authtoken from [dashboard.ngrok.com/get-started/your-authtoken](https://dashboard.ngrok.com/get-started/your-authtoken)
+3. Add to `.env.development`: `NGROK_AUTHTOKEN=your_token_here`
 
-The tunnel URL is automatically configured when you start the environment. Run `just ports` to see your URL.
+Run `just ports` to see your tunnel URL.
+
+To disable the tunnel, set `NGROK_DISABLED=true` in `.env.development`.
 
 **justfile**
 
@@ -351,7 +354,7 @@ integrations:
 
 ### Webhooks
 
-Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We use Tailscale Funnel which is started automatically in the local development environment using Docker Compose. See [Tailscale Funnel](#tailscale-funnel-optional) for setup instructions.
+Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We use ngrok which is started automatically in the local development environment using Docker Compose. See [ngrok](#ngrok-optional) for setup instructions.
 
 ### Adding or updating gems
 
@@ -367,6 +370,44 @@ Although `Gemfile.lock` is the correct source of gem versions, specifying the pe
 and safer update path through bundler for future users.
 
 Doing this for development/test groups is optional.
+
+### Git Worktrees
+
+Tramline supports running multiple worktrees simultaneously for parallel development. Each worktree gets a unique port automatically assigned based on its directory name.
+
+**Prerequisites:**
+- The main repository must be running (`just start` in the main repo)
+- Worktrees share the main repo's postgres, redis, and applelink containers
+
+**Setting up a worktree:**
+
+1. Create a worktree from the main repo:
+   ```bash
+   git worktree add ../tramline-feature-branch feature-branch
+   ```
+
+2. Run the setup script from the main repo to copy configuration files:
+   ```bash
+   bin/setup.worktree ../tramline-feature-branch
+   ```
+
+3. Start the main repo if not already running:
+   ```bash
+   just start
+   ```
+
+4. Start the worktree:
+   ```bash
+   cd ../tramline-feature-branch
+   just start
+   ```
+
+5. Check your assigned port:
+   ```bash
+   just ports
+   ```
+
+Each worktree will be accessible at `https://tramline.local.gd:<assigned-port>`.
 
 ### Using pry
 

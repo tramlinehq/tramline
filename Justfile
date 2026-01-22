@@ -16,7 +16,7 @@ ports:
   @echo "Worktree: {{ `basename $(pwd)` }}"
   @echo "Web port: {{ _web_port }}"
   @echo ""
-  @echo "Local URL: https://localhost:{{ _web_port }}"
+  @echo "Local URL: https://tramline.local.gd:{{ _web_port }}"
   @echo "Tunnel URL: $(bin/get-tunnel-url)"
 
 # start all services in the background
