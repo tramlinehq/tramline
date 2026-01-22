@@ -9,11 +9,13 @@
         <% if @detail && @release.active? %>
           <% if run.concluded? %>
             <div class="w-full">
-              <%= render AlertComponent.new(title: "The #{run.display_attr(:platform)} rollout is complete, but critical fixes can still be applied if needed.", type: :success, full_screen: false, dismissible: false) %>
+              <%= render AlertComponent.new(title: "#{run.display_attr(:platform)} rollout is complete, but critical fixes can still be applied.", type: :success, full_screen: false, dismissible: false) %>
             </div>
-          <% elsif !run.active? %>
+          <% end %>
+
+          <% if run.finished? %>
             <div class="w-full">
-              <%= render AlertComponent.new(title: "The #{run.display_attr(:platform)} release is finished and will not accept new changes.", type: :info, full_screen: false, dismissible: false) %>
+              <%= render AlertComponent.new(title: "#{run.display_attr(:platform)} release is finished and will not accept new changes.", type: :info, full_screen: false, dismissible: false) %>
             </div>
           <% end %>
         <% end %>
