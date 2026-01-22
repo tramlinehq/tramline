@@ -66,6 +66,7 @@ services:
     env_file: .env.development
     environment:
       - WEB_PORT=${WEB_PORT:-3000}
+      - LOCALTUNNEL_DOMAIN=${LOCALTUNNEL_DOMAIN:-}
     volumes:
       - .:/rails
     command: /bin/sh /rails/bin/localtunnel
