@@ -26,6 +26,8 @@ services:
     depends_on: {}
 
   spec:
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@host.docker.internal:5442/tramline_site_test
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
