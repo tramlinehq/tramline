@@ -22,7 +22,7 @@ module Installations
       end
     end
 
-    def find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+    def find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
       execute do
         # Construct Sentry release identifier: <bundle_id>@<version>+<build_number>
         # Format documented at:
@@ -31,7 +31,7 @@ module Installations
         version_string = "#{bundle_identifier}@#{app_version}+#{app_version_code}"
 
         # Fetch all data in parallel for efficiency
-        stats_thread = fetch_release_stats_async(org_slug, project_slug, environment, version_string)
+        stats_thread = fetch_release_stats_async(org_slug, project_id, environment, version_string)
         all_issues_thread = fetch_all_issues_async(org_slug, project_slug, version_string)
         new_issues_thread = fetch_new_issues_async(org_slug, project_slug, version_string)
 
@@ -56,14 +56,14 @@ module Installations
 
     private
 
-    def fetch_release_stats_async(org_slug, project_slug, environment, version)
+    def fetch_release_stats_async(org_slug, project_id, environment, version)
       # Calculate time window using configured monitoring period
       end_time = Time.current
       start_time = end_time - ProductionRelease::RELEASE_MONITORING_PERIOD_IN_DAYS[SentryIntegration].days
 
       # Build query parameters for session statistics
       params = {
-        project: project_slug,
+        project: project_id,
         field: [
           "sum(session)",
           "count_unique(user)",

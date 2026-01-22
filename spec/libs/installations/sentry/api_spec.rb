@@ -100,6 +100,7 @@ describe Installations::Sentry::Api do
 
   describe "#find_release" do
     let(:org_slug) { "test-org" }
+    let(:project_id) { "123" }
     let(:project_slug) { "test-project" }
     let(:environment) { "production" }
     let(:bundle_identifier) { "com.example.app" }
@@ -150,7 +151,7 @@ describe Installations::Sentry::Api do
       stub_request(:get, "#{base_url}/organizations/#{org_slug}/sessions/")
         .with(
           query: hash_including(
-            "project" => project_slug,
+            "project" => project_id,
             "environment" => environment,
             "query" => "release:#{version_string}"
           ),
@@ -176,19 +177,19 @@ describe Installations::Sentry::Api do
     end
 
     it "constructs the correct Sentry release identifier" do
-      api_instance.find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
 
       expect(WebMock).to have_requested(:get, "#{base_url}/organizations/#{org_slug}/sessions/")
         .with(query: hash_including("query" => "release:#{bundle_identifier}@#{app_version}+#{app_version_code}"))
     end
 
     it "makes a GET request to the sessions endpoint with correct parameters" do
-      api_instance.find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
 
       expect(WebMock).to have_requested(:get, "#{base_url}/organizations/#{org_slug}/sessions/")
         .with(
           query: hash_including(
-            "project" => project_slug,
+            "project" => project_id,
             "environment" => environment,
             "field" => ["sum(session)", "count_unique(user)", "crash_free_rate(session)", "crash_free_rate(user)"],
             "groupBy" => ["release", "session.status"]
@@ -197,7 +198,7 @@ describe Installations::Sentry::Api do
     end
 
     it "returns the transformed release data with correct structure" do
-      result = api_instance.find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      result = api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
 
       expect(result).to be_a(Hash)
       expect(result["external_release_id"]).to eq(version_string)
@@ -206,7 +207,7 @@ describe Installations::Sentry::Api do
     end
 
     it "includes error and issue counts in release data" do
-      result = api_instance.find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      result = api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
 
       expect(result["errored_sessions_count"]).to eq(500) # 400 errored + 100 crashed
       expect(result["users_with_errors_count"]).to eq(200) # 150 + 50

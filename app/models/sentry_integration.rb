@@ -103,6 +103,7 @@ class SentryIntegration < ApplicationRecord
   def find_release(platform, version, build_number, _start_date = nil)
     installation.find_release(
       organization_slug_from_config(platform),
+      project_id(platform),
       project_slug(platform),
       environment(platform),
       integrable.bundle_identifier,
@@ -157,6 +158,10 @@ class SentryIntegration < ApplicationRecord
 
   def project_slug(platform)
     project(platform)&.fetch("slug", nil)
+  end
+
+  def project_id(platform)
+    project(platform)&.fetch("id", nil)
   end
 
   def organization_slug_from_config(platform)
