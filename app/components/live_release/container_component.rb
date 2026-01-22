@@ -96,7 +96,7 @@ class LiveRelease::ContainerComponent < BaseComponent
   end
 
   def active_platform_runs
-    @active_platform_runs ||= release.release_platform_runs.select(&:active?)
+    @active_platform_runs ||= release.release_platform_runs.select(&:on_track?)
   end
 
   def platform_run_options
