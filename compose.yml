@@ -36,7 +36,7 @@ x-backend: &backend
       condition: service_healthy
     setup:
       condition: service_completed_successfully
-    ngrok:
+    localtunnel:
       condition: service_healthy
 
 services:
@@ -61,18 +61,18 @@ services:
       redis:
         condition: service_healthy
 
-  ngrok:
+  localtunnel:
     image: alpine:latest
     env_file: .env.development
     environment:
       - WEB_PORT=${WEB_PORT:-3000}
     volumes:
       - .:/rails
-    command: /bin/sh /rails/bin/ngrok-tunnel
+    command: /bin/sh /rails/bin/localtunnel
     network_mode: host
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "sh", "-c", "test -f /tmp/ngrok_ready"]
+      test: ["CMD", "sh", "-c", "test -f /tmp/localtunnel_ready"]
       interval: 5s
       timeout: 5s
       retries: 30
