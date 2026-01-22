@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-describe Coordinators::FinishPlatformRun do
+describe Coordinators::ConcludePlatformRun do
   describe "call" do
     it "marks the release_platform_run concluded" do
       release = create(:release)
