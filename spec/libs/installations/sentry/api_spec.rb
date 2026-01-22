@@ -227,6 +227,7 @@ describe Installations::Sentry::Api do
 
     context "when the API returns an error" do
       before do
+        WebMock.reset!
         stub_request(:get, "#{base_url}/organizations/#{org_slug}/sessions/")
           .to_return(status: 500, body: {detail: "Internal Server Error"}.to_json)
       end
@@ -238,8 +239,16 @@ describe Installations::Sentry::Api do
 
     context "when no session data is found" do
       before do
+        WebMock.reset!
         stub_request(:get, "#{base_url}/organizations/#{org_slug}/sessions/")
           .to_return(status: 200, body: {"groups" => []}.to_json)
+        # Re-stub the issues endpoints since we still need them for the nil check
+        stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
+          .with(query: {"query" => "release:#{version_string}"})
+          .to_return(status: 200, body: [].to_json, headers: {"Content-Type" => "application/json"})
+        stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
+          .with(query: {"query" => "firstRelease:#{version_string}"})
+          .to_return(status: 200, body: [].to_json, headers: {"Content-Type" => "application/json"})
       end
 
       it "returns nil" do
@@ -254,9 +263,9 @@ describe Installations::Sentry::Api do
       result = api_instance.send(:flatten_params, params)
 
       expect(result).to contain_exactly(
-        ["field", "a"],
-        ["field", "b"],
-        ["single", "value"]
+        [:field, "a"],
+        [:field, "b"],
+        [:single, "value"]
       )
     end
   end

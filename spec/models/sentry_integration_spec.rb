@@ -116,6 +116,7 @@ describe SentryIntegration do
 
       expect(api_instance).to have_received(:find_release).with(
         organization_slug,
+        "123",
         project_slug,
         environment,
         bundle_identifier,

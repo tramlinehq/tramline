@@ -11,6 +11,7 @@ module Installations
     def list_organizations(transforms)
       execute do
         organizations = get_request("/organizations/")
+        return nil if organizations.nil?
         Installations::Response::Keys.transform(organizations, transforms)
       end
     end
@@ -18,6 +19,7 @@ module Installations
     def list_projects(org_slug, transforms)
       execute do
         projects = get_request("/organizations/#{org_slug}/projects/")
+        return nil if projects.nil?
         Installations::Response::Keys.transform(projects, transforms)
       end
     end
