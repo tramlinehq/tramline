@@ -159,7 +159,7 @@ class Release < ApplicationRecord
     end
 
     event :partially_finish do
-      transitions from: :on_track, to: :partially_finished
+      transitions from: [:on_track, :partially_finished], to: :partially_finished
     end
 
     event :stop do
@@ -518,7 +518,7 @@ class Release < ApplicationRecord
 
     return false unless corresponding_run
     return false if corresponding_run.concluded? || corresponding_run.finished?
-    corresponding_run.active_production_release.present?
+    corresponding_run.on_track?
   end
 
   def hotfix_with_new_branch?

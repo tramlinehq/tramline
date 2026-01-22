@@ -1,4 +1,4 @@
-class Coordinators::FinishPlatformRun
+class Coordinators::ConcludePlatformRun
   def self.call(release_platform_run)
     new(release_platform_run).call
   end
@@ -9,7 +9,7 @@ class Coordinators::FinishPlatformRun
 
   def call
     with_lock do
-      return unless release.active?
+      raise "release is not active" unless release.active?
       release_platform_run.conclude!
 
       if release.ready_to_be_finalized?
@@ -20,9 +20,10 @@ class Coordinators::FinishPlatformRun
     end
 
     RefreshPlatformBreakdownJob.perform_async(release_platform_run.id)
-    release_platform_run.event_stamp!(reason: :concluded, kind: :success, data: {version: release_platform_run.release_version})
     app.refresh_external_app
     FinalizeReleaseJob.perform_async(release.id)
+
+    true
   end
 
   attr_reader :release_platform_run
