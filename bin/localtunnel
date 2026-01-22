@@ -1,14 +1,14 @@
 #!/bin/sh
-# Simple tunnel script (currently uses ngrok)
+# Local tunnel script (currently uses ngrok as the provider)
 
-if [ "$NGROK_DISABLED" = "true" ]; then
-  echo 'ngrok disabled'
+if [ "$LOCALTUNNEL_DISABLED" = "true" ]; then
+  echo 'localtunnel disabled'
   touch /tmp/localtunnel_ready
   sleep infinity
 fi
 
-if [ -z "$NGROK_AUTHTOKEN" ]; then
-  echo "ERROR: NGROK_AUTHTOKEN not set in .env.development"
+if [ -z "$LOCALTUNNEL_AUTHTOKEN" ]; then
+  echo "ERROR: LOCALTUNNEL_AUTHTOKEN not set in .env.development"
   exit 1
 fi
 
@@ -17,15 +17,19 @@ WEB_PORT="${WEB_PORT:-3000}"
 apk add --no-cache curl jq > /dev/null 2>&1
 curl -sL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz | tar xz -C /usr/local/bin
 
-ngrok config add-authtoken "$NGROK_AUTHTOKEN"
+ngrok config add-authtoken "$LOCALTUNNEL_AUTHTOKEN" 2>/dev/null
 
-# Start ngrok in background, wait for URL, then keep running
-ngrok http "https://localhost:$WEB_PORT" --log=stdout > /tmp/ngrok.log 2>&1 &
+# Start tunnel in foreground, use a subshell to capture the URL after startup
+(
+  sleep 5
+  TUNNEL_URL=$(curl -s "http://localhost:4040/api/tunnels" | jq -r '.tunnels[0].public_url')
+  echo "$TUNNEL_URL" > /rails/tmp/tunnel_url
+  echo "localtunnel: $TUNNEL_URL"
+  touch /tmp/localtunnel_ready
+) &
 
-sleep 5
-TUNNEL_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
-echo "$TUNNEL_URL" > /rails/tmp/tunnel_url
-echo "ngrok tunnel: $TUNNEL_URL"
-touch /tmp/localtunnel_ready
-
-wait
+if [ -n "$LOCALTUNNEL_DOMAIN" ]; then
+  exec ngrok http "https://localhost:$WEB_PORT" --url "$LOCALTUNNEL_DOMAIN" --log=stdout
+else
+  exec ngrok http "https://localhost:$WEB_PORT" --log=stdout
+fi
