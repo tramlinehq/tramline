@@ -52,6 +52,14 @@ else
   echo "⚠ Warning: .env.development not found in main repo"
 fi
 
+# Copy .env.test.local
+if [ -f "$MAIN_REPO_DIR/.env.test.local" ]; then
+  cp "$MAIN_REPO_DIR/.env.test.local" "$WORKTREE_PATH/.env.test.local"
+  echo "✓ Copied .env.test.local"
+else
+  echo "⚠ Warning: .env.test.local not found in main repo"
+fi
+
 # Copy config/master.key
 if [ -f "$MAIN_REPO_DIR/config/master.key" ]; then
   mkdir -p "$WORKTREE_PATH/config"
