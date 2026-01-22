@@ -33,7 +33,7 @@ pin "@popperjs/core", to: "https://ga.jspm.io/npm:@popperjs/core@2.11.8/lib/inde
 pin "quill", to: "https://ga.jspm.io/npm:quill@2.0.0/quill.js"
 pin "eventemitter3", to: "https://ga.jspm.io/npm:eventemitter3@5.0.1/index.mjs"
 pin "fast-diff", to: "https://ga.jspm.io/npm:fast-diff@1.3.0/diff.js"
-pin "lodash-es", to: "https://ga.jspm.io/npm:lodash-es@4.17.21/lodash.js"
+pin "lodash-es", to: "https://cdn.jsdelivr.net/npm/lodash-es@4.17.23/+esm"
 pin "lodash.clonedeep", to: "https://ga.jspm.io/npm:lodash.clonedeep@4.5.0/index.js"
 pin "lodash.isequal", to: "https://ga.jspm.io/npm:lodash.isequal@4.5.0/index.js"
 pin "parchment", to: "https://ga.jspm.io/npm:parchment@3.0.0/dist/parchment.js"
