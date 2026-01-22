@@ -216,7 +216,7 @@ describe Installations::Sentry::Api do
     end
 
     it "fetches issue counts from the issues API" do
-      api_instance.find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
 
       expect(WebMock).to have_requested(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
         .with(query: {"query" => "release:#{version_string}"})
@@ -232,7 +232,7 @@ describe Installations::Sentry::Api do
       end
 
       it "returns nil" do
-        expect(api_instance.find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)).to be_nil
+        expect(api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)).to be_nil
       end
     end
 
@@ -243,7 +243,7 @@ describe Installations::Sentry::Api do
       end
 
       it "returns nil" do
-        expect(api_instance.find_release(org_slug, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)).to be_nil
+        expect(api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)).to be_nil
       end
     end
   end
