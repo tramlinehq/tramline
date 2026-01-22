@@ -245,7 +245,7 @@ module Coordinators
 
     def self.conclude_platform_run!(release_platform_run)
       Res.new do
-        raise "release is not active" unless release.active?
+        raise "release is not active" unless release_platform_run.release.active?
         raise "release platform is not active" unless release_platform_run.active?
         Coordinators::ConcludePlatformRun.call(release_platform_run)
         true
