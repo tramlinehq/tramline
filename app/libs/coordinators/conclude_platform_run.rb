@@ -9,7 +9,8 @@ class Coordinators::ConcludePlatformRun
 
   def call
     with_lock do
-      raise "release is not active" unless release.active?
+      return unless release.active?
+
       release_platform_run.conclude!
 
       if release.ready_to_be_finalized?
@@ -22,8 +23,6 @@ class Coordinators::ConcludePlatformRun
     RefreshPlatformBreakdownJob.perform_async(release_platform_run.id)
     app.refresh_external_app
     FinalizeReleaseJob.perform_async(release.id)
-
-    true
   end
 
   attr_reader :release_platform_run

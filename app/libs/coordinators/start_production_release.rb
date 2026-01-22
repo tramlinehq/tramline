@@ -11,12 +11,12 @@ class Coordinators::StartProductionRelease
   def call
     with_lock do
       return unless release_platform_run.on_track?
-      return if release.blocked_for_production_release?(for_platform_run: release_platform_run)
+      # return if release.blocked_for_production_release?(for_platform_run: release_platform_run)
 
-      if previous&.inflight?
+      if current&.inflight?
         # If the latest production release is still inflight, attach the new RC build to it
         # and retrigger its submission, but only if the submission is in pre_review state
-        submission = previous.store_submission
+        submission = current.store_submission
         return if submission.blank?
         return unless submission.pre_review?
 
@@ -29,7 +29,7 @@ class Coordinators::StartProductionRelease
 
       release_platform_run
         .production_releases
-        .create!(build:, config:, previous:, status: ProductionRelease::INITIAL_STATE)
+        .create!(build:, config:, previous: current, status: ProductionRelease::INITIAL_STATE)
         .trigger_submission!
     end
   end
@@ -47,7 +47,7 @@ class Coordinators::StartProductionRelease
     Coordinators::FinalizePlatformRun.call(corresponding_run)
   end
 
-  def previous
+  def current
     release_platform_run.latest_production_release
   end
 
