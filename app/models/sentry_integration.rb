@@ -31,7 +31,8 @@ class SentryIntegration < ApplicationRecord
     name: :name,
     id: :id,
     slug: :slug,
-    platform: :platform
+    platform: :platform,
+    organization_slug: :organization_slug
   }
 
   RELEASE_TRANSFORMATIONS = {
@@ -165,12 +166,8 @@ class SentryIntegration < ApplicationRecord
   end
 
   def organization_slug_from_config(platform)
-    case platform
-    when "android" then android_config&.dig("organization_slug")
-    when "ios" then ios_config&.dig("organization_slug")
-    else
-      raise ArgumentError, "Invalid platform: #{platform}"
-    end
+    # Organization slug is now stored with the project data
+    project(platform)&.fetch("organization_slug", nil)
   end
 
   def correct_key

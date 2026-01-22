@@ -9,7 +9,6 @@
                        platform: "iOS",
                        projects: @monitoring_projects,
                        project: @sentry_integration.ios_project,
-                       org_slug: @sentry_integration.ios_config&.dig("organization_slug"),
                        environment: @sentry_integration.ios_environment
                      } %>
         <% end %>
@@ -21,7 +20,6 @@
                        platform: "Android",
                        projects: @monitoring_projects,
                        project: @sentry_integration.android_project,
-                       org_slug: @sentry_integration.android_config&.dig("organization_slug"),
                        environment: @sentry_integration.android_environment
                      } %>
         <% end %>

@@ -9,17 +9,11 @@
       <%= section.F.labeled_select "#{platform.downcase}_project",
             "Project",
             options_for_select(
-              display_channels(projects) { |proj| "#{proj[:name]} (#{proj[:slug]})" },
+              display_channels(projects) { |proj| "#{proj[:name]} (#{proj[:slug]}) - org: #{proj[:organization_slug]}" },
               projects.find { |p| p[:slug] == project&.dig("slug") }&.to_json
             ),
             {},
             {} %>
-    </div>
-    <div>
-      <%= section.F.labeled_text_field "#{platform.downcase}_organization_slug",
-            "Organization Slug",
-            value: org_slug,
-            required: true %>
     </div>
     <div>
       <%= section.F.labeled_text_field "#{platform.downcase}_environment",

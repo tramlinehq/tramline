@@ -66,6 +66,13 @@ describe Installations::Sentry::Api do
       ]
     end
 
+    let(:expected_projects_with_org) do
+      [
+        {"name" => "iOS App", "id" => "1", "slug" => "ios-app", "platform" => "apple-ios", "organization_slug" => org_slug},
+        {"name" => "Android App", "id" => "2", "slug" => "android-app", "platform" => "android", "organization_slug" => org_slug}
+      ]
+    end
+
     before do
       stub_request(:get, "#{base_url}/organizations/#{org_slug}/projects/")
         .with(headers: {"Authorization" => "Bearer #{access_token}"})
@@ -79,11 +86,11 @@ describe Installations::Sentry::Api do
         .with(headers: {"Authorization" => "Bearer #{access_token}"})
     end
 
-    it "returns the transformed projects list" do
+    it "returns the transformed projects list with organization slug" do
       result = api_instance.list_projects(org_slug, transforms)
 
       expect(result).to be_an(Array)
-      expect(result.first).to include("name" => "iOS App", "id" => "1", "slug" => "ios-app")
+      expect(result.first).to include("name" => "iOS App", "id" => "1", "slug" => "ios-app", "organization_slug" => org_slug)
     end
 
     context "when the API returns an error" do
@@ -147,27 +154,25 @@ describe Installations::Sentry::Api do
     end
 
     before do
-      # Stub the sessions API call with query parameters
-      # Note: HTTP gem encodes array params as multiple keys (field=a&field=b)
-      stub_request(:get, %r{#{Regexp.escape(base_url)}/organizations/#{Regexp.escape(org_slug)}/sessions/})
-        .with(headers: {"Authorization" => "Bearer #{access_token}"})
-        .to_return(status: 200, body: sessions_response.to_json, headers: {"Content-Type" => "application/json"})
+      # Stub all HTTP requests - WebMock doesn't work well with threads
+      # so we use method stubs instead
+      allow(HTTP).to receive(:auth).and_return(HTTP)
+      allow(HTTP).to receive(:timeout).and_return(HTTP)
 
-      # Stub the issues API call for all issues in release
-      stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
-        .with(
-          query: {"query" => "release:#{version_string}"},
-          headers: {"Authorization" => "Bearer #{access_token}"}
-        )
-        .to_return(status: 200, body: all_issues_response.to_json, headers: {"Content-Type" => "application/json"})
+      # Sessions endpoint
+      allow(HTTP).to receive(:get)
+        .with(/\/sessions\//, anything)
+        .and_return(double(status: double(success?: true), body: double(to_s: sessions_response.to_json)))
 
-      # Stub the issues API call for new issues first seen in release
-      stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
-        .with(
-          query: {"query" => "firstRelease:#{version_string}"},
-          headers: {"Authorization" => "Bearer #{access_token}"}
-        )
-        .to_return(status: 200, body: new_issues_response.to_json, headers: {"Content-Type" => "application/json"})
+      # All issues endpoint
+      allow(HTTP).to receive(:get)
+        .with(/\/issues\//, hash_including(params: hash_including(query: "release:#{version_string}")))
+        .and_return(double(status: double(success?: true), body: double(to_s: all_issues_response.to_json)))
+
+      # New issues endpoint
+      allow(HTTP).to receive(:get)
+        .with(/\/issues\//, hash_including(params: hash_including(query: "firstRelease:#{version_string}")))
+        .and_return(double(status: double(success?: true), body: double(to_s: new_issues_response.to_json)))
     end
 
     it "constructs the correct Sentry release identifier" do
@@ -228,8 +233,7 @@ describe Installations::Sentry::Api do
     context "when no session data is found" do
       before do
         # Override the sessions stub to return empty groups
-        stub_request(:get, %r{#{Regexp.escape(base_url)}/organizations/#{Regexp.escape(org_slug)}/sessions/})
-          .with(headers: {"Authorization" => "Bearer #{access_token}"})
+        stub_request(:get, /#{Regexp.escape(base_url)}\/organizations\/#{Regexp.escape(org_slug)}\/sessions\//)
           .to_return(status: 200, body: {"groups" => []}.to_json, headers: {"Content-Type" => "application/json"})
       end
 

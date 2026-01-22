@@ -20,7 +20,10 @@ module Installations
       execute do
         projects = get_request("/organizations/#{org_slug}/projects/")
         return nil if projects.nil?
-        Installations::Response::Keys.transform(projects, transforms)
+
+        # Attach organization slug to each project for easier lookup
+        projects_with_org = projects.map { |project| project.merge("organization_slug" => org_slug) }
+        Installations::Response::Keys.transform(projects_with_org, transforms)
       end
     end
 

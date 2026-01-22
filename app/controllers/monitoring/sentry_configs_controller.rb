@@ -41,10 +41,8 @@ class Monitoring::SentryConfigsController < SignedInApplicationController
       .permit(
         :ios_project,
         :ios_environment,
-        :ios_organization_slug,
         :android_project,
-        :android_environment,
-        :android_organization_slug
+        :android_environment
       )
     sentry_config_params.merge(sentry_config(sentry_config_params))
   end
@@ -55,16 +53,14 @@ class Monitoring::SentryConfigsController < SignedInApplicationController
     if config_params[:ios_environment].present?
       config[:ios_config] = {
         project: config_params[:ios_project]&.safe_json_parse,
-        environment: config_params[:ios_environment],
-        organization_slug: config_params[:ios_organization_slug]
+        environment: config_params[:ios_environment]
       }
     end
 
     if config_params[:android_environment].present?
       config[:android_config] = {
         project: config_params[:android_project]&.safe_json_parse,
-        environment: config_params[:android_environment],
-        organization_slug: config_params[:android_organization_slug]
+        environment: config_params[:android_environment]
       }
     end
 

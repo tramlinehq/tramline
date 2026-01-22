@@ -102,9 +102,8 @@ describe SentryIntegration do
     before do
       sentry_integration.update!(
         android_config: {
-          project: {id: "123", slug: project_slug, name: "Test Project"},
-          environment: environment,
-          organization_slug: organization_slug
+          project: {id: "123", slug: project_slug, name: "Test Project", organization_slug: organization_slug},
+          environment: environment
         }
       )
       allow(api_instance).to receive(:find_release)
@@ -143,9 +142,8 @@ describe SentryIntegration do
     before do
       sentry_integration.update!(
         android_config: {
-          project: {id: "123", slug: project_slug, name: "Test Project"},
-          environment: "production",
-          organization_slug: organization_slug
+          project: {id: "123", slug: project_slug, name: "Test Project", organization_slug: organization_slug},
+          environment: "production"
         }
       )
     end
@@ -154,7 +152,7 @@ describe SentryIntegration do
       it "returns the release-specific URL" do
         url = sentry_integration.dashboard_url(platform: platform, release_id: release_id)
 
-        expect(url).to eq("https://sentry.io/organizations/#{organization_slug}/projects/#{project_slug}/releases/#{release_id}/")
+        expect(url).to eq("https://sentry.io/organizations/#{organization_slug}/projects/#{project_slug}/releases/#{CGI.escape(release_id)}/")
       end
     end
 
@@ -178,13 +176,13 @@ describe SentryIntegration do
   end
 
   describe "#project" do
-    let(:ios_project) { {id: "1", slug: "ios-proj", name: "iOS Project"} }
-    let(:android_project) { {id: "2", slug: "android-proj", name: "Android Project"} }
+    let(:ios_project) { {"id" => "1", "slug" => "ios-proj", "name" => "iOS Project", "organization_slug" => "org"} }
+    let(:android_project) { {"id" => "2", "slug" => "android-proj", "name" => "Android Project", "organization_slug" => "org"} }
 
     before do
       sentry_integration.update!(
-        ios_config: {project: ios_project, environment: "production", organization_slug: "org"},
-        android_config: {project: android_project, environment: "production", organization_slug: "org"}
+        ios_config: {"project" => ios_project, "environment" => "production"},
+        android_config: {"project" => android_project, "environment" => "production"}
       )
     end
 
@@ -204,8 +202,8 @@ describe SentryIntegration do
   describe "#environment" do
     before do
       sentry_integration.update!(
-        ios_config: {project: {id: "1", slug: "proj"}, environment: "production", organization_slug: "org"},
-        android_config: {project: {id: "2", slug: "proj"}, environment: "staging", organization_slug: "org"}
+        ios_config: {project: {id: "1", slug: "proj", organization_slug: "org"}, environment: "production"},
+        android_config: {project: {id: "2", slug: "proj", organization_slug: "org"}, environment: "staging"}
       )
     end
 
