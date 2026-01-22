@@ -143,7 +143,7 @@ module Installations
       response = HTTP
         .auth("Bearer #{access_token}")
         .timeout(connect: 10, read: 30)
-        .get(url, params: flatten_params(params))
+        .get(url, params: params)
 
       if response.status.success?
         JSON.parse(response.body.to_s)
@@ -155,18 +155,6 @@ module Installations
 
     def get_request_async(path, params = {})
       Thread.new { get_request(path, params) }
-    end
-
-    # Flatten array parameters for URL encoding
-    # e.g., {field: ["a", "b"]} => [["field", "a"], ["field", "b"]]
-    def flatten_params(params)
-      params.flat_map do |key, value|
-        if value.is_a?(Array)
-          value.map { |v| [key, v] }
-        else
-          [[key, value]]
-        end
-      end
     end
 
     def execute

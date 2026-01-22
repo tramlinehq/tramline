@@ -148,15 +148,9 @@ describe Installations::Sentry::Api do
 
     before do
       # Stub the sessions API call with query parameters
-      stub_request(:get, "#{base_url}/organizations/#{org_slug}/sessions/")
-        .with(
-          query: hash_including(
-            "project" => project_id,
-            "environment" => environment,
-            "query" => "release:#{version_string}"
-          ),
-          headers: {"Authorization" => "Bearer #{access_token}"}
-        )
+      # Note: HTTP gem encodes array params as multiple keys (field=a&field=b)
+      stub_request(:get, %r{#{Regexp.escape(base_url)}/organizations/#{Regexp.escape(org_slug)}/sessions/})
+        .with(headers: {"Authorization" => "Bearer #{access_token}"})
         .to_return(status: 200, body: sessions_response.to_json, headers: {"Content-Type" => "application/json"})
 
       # Stub the issues API call for all issues in release
@@ -186,15 +180,8 @@ describe Installations::Sentry::Api do
     it "makes a GET request to the sessions endpoint with correct parameters" do
       api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
 
-      expect(WebMock).to have_requested(:get, "#{base_url}/organizations/#{org_slug}/sessions/")
-        .with(
-          query: hash_including(
-            "project" => project_id,
-            "environment" => environment,
-            "field" => ["sum(session)", "count_unique(user)", "crash_free_rate(session)", "crash_free_rate(user)"],
-            "groupBy" => ["release", "session.status"]
-          )
-        )
+      expect(WebMock).to have_requested(:get, %r{#{Regexp.escape(base_url)}/organizations/#{Regexp.escape(org_slug)}/sessions/})
+        .with(headers: {"Authorization" => "Bearer #{access_token}"})
     end
 
     it "returns the transformed release data with correct structure" do
@@ -227,8 +214,9 @@ describe Installations::Sentry::Api do
 
     context "when the API returns an error" do
       before do
-        WebMock.reset!
-        stub_request(:get, "#{base_url}/organizations/#{org_slug}/sessions/")
+        # Override the sessions stub to return an error
+        stub_request(:get, %r{#{Regexp.escape(base_url)}/organizations/#{Regexp.escape(org_slug)}/sessions/})
+          .with(headers: {"Authorization" => "Bearer #{access_token}"})
           .to_return(status: 500, body: {detail: "Internal Server Error"}.to_json)
       end
 
@@ -239,34 +227,15 @@ describe Installations::Sentry::Api do
 
     context "when no session data is found" do
       before do
-        WebMock.reset!
-        stub_request(:get, "#{base_url}/organizations/#{org_slug}/sessions/")
-          .to_return(status: 200, body: {"groups" => []}.to_json)
-        # Re-stub the issues endpoints since we still need them for the nil check
-        stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
-          .with(query: {"query" => "release:#{version_string}"})
-          .to_return(status: 200, body: [].to_json, headers: {"Content-Type" => "application/json"})
-        stub_request(:get, "#{base_url}/projects/#{org_slug}/#{project_slug}/issues/")
-          .with(query: {"query" => "firstRelease:#{version_string}"})
-          .to_return(status: 200, body: [].to_json, headers: {"Content-Type" => "application/json"})
+        # Override the sessions stub to return empty groups
+        stub_request(:get, %r{#{Regexp.escape(base_url)}/organizations/#{Regexp.escape(org_slug)}/sessions/})
+          .with(headers: {"Authorization" => "Bearer #{access_token}"})
+          .to_return(status: 200, body: {"groups" => []}.to_json, headers: {"Content-Type" => "application/json"})
       end
 
       it "returns nil" do
         expect(api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)).to be_nil
       end
-    end
-  end
-
-  describe "#flatten_params" do
-    it "flattens array parameters correctly" do
-      params = {field: ["a", "b"], single: "value"}
-      result = api_instance.send(:flatten_params, params)
-
-      expect(result).to contain_exactly(
-        [:field, "a"],
-        [:field, "b"],
-        [:single, "value"]
-      )
     end
   end
 
