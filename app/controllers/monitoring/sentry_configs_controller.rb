@@ -50,14 +50,14 @@ class Monitoring::SentryConfigsController < SignedInApplicationController
   def sentry_config(config_params)
     config = {}
 
-    if config_params[:ios_environment].present?
+    if config_params[:ios_environment].present? && config_params[:ios_project].present?
       config[:ios_config] = {
         project: config_params[:ios_project]&.safe_json_parse,
         environment: config_params[:ios_environment]
       }
     end
 
-    if config_params[:android_environment].present?
+    if config_params[:android_environment].present? && config_params[:android_project].present?
       config[:android_config] = {
         project: config_params[:android_project]&.safe_json_parse,
         environment: config_params[:android_environment]
