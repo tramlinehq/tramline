@@ -1,5 +1,5 @@
 #!/bin/bash
-# Get the Tailscale Funnel URL from the file written by the tailscale container
+# Get the ngrok tunnel URL from the file written by the ngrok container
 # Usage: bin/get-tunnel-url
 
 TUNNEL_FILE="tmp/tunnel_url"
@@ -7,5 +7,5 @@ TUNNEL_FILE="tmp/tunnel_url"
 if [ -f "$TUNNEL_FILE" ]; then
   cat "$TUNNEL_FILE"
 else
-  echo "(not available - set TAILSCALE_AUTHKEY in .env.development)"
+  echo "(not available - set NGROK_AUTHTOKEN in .env.development)"
 fi

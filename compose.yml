@@ -36,7 +36,7 @@ x-backend: &backend
       condition: service_healthy
     setup:
       condition: service_completed_successfully
-    tailscale:
+    ngrok:
       condition: service_healthy
 
 services:
@@ -61,31 +61,18 @@ services:
       redis:
         condition: service_healthy
 
-  # Tailscale container for public URLs via Funnel
-  # Optional - requires TAILSCALE_AUTHKEY in .env.development
-  # Get an authkey from https://login.tailscale.com/admin/settings/keys
-  # See README.md for setup instructions
-  tailscale:
-    image: tailscale/tailscale:latest
-    hostname: tramline-${WORKTREE_NAME:-main}
+  ngrok:
+    image: alpine:latest
     env_file: .env.development
     environment:
-      - TS_AUTHKEY=${TAILSCALE_AUTHKEY:-}
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_USERSPACE=true
-      - WORKTREE_NAME=${WORKTREE_NAME:-main}
       - WEB_PORT=${WEB_PORT:-3000}
     volumes:
-      - tailscale-state:/var/lib/tailscale
       - .:/rails
-    command: /rails/bin/tailscale-funnel.sh
+    command: /bin/sh /rails/bin/ngrok-tunnel
     network_mode: host
     restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
     healthcheck:
-      test: ["CMD", "sh", "-c", "test -f /tmp/tailscale_ready"]
+      test: ["CMD", "sh", "-c", "test -f /tmp/ngrok_ready"]
       interval: 5s
       timeout: 5s
       retries: 30
@@ -177,4 +164,3 @@ volumes:
   rails_cache:
   postgres:
   redis:
-  tailscale-state:
