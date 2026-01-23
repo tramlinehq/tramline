@@ -46,12 +46,12 @@ describe Train do
   end
 
   describe "#populate_release_schedules" do
-    let(:train) { create(:train, status: :active, kickoff_at: 1.hour.from_now, repeat_duration: 1.day) }
+    let(:train) { create(:train, status: :active, kickoff_at: 7.hours.from_now, repeat_duration: 1.day) }
 
     context "when updating schedule with existing scheduled releases" do
       before do
         # Create existing scheduled releases
-        create(:scheduled_release, train: train, scheduled_at: 2.hours.from_now)
+        create(:scheduled_release, train: train, scheduled_at: 8.hours.from_now)
         create(:scheduled_release, train: train, scheduled_at: 1.day.from_now)
       end
 
@@ -59,16 +59,16 @@ describe Train do
         expect(train.scheduled_releases.count).to eq(2)
 
         # Update kickoff_at to trigger populate_release_schedules
-        new_kickoff = 3.hours.from_now
+        new_kickoff = 9.hours.from_now
         train.update!(kickoff_at: new_kickoff)
 
         # Should have discarded old ones and created one new one
         expect(train.scheduled_releases.kept.count).to eq(1)
         expect(train.scheduled_releases.unscoped.discarded.count).to eq(2)
 
-        # New schedule should be based on updated kickoff_at, not previous schedule
+        # New schedule should be based on updated kickoff_at_app_time (timezone-aware)
         new_scheduled_release = train.scheduled_releases.kept.first
-        expect(new_scheduled_release.scheduled_at).to be_within(1.minute).of(new_kickoff)
+        expect(new_scheduled_release.scheduled_at).to eq(train.kickoff_at_app_time)
       end
 
       it "calculates next run correctly within transaction" do
@@ -83,9 +83,9 @@ describe Train do
         # Should have called next_run_at after discarding
         expect(train).to have_received(:next_run_at)
 
-        # Verify the scheduled release uses new kickoff time
+        # Verify the scheduled release uses new kickoff time (timezone-aware)
         new_scheduled_release = train.scheduled_releases.kept.first
-        expect(new_scheduled_release.scheduled_at).to be_within(1.minute).of(new_kickoff)
+        expect(new_scheduled_release.scheduled_at).to eq(train.kickoff_at_app_time)
       end
     end
 
@@ -110,7 +110,7 @@ describe Train do
     context "when updating attributes other than schedule" do
       before do
         # Create some initial scheduled releases
-        create(:scheduled_release, train: train, scheduled_at: 1.hour.from_now)
+        create(:scheduled_release, train: train, scheduled_at: 8.hours.from_now)
         create(:scheduled_release, train: train, scheduled_at: 1.day.from_now)
       end
 
@@ -187,7 +187,7 @@ describe Train do
       train.activate!
 
       expect(train.reload.scheduled_releases.count).to be(1)
-      expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at)
+      expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at_app_time)
     end
   end
 
@@ -195,42 +195,42 @@ describe Train do
     it "returns kickoff time if no releases have been scheduled yet and kickoff is in the future" do
       train = create(:train, :with_schedule, :active)
 
-      expect(train.next_run_at).to eq(train.kickoff_at)
+      expect(train.next_run_at).to eq(train.kickoff_at_app_time)
     end
 
     it "returns kickoff + repeat duration time if no releases have been scheduled yet and kickoff is in the past" do
       train = create(:train, :with_schedule, :active)
 
-      travel_to train.kickoff_at + 1.hour do
-        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration)
+      travel_to train.kickoff_at_app_time + 1.hour do
+        expect(train.next_run_at).to eq(train.kickoff_at_app_time + train.repeat_duration)
       end
     end
 
     it "returns next available schedule time if there is a scheduled release" do
       train = create(:train, :with_schedule, :active)
-      train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
+      train.scheduled_releases.create!(scheduled_at: train.kickoff_at_app_time)
 
-      travel_to train.kickoff_at + 1.hour do
-        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration)
+      travel_to train.kickoff_at_app_time + 1.hour do
+        expect(train.next_run_at).to eq(train.kickoff_at_app_time + train.repeat_duration)
       end
     end
 
     it "returns next available schedule time if there are many scheduled releases" do
       train = create(:train, :with_schedule, :active)
-      train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
-      train.scheduled_releases.create!(scheduled_at: train.kickoff_at + train.repeat_duration)
+      train.scheduled_releases.create!(scheduled_at: train.kickoff_at_app_time)
+      train.scheduled_releases.create!(scheduled_at: train.kickoff_at_app_time + train.repeat_duration)
 
-      travel_to train.kickoff_at + 1.day + 1.hour do
-        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration * 2)
+      travel_to train.kickoff_at_app_time + 1.day + 1.hour do
+        expect(train.next_run_at).to eq(train.kickoff_at_app_time + train.repeat_duration * 2)
       end
     end
 
     it "returns next available schedule time if there are scheduled releases and more than repeat duration has passed since last scheduled release" do
       train = create(:train, :with_schedule, :active)
-      train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
+      train.scheduled_releases.create!(scheduled_at: train.kickoff_at_app_time)
 
-      travel_to train.kickoff_at + 2.days + 1.hour do
-        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration * 3)
+      travel_to train.kickoff_at_app_time + 2.days + 1.hour do
+        expect(train.next_run_at).to eq(train.kickoff_at_app_time + train.repeat_duration * 3)
       end
     end
   end
@@ -263,7 +263,7 @@ describe Train do
       train.update!(kickoff_at: 2.days.from_now, repeat_duration: 2.days)
 
       expect(train.reload.scheduled_releases.count).to eq(1)
-      expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at)
+      expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at_app_time)
     end
   end
 
@@ -557,6 +557,55 @@ describe Train do
     end
   end
 
+  describe "soak period validations" do
+    context "when soak_period_enabled is true" do
+      it "validates presence of soak_period_hours" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: nil)
+        expect(train).not_to be_valid
+        expect(train.errors[:soak_period_hours]).to include("can't be blank")
+      end
+
+      it "validates soak_period_hours is greater than 0" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 0)
+        expect(train).not_to be_valid
+        expect(train.errors[:soak_period_hours]).to include("must be greater than 0")
+      end
+
+      it "validates soak_period_hours is less than or equal to 336" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 337)
+        expect(train).not_to be_valid
+        expect(train.errors[:soak_period_hours]).to include("must be less than or equal to 336")
+      end
+
+      it "is valid with soak_period_hours between 1 and 168" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 24)
+        expect(train).to be_valid
+      end
+
+      it "is valid with soak_period_hours at minimum boundary (1)" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 1)
+        expect(train).to be_valid
+      end
+
+      it "is valid with soak_period_hours at maximum boundary (168)" do
+        train = build(:train, soak_period_enabled: true, soak_period_hours: 168)
+        expect(train).to be_valid
+      end
+    end
+
+    context "when soak_period_enabled is false" do
+      it "does not validate soak_period_hours" do
+        train = build(:train, soak_period_enabled: false, soak_period_hours: nil)
+        expect(train).to be_valid
+      end
+
+      it "is valid with out-of-range soak_period_hours when disabled" do
+        train = build(:train, soak_period_enabled: false, soak_period_hours: 200)
+        expect(train).to be_valid
+      end
+    end
+  end
+
   describe "build queue validations" do
     let(:train) { create(:train, :active) }
 
@@ -639,6 +688,216 @@ describe Train do
         train.build_queue_wait_time = 1.hour
 
         expect(train).to be_valid
+      end
+    end
+  end
+
+  describe "DST-safe scheduling behavior" do
+    let(:app) { create(:app, :android, timezone: "America/New_York") } # EST/EDT timezone
+    let(:train) { create(:train, app: app) }
+
+    describe "#kickoff_at_app_time" do
+      it "interprets naive datetime in app timezone" do
+        travel_to Time.zone.parse("2024-07-15 10:00:00") do
+          train.update!(kickoff_at: "2024-07-15 14:30:00", repeat_duration: 1.week)
+
+          result = train.kickoff_at_app_time
+
+          expect(result.hour).to eq(14)
+          expect(result.min).to eq(30)
+          expect(result.zone).to eq("EDT")
+        end
+      end
+
+      it "returns nil when kickoff_at is nil" do
+        train.update!(kickoff_at: nil)
+        expect(train.kickoff_at_app_time).to be_nil
+      end
+
+      it "uses app timezone for interpretation" do
+        pacific_app = create(:app, :android, timezone: "America/Los_Angeles")
+        pacific_train = create(:train, app: pacific_app)
+
+        travel_to Time.zone.parse("2024-07-15 10:00:00") do
+          pacific_train.update!(kickoff_at: "2024-07-15 14:30:00", repeat_duration: 1.week)
+          result = pacific_train.kickoff_at_app_time
+          expect(result.zone).to eq("PDT")
+        end
+      end
+    end
+
+    describe "maintains consistent local time across DST transitions" do
+      it "keeps the same hour during spring DST transition (EST -> EDT)" do
+        # Set schedule before spring transition
+        travel_to Time.zone.parse("2024-03-01 10:00:00") do
+          # EST
+          train.update!(kickoff_at: "2024-03-01 14:00:00", repeat_duration: 1.week) # 2 PM EST
+        end
+
+        # Check before transition - should be 2 PM in EST
+        travel_to Time.zone.parse("2024-03-01 10:00:00") do
+          result = train.kickoff_at_app_time
+          expect(result.hour).to eq(14) # Same local hour
+          expect(result.zone).to eq("EST") # Timezone reflects the date context
+        end
+
+        # Check after DST transition - should still be 2 PM
+        # Note: timezone reflects the stored date (March 1 = EST), not current date
+        travel_to Time.zone.parse("2024-03-15 10:00:00") do
+          # After DST spring forward
+          result = train.kickoff_at_app_time
+          expect(result.hour).to eq(14) # Same local hour maintained!
+          expect(result.zone).to eq("EST") # Zone based on stored date (March 1)
+        end
+      end
+
+      it "keeps the same hour during fall DST transition (EDT -> EST)" do
+        # Set schedule during EDT
+        travel_to Time.zone.parse("2024-10-01 10:00:00") do
+          # EDT
+          train.update!(kickoff_at: "2024-10-01 14:00:00", repeat_duration: 1.week) # 2 PM EDT
+        end
+
+        # Check before transition - should be 2 PM in EDT
+        travel_to Time.zone.parse("2024-10-01 10:00:00") do
+          result = train.kickoff_at_app_time
+          expect(result.hour).to eq(14) # Same local hour
+          expect(result.zone).to eq("EDT") # Timezone reflects the date context
+        end
+
+        # Check after DST fall back - should still be 2 PM
+        # Note: timezone reflects the stored date (October 1 = EDT), not current date
+        travel_to Time.zone.parse("2024-11-15 10:00:00") do
+          # After DST ends
+          result = train.kickoff_at_app_time
+          expect(result.hour).to eq(14) # Same local hour maintained!
+          expect(result.zone).to eq("EDT") # Zone based on stored date (October 1)
+        end
+      end
+    end
+
+    describe "#next_run_at maintains local time across DST transitions" do
+      it "maintains same local hour when crossing fall DST (clocks fall back)" do
+        # DST ends Nov 3, 2024 at 2am in America/New_York (EDT -> EST)
+        # Schedule: 6pm daily
+        # EDT is UTC-4, so 6pm EDT = 10pm UTC
+        travel_to Time.zone.parse("2024-11-02 14:00:00") do
+          # 10am EDT
+          train.update!(kickoff_at: "2024-11-02 18:00:00", repeat_duration: 1.day)
+        end
+
+        # Current time after kickoff: 11pm UTC = 7pm EDT (after 6pm EDT kickoff)
+        travel_to Time.zone.parse("2024-11-02 23:00:00") do
+          next_run = train.next_run_at
+
+          # Should be Nov 3, 6pm EST (not 5pm or 7pm)
+          expect(next_run.hour).to eq(18)
+          expect(next_run.day).to eq(3)
+          expect(next_run.zone).to eq("EST") # Now in EST after DST ended
+        end
+      end
+
+      it "maintains same local hour when crossing spring DST (clocks spring forward)" do
+        # DST starts Mar 10, 2024 at 2am in America/New_York (EST -> EDT)
+        # Schedule: 6pm daily
+        # EST is UTC-5, so 6pm EST = 11pm UTC
+        travel_to Time.zone.parse("2024-03-09 15:00:00") do
+          # 10am EST
+          train.update!(kickoff_at: "2024-03-09 18:00:00", repeat_duration: 1.day)
+        end
+
+        # Current time after kickoff: midnight UTC = 7pm EST (after 6pm EST kickoff)
+        travel_to Time.zone.parse("2024-03-10 00:00:00") do
+          next_run = train.next_run_at
+
+          # Should be Mar 10, 6pm EDT (not 5pm or 7pm)
+          expect(next_run.hour).to eq(18)
+          expect(next_run.day).to eq(10)
+          expect(next_run.zone).to eq("EDT") # Now in EDT after DST started
+        end
+      end
+
+      # rubocop:disable RSpec/MultipleExpectations
+      it "maintains local time across multiple DST transitions with scheduled_releases" do
+        # Start before fall DST, create a scheduled release, then check after DST
+        # Oct 26 is still EDT (UTC-4), 6pm EDT = 10pm UTC
+        travel_to Time.zone.parse("2024-10-26 14:00:00") do
+          # 10am EDT
+          train.update!(kickoff_at: "2024-10-26 18:00:00", repeat_duration: 1.week)
+          # Create first scheduled release (stored as UTC in DB)
+          train.scheduled_releases.create!(scheduled_at: train.kickoff_at_app_time)
+        end
+
+        # After first kickoff: 11pm UTC = 7pm EDT
+        travel_to Time.zone.parse("2024-10-26 23:00:00") do
+          next_run = train.next_run_at
+
+          # Should be Nov 2, 6pm EDT (still EDT, DST hasn't ended yet)
+          expect(next_run.hour).to eq(18)
+          expect(next_run.month).to eq(11)
+          expect(next_run.day).to eq(2)
+        end
+
+        # Create scheduled release for Nov 2 and check next week
+        # Nov 2 is still EDT, 6pm EDT = 10pm UTC
+        travel_to Time.zone.parse("2024-11-02 23:00:00") do
+          # 7pm EDT
+          train.scheduled_releases.create!(scheduled_at: train.next_run_at)
+        end
+
+        # After DST ended (Nov 3), check next run
+        # Nov 9 is EST (UTC-5), 6pm EST = 11pm UTC
+        travel_to Time.zone.parse("2024-11-03 15:00:00") do
+          # 10am EST
+          next_run = train.next_run_at
+
+          # Should be Nov 9, 6pm EST (DST ended, now EST)
+          expect(next_run.hour).to eq(18)
+          expect(next_run.month).to eq(11)
+          expect(next_run.day).to eq(9)
+          expect(next_run.zone).to eq("EST")
+        end
+      end
+      # rubocop:enable RSpec/MultipleExpectations
+    end
+
+    describe "#last_run_at uses kickoff_at_app_time" do
+      it "returns timezone-aware kickoff_at_app_time when no scheduled releases" do
+        travel_to Time.zone.parse("2024-07-15 10:00:00") do
+          train.update!(kickoff_at: "2024-07-15 14:30:00", repeat_duration: 1.week)
+
+          # Test that last_run_at uses kickoff_at_app_time method
+          expect(train.last_run_at).to eq(train.kickoff_at_app_time)
+          # Test that kickoff_at_app_time returns timezone-aware time
+          expect(train.kickoff_at_app_time.zone).to eq("EDT")
+        end
+      end
+    end
+
+    describe "validation uses kickoff_at_app_time for future time check" do
+      it "correctly validates future times" do
+        travel_to Time.zone.parse("2024-01-15 10:00:00") do
+          train.assign_attributes(
+            kickoff_at: "2024-01-15 15:00:00", # 3 PM same day (future)
+            repeat_duration: 1.day
+          )
+
+          expect(train).to be_valid
+        end
+      end
+
+      it "correctly rejects past times" do
+        # 21:00 UTC = 16:00 EST (4 PM in America/New_York)
+        travel_to Time.zone.parse("2024-01-15 21:00:00") do
+          train.assign_attributes(
+            # 15:00 EST = 20:00 UTC, which is before 21:00 UTC (current time)
+            kickoff_at: "2024-01-15 15:00:00",
+            repeat_duration: 1.day
+          )
+
+          expect(train).not_to be_valid
+          expect(train.errors[:kickoff_at]).to include("the schedule kickoff should be in the future")
+        end
       end
     end
   end

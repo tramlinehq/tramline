@@ -19,7 +19,7 @@ class Computations::Release::StepStatuses
         internal_builds: internal_builds_status,
         regression_testing: regression_testing_status,
         release_candidate: release_candidate_status,
-        soak_period: demo? ? release_candidate_status : STATUS[:blocked],
+        soak_period: soak_period_status,
         notes: notes_status,
         screenshots: STATUS[:blocked],
         approvals: approvals_status,
@@ -59,6 +59,14 @@ class Computations::Release::StepStatuses
     STATUS[:success]
   end
 
+  def soak_period_status
+    return STATUS[:blocked] unless @release.soak_period_enabled?
+    return STATUS[:blocked] if release_candidate_status != STATUS[:success]
+    return STATUS[:success] if @release.beta_soak&.ended_at.present?
+    return STATUS[:ongoing] unless @release.beta_soak&.expired?
+    STATUS[:blocked]
+  end
+
   def notes_status
     return STATUS[:unblocked] if any_platforms? { |rp| rp.metadata_editable? }
     STATUS[:success]
@@ -72,6 +80,7 @@ class Computations::Release::StepStatuses
   end
 
   def app_submission_status
+    return STATUS[:blocked] if @release.soak_period_enabled? && @release.beta_soak&.ended_at.blank?
     return STATUS[:blocked] if @release.approvals_blocking?
     return STATUS[:blocked] if all_platforms? { |rp| rp.production_releases.none? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.inflight_production_release.present? }

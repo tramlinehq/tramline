@@ -33,4 +33,17 @@ class LiveRelease::ChangesetTrackingComponent < BaseComponent
     return if change_queue_commits.blank?
     "#{change_queue_commits_count} commit(s) in the queue. These will be automatically applied in #{time_in_words(build_queue&.scheduled_at)} or after #{build_queue&.build_queue_size} commits."
   end
+
+  memoize def conflicting_branch_releases
+    @release.conflicting_branch_releases
+  end
+
+  def conflicting_branch_release_links
+    safe_join(
+      conflicting_branch_releases.map do |r|
+        link_to_external(r.slug, release_path(r), class: "font-mono underline")
+      end,
+      ", "
+    )
+  end
 end

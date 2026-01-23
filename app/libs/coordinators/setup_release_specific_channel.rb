@@ -18,6 +18,9 @@ class Coordinators::SetupReleaseSpecificChannel
     # Use the default notification channel if we did not receive a new channel
     notification_channel = notification_provider.create_channel!(channel_name) || train.notification_channel
     release.set_notification_channel!(notification_channel)
+
+    # TODO: this is a temporary hack that allows the notify methods to work with dynamic release-specific channels
+    # the problem here is that it wouldn't work when multiple releases with their release-specific channels exist at the same time
     notification_settings.release_specific_channel_allowed.update(release_specific_channel: notification_channel)
   end
 

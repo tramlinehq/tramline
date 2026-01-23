@@ -81,7 +81,9 @@ Rails.application.configure do
   # Allow tunnelled DNSes to access localhost, like ngrok or local.gd
   config.hosts << /tunnel[0-9]+.tramline.dev/
   config.hosts << /[a-z0-9-]+\.local\.gd/
-  config.hosts << /.*.ngrok-free.app/
+  config.hosts << /.*\.ngrok-free\.app/
+  config.hosts << /.*\.ngrok-free\.dev/
+  config.hosts << /.*\.ngrok\.io/
   config.hosts << /web:3000/
 
   # Allow web console to be triggered when fired against external webhooks

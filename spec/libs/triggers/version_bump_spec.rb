@@ -16,8 +16,21 @@ describe Triggers::VersionBump do
       train = create(:train)
       release = create(:release, train:)
 
-      described_class.call(release)
+      result = described_class.call(release)
 
+      expect(result).to be_nil
+      expect(Triggers::Branch).not_to have_received(:call)
+    end
+
+    it "does not version bump if it is a hotfix release" do
+      allow(Triggers::Branch).to receive(:call)
+      train = create(:train)
+      release = create(:release, train:)
+      hotfix_release = create(:release, :hotfix, hotfixed_from: release, new_hotfix_branch: true, train: train)
+
+      result = described_class.call(hotfix_release)
+
+      expect(result).to be_nil
       expect(Triggers::Branch).not_to have_received(:call)
     end
 
@@ -85,7 +98,8 @@ describe Triggers::VersionBump do
           existing_pr: nil,
           title: "Bump version to #{release.release_version}",
           description: expected_description,
-          error_result_on_auto_merge: true
+          error_result_on_auto_merge: true,
+          allow_without_diff: false
         ).once
       end
     end

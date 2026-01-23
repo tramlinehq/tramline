@@ -117,7 +117,7 @@ GEM
     bindex (0.8.1)
     bootsnap (1.18.4)
       msgpack (~> 1.2)
-    brakeman (7.1.1)
+    brakeman (7.1.2)
       racc
     bugsnag-api (3.0.1)
       sawyer (~> 0.9.2)
@@ -476,6 +476,9 @@ GEM
       activesupport (>= 6.1)
     pghero (3.6.1)
       activerecord (>= 6.1)
+    positioning (0.4.7)
+      activerecord (>= 6.1)
+      activesupport (>= 6.1)
     posthog-ruby (3.1.0)
       concurrent-ruby (~> 1)
     postmark (1.25.1)
@@ -860,6 +863,7 @@ DEPENDENCIES
   pg_query
   pg_search (~> 2.3)
   pghero (~> 3.1)
+  positioning (~> 0.4)
   posthog-ruby (~> 3.1)
   postmark-rails (~> 0.21.0)
   prosopite

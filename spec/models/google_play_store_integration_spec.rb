@@ -1,12 +1,6 @@
 require "rails_helper"
 
 describe GooglePlayStoreIntegration do
-  let(:redis_connection) { Redis.new(**REDIS_CONFIGURATION.base) }
-
-  before do
-    redis_connection.flushdb
-  end
-
   it "has a valid factory" do
     expect(create(:google_play_store_integration, :without_callbacks_and_validations)).to be_valid
   end
@@ -308,10 +302,26 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
     let(:lock_name) { GooglePlayStoreIntegration::LOCK_NAME_PREFIX + app.id.to_s }
     let(:raise_on_lock_error) { false }
+    let(:lock_client) { Rails.application.config.distributed_lock_client }
+
+    # Helper to wait for lock to be acquired with polling instead of fixed sleep
+    def wait_for_lock(client, resource_name, timeout: 5, interval: 0.1)
+      deadline = Time.current + timeout
+      while Time.current < deadline
+        return true if client.locked?(resource_name)
+        sleep interval
+      end
+      false
+    end
 
     before do
       google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
+    end
+
+    after do
+      # Clean up any locks created during the test
+      lock_client.unlock({resource: lock_name, value: "", validity: 0})
     end
 
     it "ensures all requests take an api lock" do
@@ -325,24 +335,27 @@ describe GooglePlayStoreIntegration do
     end
 
     it "ensures that subsequent requests wait if there's already a lock" do
-      expect(redis_connection.get(lock_name)).to be_nil
-
       # first long-running api call
       allow(api_double).to receive(:halt_release) { sleep 10 }
-      Thread.new { google_integration.halt_release(anything, anything, anything, anything, raise_on_lock_error:) }
-      sleep 1
-      expect(redis_connection.get(lock_name)).not_to be_nil
+      thread = Thread.new { google_integration.halt_release(anything, anything, anything, anything, raise_on_lock_error:) }
+
+      # Wait for lock to be acquired using polling instead of fixed sleep
+      expect(wait_for_lock(lock_client, lock_name, timeout: 5)).to be(true)
 
       # second blocked call
       allow(api_double).to receive(:create_release) { sleep 1 }
       Thread.new { google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:) }
-      sleep 1
-      expect(redis_connection.get(lock_name)).not_to be_nil
+
+      # Lock should still be held
+      expect(lock_client.locked?(lock_name)).to be(true)
+
+      thread.kill
     end
 
     it "allows the retries to drain out if the lock could not be acquired on time" do
-      # pre-acquire lock
-      Rails.application.config.distributed_lock_client.lock(lock_name, 3600 * 1000)
+      # pre-acquire lock using lock! with a block to ensure it stays held
+      lock_info = lock_client.lock(lock_name, 30_000) # 30 second TTL
+      expect(lock_info).to be_truthy
 
       allow(google_integration).to receive(:api_lock_params).and_return(ttl: 100, retry_count: 1, retry_delay: 1)
       allow(api_double).to receive(:create_release)
@@ -351,6 +364,170 @@ describe GooglePlayStoreIntegration do
       r = google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:)
       expect(r.ok?).to be false
       expect(r.error).to be_a(GooglePlayStoreIntegration::LockAcquisitionError)
+
+      # Clean up the pre-acquired lock
+      lock_client.unlock(lock_info) if lock_info
+    end
+  end
+
+  describe "#build_channels" do
+    let(:app) { create(:app, platform: :android) }
+    let(:integration) { create(:integration, :with_google_play_store, integrable: app) }
+    let(:google_integration) { integration.providable }
+    let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
+
+    before do
+      google_integration.reload
+      allow(api_double).to receive(:list_tracks)
+        .with(GooglePlayStoreIntegration::CHANNEL_DATA_TRANSFORMATIONS)
+        .and_return(list_tracks_response)
+      allow(google_integration).to receive(:installation).and_return(api_double)
+    end
+
+    context "when only default form-factor tracks exist" do
+      let(:list_tracks_response) do
+        [
+          {"name" => "production", "releases" => nil},
+          {"name" => "beta", "releases" => nil},
+          {"name" => "alpha", "releases" => nil},
+          {"name" => "internal", "releases" => nil},
+          {"name" => "Pre-Alpha", "releases" => nil},
+          {"name" => "Pre-Alpha:1", "releases" => nil}
+        ].map(&:with_indifferent_access)
+      end
+
+      it "returns build channels without production track" do
+        channels = google_integration.build_channels(with_production: false)
+        expected_channels = [
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha:1",
+            "name" => "Closed testing - Pre-Alpha:1",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to match_array(expected_channels)
+      end
+
+      it "returns build channels with production track" do
+        channels = google_integration.build_channels(with_production: true)
+        expected_channels = [
+          {
+            "id" => :production,
+            "name" => "Production",
+            "is_production" => true
+          },
+          {
+            "id" => :beta,
+            "name" => "Open testing",
+            "is_production" => false
+          },
+          {
+            "id" => :alpha,
+            "name" => "Closed testing - Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => :internal,
+            "name" => "Internal testing",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha",
+            "name" => "Closed testing - Pre-Alpha",
+            "is_production" => false
+          },
+          {
+            "id" => "Pre-Alpha:1",
+            "name" => "Closed testing - Pre-Alpha:1",
+            "is_production" => false
+          }
+        ]
+
+        expect(channels).to match_array(expected_channels)
+      end
+    end
+
+    [
+      # form_factor_name, form_factor_key, pending
+      ["Android Automotive OS", "automotive", false],
+      ["Android Auto", "auto", true],
+      ["Wear OS", "wear", false],
+      ["Android TV", "tv", false],
+      ["Android XR", "android_xr", false],
+      ["Google Play Games On PC", "google_play_games_pc", false],
+      ["Google Play Instant", "google_play_instant", true]
+    ].each do |form_factor_name, form_factor_key, pending|
+      context "when #{form_factor_name} tracks are present along with default form-factor tracks", (pending ? {pending: "Skipping tests for #{form_factor_name} due to unknown form-factor prefix"} : {}) do
+        let(:list_tracks_response) do
+          [
+            {"name" => "production", "releases" => nil},
+            {"name" => "beta", "releases" => nil},
+            {"name" => "alpha", "releases" => nil},
+            {"name" => "internal", "releases" => nil},
+            {"name" => "Pre-Alpha", "releases" => nil},
+            {"name" => "#{form_factor_key}:beta", "releases" => nil},
+            {"name" => "#{form_factor_key}:internal", "releases" => nil},
+            {"name" => "#{form_factor_key}:production", "releases" => nil},
+            {"name" => "#{form_factor_key}:Pre-Alpha", "releases" => nil},
+            {"name" => "#{form_factor_key}:Pre-Alpha:1", "releases" => nil}
+          ].map(&:with_indifferent_access)
+        end
+
+        it "returns build channels without production track" do
+          channels = google_integration.build_channels(with_production: false)
+          expected_channels = [
+            {"id" => :beta, "name" => "Open testing", "is_production" => false},
+            {"id" => :alpha, "name" => "Closed testing - Alpha", "is_production" => false},
+            {"id" => :internal, "name" => "Internal testing", "is_production" => false},
+            {"id" => "Pre-Alpha", "name" => "Closed testing - Pre-Alpha", "is_production" => false},
+            {"id" => "#{form_factor_key}:beta", "name" => "#{form_factor_name} - Open testing", "is_production" => false},
+            {"id" => "#{form_factor_key}:internal", "name" => "#{form_factor_name} - Internal testing", "is_production" => false},
+            {"id" => "#{form_factor_key}:Pre-Alpha", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha", "is_production" => false},
+            {"id" => "#{form_factor_key}:Pre-Alpha:1", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha:1", "is_production" => false}
+          ]
+
+          expect(channels).to match_array(expected_channels)
+        end
+
+        it "returns build channels with production track" do
+          channels = google_integration.build_channels(with_production: true)
+          expected_channels = [
+            {"id" => :production, "name" => "Production", "is_production" => true},
+            {"id" => :beta, "name" => "Open testing", "is_production" => false},
+            {"id" => :alpha, "name" => "Closed testing - Alpha", "is_production" => false},
+            {"id" => :internal, "name" => "Internal testing", "is_production" => false},
+            {"id" => "Pre-Alpha", "name" => "Closed testing - Pre-Alpha", "is_production" => false},
+            {"id" => "#{form_factor_key}:beta", "name" => "#{form_factor_name} - Open testing", "is_production" => false},
+            {"id" => "#{form_factor_key}:internal", "name" => "#{form_factor_name} - Internal testing", "is_production" => false},
+            {"id" => "#{form_factor_key}:production", "name" => "#{form_factor_name} - Production", "is_production" => true},
+            {"id" => "#{form_factor_key}:Pre-Alpha", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha", "is_production" => false},
+            {"id" => "#{form_factor_key}:Pre-Alpha:1", "name" => "#{form_factor_name} - Closed testing - Pre-Alpha:1", "is_production" => false}
+          ]
+
+          expect(channels).to match_array(expected_channels)
+        end
+      end
     end
   end
 end

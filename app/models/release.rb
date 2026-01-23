@@ -3,7 +3,8 @@
 # Table name: releases
 #
 #  id                        :uuid             not null, primary key
-#  branch_name               :string           not null
+#  branch_name               :string           not null, indexed
+#  commit_hash               :string
 #  completed_at              :datetime
 #  hotfixed_from             :uuid
 #  internal_notes            :jsonb
@@ -15,7 +16,7 @@
 #  release_type              :string           not null
 #  scheduled_at              :datetime
 #  slug                      :string           indexed
-#  status                    :string           not null
+#  status                    :string           not null, indexed
 #  stopped_at                :datetime
 #  tag_name                  :string
 #  created_at                :datetime         not null
@@ -82,6 +83,7 @@ class Release < ApplicationRecord
   FINALIZE_STATES = %w[on_track post_release_failed partially_finished]
   TERMINAL_STATES = %w[stopped stopped_after_partial_finish finished]
   POST_RELEASE_STATES = %w[post_release_started post_release_failed]
+  ACTIVE_STATES = STATES.values - TERMINAL_STATES
   SECTIONS = {
     overview: {title: "Overview"},
     changeset_tracking: {title: "Changeset tracking"},
@@ -119,14 +121,18 @@ class Release < ApplicationRecord
   has_many :production_releases, through: :release_platform_runs
   has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
   has_many :outgoing_webhook_events, dependent: :destroy, inverse_of: :release
+  has_one :beta_soak, dependent: :destroy
 
   scope :completed, -> { where(status: TERMINAL_STATES) }
   scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
+  scope :active, -> { where(status: ACTIVE_STATES) }
 
   enum :status, STATES
   enum :release_type, {hotfix: "hotfix", release: "release"}
+
+  validate :commit_hash_input
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
@@ -480,7 +486,11 @@ class Release < ApplicationRecord
   end
 
   def upcoming?
-    train.upcoming_release == self
+    if Flipper.enabled?(:allow_multiple_upcoming_releases, train)
+      active? && !ongoing?
+    else
+      train.upcoming_release == self
+    end
   end
 
   def ongoing?
@@ -605,6 +615,30 @@ class Release < ApplicationRecord
     Triggers::OutgoingWebhook.call(self, event_type, webhook_params)
   end
 
+  # find all the other releases that share the same vcs integration and configuration
+  # and are using the same branch name
+  def conflicting_branch_releases
+    organization_id = train.app.organization_id
+    current_vcs = vcs_provider
+    integration_type = current_vcs.class.name
+    integration_category = Integration.categories[:version_control]
+    other_releases =
+      Release
+        .active
+        .includes(train: {app: [:integrations, :organization]})
+        .where.not(releases: {id: id})
+        .where(branch_name: branch_name)
+        .where(organizations: {id: organization_id})
+        .where(integrations: {category: integration_category, providable_type: integration_type, discarded_at: nil})
+    other_releases.filter do |other_release|
+      other_vcs = other_release.vcs_provider
+      current_vcs.repository_id == other_vcs.repository_id &&
+        current_vcs.code_repository_name == other_vcs.code_repository_name
+    end
+  end
+
+  delegate :soak_period_enabled?, to: :train
+
   private
 
   def base_tag_name
@@ -630,5 +664,11 @@ class Release < ApplicationRecord
 
   def set_internal_notes
     self.internal_notes = DEFAULT_INTERNAL_NOTES.to_json
+  end
+
+  def commit_hash_input
+    if !train.custom_commit_hash_input? && commit_hash.present?
+      errors.add(:commit_hash, :not_allowed)
+    end
   end
 end

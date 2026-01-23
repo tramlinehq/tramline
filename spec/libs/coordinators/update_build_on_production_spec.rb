@@ -136,6 +136,33 @@ describe Coordinators::UpdateBuildOnProduction do
       expect(store_submission.reload.created?).to be(true)
       expect(StoreSubmissions::PlayStore::UploadJob).not_to have_received(:perform_async).with(store_submission.id)
     end
+
+    it "stamps an event for production release" do
+      allow(production_release).to receive(:event_stamp!)
+      new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
+      new_build = create(:build, :with_artifact, release_platform_run:, workflow_run: new_workflow_run)
+
+      described_class.call(store_submission, new_build.id)
+
+      expect(production_release).to have_received(:event_stamp!).with(reason: :build_updated,
+        kind: :notice,
+        data: {build_number: new_build.build_number, version: "1.2.3"})
+    end
+
+    it "returns an error if build number is not higher than active rollout" do
+      # Create an active production release with build_number 126
+      active_workflow = create(:workflow_run, :rc, release_platform_run:)
+      active_build = create(:build, release_platform_run:, workflow_run: active_workflow, build_number: "126")
+      create(:production_release, :active, release_platform_run:, build: active_build)
+
+      # Try to change to build with build_number 125 (lower)
+      older_workflow = create(:workflow_run, :rc, release_platform_run:)
+      older_build = create(:build, release_platform_run:, workflow_run: older_workflow, build_number: "125")
+
+      expect {
+        described_class.call(store_submission, older_build.id)
+      }.to raise_error("build is not valid for production")
+    end
   end
 
   context "when ios" do
@@ -280,6 +307,38 @@ describe Coordinators::UpdateBuildOnProduction do
       described_class.call(store_submission, new_build.id)
       expect(store_submission.reload.created?).to be(true)
       expect(StoreSubmissions::AppStore::FindBuildJob).not_to have_received(:perform_async).with(store_submission.id)
+    end
+
+    it "stamps an event for production release" do
+      allow(production_release).to receive(:event_stamp!)
+      new_workflow_run = create(:workflow_run, :rc, release_platform_run:)
+      new_build = create(:build, :with_artifact, release_platform_run:, workflow_run: new_workflow_run)
+
+      described_class.call(store_submission, new_build.id)
+
+      expect(production_release).to have_received(:event_stamp!).with(
+        reason: :build_updated,
+        kind: :notice,
+        data: {build_number: new_build.build_number, version: "1.2.3"}
+      )
+    end
+
+    it "returns an error if version name is not higher than active rollout" do
+      # Create an older build with version 10.44.0 first
+      release_platform_run.update!(release_version: "10.44.0")
+      older_workflow = create(:workflow_run, :rc, release_platform_run:)
+      older_build = create(:build, release_platform_run:, workflow_run: older_workflow, generated_at: 2.days.ago)
+
+      # Bump version to 10.44.1 and create active production release
+      release_platform_run.update!(release_version: "10.44.1")
+      active_workflow = create(:workflow_run, :rc, release_platform_run:)
+      active_build = create(:build, release_platform_run:, workflow_run: active_workflow, generated_at: 1.day.ago)
+      create(:production_release, :active, release_platform_run:, build: active_build)
+
+      # Try to change to the older build (10.44.0 < 10.44.1)
+      expect {
+        described_class.call(store_submission, older_build.id)
+      }.to raise_error("build is not valid for production")
     end
   end
 end

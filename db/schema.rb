@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_21_222440) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -130,7 +130,17 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_21_222440) do
     t.boolean "draft"
     t.boolean "build_number_managed_internally", default: true, null: false
     t.index ["organization_id"], name: "index_apps_on_organization_id"
-    t.index ["platform", "bundle_identifier", "organization_id"], name: "index_apps_on_platform_and_bundle_id_and_org_id", unique: true
+    t.index ["platform", "bundle_identifier", "organization_id", "name"], name: "index_apps_on_platform_bundle_id_org_id_and_name", unique: true
+  end
+
+  create_table "beta_soaks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_id", null: false
+    t.datetime "started_at", null: false
+    t.datetime "ended_at"
+    t.integer "period_hours", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["release_id"], name: "index_beta_soaks_on_release_id"
   end
 
   create_table "bitbucket_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -415,7 +425,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_21_222440) do
     t.string "integrable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["integrable_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
-    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying, 'disconnected'::character varying, 'needs_reauth'::character varying]::text[])", name: "chk_rails_status_enum"
+    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying::text, 'disconnected'::character varying::text, 'needs_reauth'::character varying::text])", name: "chk_rails_status_enum"
   end
 
   create_table "invites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -794,8 +804,11 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_21_222440) do
     t.boolean "is_v2", default: false
     t.uuid "approval_overridden_by_id"
     t.jsonb "notification_channel"
+    t.string "commit_hash"
     t.index ["approval_overridden_by_id"], name: "index_releases_on_approval_overridden_by_id"
+    t.index ["branch_name"], name: "index_releases_on_branch_name"
     t.index ["slug"], name: "index_releases_on_slug", unique: true
+    t.index ["status"], name: "index_releases_on_status"
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
 
@@ -1048,6 +1061,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_21_222440) do
     t.boolean "enable_changelog_linking_in_notifications", default: false
     t.string "release_branch_pattern"
     t.boolean "webhooks_enabled", default: false, null: false
+    t.boolean "soak_period_enabled", default: false, null: false
+    t.integer "soak_period_hours", default: 24, null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
@@ -1156,6 +1171,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_21_222440) do
   add_foreign_key "approval_items", "users", column: "author_id"
   add_foreign_key "approval_items", "users", column: "status_changed_by_id"
   add_foreign_key "apps", "organizations"
+  add_foreign_key "beta_soaks", "releases"
   add_foreign_key "build_queues", "releases"
   add_foreign_key "builds", "commits"
   add_foreign_key "builds", "release_platform_runs"

@@ -5,6 +5,23 @@ describe Build do
     expect(create(:build)).to be_valid
   end
 
+  describe ".without_production_releases" do
+    let(:release_platform_run) { create(:release_platform_run) }
+
+    it "includes builds without production releases" do
+      build = create(:build, :rc, release_platform_run:)
+
+      expect(described_class.without_production_releases).to include(build)
+    end
+
+    it "excludes builds with production releases" do
+      build = create(:build, :rc, release_platform_run:)
+      create(:production_release, release_platform_run:, build:)
+
+      expect(described_class.without_production_releases).not_to include(build)
+    end
+  end
+
   describe "#release_version" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:commit) { create(:commit) }

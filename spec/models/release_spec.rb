@@ -838,4 +838,134 @@ describe Release do
       expect(release.last_applicable_commit).to eq(commit_in_queue)
     end
   end
+
+  describe "soak period delegation" do
+    let(:train) { create(:train, soak_period_enabled: true, soak_period_hours: 24) }
+    let(:release) { create(:release, train:) }
+
+    describe "#soak_period_enabled?" do
+      it "delegates to train" do
+        expect(release.soak_period_enabled?).to be(true)
+      end
+
+      it "returns false when train has soak disabled" do
+        release.train.update!(soak_period_enabled: false)
+        expect(release.soak_period_enabled?).to be(false)
+      end
+    end
+
+    describe "beta_soak association" do
+      it "can create a beta_soak" do
+        beta_soak = release.create_beta_soak!(started_at: Time.current, period_hours: 24)
+        expect(beta_soak).to be_persisted
+        expect(release.reload.beta_soak).to eq(beta_soak)
+      end
+
+      it "returns nil when no beta_soak exists" do
+        expect(release.beta_soak).to be_nil
+      end
+    end
+  end
+
+  describe "commit hash validations" do
+    it "returns an error if custom commit hashes are not allowed but specified" do
+      train = build(:train, :with_almost_trunk, :with_version_bump)
+      release = build(:release, train:, commit_hash: "abc123")
+
+      expect(release).not_to be_valid
+      expect(release.errors[:commit_hash]).to include("specifying a custom commit hash to start a release is not allowed")
+    end
+  end
+
+  describe "#conflicting_branch_releases" do
+    let(:organization) { create(:organization, :with_owner_membership) }
+    let(:train) { create(:train, app: app) }
+    let(:app) { create(:app, :android, organization: organization) }
+    let(:repo_config) { {"id" => 123, "full_name" => "org/repo"} }
+
+    before do
+      app.integrations.version_control.first.providable.update!(repository_config: repo_config)
+    end
+
+    context "when there is another active release with same branch and same repo config" do
+      let(:other_app) { create(:app, :android, organization: organization, bundle_identifier: "com.example.other") }
+      let(:other_train) { create(:train, app: other_app) }
+
+      before do
+        other_app.integrations.version_control.first.providable.update!(repository_config: repo_config)
+      end
+
+      it "returns the conflicting release" do
+        release = create(:release, :on_track, train: train, branch_name: "release/1.2.3")
+        other_release = create(:release, :on_track, train: other_train, branch_name: "release/1.2.3")
+        expect(release.conflicting_branch_releases).to include(other_release)
+      end
+    end
+
+    context "when there is another active release with same branch but different repo id" do
+      let(:other_app) { create(:app, :android, organization: organization, bundle_identifier: "com.example.other") }
+      let(:other_repo_config) { {"id" => 456, "full_name" => "org/repo"} }
+      let(:other_train) { create(:train, app: other_app) }
+
+      before do
+        _other_release = create(:release, :on_track, train: other_train, branch_name: "release/1.2.3")
+        other_app.integrations.version_control.first.providable.update!(repository_config: other_repo_config)
+      end
+
+      it "does not return the release" do
+        release = create(:release, :on_track, train: train, branch_name: "release/1.2.3")
+        expect(release.conflicting_branch_releases).to be_empty
+      end
+    end
+
+    context "when there is another active release with same branch but different repo name" do
+      let(:other_app) { create(:app, :android, organization: organization, bundle_identifier: "com.example.other") }
+      let(:other_repo_config) { {"id" => 123, "full_name" => "org/other-repo"} }
+      let(:other_train) { create(:train, app: other_app) }
+
+      before do
+        _other_release = create(:release, :on_track, train: other_train, branch_name: "release/1.2.3")
+        other_app.integrations.version_control.first.providable.update!(repository_config: other_repo_config)
+      end
+
+      it "does not return the release" do
+        release = create(:release, :on_track, train: train, branch_name: "release/1.2.3")
+        expect(release.conflicting_branch_releases).to be_empty
+      end
+    end
+
+    context "when there is another active release with same branch but different vcs provider type" do
+      let(:other_app) { create(:app, :android, organization: organization, bundle_identifier: "com.example.other") }
+      let(:other_train) { create(:train, app: other_app) }
+
+      before do
+        _other_release = create(:release, :on_track, train: other_train, branch_name: "release/1.2.3")
+        other_app.integrations.version_control.destroy_all
+        other_gitlab_integration = build(:gitlab_integration,
+          :without_callbacks_and_validations,
+          repository_config: {"id" => 123, "full_name" => "org/repo"})
+        create(:integration, integrable: other_app, category: :version_control, providable: other_gitlab_integration)
+      end
+
+      it "does not return the release" do
+        release = create(:release, :on_track, train: train, branch_name: "release/1.2.3")
+        expect(release.conflicting_branch_releases).to be_empty
+      end
+    end
+
+    context "when there is another active release with same branch but different installation_id" do
+      let(:other_app) { create(:app, :android, organization: organization, bundle_identifier: "com.example.other") }
+      let(:other_train) { create(:train, app: other_app) }
+
+      before do
+        _other_release = create(:release, :on_track, train: other_train, branch_name: "release/1.2.3")
+        other_app.integrations.version_control.first.providable.update!(repository_config: repo_config.merge("id" => 456))
+      end
+
+      it "does not return the release" do
+        release = create(:release, :on_track, train: train, branch_name: "release/1.2.3")
+        expect(release.conflicting_branch_releases).to be_empty
+      end
+    end
+  end
 end

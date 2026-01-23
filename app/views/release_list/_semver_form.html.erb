@@ -13,6 +13,19 @@
     </div>
   </div>
 
+  <% if train.custom_commit_hash_input? %>
+    <div class="mt-2">
+      <%= form.F.labeled_text_field :commit_hash,
+                                    "Commit SHA (optional)",
+                                    pattern: "[a-fA-F0-9]{40}",
+                                    autocomplete: "off",
+                                    placeholder: nil %>
+      <p class="mt-1 text-secondary text-xs">
+        The SHA to cut the release branch from <%= train.working_branch %>.
+      </p>
+    </div>
+  <% end %>
+
   <% form.with_action do %>
     <%= form.F.authz_submit "Start", "zap.svg" %>
   <% end %>

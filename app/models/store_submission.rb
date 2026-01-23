@@ -53,6 +53,8 @@ class StoreSubmission < ApplicationRecord
     conf.submission_external
   end
 
+  def transitioning? = false
+
   def triggerable?
     created? && actionable?
   end

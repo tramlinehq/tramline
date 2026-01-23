@@ -1,6 +1,7 @@
 class Config::ReleasePlatformsController < SignedInApplicationController
   include Tabbable
   using RefinedString
+  ConfigUpdater = WebHandlers::UpdateReleasePlatformConfig
 
   before_action :require_write_access!, only: %i[update]
   before_action :set_train, only: %i[edit update refresh_workflows]
@@ -18,10 +19,13 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   end
 
   def update
-    if @config.update(update_config_params)
+    updater = ConfigUpdater.new(@config, config_params, @submission_types, @ci_actions, @release_platform)
+
+    if updater.call
       redirect_to update_redirect_path, notice: t(".success")
     else
-      redirect_to update_redirect_path, flash: {error: @config.errors.full_messages.to_sentence}
+      error_message = updater.errors.full_messages.to_sentence
+      redirect_to update_redirect_path, flash: {error: error_message.presence || "Failed to update configuration."}
     end
   end
 
@@ -82,8 +86,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       production_release_attributes: [
         :id,
         submissions_attributes: [
-          :id, :submission_type, :_destroy, :rollout_stages, :rollout_enabled, :finish_rollout_in_next_release,
-          :automatic_rollout
+          :id, :submission_type, :_destroy, :rollout_stages, :rollout_enabled, :finish_rollout_in_next_release, :production_form_factor, :automatic_rollout
         ]
       ],
       internal_workflow_attributes: [
@@ -91,91 +94,6 @@ class Config::ReleasePlatformsController < SignedInApplicationController
         parameters_attributes: [:id, :name, :value, :_destroy]
       ]
     )
-  end
-
-  # Parse form params and delete parents as necessary
-  def update_config_params
-    permitted_params = config_params
-    internal_enabled = permitted_params[:internal_release_enabled] == "true"
-    beta_enabled = permitted_params[:beta_release_submissions_enabled] == "true"
-    prod_enabled = permitted_params[:production_release_enabled] == "true"
-
-    if !internal_enabled && permitted_params[:internal_release_attributes].present?
-      set_destroy!(permitted_params[:internal_release_attributes])
-      set_destroy!(permitted_params[:internal_workflow_attributes])
-    end
-
-    if !beta_enabled && permitted_params[:beta_release_attributes].present?
-      permitted_params[:beta_release_attributes][:submissions_attributes]&.each do |_, submission|
-        set_destroy!(submission)
-        set_destroy!(submission[:submission_external_attributes])
-      end
-    end
-
-    if !prod_enabled && permitted_params[:production_release_attributes].present?
-      set_destroy!(permitted_params[:production_release_attributes])
-    end
-
-    parse_config_params(permitted_params)
-  end
-
-  def parse_config_params(permitted_params)
-    update_workflow_name(permitted_params[:internal_workflow_attributes])
-    update_workflow_name(permitted_params[:release_candidate_workflow_attributes])
-    update_submission_params(permitted_params[:internal_release_attributes])
-    update_submission_params(permitted_params[:beta_release_attributes])
-    update_production_release_rollout_stages(permitted_params[:production_release_attributes]) if @release_platform.android? && permitted_params[:production_release_attributes].present?
-
-    permitted_params
-  end
-
-  def update_workflow_name(workflow_attributes)
-    if workflow_attributes&.dig(:identifier).present?
-      workflow_attributes[:name] = find_workflow_name(workflow_attributes[:identifier])
-    end
-  end
-
-  def update_submission_params(release_attributes)
-    if release_attributes.present?
-      release_attributes[:submissions_attributes]&.each do |_, submission|
-        variant = @submission_types[:variants].find { |v| v[:id] == submission[:integrable_id] }
-        submission[:integrable_type] = variant[:type]
-
-        ext_sub = find_submission(submission, variant)
-        if ext_sub.present?
-          submission[:submission_external_attributes][:name] = ext_sub[:name]
-          submission[:submission_external_attributes][:internal] = ext_sub[:is_internal]
-        end
-      end
-    end
-  end
-
-  def update_production_release_rollout_stages(production_release_attributes)
-    submission_attributes = production_release_attributes[:submissions_attributes]["0"]
-    if production_release_attributes.present? && submission_attributes[:rollout_enabled] == "true"
-      submission_attributes[:rollout_stages] = submission_attributes[:rollout_stages].safe_csv_parse(coerce_float: true)
-    else
-      submission_attributes[:finish_rollout_in_next_release] = false
-      submission_attributes[:automatic_rollout] = false
-    end
-  end
-
-  def find_workflow_name(identifier)
-    @ci_actions.find { |action| action[:id] == identifier }&.dig(:name)
-  end
-
-  def find_submission(submission, variant)
-    return if variant.blank?
-    identifier = submission.dig(:submission_external_attributes, :identifier)
-    return unless identifier
-
-    variant[:submissions].find { |type| type[:type].to_s == submission[:submission_type].to_s }
-      &.then { |sub| sub.dig(:channels) }
-      &.then { |channels| channels.find { |channel| channel[:id].to_s == identifier } }
-  end
-
-  def set_destroy!(param)
-    param[:_destroy] = "1"
   end
 
   def update_redirect_path

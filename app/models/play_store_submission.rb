@@ -52,8 +52,9 @@ class PlayStoreSubmission < StoreSubmission
     finished_manually: "finished_manually"
   }
   FINAL_STATES = %w[prepared]
-  PRE_PREPARE_STATES = %w[created preprocessing review_failed failed]
-  CHANGEABLE_STATES = %w[created preprocessing failed prepared]
+  PRE_PREPARE_STATES = %w[created preprocessing failed_with_action_required review_failed failed]
+  CHANGEABLE_STATES = %w[created preprocessing failed_with_action_required failed prepared]
+  TRANSITIONING_STATES = %w[preprocessing preparing]
   MAX_NOTES_LENGTH = 500
   DEEP_LINK_BASE = "https://play.google.com/store/apps/details?id="
 
@@ -113,6 +114,8 @@ class PlayStoreSubmission < StoreSubmission
   def cancellable? = false
 
   def cancelling? = false
+
+  def transitioning? = TRANSITIONING_STATES.include?(status)
 
   def finished?
     return true if finished_manually?

@@ -157,6 +157,10 @@ class GitlabIntegration < ApplicationRecord
     generated_at: :created_at
   }
 
+  def repository_id
+    repository_config&.fetch("id", nil)
+  end
+
   def code_repository_name
     repository_config&.fetch("full_name", nil)
   end
@@ -358,7 +362,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def get_commit(sha)
-    with_api_retries { installation.get_commit(repository_config["id"], sha, COMMITS_TRANSFORMATIONS) }
+    with_api_retries { installation.get_commit(repository_id, sha, COMMITS_TRANSFORMATIONS) }
   end
 
   def create_pr!(to_branch_ref, from_branch_ref, title, description)

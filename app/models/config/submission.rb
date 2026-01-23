@@ -21,21 +21,21 @@ class Config::Submission < ApplicationRecord
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
   belongs_to :release_step_config, class_name: "Config::ReleaseStep"
+  positioned on: :release_step_config, column: :number
   has_one :submission_external, class_name: "Config::SubmissionExternal", inverse_of: :submission_config, dependent: :destroy
   delegated_type :integrable, types: INTEGRABLE_TYPES, validate: false
 
-  before_validation :set_default_production_config, if: -> { !read_only? && new_record? && production? }
-  before_validation :set_number_one, if: -> { !read_only? && new_record? && production? }
+  before_validation :set_default_production_config, if: -> { !read_only? && production? }
   before_validation :set_default_rollout_for_ios, if: -> { !read_only? && new_record? && ios? && rollout_enabled? }
 
   validates :submission_type, presence: true
-  validates :number, presence: true, uniqueness: {scope: :release_step_config_id}
   validate :correct_rollout_stages, if: :rollout_enabled?
   validate :production_release_submission
   validate :cascading_rollout_applicability, if: :finish_rollout_in_next_release?
 
   accepts_nested_attributes_for :submission_external, allow_destroy: true
   attr_accessor :read_only
+  attribute :production_form_factor, :string
 
   delegate :ios?, :android?, :production?, :platform, to: :release_step_config
 
@@ -68,7 +68,7 @@ class Config::Submission < ApplicationRecord
   end
 
   def next
-    release_step_config.submissions.where("number > ?", number).order(:number).first
+    subsequent_number
   end
 
   def app_variant?
@@ -134,17 +134,48 @@ class Config::Submission < ApplicationRecord
     self.rollout_stages = AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE
   end
 
-  def set_number_one
-    self.number = 1
+  def set_default_production_config
+    set_production_defaults if new_record?
+    apply_form_factor_to_identifier if android? && production_form_factor_changed?
   end
 
-  def set_default_production_config
+  # Parses the form factor from the submission_external identifier
+  # e.g., "wear:production" -> "wear", "production" -> nil
+  def parsed_production_form_factor
+    return nil unless submission_external&.identifier
+    prefix, _track = submission_external.identifier.to_s.split(":", 2)
+    GooglePlayStoreIntegration::FORM_FACTOR_TRACKS.key?(prefix) ? prefix : nil
+  end
+
+  private
+
+  def set_production_defaults
     self.integrable_id = default_app.id
     self.integrable_type = "App"
-    self.submission_external = Config::SubmissionExternal.from_json(ReleasePlatform::DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym][:submissions][0][:submission_config])
+    self.submission_external = Config::SubmissionExternal.from_json(default_production_config)
+  end
+
+  def default_production_config
+    ReleasePlatform::DEFAULT_PROD_RELEASE_CONFIG[platform.to_sym][:submissions][0][:submission_config]
   end
 
   def default_app
     release_step_config.release_platform_config.release_platform.app
+  end
+
+  def apply_form_factor_to_identifier
+    return unless submission_external
+
+    submission_external.identifier = if production_form_factor.present?
+      "#{production_form_factor}:#{base_production_identifier}"
+    else
+      base_production_identifier
+    end
+  end
+
+  def base_production_identifier
+    current = submission_external.identifier.to_s
+    prefix, track = current.split(":", 2)
+    GooglePlayStoreIntegration::FORM_FACTOR_TRACKS.key?(prefix) ? (track.presence || "production") : current
   end
 end
