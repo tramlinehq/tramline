@@ -12,6 +12,7 @@ class Coordinators::UpdateBuildOnProduction
   def call
     raise "production release is not actionable" unless submission.actionable?
     raise "production release is not editable" unless production_release.inflight?
+    raise "build is not valid for production" unless valid_build?
 
     with_lock do
       return unless production_release.inflight?
@@ -26,4 +27,8 @@ class Coordinators::UpdateBuildOnProduction
 
   attr_reader :submission, :production_release, :build
   delegate :with_lock, to: :production_release
+
+  def valid_build?
+    submission.release_platform_run.valid_build_for_production?(build)
+  end
 end
