@@ -11,7 +11,7 @@ module Installations
     def list_organizations(transforms)
       execute do
         organizations = paginated_execute("/organizations/", max_results: 200)
-        return nil if organizations.nil? || organizations.empty?
+        return nil if organizations.blank?
         Installations::Response::Keys.transform(organizations, transforms)
       end
     end
@@ -19,7 +19,7 @@ module Installations
     def list_projects(org_slug, transforms)
       execute do
         projects = paginated_execute("/organizations/#{org_slug}/projects/", max_results: 500)
-        return nil if projects.nil? || projects.empty?
+        return nil if projects.blank?
 
         # Attach organization slug to each project for easier lookup
         projects_with_org = projects.map { |project| project.merge("organization_slug" => org_slug) }

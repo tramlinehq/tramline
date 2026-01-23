@@ -105,8 +105,8 @@ describe Installations::Sentry::Api do
     end
 
     context "with pagination" do
-      let(:projects_page1) { [{"id" => "1", "slug" => "proj-1", "name" => "Project 1", "platform" => "python"}] }
-      let(:projects_page2) { [{"id" => "2", "slug" => "proj-2", "name" => "Project 2", "platform" => "javascript"}] }
+      let(:projects_first_page) { [{"id" => "1", "slug" => "proj-1", "name" => "Project 1", "platform" => "python"}] }
+      let(:projects_second_page) { [{"id" => "2", "slug" => "proj-2", "name" => "Project 2", "platform" => "javascript"}] }
 
       before do
         # First page with Link header
@@ -114,7 +114,7 @@ describe Installations::Sentry::Api do
           .with(headers: {"Authorization" => "Bearer #{access_token}"})
           .to_return(
             status: 200,
-            body: projects_page1.to_json,
+            body: projects_first_page.to_json,
             headers: {
               "Content-Type" => "application/json",
               "Link" => "<https://sentry.io/api/0/organizations/#{org_slug}/projects/?cursor=xyz789>; rel=\"next\""
@@ -126,7 +126,7 @@ describe Installations::Sentry::Api do
           .with(query: {"cursor" => "xyz789"}, headers: {"Authorization" => "Bearer #{access_token}"})
           .to_return(
             status: 200,
-            body: projects_page2.to_json,
+            body: projects_second_page.to_json,
             headers: {"Content-Type" => "application/json"}
           )
       end
@@ -155,8 +155,8 @@ describe Installations::Sentry::Api do
 
   describe "#list_organizations with pagination" do
     let(:transforms) { SentryIntegration::ORGANIZATIONS_TRANSFORMATIONS }
-    let(:orgs_page1) { [{"id" => "1", "slug" => "org-1", "name" => "Org 1"}] }
-    let(:orgs_page2) { [{"id" => "2", "slug" => "org-2", "name" => "Org 2"}] }
+    let(:orgs_first_page) { [{"id" => "1", "slug" => "org-1", "name" => "Org 1"}] }
+    let(:orgs_second_page) { [{"id" => "2", "slug" => "org-2", "name" => "Org 2"}] }
 
     before do
       # First page with Link header
@@ -164,7 +164,7 @@ describe Installations::Sentry::Api do
         .with(headers: {"Authorization" => "Bearer #{access_token}"})
         .to_return(
           status: 200,
-          body: orgs_page1.to_json,
+          body: orgs_first_page.to_json,
           headers: {
             "Content-Type" => "application/json",
             "Link" => '<https://sentry.io/api/0/organizations/?cursor=abc123>; rel="next"'
@@ -176,7 +176,7 @@ describe Installations::Sentry::Api do
         .with(query: {"cursor" => "abc123"}, headers: {"Authorization" => "Bearer #{access_token}"})
         .to_return(
           status: 200,
-          body: orgs_page2.to_json,
+          body: orgs_second_page.to_json,
           headers: {"Content-Type" => "application/json"}
         )
     end
@@ -186,7 +186,7 @@ describe Installations::Sentry::Api do
 
       expect(result).to be_an(Array)
       expect(result.length).to eq(2)
-      expect(result.map { |o| o[:slug] }).to contain_exactly("org-1", "org-2")
+      expect(result.pluck(:slug)).to contain_exactly("org-1", "org-2")
     end
 
     it "makes requests for both pages" do
