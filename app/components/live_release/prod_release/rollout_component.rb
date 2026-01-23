@@ -34,7 +34,6 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
     :id,
     :parent_release, to: :store_rollout
   delegate :release, :platform, to: :release_platform_run
-  delegate :automatic_rollout?, to: :release_platform_run
 
   def decorated_status
     status_picker(STATUS, status)

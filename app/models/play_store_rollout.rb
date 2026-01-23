@@ -152,7 +152,7 @@ class PlayStoreRollout < StoreRollout
       result = rollout(last_rollout_percentage, retry_on_review_fail: true)
       if result.ok?
         start!
-        if release_platform_run.automatic_rollout?
+        if store_submission.auto_rollout?
           update!(automatic_rollout: true)
         end
         event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
