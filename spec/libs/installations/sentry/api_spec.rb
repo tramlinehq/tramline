@@ -103,6 +103,136 @@ describe Installations::Sentry::Api do
         expect(api_instance.list_projects(org_slug, transforms)).to be_nil
       end
     end
+
+    context "with pagination" do
+      let(:projects_page1) { [{"id" => "1", "slug" => "proj-1", "name" => "Project 1", "platform" => "python"}] }
+      let(:projects_page2) { [{"id" => "2", "slug" => "proj-2", "name" => "Project 2", "platform" => "javascript"}] }
+
+      before do
+        # First page with Link header
+        stub_request(:get, "#{base_url}/organizations/#{org_slug}/projects/")
+          .with(headers: {"Authorization" => "Bearer #{access_token}"})
+          .to_return(
+            status: 200,
+            body: projects_page1.to_json,
+            headers: {
+              "Content-Type" => "application/json",
+              "Link" => "<https://sentry.io/api/0/organizations/#{org_slug}/projects/?cursor=xyz789>; rel=\"next\""
+            }
+          )
+
+        # Second page without Link header (last page)
+        stub_request(:get, "#{base_url}/organizations/#{org_slug}/projects/")
+          .with(query: {"cursor" => "xyz789"}, headers: {"Authorization" => "Bearer #{access_token}"})
+          .to_return(
+            status: 200,
+            body: projects_page2.to_json,
+            headers: {"Content-Type" => "application/json"}
+          )
+      end
+
+      it "fetches all pages and attaches organization_slug to each project" do
+        result = api_instance.list_projects(org_slug, transforms)
+
+        expect(result).to be_an(Array)
+        expect(result.length).to eq(2)
+        expect(result.first[:organization_slug]).to eq(org_slug)
+        expect(result.last[:organization_slug]).to eq(org_slug)
+      end
+
+      it "makes requests for both pages" do
+        api_instance.list_projects(org_slug, transforms)
+
+        # Verify first page request (without cursor)
+        expect(WebMock).to have_requested(:get, "#{base_url}/organizations/#{org_slug}/projects/")
+          .with(headers: {"Authorization" => "Bearer #{access_token}"})
+        # Verify second page request (with cursor)
+        expect(WebMock).to have_requested(:get, "#{base_url}/organizations/#{org_slug}/projects/")
+          .with(query: {"cursor" => "xyz789"})
+      end
+    end
+  end
+
+  describe "#list_organizations with pagination" do
+    let(:transforms) { SentryIntegration::ORGANIZATIONS_TRANSFORMATIONS }
+    let(:orgs_page1) { [{"id" => "1", "slug" => "org-1", "name" => "Org 1"}] }
+    let(:orgs_page2) { [{"id" => "2", "slug" => "org-2", "name" => "Org 2"}] }
+
+    before do
+      # First page with Link header
+      stub_request(:get, "#{base_url}/organizations/")
+        .with(headers: {"Authorization" => "Bearer #{access_token}"})
+        .to_return(
+          status: 200,
+          body: orgs_page1.to_json,
+          headers: {
+            "Content-Type" => "application/json",
+            "Link" => '<https://sentry.io/api/0/organizations/?cursor=abc123>; rel="next"'
+          }
+        )
+
+      # Second page without Link header (last page)
+      stub_request(:get, "#{base_url}/organizations/")
+        .with(query: {"cursor" => "abc123"}, headers: {"Authorization" => "Bearer #{access_token}"})
+        .to_return(
+          status: 200,
+          body: orgs_page2.to_json,
+          headers: {"Content-Type" => "application/json"}
+        )
+    end
+
+    it "fetches all pages and concatenates results" do
+      result = api_instance.list_organizations(transforms)
+
+      expect(result).to be_an(Array)
+      expect(result.length).to eq(2)
+      expect(result.map { |o| o[:slug] }).to contain_exactly("org-1", "org-2")
+    end
+
+    it "makes requests for both pages" do
+      api_instance.list_organizations(transforms)
+
+      # Verify first page request (without cursor)
+      expect(WebMock).to have_requested(:get, "#{base_url}/organizations/")
+        .with(headers: {"Authorization" => "Bearer #{access_token}"})
+      # Verify second page request (with cursor)
+      expect(WebMock).to have_requested(:get, "#{base_url}/organizations/")
+        .with(query: {"cursor" => "abc123"})
+    end
+  end
+
+  describe "#paginated_execute" do
+    context "with max_results limit" do
+      it "stops when max_results is reached" do
+        # First page with 10 items
+        stub_request(:get, "#{base_url}/test/")
+          .with(headers: {"Authorization" => "Bearer #{access_token}"})
+          .to_return(
+            status: 200,
+            body: Array.new(10) { |i| {"id" => i} }.to_json,
+            headers: {"Link" => '<https://sentry.io/api/0/test/?cursor=abc>; rel="next"'}
+          )
+
+        # Second page would have more
+        stub_request(:get, "#{base_url}/test/")
+          .with(query: {"cursor" => "abc"}, headers: {"Authorization" => "Bearer #{access_token}"})
+          .to_return(
+            status: 200,
+            body: Array.new(10) { |i| {"id" => i + 10} }.to_json,
+            headers: {"Link" => '<https://sentry.io/api/0/test/?cursor=xyz>; rel="next"'}
+          )
+
+        result = api_instance.send(:paginated_execute, "/test/", max_results: 15)
+
+        # Should fetch both pages but stop at 20 items (first full page that exceeds 15)
+        expect(result.length).to eq(20)
+        # Verify both pages were requested
+        expect(WebMock).to have_requested(:get, "#{base_url}/test/")
+          .with(headers: {"Authorization" => "Bearer #{access_token}"})
+        expect(WebMock).to have_requested(:get, "#{base_url}/test/")
+          .with(query: {"cursor" => "abc"})
+      end
+    end
   end
 
   describe "#find_release" do

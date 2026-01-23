@@ -10,16 +10,16 @@ module Installations
 
     def list_organizations(transforms)
       execute do
-        organizations = get_request("/organizations/")
-        return nil if organizations.nil?
+        organizations = paginated_execute("/organizations/", max_results: 200)
+        return nil if organizations.nil? || organizations.empty?
         Installations::Response::Keys.transform(organizations, transforms)
       end
     end
 
     def list_projects(org_slug, transforms)
       execute do
-        projects = get_request("/organizations/#{org_slug}/projects/")
-        return nil if projects.nil?
+        projects = paginated_execute("/organizations/#{org_slug}/projects/", max_results: 500)
+        return nil if projects.nil? || projects.empty?
 
         # Attach organization slug to each project for easier lookup
         projects_with_org = projects.map { |project| project.merge("organization_slug" => org_slug) }
@@ -158,6 +158,47 @@ module Installations
 
     def get_request_async(path, params = {})
       Thread.new { get_request(path, params) }
+    end
+
+    def paginated_execute(path, params: {}, values: [], cursor: nil, max_results: nil)
+      # Build full URL with cursor if present
+      url = "#{base_url}#{path}"
+      params = params.merge(cursor: cursor) if cursor.present?
+
+      response = HTTP
+        .auth("Bearer #{access_token}")
+        .timeout(connect: 10, read: 30)
+        .get(url, params: params)
+
+      return values unless response.status.success?
+
+      # Parse and accumulate results
+      page_data = JSON.parse(response.body.to_s)
+      values.concat(page_data) if page_data.is_a?(Array)
+
+      # Check if we've reached max_results limit
+      return values if max_results && values.length >= max_results
+
+      # Parse Link header for next cursor
+      # Format: <https://sentry.io/api/0/path?cursor=xyz>; rel="next"
+      link_header = response.headers["Link"]
+      return values if link_header.blank?
+
+      next_cursor = extract_next_cursor(link_header)
+      return values if next_cursor.blank?
+
+      # Recursive call with next cursor
+      paginated_execute(path, params: params.except(:cursor), values: values, cursor: next_cursor, max_results: max_results)
+    end
+
+    def extract_next_cursor(link_header)
+      # Parse Link header for rel="next" and extract cursor parameter
+      next_match = link_header.match(/<([^>]+)>;\s*rel="next"/)
+      return nil unless next_match
+
+      next_uri = URI.parse(next_match[1])
+      query_params = URI.decode_www_form(next_uri.query || "").to_h
+      query_params["cursor"]
     end
 
     def execute
