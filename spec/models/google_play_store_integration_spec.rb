@@ -1,12 +1,6 @@
 require "rails_helper"
 
 describe GooglePlayStoreIntegration do
-  let(:redis_connection) { Redis.new(**REDIS_CONFIGURATION.base) }
-
-  before do
-    redis_connection.flushdb
-  end
-
   it "has a valid factory" do
     expect(create(:google_play_store_integration, :without_callbacks_and_validations)).to be_valid
   end
@@ -308,10 +302,26 @@ describe GooglePlayStoreIntegration do
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
     let(:lock_name) { GooglePlayStoreIntegration::LOCK_NAME_PREFIX + app.id.to_s }
     let(:raise_on_lock_error) { false }
+    let(:lock_client) { Rails.application.config.distributed_lock_client }
+
+    # Helper to wait for lock to be acquired with polling instead of fixed sleep
+    def wait_for_lock(client, resource_name, timeout: 5, interval: 0.1)
+      deadline = Time.current + timeout
+      while Time.current < deadline
+        return true if client.locked?(resource_name)
+        sleep interval
+      end
+      false
+    end
 
     before do
       google_integration.reload
       allow(google_integration).to receive(:installation).and_return(api_double)
+    end
+
+    after do
+      # Clean up any locks created during the test
+      lock_client.unlock({resource: lock_name, value: "", validity: 0})
     end
 
     it "ensures all requests take an api lock" do
@@ -325,24 +335,27 @@ describe GooglePlayStoreIntegration do
     end
 
     it "ensures that subsequent requests wait if there's already a lock" do
-      expect(redis_connection.get(lock_name)).to be_nil
-
       # first long-running api call
       allow(api_double).to receive(:halt_release) { sleep 10 }
-      Thread.new { google_integration.halt_release(anything, anything, anything, anything, raise_on_lock_error:) }
-      sleep 2
-      expect(redis_connection.get(lock_name)).not_to be_nil
+      thread = Thread.new { google_integration.halt_release(anything, anything, anything, anything, raise_on_lock_error:) }
+
+      # Wait for lock to be acquired using polling instead of fixed sleep
+      expect(wait_for_lock(lock_client, lock_name, timeout: 5)).to be(true)
 
       # second blocked call
       allow(api_double).to receive(:create_release) { sleep 1 }
       Thread.new { google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:) }
-      sleep 2
-      expect(redis_connection.get(lock_name)).not_to be_nil
+
+      # Lock should still be held
+      expect(lock_client.locked?(lock_name)).to be(true)
+
+      thread.kill
     end
 
     it "allows the retries to drain out if the lock could not be acquired on time" do
-      # pre-acquire lock
-      Rails.application.config.distributed_lock_client.lock(lock_name, 3600 * 1000)
+      # pre-acquire lock using lock! with a block to ensure it stays held
+      lock_info = lock_client.lock(lock_name, 30_000) # 30 second TTL
+      expect(lock_info).to be_truthy
 
       allow(google_integration).to receive(:api_lock_params).and_return(ttl: 100, retry_count: 1, retry_delay: 1)
       allow(api_double).to receive(:create_release)
@@ -351,6 +364,9 @@ describe GooglePlayStoreIntegration do
       r = google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:)
       expect(r.ok?).to be false
       expect(r.error).to be_a(GooglePlayStoreIntegration::LockAcquisitionError)
+
+      # Clean up the pre-acquired lock
+      lock_client.unlock(lock_info) if lock_info
     end
   end
 
