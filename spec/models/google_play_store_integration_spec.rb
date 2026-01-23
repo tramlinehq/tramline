@@ -340,14 +340,14 @@ describe GooglePlayStoreIntegration do
       thread = Thread.new { google_integration.halt_release(anything, anything, anything, anything, raise_on_lock_error:) }
 
       # Wait for lock to be acquired using polling instead of fixed sleep
-      expect(wait_for_lock(lock_client, lock_name, timeout: 5)).to be true
+      expect(wait_for_lock(lock_client, lock_name, timeout: 5)).to be(true)
 
       # second blocked call
       allow(api_double).to receive(:create_release) { sleep 1 }
       Thread.new { google_integration.rollout_release(anything, anything, anything, anything, anything, raise_on_lock_error:) }
 
       # Lock should still be held
-      expect(lock_client.locked?(lock_name)).to be_truthy
+      expect(lock_client.locked?(lock_name)).to be(true)
 
       thread.kill
     end
