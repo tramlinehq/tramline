@@ -83,6 +83,7 @@ describe SentryIntegration do
     end
 
     it "caches the result" do
+      allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
       sentry_integration.list_projects
       sentry_integration.list_projects
 
@@ -223,8 +224,8 @@ describe SentryIntegration do
   describe "#connection_data" do
     let(:organizations) do
       [
-        {name: "Org 1", slug: "org-1"},
-        {name: "Org 2", slug: "org-2"}
+        {"name" => "Org 1", "slug" => "org-1"},
+        {"name" => "Org 2", "slug" => "org-2"}
       ]
     end
 

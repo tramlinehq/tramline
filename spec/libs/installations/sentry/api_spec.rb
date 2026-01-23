@@ -195,22 +195,22 @@ describe Installations::Sentry::Api do
 
       expect(result).to be_a(Hash)
       expect(result["external_release_id"]).to eq(version_string)
-      expect(result["total_sessions_count"]).to eq(10000) # 9500 + 400 + 100
-      expect(result["total_users_count"]).to eq(1000) # 800 + 150 + 50
+      expect(result["sessions"]).to eq(10000) # 9500 + 400 + 100
+      expect(result["daily_users"]).to eq(1000) # 800 + 150 + 50
     end
 
     it "includes session error counts in release data" do
       result = api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
 
-      expect(result["errored_sessions_count"]).to eq(500) # 400 errored + 100 crashed
-      expect(result["users_with_errors_count"]).to eq(200) # 150 + 50
+      expect(result["sessions_with_errors"]).to eq(500) # 400 errored + 100 crashed
+      expect(result["daily_users_with_errors"]).to eq(200) # 150 + 50
     end
 
     it "includes issue counts in release data" do
       result = api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
 
-      expect(result["total_issues_count"]).to eq(3) # All issues in release
-      expect(result["new_issues_count"]).to eq(2) # Issues first seen in release
+      expect(result["errors_count"]).to eq(3) # All issues in release
+      expect(result["new_errors_count"]).to eq(2) # Issues first seen in release
     end
 
     it "fetches issue counts from the issues API" do

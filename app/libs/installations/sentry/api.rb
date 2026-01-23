@@ -45,7 +45,7 @@ module Installations
         all_issues = all_issues_thread.value || []
         new_issues = new_issues_thread.value || []
 
-        return nil if stats.blank?
+        return nil if stats.blank? || stats["groups"].blank?
 
         # Build issue counts
         issues_data = {
