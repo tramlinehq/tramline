@@ -101,7 +101,9 @@ class SentryIntegration < ApplicationRecord
     list_organizations
   end
 
-  def find_release(platform, version, build_number, _start_date = nil)
+  def find_release(platform, version, build_number, start_date)
+    end_time = Time.current
+
     installation.find_release(
       organization_slug_from_config(platform),
       project_id(platform),
@@ -110,6 +112,8 @@ class SentryIntegration < ApplicationRecord
       integrable.bundle_identifier,
       version,
       build_number,
+      start_date,
+      end_time,
       RELEASE_TRANSFORMATIONS
     )
   end
@@ -166,7 +170,6 @@ class SentryIntegration < ApplicationRecord
   end
 
   def organization_slug_from_config(platform)
-    # Organization slug is now stored with the project data
     project(platform)&.fetch("organization_slug", nil)
   end
 

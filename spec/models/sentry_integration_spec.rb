@@ -99,6 +99,7 @@ describe SentryIntegration do
     let(:organization_slug) { "test-org" }
     let(:project_slug) { "test-project" }
     let(:environment) { "production" }
+    let(:start_date) { 7.days.ago }
 
     before do
       sentry_integration.update!(
@@ -112,7 +113,7 @@ describe SentryIntegration do
     end
 
     it "calls the API find_release method with correct arguments" do
-      sentry_integration.find_release(platform, version, build_number)
+      sentry_integration.find_release(platform, version, build_number, start_date)
 
       expect(api_instance).to have_received(:find_release).with(
         organization_slug,
@@ -122,13 +123,15 @@ describe SentryIntegration do
         bundle_identifier,
         version,
         build_number,
+        start_date,     # start_date passed through
+        kind_of(Time),  # end_time calculated
         SentryIntegration::RELEASE_TRANSFORMATIONS
       )
     end
 
     it "constructs the release identifier with bundle ID, version, and build number" do
       # The API layer constructs: bundle_id@version+build_number
-      sentry_integration.find_release(platform, version, build_number)
+      sentry_integration.find_release(platform, version, build_number, start_date)
 
       expect(api_instance).to have_received(:find_release)
     end

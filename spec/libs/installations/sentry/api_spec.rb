@@ -235,6 +235,7 @@ describe Installations::Sentry::Api do
     end
   end
 
+  # rubocop:disable RSpec/MultipleMemoizedHelpers
   describe "#find_release" do
     let(:org_slug) { "test-org" }
     let(:project_id) { "123" }
@@ -243,6 +244,8 @@ describe Installations::Sentry::Api do
     let(:bundle_identifier) { "com.example.app" }
     let(:app_version) { "1.0.0" }
     let(:app_version_code) { "100" }
+    let(:start_time) { 7.days.ago }
+    let(:end_time) { Time.current }
     let(:transforms) { SentryIntegration::RELEASE_TRANSFORMATIONS }
     let(:version_string) { "#{bundle_identifier}@#{app_version}+#{app_version_code}" }
     let(:sessions_response) do
@@ -305,7 +308,7 @@ describe Installations::Sentry::Api do
     end
 
     it "constructs the correct Sentry release identifier" do
-      api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, start_time, end_time, transforms)
 
       # Verify the sessions API was called with a query containing the version string
       expect(api_instance).to have_received(:get_request_async)
@@ -313,7 +316,7 @@ describe Installations::Sentry::Api do
     end
 
     it "makes a GET request to the sessions endpoint with correct parameters" do
-      api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, start_time, end_time, transforms)
 
       # Verify sessions endpoint was called with at least project_id
       expect(api_instance).to have_received(:get_request_async)
@@ -321,7 +324,7 @@ describe Installations::Sentry::Api do
     end
 
     it "returns the transformed release data with correct structure" do
-      result = api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      result = api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, start_time, end_time, transforms)
 
       expect(result).to be_a(Hash)
       expect(result["external_release_id"]).to eq(version_string)
@@ -330,21 +333,21 @@ describe Installations::Sentry::Api do
     end
 
     it "includes session error counts in release data" do
-      result = api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      result = api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, start_time, end_time, transforms)
 
       expect(result["sessions_with_errors"]).to eq(500) # 400 errored + 100 crashed
       expect(result["daily_users_with_errors"]).to eq(200) # 150 + 50
     end
 
     it "includes issue counts in release data" do
-      result = api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      result = api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, start_time, end_time, transforms)
 
       expect(result["errors_count"]).to eq(3) # All issues in release
       expect(result["new_errors_count"]).to eq(2) # Issues first seen in release
     end
 
     it "fetches issue counts from the issues API" do
-      api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+      api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, start_time, end_time, transforms)
 
       # Verify all issues endpoint was called
       expect(api_instance).to have_received(:get_request_async)
@@ -364,7 +367,7 @@ describe Installations::Sentry::Api do
       end
 
       it "returns nil" do
-        expect(api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)).to be_nil
+        expect(api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, start_time, end_time, transforms)).to be_nil
       end
     end
 
@@ -377,10 +380,11 @@ describe Installations::Sentry::Api do
       end
 
       it "returns nil when sessions data is empty" do
-        expect(api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)).to be_nil
+        expect(api_instance.find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, start_time, end_time, transforms)).to be_nil
       end
     end
   end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 
   describe "#build_release_data" do
     let(:version_string) { "com.example.app@1.0.0+100" }

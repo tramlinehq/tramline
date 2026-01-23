@@ -10,7 +10,7 @@ module Installations
 
     def list_organizations(transforms)
       execute do
-        organizations = paginated_execute("/organizations/", max_results: 200)
+        organizations = paginated_execute("/organizations/", max_results: 100)
         return nil if organizations.blank?
         Installations::Response::Keys.transform(organizations, transforms)
       end
@@ -18,7 +18,7 @@ module Installations
 
     def list_projects(org_slug, transforms)
       execute do
-        projects = paginated_execute("/organizations/#{org_slug}/projects/", max_results: 500)
+        projects = paginated_execute("/organizations/#{org_slug}/projects/", max_results: 100)
         return nil if projects.blank?
 
         # Attach organization slug to each project for easier lookup
@@ -27,7 +27,7 @@ module Installations
       end
     end
 
-    def find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, transforms)
+    def find_release(org_slug, project_id, project_slug, environment, bundle_identifier, app_version, app_version_code, start_time, end_time, transforms)
       execute do
         # Construct Sentry release identifier: <bundle_id>@<version>+<build_number>
         # Format documented at:
@@ -36,7 +36,7 @@ module Installations
         version_string = "#{bundle_identifier}@#{app_version}+#{app_version_code}"
 
         # Fetch all data in parallel for efficiency
-        stats_thread = fetch_release_stats_async(org_slug, project_id, environment, version_string)
+        stats_thread = fetch_release_stats_async(org_slug, project_id, environment, version_string, start_time, end_time)
         all_issues_thread = fetch_all_issues_async(org_slug, project_slug, version_string)
         new_issues_thread = fetch_new_issues_async(org_slug, project_slug, version_string)
 
@@ -61,11 +61,7 @@ module Installations
 
     private
 
-    def fetch_release_stats_async(org_slug, project_id, environment, version)
-      # Calculate time window using configured monitoring period
-      end_time = Time.current
-      start_time = end_time - ProductionRelease::RELEASE_MONITORING_PERIOD_IN_DAYS[SentryIntegration].days
-
+    def fetch_release_stats_async(org_slug, project_id, environment, version, start_time, end_time)
       # Build query parameters for session statistics
       params = {
         project: project_id,
