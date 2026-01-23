@@ -306,6 +306,8 @@ Rails.application.routes.draw do
       patch "apps/:app_id/builds/:version_name/:version_code/external_metadata",
         to: "builds#external_metadata",
         constraints: {version_name: VERSION_NAME_REGEX}
+      patch "apps/:app_id/releases/:release_id/android/rollout/increase",
+        to: "store_rollouts#increase"
     end
   end
 
