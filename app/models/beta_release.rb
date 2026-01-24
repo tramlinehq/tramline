@@ -36,9 +36,9 @@ class BetaRelease < PreProdRelease
     with_lock do
       update!(status: STATES[:finished])
       event_stamp!(reason: :finished, kind: :success, data: stamp_data)
-      Signal.beta_release_is_finished!(build)
     end
 
+    Signal.beta_release_is_finished!(build)
     notify_with_changelog!("RC Finished", :rc_finished, notification_params)
     trigger_webhook!("rc.finished")
   end
