@@ -252,6 +252,7 @@ en:
       google_firebase_submission: "Firebase App Distribution"
       play_store_submission: "Google Play Store"
       crashlytics_integration: "Firebase Crashlytics"
+      sentry_integration: "Sentry"
       linear_integration: "Linear"
     values:
       pull_request:
@@ -448,6 +449,8 @@ en:
         access_token: "Bitrise Personal Access Token"
       bugsnag_integration:
         access_token: "Bugsnag Personal Access Token"
+      sentry_integration:
+        access_token: "Sentry Personal Auth Token"
       google_play_store_integration:
         json_key: "Google Play Store JSON Key"
       train:
@@ -556,6 +559,10 @@ en:
             access_token:
               no_apps: "could not find any apps listed for this token!"
         bugsnag_integration:
+          attributes:
+            access_token:
+              no_orgs: "could not find any orgs listed for this token!"
+        sentry_integration:
           attributes:
             access_token:
               no_orgs: "could not find any orgs listed for this token!"
@@ -829,6 +836,9 @@ en:
 
   monitoring:
     bugsnag_configs:
+      update:
+        success: "Monitoring configuration was successfully updated."
+    sentry_configs:
       update:
         success: "Monitoring configuration was successfully updated."
 
