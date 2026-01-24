@@ -92,6 +92,19 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
     end
   end
 
+  def rollout_type_badge
+    if store_rollout.automatic_rollout?
+      badge = BadgeComponent.new(text: "Automatic", kind: :badge)
+      badge.with_icon("robot.svg")
+    else
+      badge = BadgeComponent.new(text: "Manual", kind: :badge)
+      badge.with_icon("person_standing.svg")
+    end
+
+    badge
+  end
+
+
   def action
     return if store_rollout.completed? || store_rollout.fully_released? || store_rollout.halted?
 

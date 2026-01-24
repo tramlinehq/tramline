@@ -54,6 +54,7 @@
             </div>
 
             <div class="flex gap-1 flex-wrap">
+              <%= render(rollout_type_badge) %>
               <%= render BadgeComponent.new(**decorated_status) %>
               <div class="text-sm text-secondary-50"><%= stage_help %></div>
             </div>
@@ -61,7 +62,7 @@
             <div class="flex flex-wrap gap-y-2 text-secondary text-sm">
               <p>
                 <%= action_help %>
-                <%= next_rollout_time  %>
+                <%= next_rollout_time %>
               </p>
             </div>
           </div>

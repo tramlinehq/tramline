@@ -136,7 +136,7 @@ namespace :anonymize do
 
         anonymize("id") { |field| jump_id(field.value) }
         anonymize("release_step_config_id") { |field| jump_id(field.value) }
-        whitelist "submission_type", "number", "auto_promote", "finish_rollout_in_next_release", "rollout_enabled", "rollout_stages"
+        whitelist "submission_type", "number", "auto_promote", "finish_rollout_in_next_release", "rollout_enabled", "rollout_stages", "automatic_rollout", "auto_start_rollout_after_submission"
         whitelist_timestamps
         anonymize("integrable_id") { |_| app.id }
         anonymize("integrable_type") { |_| "App" }
@@ -359,7 +359,7 @@ namespace :anonymize do
       table "store_rollouts" do
         continue { |index, record| StoreSubmission.exists?(record["store_submission_id"]) && !StoreRollout.exists?(record["id"]) }
         primary_key "id"
-        whitelist "completed_at", "config", "current_stage", "is_staged_rollout", "status", "type", "store_submission_id", "release_platform_run_id"
+        whitelist "completed_at", "config", "current_stage", "is_staged_rollout", "status", "type", "store_submission_id", "release_platform_run_id", "automatic_rollout_updated_at", "automatic_rollout_next_update_at", "automatic_rollout"
         whitelist_timestamps
       end
 

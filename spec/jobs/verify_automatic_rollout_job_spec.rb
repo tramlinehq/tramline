@@ -30,11 +30,12 @@ describe VerifyAutomaticRolloutJob do
   end
 
   context "when a staged play store rollout with automatic rollout is in first stage and not rolled out" do
-    let!(:store_rollout) { create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 1, automatic_rollout_updated_at: 24.hours.ago, automatic_rollout_next_update_at: 10.minutes.ago) }
+    let(:store_rollout) { create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 1, automatic_rollout_updated_at: 24.hours.ago, automatic_rollout_next_update_at: 10.minutes.ago) }
 
-    it "enqueues IncreaseHealthyReleaseRolloutJob" do
+    it "enqueues AutomaticUpdateRolloutJob" do
+      store_rollout # ensure record exists before perform
       described_class.new.perform
-      expect(AutomaticUpdateRolloutJob).to have_received(:perform_async).with(store_rollout.id)
+      expect(AutomaticUpdateRolloutJob).to have_received(:perform_async).with(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
     end
   end
 

@@ -1,7 +1,7 @@
 class AutomaticUpdateRolloutJob < ApplicationJob
   queue_as :high
 
-  def perform(play_store_rollout_id, expected_timestamp = nil, expected_stage = nil)
+  def perform(play_store_rollout_id, expected_timestamp, expected_stage)
     rollout = PlayStoreRollout.find(play_store_rollout_id)
 
     # no-op and don't reschedule

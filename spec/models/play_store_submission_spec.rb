@@ -273,7 +273,6 @@ describe PlayStoreSubmission do
           release_platform_run: production_release.release_platform_run)
       }
 
-
       it "returns false when parent release is production" do
         expect(submission.auto_start_rollout?).to be(false)
       end
