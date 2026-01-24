@@ -86,7 +86,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
       production_release_attributes: [
         :id,
         submissions_attributes: [
-          :id, :submission_type, :_destroy, :rollout_stages, :rollout_enabled, :finish_rollout_in_next_release, :production_form_factor, :automatic_rollout, :auto_start_rollout_after_submission
+          :id, :submission_type, :_destroy, :rollout_stages, :rollout_enabled, :finish_rollout_in_next_release, :production_form_factor, :automatic_rollout
         ]
       ],
       internal_workflow_attributes: [
