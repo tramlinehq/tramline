@@ -12,7 +12,7 @@ describe VerifyAutomaticRolloutJob do
       create(:store_rollout, :play_store, :created, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission)
     end
 
-    it "does not call enqueue IncreaseHealthyReleaseRolloutJob" do
+    it "does not call enqueue job" do
       described_class.new.perform
       expect(AutomaticUpdateRolloutJob).not_to have_received(:perform_async)
     end
@@ -23,7 +23,7 @@ describe VerifyAutomaticRolloutJob do
       create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: false, store_submission: play_store_submission, current_stage: 1)
     end
 
-    it "does not call enqueue IncreaseHealthyReleaseRolloutJob" do
+    it "does not call enqueue job" do
       described_class.new.perform
       expect(AutomaticUpdateRolloutJob).not_to have_received(:perform_async)
     end
@@ -44,7 +44,7 @@ describe VerifyAutomaticRolloutJob do
       create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 2, automatic_rollout_updated_at: 4.minutes.ago, automatic_rollout_next_update_at: 24.hours.from_now)
     end
 
-    it "does not enqueue IncreaseHealthyReleaseRolloutJob" do
+    it "does not enqueue job" do
       described_class.new.perform
       expect(AutomaticUpdateRolloutJob).not_to have_received(:perform_async)
     end
