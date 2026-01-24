@@ -2,6 +2,7 @@ FactoryBot.define do
   factory :submission_config, class: "Config::Submission" do
     release_step_config
     submission_type { "PlayStoreSubmission" }
+    auto_start_rollout_after_submission { false }
     rollout_enabled { false }
     rollout_stages { [] }
     auto_promote { false }

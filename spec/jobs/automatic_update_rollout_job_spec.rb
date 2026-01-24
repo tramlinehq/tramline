@@ -15,13 +15,13 @@ describe AutomaticUpdateRolloutJob do
     let(:store_rollout) { create(:store_rollout, :play_store, :created, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission) }
 
     it "does not roll out the release" do
-      described_class.new.perform(store_rollout.id)
+      described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
 
     it "does not schedule rollout job" do
       expect {
-        described_class.new.perform(store_rollout.id)
+        described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       }.not_to change(described_class.jobs, :size)
     end
   end
@@ -94,13 +94,13 @@ describe AutomaticUpdateRolloutJob do
     }
 
     it "does not roll out the release" do
-      described_class.new.perform(store_rollout.id)
+      described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
 
     it "does not schedule rollout job" do
       expect {
-        described_class.new.perform(store_rollout.id)
+        described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       }.not_to change(described_class.jobs, :size)
     end
   end
@@ -122,13 +122,13 @@ describe AutomaticUpdateRolloutJob do
     end
 
     it "does not roll out the release" do
-      described_class.new.perform(store_rollout.id)
+      described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
 
     it "does not schedule rollout job" do
       expect {
-        described_class.new.perform(store_rollout.id)
+        described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       }.not_to change(described_class.jobs, :size)
     end
   end
@@ -137,13 +137,13 @@ describe AutomaticUpdateRolloutJob do
     let(:store_rollout) { create(:store_rollout, :play_store, :completed, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission) }
 
     it "does not rollout the release" do
-      described_class.new.perform(store_rollout.id)
+      described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
 
     it "does not schedule rollout job" do
       expect {
-        described_class.new.perform(store_rollout.id)
+        described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       }.not_to change(described_class.jobs, :size)
     end
   end
@@ -152,13 +152,13 @@ describe AutomaticUpdateRolloutJob do
     let(:store_rollout) { create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: false, store_submission: play_store_submission) }
 
     it "does not rollout the release" do
-      described_class.new.perform(store_rollout.id)
+      described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
 
     it "does not schedule rollout job" do
       expect {
-        described_class.new.perform(store_rollout.id)
+        described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       }.not_to change(described_class.jobs, :size)
     end
   end
@@ -167,13 +167,13 @@ describe AutomaticUpdateRolloutJob do
     let(:store_rollout) { create(:store_rollout, :play_store, :created, is_staged_rollout: false, store_submission: play_store_submission) }
 
     it "does not rollout the release" do
-      described_class.new.perform(store_rollout.id)
+      described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
 
     it "does not schedule rollout job" do
       expect {
-        described_class.new.perform(store_rollout.id)
+        described_class.new.perform(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
       }.not_to change(described_class.jobs, :size)
     end
   end
