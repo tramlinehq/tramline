@@ -120,7 +120,7 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
       )
     end
 
-    if automatic_rollout?
+    if automatic_rollout? && controllable_rollout?
       ButtonComponent.new(
         label: "Disable automatic rollout",
         scheme: :danger,

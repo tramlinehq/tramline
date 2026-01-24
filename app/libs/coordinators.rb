@@ -274,6 +274,7 @@ module Coordinators
 
     def self.disable_automatic_rollout!(rollout)
       return Res.new { raise "release is not actionable" } unless rollout.actionable?
+      return Res.new { raise "rollout is not controllable" } unless rollout.controllable_rollout?
       return Res.new { raise "automatic rollout is not enabled" } unless rollout.automatic_rollout?
       rollout.disable_automatic_rollout!
       Res.new { true }

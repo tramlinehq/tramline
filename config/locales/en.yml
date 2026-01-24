@@ -680,6 +680,7 @@ en:
       ios:
         created: "Start the rollout to kickoff the phased release."
         started: "App Store will automatically move the phased release to the next stage every day."
+        started_automatic: "App Store will automatically move the phased release to the next stage every day."
         paused: "Resume rollout to continue your phased release."
         halted: "Resume rollout to continue your phased release."
         completed: "The rollout has been completed."
