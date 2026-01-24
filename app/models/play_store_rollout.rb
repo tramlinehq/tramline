@@ -42,8 +42,6 @@ class PlayStoreRollout < StoreRollout
 
     event :start, after_commit: :on_start! do
       transitions from: :created, to: :started
-      transitions from: :halted, to: :started
-      transitions from: :paused, to: :started
     end
 
     event :pause do
@@ -52,6 +50,7 @@ class PlayStoreRollout < StoreRollout
 
     event :resume do
       transitions from: :paused, to: :started
+      transitions from: :halted, to: :started
     end
 
     event :halt, after_commit: :on_halt! do
@@ -147,11 +146,11 @@ class PlayStoreRollout < StoreRollout
 
   def resume_release!
     with_lock do
-      return unless may_start?
+      return unless may_resume?
 
       result = rollout(last_rollout_percentage, retry_on_review_fail: true)
       if result.ok?
-        start!
+        resume!
         if store_submission.auto_rollout?
           update!(automatic_rollout: true)
         end

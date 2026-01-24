@@ -75,8 +75,12 @@ class StoreSubmission < ApplicationRecord
     if parent_release.production?
       staged_rollout? && conf.automatic_rollout?
     else
-      false
+      true
     end
+  end
+
+  def auto_start_rollout_after_submission?
+    parent_release.production? ? conf.auto_start_rollout_after_submission? : true
   end
 
   def external_link

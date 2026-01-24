@@ -115,6 +115,12 @@
                           <% end %>
                         <% end %>
 
+                        <%= render Form::SwitchComponent.new(form: sub_fields, field_name: :auto_start_rollout_after_submission, on_label: "Auto-start rollout after submission", off_label: "Manual rollout start") do |c| %>
+                          <% c.with_info_icon do %>
+                            Automatically start the rollout immediately after the submission is prepared. If disabled, you will need to manually start the rollout from the release page.
+                          <% end %>
+                        <% end %>
+
                         <%= render Form::SwitchComponent.new(form: sub_fields,
                                                              field_name: :finish_rollout_in_next_release,
                                                              on_label: "Cascading rollouts are enabled",
