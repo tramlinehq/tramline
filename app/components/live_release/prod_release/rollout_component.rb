@@ -44,7 +44,7 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
   end
 
   def monitoring_size
-    app.cross_platform? ? :compact : :max
+    corresponding_app.cross_platform? ? :compact : :max
   end
 
   def show_blocked_message?
@@ -86,10 +86,13 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
   end
 
   def next_rollout_time
-    if automatic_rollout? && store_rollout.started?
-      time = time_format(store_rollout.automatic_rollout_next_update_at.in_time_zone(app.timezone))
-      "The next rollout will occur at #{time}."
-    end
+    return unless automatic_rollout? && store_rollout.started?
+
+    time = store_rollout.automatic_rollout_next_update_at.presence
+    return unless time
+
+    timez = time_format(time.in_time_zone(corresponding_app.timezone))
+    "The next rollout will occur at #{timez}."
   end
 
   def rollout_type_badge
@@ -103,7 +106,6 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
 
     badge
   end
-
 
   def action
     return if store_rollout.completed? || store_rollout.fully_released? || store_rollout.halted?
@@ -218,7 +220,7 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
     @show_monitoring
   end
 
-  memoize def app
+  memoize def corresponding_app
     release_platform_run.app
   end
 end

@@ -3,14 +3,14 @@
 # Table name: store_rollouts
 #
 #  id                               :uuid             not null, primary key
-#  automatic_rollout                :boolean          default(FALSE), not null
+#  automatic_rollout                :boolean          default(FALSE), not null, indexed
 #  automatic_rollout_next_update_at :datetime
 #  automatic_rollout_updated_at     :datetime
 #  completed_at                     :datetime
 #  config                           :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage                    :integer
-#  is_staged_rollout                :boolean          default(FALSE)
-#  status                           :string           not null
+#  is_staged_rollout                :boolean          default(FALSE), indexed
+#  status                           :string           not null, indexed
 #  type                             :string           not null
 #  created_at                       :datetime         not null
 #  updated_at                       :datetime         not null
@@ -61,6 +61,10 @@ class StoreRollout < ApplicationRecord
   def finished? = completed? || fully_released?
 
   def reached_last_stage? = next_rollout_percentage.nil?
+
+  def disable_automatic_rollout!
+    # no-op
+  end
 
   def release_info
     {

@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe ReleaseHealthEvent do
+describe ReleaseHealthEvent do
   describe "callbacks" do
     describe "#trigger_halt_on_unhealthy" do
       let(:production_release) { create(:production_release) }

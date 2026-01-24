@@ -35,7 +35,7 @@ describe VerifyAutomaticRolloutJob do
     it "enqueues AutomaticUpdateRolloutJob" do
       store_rollout # ensure record exists before perform
       described_class.new.perform
-      expect(AutomaticUpdateRolloutJob).to have_received(:perform_async).with(store_rollout.id, store_rollout.automatic_rollout_next_update_at, store_rollout.current_stage)
+      expect(AutomaticUpdateRolloutJob).to have_received(:perform_async).with(store_rollout.id, store_rollout.automatic_rollout_next_update_at.to_i, store_rollout.current_stage)
     end
   end
 

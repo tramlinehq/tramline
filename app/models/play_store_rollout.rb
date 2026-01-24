@@ -3,14 +3,14 @@
 # Table name: store_rollouts
 #
 #  id                               :uuid             not null, primary key
-#  automatic_rollout                :boolean          default(FALSE), not null
+#  automatic_rollout                :boolean          default(FALSE), not null, indexed
 #  automatic_rollout_next_update_at :datetime
 #  automatic_rollout_updated_at     :datetime
 #  completed_at                     :datetime
 #  config                           :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage                    :integer
-#  is_staged_rollout                :boolean          default(FALSE)
-#  status                           :string           not null
+#  is_staged_rollout                :boolean          default(FALSE), indexed
+#  status                           :string           not null, indexed
 #  type                             :string           not null
 #  created_at                       :datetime         not null
 #  updated_at                       :datetime         not null
@@ -142,6 +142,7 @@ class PlayStoreRollout < StoreRollout
   end
 
   def disable_automatic_rollout!
+    clear_automatic_rollout_schedule!
     update!(automatic_rollout: false)
   end
 
@@ -183,13 +184,6 @@ class PlayStoreRollout < StoreRollout
       pause!
       clear_automatic_rollout_schedule!
     end
-  end
-
-  def rollout_in_progress?
-    provider.build_in_progress?(submission_channel_id, build_number, raise_on_lock_error: true)
-  rescue GooglePlayStoreIntegration::LockAcquisitionError => e
-    errors.add(:base, e.message)
-    false
   end
 
   private

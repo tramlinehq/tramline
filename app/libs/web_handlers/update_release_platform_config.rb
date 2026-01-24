@@ -86,7 +86,6 @@ class WebHandlers::UpdateReleasePlatformConfig
       submission[:rollout_stages] = []
       submission[:finish_rollout_in_next_release] = false
       submission[:automatic_rollout] = false
-      submission[:auto_start_rollout_after_submission] = false
     end
   end
 

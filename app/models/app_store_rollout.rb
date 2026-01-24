@@ -3,14 +3,14 @@
 # Table name: store_rollouts
 #
 #  id                               :uuid             not null, primary key
-#  automatic_rollout                :boolean          default(FALSE), not null
+#  automatic_rollout                :boolean          default(FALSE), not null, indexed
 #  automatic_rollout_next_update_at :datetime
 #  automatic_rollout_updated_at     :datetime
 #  completed_at                     :datetime
 #  config                           :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage                    :integer
-#  is_staged_rollout                :boolean          default(FALSE)
-#  status                           :string           not null
+#  is_staged_rollout                :boolean          default(FALSE), indexed
+#  status                           :string           not null, indexed
 #  type                             :string           not null
 #  created_at                       :datetime         not null
 #  updated_at                       :datetime         not null
@@ -68,8 +68,6 @@ class AppStoreRollout < StoreRollout
 
   def controllable_rollout? = false
 
-  def automatic_rollout? = true
-
   def start_release!
     # return mock_start_app_store_rollout! if sandbox_mode?
     result = provider.start_release(build_number)
@@ -125,10 +123,6 @@ class AppStoreRollout < StoreRollout
         errors.add(:base, result.error)
       end
     end
-  end
-
-  def disable_automatic_rollout!
-    # noop for app store
   end
 
   def release_fully!

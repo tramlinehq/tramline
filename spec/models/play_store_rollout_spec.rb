@@ -415,6 +415,22 @@ describe PlayStoreRollout do
     end
   end
 
+  describe "#disable_automatic_rollout!" do
+    let(:release_platform_run) { create(:release_platform_run) }
+    let(:production_release) { create(:production_release, release_platform_run:) }
+    let(:store_submission) { create(:play_store_submission, :prepared, :prod_release, release_platform_run:, parent_release: production_release) }
+
+    it "clears the automatic rollout schedule and disables automatic rollout" do
+      rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:,
+        automatic_rollout: true, automatic_rollout_next_update_at: 5.minutes.from_now)
+
+      rollout.disable_automatic_rollout!
+
+      expect(rollout.reload.automatic_rollout).to be(false)
+      expect(rollout.automatic_rollout_next_update_at).to be_nil
+    end
+  end
+
   describe "#resume_release!" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }

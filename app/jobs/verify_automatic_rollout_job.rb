@@ -7,7 +7,7 @@ class VerifyAutomaticRolloutJob < ApplicationJob
       .automatic_rollouts
       .where(automatic_rollout_next_update_at: ..5.minutes.ago) # should've happened more than 5m ago
       .find_each do |rollout|
-      AutomaticUpdateRolloutJob.perform_async(rollout.id, rollout.automatic_rollout_next_update_at, rollout.current_stage)
+      AutomaticUpdateRolloutJob.perform_async(rollout.id, rollout.automatic_rollout_next_update_at.to_i, rollout.current_stage)
     end
   end
 end

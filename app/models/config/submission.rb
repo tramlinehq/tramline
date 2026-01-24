@@ -2,19 +2,20 @@
 #
 # Table name: submission_configs
 #
-#  id                             :bigint           not null, primary key
-#  auto_promote                   :boolean          default(FALSE)
-#  automatic_rollout              :boolean          default(FALSE)
-#  finish_rollout_in_next_release :boolean          default(FALSE), not null
-#  integrable_type                :string
-#  number                         :integer          indexed, indexed => [release_step_config_id]
-#  rollout_enabled                :boolean          default(FALSE)
-#  rollout_stages                 :decimal(8, 5)    default([]), is an Array
-#  submission_type                :string
-#  created_at                     :datetime         not null
-#  updated_at                     :datetime         not null
-#  integrable_id                  :uuid
-#  release_step_config_id         :bigint           indexed, indexed => [number]
+#  id                                  :bigint           not null, primary key
+#  auto_promote                        :boolean          default(FALSE)
+#  auto_start_rollout_after_submission :boolean          default(FALSE), not null
+#  automatic_rollout                   :boolean          default(FALSE)
+#  finish_rollout_in_next_release      :boolean          default(FALSE), not null
+#  integrable_type                     :string
+#  number                              :integer          indexed, indexed => [release_step_config_id]
+#  rollout_enabled                     :boolean          default(FALSE)
+#  rollout_stages                      :decimal(8, 5)    default([]), is an Array
+#  submission_type                     :string
+#  created_at                          :datetime         not null
+#  updated_at                          :datetime         not null
+#  integrable_id                       :uuid
+#  release_step_config_id              :bigint           indexed, indexed => [number]
 #
 class Config::Submission < ApplicationRecord
   self.table_name = "submission_configs"
