@@ -211,4 +211,37 @@ describe Integration do
       end
     end
   end
+
+  describe ".by_categories_for" do
+    let(:organization) { create(:organization) }
+    let(:app) { create(:app, :android, organization: organization) }
+
+    context "when sentry_integration flag is disabled" do
+      before do
+        Flipper.disable(:sentry_integration, organization)
+      end
+
+      it "excludes SentryIntegration from monitoring integrations" do
+        integrations = described_class.by_categories_for(app)
+        monitoring_providers = integrations["monitoring"].map(&:providable_type)
+
+        expect(monitoring_providers).not_to include("SentryIntegration")
+        expect(monitoring_providers).to include("BugsnagIntegration", "CrashlyticsIntegration")
+      end
+    end
+
+    context "when sentry_integration flag is enabled" do
+      before do
+        Flipper.enable(:sentry_integration, organization)
+      end
+
+      it "includes SentryIntegration in monitoring integrations" do
+        integrations = described_class.by_categories_for(app)
+        monitoring_providers = integrations["monitoring"].map(&:providable_type)
+
+        expect(monitoring_providers).to include("SentryIntegration")
+        expect(monitoring_providers).to include("BugsnagIntegration", "CrashlyticsIntegration")
+      end
+    end
+  end
 end

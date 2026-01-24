@@ -7,7 +7,8 @@ class IntegrationCardComponent < BaseComponent
     firebase: "Firebase Service Account JSON Key",
     google_play_store: "Service Account JSON Key",
     crashlytics: "Service Account JSON Key",
-    bitrise: "Access Token"
+    bitrise: "Access Token",
+    sentry: "Auth Token"
   }
 
   def initialize(app, integration, category, pre_open_category = nil)
@@ -147,6 +148,7 @@ class IntegrationCardComponent < BaseComponent
   def edit_app_monitoring_config_path
     case integration.providable_type
     when "BugsnagIntegration" then edit_app_monitoring_bugsnag_config_path(@app)
+    when "SentryIntegration" then edit_app_monitoring_sentry_config_path(@app)
     else unsupported_integration_type
     end
   end
