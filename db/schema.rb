@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_24_072930) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -977,6 +977,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_133535) do
     t.string "integrable_type"
     t.boolean "finish_rollout_in_next_release", default: false, null: false
     t.boolean "automatic_rollout", default: false
+    t.boolean "auto_start_rollout_after_submission", default: false
     t.index ["number"], name: "index_submission_configs_on_number"
     t.index ["release_step_config_id", "number"], name: "index_submission_configs_on_release_step_config_id_and_number", unique: true
     t.index ["release_step_config_id"], name: "index_submission_configs_on_release_step_config_id"

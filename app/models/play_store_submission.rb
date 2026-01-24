@@ -93,6 +93,9 @@ class PlayStoreSubmission < StoreSubmission
       transitions to: :failed
     end
 
+    # pre-prod submissions create a draft release and start a rollout together
+    # if specifically the rollout fails, we want to be able to retry just the rollout part
+    # this event is automatically picked up as a candidate event transition in the retry! method
     event :retry_rollout, after_commit: :on_retry_rollout! do
       transitions from: :failed, to: :prepared
     end
@@ -323,12 +326,12 @@ class PlayStoreSubmission < StoreSubmission
   def on_prepare!
     event_stamp!(reason: :prepared, kind: :notice, data: stamp_data)
     config = conf.rollout_stages.presence || []
-    create_play_store_rollout!(release_platform_run:, config:, is_staged_rollout: staged_rollout?, automatic_rollout: auto_rollout?)
-    play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_start_rollout_after_submission?
+    create_play_store_rollout!(release_platform_run:, config:, is_staged_rollout: staged_rollout?, automatic_rollout: conf.automatic_rollout?)
+    play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_start_rollout?
   end
 
   def on_retry_rollout!
-    play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_rollout?
+    play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_start_rollout?
   end
 
   def on_fail!(args = nil)

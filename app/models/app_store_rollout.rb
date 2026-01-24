@@ -43,11 +43,11 @@ class AppStoreRollout < StoreRollout
       transitions from: :created, to: :started
     end
 
-    event :pause do
+    event :pause, after_commit: :on_pause! do
       transitions from: :started, to: :paused
     end
 
-    event :resume do
+    event :resume, after_commit: :on_resume! do
       transitions from: :paused, to: :started
     end
 
@@ -156,8 +156,6 @@ class AppStoreRollout < StoreRollout
       if result.ok?
         update_store_info!(result.value!)
         pause!
-        event_stamp!(reason: :paused, kind: :error, data: stamp_data)
-        notify!("Rollout has been paused", :production_rollout_paused, notification_params)
       else
         elog(result.error, level: :warn)
         errors.add(:base, result.error)
@@ -173,8 +171,6 @@ class AppStoreRollout < StoreRollout
       if result.ok?
         resume!
         update_rollout(result.value!)
-        event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
-        notify!("Rollout has been resumed", :production_rollout_resumed, notification_params)
       else
         elog(result.error, level: :warn)
         errors.add(:base, result.error)

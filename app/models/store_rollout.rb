@@ -50,7 +50,7 @@ class StoreRollout < ApplicationRecord
   delegate :stale?, :actionable?, to: :parent_release
 
   scope :production, -> { joins(store_submission: :production_release) }
-  scope :automatic_rollouts, -> { where(status: [:started, :halted], is_staged_rollout: true, automatic_rollout: true) }
+  scope :automatic_rollouts, -> { where(status: [:started], is_staged_rollout: true, automatic_rollout: true) }
 
   def staged_rollout? = is_staged_rollout
 
@@ -157,6 +157,16 @@ class StoreRollout < ApplicationRecord
 
   def on_start!
     parent_release.rollout_started!
+  end
+
+  def on_resume!
+    event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
+    notify!("Rollout has been resumed", :production_rollout_resumed, notification_params)
+  end
+
+  def on_pause!
+    event_stamp!(reason: :paused, kind: :error, data: stamp_data)
+    notify!("Rollout has been paused", :production_rollout_paused, notification_params)
   end
 
   def on_complete!

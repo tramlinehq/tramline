@@ -8,11 +8,9 @@ class HaltUnhealthyReleaseRolloutJob < ApplicationJob
     if production_release.unhealthy?
       store_rollout = production_release.store_rollout
 
-      if store_rollout.is_a?(PlayStoreRollout) && store_rollout.automatic_rollout?
-        result = Action.halt_the_store_rollout!(store_rollout)
-
-        # Mark the event as action triggered if halt was successful
-        event.update(action_triggered: true) if result.ok?
+      if store_rollout.is_a?(PlayStoreRollout) && store_rollout.staged_rollout?
+        Coordinators::HaltStoreRollout.call(store_rollout)
+        event.update(action_triggered: true)
       end
     end
   end

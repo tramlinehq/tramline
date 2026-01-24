@@ -44,11 +44,11 @@ class PlayStoreRollout < StoreRollout
       transitions from: :created, to: :started
     end
 
-    event :pause do
+    event :pause, after_commit: :on_pause! do
       transitions from: :started, to: :paused
     end
 
-    event :resume do
+    event :resume, after_commit: :on_resume! do
       transitions from: :paused, to: :started
       transitions from: :halted, to: :started
     end
@@ -144,6 +144,17 @@ class PlayStoreRollout < StoreRollout
     update!(automatic_rollout: false)
   end
 
+  def schedule_next_automatic_rollout!
+    current = Time.current
+    next_update = current + AUTO_ROLLOUT_RUN_INTERVAL
+    update!(automatic_rollout_updated_at: current, automatic_rollout_next_update_at: next_update)
+    IncreaseHealthyReleaseRolloutJob.perform_at(next_update, id)
+  end
+
+  def clear_automatic_rollout_schedule!
+    update!(automatic_rollout_next_update_at: nil)
+  end
+
   def resume_release!
     with_lock do
       return unless may_resume?
@@ -151,11 +162,7 @@ class PlayStoreRollout < StoreRollout
       result = rollout(last_rollout_percentage, retry_on_review_fail: true)
       if result.ok?
         resume!
-        if store_submission.auto_rollout?
-          update!(automatic_rollout: true)
-        end
-        event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
-        notify!("Rollout was resumed", :production_rollout_resumed, notification_params)
+        schedule_next_automatic_rollout! if automatic_rollout?
       else
         fail!(result.error)
       end
@@ -169,11 +176,10 @@ class PlayStoreRollout < StoreRollout
   def pause_release!
     with_lock do
       return unless may_pause?
+      return unless automatic_rollout?
 
-      disable_automatic_rollout!
       pause!
-      event_stamp!(reason: :paused, kind: :error, data: stamp_data)
-      notify!("Automatic rollout has been paused", :production_rollout_paused, notification_params)
+      clear_automatic_rollout_schedule!
     end
   end
 
@@ -192,7 +198,7 @@ class PlayStoreRollout < StoreRollout
     event_stamp!(reason: :failed, kind: :error, data: stamp_data)
 
     return if play_store_submission.fail_with_review_rejected!(error)
-    play_store_submission.fail_with_error!(error) if play_store_submission.auto_rollout?
+    play_store_submission.fail_with_error!(error) if play_store_submission.auto_start_rollout?
   end
 
   def rollout(value, retry_on_review_fail: false)
@@ -208,6 +214,12 @@ class PlayStoreRollout < StoreRollout
   end
 
   def on_start!
+    update_external_status
+    schedule_next_automatic_rollout! if automatic_rollout?
+    super
+  end
+
+  def on_resume!
     update_external_status
     super
   end

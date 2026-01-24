@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe HaltUnhealthyReleaseRolloutJob do
+describe HaltUnhealthyReleaseRolloutJob do
   let(:play_store_integration) { instance_double(GooglePlayStoreIntegration) }
   let(:play_store_submission) { create(:play_store_submission, :prod_release) }
   let(:production_release) { play_store_submission.parent_release }
@@ -12,7 +12,7 @@ RSpec.describe HaltUnhealthyReleaseRolloutJob do
     create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 1)
   end
 
-  context "when job is run for a release with automatic staged rollout" do
+  context "when job is run for a release with staged rollout" do
     context "when release is healthy" do
       before do
         allow_any_instance_of(ProductionRelease).to receive(:healthy?).and_return(true)
@@ -48,9 +48,9 @@ RSpec.describe HaltUnhealthyReleaseRolloutJob do
     end
   end
 
-  context "when job is run for release without automatic staged rollout" do
+  context "when job is run for release without staged rollout" do
     before do
-      production_release.store_rollout.update!(automatic_rollout: false)
+      production_release.store_rollout.update!(is_staged_rollout: false)
     end
 
     context "when release is healthy" do

@@ -2,10 +2,11 @@ class StoreRolloutsController < SignedInApplicationController
   include Tabbable
 
   before_action :require_write_access!, except: [:index]
-  before_action :set_store_rollout, only: %i[start increase pause resume halt fully_release]
-  before_action :ensure_moveable, only: %i[start increase pause resume halt fully_release]
-  before_action :ensure_user_controlled_rollout, only: [:increase, :halt]
-  before_action :ensure_automatic_rollout, only: [:pause]
+  before_action :set_store_rollout, only: %i[start increase pause resume halt fully_release disable_automatic_rollout]
+  before_action :ensure_moveable, only: %i[start increase pause resume halt fully_release disable_automatic_rollout]
+  before_action :ensure_user_controlled_rollout, only: [:halt]
+  before_action :ensure_automatic_rollout, only: [:pause, :disable_automatic_rollout]
+  before_action :ensure_manual_rollout, only: [:increase]
   before_action :live_release!, only: %i[index]
   before_action :set_app, only: %i[index]
   around_action :set_time_zone
@@ -46,10 +47,18 @@ class StoreRolloutsController < SignedInApplicationController
   end
 
   def halt
-    if (res = Action.halt_the_store_rollout!(@store_rollout, manually: true)).ok?
+    if (res = Action.halt_the_store_rollout!(@store_rollout)).ok?
       redirect_back fallback_location: root_path, notice: t(".halt.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".halt.failure", errors: res.error.message)}
+    end
+  end
+
+  def disable_automatic_rollout
+    if (res = Action.disable_automatic_rollout!(@store_rollout)).ok?
+      redirect_back fallback_location: root_path, notice: t(".disable_automatic_rollout.success")
+    else
+      redirect_back fallback_location: root_path, flash: {error: t(".disable_automatic_rollout.failure", errors: res.error.message)}
     end
   end
 
@@ -75,6 +84,12 @@ class StoreRolloutsController < SignedInApplicationController
   def ensure_automatic_rollout
     unless @store_rollout.automatic_rollout?
       redirect_back fallback_location: root_path, flash: {error: t(".rollout_not_automatic")}
+    end
+  end
+
+  def ensure_manual_rollout
+    if @store_rollout.automatic_rollout?
+      redirect_back fallback_location: root_path, flash: {error: t(".rollout_is_automatic")}
     end
   end
 

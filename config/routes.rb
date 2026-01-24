@@ -266,6 +266,7 @@ Rails.application.routes.draw do
       patch :resume
       patch :halt
       patch :fully_release
+      patch :disable_automatic_rollout
     end
   end
 

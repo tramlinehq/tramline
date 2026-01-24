@@ -18,51 +18,56 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
       described_class.new.perform(store_rollout.id)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
+
+    it "does not schedule rollout job" do
+      expect {
+        described_class.new.perform(store_rollout.id)
+      }.not_to change(described_class.jobs, :size)
+    end
   end
 
   context "when a staged play store rollout is in first stage" do
     let(:store_rollout) { create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: true, store_submission: play_store_submission, current_stage: 1) }
 
-    context "when release is healthy" do
-      before do
-        allow_any_instance_of(ProductionRelease).to receive(:healthy?).and_return(true)
-      end
-
-      it "rolls out the release to next stage" do
-        freeze_time do
-          described_class.new.perform(store_rollout.id)
-          expect(play_store_integration).to have_received(:rollout_release)
-          expect(store_rollout.reload.current_stage).to eq(2)
-          expect(store_rollout.automatic_rollout_updated_at).to eq(Time.current)
-          expect(store_rollout.automatic_rollout_next_update_at).to eq(24.hours.from_now)
-        end
-      end
-
-      it "schedules rollout job after 24 hours" do
-        expect {
-          described_class.new.perform(store_rollout.id)
-        }.to change(described_class.jobs, :size).by(1)
-        expect(described_class.jobs.first["at"] - Time.current.to_f).to be_within(1.minute).of(24.hours.to_i)
+    it "rolls out the release to next stage" do
+      freeze_time do
+        described_class.new.perform(store_rollout.id)
+        expect(play_store_integration).to have_received(:rollout_release)
+        expect(store_rollout.reload.current_stage).to eq(2)
+        expect(store_rollout.automatic_rollout_updated_at).to eq(Time.current)
+        expect(store_rollout.automatic_rollout_next_update_at).to eq(24.hours.from_now)
       end
     end
 
-    context "when release is unhealthy" do
-      before do
-        allow_any_instance_of(ProductionRelease).to receive(:healthy?).and_return(false)
-      end
-
-      it "does not roll out the release to next stage" do
+    it "schedules rollout job after 24 hours" do
+      expect {
         described_class.new.perform(store_rollout.id)
-        expect(play_store_integration).not_to have_received(:rollout_release)
-        expect(store_rollout.reload.current_stage).not_to eq(2)
-      end
+      }.to change(described_class.jobs, :size).by(1)
+      expect(described_class.jobs.first["at"] - Time.current.to_f).to be_within(1.minute).of(24.hours.to_i)
+    end
+  end
 
-      it "schedules rollout job after 24 hours" do
-        expect {
-          described_class.new.perform(store_rollout.id)
-        }.to change(described_class.jobs, :size).by(1)
-        expect(described_class.jobs.first["at"] - Time.current.to_f).to be_within(1.minute).of(24.hours.to_i)
-      end
+  context "when a staged play store rollout is paused" do
+    let(:store_rollout) {
+      create(:store_rollout,
+        :play_store,
+        :paused,
+        is_staged_rollout: true,
+        automatic_rollout: true,
+        store_submission: play_store_submission,
+        config: [1, 10, 100],
+        current_stage: 0)
+    }
+
+    it "does not roll out the release" do
+      described_class.new.perform(store_rollout.id)
+      expect(play_store_integration).not_to have_received(:rollout_release)
+    end
+
+    it "does not schedule rollout job" do
+      expect {
+        described_class.new.perform(store_rollout.id)
+      }.not_to change(described_class.jobs, :size)
     end
   end
 
@@ -82,18 +87,15 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
       allow_any_instance_of(ProductionRelease).to receive(:healthy?).and_return(true)
     end
 
-    it "resumes the rollout first, then increases it" do
+    it "does not roll out the release" do
       described_class.new.perform(store_rollout.id)
-      expect(store_rollout.reload.status).to eq("started")
-      expect(play_store_integration).to have_received(:rollout_release).twice
-      expect(store_rollout.reload.current_stage).to eq(1)
+      expect(play_store_integration).not_to have_received(:rollout_release)
     end
 
-    it "schedules rollout job after 24 hours" do
+    it "does not schedule rollout job" do
       expect {
         described_class.new.perform(store_rollout.id)
-      }.to change(described_class.jobs, :size).by(1)
-      expect(described_class.jobs.first["at"] - Time.current.to_f).to be_within(1.minute).of(24.hours.to_i)
+      }.not_to change(described_class.jobs, :size)
     end
   end
 
@@ -105,7 +107,7 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
 
-    it "does not schedule rollout job after 24 hours" do
+    it "does not schedule rollout job" do
       expect {
         described_class.new.perform(store_rollout.id)
       }.not_to change(described_class.jobs, :size)
@@ -113,14 +115,14 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
   end
 
   context "when a staged play store rollout does not have automatic rollout" do
-    let(:store_rollout) { create(:store_rollout, :play_store, :created, is_staged_rollout: true, automatic_rollout: false, store_submission: play_store_submission) }
+    let(:store_rollout) { create(:store_rollout, :play_store, :started, is_staged_rollout: true, automatic_rollout: false, store_submission: play_store_submission) }
 
     it "does not rollout the release" do
       described_class.new.perform(store_rollout.id)
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
 
-    it "does not schedule rollout job after 24 hours" do
+    it "does not schedule rollout job" do
       expect {
         described_class.new.perform(store_rollout.id)
       }.not_to change(described_class.jobs, :size)
@@ -135,7 +137,7 @@ RSpec.describe IncreaseHealthyReleaseRolloutJob do
       expect(play_store_integration).not_to have_received(:rollout_release)
     end
 
-    it "does not schedule rollout job after 24 hours" do
+    it "does not schedule rollout job" do
       expect {
         described_class.new.perform(store_rollout.id)
       }.not_to change(described_class.jobs, :size)

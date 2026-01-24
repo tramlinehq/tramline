@@ -34,6 +34,30 @@ describe PlayStoreRollout do
       expect(prod_double).to have_received(:rollout_started!)
     end
 
+    context "when automatic rollout is enabled" do
+      let(:rollout) { create(:store_rollout, :play_store, :created, release_platform_run:, store_submission:, automatic_rollout: true) }
+
+      it "schedules the next automatic rollout job" do
+        freeze_time do
+          expect {
+            rollout.start_release!
+          }.to change(IncreaseHealthyReleaseRolloutJob.jobs, :size).by(1)
+          expect(rollout.reload.automatic_rollout_updated_at).to eq(Time.current)
+          expect(rollout.automatic_rollout_next_update_at).to eq(24.hours.from_now)
+        end
+      end
+    end
+
+    context "when automatic rollout is disabled" do
+      let(:rollout) { create(:store_rollout, :play_store, :created, release_platform_run:, store_submission:, automatic_rollout: false) }
+
+      it "does not schedule the automatic rollout job" do
+        expect {
+          rollout.start_release!
+        }.not_to change(IncreaseHealthyReleaseRolloutJob.jobs, :size)
+      end
+    end
+
     context "when the rollout is not staged" do
       let(:rollout) { create(:store_rollout, :play_store, :created, release_platform_run:, store_submission:, is_staged_rollout: false) }
 
@@ -328,6 +352,58 @@ describe PlayStoreRollout do
     end
   end
 
+  describe "#pause_release!" do
+    let(:release_platform_run) { create(:release_platform_run) }
+    let(:production_release) { create(:production_release, release_platform_run:) }
+    let(:store_submission) { create(:play_store_submission, :prepared, :prod_release, release_platform_run:, parent_release: production_release) }
+
+    before do
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_async)
+    end
+
+    context "when automatic rollout is enabled" do
+      it "pauses the rollout if started" do
+        rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:,
+          config: [1, 80], current_stage: 0, automatic_rollout: true)
+
+        rollout.pause_release!
+
+        expect(rollout.paused?).to be(true)
+      end
+
+      it "clears the automatic rollout schedule" do
+        rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:,
+          config: [1, 80], current_stage: 0, automatic_rollout: true,
+          automatic_rollout_next_update_at: 24.hours.from_now)
+
+        rollout.pause_release!
+
+        expect(rollout.reload.automatic_rollout_next_update_at).to be_nil
+      end
+
+      it "keeps the automatic_rollout flag enabled" do
+        rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:,
+          config: [1, 80], current_stage: 0, automatic_rollout: true)
+
+        rollout.pause_release!
+
+        expect(rollout.reload.automatic_rollout).to be(true)
+      end
+    end
+
+    context "when automatic rollout is disabled" do
+      it "does not pause the rollout" do
+        rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:,
+          config: [1, 80], current_stage: 0, automatic_rollout: false)
+
+        rollout.pause_release!
+
+        expect(rollout.paused?).to be(false)
+        expect(rollout.started?).to be(true)
+      end
+    end
+  end
+
   describe "#resume_release!" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
@@ -346,6 +422,46 @@ describe PlayStoreRollout do
       rollout.resume_release!
 
       expect(rollout.started?).to be(true)
+    end
+
+    it "resumes the rollout if paused" do
+      rollout = create(:store_rollout, :paused, :play_store, release_platform_run:, store_submission:, config: [1, 80], current_stage: 0)
+      allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+      rollout.resume_release!
+
+      expect(rollout.started?).to be(true)
+    end
+
+    context "when automatic rollout is enabled" do
+      it "schedules the next automatic rollout job" do
+        rollout = create(:store_rollout, :paused, :play_store, release_platform_run:, store_submission:,
+          config: [1, 80], current_stage: 0, automatic_rollout: true)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+        freeze_time do
+          expect {
+            rollout.resume_release!
+          }.to change(IncreaseHealthyReleaseRolloutJob.jobs, :size).by(1)
+          expect(rollout.reload.automatic_rollout_updated_at).to eq(Time.current)
+          expect(rollout.automatic_rollout_next_update_at).to eq(24.hours.from_now)
+        end
+      end
+    end
+
+    context "when automatic rollout is disabled" do
+      it "does not schedule the automatic rollout job" do
+        rollout = create(:store_rollout, :paused, :play_store, release_platform_run:, store_submission:,
+          config: [1, 80], current_stage: 0, automatic_rollout: false)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+        expect {
+          rollout.resume_release!
+        }.not_to change(IncreaseHealthyReleaseRolloutJob.jobs, :size)
+      end
     end
 
     it "does not resume the rollout if store call fails" do

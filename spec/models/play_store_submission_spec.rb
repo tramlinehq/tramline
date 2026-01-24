@@ -260,17 +260,8 @@ describe PlayStoreSubmission do
     end
   end
 
-  describe "#auto_rollout?" do
+  describe "#auto_start_rollout?" do
     let(:build) { create(:build) }
-    let(:train) { create(:train) }
-    let(:release_platform) { create(:release_platform, train:, platform: "android") }
-
-    before do
-      release_platform.platform_config.production_release.submissions.first.update!(
-        rollout_enabled: true,
-        automatic_rollout: true
-      )
-    end
 
     context "when parent release is production" do
       let(:production_release) { create(:production_release, :inflight, build:) }
@@ -282,41 +273,17 @@ describe PlayStoreSubmission do
           release_platform_run: production_release.release_platform_run)
       }
 
-      context "when staged rollout and automatic rollout are enabled" do
-        it "returns true" do
-          submission.update! config: release_platform.platform_config.production_release.submissions.first.as_json
-          expect(submission.auto_rollout?).to be(true)
-        end
-      end
 
-      context "when staged rollout is disabled" do
-        before do
-          allow(submission.conf).to receive(:rollout_enabled?).and_return(false)
-        end
-
-        it "returns false" do
-          expect(submission.auto_rollout?).to be(false)
-        end
-      end
-
-      context "when automatic rollout is disabled" do
-        before do
-          allow(submission.conf).to receive(:automatic_rollout?).and_return(false)
-        end
-
-        it "returns false" do
-          expect(submission.auto_rollout?).to be(false)
-        end
+      it "returns false when parent release is production" do
+        expect(submission.auto_start_rollout?).to be(false)
       end
     end
 
-    context "when parent release is not production" do
-      let(:pre_prod_release) { create(:beta_release) }
-      let(:submission) { create(:play_store_submission, :created, build:, parent_release: pre_prod_release) }
+    it "returns true when parent release is not production" do
+      pre_prod_release = create(:beta_release)
+      submission = create(:play_store_submission, :created, build:, parent_release: pre_prod_release)
 
-      it "returns false" do
-        expect(submission.auto_rollout?).to be(false)
-      end
+      expect(submission.auto_start_rollout?).to be(true)
     end
   end
 end

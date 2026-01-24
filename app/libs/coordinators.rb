@@ -130,6 +130,13 @@ module Coordinators
         Coordinators::PreReleaseJob.perform_async(release.id)
       end
     end
+
+    def self.halting_release_health_rule_triggered!(release_health_event)
+      HaltUnhealthyReleaseRolloutJob.perform_async(
+        release_health_event.production_release_id,
+        release_health_event.id
+      )
+    end
   end
 
   module Actions
@@ -261,10 +268,14 @@ module Coordinators
     end
 
     def self.increase_the_store_rollout!(rollout)
+      return Res.new { raise "cannot manually increase rollout when automatic rollout is enabled" } if rollout.automatic_rollout?
+      Res.new { Coordinators::IncreaseStoreRollout.call(rollout) }
+    end
+
+    def self.disable_automatic_rollout!(rollout)
       return Res.new { raise "release is not actionable" } unless rollout.actionable?
-      return Res.new { raise "rollout is not started" } unless rollout.started?
-      rollout.move_to_next_stage!
-      return Res.new { raise rollout.errors.full_messages.to_sentence } if rollout.errors?
+      return Res.new { raise "automatic rollout is not enabled" } unless rollout.automatic_rollout?
+      rollout.disable_automatic_rollout!
       Res.new { true }
     end
 
@@ -284,17 +295,8 @@ module Coordinators
       Res.new { true }
     end
 
-    def self.halt_the_store_rollout!(rollout, manually: false)
-      return Res.new { raise "release is not actionable" } unless rollout.actionable?
-      return Res.new { raise "rollout is not started" } unless rollout.started?
-      rollout.halt_release!
-
-      if manually && rollout.automatic_rollout?
-        rollout.disable_automatic_rollout!
-      end
-
-      return Res.new { raise rollout.errors.full_messages.to_sentence } if rollout.errors?
-      Res.new { true }
+    def self.halt_the_store_rollout!(rollout)
+      Res.new { Coordinators::HaltStoreRollout.call(rollout) }
     end
 
     def self.fully_release_the_store_rollout!(rollout)

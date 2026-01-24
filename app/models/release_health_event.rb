@@ -63,6 +63,7 @@ class ReleaseHealthEvent < ApplicationRecord
 
   def trigger_halt_on_unhealthy
     return unless unhealthy?
-    HaltUnhealthyReleaseRolloutJob.perform_async(production_release.id, id)
+    return unless release_health_rule.is_halting?
+    Signal.halting_release_health_rule_triggered!(self)
   end
 end
