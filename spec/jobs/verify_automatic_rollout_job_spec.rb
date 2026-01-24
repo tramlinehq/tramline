@@ -1,10 +1,10 @@
 require "rails_helper"
 
-RSpec.describe VerifyAutomaticRolloutJob do
+describe VerifyAutomaticRolloutJob do
   let(:play_store_submission) { create(:play_store_submission, :prod_release) }
 
   before do
-    allow(IncreaseHealthyReleaseRolloutJob).to receive(:perform_async)
+    allow(AutomaticUpdateRolloutJob).to receive(:perform_async)
   end
 
   context "when a staged play store rollout with automatic rollout is created" do
@@ -14,7 +14,7 @@ RSpec.describe VerifyAutomaticRolloutJob do
 
     it "does not call enqueue IncreaseHealthyReleaseRolloutJob" do
       described_class.new.perform
-      expect(IncreaseHealthyReleaseRolloutJob).not_to have_received(:perform_async)
+      expect(AutomaticUpdateRolloutJob).not_to have_received(:perform_async)
     end
   end
 
@@ -25,7 +25,7 @@ RSpec.describe VerifyAutomaticRolloutJob do
 
     it "does not call enqueue IncreaseHealthyReleaseRolloutJob" do
       described_class.new.perform
-      expect(IncreaseHealthyReleaseRolloutJob).not_to have_received(:perform_async)
+      expect(AutomaticUpdateRolloutJob).not_to have_received(:perform_async)
     end
   end
 
@@ -34,7 +34,7 @@ RSpec.describe VerifyAutomaticRolloutJob do
 
     it "enqueues IncreaseHealthyReleaseRolloutJob" do
       described_class.new.perform
-      expect(IncreaseHealthyReleaseRolloutJob).to have_received(:perform_async).with(store_rollout.id)
+      expect(AutomaticUpdateRolloutJob).to have_received(:perform_async).with(store_rollout.id)
     end
   end
 
@@ -45,7 +45,7 @@ RSpec.describe VerifyAutomaticRolloutJob do
 
     it "does not enqueue IncreaseHealthyReleaseRolloutJob" do
       described_class.new.perform
-      expect(IncreaseHealthyReleaseRolloutJob).not_to have_received(:perform_async)
+      expect(AutomaticUpdateRolloutJob).not_to have_received(:perform_async)
     end
   end
 end

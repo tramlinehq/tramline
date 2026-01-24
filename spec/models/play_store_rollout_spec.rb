@@ -41,9 +41,9 @@ describe PlayStoreRollout do
         freeze_time do
           expect {
             rollout.start_release!
-          }.to change(IncreaseHealthyReleaseRolloutJob.jobs, :size).by(1)
+          }.to change(AutomaticUpdateRolloutJob.jobs, :size).by(1)
           expect(rollout.reload.automatic_rollout_updated_at).to eq(Time.current)
-          expect(rollout.automatic_rollout_next_update_at).to eq(24.hours.from_now)
+          expect(rollout.automatic_rollout_next_update_at).to eq(PlayStoreRollout::AUTO_ROLLOUT_RUN_INTERVAL.from_now)
         end
       end
     end
@@ -54,7 +54,7 @@ describe PlayStoreRollout do
       it "does not schedule the automatic rollout job" do
         expect {
           rollout.start_release!
-        }.not_to change(IncreaseHealthyReleaseRolloutJob.jobs, :size)
+        }.not_to change(AutomaticUpdateRolloutJob.jobs, :size)
       end
     end
 
@@ -350,6 +350,17 @@ describe PlayStoreRollout do
 
       expect(providable_dbl).to have_received(:halt_release).with(anything, anything, anything, anything, retry_on_review_fail: true, raise_on_lock_error: false).once
     end
+
+    it "clears the automatic rollout schedule when automatic rollout is enabled" do
+      rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:,
+        automatic_rollout: true, automatic_rollout_next_update_at: 5.minutes.from_now)
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+      rollout.halt_release!
+
+      expect(rollout.reload.automatic_rollout_next_update_at).to be_nil
+    end
   end
 
   describe "#pause_release!" do
@@ -444,9 +455,9 @@ describe PlayStoreRollout do
         freeze_time do
           expect {
             rollout.resume_release!
-          }.to change(IncreaseHealthyReleaseRolloutJob.jobs, :size).by(1)
+          }.to change(AutomaticUpdateRolloutJob.jobs, :size).by(1)
           expect(rollout.reload.automatic_rollout_updated_at).to eq(Time.current)
-          expect(rollout.automatic_rollout_next_update_at).to eq(24.hours.from_now)
+          expect(rollout.automatic_rollout_next_update_at).to eq(PlayStoreRollout::AUTO_ROLLOUT_RUN_INTERVAL.from_now)
         end
       end
     end
@@ -460,7 +471,7 @@ describe PlayStoreRollout do
 
         expect {
           rollout.resume_release!
-        }.not_to change(IncreaseHealthyReleaseRolloutJob.jobs, :size)
+        }.not_to change(AutomaticUpdateRolloutJob.jobs, :size)
       end
     end
 

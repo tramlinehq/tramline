@@ -1,3 +1,4 @@
+# this is a preventative job that checks for automatic rollouts that should have progressed but haven't
 class VerifyAutomaticRolloutJob < ApplicationJob
   queue_as :high
 
@@ -6,8 +7,7 @@ class VerifyAutomaticRolloutJob < ApplicationJob
       .automatic_rollouts
       .where(automatic_rollout_next_update_at: ..5.minutes.ago) # should've happened more than 5m ago
       .find_each do |rollout|
-      # TODO: maybe just alert for now
-      IncreaseHealthyReleaseRolloutJob.perform_async(rollout.id)
+      AutomaticUpdateRolloutJob.perform_async(rollout.id, rollout.automatic_rollout_next_update_at, rollout.current_stage)
     end
   end
 end

@@ -44,7 +44,7 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
   end
 
   def monitoring_size
-    release_platform_run.app.cross_platform? ? :compact : :max
+    app.cross_platform? ? :compact : :max
   end
 
   def show_blocked_message?
@@ -71,7 +71,10 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
   end
 
   def action_help
-    I18n.t("views.rollout.#{platform}.#{store_rollout.status.to_sym}")
+    status = store_rollout.status.to_sym
+    status = "started_automatic" if status == :started && automatic_rollout?
+
+    I18n.t("views.rollout.#{platform}.#{status}")
   rescue I18n::MissingTranslationData
     ""
   end
@@ -79,6 +82,13 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
   def stages
     store_rollout.config.map do |stage_percentage|
       [stage_percentage, (stage_percentage > last_rollout_percentage) ? :inert : :default]
+    end
+  end
+
+  def next_rollout_time
+    if automatic_rollout? && store_rollout.started?
+      time = time_format(store_rollout.automatic_rollout_next_update_at.in_time_zone(app.timezone))
+      "The next rollout will occur at #{time}."
     end
   end
 
@@ -95,7 +105,15 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
       )
     end
 
-    if controllable_rollout?
+    if automatic_rollout?
+      ButtonComponent.new(
+        label: "Disable automatic rollout",
+        scheme: :danger,
+        options: disable_automatic_rollout_store_rollout_path(id),
+        size: :xxs,
+        html_options: html_opts(:patch, "Are you sure you want to disable automatic rollout? You will need to increase the rollout manually after this.")
+      )
+    elsif controllable_rollout?
       ButtonComponent.new(
         label: "Increase rollout",
         scheme: :default,
@@ -131,9 +149,21 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
       ],
       paused: [
         {
+          text: "Halt rollout",
+          path: halt_store_rollout_path(id),
+          scheme: :danger,
+          confirm: "Are you sure you want to halt the rollout?"
+        },
+        {
+          text: "Release to all",
+          path: fully_release_store_rollout_path(id),
+          scheme: :light,
+          confirm: "Are you sure you want to rollout to all users?"
+        },
+        {
           text: "Resume rollout",
           path: resume_store_rollout_path(id),
-          scheme: :light,
+          scheme: :green,
           confirm: "Are you sure you want to resume the rollout?"
         }
       ],
@@ -173,5 +203,9 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
 
   def show_monitoring?
     @show_monitoring
+  end
+
+  memoize def app
+    release_platform_run.app
   end
 end

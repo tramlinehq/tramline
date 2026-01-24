@@ -672,13 +672,14 @@ en:
       android:
         created: "Start the rollout to initiate your staged rollout sequence."
         started: "Increase the rollout to move to the next stage of your rollout sequence."
+        started_automatic: "Tramline will automatically move the staged rollout to the next stage every day."
         paused: "Resume rollout to continue your rollout sequence."
         halted: "Resume rollout to continue your rollout sequence."
         completed: "The rollout has been completed."
         fully_released: "The rollout has been fully released to all users."
       ios:
         created: "Start the rollout to kickoff the phased release."
-        started: "App Store will automatically move the phased release to the next stage every 24 hours."
+        started: "App Store will automatically move the phased release to the next stage every day."
         paused: "Resume rollout to continue your phased release."
         halted: "Resume rollout to continue your phased release."
         completed: "The rollout has been completed."

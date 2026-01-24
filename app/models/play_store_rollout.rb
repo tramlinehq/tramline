@@ -54,7 +54,7 @@ class PlayStoreRollout < StoreRollout
     end
 
     event :halt, after_commit: :on_halt! do
-      transitions from: [:started], to: :halted
+      transitions from: [:started, :paused], to: :halted
     end
 
     event :complete, after_commit: :on_complete! do
@@ -134,6 +134,7 @@ class PlayStoreRollout < StoreRollout
 
       if result.ok?
         halt!
+        clear_automatic_rollout_schedule!
       else
         fail!(result.error)
       end
@@ -148,10 +149,11 @@ class PlayStoreRollout < StoreRollout
     current = Time.current
     next_update = current + AUTO_ROLLOUT_RUN_INTERVAL
     update!(automatic_rollout_updated_at: current, automatic_rollout_next_update_at: next_update)
-    IncreaseHealthyReleaseRolloutJob.perform_at(next_update, id)
+    AutomaticUpdateRolloutJob.perform_at(next_update, id, next_update.to_i, current_stage)
   end
 
   def clear_automatic_rollout_schedule!
+    return unless automatic_rollout?
     update!(automatic_rollout_next_update_at: nil)
   end
 

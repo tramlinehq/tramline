@@ -9,7 +9,7 @@ class Coordinators::HaltStoreRollout
 
   def call
     raise "release is not actionable" unless rollout.actionable?
-    raise "rollout is not started" unless rollout.started?
+    raise "rollout is not in a state that can be halted" unless rollout.may_halt?
 
     rollout.halt_release!
     raise rollout.errors.full_messages.to_sentence if rollout.errors?

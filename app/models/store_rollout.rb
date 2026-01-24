@@ -135,7 +135,7 @@ class StoreRollout < ApplicationRecord
       event_stamp!(reason: :started, kind: :success, data: stamp_data)
     else
       # notify that the rollout has updated
-      event_stamp!(reason: :updated, kind: :notice, data: stamp_data)
+      event_stamp!(reason: :updated, kind: :success, data: stamp_data)
       notify!("Rollout has been updated", :production_rollout_updated, notification_params)
     end
   end
@@ -165,11 +165,12 @@ class StoreRollout < ApplicationRecord
   end
 
   def on_pause!
-    event_stamp!(reason: :paused, kind: :error, data: stamp_data)
+    event_stamp!(reason: :paused, kind: :notice, data: stamp_data)
     notify!("Rollout has been paused", :production_rollout_paused, notification_params)
   end
 
   def on_complete!
+    event_stamp!(reason: :completed, kind: :success, data: stamp_data)
     parent_release.rollout_complete!(store_submission)
   end
 

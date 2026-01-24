@@ -184,9 +184,4 @@ class AppStoreRollout < StoreRollout
     update_store_info!(release_info)
     update_stage(release_info.phased_release_stage, finish_rollout: release_info.phased_release_complete?)
   end
-
-  def on_complete!
-    event_stamp!(reason: :completed, kind: :success, data: stamp_data)
-    super
-  end
 end
