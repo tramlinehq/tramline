@@ -4,7 +4,7 @@ class StoreRolloutsController < SignedInApplicationController
   before_action :require_write_access!, except: [:index]
   before_action :set_store_rollout, only: %i[start increase pause resume halt fully_release disable_automatic_rollout]
   before_action :ensure_moveable, only: %i[start increase pause resume halt fully_release disable_automatic_rollout]
-  before_action :ensure_user_controlled_rollout, only: [:halt]
+  before_action :ensure_user_controlled_rollout, only: [:increase, :halt]
   before_action :ensure_automatic_rollout, only: [:pause, :disable_automatic_rollout]
   before_action :ensure_manual_rollout, only: [:increase]
   before_action :live_release!, only: %i[index]
