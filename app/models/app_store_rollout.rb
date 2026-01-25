@@ -197,9 +197,9 @@ class AppStoreRollout < StoreRollout
   # If release_info is provided (auto-start flow), also update the rollout stage
   # If not provided (manual flow), just transition state
   def transition_to_started_state(release_info = nil)
+    start!
+    event_stamp!(reason: :started, kind: :notice, data: stamp_data)
     if staged_rollout?
-      start!
-      event_stamp!(reason: :started, kind: :notice, data: stamp_data)
       update_rollout(release_info) if release_info
     else
       complete!
