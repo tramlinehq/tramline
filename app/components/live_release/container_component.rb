@@ -91,10 +91,6 @@ class LiveRelease::ContainerComponent < BaseComponent
     release.train.webhooks_available?
   end
 
-  def has_active_platform_runs?
-    active_platform_runs.any?
-  end
-
   def active_platform_runs
     @active_platform_runs ||= release.release_platform_runs.on_track
   end

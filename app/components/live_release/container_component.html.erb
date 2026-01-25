@@ -146,7 +146,7 @@
       </div>
 
       <div class="self-end mt-10 flex flex-col gap-2 items-end <%= RIGHT_GUTTER %>">
-        <% if active? && has_active_platform_runs? %>
+        <% if active? && active_platform_runs.any? %>
           <%= render ModalComponent.new(title: "Lock a platform") do |modal| %>
             <% modal.with_button(label: "Lock platforms", scheme: :light, type: :action, size: :xxs)
                  .with_icon("lock.svg") %>
