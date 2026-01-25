@@ -172,9 +172,9 @@ class AppStoreIntegration < ApplicationRecord
     GitHub::Result.new { installation.add_build_to_group(beta_group_id, build_number) }
   end
 
-  def prepare_release(build_number, version, is_phased_release, metadata, force)
+  def prepare_release(build_number, version, is_phased_release, metadata, force, auto_start_rollout = false)
     GitHub::Result.new do
-      release_info(installation.prepare_release(build_number, version, is_phased_release, metadata, force, RELEASE_TRANSFORMATIONS))
+      release_info(installation.prepare_release(build_number, version, is_phased_release, metadata, force, auto_start_rollout, RELEASE_TRANSFORMATIONS))
     end
   end
 

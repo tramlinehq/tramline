@@ -145,10 +145,22 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
 
       request = stub_request(:post, url).to_return(body: payload)
       result = described_class.new(bundle_id, key_id, issuer_id, key)
-        .prepare_release(build_number, version, is_phased_release, metadata, true, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+        .prepare_release(build_number, version, is_phased_release, metadata, true, false, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
 
       expect(result).to eq(expected_release)
       expect(request.with(body: params[:json])).to have_been_made
+    end
+
+    it "includes release_type when auto_start_rollout is true" do
+      payload = File.read("spec/fixtures/app_store_connect/release.json")
+      params_with_release_type = params.deep_dup
+      params_with_release_type[:json][:release_type] = "AFTER_APPROVAL"
+
+      request = stub_request(:post, url).to_return(body: payload)
+      described_class.new(bundle_id, key_id, issuer_id, key)
+        .prepare_release(build_number, version, is_phased_release, metadata, true, true, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+
+      expect(request.with(body: params_with_release_type[:json])).to have_been_made
     end
 
     it "returns error when preparing release is a failure" do
@@ -157,7 +169,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
 
       expect {
         described_class.new(bundle_id, key_id, issuer_id, key)
-          .prepare_release(build_number, version, is_phased_release, metadata, true, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+          .prepare_release(build_number, version, is_phased_release, metadata, true, false, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
       }
         .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:missing_export_compliance) }
       expect(request.with(body: params[:json])).to have_been_made
