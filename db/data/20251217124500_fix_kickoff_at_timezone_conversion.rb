@@ -2,6 +2,7 @@
 
 class FixKickoffAtTimezoneConversion < ActiveRecord::Migration[7.2]
   def up
+    return
     # We need to convert them to local time components in each app's timezone.
     # Example:
     # If user entered 6:30 PM PST, it was previously stored as 02:30 UTC.

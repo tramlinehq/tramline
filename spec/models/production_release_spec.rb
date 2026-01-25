@@ -245,8 +245,7 @@ describe ProductionRelease do
         skip_rollout: false
       ) => { release_platform:, release:, production_release:, store_rollout: }
       allow(production_release).to receive(:monitoring_provider).and_return(monitoring_provider)
-      allow(monitoring_provider).to receive(:installation).and_return(monitoring_api_dbl)
-      allow(monitoring_provider).to receive(:find_release)
+      allow(monitoring_provider).to receive_messages(installation: monitoring_api_dbl, find_release: {daily_users: 1})
 
       production_release.fetch_health_data!
 

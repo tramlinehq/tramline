@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_16_100000) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_24_222321) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -938,7 +938,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_16_100000) do
     t.boolean "is_staged_rollout", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "automatic_rollout", default: false, null: false
+    t.datetime "automatic_rollout_updated_at"
+    t.datetime "automatic_rollout_next_update_at"
+    t.index ["automatic_rollout"], name: "index_store_rollouts_on_automatic_rollout"
+    t.index ["is_staged_rollout"], name: "index_store_rollouts_on_is_staged_rollout"
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
+    t.index ["status"], name: "index_store_rollouts_on_status"
     t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
   end
 
@@ -981,6 +987,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_16_100000) do
     t.uuid "integrable_id"
     t.string "integrable_type"
     t.boolean "finish_rollout_in_next_release", default: false, null: false
+    t.boolean "automatic_rollout", default: false
+    t.boolean "auto_start_rollout_after_submission", default: false, null: false
     t.index ["number"], name: "index_submission_configs_on_number"
     t.index ["release_step_config_id", "number"], name: "index_submission_configs_on_release_step_config_id_and_number", unique: true
     t.index ["release_step_config_id"], name: "index_submission_configs_on_release_step_config_id"

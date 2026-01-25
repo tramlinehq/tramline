@@ -192,8 +192,12 @@ en:
     start:
       success: "Rollout was successfully started."
       failure: "Failed to start rollout — %{errors}"
+    disable_automatic_rollout:
+      success: "Automatic rollout was disabled."
+      failure: "Failed to disable automatic rollout — %{errors}"
     rollout_not_controllable: "Rollout is not controllable."
     rollout_not_automatic: "Rollout is not automatic."
+    rollout_is_automatic: "Cannot manually increase rollout when automatic rollout is enabled."
     rollout_not_moveable: "Rollout is not moveable."
   workflow_runs:
     trigger:
@@ -668,13 +672,15 @@ en:
       android:
         created: "Start the rollout to initiate your staged rollout sequence."
         started: "Increase the rollout to move to the next stage of your rollout sequence."
+        started_automatic: "Tramline will automatically move the staged rollout to the next stage every day."
         paused: "Resume rollout to continue your rollout sequence."
         halted: "Resume rollout to continue your rollout sequence."
         completed: "The rollout has been completed."
         fully_released: "The rollout has been fully released to all users."
       ios:
         created: "Start the rollout to kickoff the phased release."
-        started: "App Store will automatically move the phased release to the next stage every 24 hours."
+        started: "App Store will automatically move the phased release to the next stage every day."
+        started_automatic: "App Store will automatically move the phased release to the next stage every day."
         paused: "Resume rollout to continue your phased release."
         halted: "Resume rollout to continue your phased release."
         completed: "The rollout has been completed."

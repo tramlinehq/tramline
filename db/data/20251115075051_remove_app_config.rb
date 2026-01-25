@@ -2,6 +2,7 @@
 
 class RemoveAppConfig < ActiveRecord::Migration[7.2]
   def up
+    return
     ActiveRecord::Base.transaction do
       # Migrate app_config data to integrations and app_variants
       migrate_app_config_data

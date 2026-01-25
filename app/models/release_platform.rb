@@ -28,7 +28,7 @@ class ReleasePlatform < ApplicationRecord
         {number: 1,
          submission_type: "PlayStoreSubmission",
          submission_config: GooglePlayStoreIntegration::PROD_CHANNEL,
-         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE, auto_start_rollout_after_submission: false},
          auto_promote: false}
       ]
     },
@@ -38,7 +38,7 @@ class ReleasePlatform < ApplicationRecord
         {number: 1,
          submission_type: "AppStoreSubmission",
          submission_config: AppStoreIntegration::PROD_CHANNEL,
-         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE, auto_start_rollout_after_submission: false},
          auto_promote: false}
       ]
     }

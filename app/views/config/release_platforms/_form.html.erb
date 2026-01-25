@@ -109,6 +109,12 @@
                           </div>
                         </div>
 
+                        <%= render Form::SwitchComponent.new(form: sub_fields, field_name: :automatic_rollout, on_label: "Automatic rollout enabled", off_label: "Automatic rollout disabled") do |c| %>
+                          <% c.with_info_icon do %>
+                            Tramline will automatically increase store rollout once every day as specified in the Rollout sequence if the release is found to be healthy as determined by Release Health Rules.
+                          <% end %>
+                        <% end %>
+
                         <%= render Form::SwitchComponent.new(form: sub_fields,
                                                              field_name: :finish_rollout_in_next_release,
                                                              on_label: "Cascading rollouts are enabled",

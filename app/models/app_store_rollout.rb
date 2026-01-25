@@ -2,17 +2,20 @@
 #
 # Table name: store_rollouts
 #
-#  id                      :uuid             not null, primary key
-#  completed_at            :datetime
-#  config                  :decimal(8, 5)    default([]), not null, is an Array
-#  current_stage           :integer
-#  is_staged_rollout       :boolean          default(FALSE)
-#  status                  :string           not null
-#  type                    :string           not null
-#  created_at              :datetime         not null
-#  updated_at              :datetime         not null
-#  release_platform_run_id :uuid             not null, indexed
-#  store_submission_id     :uuid             indexed
+#  id                               :uuid             not null, primary key
+#  automatic_rollout                :boolean          default(FALSE), not null, indexed
+#  automatic_rollout_next_update_at :datetime
+#  automatic_rollout_updated_at     :datetime
+#  completed_at                     :datetime
+#  config                           :decimal(8, 5)    default([]), not null, is an Array
+#  current_stage                    :integer
+#  is_staged_rollout                :boolean          default(FALSE), indexed
+#  status                           :string           not null, indexed
+#  type                             :string           not null
+#  created_at                       :datetime         not null
+#  updated_at                       :datetime         not null
+#  release_platform_run_id          :uuid             not null, indexed
+#  store_submission_id              :uuid             indexed
 #
 class AppStoreRollout < StoreRollout
   include Passportable
@@ -40,11 +43,11 @@ class AppStoreRollout < StoreRollout
       transitions from: :created, to: :started
     end
 
-    event :pause do
+    event :pause, after_commit: :on_pause! do
       transitions from: :started, to: :paused
     end
 
-    event :resume do
+    event :resume, after_commit: :on_resume! do
       transitions from: :paused, to: :started
     end
 
@@ -64,8 +67,6 @@ class AppStoreRollout < StoreRollout
   end
 
   def controllable_rollout? = false
-
-  def automatic_rollout? = true
 
   def start_release!
     # return mock_start_app_store_rollout! if sandbox_mode?
@@ -149,8 +150,6 @@ class AppStoreRollout < StoreRollout
       if result.ok?
         update_store_info!(result.value!)
         pause!
-        event_stamp!(reason: :paused, kind: :error, data: stamp_data)
-        notify!("Rollout has been paused", :production_rollout_paused, notification_params)
       else
         elog(result.error, level: :warn)
         errors.add(:base, result.error)
@@ -166,8 +165,6 @@ class AppStoreRollout < StoreRollout
       if result.ok?
         resume!
         update_rollout(result.value!)
-        event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
-        notify!("Rollout has been resumed", :production_rollout_resumed, notification_params)
       else
         elog(result.error, level: :warn)
         errors.add(:base, result.error)
@@ -180,10 +177,5 @@ class AppStoreRollout < StoreRollout
   def update_rollout(release_info)
     update_store_info!(release_info)
     update_stage(release_info.phased_release_stage, finish_rollout: release_info.phased_release_complete?)
-  end
-
-  def on_complete!
-    event_stamp!(reason: :completed, kind: :success, data: stamp_data)
-    super
   end
 end
