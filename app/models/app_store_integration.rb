@@ -82,6 +82,7 @@ class AppStoreIntegration < ApplicationRecord
     build_number: :build_number,
     name: :version_name,
     added_at: :added_at,
+    release_type: :release_type,
     phased_release_day: [:phased_release, :current_day_number],
     phased_release_status: [:phased_release, :phased_release_state],
     localizations: {localizations: {language: :language,
