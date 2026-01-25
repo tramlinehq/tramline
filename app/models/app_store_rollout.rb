@@ -199,7 +199,7 @@ class AppStoreRollout < StoreRollout
   # Transition to live state when rollout is already started (manual start_release! was called)
   def transition_to_live_state(release_info)
     if staged_rollout?
-      with_lock { update_rollout(release_info) }
+      update_rollout(release_info)
     else
       complete!
     end
@@ -212,7 +212,7 @@ class AppStoreRollout < StoreRollout
     if staged_rollout?
       start!
       event_stamp!(reason: :started, kind: :notice, data: stamp_data)
-      with_lock { update_rollout(release_info) } if release_info
+      update_rollout(release_info) if release_info
     else
       complete!
     end
