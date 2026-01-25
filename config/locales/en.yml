@@ -98,6 +98,11 @@ en:
     create:
       success: "Production release was successfully created."
       failure: "Failed to create production release — %{errors}"
+  release_platform_runs:
+    conclude:
+      success: "Release platform run was successfully concluded."
+      failure: "Failed to conclude release platform run — %{errors}"
+      platform_run_required: "Please select a platform to lock."
   staged_rollout:
     ios:
       switch_on: "Enable Phased Release"

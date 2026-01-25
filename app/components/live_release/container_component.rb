@@ -90,4 +90,14 @@ class LiveRelease::ContainerComponent < BaseComponent
   def webhooks_available?
     release.train.webhooks_available?
   end
+
+  def active_platform_runs
+    @active_platform_runs ||= release.release_platform_runs.on_track
+  end
+
+  def platform_run_options
+    active_platform_runs.map do |run|
+      [run.display_attr(:platform), run.id]
+    end
+  end
 end

@@ -61,7 +61,7 @@ describe Coordinators::Signals do
       release_platform_run.update!(config: config.merge(production_release: nil))
       described_class.beta_release_is_finished!(build)
       expect(release_platform_run.reload.production_releases.size).to eq(0)
-      expect(release_platform_run.reload.finished?).to be(true)
+      expect(release_platform_run.reload.concluded?).to be(true)
     end
   end
 
@@ -70,7 +70,7 @@ describe Coordinators::Signals do
 
     it "finishes the release platform run" do
       described_class.production_release_is_complete!(release_platform_run)
-      expect(release_platform_run.reload.finished?).to be(true)
+      expect(release_platform_run.reload.concluded?).to be(true)
     end
   end
 
@@ -169,7 +169,7 @@ describe Coordinators::Signals do
       release_platform_run.update!(config: config.merge(production_release: nil))
 
       described_class.continue_after_soak_period!(release)
-      expect(release_platform_run.reload.finished?).to be(true)
+      expect(release_platform_run.reload.concluded?).to be(true)
     end
 
     it "skips platform runs without finished beta releases" do
