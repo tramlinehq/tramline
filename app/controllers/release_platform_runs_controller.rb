@@ -14,6 +14,12 @@ class ReleasePlatformRunsController < SignedInApplicationController
   private
 
   def set_release_platform_run
-    @release_platform_run = ReleasePlatformRun.find(params[:id] || params[:platform_run_id])
+    platform_run_id = params[:id] || params[:platform_run_id]
+
+    if platform_run_id.blank?
+      redirect_back fallback_location: root_path, flash: {error: t(".platform_run_required")} and return
+    end
+
+    @release_platform_run = ReleasePlatformRun.find(platform_run_id)
   end
 end

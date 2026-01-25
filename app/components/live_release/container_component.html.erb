@@ -162,7 +162,9 @@
                   <div>
                     <%= f.F.labeled_select :platform_run_id,
                                            "Pick the platform",
-                                           options_for_select(platform_run_options) %>
+                                           options_for_select(platform_run_options),
+                                           {prompt: "Select a platform"},
+                                           {required: true} %>
                   </div>
                 <% end %>
 
