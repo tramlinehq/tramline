@@ -87,6 +87,7 @@ Rails.application.routes.draw do
 
     namespace :monitoring do
       resource :bugsnag_config, only: %i[edit update]
+      resource :sentry_config, only: %i[edit update]
     end
 
     namespace :project_management do
@@ -204,6 +205,10 @@ Rails.application.routes.draw do
           controller: "integrations/bugsnag",
           as: :bugsnag_integration
 
+        resource :sentry, only: [:create],
+          controller: "integrations/sentry",
+          as: :sentry_integration
+
         resource :app_store, only: [:create],
           controller: "integrations/app_store",
           as: :appstore_integration
@@ -270,6 +275,7 @@ Rails.application.routes.draw do
       patch :resume
       patch :halt
       patch :fully_release
+      patch :disable_automatic_rollout
     end
   end
 

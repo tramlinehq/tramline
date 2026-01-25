@@ -28,7 +28,7 @@ class Passport < ApplicationRecord
   validates :stampable_type, presence: true
 
   TRAMLINE_AUTHOR = "Tramline"
-  TRAMLINE_AUTHOR_FULL_NAME = "Tram Line"
+  TRAMLINE_AUTHOR_FULL_NAME = "Tramline"
 
   delegate :platform, to: :stampable
 

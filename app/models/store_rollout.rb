@@ -2,17 +2,20 @@
 #
 # Table name: store_rollouts
 #
-#  id                      :uuid             not null, primary key
-#  completed_at            :datetime
-#  config                  :decimal(8, 5)    default([]), not null, is an Array
-#  current_stage           :integer
-#  is_staged_rollout       :boolean          default(FALSE)
-#  status                  :string           not null
-#  type                    :string           not null
-#  created_at              :datetime         not null
-#  updated_at              :datetime         not null
-#  release_platform_run_id :uuid             not null, indexed
-#  store_submission_id     :uuid             indexed
+#  id                               :uuid             not null, primary key
+#  automatic_rollout                :boolean          default(FALSE), not null, indexed
+#  automatic_rollout_next_update_at :datetime
+#  automatic_rollout_updated_at     :datetime
+#  completed_at                     :datetime
+#  config                           :decimal(8, 5)    default([]), not null, is an Array
+#  current_stage                    :integer
+#  is_staged_rollout                :boolean          default(FALSE), indexed
+#  status                           :string           not null, indexed
+#  type                             :string           not null
+#  created_at                       :datetime         not null
+#  updated_at                       :datetime         not null
+#  release_platform_run_id          :uuid             not null, indexed
+#  store_submission_id              :uuid             indexed
 #
 class StoreRollout < ApplicationRecord
   has_paper_trail
@@ -47,6 +50,7 @@ class StoreRollout < ApplicationRecord
   delegate :stale?, :actionable?, to: :parent_release
 
   scope :production, -> { joins(store_submission: :production_release) }
+  scope :automatic_rollouts, -> { where(status: [:started], is_staged_rollout: true, automatic_rollout: true) }
 
   def staged_rollout? = is_staged_rollout
 
@@ -57,6 +61,10 @@ class StoreRollout < ApplicationRecord
   def finished? = completed? || fully_released?
 
   def reached_last_stage? = next_rollout_percentage.nil?
+
+  def disable_automatic_rollout!
+    # no-op
+  end
 
   def release_info
     {
@@ -131,7 +139,7 @@ class StoreRollout < ApplicationRecord
       event_stamp!(reason: :started, kind: :success, data: stamp_data)
     else
       # notify that the rollout has updated
-      event_stamp!(reason: :updated, kind: :notice, data: stamp_data)
+      event_stamp!(reason: :updated, kind: :success, data: stamp_data)
       notify!("Rollout has been updated", :production_rollout_updated, notification_params)
     end
   end
@@ -155,7 +163,18 @@ class StoreRollout < ApplicationRecord
     parent_release.rollout_started!
   end
 
+  def on_resume!
+    event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
+    notify!("Rollout has been resumed", :production_rollout_resumed, notification_params)
+  end
+
+  def on_pause!
+    event_stamp!(reason: :paused, kind: :notice, data: stamp_data)
+    notify!("Rollout has been paused", :production_rollout_paused, notification_params)
+  end
+
   def on_complete!
+    event_stamp!(reason: :completed, kind: :success, data: stamp_data)
     parent_release.rollout_complete!(store_submission)
   end
 

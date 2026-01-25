@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :release_health_event do
-    deployment_run
-    release_health_rule
+    production_release
+    release_health_rule factory: %i[release_health_rule session_stability]
     release_health_metric
     health_status { "healthy" }
     event_timestamp { Time.current }

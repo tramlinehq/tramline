@@ -333,7 +333,8 @@ class AppStoreSubmission < StoreSubmission
     create_app_store_rollout!(
       release_platform_run:,
       config: staged_rollout? ? conf.rollout_stages : [],
-      is_staged_rollout: staged_rollout?
+      is_staged_rollout: staged_rollout?,
+      automatic_rollout: true
     )
   end
 

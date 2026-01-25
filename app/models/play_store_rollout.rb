@@ -2,17 +2,20 @@
 #
 # Table name: store_rollouts
 #
-#  id                      :uuid             not null, primary key
-#  completed_at            :datetime
-#  config                  :decimal(8, 5)    default([]), not null, is an Array
-#  current_stage           :integer
-#  is_staged_rollout       :boolean          default(FALSE)
-#  status                  :string           not null
-#  type                    :string           not null
-#  created_at              :datetime         not null
-#  updated_at              :datetime         not null
-#  release_platform_run_id :uuid             not null, indexed
-#  store_submission_id     :uuid             indexed
+#  id                               :uuid             not null, primary key
+#  automatic_rollout                :boolean          default(FALSE), not null, indexed
+#  automatic_rollout_next_update_at :datetime
+#  automatic_rollout_updated_at     :datetime
+#  completed_at                     :datetime
+#  config                           :decimal(8, 5)    default([]), not null, is an Array
+#  current_stage                    :integer
+#  is_staged_rollout                :boolean          default(FALSE), indexed
+#  status                           :string           not null, indexed
+#  type                             :string           not null
+#  created_at                       :datetime         not null
+#  updated_at                       :datetime         not null
+#  release_platform_run_id          :uuid             not null, indexed
+#  store_submission_id              :uuid             indexed
 #
 class PlayStoreRollout < StoreRollout
   include Passportable
@@ -23,6 +26,7 @@ class PlayStoreRollout < StoreRollout
   STAMPABLE_REASONS = %w[
     started
     updated
+    paused
     resumed
     halted
     completed
@@ -30,17 +34,27 @@ class PlayStoreRollout < StoreRollout
     fully_released
   ]
 
+  AUTO_ROLLOUT_RUN_INTERVAL = 24.hours
+
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
     state(*STATES.keys)
 
     event :start, after_commit: :on_start! do
       transitions from: :created, to: :started
+    end
+
+    event :pause, after_commit: :on_pause! do
+      transitions from: :started, to: :paused
+    end
+
+    event :resume, after_commit: :on_resume! do
+      transitions from: :paused, to: :started
       transitions from: :halted, to: :started
     end
 
     event :halt, after_commit: :on_halt! do
-      transitions from: [:started], to: :halted
+      transitions from: [:started, :paused], to: :halted
     end
 
     event :complete, after_commit: :on_complete! do
@@ -55,8 +69,6 @@ class PlayStoreRollout < StoreRollout
   end
 
   def controllable_rollout? = true
-
-  def automatic_rollout? = false
 
   def start_release!(retry_on_review_fail: false)
     if staged_rollout?
@@ -122,21 +134,38 @@ class PlayStoreRollout < StoreRollout
 
       if result.ok?
         halt!
+        clear_automatic_rollout_schedule!
       else
         fail!(result.error)
       end
     end
   end
 
+  def disable_automatic_rollout!
+    clear_automatic_rollout_schedule!
+    update!(automatic_rollout: false)
+  end
+
+  def schedule_next_automatic_rollout!
+    current = Time.current
+    next_update = current + AUTO_ROLLOUT_RUN_INTERVAL
+    update!(automatic_rollout_updated_at: current, automatic_rollout_next_update_at: next_update)
+    AutomaticUpdateRolloutJob.perform_at(next_update, id, next_update.to_i, current_stage)
+  end
+
+  def clear_automatic_rollout_schedule!
+    return unless automatic_rollout?
+    update!(automatic_rollout_next_update_at: nil)
+  end
+
   def resume_release!
     with_lock do
-      return unless may_start?
+      return unless may_resume?
 
       result = rollout(last_rollout_percentage, retry_on_review_fail: true)
       if result.ok?
-        start!
-        event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
-        notify!("Rollout was resumed", :production_rollout_resumed, notification_params)
+        resume!
+        schedule_next_automatic_rollout! if automatic_rollout?
       else
         fail!(result.error)
       end
@@ -145,9 +174,16 @@ class PlayStoreRollout < StoreRollout
 
   def rollout_active?
     provider.build_active?(submission_channel_id, build_number, raise_on_lock_error: true)
-  rescue GooglePlayStoreIntegration::LockAcquisitionError => e
-    errors.add(:base, e.message)
-    false
+  end
+
+  def pause_release!
+    with_lock do
+      return unless may_pause?
+      return unless automatic_rollout?
+
+      pause!
+      clear_automatic_rollout_schedule!
+    end
   end
 
   private
@@ -158,7 +194,7 @@ class PlayStoreRollout < StoreRollout
     event_stamp!(reason: :failed, kind: :error, data: stamp_data)
 
     return if play_store_submission.fail_with_review_rejected!(error)
-    play_store_submission.fail_with_error!(error) if play_store_submission.auto_rollout?
+    play_store_submission.fail_with_error!(error) if play_store_submission.auto_start_rollout?
   end
 
   def rollout(value, retry_on_review_fail: false)
@@ -174,6 +210,12 @@ class PlayStoreRollout < StoreRollout
   end
 
   def on_start!
+    update_external_status
+    schedule_next_automatic_rollout! if automatic_rollout?
+    super
+  end
+
+  def on_resume!
     update_external_status
     super
   end
