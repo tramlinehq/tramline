@@ -89,29 +89,26 @@ class AppStoreRollout < StoreRollout
     return if completed? || fully_released?
     return unless actionable?
 
-    release_info = fetch_live_release_info
-
-    unless release_info.live?(build_number)
-      # Release is not live yet, continue polling
+    result = provider.find_live_release
+    unless result.ok?
+      elog(result.error, level: :warn)
       raise ReleaseNotFullyLive, "Retrying in some time..."
     end
 
-    # Release is live, transition to appropriate state
+    release_info = result.value!
+    unless release_info.live?(build_number)
+      raise ReleaseNotFullyLive, "Retrying in some time..."
+    end
+
     if created?
-      # Auto-start flow: Apple auto-started the rollout after approval
-      transition_to_started_state(release_info)
+      transition_to_started_state(release_info) # Handle the created state (auto-start flow from Apple)
     else
-      # Manual flow: rollout was already started, just update status
-      transition_to_live_state(release_info)
+      transition_to_live_state(release_info) # Handle the started state (manual flow or subsequent polls)
     end
 
     # For non-staged rollouts, we're done (completed in transition methods)
-    return unless staged_rollout?
-
-    # For staged rollouts, check if phased release is complete
-    return if release_info.phased_release_complete?
-
-    # Staged rollout still in progress, continue polling
+    # For staged rollout, it is still in progress, continue polling
+    return if !staged_rollout? || release_info.phased_release_complete?
     raise ReleaseNotFullyLive, "Retrying in some time..."
   end
 
@@ -185,15 +182,6 @@ class AppStoreRollout < StoreRollout
     # If auto_start_rollout is enabled, Apple will automatically start the rollout after approval
     # Start polling to detect when it goes live and transition our state
     StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id) if auto_start_rollout?
-  end
-
-  def fetch_live_release_info
-    result = provider.find_live_release
-    unless result.ok?
-      elog(result.error, level: :warn)
-      raise ReleaseNotFullyLive, "Retrying in some time..."
-    end
-    result.value!
   end
 
   # Transition to live state when rollout is already started (manual start_release! was called)
