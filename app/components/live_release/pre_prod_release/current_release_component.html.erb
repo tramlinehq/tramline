@@ -13,17 +13,6 @@
   <% end %>
 
   <%= render CardComponent.new(title: "Current Build") do |card| %>
-    <% if build.present? %>
-      <% card.with_action do %>
-        <%= render partial: "shared/changes_since_last_modal",
-                   locals: {title: "Changes since last build",
-                            button_scheme: :supporting,
-                            subtitle: nil,
-                            changes_path: changes_since_previous_pre_prod_release_path(pre_prod_release),
-                            parent_release: pre_prod_release} %>
-      <% end %>
-    <% end %>
-
     <% if triggerable? %>
       <% card.with_action do %>
         <%= render ButtonComponent.new(label: "Create build",
@@ -53,6 +42,17 @@
                                        size: :xxs,
                                        html_options: html_opts(:patch, "Are you sure you want to re-fetch the build status?")) %>
 
+      <% end %>
+    <% end %>
+
+    <% if build.present? %>
+      <% card.with_action do %>
+        <%= render partial: "shared/changes_since_last_modal",
+                   locals: {title: "Changes since last build",
+                            button_scheme: :supporting,
+                            subtitle: nil,
+                            changes_path: changes_since_previous_pre_prod_release_path(pre_prod_release),
+                            parent_release: pre_prod_release} %>
       <% end %>
     <% end %>
 

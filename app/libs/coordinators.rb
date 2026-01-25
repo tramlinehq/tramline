@@ -107,12 +107,12 @@ module Coordinators
       if release_platform_run.conf.production_release.present?
         Coordinators::StartProductionRelease.call(release_platform_run, build.id)
       else
-        Coordinators::FinishPlatformRun.call(release_platform_run)
+        Coordinators::ConcludePlatformRun.call(release_platform_run)
       end
     end
 
     def self.production_release_is_complete!(release_platform_run)
-      Coordinators::FinishPlatformRun.call(release_platform_run)
+      Coordinators::ConcludePlatformRun.call(release_platform_run)
     end
 
     def self.workflow_run_trigger_failed!(workflow_run)
@@ -248,6 +248,15 @@ module Coordinators
 
     def self.stop_release!(release)
       Res.new { Coordinators::StopRelease.call(release) }
+    end
+
+    def self.conclude_platform_run!(release_platform_run)
+      Res.new do
+        raise "release is not active" unless release_platform_run.release.active?
+        raise "release platform is not active" unless release_platform_run.active?
+        Coordinators::ConcludePlatformRun.call(release_platform_run)
+        true
+      end
     end
 
     def self.fully_release_the_previous_rollout!(current_submission)
