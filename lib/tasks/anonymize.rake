@@ -279,7 +279,7 @@ namespace :anonymize do
         continue { |index, record| Release.exists?(record["release_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) && !ReleaseMetadata.exists?(record["id"]) }
 
         primary_key "id"
-        whitelist "release_platform_run_id", "locale", "created_at", "updated_at", "release_id", "default_locale"
+        whitelist "release_platform_run_id", "locale", "created_at", "updated_at", "release_id", "default_locale", "draft_release_notes", "draft_promo_text"
         whitelist_timestamps
         anonymize("release_notes").using FieldStrategy::LoremIpsum.new
         anonymize("promo_text").using FieldStrategy::LoremIpsum.new

@@ -3,7 +3,6 @@
 # Table name: store_rollouts
 #
 #  id                               :uuid             not null, primary key
-#  auto_rollout_enabled             :boolean          default(FALSE)
 #  automatic_rollout                :boolean          default(FALSE), not null, indexed
 #  automatic_rollout_next_update_at :datetime
 #  automatic_rollout_updated_at     :datetime

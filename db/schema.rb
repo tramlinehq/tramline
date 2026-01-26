@@ -63,7 +63,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_26_100000) do
     t.jsonb "jira_config", default: {}, null: false
     t.jsonb "ci_cd_workflows"
     t.jsonb "linear_config", default: {}, null: false
-    t.jsonb "codemagic_project_id"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -240,7 +239,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_26_100000) do
     t.tsvector "search_vector"
     t.uuid "release_changelog_id"
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
-    t.index ["commit_hash", "release_id"], name: "index_commits_on_commit_hash_and_release_id", unique: true
+    t.index ["commit_hash", "release_id", "release_changelog_id"], name: "idx_on_commit_hash_release_id_release_changelog_id_29200d00c2", unique: true
     t.index ["message"], name: "index_commits_on_message", opclass: :gin_trgm_ops, using: :gin
     t.index ["release_changelog_id"], name: "index_commits_on_release_changelog_id"
     t.index ["release_id", "timestamp"], name: "index_commits_on_release_id_and_timestamp"
@@ -941,7 +940,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_26_100000) do
     t.boolean "is_staged_rollout", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "auto_rollout_enabled", default: false
     t.boolean "automatic_rollout", default: false, null: false
     t.datetime "automatic_rollout_updated_at"
     t.datetime "automatic_rollout_next_update_at"
