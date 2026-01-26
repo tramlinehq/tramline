@@ -498,6 +498,7 @@ class Release < ApplicationRecord
   end
 
   def blocked_for_production_release?(for_platform_run:)
+    return false unless active?
     return true if blocked_by_hotfix?
     return true if blocked_by_ongoing_platform?(for_platform_run)
     approvals_blocking?
