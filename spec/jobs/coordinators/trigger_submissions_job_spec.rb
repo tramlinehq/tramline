@@ -16,11 +16,16 @@ describe Coordinators::TriggerSubmissionsJob do
   end
 
   it "starts the production release for the hotfix release when release candidate build is finished" do
-    release = create(:release, :hotfix, :with_no_platform_runs)
+    train = create(:train)
+    # Hotfix scheduled earlier than upcoming release, making it the "ongoing" release
+    release = create(:release, :hotfix, :with_no_platform_runs, train:, scheduled_at: 1.day.ago, approval_overridden_by: create(:user))
     release_platform_run = create(:release_platform_run, :on_track, release:)
+    # Create upcoming release so the hotfix is truly "ongoing"
+    _upcoming_release = create(:release, :on_track, train:, scheduled_at: 1.day.from_now)
+
     beta_release = create(:beta_release, release_platform_run:)
     workflow_run = create(:workflow_run, :finished, :rc, release_platform_run:, triggering_release: beta_release, artifacts_url:)
-    create(:build, :with_artifact, release_platform_run:, workflow_run:)
+    create(:build, :rc, :with_artifact, release_platform_run:, workflow_run:)
 
     described_class.new.perform(workflow_run.id)
 

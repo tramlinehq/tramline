@@ -14,8 +14,8 @@
           <% end %>
         <% end %>
 
-        <% component.with_data_set(title: "Release style") do %>
-          <%= render BadgeComponent.new(text: "Manual", status: :neutral) %>
+        <% component.with_data_set(title: "Release type") do %>
+          <%= render release_type_badge %>
         <% end %>
       <% end %>
     </div>

@@ -166,7 +166,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def prepare_for_release!
-    result = provider.prepare_release(build_number, release_version, staged_rollout?, notes, true)
+    result = provider.prepare_release(build_number, release_version, staged_rollout?, notes, true, auto_start_rollout?)
 
     unless result.ok?
       case result.error.reason
