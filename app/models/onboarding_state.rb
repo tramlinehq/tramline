@@ -10,7 +10,17 @@
 #
 class OnboardingState < ApplicationRecord
   belongs_to :app
-  validates :vcs_provider, presence: true, inclusion: { in: ["github", "gitlab", "bitbucket"] }, on: :vcs_provider_setup
+  validates :vcs_provider, presence: true, inclusion: {in: ["github", "gitlab", "bitbucket"]}, on: :vcs_provider_setup
+
+  STEPS = %i[
+    vcs_provider
+    connect_vcs_provider
+    configure_vcs_provider
+  ].freeze
+
+  def reset!
+    update(vcs_provider: nil)
+  end
 
   def step_completed?(step)
     send(:"#{step}_completed?")
