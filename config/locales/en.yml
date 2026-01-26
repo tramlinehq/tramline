@@ -91,6 +91,7 @@ en:
     update_all:
       success: "Release metadata was successfully updated."
       generic_failure: "Could not save the release metadata. Please try again."
+      draft_saved: "Your changes have been saved as a draft. Fix the validation errors and save again."
   build_queues:
     apply:
       failure: "Failed to apply the build queue — %{errors}"

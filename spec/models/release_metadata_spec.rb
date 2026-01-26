@@ -79,4 +79,29 @@ RSpec.describe ReleaseMetadata do
       expect(build(:release_metadata, locale:, release_platform_run:, release_notes: "a" * 501)).not_to be_valid
     end
   end
+
+  describe "draft fields" do
+    let(:release_platform) { create(:release_platform, platform: :ios) }
+    let(:release_platform_run) { create(:release_platform_run, release_platform:) }
+
+    it "allows saving draft_release_notes with invalid characters" do
+      metadata = create(:release_metadata, locale: "en-GB", release_platform_run:, release_notes: "valid notes")
+      metadata.update_columns(draft_release_notes: "<html>invalid</html>")
+      expect(metadata.draft_release_notes).to eq("<html>invalid</html>")
+    end
+
+    it "allows saving draft_promo_text with invalid characters" do
+      metadata = create(:release_metadata, locale: "en-GB", release_platform_run:, promo_text: "valid promo")
+      metadata.update_columns(draft_promo_text: "<script>bad</script>")
+      expect(metadata.draft_promo_text).to eq("<script>bad</script>")
+    end
+
+    it "stores draft content separately from validated content" do
+      metadata = create(:release_metadata, locale: "en-GB", release_platform_run:, release_notes: "valid notes")
+      metadata.update_columns(draft_release_notes: "draft content with <invalid> chars")
+
+      expect(metadata.release_notes).to eq("valid notes")
+      expect(metadata.draft_release_notes).to eq("draft content with <invalid> chars")
+    end
+  end
 end

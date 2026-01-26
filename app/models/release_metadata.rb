@@ -5,6 +5,8 @@
 #  id                      :uuid             not null, primary key
 #  default_locale          :boolean          default(FALSE)
 #  description             :text
+#  draft_promo_text        :text
+#  draft_release_notes     :text
 #  keywords                :string           default([]), is an Array
 #  locale                  :string           not null, indexed => [release_platform_run_id]
 #  promo_text              :text

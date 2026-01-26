@@ -39,4 +39,28 @@ class LiveRelease::MetadataComponent < BaseComponent
   def promo_text_max_length
     ReleaseMetadata::PROMO_TEXT_MAX_LENGTH
   end
+
+  def android_has_draft_notes?
+    android_metadata&.draft_release_notes.present?
+  end
+
+  def ios_has_draft_notes?
+    ios_metadata&.draft_release_notes.present?
+  end
+
+  def ios_has_draft_promo_text?
+    ios_metadata&.draft_promo_text.present?
+  end
+
+  def android_draft_notes
+    android_metadata&.draft_release_notes
+  end
+
+  def ios_draft_notes
+    ios_metadata&.draft_release_notes
+  end
+
+  def ios_draft_promo_text
+    ios_metadata&.draft_promo_text
+  end
 end

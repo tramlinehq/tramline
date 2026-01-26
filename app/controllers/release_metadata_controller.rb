@@ -36,22 +36,37 @@ class ReleaseMetadataController < SignedInApplicationController
 
     begin
       ReleaseMetadata.transaction do
-        android_metadata.update!(android_params) if android_id.present?
-        ios_metadata.update!(ios_params) if ios_id.present?
+        android_metadata.update!(android_params.merge(draft_release_notes: nil)) if android_id.present?
+        ios_metadata.update!(ios_params.merge(draft_release_notes: nil, draft_promo_text: nil)) if ios_id.present?
       end
 
       redirect_to release_metadata_edit_path(@release), notice: t(".success")
     rescue ActiveRecord::RecordInvalid
+      save_drafts(android_metadata, android_params, ios_metadata, ios_params)
       set_metadata
       flash.now[:error] ||= []
       flash.now[:error] << android_metadata&.errors&.full_messages&.to_sentence
       flash.now[:error] << ios_metadata&.errors&.full_messages&.to_sentence
+      flash.now[:notice] = t(".draft_saved")
 
       render :index, status: :unprocessable_entity
     end
   end
 
   private
+
+  def save_drafts(android_metadata, android_params, ios_metadata, ios_params)
+    if android_metadata.present? && android_params.present?
+      android_metadata.update_columns(draft_release_notes: android_params[:release_notes])
+    end
+
+    if ios_metadata.present? && ios_params.present?
+      ios_metadata.update_columns(
+        draft_release_notes: ios_params[:release_notes],
+        draft_promo_text: ios_params[:promo_text]
+      )
+    end
+  end
 
   def set_metadata
     @active_languages = @release.active_languages
