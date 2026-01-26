@@ -84,20 +84,7 @@
             <%= aF.hidden_field :id %>
             <div data-controller="text-applier" data-text-applier-content-value="<%= android_draft_notes %>">
               <% if android_has_draft_notes? %>
-                <div data-text-applier-target="container" class="mb-2">
-                  <%= render AlertComponent.new(kind: :announcement, type: :info, title: "Unsaved metadata", full_screen: false) do |alert| %>
-                    <div class="text-sm">
-                      Your previously entered notes could not be saved because they exceed the allowed length or include
-                      unsupported characters. Your last input has been preserved — click the "Apply draft" button to
-                      restore it, then shorten or adjust the text to comply with the limits before saving.
-                    </div>
-                    <% alert.with_announcement_button(label: "Apply draft",
-                                                      scheme: :light,
-                                                      type: :action,
-                                                      size: :xxs,
-                                                      html_options: {data: {action: "click->text-applier#apply"}}) %>
-                  <% end %>
-                </div>
+                <%= render partial: "live_release/draft_alert", locals: {title: "Unsaved release notes", field_name: "release notes"} %>
               <% end %>
               <div data-text-applier-target="input">
                 <%= render partial: "shared/size_limited_textarea", locals: {form: aF,
@@ -121,15 +108,7 @@
             <%= iosF.hidden_field :id %>
             <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_notes %>">
               <% if ios_has_draft_notes? %>
-                <div data-text-applier-target="container" class="mb-2">
-                  <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "You have unsaved draft notes", full_screen: false) do |alert| %>
-                    <% alert.with_announcement_button(label: "Apply draft",
-                                                      scheme: :light,
-                                                      type: :action,
-                                                      size: :xxs,
-                                                      html_options: {data: {action: "click->text-applier#apply"}}) %>
-                  <% end %>
-                </div>
+                <%= render partial: "live_release/draft_alert", locals: {title: "Unsaved release notes", field_name: "release notes"} %>
               <% end %>
               <div data-text-applier-target="input">
                 <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
@@ -141,15 +120,7 @@
             </div>
             <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_promo_text %>">
               <% if ios_has_draft_promo_text? %>
-                <div data-text-applier-target="container" class="mb-2">
-                  <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "You have unsaved draft promo text", full_screen: false) do |alert| %>
-                    <% alert.with_announcement_button(label: "Apply draft",
-                                                      scheme: :light,
-                                                      type: :action,
-                                                      size: :xxs,
-                                                      html_options: {data: {action: "click->text-applier#apply"}}) %>
-                  <% end %>
-                </div>
+                <%= render partial: "live_release/draft_alert", locals: {title: "Unsaved promo text", field_name: "promo text"} %>
               <% end %>
               <div data-text-applier-target="input">
                 <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,

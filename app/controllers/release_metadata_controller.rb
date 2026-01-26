@@ -36,8 +36,18 @@ class ReleaseMetadataController < SignedInApplicationController
 
     begin
       ReleaseMetadata.transaction do
-        android_metadata.update!(android_params.merge(draft_release_notes: nil)) if android_id.present?
-        ios_metadata.update!(ios_params.merge(draft_release_notes: nil, draft_promo_text: nil)) if ios_id.present?
+        if android_id.present?
+          clear_drafts = {}
+          clear_drafts[:draft_release_notes] = nil if android_params.key?(:release_notes)
+          android_metadata.update!(android_params.merge(clear_drafts))
+        end
+
+        if ios_id.present?
+          clear_drafts = {}
+          clear_drafts[:draft_release_notes] = nil if ios_params.key?(:release_notes)
+          clear_drafts[:draft_promo_text] = nil if ios_params.key?(:promo_text)
+          ios_metadata.update!(ios_params.merge(clear_drafts))
+        end
       end
 
       redirect_to release_metadata_edit_path(@release), notice: t(".success")
@@ -59,14 +69,16 @@ class ReleaseMetadataController < SignedInApplicationController
   # We intentionally skip validations here to save draft content that may be invalid
   def save_drafts(android_metadata, android_params, ios_metadata, ios_params)
     if android_metadata.present? && android_params.present?
-      android_metadata.update_columns(draft_release_notes: android_params[:release_notes])
+      drafts = {}
+      drafts[:draft_release_notes] = android_params[:release_notes] if android_params.key?(:release_notes)
+      android_metadata.update_columns(drafts) if drafts.present?
     end
 
     if ios_metadata.present? && ios_params.present?
-      ios_metadata.update_columns(
-        draft_release_notes: ios_params[:release_notes],
-        draft_promo_text: ios_params[:promo_text]
-      )
+      drafts = {}
+      drafts[:draft_release_notes] = ios_params[:release_notes] if ios_params.key?(:release_notes)
+      drafts[:draft_promo_text] = ios_params[:promo_text] if ios_params.key?(:promo_text)
+      ios_metadata.update_columns(drafts) if drafts.present?
     end
   end
   # rubocop:enable Rails/SkipsModelValidations
