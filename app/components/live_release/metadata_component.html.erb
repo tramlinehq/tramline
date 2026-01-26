@@ -82,16 +82,16 @@
         <% f.F.fields_for :android, android_metadata do |aF| %>
           <div class="flex flex-col gap-y-4">
             <%= aF.hidden_field :id %>
-            <div data-controller="draft-apply" data-draft-apply-draft-value="<%= android_draft_notes %>">
+            <div data-controller="text-applier" data-text-applier-content-value="<%= android_draft_notes %>">
               <% if android_has_draft_notes? %>
-                <div data-draft-container class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md flex items-center justify-between">
+                <div data-text-applier-target="container" class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md flex items-center justify-between">
                   <span class="text-sm text-yellow-800">You have unsaved draft notes</span>
-                  <button type="button" class="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline" data-action="click->draft-apply#apply">
+                  <button type="button" class="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline" data-action="click->text-applier#apply">
                     Apply draft
                   </button>
                 </div>
               <% end %>
-              <div data-draft-apply-target="textarea">
+              <div data-text-applier-target="input">
                 <%= render partial: "shared/size_limited_textarea", locals: {form: aF,
                                                                              obj_method: :release_notes,
                                                                              label_text: "Release Notes",
@@ -111,16 +111,16 @@
         <% f.F.fields_for :ios, ios_metadata do |iosF| %>
           <div class="flex flex-col gap-y-4">
             <%= iosF.hidden_field :id %>
-            <div data-controller="draft-apply" data-draft-apply-draft-value="<%= ios_draft_notes %>">
+            <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_notes %>">
               <% if ios_has_draft_notes? %>
-                <div data-draft-container class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md flex items-center justify-between">
+                <div data-text-applier-target="container" class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md flex items-center justify-between">
                   <span class="text-sm text-yellow-800">You have unsaved draft notes</span>
-                  <button type="button" class="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline" data-action="click->draft-apply#apply">
+                  <button type="button" class="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline" data-action="click->text-applier#apply">
                     Apply draft
                   </button>
                 </div>
               <% end %>
-              <div data-draft-apply-target="textarea">
+              <div data-text-applier-target="input">
                 <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
                                                                              obj_method: :release_notes,
                                                                              label_text: "Release Notes",
@@ -128,16 +128,16 @@
                                                                              existing_value: ios_metadata.release_notes} %>
               </div>
             </div>
-            <div data-controller="draft-apply" data-draft-apply-draft-value="<%= ios_draft_promo_text %>">
+            <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_promo_text %>">
               <% if ios_has_draft_promo_text? %>
-                <div data-draft-container class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md flex items-center justify-between">
+                <div data-text-applier-target="container" class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md flex items-center justify-between">
                   <span class="text-sm text-yellow-800">You have unsaved draft promo text</span>
-                  <button type="button" class="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline" data-action="click->draft-apply#apply">
+                  <button type="button" class="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline" data-action="click->text-applier#apply">
                     Apply draft
                   </button>
                 </div>
               <% end %>
-              <div data-draft-apply-target="textarea">
+              <div data-text-applier-target="input">
                 <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
                                                                              obj_method: :promo_text,
                                                                              label_text: "Promo Text",
