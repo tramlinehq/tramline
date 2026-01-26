@@ -75,6 +75,16 @@
                       ) %>
                 <% end %>
 
+                <%= render Form::SwitchComponent.new(form: sub_fields, field_name: :auto_start_rollout_after_submission, on_label: "Auto-start rollout after submission", off_label: "Auto-start rollout after submission disabled") do |c| %>
+                  <% c.with_info_icon do %>
+                    <% if platform.android? %>
+                      Automatically start the rollout as soon as the submission is prepared (draft release created).
+                    <% else %>
+                      Automatically start the phased release after App Store review approval by setting the release type to "AFTER_APPROVAL".
+                    <% end %>
+                  <% end %>
+                <% end %>
+
                 <%= render Form::SwitchComponent.new(form: sub_fields,
                                                      field_name: :rollout_enabled,
                                                      on_label: t("store_rollouts.switcher.#{platform_name}.enable"),

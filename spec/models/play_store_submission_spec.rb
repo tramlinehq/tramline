@@ -273,7 +273,17 @@ describe PlayStoreSubmission do
           release_platform_run: production_release.release_platform_run)
       }
 
-      it "returns false when parent release is production" do
+      it "returns false when auto_start_rollout_after_submission is not set" do
+        expect(submission.auto_start_rollout?).to be(false)
+      end
+
+      it "returns true when auto_start_rollout_after_submission is enabled" do
+        submission.config["rollout_config"]["auto_start_after_submission"] = true
+        expect(submission.auto_start_rollout?).to be(true)
+      end
+
+      it "returns false when auto_start_rollout_after_submission is disabled" do
+        submission.config["rollout_config"]["auto_start_after_submission"] = false
         expect(submission.auto_start_rollout?).to be(false)
       end
     end
@@ -283,6 +293,34 @@ describe PlayStoreSubmission do
       submission = create(:play_store_submission, :created, build:, parent_release: pre_prod_release)
 
       expect(submission.auto_start_rollout?).to be(true)
+    end
+  end
+
+  describe "#should_fail_on_rollout_start_failure?" do
+    let(:build) { create(:build) }
+
+    context "when parent release is production" do
+      let(:production_release) { create(:production_release, :inflight, build:) }
+      let(:submission) {
+        create(:play_store_submission,
+          :created,
+          build:,
+          parent_release: production_release,
+          release_platform_run: production_release.release_platform_run)
+      }
+
+      it "returns false for production releases" do
+        expect(submission.should_fail_on_rollout_start_failure?).to be(false)
+      end
+    end
+
+    context "when parent release is not production" do
+      let(:pre_prod_release) { create(:beta_release) }
+      let(:submission) { create(:play_store_submission, :created, build:, parent_release: pre_prod_release) }
+
+      it "returns true for pre-prod releases" do
+        expect(submission.should_fail_on_rollout_start_failure?).to be(true)
+      end
     end
   end
 end

@@ -194,7 +194,7 @@ class PlayStoreRollout < StoreRollout
     event_stamp!(reason: :failed, kind: :error, data: stamp_data)
 
     return if play_store_submission.fail_with_review_rejected!(error)
-    play_store_submission.fail_with_error!(error) if play_store_submission.auto_start_rollout?
+    play_store_submission.fail_with_error!(error) if play_store_submission.should_fail_on_rollout_start_failure?
   end
 
   def rollout(value, retry_on_review_fail: false)

@@ -34,6 +34,9 @@ class AppStoreRollout < StoreRollout
 
   belongs_to :app_store_submission, foreign_key: :store_submission_id, inverse_of: :app_store_rollout
   delegate :update_store_info!, to: :store_submission
+  delegate :auto_start_rollout?, to: :app_store_submission
+
+  after_create_commit :start_polling_for_auto_started_rollout
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
@@ -78,13 +81,7 @@ class AppStoreRollout < StoreRollout
       return
     end
 
-    if staged_rollout?
-      start!
-      event_stamp!(reason: :started, kind: :notice, data: stamp_data)
-    else
-      complete!
-    end
-
+    transition_to_started_state
     StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id)
   end
 
@@ -99,12 +96,19 @@ class AppStoreRollout < StoreRollout
     end
 
     release_info = result.value!
-    if release_info.live?(build_number)
-      return complete! unless staged_rollout?
-      with_lock { update_rollout(release_info) }
-      return if release_info.phased_release_complete?
+    unless release_info.live?(build_number)
+      raise ReleaseNotFullyLive, "Retrying in some time..."
     end
 
+    if created?
+      transition_to_started_state(release_info) # Handle the created state (auto-start flow from Apple)
+    else
+      transition_to_live_state(release_info) # Handle the started state (manual flow or subsequent polls)
+    end
+
+    # For non-staged rollouts, we're done (completed in transition methods)
+    # For staged rollout, it is still in progress, continue polling
+    return if !staged_rollout? || release_info.phased_release_complete?
     raise ReleaseNotFullyLive, "Retrying in some time..."
   end
 
@@ -173,6 +177,34 @@ class AppStoreRollout < StoreRollout
   end
 
   private
+
+  def start_polling_for_auto_started_rollout
+    # If auto_start_rollout is enabled, Apple will automatically start the rollout after approval
+    # Start polling to detect when it goes live and transition our state
+    StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id) if auto_start_rollout?
+  end
+
+  # Transition to live state when rollout is already started (manual start_release! was called)
+  def transition_to_live_state(release_info)
+    if staged_rollout?
+      update_rollout(release_info)
+    else
+      complete!
+    end
+  end
+
+  # Transition to started state
+  # If release_info is provided (auto-start flow), also update the rollout stage
+  # If not provided (manual flow), just transition state
+  def transition_to_started_state(release_info = nil)
+    start!
+    event_stamp!(reason: :started, kind: :notice, data: stamp_data)
+    if staged_rollout?
+      update_rollout(release_info) if release_info
+    else
+      complete!
+    end
+  end
 
   def update_rollout(release_info)
     update_store_info!(release_info)

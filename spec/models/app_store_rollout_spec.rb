@@ -354,5 +354,113 @@ describe AppStoreRollout do
         end
       end
     end
+
+    context "when auto-start flow (created state)" do
+      let(:release_info) {
+        AppStoreIntegration::AppStoreReleaseInfo.new(
+          {
+            external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+            name: "1.2.0",
+            build_number: 9012,
+            added_at: 1.day.ago,
+            status: "READY_FOR_SALE",
+            phased_release_day: 1,
+            phased_release_status: "ACTIVE"
+          }
+        )
+      }
+
+      it "transitions to started when release goes live for staged rollout" do
+        rollout = create(:store_rollout, :app_store, :created, release_platform_run:, store_submission:, config: [1, 50, 100])
+
+        allow(rollout).to receive_messages(provider: providable_dbl, actionable?: true)
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
+        allow(release_info).to receive_messages(live?: true, phased_release_complete?: false, phased_release_stage: 0)
+
+        expect { rollout.track_live_release_status }.to raise_error(AppStoreRollout::ReleaseNotFullyLive)
+        rollout.reload
+
+        expect(rollout.started?).to be(true)
+        expect(rollout.current_stage).to eq(0)
+      end
+
+      it "stamps started event when transitioning from created" do
+        rollout = create(:store_rollout, :app_store, :created, release_platform_run:, store_submission:, config: [1, 50, 100])
+
+        allow(rollout).to receive_messages(provider: providable_dbl, actionable?: true)
+        allow(rollout).to receive(:event_stamp!).and_call_original
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
+        allow(release_info).to receive_messages(live?: true, phased_release_complete?: false, phased_release_stage: 0)
+
+        expect { rollout.track_live_release_status }.to raise_error(AppStoreRollout::ReleaseNotFullyLive)
+
+        expect(rollout).to have_received(:event_stamp!).with(hash_including(reason: :started))
+      end
+
+      it "completes immediately for non-staged rollout when live" do
+        rollout = create(:store_rollout, :app_store, :created, release_platform_run:, store_submission:, is_staged_rollout: false)
+
+        allow(rollout).to receive_messages(provider: providable_dbl, actionable?: true)
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
+        allow(release_info).to receive(:live?).with(rollout.build_number).and_return(true)
+
+        rollout.track_live_release_status
+        rollout.reload
+
+        expect(rollout.completed?).to be(true)
+      end
+
+      it "completes immediately when phased release is complete on first poll" do
+        rollout = create(:store_rollout, :app_store, :created, release_platform_run:, store_submission:, config: [1, 50, 100])
+
+        allow(rollout).to receive_messages(provider: providable_dbl, actionable?: true)
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
+        allow(release_info).to receive_messages(live?: true, phased_release_complete?: true, phased_release_stage: 2)
+
+        rollout.track_live_release_status
+        rollout.reload
+
+        expect(rollout.completed?).to be(true)
+        expect(rollout.current_stage).to eq(2)
+      end
+    end
+
+    context "when release is not live yet" do
+      let(:release_info) {
+        AppStoreIntegration::AppStoreReleaseInfo.new(
+          {
+            external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+            name: "1.2.0",
+            build_number: 9012,
+            added_at: 1.day.ago,
+            status: "PENDING_DEVELOPER_RELEASE",
+            phased_release_day: 0,
+            phased_release_status: "INACTIVE"
+          }
+        )
+      }
+
+      it "raises error and keeps retrying for created state" do
+        rollout = create(:store_rollout, :app_store, :created, release_platform_run:, store_submission:)
+
+        allow(rollout).to receive_messages(provider: providable_dbl, actionable?: true)
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
+        allow(release_info).to receive(:live?).with(rollout.build_number).and_return(false)
+
+        expect { rollout.track_live_release_status }.to raise_error(AppStoreRollout::ReleaseNotFullyLive)
+        expect(rollout.created?).to be(true)
+      end
+
+      it "raises error and keeps retrying for started state" do
+        rollout = create(:store_rollout, :app_store, :started, release_platform_run:, store_submission:)
+
+        allow(rollout).to receive_messages(provider: providable_dbl, actionable?: true)
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { release_info })
+        allow(release_info).to receive(:live?).with(rollout.build_number).and_return(false)
+
+        expect { rollout.track_live_release_status }.to raise_error(AppStoreRollout::ReleaseNotFullyLive)
+        expect(rollout.started?).to be(true)
+      end
+    end
   end
 end

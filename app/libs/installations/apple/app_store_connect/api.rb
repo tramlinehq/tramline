@@ -82,7 +82,7 @@ module Installations
         .then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
     end
 
-    def prepare_release(build_number, version, is_phased_release, metadata, is_force, transforms)
+    def prepare_release(build_number, version, is_phased_release, metadata, is_force, auto_start_rollout, transforms)
       params = {
         build_number:,
         version:,
@@ -90,6 +90,9 @@ module Installations
         is_force:,
         metadata: metadata
       }
+
+      # Set releaseType to "AFTER_APPROVAL" if auto_start_rollout is enabled
+      params[:release_type] = "AFTER_APPROVAL" if auto_start_rollout
 
       execute(:post, PREPARE_RELEASE_URL.expand(bundle_id:).to_s, {json: params})
         .then { |response| Installations::Response::Keys.transform([response], transforms) }

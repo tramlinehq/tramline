@@ -71,7 +71,18 @@ class StoreSubmission < ApplicationRecord
     conf.rollout_enabled?
   end
 
+  # Returns the auto_start_rollout_after_submission config value
+  # For pre-prod releases: always true (existing behavior)
+  # For production releases: respect the config setting
   def auto_start_rollout?
+    return true unless parent_release.production?
+    conf.auto_start_rollout_after_submission?
+  end
+
+  # Determines if submission should be marked as failed when rollout start fails
+  # For pre-prod releases: always mark as failed (existing behavior)
+  # For production releases: never mark as failed (rollout start is optional)
+  def should_fail_on_rollout_start_failure?
     !parent_release.production?
   end
 

@@ -331,7 +331,8 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def on_retry_rollout!
-    play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_start_rollout?
+    # Always start rollout on retry - this is a manual retry action, not auto-start
+    play_store_rollout.start_release!(retry_on_review_fail: internal_channel?)
   end
 
   def on_fail!(args = nil)
