@@ -80,6 +80,7 @@ RSpec.describe ReleaseMetadata do
     end
   end
 
+  # rubocop:disable Rails/SkipsModelValidations
   describe "draft fields" do
     let(:release_platform) { create(:release_platform, platform: :ios) }
     let(:release_platform_run) { create(:release_platform_run, release_platform:) }
@@ -104,4 +105,5 @@ RSpec.describe ReleaseMetadata do
       expect(metadata.draft_release_notes).to eq("draft content with <invalid> chars")
     end
   end
+  # rubocop:enable Rails/SkipsModelValidations
 end

@@ -55,6 +55,8 @@ class ReleaseMetadataController < SignedInApplicationController
 
   private
 
+  # rubocop:disable Rails/SkipsModelValidations
+  # We intentionally skip validations here to save draft content that may be invalid
   def save_drafts(android_metadata, android_params, ios_metadata, ios_params)
     if android_metadata.present? && android_params.present?
       android_metadata.update_columns(draft_release_notes: android_params[:release_notes])
@@ -67,6 +69,7 @@ class ReleaseMetadataController < SignedInApplicationController
       )
     end
   end
+  # rubocop:enable Rails/SkipsModelValidations
 
   def set_metadata
     @active_languages = @release.active_languages

@@ -8,7 +8,7 @@
   <% end %>
 </div>
 
-<%= render FormComponent.new(model: ReleaseMetadata.new(release: @release), url: update_metadata_path, method: :patch, data: {turbo: false}, free_form: true) do |f| %>
+<%= render FormComponent.new(model: ReleaseMetadata.new(release: @release), url: update_metadata_path, method: :patch, data: { turbo: false }, free_form: true) do |f| %>
   <div>
     <div class="flex flex-col gap-y-2 mb-6">
       <div class="flex gap-x-4">
@@ -16,23 +16,23 @@
                                        scheme: :link,
                                        type: :link_external,
                                        options: "https://play.google.com/console/about/storelistings/#best-practices",
-                                       html_options: {class: "text-sm"},
+                                       html_options: { class: "text-sm" },
                                        authz: false,
                                        size: :none,
                                        arrow: :none) do |b|
-              b.with_icon("integrations/logo_google_play_store.png", size: :md, classes: "text-main")
-            end %>
+          b.with_icon("integrations/logo_google_play_store.png", size: :md, classes: "text-main")
+        end %>
 
         <%= render ButtonComponent.new(label: "App Store Connect metadata requirements",
                                        scheme: :link,
                                        type: :link_external,
                                        options: "https://help.apple.com/asc/appsspec/en.lproj/static.html",
-                                       html_options: {class: "text-sm"},
+                                       html_options: { class: "text-sm" },
                                        authz: false,
                                        size: :none,
                                        arrow: :none) do |b|
-              b.with_icon("integrations/logo_app_store.png", size: :md, classes: "text-main")
-            end %>
+          b.with_icon("integrations/logo_app_store.png", size: :md, classes: "text-main")
+        end %>
       </div>
 
       <div class="flex flex-row justify-between">
@@ -42,25 +42,25 @@
              data-stream-effect-param-value="language">
           <%= render IconComponent.new("languages.svg", size: :xxl) %>
           <%= select_tag :language,
-                options_for_select(active_languages, language),
-                disabled: false,
-                class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES,
-                data: {action: "change->stream-effect#fetch", stream_effect_target: "dispatch"} %>
+                         options_for_select(active_languages, language),
+                         disabled: false,
+                         class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES,
+                         data: { action: "change->stream-effect#fetch", stream_effect_target: "dispatch" } %>
         </div>
 
         <div class="flex flex-row justify-end gap-x-2">
           <div>
             <%= render ButtonComponent.new(
-                  scheme: :light,
-                  options: root_path,
-                  type: :link,
-                  disabled: true,
-                  size: :xxs,
-                  label: "Copy to all locales",
-                  html_options: {data: {turbo_confirm: "This will copy the release notes to all locales, are you sure?"}}
-                ) do |b|
-                  b.with_icon("square_stack.svg", size: :sm)
-                end %>
+              scheme: :light,
+              options: root_path,
+              type: :link,
+              disabled: true,
+              size: :xxs,
+              label: "Copy to all locales",
+              html_options: { data: { turbo_confirm: "This will copy the release notes to all locales, are you sure?" } }
+            ) do |b|
+              b.with_icon("square_stack.svg", size: :sm)
+            end %>
           </div>
 
           <div>
@@ -85,21 +85,26 @@
             <div data-controller="text-applier" data-text-applier-content-value="<%= android_draft_notes %>">
               <% if android_has_draft_notes? %>
                 <div data-text-applier-target="container" class="mb-2">
-                  <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "You have unsaved draft notes", full_screen: false) do |alert| %>
+                  <%= render AlertComponent.new(kind: :announcement, type: :info, title: "Unsaved metadata", full_screen: false) do |alert| %>
+                    <div class="text-sm">
+                      Your previously entered notes could not be saved because they exceed the allowed length or include
+                      unsupported characters. Your last input has been preserved — click the "Apply draft" button to
+                      restore it, then shorten or adjust the text to comply with the limits before saving.
+                    </div>
                     <% alert.with_announcement_button(label: "Apply draft",
                                                       scheme: :light,
                                                       type: :action,
                                                       size: :xxs,
-                                                      html_options: {data: {action: "click->text-applier#apply"}}) %>
+                                                      html_options: { data: { action: "click->text-applier#apply" } }) %>
                   <% end %>
                 </div>
               <% end %>
               <div data-text-applier-target="input">
-                <%= render partial: "shared/size_limited_textarea", locals: {form: aF,
-                                                                             obj_method: :release_notes,
-                                                                             label_text: "Release Notes",
-                                                                             max_length: android_max_length,
-                                                                             existing_value: android_metadata.release_notes} %>
+                <%= render partial: "shared/size_limited_textarea", locals: { form: aF,
+                                                                              obj_method: :release_notes,
+                                                                              label_text: "Release Notes",
+                                                                              max_length: android_max_length,
+                                                                              existing_value: android_metadata.release_notes } %>
               </div>
             </div>
           </div>
@@ -122,16 +127,16 @@
                                                       scheme: :light,
                                                       type: :action,
                                                       size: :xxs,
-                                                      html_options: {data: {action: "click->text-applier#apply"}}) %>
+                                                      html_options: { data: { action: "click->text-applier#apply" } }) %>
                   <% end %>
                 </div>
               <% end %>
               <div data-text-applier-target="input">
-                <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
-                                                                             obj_method: :release_notes,
-                                                                             label_text: "Release Notes",
-                                                                             max_length: ios_max_length,
-                                                                             existing_value: ios_metadata.release_notes} %>
+                <%= render partial: "shared/size_limited_textarea", locals: { form: iosF,
+                                                                              obj_method: :release_notes,
+                                                                              label_text: "Release Notes",
+                                                                              max_length: ios_max_length,
+                                                                              existing_value: ios_metadata.release_notes } %>
               </div>
             </div>
             <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_promo_text %>">
@@ -142,16 +147,16 @@
                                                       scheme: :light,
                                                       type: :action,
                                                       size: :xxs,
-                                                      html_options: {data: {action: "click->text-applier#apply"}}) %>
+                                                      html_options: { data: { action: "click->text-applier#apply" } }) %>
                   <% end %>
                 </div>
               <% end %>
               <div data-text-applier-target="input">
-                <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
-                                                                             obj_method: :promo_text,
-                                                                             label_text: "Promo Text",
-                                                                             max_length: promo_text_max_length,
-                                                                             existing_value: ios_metadata.promo_text} %>
+                <%= render partial: "shared/size_limited_textarea", locals: { form: iosF,
+                                                                              obj_method: :promo_text,
+                                                                              label_text: "Promo Text",
+                                                                              max_length: promo_text_max_length,
+                                                                              existing_value: ios_metadata.promo_text } %>
               </div>
             </div>
             <div><%= iosF.labeled_textarea :keywords, "Keywords", readonly: true, disabled: true %></div>
