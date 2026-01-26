@@ -2,7 +2,8 @@
   <%= render AlertComponent.new(kind: :announcement, type: :info, title: title, full_screen: false) do |alert| %>
     <div class="text-sm">
       Your previously entered <%= field_name %> could not be saved because they exceed the allowed length or include
-      unsupported characters. Click "Apply draft" to restore your input, then adjust the text before saving.
+      unsupported characters. Your last input has been preserved — click the "Apply draft" button to
+      restore it, then shorten or adjust the text to comply with the limits before saving.
     </div>
     <% alert.with_announcement_button(label: "Apply draft",
                                       scheme: :light,
