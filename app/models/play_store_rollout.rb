@@ -70,10 +70,10 @@ class PlayStoreRollout < StoreRollout
 
   def controllable_rollout? = true
 
-  def start_release!(retry_on_review_fail: false)
+  def start_release!(retry_on_review_fail: false, rollout_percentage: nil)
     if staged_rollout?
       # return mock_start_play_store_rollout! if sandbox_mode?
-      move_to_next_stage!(retry_on_review_fail:)
+      start_with_percentage!(rollout_percentage, retry_on_review_fail:)
     else
       # return mock_complete_play_store_rollout! if sandbox_mode?
       result = rollout(Release::FULL_ROLLOUT_VALUE, retry_on_review_fail:)
@@ -81,6 +81,25 @@ class PlayStoreRollout < StoreRollout
         complete!
         event_stamp!(reason: :completed, kind: :success, data: stamp_data)
       else
+        fail!(result.error)
+      end
+    end
+  end
+
+  def start_with_percentage!(percentage, retry_on_review_fail: true)
+    with_lock do
+      return if completed? || fully_released?
+
+      target_percentage = percentage.presence || next_rollout_percentage
+      result = rollout(target_percentage, retry_on_review_fail:)
+      if result.ok?
+        target_stage = find_stage_for_percentage(target_percentage)
+        update_stage(target_stage, finish_rollout: reached_stage?(target_stage))
+      else
+        if result.error.is_a?(Installations::Error) && result.error.reason == :fully_released_can_not_be_staged
+          fully_release!
+          return
+        end
         fail!(result.error)
       end
     end
@@ -233,5 +252,21 @@ class PlayStoreRollout < StoreRollout
 
   def stamp_data
     super.merge(track: submission_channel.name.humanize)
+  end
+
+  def find_stage_for_percentage(percentage)
+    return next_stage if percentage.nil?
+
+    # Find the stage index where the percentage matches or is just below
+    # e.g., for config [10, 50, 100] and percentage 50, return index 1
+    config.each_with_index do |stage_percent, idx|
+      return idx if percentage.to_f <= stage_percent.to_f
+    end
+    # If percentage exceeds all stages, return the last stage
+    config.size - 1
+  end
+
+  def reached_stage?(stage)
+    stage >= (config.size - 1)
   end
 end

@@ -197,10 +197,10 @@ module Coordinators
       end
     end
 
-    def self.trigger_submission!(submission)
+    def self.trigger_submission!(submission, rollout_percentage: nil)
       Res.new do
         raise "submission is not triggerable" unless submission.triggerable?
-        submission.trigger!
+        submission.trigger!(rollout_percentage:)
       end
     end
 

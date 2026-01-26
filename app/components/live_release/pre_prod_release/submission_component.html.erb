@@ -2,14 +2,56 @@
   <% if active? %>
     <% card.with_action do %>
       <% if submission.triggerable? %>
-        <%= render ButtonComponent.new(label: "Send to #{submission.display}",
-                                       auto_label_case: false,
-                                       scheme: :default,
-                                       type: :button,
-                                       options: trigger_store_submission_path(submission),
-                                       html_options: html_opts(:patch, "Are you sure you want to send this submission to #{submission.display}?"),
-                                       size: :xxs) do |b| %>
-          <% b.with_icon(submission_logo_bw, size: :md) %>
+        <% if show_rollout_percentage_modal? %>
+          <%= render ModalComponent.new(title: "Start rollout", subtitle: "Send to #{submission.display}", size: :xs) do |modal| %>
+            <% modal.with_button(label: "Send to #{submission.display}",
+                                 auto_label_case: false,
+                                 scheme: :default,
+                                 size: :xxs) do |b| %>
+              <% b.with_icon(submission_logo_bw, size: :md) %>
+            <% end %>
+            <% modal.with_body do %>
+              <%= form_with(url: trigger_store_submission_path(submission), method: :patch, class: "flex flex-col gap-4") do |form| %>
+                <div class="flex flex-col gap-2">
+                  <label for="rollout_percentage" class="text-sm font-medium">Rollout percentage</label>
+                  <div class="flex items-center gap-2">
+                    <%= form.number_field :rollout_percentage,
+                                          value: default_rollout_percentage,
+                                          min: 0.01,
+                                          max: 100,
+                                          step: 0.01,
+                                          class: "input-base w-24",
+                                          required: true %>
+                    <span class="text-secondary">%</span>
+                  </div>
+                  <p class="text-xs text-secondary-50">Enter the percentage of users to roll out to (0.01 - 100)</p>
+                </div>
+                <div class="flex justify-end gap-2">
+                  <%= render ButtonComponent.new(label: "Cancel",
+                                                 scheme: :light,
+                                                 type: :action,
+                                                 size: :xxs,
+                                                 html_options: {data: {action: "dialog#close"}}) %>
+                  <%= render ButtonComponent.new(label: "Start rollout",
+                                                 scheme: :default,
+                                                 type: :button,
+                                                 size: :xxs) do |b| %>
+                    <% b.with_icon(submission_logo_bw, size: :md) %>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% else %>
+          <%= render ButtonComponent.new(label: "Send to #{submission.display}",
+                                         auto_label_case: false,
+                                         scheme: :default,
+                                         type: :button,
+                                         options: trigger_store_submission_path(submission),
+                                         html_options: html_opts(:patch, "Are you sure you want to send this submission to #{submission.display}?"),
+                                         size: :xxs) do |b| %>
+            <% b.with_icon(submission_logo_bw, size: :md) %>
+          <% end %>
         <% end %>
       <% end %>
       <% if submission.retryable? %>

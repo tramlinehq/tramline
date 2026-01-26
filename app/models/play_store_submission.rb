@@ -112,6 +112,8 @@ class PlayStoreSubmission < StoreSubmission
   delegate :play_store_blocked?, to: :release_platform_run
   delegate :finish_rollout_in_next_release?, to: :conf
 
+  attr_accessor :initial_rollout_percentage
+
   def change_build? = CHANGEABLE_STATES.include?(status) && editable?
 
   def cancellable? = false
@@ -146,9 +148,10 @@ class PlayStoreSubmission < StoreSubmission
     submission_channel_id.to_sym == :internal
   end
 
-  def trigger!
+  def trigger!(rollout_percentage: nil)
     return unless actionable?
 
+    store_initial_rollout_percentage!(rollout_percentage) if rollout_percentage.present?
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
 
     if build.has_artifact?
@@ -325,13 +328,19 @@ class PlayStoreSubmission < StoreSubmission
 
   def on_prepare!
     event_stamp!(reason: :prepared, kind: :notice, data: stamp_data)
-    config = conf.rollout_stages.presence || []
-    create_play_store_rollout!(release_platform_run:, config:, is_staged_rollout: staged_rollout?, automatic_rollout: conf.automatic_rollout?)
-    play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_start_rollout?
+    rollout_config = conf.rollout_stages.presence || []
+    create_play_store_rollout!(release_platform_run:, config: rollout_config, is_staged_rollout: staged_rollout?, automatic_rollout: conf.automatic_rollout?)
+    if auto_start_rollout?
+      rollout_percentage = stored_initial_rollout_percentage
+      play_store_rollout.start_release!(retry_on_review_fail: internal_channel?, rollout_percentage:)
+    end
   end
 
   def on_retry_rollout!
-    play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_start_rollout?
+    if auto_start_rollout?
+      rollout_percentage = stored_initial_rollout_percentage
+      play_store_rollout.start_release!(retry_on_review_fail: internal_channel?, rollout_percentage:)
+    end
   end
 
   def on_fail!(args = nil)
@@ -342,5 +351,14 @@ class PlayStoreSubmission < StoreSubmission
 
   def stamp_data(failure_message: nil)
     super.merge(track: submission_channel.name.humanize)
+  end
+
+  def store_initial_rollout_percentage!(percentage)
+    self.config = config.merge("initial_rollout_percentage" => percentage.to_f)
+    save!
+  end
+
+  def stored_initial_rollout_percentage
+    config&.dig("initial_rollout_percentage")
   end
 end

@@ -81,4 +81,12 @@ class LiveRelease::PreProdRelease::SubmissionComponent < BaseComponent
       "upcoming submission"
     end
   end
+
+  def show_rollout_percentage_modal?
+    submission.is_a?(PlayStoreSubmission) && submission.staged_rollout?
+  end
+
+  def default_rollout_percentage
+    submission.conf.rollout_stages&.first || 100
+  end
 end

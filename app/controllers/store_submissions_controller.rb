@@ -18,7 +18,8 @@ class StoreSubmissionsController < SignedInApplicationController
 
   def trigger
     # return mock_trigger_submission if sandbox_mode?
-    if (result = Action.trigger_submission!(@submission)).ok?
+    rollout_percentage = params[:rollout_percentage].presence&.to_f
+    if (result = Action.trigger_submission!(@submission, rollout_percentage:)).ok?
       redirect_back fallback_location: fallback_path, notice: t(".success")
     else
       redirect_back fallback_location: fallback_path, flash: {error: t(".failure", errors: result.error.message)}
