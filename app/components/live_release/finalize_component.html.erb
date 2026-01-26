@@ -32,18 +32,18 @@
     <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: false) %>
   <% else %>
     <div class="flex flex-col gap-2 text-sm text-secondary">
-      <% if train.tag_end_of_release? %>
-        <p class="<%= strikethrough %>">
-          ◦ Cut tag at <code><%= release.last_commit&.short_sha %></code> and push to <%= tag_link %> <%= checked %>
+      <% if tag_enabled? %>
+        <p class="<%= strikethrough(tag_successful?) %>">
+          ◦ Cut tag at <code><%= release.last_commit&.short_sha %></code> and push to <%= tag_link %> <%= status_icon(tag_successful?) %>
         </p>
       <% end %>
 
-      <p class="<%= strikethrough %>">
-        ◦ Ensure all unmerged changes are pushed back to <%= release.train.working_branch %> <%= checked %>
+      <p class="<%= strikethrough(backmerge_successful?) %>">
+        ◦ Ensure all unmerged changes are pushed back to <%= release.train.working_branch %> <%= status_icon(backmerge_successful?) %>
       </p>
 
       <p class="<%= strikethrough %>">
-        ◦ Refresh all the DevOps dashboards and reports <%= checked %>
+        ◦ Refresh all the DevOps dashboards and reports <%= status_icon %>
       </p>
     </div>
 

@@ -13,15 +13,27 @@ class LiveRelease::FinalizeComponent < BaseComponent
   attr_reader :release, :unmerged_commits
   delegate :train, :finished?, :post_release_started?, :post_release_failed?, to: :release
 
-  def strikethrough
-    "line-through" if strikethrough?
+  def strikethrough(condition = nil)
+    completed = condition.nil? ? automations_started? : condition
+    "line-through" if completed
   end
 
-  def checked
-    "✅" if strikethrough?
+  ICON_CLASSES = "w-4 h-4 inline-block align-text-bottom"
+  SUCCESS_ICON_CLASSES = "#{ICON_CLASSES} text-green-600"
+  FAILURE_ICON_CLASSES = "#{ICON_CLASSES} text-red-600"
+  PENDING_ICON_CLASSES = "#{ICON_CLASSES} text-secondary animate-pulse"
+
+  def status_icon(condition = nil)
+    return inline_svg("circle_dashed.svg", classname: PENDING_ICON_CLASSES) if post_release_started?
+    completed = condition.nil? ? automations_started? : condition
+    if completed
+      inline_svg("circle_check.svg", classname: SUCCESS_ICON_CLASSES)
+    else
+      inline_svg("circle_x.svg", classname: FAILURE_ICON_CLASSES)
+    end
   end
 
-  def strikethrough?
+  memoize def automations_started?
     post_release_started? || post_release_failed? || finished?
   end
 
@@ -69,6 +81,19 @@ class LiveRelease::FinalizeComponent < BaseComponent
   def subtitle
     return "These will be automatically run when the rollout finishes" unless release.finished?
     ""
+  end
+
+  memoize def tag_enabled?
+    train.tag_end_of_release?
+  end
+
+  memoize def tag_successful?
+    tag_enabled? && release.tag_name.present?
+  end
+
+  memoize def backmerge_successful?
+    return true if train.backmerge_strategy == "disabled"
+    automations_started? && !unmerged_commits? && !open_backmerge_prs? && !open_post_release_prs?
   end
 
   def tag_link

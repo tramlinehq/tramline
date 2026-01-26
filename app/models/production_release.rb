@@ -38,7 +38,7 @@ class ProductionRelease < ApplicationRecord
   delegate :commit, :version_name, :build_number, to: :build
   delegate :release_health_rules, to: :release_platform
 
-  STAMPABLE_REASONS = %w[created active finished tag_created vcs_release_created build_updated]
+  STAMPABLE_REASONS = %w[created active finished tag_created vcs_release_created tagging_failed build_updated]
 
   STATES = {
     inflight: "inflight",
