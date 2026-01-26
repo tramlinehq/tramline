@@ -84,7 +84,7 @@
             <%= aF.hidden_field :id %>
             <div data-controller="text-applier" data-text-applier-content-value="<%= android_draft_notes %>">
               <% if android_has_draft_notes? %>
-                <%= render partial: "live_release/draft_alert", locals: {title: "Unsaved release notes", field_name: "release notes"} %>
+                <%= render partial: "release_metadata/draft_alert", locals: {title: "Unsaved release notes", field_name: "release notes"} %>
               <% end %>
               <div data-text-applier-target="input">
                 <%= render partial: "shared/size_limited_textarea", locals: {form: aF,
@@ -108,7 +108,7 @@
             <%= iosF.hidden_field :id %>
             <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_notes %>">
               <% if ios_has_draft_notes? %>
-                <%= render partial: "live_release/draft_alert", locals: {title: "Unsaved release notes", field_name: "release notes"} %>
+                <%= render partial: "release_metadata/draft_alert", locals: {title: "Unsaved release notes", field_name: "release notes"} %>
               <% end %>
               <div data-text-applier-target="input">
                 <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
@@ -120,7 +120,7 @@
             </div>
             <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_promo_text %>">
               <% if ios_has_draft_promo_text? %>
-                <%= render partial: "live_release/draft_alert", locals: {title: "Unsaved promo text", field_name: "promo text"} %>
+                <%= render partial: "release_metadata/draft_alert", locals: {title: "Unsaved promo text", field_name: "promo text"} %>
               <% end %>
               <div data-text-applier-target="input">
                 <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
