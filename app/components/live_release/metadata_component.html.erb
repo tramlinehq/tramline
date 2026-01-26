@@ -84,11 +84,14 @@
             <%= aF.hidden_field :id %>
             <div data-controller="text-applier" data-text-applier-content-value="<%= android_draft_notes %>">
               <% if android_has_draft_notes? %>
-                <div data-text-applier-target="container" class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md flex items-center justify-between">
-                  <span class="text-sm text-yellow-800">You have unsaved draft notes</span>
-                  <button type="button" class="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline" data-action="click->text-applier#apply">
-                    Apply draft
-                  </button>
+                <div data-text-applier-target="container" class="mb-2">
+                  <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "You have unsaved draft notes", full_screen: false) do |alert| %>
+                    <% alert.with_announcement_button(label: "Apply draft",
+                                                      scheme: :light,
+                                                      type: :action,
+                                                      size: :xxs,
+                                                      html_options: {data: {action: "click->text-applier#apply"}}) %>
+                  <% end %>
                 </div>
               <% end %>
               <div data-text-applier-target="input">
@@ -113,11 +116,14 @@
             <%= iosF.hidden_field :id %>
             <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_notes %>">
               <% if ios_has_draft_notes? %>
-                <div data-text-applier-target="container" class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md flex items-center justify-between">
-                  <span class="text-sm text-yellow-800">You have unsaved draft notes</span>
-                  <button type="button" class="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline" data-action="click->text-applier#apply">
-                    Apply draft
-                  </button>
+                <div data-text-applier-target="container" class="mb-2">
+                  <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "You have unsaved draft notes", full_screen: false) do |alert| %>
+                    <% alert.with_announcement_button(label: "Apply draft",
+                                                      scheme: :light,
+                                                      type: :action,
+                                                      size: :xxs,
+                                                      html_options: {data: {action: "click->text-applier#apply"}}) %>
+                  <% end %>
                 </div>
               <% end %>
               <div data-text-applier-target="input">
@@ -130,11 +136,14 @@
             </div>
             <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_promo_text %>">
               <% if ios_has_draft_promo_text? %>
-                <div data-text-applier-target="container" class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md flex items-center justify-between">
-                  <span class="text-sm text-yellow-800">You have unsaved draft promo text</span>
-                  <button type="button" class="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline" data-action="click->text-applier#apply">
-                    Apply draft
-                  </button>
+                <div data-text-applier-target="container" class="mb-2">
+                  <%= render AlertComponent.new(kind: :announcement, type: :announce, title: "You have unsaved draft promo text", full_screen: false) do |alert| %>
+                    <% alert.with_announcement_button(label: "Apply draft",
+                                                      scheme: :light,
+                                                      type: :action,
+                                                      size: :xxs,
+                                                      html_options: {data: {action: "click->text-applier#apply"}}) %>
+                  <% end %>
                 </div>
               <% end %>
               <div data-text-applier-target="input">
