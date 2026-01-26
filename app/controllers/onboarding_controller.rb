@@ -2,9 +2,7 @@ class OnboardingController < SignedInApplicationController
   include Wicked::Wizard
   before_action :set_onboarding_state
 
-  steps :vcs_provider,
-    :connect_vcs_provider,
-    :configure_vcs_provider
+  steps(*OnboardingState::STEPS)
 
   def show
     render_wizard
@@ -17,6 +15,11 @@ class OnboardingController < SignedInApplicationController
     flash[:notice] = I18n.t("onboarding.completed") if step == steps.last
     render_wizard @onboarding_state
   end
+
+  def current_step
+    step
+  end
+  helper_method :current_step, :current_step?, :previous_step, :next_step
 
   private
 

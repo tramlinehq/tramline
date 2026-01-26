@@ -1,9 +1,5 @@
-<li class="<%= item_classes %> <%= is_active? ? 'active' : '' %> <%= is_completed? ? 'completed' : '' %>"
-    data-onboarding-wizard-target="step"
-    data-action="click->onboarding-wizard#navigateTo"
-    data-step-index="<%= index %>">
-  <span data-onboarding-wizard-target="indicator"
-        class="<%= point_classes %> <%= is_completed? ? 'bg-green-500' : (is_active? ? 'bg-blue-500' : 'bg-gray-200') %> transition-colors duration-300">
+<li class="<%= class_names(item_classes, 'active' => is_active?, 'completed' => is_completed?) %>">
+  <span class="<%= class_names(point_classes, is_completed? ? 'bg-green-500' : (is_active? ? 'bg-blue-500' : 'bg-gray-200'), 'transition-colors duration-300') %>">
     <% if is_completed? %>
       <%= render IconComponent.new("check.svg", size: :sm, classes: "text-white") %>
     <% else %>
