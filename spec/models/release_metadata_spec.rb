@@ -79,4 +79,80 @@ RSpec.describe ReleaseMetadata do
       expect(build(:release_metadata, locale:, release_platform_run:, release_notes: "a" * 501)).not_to be_valid
     end
   end
+
+  describe "#update_and_clear_drafts!" do
+    let(:release_platform) { create(:release_platform, platform: :ios) }
+    let(:release_platform_run) { create(:release_platform_run, release_platform:) }
+
+    it "updates fields and clears draft for changed fields" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "old notes",
+        draft_release_notes: "draft notes")
+
+      metadata.update_and_clear_drafts!(release_notes: "new notes")
+
+      expect(metadata.reload.release_notes).to eq("new notes")
+      expect(metadata.draft_release_notes).to be_nil
+    end
+
+    it "does not clear draft for unchanged fields" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "same notes",
+        promo_text: "old promo",
+        draft_release_notes: "draft notes",
+        draft_promo_text: "draft promo")
+
+      metadata.update_and_clear_drafts!(release_notes: "same notes", promo_text: "new promo")
+
+      expect(metadata.reload.draft_release_notes).to eq("draft notes")
+      expect(metadata.draft_promo_text).to be_nil
+    end
+
+    it "raises on validation failure" do
+      metadata = create(:release_metadata, locale: "en-GB", release_platform_run:, release_notes: "valid")
+
+      expect {
+        metadata.update_and_clear_drafts!(release_notes: "<invalid>")
+      }.to raise_error(ActiveRecord::RecordInvalid)
+    end
+  end
+
+  describe "#save_draft" do
+    let(:release_platform) { create(:release_platform, platform: :ios) }
+    let(:release_platform_run) { create(:release_platform_run, release_platform:) }
+
+    it "saves draft for changed fields" do
+      metadata = create(:release_metadata, locale: "en-GB", release_platform_run:, release_notes: "original")
+
+      metadata.save_draft(release_notes: "new content")
+
+      expect(metadata.reload.draft_release_notes).to eq("new content")
+      expect(metadata.release_notes).to eq("original")
+    end
+
+    it "does not save draft for unchanged fields" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "same",
+        promo_text: "original promo")
+
+      metadata.save_draft(release_notes: "same", promo_text: "new promo")
+
+      expect(metadata.reload.draft_release_notes).to be_nil
+      expect(metadata.draft_promo_text).to eq("new promo")
+    end
+
+    it "saves draft even with invalid content" do
+      metadata = create(:release_metadata, locale: "en-GB", release_platform_run:, release_notes: "valid")
+
+      metadata.save_draft(release_notes: "<html>invalid</html>")
+
+      expect(metadata.reload.draft_release_notes).to eq("<html>invalid</html>")
+    end
+  end
 end
