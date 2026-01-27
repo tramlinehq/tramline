@@ -36,8 +36,8 @@ class ReleaseMetadataController < SignedInApplicationController
 
     begin
       ReleaseMetadata.transaction do
-        android_metadata.update_and_clear_drafts!(android_params) if android_id.present?
-        ios_metadata.update_and_clear_drafts!(ios_params) if ios_id.present?
+        android_metadata&.update_and_clear_drafts!(android_params)
+        ios_metadata&.update_and_clear_drafts!(ios_params)
       end
 
       redirect_to release_metadata_edit_path(@release), notice: t(".success")
