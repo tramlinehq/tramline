@@ -55,7 +55,31 @@ class ReleaseMetadata < ApplicationRecord
     ReleaseMetadata.find_by(id: id, locale: locale_tag)
   end
 
+  def update_and_clear_drafts!(attrs)
+    update!(attrs.merge(draft_attrs_to_clear(attrs)))
+  end
+
+  # rubocop:disable Rails/SkipsModelValidations
+  def save_draft(attrs)
+    update_columns(draft_attrs_to_save(attrs))
+  end
+  # rubocop:enable Rails/SkipsModelValidations
+
   private
+
+  def draft_attrs_to_clear(attrs)
+    {}.tap do |drafts|
+      drafts[:draft_release_notes] = nil if attrs[:release_notes] != release_notes
+      drafts[:draft_promo_text] = nil if attrs[:promo_text] != promo_text
+    end
+  end
+
+  def draft_attrs_to_save(attrs)
+    {}.tap do |drafts|
+      drafts[:draft_release_notes] = attrs[:release_notes] if attrs[:release_notes] != release_notes
+      drafts[:draft_promo_text] = attrs[:promo_text] if attrs[:promo_text] != promo_text
+    end.compact
+  end
 
   def notes_length
     errors.add(:release_notes, :too_long, max_length: notes_max_length, platform: release_platform_run.platform) if release_notes.length > notes_max_length

@@ -36,27 +36,20 @@ class ReleaseMetadataController < SignedInApplicationController
 
     begin
       ReleaseMetadata.transaction do
-        if android_id.present?
-          clear_drafts = {}
-          clear_drafts[:draft_release_notes] = nil if android_params.key?(:release_notes)
-          android_metadata.update!(android_params.merge(clear_drafts))
-        end
-
-        if ios_id.present?
-          clear_drafts = {}
-          clear_drafts[:draft_release_notes] = nil if ios_params.key?(:release_notes)
-          clear_drafts[:draft_promo_text] = nil if ios_params.key?(:promo_text)
-          ios_metadata.update!(ios_params.merge(clear_drafts))
-        end
+        android_metadata.update_and_clear_drafts!(android_params) if android_id.present?
+        ios_metadata.update_and_clear_drafts!(ios_params) if ios_id.present?
       end
 
       redirect_to release_metadata_edit_path(@release), notice: t(".success")
     rescue ActiveRecord::RecordInvalid
-      save_drafts(android_metadata, android_params, ios_metadata, ios_params)
+      android_metadata&.save_draft(android_params) if android_params.present?
+      ios_metadata&.save_draft(ios_params) if ios_params.present?
+
       set_metadata
-      flash.now[:error] ||= []
-      flash.now[:error] << android_metadata&.errors&.full_messages&.to_sentence
-      flash.now[:error] << ios_metadata&.errors&.full_messages&.to_sentence
+      flash.now[:error] = [
+        android_metadata&.errors&.full_messages&.to_sentence,
+        ios_metadata&.errors&.full_messages&.to_sentence
+      ].compact_blank
       flash.now[:notice] = t(".draft_saved")
 
       render :index, status: :unprocessable_entity
@@ -64,24 +57,6 @@ class ReleaseMetadataController < SignedInApplicationController
   end
 
   private
-
-  # rubocop:disable Rails/SkipsModelValidations
-  # We intentionally skip validations here to save draft content that may be invalid
-  def save_drafts(android_metadata, android_params, ios_metadata, ios_params)
-    if android_metadata.present? && android_params.present?
-      drafts = {}
-      drafts[:draft_release_notes] = android_params[:release_notes] if android_params.key?(:release_notes)
-      android_metadata.update_columns(drafts) if drafts.present?
-    end
-
-    if ios_metadata.present? && ios_params.present?
-      drafts = {}
-      drafts[:draft_release_notes] = ios_params[:release_notes] if ios_params.key?(:release_notes)
-      drafts[:draft_promo_text] = ios_params[:promo_text] if ios_params.key?(:promo_text)
-      ios_metadata.update_columns(drafts) if drafts.present?
-    end
-  end
-  # rubocop:enable Rails/SkipsModelValidations
 
   def set_metadata
     @active_languages = @release.active_languages
