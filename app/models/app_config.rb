@@ -20,7 +20,6 @@
 #  app_id                              :uuid             not null, indexed
 #  bitrise_project_id                  :jsonb
 #  bugsnag_project_id                  :jsonb
-#  codemagic_project_id                :jsonb
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
