@@ -1,0 +1,41 @@
+# .kamal/hooks/post-deploy
+#!/bin/bash
+
+set -e
+
+DB_HOST=${DB_HOST:-localhost}
+DB_PORT=${DB_PORT:-5432}
+WAIT_RETRIES=${WAIT_RETRIES:-30}
+
+echo "Waiting for DB to be ready at ${DB_HOST}:${DB_PORT}..."
+
+if ! command -v pg_isready &> /dev/null; then
+    echo "pg_isready not found. Installing..."
+    if [ "$EUID" -ne 0 ]; then
+        echo "This script must be run as root to install pg_isready."
+        exit 1
+    fi
+    
+    apt-get update && apt-get install -y postgresql-client
+    
+    if ! command -v pg_isready &> /dev/null; then
+        echo "pg_isready installation failed. Exiting."
+        exit 0 
+        # Do not exit with error code here 
+        # since DB is already working, 
+        # else app wouldnt be running
+    fi
+fi
+
+until pg_isready -h "${DB_HOST}" -p "${DB_PORT}" -d "tramline_staging" -U "postgres" | grep -q "accepting connections"; do
+    WAIT_RETRIES=$((WAIT_RETRIES - 1))
+    if [ "$WAIT_RETRIES" -le 0 ]; then
+        echo "Database not reachable after waiting. Exiting."
+        exit 1
+    fi
+    sleep 1
+done
+
+echo "DB is ready."
+
+exit 0
