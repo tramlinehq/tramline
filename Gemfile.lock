@@ -777,6 +777,8 @@ GEM
       base64
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
+    wicked (2.0.0)
+      railties (>= 3.0.7)
     zache (0.13.2)
     zeitwerk (2.7.2)
 
@@ -910,6 +912,7 @@ DEPENDENCIES
   web-console
   webdrivers
   webmock
+  wicked (~> 2.0)
 
 RUBY VERSION
    ruby 3.3.6p108
