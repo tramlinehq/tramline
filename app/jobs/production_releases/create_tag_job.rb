@@ -10,9 +10,9 @@ module ProductionReleases
       commitish = production_release.commit.commit_hash
 
       if train.tag_store_releases_vcs_release?
-        production_release.create_vcs_release!(commitish, release.release_diff)
+        production_release.create_vcs_release!(commitish, release.release_diff, silent: true)
       else
-        production_release.create_tag!(commitish)
+        production_release.create_tag!(commitish, silent: true)
       end
     end
   end

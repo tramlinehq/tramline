@@ -14,12 +14,12 @@ en:
       finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>'
       approvals_overwritten_html: 'Approval items were force-approved by the release captain'
       tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
+      tagging_failed_html: 'Failed to create tag — <span class="emphasize">%{error}</span>'
     release_platform_run:
       version_changed_html: 'Updated the release version to <span class="emphasize">%{version}</span>'
       version_corrected_html: 'Updated the release version to <span class="emphasize">%{version}</span> since the ongoing release has moved on to <span class="emphasize">%{ongoing_version}</span>'
       finished_html: 'Finished the platform release with version <span class="emphasize">%{version}</span>'
       stopped_html: 'Stopped the platform release with version <span class="emphasize">%{version}</span>'
-      tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
     commit:
       created_html: 'New commit <span class="emphasize">%{sha}</span> has landed'
     pull_request:
@@ -36,6 +36,7 @@ en:
       finished_html: 'Finished the production release for <span class="emphasize">%{version} (%{build_number})</span>'
       vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
       tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
+      tagging_failed_html: 'Failed to create tag — <span class="emphasize">%{error}</span>'
       build_updated_html: 'In-flight production release was updated with a new build <span class="emphasize">%{version} (%{build_number})</span>'
     workflow_run:
       triggered_html: 'A new %{kind} workflow run was triggered for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name}</span>'
