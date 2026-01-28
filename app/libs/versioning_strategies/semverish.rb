@@ -47,10 +47,6 @@ class VersioningStrategies::Semverish
   def <=>(other)
     other = new(other) if other.is_a? String
 
-    if other.partial? != partial?
-      raise ArgumentError.new("cannot compare #{version} with version #{other.version}")
-    end
-
     [:major, :minor, (proper? ? :patch : nil)].compact.each do |part|
       c = (public_send(part).to_i <=> other.public_send(part).to_i)
 
