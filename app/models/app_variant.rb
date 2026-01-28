@@ -25,7 +25,6 @@ class AppVariant < ApplicationRecord
 
   validates :bundle_identifier, presence: true, uniqueness: {scope: :app_id}
   validate :duplicate_bundle_identifier
-  validate :single_variant_per_app, on: :create
   validates :name, presence: true, length: {maximum: 30}
 
   friendly_id :slug_candidates, use: :slugged
@@ -55,11 +54,5 @@ class AppVariant < ApplicationRecord
 
   def duplicate_bundle_identifier
     errors.add(:bundle_identifier, :same_as_parent) if app.bundle_identifier == bundle_identifier
-  end
-
-  def single_variant_per_app
-    if AppVariant.exists?(app_id: app_id)
-      errors.add(:app_id, "can only have one variant")
-    end
   end
 end

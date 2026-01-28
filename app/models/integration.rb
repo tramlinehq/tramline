@@ -32,7 +32,7 @@ class Integration < ApplicationRecord
   IntegrationNotImplemented = Class.new(StandardError)
   UnsupportedAction = Class.new(StandardError)
 
-  APP_VARIANT_PROVIDABLE_TYPES = %w[GoogleFirebaseIntegration]
+  APP_VARIANT_PROVIDABLE_TYPES = %w[GoogleFirebaseIntegration GooglePlayStoreIntegration]
 
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
