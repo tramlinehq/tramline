@@ -52,11 +52,12 @@ class ReleasePlatformRun < ApplicationRecord
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_submitted_production, -> { on_track.reject(&:production_release_submitted?) }
 
-  STAMPABLE_REASONS = %w[version_changed version_corrected finished stopped]
+  STAMPABLE_REASONS = %w[version_changed tag_created version_corrected concluded finished stopped]
 
   STATES = {
     created: "created",
     on_track: "on_track",
+    concluded: "concluded",
     stopped: "stopped",
     finished: "finished"
   }
@@ -65,7 +66,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   before_create :set_config
   after_create :set_default_release_metadata
-  scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
+  scope :pending_release, -> { where.not(status: [:concluded, :finished, :stopped]) }
 
   delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, :release_branch, to: :release
   delegate :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
@@ -75,30 +76,32 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def start!
-    with_lock do
-      return unless created?
-      update!(status: STATES[:on_track])
-    end
+    return unless created? || concluded?
+    update!(status: STATES[:on_track])
   end
 
   def stop!
-    with_lock do
-      return if finished?
-      update!(status: STATES[:stopped], stopped_at: Time.current)
-    end
-
+    return if finished?
+    update!(status: STATES[:stopped], stopped_at: Time.current)
     event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
   end
 
+  def conclude!
+    return unless on_track?
+    update!(status: STATES[:concluded])
+  end
+
   def finish!
-    with_lock do
-      return unless on_track?
-      update!(status: STATES[:finished], completed_at: Time.current)
-    end
+    return unless concluded?
+    update!(status: STATES[:finished], completed_at: Time.current)
   end
 
   def active?
     STATES.slice(:created, :on_track).value?(status)
+  end
+
+  def committable?
+    on_track? || concluded?
   end
 
   def metadata_for(language, platform)
@@ -240,6 +243,7 @@ class ReleasePlatformRun < ApplicationRecord
     locale = default_locale || ReleaseMetadata::DEFAULT_LOCALE
     release_metadata.create!(base.merge(locale: locale, default_locale: true))
   end
+
   # rubocop:enable Rails/SkipsModelValidations
 
   def correct_version!

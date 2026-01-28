@@ -94,11 +94,11 @@
 
             <%# TODO: use the new rollout domain object / use radial charts %>
             <%# platform_runs.each do |platform_run| %>
-              <%# if staged_rollout_status(platform_run) %>
-                <%#= render BadgeComponent.new(**staged_rollout_status(platform_run)) do |status| %>
-                  <%#= status.with_icon("#{platform_run.platform}.svg", size: :sm) %>
-                <%# end %>
-              <%# end %>
+            <%# if staged_rollout_status(platform_run) %>
+            <%#= render BadgeComponent.new(**staged_rollout_status(platform_run)) do |status| %>
+            <%#= status.with_icon("#{platform_run.platform}.svg", size: :sm) %>
+            <%# end %>
+            <%# end %>
             <%# end %>
           </div>
 
@@ -146,6 +146,42 @@
       </div>
 
       <div class="self-end mt-10 flex flex-col gap-2 items-end <%= RIGHT_GUTTER %>">
+        <% if active? && active_platform_runs.any? %>
+          <%= render ModalComponent.new(title: "Lock a platform") do |modal| %>
+            <% modal.with_button(label: "Lock release", scheme: :light, type: :action, size: :xxs)
+                 .with_icon("lock.svg") %>
+            <% modal.with_body do %>
+              <%= render FormComponent.new(url: conclude_runs_path, method: :post, free_form: false) do |f| %>
+                <% f.with_section(heading: "Why?") do |section| %>
+                  <% section.with_description do %>
+                    <p>
+                      This is useful when you don't want to continue with a particular platform release any longer. For
+                      example, if a spurious commit on this release is blocking an upcoming production release, you can
+                      lock this platform and continue with the upcoming release.
+                    </p>
+
+                    <p>
+                      For single-platform release, you can just pick the one platform for when you need to prematurely
+                      mark the release as completed.
+                    </p>
+                  <% end %>
+
+                  <div>
+                    <%= f.F.labeled_select :platform_run_id,
+                                           "Pick the platform",
+                                           options_for_select(platform_run_options),
+                                           {prompt: "Select a platform"},
+                                           {required: true} %>
+                  </div>
+                <% end %>
+
+                <% f.with_action do %>
+                  <%= f.F.authz_submit "Lock Platform", "lock.svg" %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
         <% if partially_finished? %>
           <%= render ButtonComponent.new(
                 scheme: :light,

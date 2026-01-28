@@ -91,6 +91,7 @@ en:
     update_all:
       success: "Release metadata was successfully updated."
       generic_failure: "Could not save the release metadata. Please try again."
+      draft_saved: "Your changes have been saved as a draft. Fix the validation errors and save again."
   build_queues:
     apply:
       failure: "Failed to apply the build queue — %{errors}"
@@ -98,6 +99,11 @@ en:
     create:
       success: "Production release was successfully created."
       failure: "Failed to create production release — %{errors}"
+  release_platform_runs:
+    conclude:
+      success: "Release platform run was successfully concluded."
+      failure: "Failed to conclude release platform run — %{errors}"
+      platform_run_required: "Please select a platform to lock."
   staged_rollout:
     ios:
       switch_on: "Enable Phased Release"

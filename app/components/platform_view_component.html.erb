@@ -6,10 +6,18 @@
           <%= run.display_attr(:platform) %>
         </span>
 
-        <% if @detail && @release.active? && !run.active? %>
-          <div class="w-full">
-            <%= render AlertComponent.new(title: "The #{run.display_attr(:platform)} release is locked and will not accept new changes.", type: :info, full_screen: false, dismissible: false) %>
-          </div>
+        <% if @detail && @release.active? %>
+          <% if run.concluded? %>
+            <div class="w-full">
+              <%= render AlertComponent.new(title: "#{run.display_attr(:platform)} rollout is complete, but critical fixes can still be applied.", type: :success, full_screen: false, dismissible: false) %>
+            </div>
+          <% end %>
+
+          <% if run.finished? %>
+            <div class="w-full">
+              <%= render AlertComponent.new(title: "#{run.display_attr(:platform)} release is finished and will not accept new changes.", type: :info, full_screen: false, dismissible: false) %>
+            </div>
+          <% end %>
         <% end %>
       </div>
     <% end %>

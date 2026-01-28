@@ -36,16 +36,21 @@ class ReleaseMetadataController < SignedInApplicationController
 
     begin
       ReleaseMetadata.transaction do
-        android_metadata.update!(android_params) if android_id.present?
-        ios_metadata.update!(ios_params) if ios_id.present?
+        android_metadata&.update_and_clear_drafts!(android_params)
+        ios_metadata&.update_and_clear_drafts!(ios_params)
       end
 
       redirect_to release_metadata_edit_path(@release), notice: t(".success")
     rescue ActiveRecord::RecordInvalid
+      android_metadata&.save_draft(android_params) if android_params.present?
+      ios_metadata&.save_draft(ios_params) if ios_params.present?
+
       set_metadata
-      flash.now[:error] ||= []
-      flash.now[:error] << android_metadata&.errors&.full_messages&.to_sentence
-      flash.now[:error] << ios_metadata&.errors&.full_messages&.to_sentence
+      flash.now[:error] = [
+        android_metadata&.errors&.full_messages&.to_sentence,
+        ios_metadata&.errors&.full_messages&.to_sentence
+      ].compact_blank
+      flash.now[:notice] = t(".draft_saved")
 
       render :index, status: :unprocessable_entity
     end

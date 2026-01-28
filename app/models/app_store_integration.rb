@@ -82,6 +82,7 @@ class AppStoreIntegration < ApplicationRecord
     build_number: :build_number,
     name: :version_name,
     added_at: :added_at,
+    release_type: :release_type,
     phased_release_day: [:phased_release, :current_day_number],
     phased_release_status: [:phased_release, :phased_release_state],
     localizations: {localizations: {language: :language,
@@ -172,9 +173,9 @@ class AppStoreIntegration < ApplicationRecord
     GitHub::Result.new { installation.add_build_to_group(beta_group_id, build_number) }
   end
 
-  def prepare_release(build_number, version, is_phased_release, metadata, force)
+  def prepare_release(build_number, version, is_phased_release, metadata, force, auto_start_rollout = false)
     GitHub::Result.new do
-      release_info(installation.prepare_release(build_number, version, is_phased_release, metadata, force, RELEASE_TRANSFORMATIONS))
+      release_info(installation.prepare_release(build_number, version, is_phased_release, metadata, force, auto_start_rollout, RELEASE_TRANSFORMATIONS))
     end
   end
 
