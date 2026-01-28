@@ -84,7 +84,7 @@ RSpec.describe ReleaseMetadata do
     let(:release_platform) { create(:release_platform, platform: :ios) }
     let(:release_platform_run) { create(:release_platform_run, release_platform:) }
 
-    it "updates fields and clears draft for changed fields" do
+    it "updates fields and clears draft for submitted fields" do
       metadata = create(:release_metadata,
         locale: "en-GB",
         release_platform_run:,
@@ -97,7 +97,7 @@ RSpec.describe ReleaseMetadata do
       expect(metadata.draft_release_notes).to be_nil
     end
 
-    it "does not clear draft for unchanged fields" do
+    it "clears draft for any submitted field, even if value unchanged" do
       metadata = create(:release_metadata,
         locale: "en-GB",
         release_platform_run:,
@@ -108,8 +108,23 @@ RSpec.describe ReleaseMetadata do
 
       metadata.update_and_clear_drafts!(release_notes: "same notes", promo_text: "new promo")
 
-      expect(metadata.reload.draft_release_notes).to eq("draft notes")
+      expect(metadata.reload.draft_release_notes).to be_nil
       expect(metadata.draft_promo_text).to be_nil
+    end
+
+    it "does not clear draft for fields not submitted" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "notes",
+        promo_text: "promo",
+        draft_release_notes: "draft notes",
+        draft_promo_text: "draft promo")
+
+      metadata.update_and_clear_drafts!(release_notes: "new notes")
+
+      expect(metadata.reload.draft_release_notes).to be_nil
+      expect(metadata.draft_promo_text).to eq("draft promo")
     end
 
     it "raises on validation failure" do
@@ -153,6 +168,29 @@ RSpec.describe ReleaseMetadata do
       metadata.save_draft(release_notes: "<html>invalid</html>")
 
       expect(metadata.reload.draft_release_notes).to eq("<html>invalid</html>")
+    end
+
+    it "compares against database values, not in-memory values" do
+      metadata = create(:release_metadata, locale: "en-GB", release_platform_run:, release_notes: "original")
+
+      # Simulate a failed update! that left dirty attributes in memory
+      metadata.release_notes = "failed update value"
+
+      # save_draft should compare against DB value ("original"), not in-memory value
+      metadata.save_draft(release_notes: "draft content")
+
+      expect(metadata.reload.draft_release_notes).to eq("draft content")
+      expect(metadata.release_notes).to eq("original")
+    end
+
+    it "does not save draft when submitted value matches database value" do
+      metadata = create(:release_metadata, locale: "en-GB", release_platform_run:, release_notes: "original")
+
+      # Even with dirty in-memory state, if submitted value matches DB, no draft saved
+      metadata.release_notes = "dirty value"
+      metadata.save_draft(release_notes: "original")
+
+      expect(metadata.reload.draft_release_notes).to be_nil
     end
   end
 end
