@@ -34,25 +34,19 @@
     <div class="flex flex-col gap-2 text-sm text-secondary">
       <% if tag_enabled? %>
         <div class="flex items-center gap-1">
-          <p class="<%= strikethrough(tag_successful?) %>">
-            ◦ Cut tag at <code><%= release.last_commit&.short_sha %></code> and push to <%= tag_link %>
-          </p>
           <%= status_icon(tag_successful?) %>
+          <span>Cut tag at <code><%= release.last_commit&.short_sha %></code> and push to <%= tag_link %></span>
         </div>
       <% end %>
 
       <div class="flex items-center gap-1">
-        <p class="<%= strikethrough(backmerge_successful?) %>">
-          ◦ Ensure all unmerged changes are pushed back to <%= release.train.working_branch %>
-        </p>
         <%= status_icon(backmerge_successful?) %>
+        <span>Ensure all unmerged changes are pushed back to <%= release.train.working_branch %></span>
       </div>
 
       <div class="flex items-center gap-1">
-        <p class="<%= strikethrough %>">
-          ◦ Refresh all the DevOps dashboards and reports
-        </p>
         <%= status_icon %>
+        <span>Refresh all the DevOps dashboards and reports</span>
       </div>
     </div>
 

@@ -13,11 +13,6 @@ class LiveRelease::FinalizeComponent < BaseComponent
   attr_reader :release, :unmerged_commits
   delegate :train, :finished?, :post_release_started?, :post_release_failed?, to: :release
 
-  def strikethrough(condition = nil)
-    completed = condition.nil? ? automations_started? : condition
-    "line-through" if completed
-  end
-
   ICON_CLASSES = "align-text-bottom"
   SUCCESS_ICON_CLASSES = "#{ICON_CLASSES} text-green-600"
   FAILURE_ICON_CLASSES = "#{ICON_CLASSES} text-red-600"
