@@ -83,6 +83,7 @@ Rails.application.configure do
   config.hosts << /[a-z0-9-]+\.local\.gd/
   config.hosts << /.*\.ngrok-free\.app/
   config.hosts << /.*\.ngrok-free\.dev/
+  config.hosts << /.*\.ngrok\.app/
   config.hosts << /.*\.ngrok\.io/
   config.hosts << /web:3000/
 
