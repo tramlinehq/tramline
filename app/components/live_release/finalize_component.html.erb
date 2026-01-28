@@ -2,29 +2,29 @@
   <% if wrap_up? %>
     <% card.with_action do %>
       <%= render ButtonComponent.new(
-            scheme: :default,
-            options: post_release_release_path(release),
-            type: :button,
-            size: :xxs,
-            label: "Retry"
-          ) do |b|
-            b.with_icon("repeat.svg", size: :md)
-          end %>
+        scheme: :default,
+        options: post_release_release_path(release),
+        type: :button,
+        size: :xxs,
+        label: "Retry"
+      ) do |b|
+        b.with_icon("repeat.svg", size: :md)
+      end %>
     <% end %>
   <% end %>
 
   <% if post_release_started? %>
     <% card.with_action do %>
       <%= render ButtonComponent.new(
-            scheme: :default,
-            options: request.path,
-            type: :link,
-            size: :xxs,
-            label: "Refresh",
-            html_options: {data: {turbo_method: :get, turbo_frame: :_top}}
-          ) do |b|
-            b.with_icon("repeat.svg", size: :md)
-          end %>
+        scheme: :default,
+        options: request.path,
+        type: :link,
+        size: :xxs,
+        label: "Refresh",
+        html_options: { data: { turbo_method: :get, turbo_frame: :_top } }
+      ) do |b|
+        b.with_icon("repeat.svg", size: :md)
+      end %>
     <% end %>
   <% end %>
 
@@ -33,18 +33,27 @@
   <% else %>
     <div class="flex flex-col gap-2 text-sm text-secondary">
       <% if tag_enabled? %>
-        <p class="<%= strikethrough(tag_successful?) %>">
-          ◦ Cut tag at <code><%= release.last_commit&.short_sha %></code> and push to <%= tag_link %> <%= status_icon(tag_successful?) %>
-        </p>
+        <div class="flex items-center gap-1">
+          <p class="<%= strikethrough(tag_successful?) %>">
+            ◦ Cut tag at <code><%= release.last_commit&.short_sha %></code> and push to <%= tag_link %>
+          </p>
+          <%= status_icon(tag_successful?) %>
+        </div>
       <% end %>
 
-      <p class="<%= strikethrough(backmerge_successful?) %>">
-        ◦ Ensure all unmerged changes are pushed back to <%= release.train.working_branch %> <%= status_icon(backmerge_successful?) %>
-      </p>
+      <div class="flex items-center gap-1">
+        <p class="<%= strikethrough(backmerge_successful?) %>">
+          ◦ Ensure all unmerged changes are pushed back to <%= release.train.working_branch %>
+        </p>
+        <%= status_icon(backmerge_successful?) %>
+      </div>
 
-      <p class="<%= strikethrough %>">
-        ◦ Refresh all the DevOps dashboards and reports <%= status_icon %>
-      </p>
+      <div class="flex items-center gap-1">
+        <p class="<%= strikethrough %>">
+          ◦ Refresh all the DevOps dashboards and reports
+        </p>
+        <%= status_icon %>
+      </div>
     </div>
 
     <% if closed_post_release_prs.present? %>
@@ -77,18 +86,18 @@
               <code><%= release.train.working_branch %></code> before wrapping up this release.</p>
             <div class="mt-2">
               <%= render partial: "shared/divide_collection",
-                         locals: {collection: render(CommitComponent.with_collection(unmerged_commits))} %>
+                         locals: { collection: render(CommitComponent.with_collection(unmerged_commits)) } %>
             </div>
           </div>
 
           <% unless open_prs? %>
             <%= render ButtonComponent.new(
-                  scheme: :danger,
-                  options: post_release_release_path(release),
-                  type: :button,
-                  size: :xxs,
-                  label: "I understand, complete the release"
-                ) %>
+              scheme: :danger,
+              options: post_release_release_path(release),
+              type: :button,
+              size: :xxs,
+              label: "I understand, complete the release"
+            ) %>
           <% end %>
         <% end %>
       </div>

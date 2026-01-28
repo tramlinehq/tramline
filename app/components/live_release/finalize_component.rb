@@ -18,18 +18,22 @@ class LiveRelease::FinalizeComponent < BaseComponent
     "line-through" if completed
   end
 
-  ICON_CLASSES = "w-4 h-4 inline-block align-text-bottom"
+  ICON_CLASSES = "align-text-bottom"
   SUCCESS_ICON_CLASSES = "#{ICON_CLASSES} text-green-600"
   FAILURE_ICON_CLASSES = "#{ICON_CLASSES} text-red-600"
   PENDING_ICON_CLASSES = "#{ICON_CLASSES} text-secondary animate-pulse"
 
   def status_icon(condition = nil)
-    return inline_svg("circle_dashed.svg", classname: PENDING_ICON_CLASSES) if post_release_started?
     completed = condition.nil? ? automations_started? : condition
+
+    if post_release_started? && condition.nil?
+      return render(IconComponent.new("circle_dashed.svg", size: :md, classes: PENDING_ICON_CLASSES))
+    end
+
     if completed
-      inline_svg("circle_check.svg", classname: SUCCESS_ICON_CLASSES)
+      render(IconComponent.new("circle_check_big.svg", size: :md, classes: SUCCESS_ICON_CLASSES))
     else
-      inline_svg("circle_x.svg", classname: FAILURE_ICON_CLASSES)
+      render(IconComponent.new("circle_x.svg", size: :md, classes: FAILURE_ICON_CLASSES))
     end
   end
 
