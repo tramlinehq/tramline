@@ -175,6 +175,13 @@ class WorkflowRun < ApplicationRecord
     store_provider.find_build(build.build_number)
   end
 
+  def update_build_number_from_api!(build_number)
+    raise ArgumentError, "Build number cannot be blank" if build_number.blank?
+
+    build.update!(build_number: build_number)
+    app.bump_build_number!(release_version: build.release_version, workflow_build_number: build_number)
+  end
+
   def add_metadata!(artifacts_url:, started_at:, finished_at:)
     update!(artifacts_url:, started_at:, finished_at:)
   end
