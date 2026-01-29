@@ -15,12 +15,12 @@ class AppVariantsController < SignedInApplicationController
   end
 
   def edit
-    set_firebase_app_configs
+    set_integration_configs
   end
 
   def create
     @app_variant = @app.variants.new(create_params)
-    set_firebase_integration
+    set_integration
 
     if @app_variant.save
       redirect_to default_path, notice: "App Variant was successfully created."
@@ -81,12 +81,25 @@ class AppVariantsController < SignedInApplicationController
     @providable_params_errors ||= Validators::KeyFileValidator.validate(json_key_file).errors
   end
 
-  def set_firebase_integration
+  def set_integration
     integration_params = app_variant_params[:integrations].except(:providable)
-    providable = integration_providable_params[:type].constantize.new(integration: @integration)
-    providable_params = {json_key: json_key_file.read, project_number: integration_providable_params[:project_number]}
+    providable_type = integration_providable_params[:type]
+    providable = providable_type.constantize.new(integration: @integration)
+    providable_params = build_providable_params(providable_type)
     @integration = @app_variant.integrations.new(integration_params.merge(providable:))
     @integration.providable.assign_attributes(providable_params)
+  end
+
+  def build_providable_params(providable_type)
+    base_params = {json_key: json_key_file.read}
+    case providable_type
+    when "GoogleFirebaseIntegration"
+      base_params.merge(project_number: integration_providable_params[:project_number])
+    when "GooglePlayStoreIntegration"
+      base_params
+    else
+      base_params
+    end
   end
 
   def integration_providable_params
@@ -99,8 +112,15 @@ class AppVariantsController < SignedInApplicationController
     end
   end
 
+  def set_integration_configs
+    set_firebase_app_configs
+  end
+
   def set_firebase_app_configs
-    config = @app_variant.integrations.firebase_build_channel_provider.setup
+    firebase_provider = @app_variant.integrations.firebase_build_channel_provider
+    return unless firebase_provider
+
+    config = firebase_provider.setup
     @firebase_android_apps, @firebase_ios_apps = config[:android], config[:ios]
   end
 
