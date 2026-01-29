@@ -212,7 +212,7 @@ class AppStoreSubmission < StoreSubmission
     release_info = result.value!
     update_store_info!(release_info)
 
-    if release_info.success?
+    if release_info.success? || release_info.live?(build_number)
       approve!
       return
     elsif release_info.review_cancelled?
