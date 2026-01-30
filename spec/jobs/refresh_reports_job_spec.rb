@@ -35,59 +35,66 @@ describe RefreshReportsJob do
     end
   end
 
-  it "writes to the train devops report query cache" do
-    allow(Queries::ReleaseBreakdown).to receive(:warm)
-    allow(Queries::DevopsReport).to receive(:warm).and_call_original
-
-    expect do
-      described_class.new.perform(release.id)
-    end.to change {
-      Rails.cache.exist?("train/#{train.id}/queries/devops_report")
-    }.from(false).to(true)
-  end
-
-  context "when train follows semver versioning" do
+  describe "devops report query caching" do
     before do
       allow(Queries::ReleaseBreakdown).to receive(:warm)
       allow(Queries::DevopsReport).to receive(:warm).and_call_original
     end
 
-    describe "when previous releases were partial semver" do
-      it "sorts versions correctly when current release is partial semver" do
-        rel1 = create(:release, :finished, train:, completed_at: 7.days.ago)
-        rel1.release_platform_runs.each { |run| run.update!(release_version: "1.1") }
-
-        rel2 = create(:release, :finished, train:, completed_at: 5.days.ago)
-        rel2.release_platform_runs.each { |run| run.update!(release_version: "1.2") }
-
-        release.update!(status: :finished, completed_at: 3.days.ago)
-        release.release_platform_runs.each { |run| run.update!(release_version: "1.3") }
-
+    it "writes to the train devops report query cache" do
+      expect do
         described_class.new.perform(release.id)
-
-        cached_report = Rails.cache.read("train/#{train.id}/queries/devops_report")
-        expect(cached_report[:duration].keys).to eq(["1.1", "1.2", "1.3"])
-      end
-
-      it "sorts mixed partial and proper semver correctly when current release is proper semver" do
-        rel1 = create(:release, :finished, train:, completed_at: 7.days.ago)
-        rel1.release_platform_runs.each { |run| run.update!(release_version: "1.1") }
-
-        rel2 = create(:release, :finished, train:, completed_at: 5.days.ago)
-        rel2.release_platform_runs.each { |run| run.update!(release_version: "1.2") }
-
-        release.update!(status: :finished, completed_at: 3.days.ago)
-        release.release_platform_runs.each { |run| run.update!(release_version: "1.2.1") }
-
-        described_class.new.perform(release.id)
-
-        cached_report = Rails.cache.read("train/#{train.id}/queries/devops_report")
-        expect(cached_report[:duration].keys).to eq(["1.1", "1.2", "1.2.1"])
-      end
+      end.to change {
+        Rails.cache.exist?("train/#{train.id}/queries/devops_report")
+      }.from(false).to(true)
     end
 
-    describe "when previous releases were proper semver" do
-      it "sorts versions correctly when current release is proper semver" do
+    context "when train follows semver versioning" do
+      describe "when previous releases were partial semver" do
+        it "caches the report elements in semantic order of releases when current release has a partial semver version" do
+          rel1 = create(:release, :finished, train:, completed_at: 7.days.ago)
+          rel1.release_platform_runs.each { |run| run.update!(release_version: "1.1") }
+
+          rel2 = create(:release, :finished, train:, completed_at: 5.days.ago)
+          rel2.release_platform_runs.each { |run| run.update!(release_version: "1.2") }
+
+          release.update!(status: :finished, completed_at: 3.days.ago)
+          release.release_platform_runs.each { |run| run.update!(release_version: "1.3") }
+
+          described_class.new.perform(release.id)
+
+          cached_report = Rails.cache.read("train/#{train.id}/queries/devops_report")
+          expect(cached_report[:duration].keys).to eq(["1.1", "1.2", "1.3"])
+          expect(cached_report[:patch_fixes].keys).to eq(["1.1", "1.2", "1.3"])
+          expect(cached_report[:hotfixes].keys).to eq(["1.1", "1.2", "1.3"])
+          expect(cached_report[:time_in_phases].keys).to eq(["1.1", "1.2", "1.3"])
+          expect(cached_report[:stability_contributors].keys).to eq(["1.1", "1.2", "1.3"])
+          expect(cached_report[:contributors].keys).to eq(["1.1", "1.2", "1.3"])
+        end
+
+        it "caches the report elements in semantic order of releases when current release has a proper semver version" do
+          rel1 = create(:release, :finished, train:, completed_at: 7.days.ago)
+          rel1.release_platform_runs.each { |run| run.update!(release_version: "1.1") }
+
+          rel2 = create(:release, :finished, train:, completed_at: 5.days.ago)
+          rel2.release_platform_runs.each { |run| run.update!(release_version: "1.2") }
+
+          release.update!(status: :finished, completed_at: 3.days.ago)
+          release.release_platform_runs.each { |run| run.update!(release_version: "1.2.1") }
+
+          described_class.new.perform(release.id)
+
+          cached_report = Rails.cache.read("train/#{train.id}/queries/devops_report")
+          expect(cached_report[:duration].keys).to eq(["1.1", "1.2", "1.2.1"])
+          expect(cached_report[:patch_fixes].keys).to eq(["1.1", "1.2", "1.2.1"])
+          expect(cached_report[:hotfixes].keys).to eq(["1.1", "1.2", "1.2.1"])
+          expect(cached_report[:time_in_phases].keys).to eq(["1.1", "1.2", "1.2.1"])
+          expect(cached_report[:stability_contributors].keys).to eq(["1.1", "1.2", "1.2.1"])
+          expect(cached_report[:contributors].keys).to eq(["1.1", "1.2", "1.2.1"])
+        end
+      end
+
+      it "caches the report elements in semantic order of releases when current release has a proper semver version and previous releases were proper semver" do
         rel1 = create(:release, :finished, train:, completed_at: 7.days.ago)
         rel1.release_platform_runs.each { |run| run.update!(release_version: "1.2.0") }
 
@@ -99,9 +106,8 @@ describe RefreshReportsJob do
         described_class.new.perform(release.id)
 
         cached_report = Rails.cache.read("train/#{train.id}/queries/devops_report")
-        expect(cached_report[:duration].keys).to eq(["1.2.0", "1.2.1", "1.2.2"])
 
-        # Verify other version-sorted cache keys
+        expect(cached_report[:duration].keys).to eq(["1.2.0", "1.2.1", "1.2.2"])
         expect(cached_report[:patch_fixes].keys).to eq(["1.2.0", "1.2.1", "1.2.2"])
         expect(cached_report[:hotfixes].keys).to eq(["1.2.0", "1.2.1", "1.2.2"])
         expect(cached_report[:time_in_phases].keys).to eq(["1.2.0", "1.2.1", "1.2.2"])
@@ -109,10 +115,11 @@ describe RefreshReportsJob do
         expect(cached_report[:contributors].keys).to eq(["1.2.0", "1.2.1", "1.2.2"])
       end
     end
-  end
 
-  context "when train follows calver versioning" do
-    it "sorts calver versions correctly" do
+    it "caches the report elements in semantic order of releases when the train follows calver versioning" do
+      allow(Queries::ReleaseBreakdown).to receive(:warm)
+      allow(Queries::DevopsReport).to receive(:warm).and_call_original
+
       train.update!(versioning_strategy: :calver)
 
       rel1 = create(:release, :finished, train:, completed_at: 7.days.ago)
@@ -124,15 +131,11 @@ describe RefreshReportsJob do
       release.update!(status: :finished, completed_at: 3.days.ago)
       release.release_platform_runs.each { |run| run.update!(release_version: "2015.12.0201") }
 
-      allow(Queries::ReleaseBreakdown).to receive(:warm)
-      allow(Queries::DevopsReport).to receive(:warm).and_call_original
-
       described_class.new.perform(release.id)
 
       cached_report = Rails.cache.read("train/#{train.id}/queries/devops_report")
-      expect(cached_report[:duration].keys).to eq(["2015.12.01", "2015.12.02", "2015.12.0201"])
 
-      # Verify other version-sorted cache keys
+      expect(cached_report[:duration].keys).to eq(["2015.12.01", "2015.12.02", "2015.12.0201"])
       expect(cached_report[:patch_fixes].keys).to eq(["2015.12.01", "2015.12.02", "2015.12.0201"])
       expect(cached_report[:hotfixes].keys).to eq(["2015.12.01", "2015.12.02", "2015.12.0201"])
       expect(cached_report[:time_in_phases].keys).to eq(["2015.12.01", "2015.12.02", "2015.12.0201"])
