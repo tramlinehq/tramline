@@ -83,6 +83,8 @@ describe VersioningStrategies::Semverish do
     end
 
     it "determines sort order with mixed partial and proper semverish" do
+      # NOTE: In practice, a train will never have releases with mixed partial and proper semver versions in this order.
+      # This example, however, should give us confidence that the comparison logic is sound and works in the general case.
       v1 = described_class.new("1.2.1")
       v2 = described_class.new("1.2.3")
       v3 = described_class.new("1.1.3")
