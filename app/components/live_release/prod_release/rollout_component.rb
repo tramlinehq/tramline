@@ -43,6 +43,16 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
     "integrations/logo_#{provider}.png"
   end
 
+  def form_factor
+    return nil unless store_submission.is_a?(PlayStoreSubmission)
+    form_factor_key = store_submission.conf.parsed_production_form_factor
+    return nil unless form_factor_key
+    {
+      text: GooglePlayStoreIntegration::FORM_FACTOR_TRACKS[form_factor_key],
+      icon: "form_factors/#{form_factor_key}.svg"
+    }
+  end
+
   def monitoring_size
     corresponding_app.cross_platform? ? :compact : :max
   end
