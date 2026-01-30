@@ -14,7 +14,15 @@
           <% modal.with_button(label: "Add a new app", scheme: :default, type: :action, size: :sm, arrow: :none)
                .with_icon("plus.svg", size: :md) %>
           <% modal.with_body do %>
-            <%= render partial: "apps/form", locals: {app: new_app} %>
+            <%= tag.turbo_frame id: :new_app_form do %>
+              <%= render SearchBarComponent.new(search_name: :apps_search, search_value: params[:apps_search_pattern], search_placeholder: "Search App Store and Play Store", turbo_frame: :app_search_results, query_field: :app_search_pattern) do |search| %>
+                <% search.with_search_form url: search_apps_path(apps_search_pattern: params[:apps_search_pattern]) %>
+                <% search.with_notice do %>
+                  <%= link_to "Add manually", new_app_path, class: "underline hover:cursor-pointer text-xs ml-2" %>
+                <% end %>
+                <div class="text-xs text-secondary mb-3">Search both stores; results appear below.</div>
+              <% end %>
+            <% end %>
           <% end %>
         <% end %>
       <% end %>
