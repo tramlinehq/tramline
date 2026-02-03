@@ -66,7 +66,19 @@ Rails.application.routes.draw do
       delete :remove_icon
     end
 
-    resources :app_variants, only: %i[index edit create update destroy]
+    resources :app_variants, only: %i[index edit create update destroy] do
+      resources :integrations, only: %i[create destroy], controller: "app_variant_integrations" do
+        collection do
+          resource :google_play_store, only: [:create],
+            controller: "app_variant_integrations/google_play_store",
+            as: :google_play_store_integration
+
+          resource :google_firebase, only: [:create],
+            controller: "app_variant_integrations/google_firebase",
+            as: :google_firebase_integration
+        end
+      end
+    end
 
     namespace :version_control do
       resource :github_config, only: %i[edit update]

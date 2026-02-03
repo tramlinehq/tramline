@@ -6,76 +6,7 @@
            .with_icon("plus.svg", size: :sm) %>
 
       <% modal.with_body do %>
-        <%= render partial: "create",
-                   locals: {app: @app,
-                            app_variant: @new_app_variant,
-                            firebase_ios_apps: @firebase_ios_apps,
-                            firebase_android_apps: @firebase_android_apps} %>
-      <% end %>
-    <% end %>
-  <% end %>
-
-  <%= render TableComponent.new(columns: ["name", "bundle identifier", "Connections", ""]) do |table| %>
-    <% @app_variants.each do |variant| %>
-      <% table.with_row do |row| %>
-        <% row.with_cell do %>
-          <%= variant.name %>
-        <% end %>
-
-        <% row.with_cell do %>
-          <%= variant.bundle_identifier %>
-        <% end %>
-
-        <% row.with_cell do %>
-          <% variant.integrations.each do |integration| %>
-            <%= render BadgeComponent.new(text: integration.providable.display, kind: :badge) do |badge| %>
-              <% badge.with_icon("integrations/logo_#{integration.providable}.png") %>
-            <% end %>
-          <% end %>
-        <% end %>
-
-        <% row.with_cell(wrap: true) do %>
-
-          <div class="flex gap-x-2 justify-end">
-            <%= render ModalComponent.new(title: "Edit variant") do |modal| %>
-              <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("pencil.svg") %>
-              <% modal.with_body do %>
-                <%= tag.turbo_frame id: dom_id(variant, :edit_variant),
-                                    src: edit_app_app_variant_path(@app, variant),
-                                    loading: :lazy,
-                                    class: "with-turbo-frame-loader" do %>
-                  <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
-                <% end %>
-              <% end %>
-            <% end %>
-
-            <% if variant.integrations.firebase_build_channel_provider.present? %>
-              <%= render ModalComponent.new(title: "Edit integrations", open: false) do |modal| %>
-                <% button = modal.with_button(scheme: :light, type: :action, size: :xxs) %>
-                <% button.with_icon("cog.svg", size: :sm) %>
-                <% modal.with_body do %>
-                  <%= tag.turbo_frame id: "build_channel_config",
-                                      src: edit_app_build_channel_google_firebase_config_path(@app, integrable_id: variant),
-                                      loading: :lazy,
-                                      class: "with-turbo-frame-loader" do %>
-                    <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
-                  <% end %>
-                <% end %>
-              <% end %>
-            <% end %>
-
-            <%= render ButtonComponent.new(
-                  scheme: :light,
-                  options: app_app_variant_path(@app, variant),
-                  type: :link,
-                  html_options: {method: :delete,
-                                 data: {turbo_method: :delete,
-                                        turbo_confirm: "Are you sure you want to delete the variant? This will also destroy the associated integrations."}}
-                ) do |b|
-                  b.with_icon("trash.svg")
-                end %>
-          </div>
-        <% end %>
+        <%= render partial: "create", locals: {app: @app, app_variant: @new_app_variant} %>
       <% end %>
     <% end %>
   <% end %>
@@ -86,6 +17,12 @@
                                          text: "No app variants have been configured yet.",
                                          banner_image: "dna.svg",
                                          type: :subdued) %>
+    </div>
+  <% else %>
+    <div class="flex flex-col gap-6">
+      <% @app_variants.each do |variant| %>
+        <%= render partial: "app_variants/variant_card", locals: {app: @app, variant: variant} %>
+      <% end %>
     </div>
   <% end %>
 <% end %>

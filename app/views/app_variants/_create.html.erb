@@ -1,51 +1,6 @@
 <%= render FormComponent.new(model: [app, app_variant], url: app_app_variants_path(app), method: :post) do |f| %>
   <%= render partial: "form", locals: {form: f, bundle_id: app.bundle_identifier} %>
 
-  <% f.with_section(heading: "Setup Integration") do |section| %>
-    <% section.with_description do %>
-      <p>Choose an integration for this variant</p>
-      <p class="mt-2 text-xs">
-        <%= link_to_external "Firebase setup",
-              "https://docs.tramline.app/integrations/distribution/firebase",
-              class: "underline" %> |
-        <%= link_to_external "Play Store setup",
-              "https://docs.tramline.app/integrations/distribution/play-store",
-              class: "underline" %>
-      </p>
-    <% end %>
-
-    <div data-controller="integration-type-select">
-      <% section.F.fields_for :integrations do |integrationForm| %>
-        <%= integrationForm.hidden_field :category, value: "build_channel" %>
-        <% integrationForm.fields_for :providable do |providableForm| %>
-          <div class="mb-4">
-            <%= providableForm.label :type, "Integration Type", class: "block text-sm font-medium text-main mb-1" %>
-            <%= providableForm.select :type,
-                  options_for_select([
-                    ["Firebase App Distribution", "GoogleFirebaseIntegration"],
-                    ["Google Play Store", "GooglePlayStoreIntegration"]
-                  ], "GoogleFirebaseIntegration"),
-                  {},
-                  class: "w-full",
-                  data: {
-                    integration_type_select_target: "typeSelect",
-                    action: "change->integration-type-select#change"
-                  } %>
-          </div>
-
-          <div data-integration-type-select-target="section" data-integration-type="GoogleFirebaseIntegration">
-            <div><%= providableForm.labeled_text_field :project_number, "Project Number", required: true %></div>
-            <div><%= providableForm.labeled_file_field :json_key_file, "Upload Service Account JSON Key", "Only .json files.", accept: "application/json", required: true %></div>
-          </div>
-
-          <div data-integration-type-select-target="section" data-integration-type="GooglePlayStoreIntegration" hidden>
-            <div><%= providableForm.labeled_file_field :json_key_file, "Upload Service Account JSON Key", "Only .json files.", accept: "application/json", required: true, disabled: true %></div>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
-  <% end %>
-
   <% f.with_action do %>
     <%= f.F.authz_submit "Save", "plus.svg" %>
   <% end %>
