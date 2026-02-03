@@ -22,7 +22,20 @@ ngrok config add-authtoken "$LOCALTUNNEL_AUTHTOKEN" 2>/dev/null
 # Start tunnel in foreground, use a subshell to capture the URL after startup
 (
   sleep 5
-  TUNNEL_URL=$(curl -s "http://localhost:4040/api/tunnels" | jq -r '.tunnels[0].public_url')
+  # Query all ngrok API ports (4040-4050) to find our tunnel
+  TUNNEL_URL=""
+  for port in $(seq 4040 4050); do
+    if [ -n "$LOCALTUNNEL_DOMAIN" ]; then
+      # Find tunnel matching our configured domain
+      TUNNEL_URL=$(curl -s "http://localhost:$port/api/tunnels" 2>/dev/null | jq -r --arg domain "$LOCALTUNNEL_DOMAIN" '.tunnels[] | select(.public_url | contains($domain)) | .public_url')
+    else
+      # No domain configured, just get the first tunnel from the first responding port
+      TUNNEL_URL=$(curl -s "http://localhost:$port/api/tunnels" 2>/dev/null | jq -r '.tunnels[0].public_url')
+    fi
+    if [ -n "$TUNNEL_URL" ] && [ "$TUNNEL_URL" != "null" ]; then
+      break
+    fi
+  done
   echo "$TUNNEL_URL" > /rails/tmp/tunnel_url
   echo "localtunnel: $TUNNEL_URL"
   touch /tmp/localtunnel_ready

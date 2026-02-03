@@ -38,7 +38,7 @@ class ProductionRelease < ApplicationRecord
   delegate :commit, :version_name, :build_number, to: :build
   delegate :release_health_rules, to: :release_platform
 
-  STAMPABLE_REASONS = %w[created active finished tag_created vcs_release_created build_updated]
+  STAMPABLE_REASONS = %w[created active finished tag_created vcs_release_created tagging_failed build_updated]
 
   STATES = {
     inflight: "inflight",
@@ -102,7 +102,7 @@ class ProductionRelease < ApplicationRecord
   end
 
   def actionable?
-    return false if release.blocked_for_production_release?
+    return false if release.blocked_for_production_release?(for_platform_run: release_platform_run)
     ACTIONABLE_STATES.include?(status) && release_platform_run.on_track?
   end
 

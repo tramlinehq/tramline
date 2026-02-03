@@ -42,7 +42,7 @@ class Coordinators::FinalizeRelease::ReleaseBackMerge
   def create_tag
     GitHub::Result.new do
       if train.tag_end_of_release?
-        release.create_vcs_release!(release.last_commit.commit_hash, release.release_diff)
+        release.create_vcs_release!(release.last_commit.commit_hash, release.release_diff, silent: true)
       end
     end
   end

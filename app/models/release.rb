@@ -61,6 +61,7 @@ class Release < ApplicationRecord
     backmerge_failure
     tag_created
     vcs_release_created
+    tagging_failed
     finalize_failed
     stopped
     finished
@@ -159,7 +160,7 @@ class Release < ApplicationRecord
     end
 
     event :partially_finish do
-      transitions from: :on_track, to: :partially_finished
+      transitions from: [:on_track, :partially_finished], to: :partially_finished
     end
 
     event :stop do
@@ -440,7 +441,7 @@ class Release < ApplicationRecord
   end
 
   def ready_to_be_finalized?
-    release_platform_runs.all? { |prun| prun.finished? || prun.stopped? }
+    release_platform_runs.all? { |prun| prun.finished? || prun.stopped? || prun.concluded? }
   end
 
   def live_release_link
@@ -497,10 +498,29 @@ class Release < ApplicationRecord
     train.ongoing_release == self
   end
 
-  def blocked_for_production_release?
-    return true if upcoming? && !Flipper.enabled?(:temporary_unblock_upcoming, self)
-    return true if ongoing? && train.hotfix_release.present?
+  def blocked_for_production_release?(for_platform_run:)
+    return false unless active?
+    return true if blocked_by_hotfix?
+    return true if blocked_by_ongoing_platform?(for_platform_run)
     approvals_blocking?
+  end
+
+  def blocked_by_hotfix?
+    ongoing? && train.hotfix_release.present?
+  end
+
+  def blocked_by_ongoing_platform?(for_platform_run)
+    return false if ongoing? || hotfix?
+
+    ongoing = train.ongoing_release
+    return true unless ongoing
+
+    release_platform_id = for_platform_run.release_platform_id
+    corresponding_run = ongoing.release_platform_runs.find_by(release_platform_id:)
+
+    return false unless corresponding_run
+    return false if corresponding_run.concluded? || corresponding_run.finished?
+    corresponding_run.on_track?
   end
 
   def hotfix_with_new_branch?

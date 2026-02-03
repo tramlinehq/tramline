@@ -166,7 +166,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def prepare_for_release!
-    result = provider.prepare_release(build_number, release_version, staged_rollout?, notes, true)
+    result = provider.prepare_release(build_number, release_version, staged_rollout?, notes, true, auto_start_rollout?)
 
     unless result.ok?
       case result.error.reason
@@ -212,7 +212,7 @@ class AppStoreSubmission < StoreSubmission
     release_info = result.value!
     update_store_info!(release_info)
 
-    if release_info.success?
+    if release_info.success? || release_info.live?(build_number)
       approve!
       return
     elsif release_info.review_cancelled?

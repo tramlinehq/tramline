@@ -21,6 +21,11 @@ class LiveRelease::PreviewSubmissionComponent < BaseComponent
     release_info.attributes["phased_release_status"].present?
   end
 
+  def release_type_badge
+    text = release_info.attributes["release_type"].humanize
+    BadgeComponent.new(text:, status: :neutral)
+  end
+
   def show_existing_review_items
     existing_review_items.map { |item| "#{item[:type]} (#{item[:id]})" }.join(", ")
   end

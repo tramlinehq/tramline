@@ -1,26 +1,51 @@
 module Taggable
+  include Loggable
+
   # recursively attempt to create a release tag until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
-  def create_tag!(commitish, input_tag_name = base_tag_name)
+  # pass silent: true to suppress errors and log them instead of raising
+  def create_tag!(commitish, input_tag_name = base_tag_name, silent: false)
     return if tag_name.present?
     train.create_tag!(input_tag_name, commitish)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :tag_created, kind: :notice, data: {tag: input_tag_name})
   rescue Installations::Error => ex
-    raise unless ex.reason == :tag_reference_already_exists
-    create_tag!(commitish, unique_tag_name(input_tag_name, commitish))
+    if ex.reason == :tag_reference_already_exists
+      create_tag!(commitish, unique_tag_name(input_tag_name, commitish), silent:)
+    elsif silent
+      handle_tagging_error(ex)
+    else
+      raise
+    end
+  rescue => ex
+    raise unless silent
+    handle_tagging_error(ex)
   end
 
   # recursively attempt to create a vcs release until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
-  def create_vcs_release!(commitish, release_diff, input_tag_name = base_tag_name)
+  # pass silent: true to suppress errors and log them instead of raising
+  def create_vcs_release!(commitish, release_diff, input_tag_name = base_tag_name, silent: false)
     return if tag_name.present?
     train.create_vcs_release!(commitish, input_tag_name, previous_tag_name, release_diff)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: train.vcs_provider.display, tag: input_tag_name})
   rescue Installations::Error => ex
-    raise unless [:tag_reference_already_exists, :tagged_release_already_exists].include?(ex.reason)
-    create_vcs_release!(commitish, release_diff, unique_tag_name(input_tag_name, commitish))
+    if [:tag_reference_already_exists, :tagged_release_already_exists].include?(ex.reason)
+      create_vcs_release!(commitish, release_diff, unique_tag_name(input_tag_name, commitish), silent:)
+    elsif silent
+      handle_tagging_error(ex)
+    else
+      raise
+    end
+  rescue => ex
+    raise unless silent
+    handle_tagging_error(ex)
+  end
+
+  def handle_tagging_error(ex)
+    event_stamp!(reason: :tagging_failed, kind: :error, data: {error: ex.message})
+    elog(ex, level: :error)
   end
 
   # returns a sticky but unique tag name

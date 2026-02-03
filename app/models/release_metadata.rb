@@ -5,6 +5,8 @@
 #  id                      :uuid             not null, primary key
 #  default_locale          :boolean          default(FALSE)
 #  description             :text
+#  draft_promo_text        :text
+#  draft_release_notes     :text
 #  keywords                :string           default([]), is an Array
 #  locale                  :string           not null, indexed => [release_platform_run_id]
 #  promo_text              :text
@@ -53,10 +55,47 @@ class ReleaseMetadata < ApplicationRecord
     ReleaseMetadata.find_by(id: id, locale: locale_tag)
   end
 
+  def update_and_clear_drafts!(attrs)
+    update!(attrs.merge(draft_attrs_to_clear(attrs)))
+  end
+
+  # rubocop:disable Rails/SkipsModelValidations
+  def save_draft(attrs)
+    draft_attrs = draft_attrs_to_save(attrs)
+    update_columns(draft_attrs) if draft_attrs.present?
+  end
+  # rubocop:enable Rails/SkipsModelValidations
+
   private
 
+  def draft_attrs_to_clear(attrs)
+    attrs = attrs.to_h.with_indifferent_access
+    {}.tap do |drafts|
+      drafts[:draft_release_notes] = nil if attrs.key?(:release_notes)
+      drafts[:draft_promo_text] = nil if attrs.key?(:promo_text)
+    end
+  end
+
+  def draft_attrs_to_save(attrs)
+    attrs = attrs.to_h.with_indifferent_access
+    db_values = self.class.where(id: id).pick(:release_notes, :promo_text)
+    db_release_notes, db_promo_text = db_values || [nil, nil]
+
+    {}.tap do |drafts|
+      if attrs.key?(:release_notes) && attrs[:release_notes] != db_release_notes
+        drafts[:draft_release_notes] = attrs[:release_notes]
+      end
+
+      if attrs.key?(:promo_text) && attrs[:promo_text] != db_promo_text
+        drafts[:draft_promo_text] = attrs[:promo_text]
+      end
+    end
+  end
+
   def notes_length
-    errors.add(:release_notes, :too_long, max_length: notes_max_length, platform: release_platform_run.platform) if release_notes.length > notes_max_length
+    if release_notes.length > notes_max_length
+      errors.add(:release_notes, :too_long, max_length: notes_max_length, platform: release_platform_run.platform)
+    end
   end
 
   def notes_max_length
