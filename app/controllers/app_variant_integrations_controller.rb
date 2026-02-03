@@ -8,7 +8,7 @@ class AppVariantIntegrationsController < SignedInApplicationController
 
   def create
     if @integration.save
-      redirect_to app_app_variants_path(@app), notice: "Integration was successfully created."
+      redirect_to app_app_variants_path(@app), notice: t("integrations.app_variant.integration_created")
     else
       redirect_to app_app_variants_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
     end
@@ -18,7 +18,7 @@ class AppVariantIntegrationsController < SignedInApplicationController
     @integration = @app_variant.integrations.find(params[:id])
 
     if @integration.disconnect
-      redirect_to app_app_variants_path(@app), notice: "Integration was successfully disconnected."
+      redirect_to app_app_variants_path(@app), notice: t("integrations.app_variant.integration_disconnected")
     else
       redirect_to app_app_variants_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
     end

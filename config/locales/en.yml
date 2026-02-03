@@ -790,6 +790,9 @@ en:
         help_text: "These are the changes made to the release branch after the release has started by members in these respective teams.\n\nThis is a good indicator of how much the team is involved in the release stability."
 
   integrations:
+    app_variant:
+      integration_created: "Integration was successfully created."
+      integration_disconnected: "Integration was successfully disconnected."
     project_management:
       jira:
         integration_created: "Jira integration created successfully"
