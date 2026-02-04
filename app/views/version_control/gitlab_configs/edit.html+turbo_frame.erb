@@ -12,7 +12,8 @@
               options_for_select(
                 display_channels(@code_repositories) { |repo| repo[:full_name] },
                 @code_repositories.find { |repo| repo[:id] == @gitlab_integration.repository_config&.dig("id") }&.to_json
-              ) %>
+              ),
+              {include_blank: "Select a repository"} %>
       </div>
     <% end %>
 

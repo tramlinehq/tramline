@@ -14,7 +14,7 @@
                   display_channels(@ci_cd_apps) { |app| "#{app[:name]} (#{app[:id]})" },
                   @ci_cd_apps.find { |app| app[:id] == @project_config&.dig("id") }&.to_json
                 ),
-                {},
+                {include_blank: "Select a project"},
                 data: {controller: "input-select"} %>
         </div>
       <% end %>

@@ -1,3 +1,4 @@
+<% needs_configuration = integration.present? && integration.requires_configuration? %>
 <div class="border border-default rounded-lg p-3 bg-backgroundLight-50 dark:bg-backgroundDark-50">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-2">
@@ -7,9 +8,9 @@
 
     <% if integration.present? %>
       <div class="flex items-center gap-2">
-        <%= render BadgeComponent.new(text: "Connected", status: :success) %>
-        <% if integration.providable_type == "GoogleFirebaseIntegration" && integration.providable.further_setup? %>
-          <%= render ModalComponent.new(title: "Configure Firebase") do |modal| %>
+        <% if needs_configuration %>
+          <%= render BadgeComponent.new(text: "Requires configuration", status: :inert) %>
+          <%= render ModalComponent.new(title: "Configure #{provider_name}") do |modal| %>
             <% button = modal.with_button(scheme: :light, type: :action, size: :xxs) %>
             <% button.with_icon("cog.svg", size: :sm) %>
             <% modal.with_body do %>
@@ -21,6 +22,8 @@
               <% end %>
             <% end %>
           <% end %>
+        <% else %>
+          <%= render BadgeComponent.new(text: "Connected", status: :success) %>
         <% end %>
         <%= render ButtonComponent.new(
               scheme: :danger,

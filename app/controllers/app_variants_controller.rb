@@ -10,6 +10,7 @@ class AppVariantsController < SignedInApplicationController
     @app_variants = @app.variants.to_a
     @new_app_variant = @app.variants.build
     @none = @app_variants.empty?
+    @variants_needing_setup = @app_variants.select { |v| v.integrations.connected.any?(&:requires_configuration?) }
   end
 
   def edit

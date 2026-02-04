@@ -109,6 +109,13 @@ class LinearIntegration < ApplicationRecord
 
   def further_setup? = true
 
+  def setup_complete?
+    project_config.present? &&
+      project_config["selected_teams"].present? &&
+      project_config["selected_teams"].any? &&
+      project_config["team_configs"].present?
+  end
+
   def public_icon_img
     PUBLIC_ICON
   end

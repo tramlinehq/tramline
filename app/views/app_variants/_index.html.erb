@@ -19,6 +19,12 @@
                                          type: :subdued) %>
     </div>
   <% else %>
+    <% if @variants_needing_setup.any? %>
+      <%= render AlertComponent.new(kind: :announcement, type: :announce, title: t("integrations.app_variant.requires_configuration_banner_title")) do %>
+        <span class="text-sm"><%= t("integrations.app_variant.requires_configuration_banner_body") %></span>
+      <% end %>
+    <% end %>
+
     <div class="flex flex-col gap-6">
       <% @app_variants.each do |variant| %>
         <%= render partial: "app_variants/variant_card", locals: {app: @app, variant: variant} %>
