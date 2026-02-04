@@ -53,7 +53,30 @@
         <% end %>
 
         <% if commit.backmerge_failure? %>
-          <%= status_badge("backmerge failed", :inert) %>
+          <div data-controller="dialog">
+            <button data-action="click->dialog#open" class="cursor-pointer border-none bg-transparent p-0">
+              <%= status_badge("backmerge failed", :inert, classes: "hover:underline") %>
+            </button>
+
+            <dialog data-dialog-target="dialog" class="overflow-y-auto backdrop:bg-main-900/50 backdrop:dark:bg-main-900/80 box-padding rounded-lg shadow-lg shadow-main-500 dark:bg-main bg-white open:animate-fade-in w-full max-w-xl">
+              <div class="flex flex-col gap-y-1">
+                <div class="flex justify-between items-center border-b border-main-200 dark:border-main-600 py-2 px-4">
+                  <div>
+                    <h1 class="text-lg font-semibold text-main-900 dark:text-white">Cherry-Pick Commit to Working Branch</h1>
+                    <p class="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Follow these steps to manually cherry-pick this commit</p>
+                  </div>
+                  <button class="text-main-600 dark:text-main-400 hover:text-main-900 dark:hover:text-white" data-action="dialog#close">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div class="p-4">
+                  <%= render BackmergeCherryPickInstructionsComponent.new(commit) %>
+                </div>
+              </div>
+            </dialog>
+          </div>
         <% end %>
 
         <% if teams_supported? && team.present? %>

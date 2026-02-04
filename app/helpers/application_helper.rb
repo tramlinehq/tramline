@@ -81,7 +81,7 @@ module ApplicationHelper
     }
   end
 
-  def status_badge(status, custom = [], fixed = nil, pulse: false)
+  def status_badge(status, custom = [], fixed = nil, pulse: false, classes: nil)
     return if status.blank?
 
     styles =
@@ -98,10 +98,11 @@ module ApplicationHelper
         STATUS_COLOR_PALETTE[fixed] unless fixed.nil?
       end
 
-    classes = %w[text-xs uppercase tracking-wide inline-flex font-medium rounded-full text-center px-2 py-0.5]
-    classes << "animate-pulse" if pulse
-    classes.concat(styles) if styles
-    content_tag(:span, status, class: classes)
+    badge_classes = %w[text-xs uppercase tracking-wide inline-flex font-medium rounded-full text-center px-2 py-0.5]
+    badge_classes << "animate-pulse" if pulse
+    badge_classes.concat(styles) if styles
+    badge_classes << classes if classes
+    content_tag(:span, status, class: badge_classes)
   end
 
   def display_channels(channels, with_none: false)
