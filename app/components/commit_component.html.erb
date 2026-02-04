@@ -54,7 +54,7 @@
 
         <% if commit.backmerge_failure? %>
           <%= render ModalComponent.new(title: "Resolve Backmerge Failure", size: :xs, authz: false) do |modal| %>
-            <% button = modal.with_button(scheme: :none, type: :action, size: :xxs, arrow: :none) %>
+            <% button = modal.with_button(scheme: :none, type: :action, size: :none, arrow: :none) %>
             <% button.with_title_text do %>
               <%= status_badge("backmerge failed", :inert, classes: "hover:underline") %>
             <% end %>
