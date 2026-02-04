@@ -17,7 +17,7 @@ class BackmergeCherryPickInstructionsComponent < BaseComponent
 
   def commands
     [
-      "git fetch",
+      "git fetch origin",
       "git checkout -b patch-#{short_sha} #{working_branch}",
       "git cherry-pick #{short_sha}",
       "git push -u origin patch-#{short_sha}"
