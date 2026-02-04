@@ -13,9 +13,7 @@ class BackmergeCherryPickInstructionsComponent < BaseComponent
     commit.release.branch_name
   end
 
-  def short_sha
-    commit.short_sha
-  end
+  delegate :short_sha, to: :commit
 
   def commands
     [
