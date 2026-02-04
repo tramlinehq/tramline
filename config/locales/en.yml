@@ -795,6 +795,7 @@ en:
       integration_disconnected: "Integration was successfully disconnected."
       requires_configuration_banner_title: "Integrations require configuration"
       requires_configuration_banner_body: "Some variant integrations are connected but still need to be configured before they can be used."
+      invalid_provider: "This integration provider is not supported for app variants."
     project_management:
       jira:
         integration_created: "Jira integration created successfully"

@@ -27,12 +27,13 @@
   <% end %>
 
   <div class="mt-2">
+    <% integrations_by_type = variant.integrations.connected.index_by(&:providable_type) %>
     <div class="grid grid-cols-2 gap-4">
       <%= render partial: "app_variants/integration_card",
                  locals: {
                    app: app,
                    variant: variant,
-                   integration: variant.integrations.connected.find { |i| i.providable_type == "GoogleFirebaseIntegration" },
+                   integration: integrations_by_type["GoogleFirebaseIntegration"],
                    provider_type: "GoogleFirebaseIntegration",
                    provider_name: "Firebase App Distribution",
                    provider_logo: "firebase"
@@ -42,7 +43,7 @@
                  locals: {
                    app: app,
                    variant: variant,
-                   integration: variant.integrations.connected.find { |i| i.providable_type == "GooglePlayStoreIntegration" },
+                   integration: integrations_by_type["GooglePlayStoreIntegration"],
                    provider_type: "GooglePlayStoreIntegration",
                    provider_name: "Google Play Store",
                    provider_logo: "google_play_store"
