@@ -5,15 +5,15 @@ class BackmergeCherryPickInstructionsComponent < BaseComponent
 
   attr_reader :commit
 
-  def working_branch
-    commit.release.train.working_branch
+  delegate :release, :short_sha, to: :commit
+  delegate :train, to: :release
+  delegate :working_branch, to: :train
+
+  def commands_with_descriptions
+    commands.zip(step_descriptions)
   end
 
-  def release_branch
-    commit.release.branch_name
-  end
-
-  delegate :short_sha, to: :commit
+  private
 
   def commands
     [
@@ -21,6 +21,15 @@ class BackmergeCherryPickInstructionsComponent < BaseComponent
       "git checkout -b patch-#{short_sha} #{working_branch}",
       "git cherry-pick #{short_sha}",
       "git push -u origin patch-#{short_sha}"
+    ]
+  end
+
+  def step_descriptions
+    [
+      "Fetch the latest changes from the remote repository",
+      "Switch to your working branch",
+      "Apply this commit to your working branch",
+      "Push the changes to the remote repository"
     ]
   end
 end
