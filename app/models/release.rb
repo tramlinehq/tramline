@@ -500,7 +500,7 @@ class Release < ApplicationRecord
 
   def blocked_for_production_release?(for_platform_run:)
     return false unless active?
-    return true if upcoming? && !Flipper.enabled?(:temporary_unblock_upcoming, self)
+    return false if upcoming? && Flipper.enabled?(:temporarily_unblock_upcoming, self)
     return true if blocked_by_hotfix?
     return true if blocked_by_ongoing_platform?(for_platform_run)
     approvals_blocking?
