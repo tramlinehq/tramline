@@ -9,15 +9,15 @@ describe BackmergeCherryPickInstructionsComponent, type: :component do
     create(:commit, release:, commit_hash: "abc123def456789", message: "Fix bug")
   end
 
-  describe "#commands_with_descriptions" do
+  describe "#commands" do
     it "returns the expected git commands" do
       component = described_class.new(commit)
 
-      expect(component.commands_with_descriptions.map(&:first)).to eq(
+      expect(component.commands).to eq(
         [
           "git fetch origin",
-          "git checkout -b patch-abc123d #{working_branch}",
-          "git cherry-pick abc123d",
+          "git checkout -b patch-abc123d origin/#{working_branch}",
+          "git cherry-pick abc123def456789",
           "git push -u origin patch-abc123d"
         ]
       )
