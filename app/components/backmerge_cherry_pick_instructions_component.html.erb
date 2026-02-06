@@ -6,7 +6,7 @@
 
   <!-- Commands -->
   <div class="space-y-4">
-    <% commands_with_descriptions.each_with_index do |(command, description), index| %>
+    <% instructions.each_with_index do |(description, command), index| %>
       <div class="flex gap-3 items-start">
         <div class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center mt-0.5">
           <span class="text-xs font-semibold text-primary-600 dark:text-primary-400"><%= index + 1 %></span>
