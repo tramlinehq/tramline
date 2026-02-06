@@ -13,8 +13,8 @@ class CommitsController < SignedInApplicationController
 
   def set_commit
     @commit = Commit
-      .joins(release: { train: { app: :organization } })
-      .where(organizations: { id: current_organization.id })
+      .joins(release: {train: {app: :organization}})
+      .where(organizations: {id: current_organization.id})
       .find(params[:id])
   end
 end
