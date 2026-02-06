@@ -79,6 +79,7 @@ Rails.application.routes.draw do
       resource :github_config, only: %i[edit update]
       resource :gitlab_config, only: %i[edit update]
       resource :bitbucket_config, only: %i[edit update]
+      resource :teamcity_config, only: %i[edit update]
     end
 
     namespace :build_channel do
@@ -200,6 +201,10 @@ Rails.application.routes.draw do
         resource :bitrise, only: [:create],
           controller: "integrations/bitrise",
           as: :bitrise_integration
+
+        resource :teamcity, only: [:create],
+          controller: "integrations/teamcity",
+          as: :teamcity_integration
 
         resource :bugsnag, only: [:create],
           controller: "integrations/bugsnag",

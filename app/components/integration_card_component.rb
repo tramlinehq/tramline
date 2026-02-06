@@ -134,6 +134,7 @@ class IntegrationCardComponent < BaseComponent
     when "GitlabIntegration" then edit_app_ci_cd_gitlab_config_path(@app)
     when "BitbucketIntegration" then edit_app_ci_cd_bitbucket_config_path(@app)
     when "BitriseIntegration" then edit_app_ci_cd_bitrise_config_path(@app)
+    when "TeamcityIntegration" then edit_app_ci_cd_teamcity_config_path(@app)
     else unsupported_integration_type
     end
   end

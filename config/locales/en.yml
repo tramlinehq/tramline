@@ -260,6 +260,7 @@ en:
       crashlytics_integration: "Firebase Crashlytics"
       sentry_integration: "Sentry"
       linear_integration: "Linear"
+      teamcity_integration: "TeamCity"
     values:
       pull_request:
         kind:
@@ -834,6 +835,9 @@ en:
       update:
         success: "CI/CD configuration was successfully updated."
     bitbucket_configs:
+      update:
+        success: "CI/CD configuration was successfully updated."
+    teamcity_configs:
       update:
         success: "CI/CD configuration was successfully updated."
 
