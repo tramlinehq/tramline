@@ -1,22 +1,23 @@
 # frozen_string_literal: true
 
 class SearchBarComponent < BaseComponent
-  FRAME = "search_bar_and_results"
-  QUERY_FIELD = "search_pattern"
+  DEFAULT_FRAME = "search_bar_and_results"
+  DEFAULT_QUERY_FIELD = "search_pattern"
 
   renders_one :notice
-
-  renders_one :search_form, ->(url) {
-    form_with url: url, method: :get, data: {search_form_target: "form", turbo_frame: FRAME, turbo_action: "advance"} do |form|
-      form.hidden_field QUERY_FIELD.to_sym
+  renders_one :search_form, ->(url:, turbo_action: nil) {
+    form_with url:, method: :get, data: {search_form_target: "form", turbo_frame:, turbo_action:} do |form|
+      form.hidden_field query_field
     end
   }
 
-  def initialize(search_name:, search_value:, search_placeholder:)
+  def initialize(search_name:, search_value:, search_placeholder:, turbo_frame: DEFAULT_FRAME, query_field: DEFAULT_QUERY_FIELD)
     @search_name = search_name
     @search_value = search_value
     @search_placeholder = search_placeholder
+    @turbo_frame = turbo_frame
+    @query_field = query_field
   end
 
-  attr_reader :search_name, :search_value, :search_placeholder
+  attr_reader :search_name, :search_value, :search_placeholder, :turbo_frame, :query_field
 end
