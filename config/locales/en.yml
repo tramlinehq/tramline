@@ -422,6 +422,7 @@ en:
           localization_not_found: "the locale for release metadata doesn't exist in the store"
           unauthorized: "the request to the store failed due to authorization error"
           developer_rejected: "the store version was rejected by you manually"
+          age_rating_missing: "Apple requires updated age rating declarations (e.g. messagingAndChat, gunsOrOtherWeapons, userGeneratedContent, advertising, lootBox, parentalControls, etc.) for your app. Please complete the age rating questionnaire in App Store Connect and retry the submission."
       test_flight_submission:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"
