@@ -32,7 +32,7 @@ class Integration < ApplicationRecord
   IntegrationNotImplemented = Class.new(StandardError)
   UnsupportedAction = Class.new(StandardError)
 
-  APP_VARIANT_PROVIDABLE_TYPES = %w[GoogleFirebaseIntegration]
+  APP_VARIANT_PROVIDABLE_TYPES = %w[GoogleFirebaseIntegration GooglePlayStoreIntegration]
 
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
@@ -235,38 +235,14 @@ class Integration < ApplicationRecord
       connected_integrations = connected
       categories = {}.with_indifferent_access
 
-      if connected_integrations.version_control.present?
-        categories[:version_control] = {
-          further_setup: connected_integrations.version_control.any?(&:further_setup?),
-          ready: code_repository.present?
-        }
-      end
+      Integration.categories.each_key do |category|
+        next if category == "notification"
+        category_integrations = connected_integrations.public_send(category)
+        next if category_integrations.blank?
 
-      if connected_integrations.ci_cd.present?
-        categories[:ci_cd] = {
-          further_setup: connected_integrations.ci_cd.any?(&:further_setup?),
-          ready: ci_cd_ready?
-        }
-      end
-
-      if connected_integrations.build_channel.present?
-        categories[:build_channel] = {
-          further_setup: connected_integrations.build_channel.map(&:providable).any?(&:further_setup?),
-          ready: firebase_ready?
-        }
-      end
-
-      if connected_integrations.monitoring.present?
-        categories[:monitoring] = {
-          further_setup: connected_integrations.monitoring.any?(&:further_setup?),
-          ready: bugsnag_ready?
-        }
-      end
-
-      if connected_integrations.project_management.present?
-        categories[:project_management] = {
-          further_setup: connected_integrations.project_management.map(&:providable).any?(&:further_setup?),
-          ready: project_management_ready?
+        categories[category] = {
+          further_setup: category_integrations.any?(&:further_setup?),
+          ready: category_integrations.all?(&:setup_complete?)
         }
       end
 
@@ -277,78 +253,6 @@ class Integration < ApplicationRecord
 
     def providable_error_message(meta)
       meta[:value].errors.full_messages[0]
-    end
-
-    def code_repository
-      vcs_provider&.repository_config
-    end
-
-    def ci_cd_code_repository
-      ci_cd_provider&.repository_config
-    end
-
-    def ci_cd_ready?
-      return false if ci_cd_provider.blank?
-
-      case ci_cd_provider
-      when GithubIntegration, GitlabIntegration, BitbucketIntegration
-        ci_cd_code_repository.present?
-      when BitriseIntegration
-        bitrise_ready?
-      else
-        false
-      end
-    end
-
-    def bitrise_ready?
-      app = first.integrable
-      return true unless app.bitrise_connected?
-      bitrise_ci_cd_provider&.project.present?
-    end
-
-    def firebase_ready?
-      app = first.integrable
-      return true unless app.firebase_connected?
-
-      firebase_build_channel = firebase_build_channel_provider
-      configs_ready?(app, firebase_build_channel&.android_config, firebase_build_channel&.ios_config)
-    end
-
-    def bugsnag_ready?
-      app = first.integrable
-      return true unless app.bugsnag_connected?
-
-      monitoring = monitoring_provider
-      configs_ready?(app, monitoring&.android_config, monitoring&.ios_config)
-    end
-
-    def project_management_ready?
-      return false if project_management.blank?
-
-      jira = project_management.find(&:jira_integration?)&.providable
-      linear = project_management.find(&:linear_integration?)&.providable
-
-      if jira
-        return jira.project_config.present? &&
-            jira.project_config["selected_projects"].present? &&
-            jira.project_config["selected_projects"].any? &&
-            jira.project_config["project_configs"].present?
-      end
-
-      if linear
-        return linear.project_config.present? &&
-            linear.project_config["selected_teams"].present? &&
-            linear.project_config["selected_teams"].any? &&
-            linear.project_config["team_configs"].present?
-      end
-
-      false
-    end
-
-    def configs_ready?(app, android_config, ios_config)
-      return ios_config.present? if app.ios?
-      return android_config.present? if app.android?
-      ios_config.present? && android_config.present? if app.cross_platform?
     end
   end
 
@@ -395,6 +299,15 @@ class Integration < ApplicationRecord
     return true if version_control?
     return false if notification?
     providable.further_setup?
+  end
+
+  def setup_complete?
+    return true unless further_setup?
+    providable.respond_to?(:setup_complete?) ? providable.setup_complete? : false
+  end
+
+  def requires_configuration?
+    further_setup? && !setup_complete?
   end
 
   def installation_state

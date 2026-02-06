@@ -11,7 +11,7 @@
       <%= section.F.labeled_select :workspace,
             "Workspace",
             options_for_select(workspaces, bitbucket_integration.workspace),
-            {},
+            {include_blank: "Select a workspace"},
             disabled: workspaces.blank?,
             class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES,
             data: {action: "change->stream-effect#fetch", stream_effect_target: "dispatch"} %>
@@ -23,7 +23,8 @@
             options_for_select(
               display_channels(code_repositories) { |repo| repo[:full_name] },
               code_repositories.find { |repo| repo[:full_name] == bitbucket_integration.repository_config&.dig("full_name") }&.to_json
-            ) %>
+            ),
+            {include_blank: "Select a repository"} %>
     </div>
   <% end %>
 
