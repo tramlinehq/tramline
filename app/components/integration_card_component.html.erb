@@ -19,7 +19,11 @@
 
         <% if connected? %>
           <div class="flex justify-between w-full items-baseline">
-            <%= render BadgeComponent.new(text: "Connected", status: :success) %>
+            <% if requires_configuration? %>
+              <%= render BadgeComponent.new(text: "Requires configuration", status: :inert) %>
+            <% else %>
+              <%= render BadgeComponent.new(text: "Connected", status: :success) %>
+            <% end %>
             <div class="flex gap-2">
               <% if further_setup? %>
                 <%= render ModalComponent.new(title: category_title, open: pre_open_category?) do |modal| %>

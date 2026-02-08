@@ -274,6 +274,10 @@ class GitlabIntegration < ApplicationRecord
     true
   end
 
+  def setup_complete?
+    repository_config.present?
+  end
+
   def enable_auto_merge? = true
 
   def find_or_create_webhook!(id:, train_id:)

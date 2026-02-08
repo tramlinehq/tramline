@@ -89,6 +89,10 @@ class BitriseIntegration < ApplicationRecord
     true
   end
 
+  def setup_complete?
+    project.present?
+  end
+
   def setup
     list_apps
   end

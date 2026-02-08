@@ -228,6 +228,10 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
+  def setup_complete?
+    repository_config.present?
+  end
+
   def enable_auto_merge? = true
 
   def connection_data

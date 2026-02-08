@@ -791,6 +791,12 @@ en:
         help_text: "These are the changes made to the release branch after the release has started by members in these respective teams.\n\nThis is a good indicator of how much the team is involved in the release stability."
 
   integrations:
+    app_variant:
+      integration_created: "Integration was successfully created."
+      integration_disconnected: "Integration was successfully disconnected."
+      requires_configuration_banner_title: "Integrations require configuration"
+      requires_configuration_banner_body: "Some variant integrations are connected but still need to be configured before they can be used."
+      invalid_provider: "This integration provider is not supported for app variants."
     project_management:
       jira:
         integration_created: "Jira integration created successfully"
