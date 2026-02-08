@@ -10,14 +10,25 @@ class BackmergeCherryPickInstructionsComponent < BaseComponent
   delegate :working_branch, to: :train
 
   INSTRUCTIONS = [
-    "Fetch the latest changes from the remote repository",
-    "Switch to your working branch",
-    "Apply this commit to your working branch",
-    "Push the changes to the remote repository"
+    {
+      text: "Fetch the latest changes from the remote repository"
+    },
+    {
+      text: "Create a new patch branch from the working branch",
+      note: "Skip to step 3, if you'd like to cherry-pick directly on the working branch"
+    },
+    {
+      text: "Apply this commit to your working branch"
+    },
+    {
+      text: "Push the changes to the remote repository"
+    }
   ].freeze
 
   def instructions
-    INSTRUCTIONS.zip(commands)
+    INSTRUCTIONS.zip(commands).map do |instruction, command|
+      instruction.merge(command:)
+    end
   end
 
   def commands

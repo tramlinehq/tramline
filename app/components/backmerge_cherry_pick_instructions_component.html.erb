@@ -6,26 +6,29 @@
 
   <!-- Commands -->
   <div class="space-y-4">
-    <% instructions.each_with_index do |(description, command), index| %>
-      <div class="flex gap-3 items-start">
-        <div class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center mt-0.5">
-          <span class="text-xs font-semibold text-primary-600 dark:text-primary-400"><%= index + 1 %></span>
-        </div>
-        <div class="flex-1 space-y-1.5">
-          <p class="text-xs leading-6 text-neutral-600 dark:text-neutral-400"><%= description %></p>
-          <%= render SmartTextBoxComponent.new(
-                command,
-                clipboard: true,
-                clipboard_tooltip: "Copy command",
-                size: :compact
-              ) %>
-        </div>
+    <% instructions.each do |instruction| %>
+      <div>
+        <p class="text-xs text-neutral-700 dark:text-neutral-300 mb-1.5"><%= instruction[:text] %></p>
+        <%= render SmartTextBoxComponent.new(
+              instruction[:command],
+              clipboard: true,
+              clipboard_tooltip: "Copy command",
+              size: :compact
+            ) %>
+
+        <% if instruction[:note] %>
+          <div class="mt-2">
+            <%= render AlertComponent.new(kind: :inline, type: :notice, full_screen: false) do %>
+              <%= instruction[:note] %>
+            <% end %>
+          </div>
+        <% end %>
       </div>
     <% end %>
   </div>
 
   <!-- Conflict Note -->
-  <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded p-3 text-xs text-amber-700 dark:text-amber-400">
-    <strong>Note:</strong> If cherry-pick fails due to conflicts, resolve them manually and run <code class="font-mono">git cherry-pick --continue</code> after staging your changes.
-  </div>
+  <%= render AlertComponent.new(kind: :inline, type: :announce, full_screen: false) do %>
+    If cherry-pick fails due to conflicts, resolve them manually and run <code class="font-mono">git cherry-pick --continue</code> after staging your changes.
+  <% end %>
 </div>
