@@ -242,6 +242,12 @@ Rails.application.routes.draw do
     get "/integrations/build_artifact_channels", to: "integrations#build_artifact_channels"
   end
 
+  resources :commits, only: [] do
+    member do
+      get :backmerge_failure_instructions
+    end
+  end
+
   resources :release_platform_runs, path: :runs, as: :runs, only: [] do
     collection do
       post :conclude, to: "release_platform_runs#conclude"
