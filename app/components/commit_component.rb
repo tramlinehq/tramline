@@ -2,12 +2,13 @@ class CommitComponent < BaseComponent
   DEFAULT_TRUNCATE = 75
   OUTER_CLASSES = "px-2 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
 
-  def initialize(commit:, avatar: true, detailed: true, render_html: false, enable_truncate: true)
+  def initialize(commit:, avatar: true, detailed: true, render_html: false, enable_truncate: true, backmerge_instructions: false)
     @commit = commit
     @avatar = avatar
     @detailed = detailed
     @render_html = render_html
     @enable_truncate = enable_truncate
+    @backmerge_instructions = backmerge_instructions
   end
 
   attr_reader :commit, :render_html, :enable_truncate
@@ -29,6 +30,8 @@ class CommitComponent < BaseComponent
   def detailed? = @detailed
 
   def show_avatar? = @avatar
+
+  def show_backmerge_instructions? = @backmerge_instructions
 
   def pull_request
     @commit.pull_request
