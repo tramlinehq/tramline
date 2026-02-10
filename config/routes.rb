@@ -244,7 +244,7 @@ Rails.application.routes.draw do
 
   resources :commits, only: [] do
     member do
-      get :backmerge_cherry_pick_instructions
+      get :backmerge_failure_instructions
     end
   end
 

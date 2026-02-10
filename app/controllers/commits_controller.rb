@@ -1,10 +1,10 @@
 class CommitsController < SignedInApplicationController
   before_action :set_commit
 
-  def backmerge_cherry_pick_instructions
+  def backmerge_failure_instructions
     respond_to do |format|
       format.html do |variant|
-        variant.turbo_frame { render :backmerge_cherry_pick_instructions }
+        variant.turbo_frame { render :backmerge_failure_instructions }
       end
     end
   end

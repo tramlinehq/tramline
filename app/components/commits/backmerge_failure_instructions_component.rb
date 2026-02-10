@@ -1,4 +1,4 @@
-class BackmergeCherryPickInstructionsComponent < BaseComponent
+class Commits::BackmergeFailureInstructionsComponent < BaseComponent
   def initialize(commit)
     @commit = commit
   end

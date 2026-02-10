@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe BackmergeCherryPickInstructionsComponent, type: :component do
+describe Commits::BackmergeFailureInstructionsComponent, type: :component do
   let(:app) { create(:app, :android) }
   let(:working_branch) { "r/dev/2026-01-01" }
   let(:train) { create(:train, working_branch:, app:, branching_strategy: :almost_trunk, backmerge_strategy: :continuous) }

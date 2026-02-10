@@ -60,7 +60,7 @@
                 <%= status_badge("backmerge failed", :inert, classes: "hover:underline") %>
               <% end %>
               <% modal.with_body do %>
-                <%= tag.turbo_frame id: dom_id(commit, :backmerge_instructions), src: backmerge_cherry_pick_instructions_commit_path(commit), loading: :lazy, class: "with-turbo-frame-loader" do %>
+                <%= tag.turbo_frame id: dom_id(commit, :backmerge_instructions), src: backmerge_failure_instructions_commit_path(commit), loading: :lazy, class: "with-turbo-frame-loader" do %>
                   <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
                 <% end %>
               <% end %>
