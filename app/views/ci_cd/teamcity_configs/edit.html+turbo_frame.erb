@@ -1,5 +1,5 @@
 <%= render EnhancedTurboFrameComponent.new(:ci_cd_config) do %>
-  <%= render FormComponent.new(model: @teamcity_integration, url: app_teamcity_config_path(@app)) do |f| %>
+  <%= render FormComponent.new(model: @teamcity_integration, url: app_ci_cd_teamcity_config_path(@app)) do |f| %>
     <% f.with_section(heading: "Project") do |section| %>
       <% section.with_description do %>
         <p>Select the TeamCity project containing your build configurations</p>

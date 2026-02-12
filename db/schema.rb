@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_26_100000) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_30_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -425,7 +425,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_26_100000) do
     t.string "integrable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["integrable_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
-    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying, 'disconnected'::character varying, 'needs_reauth'::character varying]::text[])", name: "chk_rails_status_enum"
+    t.check_constraint "status::text = ANY (ARRAY['connected'::character varying::text, 'disconnected'::character varying::text, 'needs_reauth'::character varying::text])", name: "chk_rails_status_enum"
   end
 
   create_table "invites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -496,7 +496,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_26_100000) do
     t.text "user_content"
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
-    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))", validate: false
+    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))"
   end
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1017,6 +1017,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_26_100000) do
     t.index ["status"], name: "index_svix_integrations_on_status"
     t.index ["svix_app_id"], name: "index_svix_integrations_on_svix_app_id", unique: true
     t.index ["train_id"], name: "index_svix_integrations_on_train_id", unique: true
+  end
+
+  create_table "teamcity_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "server_url", null: false
+    t.string "access_token"
+    t.jsonb "project_config"
+    t.string "cf_access_client_id"
+    t.string "cf_access_client_secret"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
