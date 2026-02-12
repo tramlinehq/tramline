@@ -100,7 +100,7 @@
         ) %>
   <% end %>
 
-  <% if @blocked_notice %>
+  <% if @show_blocked %>
     <%= render AlertComponent.new(kind: :banner,
                                   type: :notice,
                                   title: "Release to production is blocked",
@@ -110,7 +110,7 @@
     <% end %>
   <% end %>
 
-  <% if @block_override_warning %>
+  <% if @show_block_overridden %>
     <%= render AlertComponent.new(type: :announce,
                                   title: "The ongoing release has not finished on this platform yet. Proceeding may result in overlapping production releases.",
                                   full_screen: false) %>

@@ -23,8 +23,8 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
     @inactive = inactive
     @change_build_prompt = false
     @cancel_prompt = false
-    @blocked_notice = false
-    @block_override_warning = false
+    @show_blocked = false
+    @show_block_overridden = false
     @new_submission_prompt = false
     @title = title
   end
@@ -138,8 +138,8 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   end
 
   def compute_prompts
-    return @blocked_notice = true if blocked?
-    @block_override_warning = true if block_overridden?
+    return @show_blocked = true if blocked?
+    @show_block_overridden = true if block_overridden?
     return if newer_builds.blank?
 
     if submission.change_build?
