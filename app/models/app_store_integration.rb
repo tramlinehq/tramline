@@ -367,6 +367,10 @@ class AppStoreIntegration < ApplicationRecord
       [current_stage, final_stage].min
     end
 
+    def phased_release_available?
+      release_info[:phased_release_status].present? || release_info[:phased_release_day].present?
+    end
+
     def phased_release_complete?
       release_info[:phased_release_status] == PHASED_RELEASE_COMPLETE
     end
