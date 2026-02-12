@@ -31,13 +31,23 @@ class AppsController < SignedInApplicationController
     end
   end
 
+  def new
+  end
+
   def edit
   end
 
+  def new_via_search
+  end
+
   def create
-    @app = current_organization.apps.new(app_params)
+    @app = current_organization.apps.new(app_params.except(:icon_url))
 
     if @app.save
+      if app_params[:icon_url].present?
+        DownloadAppIconJob.perform_async(@app.id, app_params[:icon_url])
+      end
+
       redirect_to app_path(@app), notice: "App was successfully created."
     else
       @apps = current_organization.apps
@@ -71,6 +81,12 @@ class AppsController < SignedInApplicationController
 
   def search
     redirect_to search_releases_app_path(@app)
+  end
+
+  def search_apps
+    api = Installations::StoreSweeper::Api.new
+    results = api.tsearch(search_term: params[:app_search_pattern])
+    @apps = results["results"]
   end
 
   def search_releases
@@ -135,7 +151,8 @@ class AppsController < SignedInApplicationController
       :build_number_managed_internally,
       :build_number,
       :timezone,
-      :icon
+      :icon,
+      :icon_url
     )
   end
 
