@@ -110,6 +110,12 @@
     <% end %>
   <% end %>
 
+  <% if @block_override_warning %>
+    <%= render AlertComponent.new(type: :announce,
+                                  title: "The ongoing release has not finished on this platform yet. Proceeding may result in overlapping production releases.",
+                                  full_screen: false) %>
+  <% end %>
+
   <%= render CardComponent.new(title: @title, size: :full, separator: false, border_style:) do |card| %>
     <% card.with_action do %>
       <% if changeable? %>

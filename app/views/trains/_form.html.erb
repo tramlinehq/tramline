@@ -306,6 +306,18 @@
                                            off_label: "Manually apply patch changes") %>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Allow upcoming release submissions") do |section| %>
+      <% section.with_description do %>
+        By default, upcoming releases are blocked from submitting to production until the ongoing release completes on that platform.
+        Enable this to allow upcoming releases to proceed with production submissions even while the ongoing release is active.
+      <% end %>
+
+      <%= render Form::SwitchComponent.new(form: section.F,
+                                           field_name: :allow_upcoming_release_submissions,
+                                           on_label: "Upcoming releases can submit to production",
+                                           off_label: "Upcoming releases are blocked until ongoing release completes") %>
+    <% end %>
+
     <%= f.with_advanced_section(heading: "Compact Build Notes") do |section| %>
       <% section.with_description do %>
         Compact the build notes by picking only the first line of commit messages.

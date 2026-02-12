@@ -24,6 +24,7 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
     @change_build_prompt = false
     @cancel_prompt = false
     @blocked_notice = false
+    @block_override_warning = false
     @new_submission_prompt = false
     @title = title
   end
@@ -39,6 +40,10 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
 
   def blocked?
     release.blocked_for_production_release?(for_platform_run: release_platform_run)
+  end
+
+  def block_overridden?
+    release.overridden_upcoming_block?(for_platform_run: release_platform_run)
   end
 
   def actionable?
@@ -134,6 +139,7 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
 
   def compute_prompts
     return @blocked_notice = true if blocked?
+    @block_override_warning = true if block_overridden?
     return if newer_builds.blank?
 
     if submission.change_build?
@@ -156,7 +162,9 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   # rubocop:enable Rails/Delegate
 
   memoize def cascading_rollout_actionable?
-    submission.created? && submission.finish_rollout_in_next_release? && previously_completed_rollout_run.present?
+    submission.created? &&
+      submission.finish_rollout_in_next_release? &&
+      previously_completed_rollout_run.present?
   end
 
   def previously_completed_release_link
@@ -193,25 +201,5 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
 
   def border_style
     :dashed if inflight?
-  end
-
-  # ============== Sandbox actions ==============
-  def mock_actions
-    return unless actionable? && submission.respond_to?(:submitted_for_review?) && submission.submitted_for_review?
-
-    content_tag(:div, class: "flex items-center gap-0.5") do
-      concat(render(ButtonComponent.new(scheme: :mock,
-        type: :button,
-        label: "Mock approve",
-        options: mock_approve_for_app_store_path(submission.id),
-        turbo: false,
-        html_options: html_opts(:patch, "Are you sure about that?"))))
-      concat(render(ButtonComponent.new(scheme: :mock,
-        type: :button,
-        label: "Mock reject",
-        options: mock_reject_for_app_store_path(submission.id),
-        turbo: false,
-        html_options: html_opts(:patch, "Are you sure about that?"))))
-    end
   end
 end
