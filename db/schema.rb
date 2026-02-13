@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_26_100000) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_12_080937) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1077,6 +1077,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_26_100000) do
     t.boolean "soak_period_enabled", default: false, null: false
     t.integer "soak_period_hours", default: 24, null: false
     t.datetime "kickoff_at"
+    t.boolean "allow_upcoming_release_submissions", default: false, null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

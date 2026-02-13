@@ -100,7 +100,7 @@
         ) %>
   <% end %>
 
-  <% if @blocked_notice %>
+  <% if @show_blocked %>
     <%= render AlertComponent.new(kind: :banner,
                                   type: :notice,
                                   title: "Release to production is blocked",
@@ -108,6 +108,12 @@
                                   info: blocked_release_info[:info]) do %>
       <%= blocked_release_info[:message] %>
     <% end %>
+  <% end %>
+
+  <% if @show_block_overridden %>
+    <%= render AlertComponent.new(type: :announce,
+                                  title: "The ongoing release has not finished on this platform yet. Proceeding may result in overlapping production releases.",
+                                  full_screen: false) %>
   <% end %>
 
   <%= render CardComponent.new(title: @title, size: :full, separator: false, border_style:) do |card| %>
@@ -135,10 +141,6 @@
         <% end %>
       <% end %>
     <% end %>
-
-    <%# card.with_action do %>
-    <%#= mock_actions %>
-    <%# end %>
 
     <% card.with_action do %>
       <% if action.present? %>
