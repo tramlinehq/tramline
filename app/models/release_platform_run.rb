@@ -382,7 +382,7 @@ class ReleasePlatformRun < ApplicationRecord
   private
 
   memoize def blocked_by_ongoing_platform?
-    return false if release.ongoing? || release.hotfix?
+    return false unless release.upcoming?
 
     ongoing = release.train.ongoing_release
     return true unless ongoing

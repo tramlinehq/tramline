@@ -763,7 +763,7 @@ describe ReleasePlatformRun do
 
     it "is true when release is upcoming and an ongoing release has an active production release" do
       train = create(:train)
-      release_platform = create(:release_platform)
+      release_platform = create(:release_platform, train:)
       ongoing = create(:release, :with_no_platform_runs, :on_track, train:)
       ongoing_rpr = create(:release_platform_run, release: ongoing, release_platform:)
       _ongoing_production_release = create(:production_release,
@@ -779,7 +779,7 @@ describe ReleasePlatformRun do
 
     it "is false when release is upcoming and train allows upcoming release submissions" do
       train = create(:train, allow_upcoming_release_submissions: true)
-      release_platform = create(:release_platform)
+      release_platform = create(:release_platform, train:)
       ongoing = create(:release, :with_no_platform_runs, :on_track, train:)
       ongoing_rpr = create(:release_platform_run, release: ongoing, release_platform:)
       _ongoing_production_release = create(:production_release,
@@ -793,7 +793,7 @@ describe ReleasePlatformRun do
       expect(upcoming_platform_run.blocked_for_production_release?).to be(false)
     end
 
-    it "is true when it is an hotfix release is simultaneously ongoing" do
+    it "is true when a hotfix release is simultaneously ongoing" do
       train = create(:train)
       finished_release = create(:release, :finished, train:, completed_at: 2.days.ago, tag_name: "foo")
       _hotfix_release = create(:release, :on_track, :hotfix, train:, hotfixed_from: finished_release)
