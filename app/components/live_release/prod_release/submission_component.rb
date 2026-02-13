@@ -32,18 +32,10 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   attr_reader :submission
   delegate :id, :release_platform_run, :external_link, :provider, :parent_release, to: :submission
   delegate :inflight?, to: :parent_release
-  delegate :release, to: :release_platform_run
+  delegate :release, :blocked_for_production_release?, :blocked_for_production_release_override?, to: :release_platform_run
 
   def show_blocked_message?
     release_platform_run.play_store_blocked? && !submission.failed_with_action_required?
-  end
-
-  def blocked?
-    release.blocked_for_production_release?(for_platform_run: release_platform_run)
-  end
-
-  def block_overridden?
-    release.overridden_upcoming_block?(for_platform_run: release_platform_run)
   end
 
   def actionable?
@@ -133,13 +125,18 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   end
 
   def changeable?
-    return false if blocked?
+    return false if blocked_for_production_release?
     submission.change_build? && available_builds.present?
   end
 
   def compute_prompts
-    return @show_blocked = true if blocked?
-    @show_block_overridden = true if block_overridden?
+    if blocked_for_production_release?
+      @show_blocked = true
+      return
+    elsif blocked_for_production_release_override?
+      @show_block_overridden = true
+    end
+
     return if newer_builds.blank?
 
     if submission.change_build?

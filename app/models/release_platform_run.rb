@@ -24,6 +24,7 @@ class ReleasePlatformRun < ApplicationRecord
   include Passportable
   include ActionView::Helpers::DateHelper
   include Displayable
+  include Memery
   using RefinedString
 
   self.ignored_columns += %w[branch_name commit_sha original_release_version tag_name]
@@ -347,6 +348,20 @@ class ReleasePlatformRun < ApplicationRecord
     update!(play_store_blocked: false)
   end
 
+  def blocked_for_production_release?
+    return false unless release.active?
+    return false if blocked_for_production_release_override?
+    return true if release.blocked_by_hotfix?
+    return true if blocked_by_ongoing_platform?
+    release.approvals_blocking?
+  end
+
+  def blocked_for_production_release_override?
+    release.upcoming? &&
+      release.train.allow_upcoming_release_submissions? &&
+      blocked_by_ongoing_platform?
+  end
+
   def previously_completed_rollout_run
     run = train
       .release_platform_runs
@@ -365,6 +380,19 @@ class ReleasePlatformRun < ApplicationRecord
   def conf = Config::ReleasePlatform.from_json(config)
 
   private
+
+  memoize def blocked_by_ongoing_platform?
+    return false if release.ongoing? || release.hotfix?
+
+    ongoing = release.train.ongoing_release
+    return true unless ongoing
+
+    corresponding_run = ongoing.release_platform_runs.find_by(release_platform_id:)
+
+    return false unless corresponding_run
+    return false if corresponding_run.concluded? || corresponding_run.finished?
+    corresponding_run.on_track?
+  end
 
   # Returns the production release to use as reference for version/build number constraints
   # Prefers active rollout, falls back to finished rollout if no active release exists
