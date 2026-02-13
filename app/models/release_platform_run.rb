@@ -350,9 +350,8 @@ class ReleasePlatformRun < ApplicationRecord
 
   def blocked_for_production_release?
     return false unless release.active?
-    return false if blocked_for_production_release_override?
     return true if release.blocked_by_hotfix?
-    return true if blocked_by_ongoing_platform?
+    return true if blocked_by_ongoing_platform? && !blocked_for_production_release_override?
     release.approvals_blocking?
   end
 

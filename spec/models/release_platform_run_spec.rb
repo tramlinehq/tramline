@@ -892,6 +892,26 @@ describe ReleasePlatformRun do
         expect(ongoing_android_run.blocked_for_production_release_override?).to be(false)
       end
 
+      it "override does not bypass approvals block" do
+        app = create(:app, :android, organization:)
+        _train_platform = create(:release_platform, train:, platform: "android")
+        train.update!(allow_upcoming_release_submissions: true, approvals_enabled: true, app:)
+
+        pilot = create(:user, :with_email_authentication, :as_developer, member_organization: organization)
+
+        ongoing_release = create(:release, :with_no_platform_runs, train:)
+        _ongoing_android_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: android_platform)
+        _ongoing_ios_run = create(:release_platform_run, :on_track, release: ongoing_release, release_platform: ios_platform)
+
+        upcoming_release = create(:release, :with_no_platform_runs, train:, release_pilot: pilot)
+        _approval_items = create_list(:approval_item, 3, release: upcoming_release, author: pilot)
+        upcoming_android_run = create(:release_platform_run, release: upcoming_release, release_platform: android_platform)
+        _upcoming_ios_run = create(:release_platform_run, release: upcoming_release, release_platform: ios_platform)
+
+        expect(upcoming_android_run.blocked_for_production_release_override?).to be(true)
+        expect(upcoming_android_run.blocked_for_production_release?).to be(true)
+      end
+
       it "blocked_for_production_release_override? is false when not blocked by ongoing platform" do
         train.update!(allow_upcoming_release_submissions: true)
 
