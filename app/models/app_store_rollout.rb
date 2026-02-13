@@ -102,27 +102,25 @@ class AppStoreRollout < StoreRollout
     end
 
     with_lock do
-      # rollout is actually complete on the store — either phased release finished or no phased release configured
+      # rollout is completed on the store — regardless of what we think is true
       if !release_info.phased_release_available? || release_info.phased_release_complete?
         transition_to_complete_state(release_info)
         return
       end
 
-      if created?
-        # rollout is in created in our system, but has started on the store
-        # (eg. auto-start from Apple)
-        transition_to_started_state(release_info)
-      else
-        # rollout is started in our system, update ourselves with the latest
-        # (manual or subsequent polls)
-        transition_to_current_state(release_info)
+      if release_info.phased_release_active?
+        if created?
+          # rollout is in created in our system, but has started on the store
+          # (eg. auto-start from ASC, or out-of-band phased release)
+          transition_to_started_state(staged_rollout? ? release_info : nil)
+        elsif staged_rollout?
+          # rollout is started in our system, update ourselves with the latest
+          update_rollout(release_info)
+        end
       end
     end
 
-    # for non-phased releases, we're done (completed in transition methods)
-    return unless staged_rollout?
-
-    # for phased releases, it is still in progress, continue polling
+    # continue polling, any terminal transitions will be guarded off the next time
     raise ReleaseNotFullyLive, "Retrying in some time..."
   end
 
@@ -206,25 +204,12 @@ class AppStoreRollout < StoreRollout
     complete! unless completed?
   end
 
-  # Transition to the current state when rollout is already started (manual start_release! was called)
-  def transition_to_current_state(release_info)
-    if staged_rollout?
-      update_rollout(release_info)
-    else
-      complete!
-    end
-  end
-
   # If release_info is provided (auto-start flow), also update the rollout stage
   # If not provided (manual flow), just transition state
   def transition_to_started_state(release_info = nil)
     start!
     event_stamp!(reason: :started, kind: :notice, data: stamp_data)
-    if staged_rollout?
-      update_rollout(release_info) if release_info
-    else
-      complete!
-    end
+    update_rollout(release_info) if release_info
   end
 
   def update_rollout(release_info)

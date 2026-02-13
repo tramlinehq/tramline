@@ -352,6 +352,7 @@ class AppStoreIntegration < ApplicationRecord
     INVALID_BINARY = "INVALID_BINARY"
     PHASED_RELEASE_COMPLETE = "COMPLETE"
     PHASED_RELEASE_INACTIVE = "INACTIVE"
+    PHASED_RELEASE_ACTIVE = "ACTIVE"
     IN_REVIEW = "IN_REVIEW"
     WAITING_FOR_REVIEW = "WAITING_FOR_REVIEW"
     REVIEW_SUBMISSION_LINK =
@@ -369,6 +370,10 @@ class AppStoreIntegration < ApplicationRecord
 
     def phased_release_available?
       release_info[:phased_release_status].present? || release_info[:phased_release_day].present?
+    end
+
+    def phased_release_active?
+      release_info[:phased_release_status] == PHASED_RELEASE_ACTIVE
     end
 
     def phased_release_complete?

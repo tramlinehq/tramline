@@ -142,10 +142,6 @@
       <% end %>
     <% end %>
 
-    <%# card.with_action do %>
-    <%#= mock_actions %>
-    <%# end %>
-
     <% card.with_action do %>
       <% if action.present? %>
         <%= render ButtonComponent.new(**action) { |b| b.with_icon("clipboard_list.svg") } %>
