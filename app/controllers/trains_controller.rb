@@ -141,7 +141,8 @@ class TrainsController < SignedInApplicationController
       :enable_changelog_linking_in_notifications,
       :webhooks_enabled,
       :soak_period_enabled,
-      :soak_period_hours
+      :soak_period_hours,
+      :allow_upcoming_release_submissions
     )
   end
 
@@ -196,7 +197,8 @@ class TrainsController < SignedInApplicationController
       :enable_changelog_linking_in_notifications,
       :webhooks_enabled,
       :soak_period_enabled,
-      :soak_period_hours
+      :soak_period_hours,
+      :allow_upcoming_release_submissions
     )
   end
 

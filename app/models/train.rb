@@ -3,6 +3,7 @@
 # Table name: trains
 #
 #  id                                             :uuid             not null, primary key
+#  allow_upcoming_release_submissions             :boolean          default(FALSE), not null
 #  approvals_enabled                              :boolean          default(FALSE), not null
 #  auto_apply_patch_changes                       :boolean          default(TRUE)
 #  backmerge_strategy                             :string           default("on_finalize"), not null
