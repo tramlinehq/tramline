@@ -1,0 +1,34 @@
+<div class="flex flex-col gap-y-4 py-1">
+  <!-- Intro -->
+  <div class="text-sm text-neutral-700 dark:text-neutral-300">
+    <p>The automatic backmerge failed for this commit. You'll need to manually cherry-pick it to your working branch to keep your changes in sync.</p>
+  </div>
+
+  <!-- Commands -->
+  <div class="space-y-4">
+    <% instructions.each do |instruction| %>
+      <div>
+        <p class="text-xs text-neutral-700 dark:text-neutral-300 mb-1.5"><%= instruction[:text] %></p>
+        <%= render SmartTextBoxComponent.new(
+              instruction[:command],
+              clipboard: true,
+              clipboard_tooltip: "Copy command",
+              size: :compact
+            ) %>
+
+        <% if instruction[:note] %>
+          <div class="mt-2">
+            <%= render AlertComponent.new(kind: :inline, type: :notice, full_screen: false) do %>
+              <%= instruction[:note] %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Conflict Note -->
+  <%= render AlertComponent.new(kind: :inline, type: :announce, full_screen: false) do %>
+    If cherry-pick fails due to conflicts, resolve them manually and run <code class="font-mono">git cherry-pick --continue</code> after staging your changes.
+  <% end %>
+</div>

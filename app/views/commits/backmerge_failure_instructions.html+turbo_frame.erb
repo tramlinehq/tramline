@@ -1,0 +1,3 @@
+<%= render EnhancedTurboFrameComponent.new(dom_id(@commit, :backmerge_instructions)) do |frame| %>
+  <%= render Commits::BackmergeFailureInstructionsComponent.new(@commit) %>
+<% end %>
