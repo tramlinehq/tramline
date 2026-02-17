@@ -322,6 +322,7 @@ Rails.application.routes.draw do
       patch "apps/:app_id/builds/:version_name/:version_code/external_metadata",
         to: "builds#external_metadata",
         constraints: {version_name: VERSION_NAME_REGEX}
+      patch "workflow_runs/:id/build_number", to: "workflow_runs#update_build_number"
     end
   end
 
