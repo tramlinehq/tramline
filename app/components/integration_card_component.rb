@@ -102,6 +102,8 @@ class IntegrationCardComponent < BaseComponent
     @pre_open_category == @category
   end
 
+  delegate :requires_configuration?, to: :integration, allow_nil: true
+
   def category_config_turbo_frame_id
     "#{@category}_config"
   end

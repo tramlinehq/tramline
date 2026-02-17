@@ -17,7 +17,7 @@
               display_channels(projects.map { |p| p.except(:release_stages) }) { |project| "#{project[:name]} (#{project[:id]})" },
               projects.find { |proj| proj[:id] == project&.dig("id") }&.except(:release_stages)&.to_json
             ),
-            {},
+            {include_blank: "Select a project"},
             {data: {nested_select_target: "primary", action: "nested-select#updateNestedOptions"}} %>
     </div>
     <div>

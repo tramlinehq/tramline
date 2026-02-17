@@ -1,0 +1,53 @@
+<%= render CardComponent.new(title: variant.name, subtitle: variant.bundle_identifier) do |card| %>
+  <% card.with_action do %>
+    <%= render ModalComponent.new(title: "Edit variant") do |modal| %>
+      <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("pencil.svg") %>
+      <% modal.with_body do %>
+        <%= tag.turbo_frame id: dom_id(variant, :edit_variant),
+                            src: edit_app_app_variant_path(app, variant),
+                            loading: :lazy,
+                            class: "with-turbo-frame-loader" do %>
+          <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% card.with_action do %>
+    <%= render ButtonComponent.new(
+          scheme: :light,
+          options: app_app_variant_path(app, variant),
+          type: :link,
+          html_options: {method: :delete,
+                         data: {turbo_method: :delete,
+                                turbo_confirm: "Are you sure you want to delete the variant? This will also destroy the associated integrations."}}
+        ) do |b|
+          b.with_icon("trash.svg")
+        end %>
+  <% end %>
+
+  <div class="mt-2">
+    <% integrations_by_type = variant.integrations.connected.index_by(&:providable_type) %>
+    <div class="grid grid-cols-2 gap-4">
+      <%= render partial: "app_variants/integration_card",
+                 locals: {
+                   app: app,
+                   variant: variant,
+                   integration: integrations_by_type["GoogleFirebaseIntegration"],
+                   provider_type: "GoogleFirebaseIntegration",
+                   provider_name: "Firebase App Distribution",
+                   provider_logo: "firebase"
+                 } %>
+
+      <%= render partial: "app_variants/integration_card",
+                 locals: {
+                   app: app,
+                   variant: variant,
+                   integration: integrations_by_type["GooglePlayStoreIntegration"],
+                   provider_type: "GooglePlayStoreIntegration",
+                   provider_name: "Google Play Store",
+                   provider_logo: "google_play_store"
+                 } %>
+    </div>
+  </div>
+<% end %>

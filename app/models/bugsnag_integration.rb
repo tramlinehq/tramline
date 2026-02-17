@@ -80,6 +80,19 @@ class BugsnagIntegration < ApplicationRecord
     true
   end
 
+  def setup_complete?
+    app = integrable.is_a?(App) ? integrable : integrable.app
+    if app.android?
+      android_config.present?
+    elsif app.ios?
+      ios_config.present?
+    elsif app.cross_platform?
+      android_config.present? && ios_config.present?
+    else
+      false
+    end
+  end
+
   def setup
     list_projects
   end

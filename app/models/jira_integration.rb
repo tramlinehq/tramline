@@ -123,6 +123,13 @@ class JiraIntegration < ApplicationRecord
 
   def further_setup? = true
 
+  def setup_complete?
+    project_config.present? &&
+      project_config["selected_projects"].present? &&
+      project_config["selected_projects"].any? &&
+      project_config["project_configs"].present?
+  end
+
   def public_icon_img
     PUBLIC_ICON
   end
