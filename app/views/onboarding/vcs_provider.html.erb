@@ -1,0 +1,46 @@
+<%= render Onboarding::WizardComponent.new(
+      app: @app,
+      onboarding_state: @onboarding_state,
+      show_back_button: false,
+      show_next_button: true
+    ) do |wizard_component| %>
+  <%= render FormComponent.new(model: [@app, @onboarding_state], url: wizard_path, method: :put) do |f| %>
+    <% f.with_section(heading: "Setup Information") do |section| %>
+      <% section.with_description do %>
+        Select your version control provider to integrate with.
+      <% end %>
+      <% selected_provider = @onboarding_state.vcs_provider %>
+      <% vcs_provider_options = [
+           {
+             title: "GitHub",
+             subtitle: "Connect repositories hosted on GitHub",
+             icon: "git_branch.svg",
+             opt_name: :vcs_provider,
+             opt_value: "github",
+             options: {checked: selected_provider.present? ? selected_provider == "github" : true}
+           },
+           {
+             title: "GitLab",
+             subtitle: "Connect repositories hosted on GitLab",
+             icon: "git_commit.svg",
+             opt_name: :vcs_provider,
+             opt_value: "gitlab",
+             options: {checked: selected_provider == "gitlab"}
+           },
+           {
+             title: "Bitbucket",
+             subtitle: "Connect repositories hosted on Bitbucket",
+             icon: "git_pull_request.svg",
+             opt_name: :vcs_provider,
+             opt_value: "bitbucket",
+             options: {checked: selected_provider == "bitbucket"}
+           }
+         ] %>
+
+      <%= render OptionCardsComponent.new(form: section.F, options: vcs_provider_options) %>
+    <% end %>
+    <% f.with_action do %>
+      <%= f.F.authz_submit "Continue", "arrow_right.svg", size: :sm %>
+    <% end %>
+  <% end %>
+<% end %>
