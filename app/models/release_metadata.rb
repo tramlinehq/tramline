@@ -45,6 +45,8 @@ class ReleaseMetadata < ApplicationRecord
   validates :locale, uniqueness: {scope: :release_platform_run_id}
   validate :notes_length
 
+  # TODO: add validations for description and keywords for iOS
+
   delegate :ios?, :android?, to: :release_platform_run
 
   # NOTE: strip and normalize line endings across various OSes
