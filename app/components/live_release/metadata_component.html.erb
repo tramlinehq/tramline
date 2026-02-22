@@ -130,6 +130,7 @@
                                                                              existing_value: ios_metadata.promo_text} %>
               </div>
             </div>
+            <%# TODO: add character limit indicators for iOS keywords and description %>
             <div><%= iosF.labeled_textarea :keywords, "Keywords", value: ios_metadata.keywords.join(", ") %></div>
             <div><%= iosF.labeled_textarea :description, "Description" %></div>
           </div>
