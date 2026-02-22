@@ -130,8 +130,8 @@
                                                                              existing_value: ios_metadata.promo_text} %>
               </div>
             </div>
-            <div><%= iosF.labeled_textarea :keywords, "Keywords", readonly: true, disabled: true %></div>
-            <div><%= iosF.labeled_textarea :description, "Description", readonly: true, disabled: true %></div>
+            <div><%= iosF.labeled_textarea :keywords, "Keywords", value: ios_metadata.keywords.join(", ") %></div>
+            <div><%= iosF.labeled_textarea :description, "Description" %></div>
           </div>
         <% end %>
       <% elsif component.cross_platform? %>
