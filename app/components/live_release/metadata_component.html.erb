@@ -134,14 +134,14 @@
               <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
                                                                            obj_method: :keywords,
                                                                            label_text: "Keywords",
-                                                                           max_length: ReleaseMetadata::IOS_KEYWORDS_MAX_LENGTH,
-                                                                           existing_value: ios_metadata.keywords.join(", ")} %>
+                                                                           max_length: keywords_max_length,
+                                                                           existing_value: ios_metadata.keywords_joined} %>
             </div>
             <div>
               <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
                                                                            obj_method: :description,
                                                                            label_text: "Description",
-                                                                           max_length: ReleaseMetadata::IOS_DESCRIPTION_MAX_LENGTH,
+                                                                           max_length: description_max_length,
                                                                            existing_value: ios_metadata.description} %>
             </div>
           </div>

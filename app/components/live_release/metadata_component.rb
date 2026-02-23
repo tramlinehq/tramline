@@ -42,6 +42,14 @@ class LiveRelease::MetadataComponent < BaseComponent
     ReleaseMetadata::PROMO_TEXT_MAX_LENGTH
   end
 
+  def keywords_max_length
+    ReleaseMetadata::IOS_KEYWORDS_MAX_LENGTH
+  end
+
+  def description_max_length
+    ReleaseMetadata::IOS_DESCRIPTION_MAX_LENGTH
+  end
+
   memoize def android_draft_notes
     android_metadata&.draft_release_notes
   end
