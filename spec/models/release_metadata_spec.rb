@@ -55,11 +55,11 @@ RSpec.describe ReleaseMetadata do
     end
 
     it "allows up to 100 characters in keywords" do
-      expect(build(:release_metadata, locale:, release_platform_run:, keywords: ["a" * 50, "b" * 48])).to be_valid
+      expect(build(:release_metadata, locale:, release_platform_run:, keywords: ["a" * 50, "b" * 49])).to be_valid
     end
 
     it "disallows more than 100 characters in keywords" do
-      expect(build(:release_metadata, locale:, release_platform_run:, keywords: ["a" * 50, "b" * 49])).not_to be_valid
+      expect(build(:release_metadata, locale:, release_platform_run:, keywords: ["a" * 50, "b" * 50])).not_to be_valid
     end
   end
 

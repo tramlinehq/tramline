@@ -63,6 +63,10 @@ class ReleaseMetadata < ApplicationRecord
     update!(attrs.merge(draft_attrs_to_clear(attrs)))
   end
 
+  def keywords_joined
+    keywords.join(",")
+  end
+
   # rubocop:disable Rails/SkipsModelValidations
   def save_draft(attrs)
     draft_attrs = draft_attrs_to_save(attrs)
@@ -109,7 +113,7 @@ class ReleaseMetadata < ApplicationRecord
   end
 
   def keywords_length
-    if keywords.join(", ").length > IOS_KEYWORDS_MAX_LENGTH
+    if keywords_joined.length > IOS_KEYWORDS_MAX_LENGTH
       errors.add(:keywords, :too_long, count: IOS_KEYWORDS_MAX_LENGTH)
     end
   end
