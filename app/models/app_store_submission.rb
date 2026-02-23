@@ -277,7 +277,7 @@ class AppStoreSubmission < StoreSubmission
         whats_new: metadata.release_notes,
         promotional_text: metadata.promo_text,
         description: metadata.description,
-        keywords: metadata.keywords.join(","),
+        keywords: metadata.keywords_joined,
         locale: metadata.locale
       }
     end
