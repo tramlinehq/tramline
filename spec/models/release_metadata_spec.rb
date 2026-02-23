@@ -45,6 +45,22 @@ RSpec.describe ReleaseMetadata do
       expect(build(:release_metadata, locale:, release_platform_run:, release_notes: "<a>")).not_to be_valid
       expect(build(:release_metadata, locale:, release_platform_run:, release_notes: "hi2u \n <3")).not_to be_valid
     end
+
+    it "allows up to 4000 characters in description" do
+      expect(build(:release_metadata, locale:, release_platform_run:, description: "a" * 4000)).to be_valid
+    end
+
+    it "disallows more than 4000 characters in description" do
+      expect(build(:release_metadata, locale:, release_platform_run:, description: "a" * 4001)).not_to be_valid
+    end
+
+    it "allows up to 100 characters in keywords" do
+      expect(build(:release_metadata, locale:, release_platform_run:, keywords: ["a" * 50, "b" * 48])).to be_valid
+    end
+
+    it "disallows more than 100 characters in keywords" do
+      expect(build(:release_metadata, locale:, release_platform_run:, keywords: ["a" * 50, "b" * 49])).not_to be_valid
+    end
   end
 
   context "when android" do

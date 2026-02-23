@@ -23,6 +23,8 @@ class ReleaseMetadata < ApplicationRecord
   belongs_to :release_platform_run, inverse_of: :release_metadata, optional: true
 
   IOS_NOTES_MAX_LENGTH = 4000
+  IOS_DESCRIPTION_MAX_LENGTH = 4000
+  IOS_KEYWORDS_MAX_LENGTH = 100
   ANDROID_NOTES_MAX_LENGTH = 500
   PROMO_TEXT_MAX_LENGTH = 170
   IOS_DENY_LIST = %w[<]
@@ -42,10 +44,10 @@ class ReleaseMetadata < ApplicationRecord
   validates :promo_text,
     format: {with: IOS_PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true, multiline: true},
     length: {maximum: PROMO_TEXT_MAX_LENGTH}
+  validates :description, length: {maximum: IOS_DESCRIPTION_MAX_LENGTH}, if: :ios?
+  validate :keywords_length, if: :ios?
   validates :locale, uniqueness: {scope: :release_platform_run_id}
   validate :notes_length
-
-  # TODO: add validations for description and keywords for iOS
 
   delegate :ios?, :android?, to: :release_platform_run
 
@@ -104,5 +106,11 @@ class ReleaseMetadata < ApplicationRecord
     return ANDROID_NOTES_MAX_LENGTH if android?
     return IOS_NOTES_MAX_LENGTH if ios?
     raise ArgumentError, "Invalid platform"
+  end
+
+  def keywords_length
+    if keywords.join(", ").length > IOS_KEYWORDS_MAX_LENGTH
+      errors.add(:keywords, :too_long, count: IOS_KEYWORDS_MAX_LENGTH)
+    end
   end
 end
