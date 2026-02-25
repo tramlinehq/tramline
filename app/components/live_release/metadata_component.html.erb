@@ -131,11 +131,30 @@
               </div>
             </div>
             <div>
-              <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
-                                                                           obj_method: :keywords,
-                                                                           label_text: "Keywords",
-                                                                           max_length: keywords_max_length,
-                                                                           existing_value: ios_metadata.keywords_joined} %>
+              <div data-controller="character-counter" data-character-counter-max-length-value="<%= keywords_max_length %>">
+                <div class="flex items-center gap-1.5">
+                  <%= iosF.label_only :keywords, "Keywords", type: :base %>
+                  <%= render InfoIconComponent.new do %>
+                    <p>Use accurate, relevant comma-separated keywords. Avoid categories, trademarks, competitor app names, or terms not tied to your app.</p>
+                    <p class="mt-1">
+                      <%= link_to_external "Read more",
+                                           "https://developer.apple.com/app-store/search/#:~:text=Choose%20accurate%20keywords%20that%20resonate,part%20of%20your%20brand%20identity",
+                                           class: "underline" %> about proper use of keywords.
+                    </p>
+                  <% end %>
+                </div>
+                <%= iosF.textarea :keywords,
+                                  placeholder: "Write keywords here",
+                                  value: ios_metadata.keywords_joined,
+                                  data: {character_counter_target: "input",
+                                         action: "input->character-counter#update",
+                                         controller: "textarea-autogrow"} %>
+                <p class="text-xs text-secondary">
+                  Characters –
+                  <strong data-character-counter-target="counter"><%= ios_metadata.keywords_joined&.length || 0 %></strong>
+                  / <%= keywords_max_length %>
+                </p>
+              </div>
             </div>
             <div>
               <%= render partial: "shared/size_limited_textarea", locals: {form: iosF,
