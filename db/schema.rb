@@ -720,6 +720,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
     t.boolean "default_locale", default: false
     t.text "draft_release_notes"
     t.text "draft_promo_text"
+    t.string "draft_keywords", default: [], array: true
+    t.text "draft_description"
     t.index ["release_platform_run_id", "locale"], name: "index_release_metadata_on_release_platform_run_id_and_locale", unique: true
     t.index ["release_platform_run_id"], name: "index_release_metadata_on_release_platform_run_id"
   end
