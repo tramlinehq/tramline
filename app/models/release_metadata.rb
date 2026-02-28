@@ -45,7 +45,8 @@ class ReleaseMetadata < ApplicationRecord
     if: :android?
   validates :promo_text,
     format: {with: IOS_PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true, denied_characters: IOS_DENY_LIST.join(", "), multiline: true},
-    length: {maximum: PROMO_TEXT_MAX_LENGTH}
+    length: {maximum: PROMO_TEXT_MAX_LENGTH},
+    if: :ios?
   validates :description, length: {maximum: IOS_DESCRIPTION_MAX_LENGTH}, if: :ios?
   validate :keywords_length, if: :ios?
   validates :locale, uniqueness: {scope: :release_platform_run_id}

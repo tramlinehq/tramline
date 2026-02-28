@@ -32,12 +32,33 @@ describe AppStoreSubmission do
 
       before do
         allow(providable_dbl).to receive(:prepare_release).and_return(GitHub::Result.new { prepared_release_info })
+        submission.release_platform_run
+          .default_release_metadata
+          .update!(release_notes: "Bug fixes and stability improvements",
+            promo_text: "Try the new feature",
+            description: "A longer store description",
+            keywords: ["bugfix", "performance"])
       end
 
       it "prepares the release" do
         submission.prepare_for_release!
 
-        expect(providable_dbl).to have_received(:prepare_release).with(build.build_number, build.version_name, true, anything, true, false).once
+        expect(providable_dbl).to have_received(:prepare_release).with(
+          build.build_number,
+          build.version_name,
+          true,
+          [
+            {
+              whats_new: "Bug fixes and stability improvements",
+              promotional_text: "Try the new feature",
+              description: "A longer store description",
+              keywords: "bugfix,performance",
+              locale: "en-US"
+            }
+          ],
+          true,
+          false
+        ).once
       end
 
       it "marks the submission as prepared" do
