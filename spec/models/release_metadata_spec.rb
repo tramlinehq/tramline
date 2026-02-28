@@ -61,6 +61,18 @@ RSpec.describe ReleaseMetadata do
     it "disallows more than 100 characters in keywords" do
       expect(build(:release_metadata, locale:, release_platform_run:, keywords: ["a" * 50, "b" * 50])).not_to be_valid
     end
+
+    describe '#keywords_joined' do
+      it "joins keywords with comma" do
+        metadata = build(:release_metadata, locale:, release_platform_run:, keywords: ["keyword1", "keyword2", "keyword3"])
+        expect(metadata.keywords_joined).to eq("keyword1,keyword2,keyword3")
+      end
+
+      it "returns empty string when no keywords" do
+        metadata = build(:release_metadata, locale:, release_platform_run:, keywords: [])
+        expect(metadata.keywords_joined).to eq("")
+      end
+    end
   end
 
   context "when android" do
