@@ -130,7 +130,7 @@
                                                                              existing_value: ios_metadata.promo_text} %>
               </div>
             </div>
-            <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_keywords&.join(',') %>">
+            <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_keywords&.join(",") %>">
               <% if ios_has_draft_keywords? %>
                 <%= render partial: "release_metadata/draft_alert", locals: {title: "Unsaved keywords", field_name: "keywords"} %>
               <% end %>

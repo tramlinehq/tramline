@@ -405,4 +405,47 @@ describe AppStoreSubmission do
       end
     end
   end
+
+  describe "#notes" do
+    let(:release_platform_run) { create(:release_platform_run) }
+    let(:parent_release) { create(:production_release, release_platform_run:) }
+    let(:build) { create(:build, release_platform_run:) }
+    let(:submission) { create(:app_store_submission, parent_release:, release_platform_run:, build:) }
+
+    before do
+      release_platform_run.default_release_metadata.update!(
+        release_notes: "Bug fixes and stability improvements",
+        promo_text: "Try the new feature",
+        description: "A longer store description",
+        keywords: ["bugfix", "performance"]
+      )
+      create(:release_metadata,
+        release: release_platform_run.release,
+        release_platform_run:,
+        locale: "fr-FR",
+        release_notes: "Corrections de bugs",
+        promo_text: "Essayez la nouvelle fonctionnalité",
+        description: "Une description plus longue",
+        keywords: ["correction", "performance"])
+    end
+
+    it "contains locale-specific release metadata" do
+      expect(submission.notes).to contain_exactly(
+        {
+          whats_new: "Bug fixes and stability improvements",
+          promotional_text: "Try the new feature",
+          description: "A longer store description",
+          keywords: "bugfix,performance",
+          locale: "en-US"
+        },
+        {
+          whats_new: "Corrections de bugs",
+          promotional_text: "Essayez la nouvelle fonctionnalité",
+          description: "Une description plus longue",
+          keywords: "correction,performance",
+          locale: "fr-FR"
+        }
+      )
+    end
+  end
 end
