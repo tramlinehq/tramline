@@ -231,12 +231,6 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.retry_job!(code_repository_name, ci_ref, JOB_RUN_TRANSFORMATIONS) }
   end
 
-  def find_workflow_run(_, _, _)
-    # GitLab does not have a direct equivalent to finding a workflow run by workflow_id, branch, and commit_sha.
-    # When a job is triggered, we have an ID which we can directly find later (see: get_workflow_run).
-    raise Integrations::UnsupportedAction
-  end
-
   def get_workflow_run(job_id)
     with_api_retries { installation.get_job(code_repository_name, job_id) }
   end

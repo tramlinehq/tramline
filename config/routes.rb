@@ -130,6 +130,7 @@ Rails.application.routes.draw do
         resource :release_platform_configs, only: %i[edit update], path: :submissions, as: :submission_config, controller: "config/release_platforms" do
           collection do
             post :refresh_workflows
+            post :test_workflow
           end
         end
       end
