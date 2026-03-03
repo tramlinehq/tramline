@@ -11,6 +11,9 @@
     <% section.with_description do %>
       You must have at least an RC workflow defined. The CI workflows should generate a valid build artifact (aab/apk/ipa).
       <div><%= render partial: "refresh_workflows", locals: {app:, train:, platform_name:} %></div>
+      <% if platform_config.release_candidate_workflow&.identifier.present? %>
+        <div><%= render partial: "test_workflow", locals: {app:, train:, platform_name:, workflow_kind: "release_candidate"} %></div>
+      <% end %>
     <% end %>
 
     <% section.F.fields_for :release_candidate_workflow, section.F.object.release_candidate_workflow do |rc_fields| %>
@@ -177,6 +180,9 @@
     <% section.with_description do %>
       If you have an internal testing process that generates non-production builds and sends them to testing channels, you can configure it here.
       <div><%= render partial: "refresh_workflows", locals: {app:, train:, platform_name:} %></div>
+      <% if platform_config.internal_workflow&.identifier.present? %>
+        <div><%= render partial: "test_workflow", locals: {app:, train:, platform_name:, workflow_kind: "internal"} %></div>
+      <% end %>
     <% end %>
 
     <%= render Form::SwitchComponent.new(form: section.F,

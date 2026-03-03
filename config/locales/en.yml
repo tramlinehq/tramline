@@ -84,6 +84,11 @@ en:
       success: "Platform configuration was successfully updated."
       refresh_workflows:
         success: "The workflow list is being refreshed. This may take a few seconds."
+      test_workflow:
+        success_html: "%{workflow_kind} workflow '%{workflow_name}' triggered successfully! <a href='%{ci_link}' target='_blank' class='underline'>View CI run →</a>"
+        triggered: "%{workflow_kind} workflow '%{workflow_name}' triggered successfully!"
+        not_found: "No saved workflow found for this configuration."
+        failure: "Failed to trigger workflow: %{error}"
   release_metadata:
     metadata_not_editable: "Cannot update the release metadata once the production release has begun."
     update:

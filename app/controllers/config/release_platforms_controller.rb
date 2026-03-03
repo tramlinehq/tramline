@@ -4,10 +4,10 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   ConfigUpdater = WebHandlers::UpdateReleasePlatformConfig
 
   before_action :require_write_access!, only: %i[update]
-  before_action :set_train, only: %i[edit update refresh_workflows]
-  before_action :set_app_from_train, only: %i[edit update]
-  before_action :set_release_platform, only: %i[edit update refresh_workflows]
-  before_action :set_config, only: %i[edit update]
+  before_action :set_train, only: %i[edit update refresh_workflows test_workflow]
+  before_action :set_app_from_train, only: %i[edit update test_workflow]
+  before_action :set_release_platform, only: %i[edit update refresh_workflows test_workflow]
+  before_action :set_config, only: %i[edit update test_workflow]
   before_action :set_train_config_tabs, only: %i[edit update]
   before_action :ensure_app_ready, only: %i[edit update]
   before_action :set_ci_actions, only: %i[edit update]
@@ -32,6 +32,34 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   def refresh_workflows
     RefreshWorkflowsJob.perform_async(@train.id)
     redirect_to update_redirect_path, notice: t(".success")
+  end
+
+  def test_workflow
+    workflow = find_workflow(params[:workflow_kind])
+
+    unless workflow&.identifier.present?
+      redirect_to update_redirect_path, flash: {error: t(".not_found")}
+      return
+    end
+
+    inputs = {
+      version_code: "0",
+      build_version: "0.0.0-test",
+      parameters: workflow.parameters.each_with_object({}) { |p, h| h[p.name] = p.value }
+    }
+
+    result = @train.ci_cd_provider.trigger_workflow_run!(workflow.identifier, @train.working_branch, inputs)
+    ci_link = result[:ci_link] if result.is_a?(Hash)
+
+    workflow_label = workflow.release_candidate? ? "RC" : "Internal"
+
+    if ci_link.present?
+      redirect_to update_redirect_path, flash: {notice_html: t(".success_html", ci_link: ci_link, workflow_kind: workflow_label, workflow_name: workflow.name)}
+    else
+      redirect_to update_redirect_path, notice: t(".triggered", workflow_kind: workflow_label, workflow_name: workflow.name)
+    end
+  rescue Installations::Error => e
+    redirect_to update_redirect_path, flash: {error: t(".failure", error: e.message)}
   end
 
   private
@@ -94,6 +122,15 @@ class Config::ReleasePlatformsController < SignedInApplicationController
         parameters_attributes: [:id, :name, :value, :_destroy]
       ]
     )
+  end
+
+  def find_workflow(kind)
+    case kind
+    when "release_candidate"
+      @config.release_candidate_workflow
+    when "internal"
+      @config.internal_workflow
+    end
   end
 
   def update_redirect_path
