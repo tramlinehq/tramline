@@ -238,7 +238,7 @@ class WorkflowRun < ApplicationRecord
     external_workflow_run = ci_cd_provider
       .trigger_workflow_run!(conf.identifier, release_branch, workflow_inputs, commit_hash)
 
-    check_external_data(external_workflow_run)
+    external_workflow_run = check_external_data(external_workflow_run)
     update_external_metadata!(external_workflow_run)
   end
 

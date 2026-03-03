@@ -3,7 +3,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   using RefinedString
   ConfigUpdater = WebHandlers::UpdateReleasePlatformConfig
 
-  before_action :require_write_access!, only: %i[update]
+  before_action :require_write_access!, only: %i[update test_workflow]
   before_action :set_train, only: %i[edit update refresh_workflows test_workflow]
   before_action :set_app_from_train, only: %i[edit update test_workflow]
   before_action :set_release_platform, only: %i[edit update refresh_workflows test_workflow]
