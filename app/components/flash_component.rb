@@ -11,7 +11,7 @@ class FlashComponent < BaseComponent
       @flash.each do |type, messages|
         render_type, html_safe = parse_flash_type(type)
         Array(messages).compact_blank.each do |message|
-          message = message.html_safe if html_safe
+          message = message.html_safe if html_safe # rubocop:disable Rails/OutputSafety -- trusted server-generated flash content
           concat render(AlertComponent.new(type: render_type, title: message, dismissible: true, full_screen: @full_screen))
         end
       end

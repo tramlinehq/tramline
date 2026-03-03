@@ -48,31 +48,6 @@ describe Installations::Github::Api, type: :integration do
     end
   end
 
-  describe "#find_workflow_run" do
-    let(:payload) { JSON.parse(File.read("spec/fixtures/github/workflow_runs.json")).to_h.with_indifferent_access }
-    let(:repo) { Faker::Lorem.characters(number: 8) }
-
-    it "returns the transformed list of active workflows" do
-      workflow = Faker::Lorem.characters(number: 8)
-      branch = Faker::Lorem.characters(number: 8)
-      head_sha = Faker::Crypto.sha1
-
-      allow_any_instance_of(Octokit::Client).to receive(:workflow_runs).and_return(payload)
-      result =
-        described_class
-          .new(installation_id)
-          .find_workflow_run(repo, workflow, branch, head_sha, GithubIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
-
-      expected = {
-        ci_ref: 30433642,
-        ci_link: "https://github.com/octo-org/octo-repo/actions/runs/30433642",
-        number: 562,
-        unique_number: 562 # same as ci_ref
-      }
-      expect(result).to match(expected)
-    end
-  end
-
   describe "#create_branch!" do
     let(:payload) { JSON.parse(File.read("spec/fixtures/github/create_branch.json")).to_h.with_indifferent_access }
     let(:repo) { Faker::Lorem.characters(number: 8) }

@@ -37,7 +37,7 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   def test_workflow
     workflow = find_workflow(params[:workflow_kind])
 
-    unless workflow&.identifier.present?
+    if workflow&.identifier.blank?
       redirect_to update_redirect_path, flash: {error: t(".not_found")}
       return
     end
