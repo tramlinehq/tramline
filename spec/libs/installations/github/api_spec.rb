@@ -48,31 +48,6 @@ describe Installations::Github::Api, type: :integration do
     end
   end
 
-  describe "#find_workflow_run" do
-    let(:payload) { JSON.parse(File.read("spec/fixtures/github/workflow_runs.json")).to_h.with_indifferent_access }
-    let(:repo) { Faker::Lorem.characters(number: 8) }
-
-    it "returns the transformed list of active workflows" do
-      workflow = Faker::Lorem.characters(number: 8)
-      branch = Faker::Lorem.characters(number: 8)
-      head_sha = Faker::Crypto.sha1
-
-      allow_any_instance_of(Octokit::Client).to receive(:workflow_runs).and_return(payload)
-      result =
-        described_class
-          .new(installation_id)
-          .find_workflow_run(repo, workflow, branch, head_sha, GithubIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
-
-      expected = {
-        ci_ref: 30433642,
-        ci_link: "https://github.com/octo-org/octo-repo/actions/runs/30433642",
-        number: 562,
-        unique_number: 562 # same as ci_ref
-      }
-      expect(result).to match(expected)
-    end
-  end
-
   describe "#create_branch!" do
     let(:payload) { JSON.parse(File.read("spec/fixtures/github/create_branch.json")).to_h.with_indifferent_access }
     let(:repo) { Faker::Lorem.characters(number: 8) }
@@ -101,6 +76,35 @@ describe Installations::Github::Api, type: :integration do
 
       expected_branch = "refs/heads/#{new_branch_name}"
       expect(result[:ref]).to match(expected_branch)
+    end
+  end
+
+  describe "#run_workflow!" do
+    let(:repo) { Faker::Lorem.characters(number: 8) }
+    let(:workflow_id) { Faker::Lorem.characters(number: 8) }
+    let(:ref) { "main" }
+    let(:commit_hash) { Faker::Crypto.sha1 }
+    let(:inputs) { {build_version: "1.0.0", version_code: 1, parameters: {}} }
+
+    it "returns workflow_run_id from GitHub API response" do
+      workflow_run_id = Faker::Number.number(digits: 10)
+      response_body = {"workflow_run_id" => workflow_run_id}.to_json
+
+      allow_any_instance_of(described_class).to receive(:execute_custom).and_return(response_body)
+
+      result = described_class.new(installation_id).run_workflow!(repo, workflow_id, ref, inputs, commit_hash)
+
+      expect(result).to eq(workflow_run_id)
+    end
+
+    it "raises error when workflow_run_id is not in response" do
+      response_body = {}.to_json
+
+      allow_any_instance_of(described_class).to receive(:execute_custom).and_return(response_body)
+
+      expect {
+        described_class.new(installation_id).run_workflow!(repo, workflow_id, ref, inputs, commit_hash)
+      }.to raise_error(Installations::Error, "Workflow run ID not returned")
     end
   end
 

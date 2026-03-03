@@ -49,23 +49,6 @@ module Installations
       end
     end
 
-    def find_workflow_run(repo, workflow, branch, head_sha, transforms)
-      options = {
-        branch:,
-        head_sha:
-      }
-
-      execute do
-        @client
-          .workflow_runs(repo, workflow, options)
-          .then { |response| response[:workflow_runs] }
-          .then { |workflow_runs| workflow_runs.sort_by { |workflow_run| workflow_run[:run_number] }.reverse! }
-          .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
-          .first
-          .then { |run| run&.presence || raise(Installations::Error.new("Could not find the workflow run", reason: :workflow_run_not_found)) }
-      end
-    end
-
     def get_workflow_run(repo, run_id)
       execute do
         @client
@@ -101,17 +84,15 @@ module Installations
       params = {
         json: {
           inputs: inputs,
-          ref: ref
+          ref: ref,
+          return_run_details: true
         }
       }
 
-      # execute do
-      #     @client
-      #       .workflow_dispatch(repo, id, ref, inputs:)
-      #       .then { |ok| ok.presence || raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed)) }
-
+      # With return_run_details, GitHub API returns 200 OK with workflow_run_id
+      # instead of the default 204 No Content with empty body
       begin
-        execute_custom do |custom_client|
+        response_body = execute_custom do |custom_client|
           custom_client.post(
             WORKFLOW_DISPATCH_URL
               .expand(repo: repo, workflow_id: id)
@@ -120,11 +101,21 @@ module Installations
             params
           )
         end
+
+        # Parse JSON response and extract workflow_run_id
+        response_data = JSON.parse(response_body.to_s)
+        workflow_run_id = response_data["workflow_run_id"]
+
+        raise(Installations::Error.new("Workflow run ID not returned", reason: :workflow_run_id_missing)) if workflow_run_id.blank?
+
+        workflow_run_id
+      rescue JSON::ParserError
+        raise(Installations::Error.new("Invalid response from GitHub API", reason: :invalid_response))
+      rescue Installations::Error
+        raise
       rescue
         raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed))
       end
-
-      true
     end
 
     def cancel_workflow!(repo, run_id)

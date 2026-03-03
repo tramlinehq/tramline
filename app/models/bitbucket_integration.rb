@@ -332,10 +332,6 @@ class BitbucketIntegration < ApplicationRecord
     with_api_retries { installation.cancel_pipeline!(code_repository_name, ci_ref) }
   end
 
-  def find_workflow_run(_workflow_id, _branch, _commit_sha)
-    raise Integrations::UnsupportedAction
-  end
-
   def get_workflow_run(pipeline_id)
     with_api_retries { installation.get_pipeline(code_repository_name, pipeline_id) }
   end
