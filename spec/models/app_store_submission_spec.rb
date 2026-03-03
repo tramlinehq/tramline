@@ -242,7 +242,6 @@ describe AppStoreSubmission do
 
     it "finds release even if action is blocked" do
       allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { initial_release_info })
-      allow(submission.release).to receive(:blocked_for_production_release?).and_return(false)
 
       expect { submission.update_external_release }
         .to raise_error(AppStoreSubmission::SubmissionNotInTerminalState)

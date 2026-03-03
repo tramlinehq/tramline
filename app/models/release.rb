@@ -498,30 +498,8 @@ class Release < ApplicationRecord
     train.ongoing_release == self
   end
 
-  def blocked_for_production_release?(for_platform_run:)
-    return false unless active?
-    return false if upcoming? && Flipper.enabled?(:temporarily_unblock_upcoming, self)
-    return true if blocked_by_hotfix?
-    return true if blocked_by_ongoing_platform?(for_platform_run)
-    approvals_blocking?
-  end
-
   def blocked_by_hotfix?
     ongoing? && train.hotfix_release.present?
-  end
-
-  def blocked_by_ongoing_platform?(for_platform_run)
-    return false if ongoing? || hotfix?
-
-    ongoing = train.ongoing_release
-    return true unless ongoing
-
-    release_platform_id = for_platform_run.release_platform_id
-    corresponding_run = ongoing.release_platform_runs.find_by(release_platform_id:)
-
-    return false unless corresponding_run
-    return false if corresponding_run.concluded? || corresponding_run.finished?
-    corresponding_run.on_track?
   end
 
   def hotfix_with_new_branch?

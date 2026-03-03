@@ -11,7 +11,7 @@ class Coordinators::StartProductionRelease
   def call
     with_lock do
       return unless release_platform_run.on_track?
-      # return if release.blocked_for_production_release?(for_platform_run: release_platform_run)
+      # return if release_platform_run.blocked_for_production_release?
 
       if current&.inflight?
         # If the latest production release is still inflight, attach the new RC build to it

@@ -72,7 +72,6 @@ class AppStoreRollout < StoreRollout
   def controllable_rollout? = false
 
   def start_release!
-    # return mock_start_app_store_rollout! if sandbox_mode?
     result = provider.start_release(build_number)
 
     unless result.ok?
@@ -89,26 +88,39 @@ class AppStoreRollout < StoreRollout
     return if completed? || fully_released?
     return unless actionable?
 
-    result = provider.find_live_release
+    # can't find the build, try again
+    result = provider.find_release(build_number)
     unless result.ok?
       elog(result.error, level: :warn)
       raise ReleaseNotFullyLive, "Retrying in some time..."
     end
 
+    # build isn't ready yet, try again
     release_info = result.value!
     unless release_info.live?(build_number)
       raise ReleaseNotFullyLive, "Retrying in some time..."
     end
 
-    if created?
-      transition_to_started_state(release_info) # Handle the created state (auto-start flow from Apple)
-    else
-      transition_to_live_state(release_info) # Handle the started state (manual flow or subsequent polls)
+    with_lock do
+      # rollout is completed on the store — regardless of what we think is true
+      if !release_info.phased_release_available? || release_info.phased_release_complete?
+        transition_to_complete_state(release_info)
+        return
+      end
+
+      if release_info.phased_release_active?
+        if created?
+          # rollout is in created in our system, but has started on the store
+          # (eg. auto-start from ASC, or out-of-band phased release)
+          transition_to_started_state(staged_rollout? ? release_info : nil)
+        elsif staged_rollout?
+          # rollout is started in our system, update ourselves with the latest
+          update_rollout(release_info)
+        end
+      end
     end
 
-    # For non-staged rollouts, we're done (completed in transition methods)
-    # For staged rollout, it is still in progress, continue polling
-    return if !staged_rollout? || release_info.phased_release_complete?
+    # continue polling, any terminal transitions will be guarded off the next time
     raise ReleaseNotFullyLive, "Retrying in some time..."
   end
 
@@ -184,26 +196,20 @@ class AppStoreRollout < StoreRollout
     StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id) if auto_start_rollout?
   end
 
-  # Transition to live state when rollout is already started (manual start_release! was called)
-  def transition_to_live_state(release_info)
-    if staged_rollout?
-      update_rollout(release_info)
-    else
-      complete!
-    end
+  # Transition to completed state when the store has already finished the rollout
+  # Either phased release is complete or no phased release was configured on ASC
+  def transition_to_complete_state(release_info)
+    start! if created?
+    update_rollout(release_info) if release_info.phased_release_available?
+    complete! unless completed?
   end
 
-  # Transition to started state
   # If release_info is provided (auto-start flow), also update the rollout stage
   # If not provided (manual flow), just transition state
   def transition_to_started_state(release_info = nil)
     start!
     event_stamp!(reason: :started, kind: :notice, data: stamp_data)
-    if staged_rollout?
-      update_rollout(release_info) if release_info
-    else
-      complete!
-    end
+    update_rollout(release_info) if release_info
   end
 
   def update_rollout(release_info)

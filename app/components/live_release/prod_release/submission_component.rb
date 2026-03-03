@@ -23,7 +23,8 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
     @inactive = inactive
     @change_build_prompt = false
     @cancel_prompt = false
-    @blocked_notice = false
+    @show_blocked = false
+    @show_block_overridden = false
     @new_submission_prompt = false
     @title = title
   end
@@ -31,14 +32,10 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   attr_reader :submission
   delegate :id, :release_platform_run, :external_link, :provider, :parent_release, to: :submission
   delegate :inflight?, to: :parent_release
-  delegate :release, to: :release_platform_run
+  delegate :release, :blocked_for_production_release?, :blocked_for_production_release_override?, to: :release_platform_run
 
   def show_blocked_message?
     release_platform_run.play_store_blocked? && !submission.failed_with_action_required?
-  end
-
-  def blocked?
-    release.blocked_for_production_release?(for_platform_run: release_platform_run)
   end
 
   def actionable?
@@ -128,12 +125,18 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   end
 
   def changeable?
-    return false if blocked?
+    return false if blocked_for_production_release?
     submission.change_build? && available_builds.present?
   end
 
   def compute_prompts
-    return @blocked_notice = true if blocked?
+    if blocked_for_production_release?
+      @show_blocked = true
+      return
+    elsif blocked_for_production_release_override?
+      @show_block_overridden = true
+    end
+
     return if newer_builds.blank?
 
     if submission.change_build?
@@ -156,7 +159,9 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   # rubocop:enable Rails/Delegate
 
   memoize def cascading_rollout_actionable?
-    submission.created? && submission.finish_rollout_in_next_release? && previously_completed_rollout_run.present?
+    submission.created? &&
+      submission.finish_rollout_in_next_release? &&
+      previously_completed_rollout_run.present?
   end
 
   def previously_completed_release_link
@@ -193,25 +198,5 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
 
   def border_style
     :dashed if inflight?
-  end
-
-  # ============== Sandbox actions ==============
-  def mock_actions
-    return unless actionable? && submission.respond_to?(:submitted_for_review?) && submission.submitted_for_review?
-
-    content_tag(:div, class: "flex items-center gap-0.5") do
-      concat(render(ButtonComponent.new(scheme: :mock,
-        type: :button,
-        label: "Mock approve",
-        options: mock_approve_for_app_store_path(submission.id),
-        turbo: false,
-        html_options: html_opts(:patch, "Are you sure about that?"))))
-      concat(render(ButtonComponent.new(scheme: :mock,
-        type: :button,
-        label: "Mock reject",
-        options: mock_reject_for_app_store_path(submission.id),
-        turbo: false,
-        html_options: html_opts(:patch, "Are you sure about that?"))))
-    end
   end
 end
