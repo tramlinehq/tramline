@@ -1,34 +1,24 @@
-<div class="col-span-4">
-    <input type="radio" name="app_data" id="<%= app_id %>" value="<%= app.to_json %>" class="hidden peer" data-action="domain--app-selector#selectApp reveal#show" />
-    <label for="<%= app_id %>" class="flex flex-col h-full w-full p-3 text-secondary bg-white border border-main-200 rounded-lg cursor-pointer transition-colors hover:text-main-600 hover:bg-main-100 dark:text-secondary-50 dark:bg-main-800 dark:border-main-700 dark:hover:text-main-300 dark:hover:bg-main-700 peer-checked:bg-main-100 peer-checked:border-blue-800 peer-checked:text-blue-800 dark:peer-checked:bg-main-700 dark:peer-checked:text-blue-700">
-      <div class="flex flex-col h-full space-y-3">
-        <div class="grow">
-          <header class="flex items-start space-x-3 align-top">
-            <% if icon_url.present? %>
-              <img src="<%= icon_url %>" alt="icon" class="w-10 h-10 rounded" />
-            <% else %>
-              <%= image_tag "app.svg", class: "w-10 h-10" %>
-            <% end %>
-            <h4 class="heading-4"><%= name %></h4>
-          </header>
-        </div>
+<div>
+  <input type="radio" name="app_data" id="<%= app_id %>" value="<%= app.merge("platform" => platform).to_json %>" class="hidden peer" data-action="domain--app-selector#selectApp reveal#show" />
+  <label for="<%= app_id %>" class="flex flex-col h-full w-full box-padding border-default cursor-pointer transition-colors bg-white hover:bg-main-100 hover:text-main-600 dark:bg-main-800 dark:hover:bg-main-700 dark:hover:text-main-300 peer-checked:bg-main-100 peer-checked:border-blue-800 peer-checked:text-blue-800 dark:peer-checked:bg-main-700 dark:peer-checked:text-blue-700">
+    <div class="flex items-center gap-3">
+      <% if icon_url.present? %>
+        <img src="<%= icon_url %>" alt="icon" class="w-10 h-10 rounded-lg shrink-0" />
+      <% else %>
+        <%= image_tag "app.svg", class: "w-10 h-10 shrink-0" %>
+      <% end %>
 
-        <footer>
-          <div class="flex flex-col justify-start items-start space-y-5">
-            <div class="text-xs text-slate-500 break-all">
-              <%= description %>
-            </div>
-
-            <div class="flex justify-between w-full items-baseline">
-              <div class="flex flex-col gap-2">
-                <% if bundle_id.present? %>
-                  <div class="text-xs text-secondary font-mono break-all"><%= bundle_id %></div>
-                <% end %>
-                <div class="text-xs text-secondary font-mono break-all"><%= store %></div>
-              </div>
-            </div>
-          </div>
-        </footer>
+      <div class="flex flex-col gap-0.5 min-w-0">
+        <div class="text-sm font-medium text-main dark:text-white truncate"><%= name %></div>
+        <% if bundle_id.present? %>
+          <div class="text-xs text-secondary font-mono truncate"><%= bundle_id %></div>
+        <% end %>
       </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 mt-2 pt-2 border-t border-main-100 dark:border-main-700">
+      <%= image_tag store_logo, class: "w-4 h-4 shrink-0" %>
+      <span class="text-xs text-secondary"><%= store_label %></span>
+    </div>
   </label>
 </div>

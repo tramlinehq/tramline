@@ -33,7 +33,7 @@ export default class extends ApplicationController {
     if (queryLength > 0) {
       this.__shadowQuery().value = ""
       query.value = ""
-      this.formTarget.requestSubmit() // clear the search results
+      this.formTarget.requestSubmit()
     }
   }
 

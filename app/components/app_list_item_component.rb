@@ -27,6 +27,14 @@ class AppListItemComponent < BaseComponent
     app["store"]
   end
 
+  def store_label
+    (store == "app-store") ? "App Store" : "Play Store"
+  end
+
+  def store_logo
+    (store == "app-store") ? "integrations/logo_app_store.png" : "integrations/logo_google_play_store.png"
+  end
+
   def rating
     app["averageRating"]
   end

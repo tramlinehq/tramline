@@ -10,7 +10,7 @@
               data: {search_form_target: "searchInput", action: "input->search-form#search"}
             } %>
 
-        <%= tag.div "clear", class: "underline hover:cursor-pointer text-xs ml-2", data: {action: "click->search-form#clear"} %>
+        <%= link_to "clear", "#", class: "underline hover:cursor-pointer text-xs ml-2", data: {action: "search-form#clear"} %>
       </div>
 
       <div class="flex items-end">
@@ -18,11 +18,12 @@
       </div>
     </div>
 
-    <%= search_form %>
-
     <% frame = EnhancedTurboFrameComponent.new(turbo_frame, classes: "with-turbo-frame-loader") %>
     <% frame.with_loading_indicator %>
     <%= render frame do %>
+      <%= form_with url: form_url, method: :get, data: {search_form_target: "form", turbo_frame:, turbo_action:} do |form| %>
+        <%= form.hidden_field query_field %>
+      <% end %>
       <%= content %>
     <% end %>
   </div>

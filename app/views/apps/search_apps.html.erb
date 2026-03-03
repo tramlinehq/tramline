@@ -1,14 +1,17 @@
 <% frame = EnhancedTurboFrameComponent.new(:app_search_results, classes: "with-turbo-frame-loader") %>
 <% frame.with_loading_indicator %>
 <%= render frame do %>
+  <%= form_with url: search_apps_path, method: :get, data: {search_form_target: "form", turbo_frame: :app_search_results} do |form| %>
+    <%= form.hidden_field :app_search_pattern %>
+  <% end %>
   <% if @apps.present? %>
     <div data-controller="reveal domain--app-selector">
-      <div class="text-xs text-secondary mb-3">Showing <%= @apps.size %> <%= "result".pluralize(@apps.size) %></div>
-      <div class="max-h-80 overflow-y-auto pr-3">
+      <div class="text-xs text-secondary mb-2">Showing <%= @apps.size %> <%= "result".pluralize(@apps.size) %></div>
+      <div class="max-h-72 overflow-y-auto">
         <%= render AppListComponent.new(apps: @apps) %>
       </div>
 
-      <div data-reveal hidden class="mt-6">
+      <div data-reveal hidden class="mt-4 pt-4 border-t border-main-200 dark:border-main-600">
         <%= render FormComponent.new(model: [new_app], free_form: true, data: {domain__app_selector_target: :form}) do |form| %>
           <div class="grid gap-4 mb-4 sm:grid-cols-2">
             <div class="sm:col-span-2"
@@ -51,7 +54,6 @@
             <div><%= form.F.labeled_tz_select :timezone, "Timezone", default_timezones, {model: ActiveSupport::TimeZone} %></div>
           </div>
 
-          <%# TODO: figure out how to validate and attach the app icon via the searched app's image URL %>
           <%= form.F.hidden_field :name %>
           <%= form.F.hidden_field :bundle_identifier %>
           <%= form.F.hidden_field :description %>
@@ -63,7 +65,7 @@
         <% end %>
       </div>
     </div>
-  <% else %>
-    <div class="text-xs text-secondary">Search both stores; results appear below.</div>
+  <% elsif params[:app_search_pattern].present? %>
+    <div class="text-xs text-secondary">No results found. Try a different search term.</div>
   <% end %>
 <% end %>

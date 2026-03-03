@@ -84,6 +84,9 @@ class AppsController < SignedInApplicationController
   end
 
   def search_apps
+    @apps = []
+    return if params[:app_search_pattern].blank?
+
     api = Installations::StoreSweeper::Api.new
     results = api.tsearch(search_term: params[:app_search_pattern])
     @apps = results["results"]

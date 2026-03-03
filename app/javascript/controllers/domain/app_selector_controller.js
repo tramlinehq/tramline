@@ -26,6 +26,9 @@ export default class extends Controller {
       if (bundleIdField) bundleIdField.value = appData.bundleId || ""
       if (descriptionField) descriptionField.value = appData.description || ""
       if (iconUrlField) iconUrlField.value = appData.iconUrl || ""
+
+      const platformField = form.querySelector('[name*="platform"]')
+      if (platformField) platformField.value = appData.platform || ""
     } catch (e) {
       console.error("Failed to parse app data:", e)
     }
