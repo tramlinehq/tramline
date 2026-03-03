@@ -1,16 +1,15 @@
-<%# locals: (app:, train:, platform_name:, workflow_kind:) %>
 <%= render ButtonComponent.new(
-  label: "Test workflow",
-  scheme: :light,
-  type: :link,
-  size: :xxs,
-  options: test_workflow_app_train_platform_submission_config_path(app, train, platform_name, workflow_kind: workflow_kind),
-  html_options: {
-    method: :post,
-    class: "-mx-1 mt-1",
-    data: {
-      turbo_method: :post,
-      turbo_confirm: "This will trigger a real CI workflow run on your working branch (#{train.working_branch}) with test inputs. Continue?"
-    }
-  }
-) %>
+      label: "Test workflow",
+      scheme: :light,
+      type: :link,
+      size: :xxs,
+      options: test_workflow_app_train_platform_submission_config_path(app, train, platform_name, workflow_kind: workflow_kind),
+      html_options: {
+        method: :post,
+        class: "-mx-1 mt-1",
+        data: {
+          turbo_method: :post,
+          turbo_confirm: "This will trigger a real CI workflow run on your working branch (#{train.working_branch}) with test inputs. Continue?"
+        }
+      }
+    ) %>
