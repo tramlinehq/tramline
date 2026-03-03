@@ -64,4 +64,4 @@ sbom.xml
 sbom.json
 
 # Ignore LLM related files
-.claude/settings.local.json
+.claude/
