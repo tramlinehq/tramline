@@ -158,6 +158,21 @@ describe Coordinators::ProcessCommits do
       expect(Commit::ContinuousBackmergeJob).to have_received(:perform_async).with(commit.id, true)
     end
 
+    context "when cherry_pick backmerge strategy" do
+      let(:train) { create(:train, :with_almost_trunk, backmerge_strategy: "cherry_pick") }
+
+      it "does not attempt a backmerge" do
+        release = create(:release, :created, :with_no_platform_runs, train:)
+        _release_platform_run = create(:release_platform_run, release_platform:, release:)
+        allow(Coordinators::CreateBetaRelease).to receive(:call)
+        allow(Commit::ContinuousBackmergeJob).to receive(:perform_async)
+
+        described_class.call(release, head_commit_attributes, rest_commit_attributes)
+
+        expect(Commit::ContinuousBackmergeJob).not_to have_received(:perform_async)
+      end
+    end
+
     context "when build queue" do
       let(:queue_size) { 3 }
       let(:train) { create(:train, :with_build_queue) }

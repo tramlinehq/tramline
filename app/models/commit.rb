@@ -16,6 +16,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_queue_id          :uuid             indexed
+#  forward_merge_queue_id  :uuid             indexed
 #  release_changelog_id    :uuid             indexed => [commit_hash, release_id], indexed
 #  release_id              :uuid             indexed => [commit_hash, release_changelog_id], indexed => [timestamp]
 #  release_platform_id     :uuid             indexed
@@ -33,11 +34,12 @@ class Commit < ApplicationRecord
   belongs_to :release, inverse_of: :all_commits
   belongs_to :release_changelog, inverse_of: :commits, optional: true
   belongs_to :build_queue, inverse_of: :commits, optional: true
+  belongs_to :forward_merge_queue, optional: true, inverse_of: :commit
   belongs_to :user, foreign_key: "author_login", primary_key: "github_login", optional: true, inverse_of: :commits, class_name: "Accounts::User"
   has_one :pull_request, inverse_of: :commit, dependent: :nullify
 
   scope :sequential, -> { order(timestamp: :desc) }
-  scope :stability, -> { where(release_changelog: nil) }
+  scope :stability, -> { where(release_changelog: nil, forward_merge_queue_id: nil) }
   scope :changelog, -> { where.not(stability.where_values_hash) }
 
   STAMPABLE_REASONS = ["created"]

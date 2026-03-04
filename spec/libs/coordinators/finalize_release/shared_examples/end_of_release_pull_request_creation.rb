@@ -53,6 +53,18 @@ shared_examples "end of release pull request creation for almost trunk" do
       expect(Triggers::PullRequest).not_to have_received(:create_and_merge!)
     end
   end
+
+  context "when backmerge strategy is cherry_pick" do
+    before do
+      train.update(backmerge_strategy: "cherry_pick")
+    end
+
+    it "does not create a pull request" do
+      described_class.call(release)
+
+      expect(Triggers::PullRequest).not_to have_received(:create_and_merge!)
+    end
+  end
 end
 
 shared_examples "end of release pull request creation for parallel branches" do

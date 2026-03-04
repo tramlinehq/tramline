@@ -9,9 +9,10 @@ class LiveRelease::ChangesetTrackingComponent < BaseComponent
     @open_backmerge_prs = release.mid_release_back_merge_prs.open
     @change_queue_commits = @build_queue&.commits&.sequential
     @version_bump_prs = release.pull_requests.version_bump_type
+    @forward_merge_queue = release.forward_merge_queue.sequential if cherry_pick_mode?
   end
 
-  attr_reader :release, :build_queue, :applied_commits, :change_queue_commits, :mid_release_stability_prs, :open_backmerge_prs, :version_bump_prs
+  attr_reader :release, :build_queue, :applied_commits, :change_queue_commits, :mid_release_stability_prs, :open_backmerge_prs, :version_bump_prs, :forward_merge_queue
 
   def change_queue_commits_count
     change_queue_commits&.size || 0
@@ -32,6 +33,14 @@ class LiveRelease::ChangesetTrackingComponent < BaseComponent
   def apply_help_text
     return if change_queue_commits.blank?
     "#{change_queue_commits_count} commit(s) in the queue. These will be automatically applied in #{time_in_words(build_queue&.scheduled_at)} or after #{build_queue&.build_queue_size} commits."
+  end
+
+  def cherry_pick_mode?
+    release.train.cherry_pick?
+  end
+
+  def forward_merge_queue_count
+    forward_merge_queue&.size || 0
   end
 
   memoize def conflicting_branch_releases

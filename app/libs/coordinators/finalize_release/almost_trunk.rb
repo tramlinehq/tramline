@@ -13,6 +13,7 @@ class Coordinators::FinalizeRelease::AlmostTrunk
     case train.backmerge_strategy
     when Train.backmerge_strategies[:continuous] then create_tag
     when Train.backmerge_strategies[:on_finalize] then create_tag.then { create_and_merge_pr }
+    when Train.backmerge_strategies[:cherry_pick] then create_tag
     else create_tag
     end
   end

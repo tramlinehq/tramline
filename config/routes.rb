@@ -253,6 +253,13 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :forward_merge_queue, only: [] do
+    member do
+      post :cherry_pick
+      post :mark_as_picked
+    end
+  end
+
   resources :release_platform_runs, path: :runs, as: :runs, only: [] do
     collection do
       post :conclude, to: "release_platform_runs#conclude"

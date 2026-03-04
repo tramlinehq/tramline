@@ -93,6 +93,7 @@ class Coordinators::ProcessCommits
 
   def attempt_backmerge!(created_head_commit, created_rest_commits)
     return unless created_head_commit
+    return if train.cherry_pick?
     Commit::ContinuousBackmergeJob.perform_async(created_head_commit.id, true)
     created_rest_commits.each { |c| Commit::ContinuousBackmergeJob.perform_async(c.id, false) }
   end

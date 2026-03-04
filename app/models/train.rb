@@ -101,7 +101,7 @@ class Train < ApplicationRecord
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :monitoring_provider, to: :integrations
 
   enum :status, {draft: "draft", active: "active", inactive: "inactive"}
-  enum :backmerge_strategy, {continuous: "continuous", on_finalize: "on_finalize", disabled: "disabled"}
+  enum :backmerge_strategy, {continuous: "continuous", on_finalize: "on_finalize", disabled: "disabled", cherry_pick: "cherry_pick"}
   enum :versioning_strategy, VersioningStrategies::Semverish::STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
   enum :version_bump_strategy, VERSION_BUMP_STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
 
@@ -436,6 +436,10 @@ class Train < ApplicationRecord
     !almost_trunk?
   end
 
+  def cherry_pick?
+    backmerge_strategy == "cherry_pick"
+  end
+
   def custom_commit_hash_input?
     almost_trunk? && !version_bump_enabled?
   end
@@ -648,6 +652,8 @@ class Train < ApplicationRecord
 
   def backmerge_config
     errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && continuous_backmerge?
+    errors.add(:backmerge_strategy, :cherry_pick_not_allowed) if branching_strategy != "almost_trunk" && cherry_pick?
+    errors.add(:backmerge_strategy, :cherry_pick_not_supported_for_bitbucket) if cherry_pick? && vcs_provider.is_a?(BitbucketIntegration)
   end
 
   def working_branch_presence

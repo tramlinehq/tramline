@@ -34,6 +34,63 @@
     <% end %>
   <% end %>
 
+  <% if cherry_pick_mode? %>
+    <%= render CardComponent.new(title: "Forward merge queue (#{forward_merge_queue_count})",
+                                 fold: false,
+                                 size: :base,
+                                 separator: true,
+                                 emptiness: forward_merge_queue_count.zero?) do |card| %>
+      <% card.with_empty_state(text: "No commits from the working branch are queued for cherry-pick.",
+                               banner_image: "git_commit_vertical.svg") %>
+
+      <% forward_merge_queue&.each do |fmq| %>
+        <div class="flex items-center justify-between px-2 py-1.5 border-b border-main-100 last:border-b-0">
+          <div class="flex-1">
+            <%= render CommitComponent.new(commit: fmq.commit, detailed: false) %>
+          </div>
+          <div class="flex items-center gap-x-2 shrink-0">
+            <% if fmq.pending? %>
+              <%= render ButtonComponent.new(
+                    scheme: :default,
+                    options: cherry_pick_forward_merge_queue_path(fmq),
+                    type: :button,
+                    size: :xxs,
+                    disabled: !release.committable?,
+                    label: "Cherry-pick",
+                    html_options: {data: {turbo_confirm: "Cherry-pick this commit into the release branch?"}}
+                  ) %>
+            <% elsif fmq.in_progress? %>
+              <%= status_badge("picking...", :ongoing, pulse: true) %>
+            <% elsif fmq.success? %>
+              <%= status_badge("picked", :success) %>
+            <% elsif fmq.failed? %>
+              <%= status_badge("failed to merge cleanly", :failure) %>
+              <%= render ButtonComponent.new(
+                    scheme: :default,
+                    options: mark_as_picked_forward_merge_queue_path(fmq),
+                    type: :button,
+                    size: :xxs,
+                    label: "Mark as picked",
+                    html_options: {data: {turbo_confirm: "Mark this commit as manually picked?"}}
+                  ) %>
+              <%= render ButtonComponent.new(
+                    scheme: :default,
+                    options: cherry_pick_forward_merge_queue_path(fmq),
+                    type: :button,
+                    size: :xxs,
+                    disabled: !release.committable?,
+                    label: "Retry",
+                    html_options: {data: {turbo_confirm: "Retry cherry-picking this commit?"}}
+                  ) %>
+            <% elsif fmq.manually_picked? %>
+              <%= status_badge("manually picked", :neutral) %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
   <%= render CardComponent.new(title: "Ongoing work (#{mid_release_stability_prs.count})",
                                fold: true,
                                size: :base,

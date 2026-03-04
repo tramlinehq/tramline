@@ -21,6 +21,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             indexed
+#  forward_merge_queue_id  :uuid             indexed
 #  release_id              :uuid             indexed => [phase, number], indexed => [head_ref], indexed => [kind], indexed => [phase]
 #  release_platform_run_id :uuid
 #  source_id               :string           not null, indexed
@@ -37,6 +38,7 @@ class PullRequest < ApplicationRecord
 
   belongs_to :release
   belongs_to :commit, optional: true
+  belongs_to :forward_merge_queue, optional: true
 
   enum :phase, {
     pre_release: "pre_release",
@@ -48,7 +50,8 @@ class PullRequest < ApplicationRecord
     stability: "stability",
     forward_merge: "forward_merge",
     back_merge: "back_merge",
-    version_bump: "version_bump"
+    version_bump: "version_bump",
+    cherry_pick: "cherry_pick"
   }, suffix: :type
 
   enum :state, {
