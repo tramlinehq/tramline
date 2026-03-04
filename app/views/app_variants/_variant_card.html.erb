@@ -28,26 +28,21 @@
 
   <div class="mt-2">
     <% integrations_by_type = variant.integrations.connected.index_by(&:providable_type) %>
+    <% provider_info = {"GoogleFirebaseIntegration" => {name: "Firebase App Distribution", logo: "firebase"}, "GooglePlayStoreIntegration" => {name: "Google Play Store", logo: "google_play_store"}, "AppStoreIntegration" => {name: "App Store Connect", logo: "app_store"}} %>
+    <% allowed_types = Integration::APP_VARIANT_PROVIDABLE_TYPES[app.platform] || [] %>
     <div class="grid grid-cols-2 gap-4">
-      <%= render partial: "app_variants/integration_card",
-                 locals: {
-                   app: app,
-                   variant: variant,
-                   integration: integrations_by_type["GoogleFirebaseIntegration"],
-                   provider_type: "GoogleFirebaseIntegration",
-                   provider_name: "Firebase App Distribution",
-                   provider_logo: "firebase"
-                 } %>
-
-      <%= render partial: "app_variants/integration_card",
-                 locals: {
-                   app: app,
-                   variant: variant,
-                   integration: integrations_by_type["GooglePlayStoreIntegration"],
-                   provider_type: "GooglePlayStoreIntegration",
-                   provider_name: "Google Play Store",
-                   provider_logo: "google_play_store"
-                 } %>
+      <% allowed_types.each do |provider_type| %>
+        <% info = provider_info[provider_type] %>
+        <%= render partial: "app_variants/integration_card",
+                   locals: {
+                     app: app,
+                     variant: variant,
+                     integration: integrations_by_type[provider_type],
+                     provider_type: provider_type,
+                     provider_name: info[:name],
+                     provider_logo: info[:logo]
+                   } %>
+      <% end %>
     </div>
   </div>
 <% end %>

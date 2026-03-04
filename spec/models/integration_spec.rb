@@ -334,17 +334,8 @@ describe Integration do
   end
 
   describe "app_variant_restriction validation" do
-    let(:variant) { create(:app_variant, app: app, bundle_identifier: "com.example.staging") }
-
-    it "allows build_channel category for app variants" do
-      integration = build(:integration,
-        category: "build_channel",
-        integrable: variant,
-        providable: build(:google_firebase_integration, :without_callbacks_and_validations))
-      expect(integration).to be_valid
-    end
-
     it "rejects non-build_channel category for app variants" do
+      variant = create(:app_variant, app: app, bundle_identifier: "com.example.staging")
       integration = build(:integration,
         category: "version_control",
         integrable: variant,
@@ -353,14 +344,108 @@ describe Integration do
       expect(integration.errors[:category]).to be_present
     end
 
-    it "rejects non-allowed providable types for app variants" do
-      integration = build(:integration,
-        category: "build_channel",
-        integrable: variant,
-        providable: build(:google_firebase_integration, :without_callbacks_and_validations))
-      integration.providable_type = "SlackIntegration"
-      expect(integration).not_to be_valid
-      expect(integration.errors[:providable_type]).to be_present
+    context "when android app" do
+      let(:variant) { create(:app_variant, app: app, bundle_identifier: "com.example.staging") }
+
+      it "allows GoogleFirebaseIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        expect(integration).to be_valid
+      end
+
+      it "allows GooglePlayStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "GooglePlayStoreIntegration"
+        expect(integration).to be_valid
+      end
+
+      it "rejects AppStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "AppStoreIntegration"
+        expect(integration).not_to be_valid
+        expect(integration.errors[:providable_type]).to be_present
+      end
+    end
+
+    context "when ios app" do
+      let(:ios_app) { create(:app, :ios) }
+      let(:variant) { create(:app_variant, app: ios_app, bundle_identifier: "com.example.staging") }
+
+      it "allows GoogleFirebaseIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        expect(integration).to be_valid
+      end
+
+      it "allows AppStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "AppStoreIntegration"
+        expect(integration).to be_valid
+      end
+
+      it "rejects GooglePlayStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "GooglePlayStoreIntegration"
+        expect(integration).not_to be_valid
+        expect(integration.errors[:providable_type]).to be_present
+      end
+    end
+
+    context "when cross_platform app" do
+      let(:cp_app) { create(:app, :cross_platform) }
+      let(:variant) { create(:app_variant, app: cp_app, bundle_identifier: "com.example.staging") }
+
+      it "allows GoogleFirebaseIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        expect(integration).to be_valid
+      end
+
+      it "allows GooglePlayStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "GooglePlayStoreIntegration"
+        expect(integration).to be_valid
+      end
+
+      it "allows AppStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "AppStoreIntegration"
+        expect(integration).to be_valid
+      end
+
+      it "rejects SlackIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "SlackIntegration"
+        expect(integration).not_to be_valid
+        expect(integration.errors[:providable_type]).to be_present
+      end
     end
   end
 

@@ -35,7 +35,7 @@ class AppVariantIntegrationsController < SignedInApplicationController
   end
 
   def set_providable
-    unless Integration::APP_VARIANT_PROVIDABLE_TYPES.include?(providable_type)
+    unless Integration::APP_VARIANT_PROVIDABLE_TYPES[@app.platform]&.include?(providable_type)
       redirect_to app_app_variants_path(@app), flash: {error: t("integrations.app_variant.invalid_provider")}
       return
     end

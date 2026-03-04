@@ -215,14 +215,13 @@ describe Config::ReleasePlatform do
     context "when app has variants" do
       let!(:variant) { create(:app_variant, app: app, bundle_identifier: "com.example.staging") }
 
-      it "includes variants in the result" do
+      it "omits variant with no integrations" do
         result = platform_config.allowed_pre_prod_submissions
         variant_entry = result[:variants].find { |v| v[:type] == "AppVariant" }
-        expect(variant_entry).to be_present
-        expect(variant_entry[:id]).to eq(variant.id)
+        expect(variant_entry).to be_nil
       end
 
-      it "excludes unconfigured variant integrations" do
+      it "omits variant entirely when it has no configured integrations" do
         firebase = create(:google_firebase_integration, :without_callbacks_and_validations)
         create(:integration,
           category: "build_channel",
@@ -234,7 +233,7 @@ describe Config::ReleasePlatform do
 
         result = platform_config.allowed_pre_prod_submissions
         variant_entry = result[:variants].find { |v| v[:type] == "AppVariant" }
-        expect(variant_entry[:submissions]).to be_empty
+        expect(variant_entry).to be_nil
       end
 
       it "includes configured variant integrations" do
@@ -253,7 +252,7 @@ describe Config::ReleasePlatform do
         expect(variant_entry[:submissions]).not_to be_empty
       end
 
-      it "excludes disconnected variant integrations" do
+      it "omits variant when all integrations are disconnected" do
         firebase = create(:google_firebase_integration, :without_callbacks_and_validations)
         integration = create(:integration,
           category: "build_channel",
@@ -266,7 +265,7 @@ describe Config::ReleasePlatform do
 
         result = platform_config.allowed_pre_prod_submissions
         variant_entry = result[:variants].find { |v| v[:type] == "AppVariant" }
-        expect(variant_entry[:submissions]).to be_empty
+        expect(variant_entry).to be_nil
       end
     end
   end

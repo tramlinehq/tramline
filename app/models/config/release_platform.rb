@@ -115,12 +115,15 @@ class Config::ReleasePlatform < ApplicationRecord
     }
 
     if app.variants.any?
-      opts[:variants] += app.variants.map do |variant|
+      opts[:variants] += app.variants.filter_map do |variant|
+        submissions = pre_prod_submissions_for(variant)
+        next if submissions.empty?
+
         {
           name: "#{variant.name} – #{variant.bundle_identifier}",
           id: variant.id,
           type: "AppVariant",
-          submissions: pre_prod_submissions_for(variant)
+          submissions: submissions
         }
       end
     end

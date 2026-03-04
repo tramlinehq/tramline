@@ -32,7 +32,11 @@ class Integration < ApplicationRecord
   IntegrationNotImplemented = Class.new(StandardError)
   UnsupportedAction = Class.new(StandardError)
 
-  APP_VARIANT_PROVIDABLE_TYPES = %w[GoogleFirebaseIntegration GooglePlayStoreIntegration]
+  APP_VARIANT_PROVIDABLE_TYPES = {
+    ios: %w[GoogleFirebaseIntegration AppStoreIntegration],
+    android: %w[GoogleFirebaseIntegration GooglePlayStoreIntegration],
+    cross_platform: %w[GoogleFirebaseIntegration GooglePlayStoreIntegration AppStoreIntegration]
+  }.with_indifferent_access.freeze
 
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
@@ -352,7 +356,8 @@ class Integration < ApplicationRecord
       errors.add(:category, "must be 'build_channel' when integrable is an AppVariant")
     end
 
-    if APP_VARIANT_PROVIDABLE_TYPES.exclude?(providable_type)
+    allowed_types = APP_VARIANT_PROVIDABLE_TYPES[integrable.platform] || []
+    if allowed_types.exclude?(providable_type)
       errors.add(:providable_type, :not_allowed_for_app_variant)
     end
   end
