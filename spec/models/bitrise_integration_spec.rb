@@ -2,7 +2,26 @@
 
 require "rails_helper"
 
-describe "BitriseIntegration" do
+describe BitriseIntegration do
+  describe "#setup_complete?" do
+    let(:app) { create(:app, :android) }
+    let(:bitrise_integration) { create(:bitrise_integration, :without_callbacks_and_validations) }
+
+    before do
+      create(:integration, category: "ci_cd", providable: bitrise_integration, integrable: app)
+    end
+
+    it "returns true when project_config has an id" do
+      bitrise_integration.update!(project_config: {"id" => "abc123", "title" => "My App"})
+      expect(bitrise_integration.setup_complete?).to be true
+    end
+
+    it "returns false when project_config is blank" do
+      bitrise_integration.update!(project_config: nil)
+      expect(bitrise_integration.setup_complete?).to be false
+    end
+  end
+
   describe "#workflows" do
     let(:app) { create(:app, :android, id: "a6f392f6-e92c-4f00-a2e6-a5db7abfb0e0") }
     let(:installation) { instance_double(Installations::Bitrise::Api) }

@@ -15,6 +15,56 @@ describe SentryIntegration do
     expect(sentry_integration).to be_valid
   end
 
+  describe "#setup_complete?" do
+    context "when android app" do
+      it "returns true when android_config is present" do
+        sentry_integration.update!(android_config: {project_id: "123"})
+        expect(sentry_integration.setup_complete?).to be true
+      end
+
+      it "returns false when android_config is blank" do
+        sentry_integration.update!(android_config: nil)
+        expect(sentry_integration.setup_complete?).to be false
+      end
+    end
+
+    context "when ios app" do
+      let(:ios_app) { create(:app, :ios) }
+      let(:ios_integration) { create(:integration, :with_sentry, integrable: ios_app) }
+      let(:ios_sentry) { ios_integration.providable }
+
+      it "returns true when ios_config is present" do
+        ios_sentry.update!(ios_config: {project_id: "123"})
+        allow(ios_sentry).to receive(:integrable).and_return(ios_app)
+        expect(ios_sentry.setup_complete?).to be true
+      end
+
+      it "returns false when ios_config is blank" do
+        ios_sentry.update!(ios_config: nil)
+        allow(ios_sentry).to receive(:integrable).and_return(ios_app)
+        expect(ios_sentry.setup_complete?).to be false
+      end
+    end
+
+    context "when cross_platform app" do
+      let(:cp_app) { create(:app, :cross_platform) }
+      let(:cp_integration) { create(:integration, :with_sentry, integrable: cp_app) }
+      let(:cp_sentry) { cp_integration.providable }
+
+      it "returns true when both configs are present" do
+        cp_sentry.update!(android_config: {project_id: "123"}, ios_config: {project_id: "456"})
+        allow(cp_sentry).to receive(:integrable).and_return(cp_app)
+        expect(cp_sentry.setup_complete?).to be true
+      end
+
+      it "returns false when only one config is present" do
+        cp_sentry.update!(android_config: {project_id: "123"}, ios_config: nil)
+        allow(cp_sentry).to receive(:integrable).and_return(cp_app)
+        expect(cp_sentry.setup_complete?).to be false
+      end
+    end
+  end
+
   describe "#installation" do
     it "returns an API instance with the access token" do
       sentry_integration.installation

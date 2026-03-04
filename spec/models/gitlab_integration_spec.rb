@@ -10,6 +10,18 @@ describe GitlabIntegration do
     allow(gitlab_integration).to receive_messages(installation:)
   end
 
+  describe "#setup_complete?" do
+    it "returns true when repository_config is present" do
+      gitlab_integration.update!(repository_config: {id: 123, full_name: "tramline/repo", namespace: "tramline"})
+      expect(gitlab_integration.setup_complete?).to be true
+    end
+
+    it "returns false when repository_config is blank" do
+      gitlab_integration.update!(repository_config: nil)
+      expect(gitlab_integration.setup_complete?).to be false
+    end
+  end
+
   describe "#create_release!" do
     it "calls the GitLab API to create a release" do
       allow(installation).to receive(:create_release!).and_return({"tag_name" => "v1.0.0"})

@@ -109,17 +109,7 @@ class Config::ReleasePlatform < ApplicationRecord
           name: "Default – #{app.bundle_identifier}",
           id: app.id,
           type: "App",
-          submissions:
-            Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym].invert.each_with_object([]) do |(type, integration), submissions|
-              provider = app.integrations.build_channel.find_by(providable_type: integration.to_s)&.providable
-              next if provider.blank?
-
-              submissions << {
-                type: type,
-                name: provider.display,
-                channels: provider.build_channels(with_production: false)
-              }
-            end
+          submissions: pre_prod_submissions_for(app)
         }
       ]
     }
@@ -130,17 +120,7 @@ class Config::ReleasePlatform < ApplicationRecord
           name: "#{variant.name} – #{variant.bundle_identifier}",
           id: variant.id,
           type: "AppVariant",
-          submissions:
-            Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym].invert.each_with_object([]) do |(type, integration), submissions|
-              provider = variant.integrations.build_channel.find_by(providable_type: integration.to_s)&.providable
-              next if provider.blank?
-
-              submissions << {
-                type: type,
-                name: provider.display,
-                channels: provider.build_channels(with_production: false)
-              }
-            end
+          submissions: pre_prod_submissions_for(variant)
         }
       end
     end
@@ -223,5 +203,22 @@ class Config::ReleasePlatform < ApplicationRecord
   # beta releases are always present, so we check for submissions in particular for any beta-related validations
   def beta_valid?
     beta_release&.submissions.present? && !beta_release.marked_for_destruction?
+  end
+
+  private
+
+  def pre_prod_submissions_for(integrable)
+    configured_integrations = integrable.integrations.connected.build_channel.select(&:setup_complete?)
+
+    Integration::INTEGRATIONS_TO_PRE_PROD_SUBMISSIONS[platform.to_sym].invert.each_with_object([]) do |(type, integration), submissions|
+      provider = configured_integrations.find { |i| i.providable_type == integration.to_s }&.providable
+      next if provider.blank?
+
+      submissions << {
+        type: type,
+        name: provider.display,
+        channels: provider.build_channels(with_production: false)
+      }
+    end
   end
 end

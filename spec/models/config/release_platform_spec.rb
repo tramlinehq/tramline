@@ -180,6 +180,97 @@ describe Config::ReleasePlatform do
     end
   end
 
+  describe "#allowed_pre_prod_submissions" do
+    let(:app) { create(:app, :android) }
+    let(:release_platform) { create(:release_platform, app:, platform: "android") }
+    let(:platform_config) { described_class.from_json(base_config.merge(release_platform:)) }
+
+    context "when app has configured integrations" do
+      it "includes submissions for connected and configured integrations" do
+        firebase = app.integrations.connected.build_channel
+          .find { |i| i.providable_type == "GoogleFirebaseIntegration" }
+
+        if firebase
+          allow(firebase).to receive(:setup_complete?).and_return(true)
+          allow(firebase.providable).to receive(:build_channels).and_return([{id: "group1", name: "Testers"}])
+        end
+
+        result = platform_config.allowed_pre_prod_submissions
+        default_variant = result[:variants].find { |v| v[:type] == "App" }
+        expect(default_variant).to be_present
+        expect(default_variant[:id]).to eq(app.id)
+      end
+    end
+
+    context "when app has unconfigured integrations" do
+      it "excludes integrations that are not setup_complete" do
+        allow_any_instance_of(Integration).to receive(:setup_complete?).and_return(false)
+
+        result = platform_config.allowed_pre_prod_submissions
+        default_variant = result[:variants].find { |v| v[:type] == "App" }
+        expect(default_variant[:submissions]).to be_empty
+      end
+    end
+
+    context "when app has variants" do
+      let!(:variant) { create(:app_variant, app: app, bundle_identifier: "com.example.staging") }
+
+      it "includes variants in the result" do
+        result = platform_config.allowed_pre_prod_submissions
+        variant_entry = result[:variants].find { |v| v[:type] == "AppVariant" }
+        expect(variant_entry).to be_present
+        expect(variant_entry[:id]).to eq(variant.id)
+      end
+
+      it "excludes unconfigured variant integrations" do
+        firebase = create(:google_firebase_integration, :without_callbacks_and_validations)
+        create(:integration,
+          category: "build_channel",
+          integrable: variant,
+          status: :connected,
+          providable: firebase)
+        # Firebase without config is not setup_complete
+        firebase.update!(android_config: nil)
+
+        result = platform_config.allowed_pre_prod_submissions
+        variant_entry = result[:variants].find { |v| v[:type] == "AppVariant" }
+        expect(variant_entry[:submissions]).to be_empty
+      end
+
+      it "includes configured variant integrations" do
+        firebase = create(:google_firebase_integration, :without_callbacks_and_validations)
+        create(:integration,
+          category: "build_channel",
+          integrable: variant,
+          status: :connected,
+          providable: firebase)
+        firebase.update!(android_config: {app_id: "1:123:android:abc"})
+        allow_any_instance_of(GoogleFirebaseIntegration).to receive(:build_channels)
+          .and_return([{id: "group1", name: "Testers"}])
+
+        result = platform_config.allowed_pre_prod_submissions
+        variant_entry = result[:variants].find { |v| v[:type] == "AppVariant" }
+        expect(variant_entry[:submissions]).not_to be_empty
+      end
+
+      it "excludes disconnected variant integrations" do
+        firebase = create(:google_firebase_integration, :without_callbacks_and_validations)
+        integration = create(:integration,
+          category: "build_channel",
+          integrable: variant,
+          status: :connected,
+          providable: firebase)
+        firebase.update!(android_config: {app_id: "1:123:android:abc"})
+        allow(integration).to receive(:disconnectable?).and_return(true)
+        integration.disconnect
+
+        result = platform_config.allowed_pre_prod_submissions
+        variant_entry = result[:variants].find { |v| v[:type] == "AppVariant" }
+        expect(variant_entry[:submissions]).to be_empty
+      end
+    end
+  end
+
   describe "#has_restricted_public_channels?" do
     it "returns false for an ios config" do
       config = described_class.from_json(base_config.merge(release_platform: create(:release_platform, platform: "ios")))
