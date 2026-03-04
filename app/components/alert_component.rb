@@ -21,7 +21,7 @@ class AlertComponent < BaseComponent
 
   ACTION_BUTTON_STYLES = "flex items-center text-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
 
-  KINDS = [:alert, :banner, :announcement]
+  KINDS = [:alert, :banner, :announcement, :inline]
 
   renders_one :banner_action, ButtonComponent
   renders_many :announcement_modals, ModalComponent
@@ -77,6 +77,10 @@ class AlertComponent < BaseComponent
 
   def announcement?
     @kind == :announcement
+  end
+
+  def inline?
+    @kind == :inline
   end
 
   def info?

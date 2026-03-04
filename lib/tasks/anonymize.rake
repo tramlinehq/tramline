@@ -51,7 +51,7 @@ namespace :anonymize do
           "tag_store_releases_with_platform_names", "tag_store_releases", "compact_build_notes", "tag_end_of_release", "build_queue_enabled",
           "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_release_specific_channel_enabled",
           "tag_end_of_release_prefix", "tag_end_of_release_suffix", "version_bump_strategy", "enable_changelog_linking_in_notifications",
-          "release_branch_pattern", "webhooks_enabled"
+          "release_branch_pattern", "webhooks_enabled", "allow_upcoming_release_submissions"
         whitelist_timestamps
         anonymize("app_id") { |field| app.id }
         anonymize("notification_channel") { |field| {"id" => "dummy", "name" => "test", "is_private" => false} }

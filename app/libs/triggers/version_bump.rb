@@ -72,6 +72,7 @@ class Triggers::VersionBump
       when file_types[:plist] then update_plist_version(content)
       when file_types[:pbxproj] then update_pbxproj_version(content)
       when file_types[:yaml] then update_pubspec_version(content)
+      when file_types[:properties] then update_properties_version(content)
       else
         content # no change for unknown file types
       end
@@ -127,6 +128,12 @@ class Triggers::VersionBump
 
   def update_pbxproj_version(content)
     content.gsub(/MARKETING_VERSION = .*?;/, "MARKETING_VERSION = #{release_version};")
+  end
+
+  # The version line typically looks like: VERSION_NAME=1.0.0 or versionName=1.0.0
+  # Spaces around the = sign are optional
+  def update_properties_version(content)
+    content.gsub(/^(VERSION_NAME|versionName)\s*=\s*\S+/, "\\1=#{release_version}")
   end
 
   memoize def version_bump_branch

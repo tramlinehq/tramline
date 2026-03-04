@@ -145,10 +145,6 @@ class BitriseIntegration < ApplicationRecord
     end
   end
 
-  def find_workflow_run(_workflow_id, _branch, _commit_sha)
-    raise Integrations::UnsupportedAction
-  end
-
   def artifact_url(workflow_run_id, artifact_name_pattern)
     installation
       .artifacts(project, workflow_run_id)

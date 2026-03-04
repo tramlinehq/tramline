@@ -84,6 +84,11 @@ en:
       success: "Platform configuration was successfully updated."
       refresh_workflows:
         success: "The workflow list is being refreshed. This may take a few seconds."
+      test_workflow:
+        success_html: "%{workflow_kind} workflow '%{workflow_name}' triggered successfully! <a href='%{ci_link}' target='_blank' rel='noopener noreferrer' class='underline'>View CI run →</a>"
+        triggered: "%{workflow_kind} workflow '%{workflow_name}' triggered successfully!"
+        not_found: "No saved workflow found for this configuration."
+        failure: "Failed to trigger workflow: %{error}"
   release_metadata:
     metadata_not_editable: "Cannot update the release metadata once the production release has begun."
     update:
@@ -422,6 +427,7 @@ en:
           localization_not_found: "the locale for release metadata doesn't exist in the store"
           unauthorized: "the request to the store failed due to authorization error"
           developer_rejected: "the store version was rejected by you manually"
+          age_rating_missing: "Apple requires updated age rating declarations (e.g. messagingAndChat, gunsOrOtherWeapons, userGeneratedContent, advertising, lootBox, parentalControls, etc.) for your app. Please complete the age rating questionnaire in App Store Connect and retry the submission."
       test_flight_submission:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"

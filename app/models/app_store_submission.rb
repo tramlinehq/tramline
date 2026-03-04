@@ -171,7 +171,7 @@ class AppStoreSubmission < StoreSubmission
     unless result.ok?
       case result.error.reason
       when :release_not_found then raise PreparedVersionNotFoundError
-      when :release_already_exists then fail_prepare!(reason: result.error.reason)
+      when :release_already_exists, :age_rating_missing then fail_prepare!(reason: result.error.reason, error: result.error)
       else fail_with_error!(result.error)
       end
 

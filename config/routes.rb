@@ -62,6 +62,11 @@ Rails.application.routes.draw do
   end
 
   resources :apps do
+    collection do
+      get :search, to: "apps#search_apps"
+      get :new_via_search
+    end
+
     member do
       delete :remove_icon
     end
@@ -137,6 +142,7 @@ Rails.application.routes.draw do
         resource :release_platform_configs, only: %i[edit update], path: :submissions, as: :submission_config, controller: "config/release_platforms" do
           collection do
             post :refresh_workflows
+            post :test_workflow
           end
         end
       end
@@ -252,6 +258,12 @@ Rails.application.routes.draw do
     end
 
     get "/integrations/build_artifact_channels", to: "integrations#build_artifact_channels"
+  end
+
+  resources :commits, only: [] do
+    member do
+      get :backmerge_failure_instructions
+    end
   end
 
   resources :release_platform_runs, path: :runs, as: :runs, only: [] do

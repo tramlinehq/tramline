@@ -143,14 +143,6 @@ class WorkflowRun < ApplicationRecord
     FAILED_STATES.include?(status)
   end
 
-  def find_and_update_external
-    return if workflow_found?
-
-    find_external_run
-      .then { |external_workflow_run| check_external_data(external_workflow_run) }
-      .then { |external_workflow_run| update_external_metadata!(external_workflow_run) }
-  end
-
   def get_external_run
     # return mock_finished_external_run if sandbox_mode?
     ci_cd_provider.get_workflow_run(external_id)
@@ -242,10 +234,12 @@ class WorkflowRun < ApplicationRecord
   end
 
   def trigger_external_run!
-    ci_cd_provider
+    # GitHub now returns workflow_run_id immediately, so we get full metadata right away
+    external_workflow_run = ci_cd_provider
       .trigger_workflow_run!(conf.identifier, release_branch, workflow_inputs, commit_hash)
-      .then { |external_workflow_run| check_external_data(external_workflow_run) }
-      .then { |external_workflow_run| update_external_metadata!(external_workflow_run) }
+
+    external_workflow_run = check_external_data(external_workflow_run)
+    update_external_metadata!(external_workflow_run)
   end
 
   def update_internally_managed_build_number!
@@ -280,19 +274,13 @@ class WorkflowRun < ApplicationRecord
     update_build_number_from_external_metadata! if app.build_number_managed_externally?
   end
 
-  def find_external_run
-    # return mock_external_run if sandbox_mode?
-    ci_cd_provider.find_workflow_run(conf.identifier, release_branch, commit_hash)
-  end
-
   def on_initiate!
     WorkflowRuns::TriggerJob.perform_async(id)
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
   end
 
   def on_initiation!
-    return found! if workflow_found? && may_found?
-    WorkflowRuns::FindJob.perform_async(id)
+    found! if workflow_found? && may_found?
   end
 
   def on_found!

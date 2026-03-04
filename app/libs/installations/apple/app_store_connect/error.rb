@@ -100,6 +100,11 @@ module Installations
         resource: "submission",
         code: "not_found",
         decorated_reason: :submission_not_found
+      },
+      {
+        resource: "release",
+        code: "age_rating_missing",
+        decorated_reason: :age_rating_missing
       }
     ]
 

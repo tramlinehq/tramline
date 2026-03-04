@@ -80,7 +80,7 @@
               <code><%= release.train.working_branch %></code> before wrapping up this release.</p>
             <div class="mt-2">
               <%= render partial: "shared/divide_collection",
-                         locals: {collection: render(CommitComponent.with_collection(unmerged_commits))} %>
+                         locals: {collection: render(CommitComponent.with_collection(unmerged_commits, backmerge_instructions: true))} %>
             </div>
           </div>
 
