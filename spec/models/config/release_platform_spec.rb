@@ -187,18 +187,24 @@ describe Config::ReleasePlatform do
 
     context "when app has configured integrations" do
       it "includes submissions for connected and configured integrations" do
-        firebase = app.integrations.connected.build_channel
-          .find { |i| i.providable_type == "GoogleFirebaseIntegration" }
-
-        if firebase
-          allow(firebase).to receive(:setup_complete?).and_return(true)
-          allow(firebase.providable).to receive(:build_channels).and_return([{id: "group1", name: "Testers"}])
-        end
+        firebase = create(:google_firebase_integration, :without_callbacks_and_validations)
+        create(:integration,
+          category: "build_channel",
+          integrable: app,
+          status: :connected,
+          providable: firebase)
+        firebase.update!(android_config: {app_id: "1:123:android:abc"})
+        allow_any_instance_of(GoogleFirebaseIntegration).to receive(:build_channels)
+          .and_return([{id: "group1", name: "Testers"}])
 
         result = platform_config.allowed_pre_prod_submissions
         default_variant = result[:variants].find { |v| v[:type] == "App" }
         expect(default_variant).to be_present
         expect(default_variant[:id]).to eq(app.id)
+
+        firebase_submission = default_variant[:submissions].find { |s| s[:type] == GoogleFirebaseSubmission }
+        expect(firebase_submission).to be_present
+        expect(firebase_submission[:channels]).to eq([{"id" => "group1", "name" => "Testers"}])
       end
     end
 
