@@ -257,7 +257,7 @@ class Integration < ApplicationRecord
   end
 
   def disconnectable?
-    app.active_runs.none?
+    integrable.active_runs.none?
   end
 
   def disconnectable_categories?
