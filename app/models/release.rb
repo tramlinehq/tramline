@@ -115,7 +115,7 @@ class Release < ApplicationRecord
   has_many :builds, through: :release_platform_runs
   has_many :build_queues, dependent: :destroy
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
-  has_many :forward_merge_queue, -> { sequential }, dependent: :destroy, inverse_of: :release, class_name: "ForwardMergeQueue"
+  has_many :forward_merges, -> { sequential }, dependent: :destroy, inverse_of: :release, class_name: "ForwardMerge"
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
   has_many :approval_items, -> { order(:created_at) }, inverse_of: :release, dependent: :destroy
   has_many :store_rollouts, through: :release_platform_runs

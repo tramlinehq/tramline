@@ -5,8 +5,8 @@ require "rails_helper"
 describe Triggers::CherryPickPullRequest do
   let(:train) { create(:train, :with_almost_trunk, backmerge_strategy: "cherry_pick") }
   let(:release) { create(:release, train:) }
-  let(:fmq) { create(:forward_merge_queue, release:) }
-  let(:commit) { create(:commit, release:, forward_merge_queue: fmq) }
+  let(:fmq) { create(:forward_merge, release:) }
+  let(:commit) { create(:commit, release:, forward_merge: fmq) }
   let(:repo_integration) { instance_double(GithubIntegration) }
   let(:expected_patch_branch) { "cherry-pick-#{release.branch_name.parameterize}-#{commit.short_sha}" }
   let(:expected_title) { "[CHERRY-PICK] [#{release.release_version}] #{commit.message.to_s.split("\n").first}".gsub(/\s*\(#\d+\)/, "").squish }
@@ -81,6 +81,6 @@ describe Triggers::CherryPickPullRequest do
     described_class.call(release, fmq)
 
     pr = release.pull_requests.cherry_pick_type.last
-    expect(pr.forward_merge_queue_id).to eq(fmq.id)
+    expect(pr.forward_merge_id).to eq(fmq.id)
   end
 end

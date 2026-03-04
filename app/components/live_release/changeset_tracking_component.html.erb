@@ -35,22 +35,22 @@
   <% end %>
 
   <% if cherry_pick_mode? %>
-    <%= render CardComponent.new(title: "Forward merge queue (#{forward_merge_queue_count})",
+    <%= render CardComponent.new(title: "Forward merges (#{forward_merges_count})",
                                  fold: false,
                                  size: :base,
                                  separator: true,
-                                 emptiness: forward_merge_queue_count.zero?) do |card| %>
+                                 emptiness: forward_merges_count.zero?) do |card| %>
       <% card.with_empty_state(text: "No commits from the working branch are queued for cherry-pick.",
                                banner_image: "git_commit_vertical.svg") %>
 
       <div class="divide-default">
-        <% forward_merge_queue&.each do |fmq| %>
+        <% forward_merges&.each do |fmq| %>
           <%= render CommitComponent.new(commit: fmq.commit) do |c| %>
             <% c.with_actions do %>
               <% if fmq.pending? %>
                 <%= render ButtonComponent.new(
                       scheme: :default,
-                      options: cherry_pick_forward_merge_queue_path(fmq),
+                      options: cherry_pick_forward_merge_path(fmq),
                       type: :button,
                       size: :xxs,
                       disabled: !release.committable?,
@@ -65,7 +65,7 @@
                 <%= status_badge("failed to merge cleanly", :failure) %>
                 <%= render ButtonComponent.new(
                       scheme: :default,
-                      options: mark_as_picked_forward_merge_queue_path(fmq),
+                      options: mark_as_picked_forward_merge_path(fmq),
                       type: :button,
                       size: :xxs,
                       label: "Mark as picked",
@@ -73,7 +73,7 @@
                     ) %>
                 <%= render ButtonComponent.new(
                       scheme: :default,
-                      options: cherry_pick_forward_merge_queue_path(fmq),
+                      options: cherry_pick_forward_merge_path(fmq),
                       type: :button,
                       size: :xxs,
                       disabled: !release.committable?,

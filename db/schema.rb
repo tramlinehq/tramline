@@ -238,10 +238,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_03_100006) do
     t.jsonb "parents"
     t.tsvector "search_vector"
     t.uuid "release_changelog_id"
-    t.uuid "forward_merge_queue_id"
+    t.uuid "forward_merge_id"
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
     t.index ["commit_hash", "release_id", "release_changelog_id"], name: "idx_on_commit_hash_release_id_release_changelog_id_29200d00c2", unique: true
-    t.index ["forward_merge_queue_id"], name: "index_commits_on_forward_merge_queue_id"
+    t.index ["forward_merge_id"], name: "index_commits_on_forward_merge_id"
     t.index ["message"], name: "index_commits_on_message", opclass: :gin_trgm_ops, using: :gin
     t.index ["release_changelog_id"], name: "index_commits_on_release_changelog_id"
     t.index ["release_id", "timestamp"], name: "index_commits_on_release_id_and_timestamp"
@@ -381,12 +381,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_03_100006) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "forward_merge_queue", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "forward_merges", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_id", null: false
     t.string "status", default: "pending", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["release_id"], name: "index_forward_merge_queue_on_release_id"
+    t.index ["release_id"], name: "index_forward_merges_on_release_id"
   end
 
   create_table "github_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -620,10 +620,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_03_100006) do
     t.tsvector "search_vector"
     t.string "merge_commit_sha"
     t.string "kind"
-    t.uuid "forward_merge_queue_id"
+    t.uuid "forward_merge_id"
     t.index ["body"], name: "index_pull_requests_on_body", opclass: :gin_trgm_ops, using: :gin
     t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
-    t.index ["forward_merge_queue_id"], name: "index_pull_requests_on_forward_merge_queue_id"
+    t.index ["forward_merge_id"], name: "index_pull_requests_on_forward_merge_id"
     t.index ["merge_commit_sha"], name: "index_pull_requests_on_merge_commit_sha", where: "(merge_commit_sha IS NOT NULL)"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
@@ -1205,7 +1205,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_03_100006) do
   add_foreign_key "builds", "workflow_runs"
   add_foreign_key "commit_listeners", "release_platforms"
   add_foreign_key "commits", "build_queues"
-  add_foreign_key "commits", "forward_merge_queue"
+  add_foreign_key "commits", "forward_merges"
   add_foreign_key "commits", "release_changelogs"
   add_foreign_key "commits", "release_platform_runs"
   add_foreign_key "commits", "release_platforms"
@@ -1215,7 +1215,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_03_100006) do
   add_foreign_key "deployments", "steps"
   add_foreign_key "external_apps", "apps"
   add_foreign_key "external_releases", "deployment_runs"
-  add_foreign_key "forward_merge_queue", "releases"
+  add_foreign_key "forward_merges", "releases"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"
   add_foreign_key "invites", "users", column: "recipient_id"
@@ -1231,7 +1231,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_03_100006) do
   add_foreign_key "production_releases", "builds"
   add_foreign_key "production_releases", "production_releases", column: "previous_id"
   add_foreign_key "production_releases", "release_platform_runs"
-  add_foreign_key "pull_requests", "forward_merge_queue"
+  add_foreign_key "pull_requests", "forward_merges"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
   add_foreign_key "release_health_events", "production_releases"

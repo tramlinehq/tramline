@@ -9,10 +9,10 @@ class LiveRelease::ChangesetTrackingComponent < BaseComponent
     @open_backmerge_prs = release.mid_release_back_merge_prs.open
     @change_queue_commits = @build_queue&.commits&.sequential
     @version_bump_prs = release.pull_requests.version_bump_type
-    @forward_merge_queue = release.forward_merge_queue.sequential if cherry_pick_mode?
+    @forward_merges = release.forward_merges.sequential if cherry_pick_mode?
   end
 
-  attr_reader :release, :build_queue, :applied_commits, :change_queue_commits, :mid_release_stability_prs, :open_backmerge_prs, :version_bump_prs, :forward_merge_queue
+  attr_reader :release, :build_queue, :applied_commits, :change_queue_commits, :mid_release_stability_prs, :open_backmerge_prs, :version_bump_prs, :forward_merges
 
   def change_queue_commits_count
     change_queue_commits&.size || 0
@@ -39,8 +39,8 @@ class LiveRelease::ChangesetTrackingComponent < BaseComponent
     release.train.cherry_pick?
   end
 
-  def forward_merge_queue_count
-    forward_merge_queue&.size || 0
+  def forward_merges_count
+    forward_merges&.size || 0
   end
 
   memoize def conflicting_branch_releases

@@ -2,51 +2,51 @@
 
 require "rails_helper"
 
-describe ForwardMergeQueue do
+describe ForwardMerge do
   describe "associations" do
     it "belongs to a release" do
-      fmq = create(:forward_merge_queue)
+      fmq = create(:forward_merge)
       expect(fmq.release).to be_present
     end
 
     it "has one commit" do
       release = create(:release)
-      fmq = create(:forward_merge_queue, release:)
-      create(:commit, release:, forward_merge_queue: fmq)
+      fmq = create(:forward_merge, release:)
+      create(:commit, release:, forward_merge: fmq)
       expect(fmq.commit).to be_present
     end
 
     it "has one pull request" do
       release = create(:release)
-      fmq = create(:forward_merge_queue, release:)
-      create(:pull_request, release:, forward_merge_queue: fmq, kind: "cherry_pick")
+      fmq = create(:forward_merge, release:)
+      create(:pull_request, release:, forward_merge: fmq, kind: "cherry_pick")
       expect(fmq.pull_request).to be_present
     end
   end
 
   describe "#actionable?" do
     it "is actionable when pending" do
-      fmq = build(:forward_merge_queue, status: "pending")
+      fmq = build(:forward_merge, status: "pending")
       expect(fmq.actionable?).to be(true)
     end
 
     it "is actionable when failed" do
-      fmq = build(:forward_merge_queue, status: "failed")
+      fmq = build(:forward_merge, status: "failed")
       expect(fmq.actionable?).to be(true)
     end
 
     it "is not actionable when in_progress" do
-      fmq = build(:forward_merge_queue, status: "in_progress")
+      fmq = build(:forward_merge, status: "in_progress")
       expect(fmq.actionable?).to be(false)
     end
 
     it "is not actionable when success" do
-      fmq = build(:forward_merge_queue, status: "success")
+      fmq = build(:forward_merge, status: "success")
       expect(fmq.actionable?).to be(false)
     end
 
     it "is not actionable when manually_picked" do
-      fmq = build(:forward_merge_queue, status: "manually_picked")
+      fmq = build(:forward_merge, status: "manually_picked")
       expect(fmq.actionable?).to be(false)
     end
   end
@@ -54,10 +54,10 @@ describe ForwardMergeQueue do
   describe ".sequential" do
     it "orders by commit timestamp descending" do
       release = create(:release)
-      fmq1 = create(:forward_merge_queue, release:)
-      fmq2 = create(:forward_merge_queue, release:)
-      create(:commit, release:, forward_merge_queue: fmq1, timestamp: 1.hour.ago)
-      create(:commit, release:, forward_merge_queue: fmq2, timestamp: Time.current)
+      fmq1 = create(:forward_merge, release:)
+      fmq2 = create(:forward_merge, release:)
+      create(:commit, release:, forward_merge: fmq1, timestamp: 1.hour.ago)
+      create(:commit, release:, forward_merge: fmq2, timestamp: Time.current)
 
       result = described_class.sequential
 
@@ -69,11 +69,11 @@ describe ForwardMergeQueue do
   describe ".actionable" do
     it "returns only pending and failed records" do
       release = create(:release)
-      pending_fmq = create(:forward_merge_queue, release:, status: "pending")
-      failed_fmq = create(:forward_merge_queue, release:, status: "failed")
-      create(:forward_merge_queue, release:, status: "success")
-      create(:forward_merge_queue, release:, status: "in_progress")
-      create(:forward_merge_queue, release:, status: "manually_picked")
+      pending_fmq = create(:forward_merge, release:, status: "pending")
+      failed_fmq = create(:forward_merge, release:, status: "failed")
+      create(:forward_merge, release:, status: "success")
+      create(:forward_merge, release:, status: "in_progress")
+      create(:forward_merge, release:, status: "manually_picked")
 
       result = described_class.actionable
 
@@ -84,8 +84,8 @@ describe ForwardMergeQueue do
   describe "delegation" do
     it "delegates commit attributes" do
       release = create(:release)
-      fmq = create(:forward_merge_queue, release:)
-      commit = create(:commit, release:, forward_merge_queue: fmq)
+      fmq = create(:forward_merge, release:)
+      commit = create(:commit, release:, forward_merge: fmq)
 
       expect(fmq.short_sha).to eq(commit.short_sha)
       expect(fmq.commit_hash).to eq(commit.commit_hash)

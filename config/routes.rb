@@ -253,7 +253,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :forward_merge_queue, only: [] do
+  resources :forward_merges, only: [] do
     member do
       post :cherry_pick
       post :mark_as_picked

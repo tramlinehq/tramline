@@ -1,12 +1,12 @@
 class Triggers::CherryPickPullRequest
-  def self.call(release, forward_merge_queue)
-    new(release, forward_merge_queue).call
+  def self.call(release, forward_merge)
+    new(release, forward_merge).call
   end
 
-  def initialize(release, forward_merge_queue)
+  def initialize(release, forward_merge)
     @release = release
-    @forward_merge_queue = forward_merge_queue
-    @commit = forward_merge_queue.commit
+    @forward_merge = forward_merge
+    @commit = forward_merge.commit
     @pull_request = Triggers::PullRequest.new(
       release: release,
       new_pull_request_attrs: {
@@ -14,13 +14,13 @@ class Triggers::CherryPickPullRequest
         kind: :cherry_pick,
         release_id: release.id,
         state: :open,
-        forward_merge_queue_id: forward_merge_queue.id
+        forward_merge_id: forward_merge.id
       },
       to_branch_ref: release.branch_name,
       from_branch_ref: patch_branch,
       title: pr_title,
       description: pr_description,
-      existing_pr: forward_merge_queue.pull_request,
+      existing_pr: forward_merge.pull_request,
       patch_pr: true,
       patch_commit: commit
     )
@@ -34,7 +34,7 @@ class Triggers::CherryPickPullRequest
 
   delegate :train, to: :release
   delegate :working_branch, to: :train
-  attr_reader :release, :forward_merge_queue, :commit
+  attr_reader :release, :forward_merge, :commit
 
   def pr_title
     "[CHERRY-PICK] [#{release.release_version}] #{commit.message.to_s.split("\n").first}".gsub(/\s*\(#\d+\)/, "").squish

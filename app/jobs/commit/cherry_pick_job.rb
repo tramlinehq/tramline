@@ -2,16 +2,16 @@ class Commit::CherryPickJob < ApplicationJob
   MAX_RETRIES = 32
   queue_as :high
 
-  def perform(forward_merge_queue_id, count = 0)
-    @forward_merge_queue = ForwardMergeQueue.find(forward_merge_queue_id)
+  def perform(forward_merge_id, count = 0)
+    @forward_merge = ForwardMerge.find(forward_merge_id)
 
     return unless release.committable?
-    return unless forward_merge_queue.actionable?
+    return unless forward_merge.actionable?
 
-    forward_merge_queue.update!(status: "in_progress")
+    forward_merge.update!(status: "in_progress")
 
     result = release.with_lock do
-      Triggers::CherryPickPullRequest.call(release, forward_merge_queue)
+      Triggers::CherryPickPullRequest.call(release, forward_merge)
     end
 
     return unless result
@@ -22,20 +22,20 @@ class Commit::CherryPickJob < ApplicationJob
 
   private
 
-  attr_reader :forward_merge_queue
+  attr_reader :forward_merge
 
-  delegate :release, to: :forward_merge_queue
+  delegate :release, to: :forward_merge
   delegate :train, to: :release
-  delegate :commit, to: :forward_merge_queue
+  delegate :commit, to: :forward_merge
 
   def handle_success
-    forward_merge_queue.update!(status: "success")
+    forward_merge.update!(status: "success")
     release.event_stamp!(reason: :cherry_pick_succeeded, kind: :success, data: stamp_data)
   end
 
   def handle_failure(err)
     elog(err, level: :debug)
-    forward_merge_queue.update!(status: "failed")
+    forward_merge.update!(status: "failed")
     release.event_stamp!(reason: :cherry_pick_failed, kind: :error, data: stamp_data)
     commit.notify!("Cherry-pick to the release branch failed", :backmerge_failed, commit.notification_params)
   end
@@ -45,7 +45,7 @@ class Commit::CherryPickJob < ApplicationJob
       attempt = count + 1
       Commit::CherryPickJob
         .set(wait: backoff_in(attempt:, period: :minutes, type: :linear, factor: 5))
-        .perform_async(forward_merge_queue.id, attempt)
+        .perform_async(forward_merge.id, attempt)
     else
       handle_failure(StandardError.new("Max retries exhausted for cherry-pick"))
     end

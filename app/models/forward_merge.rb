@@ -1,7 +1,7 @@
-class ForwardMergeQueue < ApplicationRecord
-  belongs_to :release, inverse_of: :forward_merge_queue
-  has_one :commit, dependent: :nullify, inverse_of: :forward_merge_queue
-  has_one :pull_request, dependent: :nullify, inverse_of: :forward_merge_queue
+class ForwardMerge < ApplicationRecord
+  belongs_to :release, inverse_of: :forward_merge
+  has_one :commit, dependent: :nullify, inverse_of: :forward_merge
+  has_one :pull_request, dependent: :nullify, inverse_of: :forward_merge
 
   enum :status, {
     pending: "pending",

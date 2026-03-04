@@ -15,15 +15,15 @@ class Webhooks::WorkingBranchPushJob < ApplicationJob
 
   def create_forward_merge_entry!(release, commit_data)
     release.with_lock do
-      return if release.forward_merge_queue
+      return if release.forward_merges
         .joins(:commit)
         .exists?(commits: {commit_hash: commit_data[:commit_hash]})
 
-      fmq = ForwardMergeQueue.create!(release:)
+      fmq = ForwardMerge.create!(release:)
       Commit.create!(
         commit_data
           .slice(:commit_hash, :message, :author_name, :author_email, :author_login, :url, :timestamp)
-          .merge(release:, forward_merge_queue: fmq)
+          .merge(release:, forward_merge: fmq)
       )
     end
   end

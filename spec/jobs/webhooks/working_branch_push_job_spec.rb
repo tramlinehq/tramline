@@ -35,21 +35,21 @@ describe Webhooks::WorkingBranchPushJob do
   it "creates a forward merge queue entry for the head commit" do
     expect {
       described_class.new.perform(release.id, commit_data.stringify_keys, [])
-    }.to change(ForwardMergeQueue, :count).by(1)
+    }.to change(ForwardMerge, :count).by(1)
       .and change(Commit, :count).by(1)
   end
 
   it "creates forward merge queue entries for all commits" do
     expect {
       described_class.new.perform(release.id, commit_data.stringify_keys, rest_commits.map(&:stringify_keys))
-    }.to change(ForwardMergeQueue, :count).by(2)
+    }.to change(ForwardMerge, :count).by(2)
       .and change(Commit, :count).by(2)
   end
 
   it "links the commit to its forward merge queue entry" do
     described_class.new.perform(release.id, commit_data.stringify_keys, [])
 
-    fmq = ForwardMergeQueue.last
+    fmq = ForwardMerge.last
     expect(fmq.commit).to be_present
     expect(fmq.commit.commit_hash).to eq(commit_data[:commit_hash])
     expect(fmq.status).to eq("pending")
@@ -60,7 +60,7 @@ describe Webhooks::WorkingBranchPushJob do
 
     expect {
       described_class.new.perform(release.id, commit_data.stringify_keys, [])
-    }.not_to change(ForwardMergeQueue, :count)
+    }.not_to change(ForwardMerge, :count)
   end
 
   it "does nothing if the release is not committable" do
@@ -68,7 +68,7 @@ describe Webhooks::WorkingBranchPushJob do
 
     expect {
       described_class.new.perform(release.id, commit_data.stringify_keys, [])
-    }.not_to change(ForwardMergeQueue, :count)
+    }.not_to change(ForwardMerge, :count)
   end
 
   it "associates the commit with the release" do
@@ -76,6 +76,6 @@ describe Webhooks::WorkingBranchPushJob do
 
     commit = Commit.last
     expect(commit.release).to eq(release)
-    expect(commit.forward_merge_queue).to be_present
+    expect(commit.forward_merge).to be_present
   end
 end

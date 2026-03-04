@@ -5,8 +5,8 @@ require "rails_helper"
 describe Commit::CherryPickJob do
   let(:train) { create(:train, :with_almost_trunk, backmerge_strategy: "cherry_pick") }
   let(:release) { create(:release, :on_track, train:) }
-  let(:fmq) { create(:forward_merge_queue, release:) }
-  let!(:commit) { create(:commit, release:, forward_merge_queue: fmq) }
+  let(:fmq) { create(:forward_merge, release:) }
+  let!(:commit) { create(:commit, release:, forward_merge: fmq) }
 
   before do
     allow(Triggers::CherryPickPullRequest).to receive(:call).and_return(GitHub::Result.new { true })
