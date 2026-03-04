@@ -48,6 +48,6 @@ class AppListItemComponent < BaseComponent
   end
 
   def app_id
-    "app_#{bundle_id&.parameterize}"
+    ["app", store, bundle_id].compact.join(":").parameterize(separator: "_")
   end
 end
