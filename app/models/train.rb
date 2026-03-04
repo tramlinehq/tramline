@@ -75,7 +75,8 @@ class Train < ApplicationRecord
     kotlin_gradle: ".kts",
     plist: ".plist",
     pbxproj: ".pbxproj",
-    yaml: ".yaml"
+    yaml: ".yaml",
+    properties: ".properties"
   }.freeze
   VERSION_BUMP_STRATEGIES = {
     current_version_before_release_branch: "Current Version Before Release Branch Cuts",

@@ -158,6 +158,19 @@ describe Triggers::VersionBump do
 
         expect(vcs_provider_dbl).to have_received(:update_file!).with(anything, project_file, updated_contents, anything, anything).once
       end
+
+      it "updates the version properties file" do
+        project_file = "spec/fixtures/project_files/build.1.0.0.version.properties"
+        updated_contents_file = "spec/fixtures/project_files/build.1.2.0.version.properties"
+        updated_contents = File.read(updated_contents_file)
+        train = create(:train, :with_version_bump, version_seeded_with: "1.1.0", version_bump_file_paths: [project_file])
+        release = create(:release, train:)
+        setup_mocks(train, vcs_provider_dbl, project_file, updated_contents_file)
+
+        described_class.call(release)
+
+        expect(vcs_provider_dbl).to have_received(:update_file!).with(anything, project_file, updated_contents, anything, anything).once
+      end
     end
 
     describe "#update_gradle_version" do
@@ -216,6 +229,32 @@ describe Triggers::VersionBump do
       ].each do |input, expected|
         it "matches against <#{input}>" do
           expect(described_class.new(release).update_gradle_kts_version(input)).to eq(expected)
+        end
+      end
+    end
+
+    describe "#update_properties_version" do
+      let(:train) { create(:train, :with_version_bump) }
+      let(:release) { create(:release, train:) }
+
+      before do
+        allow(release).to receive(:release_version).and_return("1.2.0")
+      end
+
+      [
+        ["VERSION_NAME=1.0.0", "VERSION_NAME=1.2.0"],
+        ["versionName=1.0.0", "versionName=1.2.0"],
+        ["VERSION_NAME = 1.0.0", "VERSION_NAME=1.2.0"],
+        ["versionName = 1.0.0", "versionName=1.2.0"],
+        ["VERSION_NAME  =  1.0.0", "VERSION_NAME=1.2.0"],
+        ["VERSION_CODE=42", "VERSION_CODE=42"],
+        ["versionCode=42", "versionCode=42"],
+        ["", ""],
+        ["# comment line", "# comment line"],
+        ["VERSION_NAME=1.0.0\nVERSION_CODE=1", "VERSION_NAME=1.2.0\nVERSION_CODE=1"]
+      ].each do |input, expected|
+        it "matches against <#{input.inspect}>" do
+          expect(described_class.new(release).update_properties_version(input)).to eq(expected)
         end
       end
     end
