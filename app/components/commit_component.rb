@@ -2,6 +2,8 @@ class CommitComponent < BaseComponent
   DEFAULT_TRUNCATE = 75
   OUTER_CLASSES = "px-2 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
 
+  renders_one :actions
+
   def initialize(commit:, avatar: true, detailed: true, render_html: false, enable_truncate: true, backmerge_instructions: false)
     @commit = commit
     @avatar = avatar

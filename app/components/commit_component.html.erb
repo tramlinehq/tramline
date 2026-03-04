@@ -73,6 +73,10 @@
         <% if teams_supported? && team.present? %>
           <%= render TeamPillComponent.new(team) %>
         <% end %>
+
+        <% if actions? %>
+          <%= actions %>
+        <% end %>
       </div>
     <% end %>
   </div>
