@@ -408,7 +408,7 @@
             <%= section.F.labeled_text_field :version_bump_file_paths,
                                              "Build File Paths",
                                              value: list_to_csv(section.F.object.version_bump_file_paths),
-                                             placeholder: "e.g., pubspec.yaml, android/app/build.gradle (comma-separated)",
+                                             placeholder: "e.g., pubspec.yaml, android/app/build.gradle, version.properties (comma-separated)",
                                              help_text: "Comma-separated list of file paths to update versions in" %>
 
             <%= section.F.labeled_text_field :version_bump_branch_prefix,
