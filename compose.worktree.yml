@@ -11,14 +11,12 @@ services:
       - '${WEB_PORT:-3001}:3000'
     environment:
       PORT_NUM: ${WEB_PORT:-3001}
-      APPLELINK_URL: http://host.docker.internal:4000
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
   worker:
     environment:
       PORT_NUM: ${WEB_PORT:-3001}
-      APPLELINK_URL: http://host.docker.internal:4000
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
