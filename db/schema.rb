@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_12_080937) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_25_190552) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -720,6 +720,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_12_080937) do
     t.boolean "default_locale", default: false
     t.text "draft_release_notes"
     t.text "draft_promo_text"
+    t.string "draft_keywords", default: [], array: true
+    t.text "draft_description"
     t.index ["release_platform_run_id", "locale"], name: "index_release_metadata_on_release_platform_run_id_and_locale", unique: true
     t.index ["release_platform_run_id"], name: "index_release_metadata_on_release_platform_run_id"
   end
