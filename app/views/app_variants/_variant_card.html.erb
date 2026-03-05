@@ -1,0 +1,48 @@
+<%= render CardComponent.new(title: variant.name, subtitle: variant.bundle_identifier) do |card| %>
+  <% card.with_action do %>
+    <%= render ModalComponent.new(title: "Edit variant") do |modal| %>
+      <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("pencil.svg") %>
+      <% modal.with_body do %>
+        <%= tag.turbo_frame id: dom_id(variant, :edit_variant),
+                            src: edit_app_app_variant_path(app, variant),
+                            loading: :lazy,
+                            class: "with-turbo-frame-loader" do %>
+          <%= render LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% card.with_action do %>
+    <%= render ButtonComponent.new(
+          scheme: :light,
+          options: app_app_variant_path(app, variant),
+          type: :link,
+          html_options: {method: :delete,
+                         data: {turbo_method: :delete,
+                                turbo_confirm: "Are you sure you want to delete the variant? This will also destroy the associated integrations."}}
+        ) do |b|
+          b.with_icon("trash.svg")
+        end %>
+  <% end %>
+
+  <div class="mt-2">
+    <% integrations_by_type = variant.integrations.connected.index_by(&:providable_type) %>
+    <% provider_info = {"GoogleFirebaseIntegration" => {name: "Firebase App Distribution", logo: "firebase"}, "GooglePlayStoreIntegration" => {name: "Google Play Store", logo: "google_play_store"}, "AppStoreIntegration" => {name: "App Store Connect", logo: "app_store"}} %>
+    <% allowed_types = Integration::APP_VARIANT_PROVIDABLE_TYPES[app.platform] || [] %>
+    <div class="grid grid-cols-2 gap-4">
+      <% allowed_types.each do |provider_type| %>
+        <% info = provider_info[provider_type] %>
+        <%= render partial: "app_variants/integration_card",
+                   locals: {
+                     app: app,
+                     variant: variant,
+                     integration: integrations_by_type[provider_type],
+                     provider_type: provider_type,
+                     provider_name: info[:name],
+                     provider_logo: info[:logo]
+                   } %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

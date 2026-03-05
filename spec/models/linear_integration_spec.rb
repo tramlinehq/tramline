@@ -3,6 +3,36 @@ require "rails_helper"
 describe LinearIntegration do
   let(:linear_integration) { build(:linear_integration) }
 
+  describe "#setup_complete?" do
+    it "returns true when project_config has selected_teams and team_configs" do
+      linear_integration.project_config = {
+        "selected_teams" => ["TEAM-1"],
+        "team_configs" => [{"id" => "TEAM-1"}]
+      }
+      expect(linear_integration.setup_complete?).to be true
+    end
+
+    it "returns false when project_config is nil" do
+      linear_integration.project_config = nil
+      expect(linear_integration.setup_complete?).to be false
+    end
+
+    it "returns false when selected_teams is empty" do
+      linear_integration.project_config = {
+        "selected_teams" => [],
+        "team_configs" => [{"id" => "TEAM-1"}]
+      }
+      expect(linear_integration.setup_complete?).to be false
+    end
+
+    it "returns false when team_configs is missing" do
+      linear_integration.project_config = {
+        "selected_teams" => ["TEAM-1"]
+      }
+      expect(linear_integration.setup_complete?).to be false
+    end
+  end
+
   describe "validations" do
     it "validates presence of workspace_id" do
       linear_integration.workspace_id = nil

@@ -6,6 +6,36 @@ describe JiraIntegration do
   let(:sample_release_label) { "release-1.0" }
   let(:sample_version) { "v1.0.0" }
 
+  describe "#setup_complete?" do
+    it "returns true when project_config has selected_projects and project_configs" do
+      integration.project_config = {
+        "selected_projects" => ["PROJ-1"],
+        "project_configs" => [{"id" => "PROJ-1"}]
+      }
+      expect(integration.setup_complete?).to be true
+    end
+
+    it "returns false when project_config is nil" do
+      integration.project_config = nil
+      expect(integration.setup_complete?).to be false
+    end
+
+    it "returns false when selected_projects is empty" do
+      integration.project_config = {
+        "selected_projects" => [],
+        "project_configs" => [{"id" => "PROJ-1"}]
+      }
+      expect(integration.setup_complete?).to be false
+    end
+
+    it "returns false when project_configs is missing" do
+      integration.project_config = {
+        "selected_projects" => ["PROJ-1"]
+      }
+      expect(integration.setup_complete?).to be false
+    end
+  end
+
   describe "validations" do
     describe "release filters" do
       context "with invalid filter type" do

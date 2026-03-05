@@ -212,6 +212,243 @@ describe Integration do
     end
   end
 
+  describe "#disconnectable?" do
+    context "when integrable is an App with no active runs" do
+      it "returns true" do
+        allow(app).to receive(:active_runs).and_return(Release.none)
+        expect(integration.disconnectable?).to be true
+      end
+    end
+
+    context "when integrable is an App with active runs" do
+      it "returns false" do
+        active_runs = instance_double(ActiveRecord::Relation, none?: false)
+        allow(app).to receive(:active_runs).and_return(active_runs)
+        expect(integration.disconnectable?).to be false
+      end
+    end
+
+    context "when integrable is an AppVariant" do
+      let(:variant) { create(:app_variant, app: app, bundle_identifier: "com.example.staging") }
+      let(:variant_integration) {
+        create(:integration,
+          category: "build_channel",
+          integrable: variant,
+          status: :connected,
+          providable: create(:google_firebase_integration, :without_callbacks_and_validations))
+      }
+
+      it "delegates to the variant which delegates to the app" do
+        allow(app).to receive(:active_runs).and_return(Release.none)
+        expect(variant_integration.disconnectable?).to be true
+      end
+    end
+  end
+
+  describe "#setup_complete?" do
+    context "when further_setup? is false" do
+      it "returns true" do
+        allow(integration).to receive(:further_setup?).and_return(false)
+        expect(integration.setup_complete?).to be true
+      end
+    end
+
+    context "when further_setup? is true and providable responds to setup_complete?" do
+      it "delegates to providable" do
+        allow(integration).to receive(:further_setup?).and_return(true)
+        allow(integration.providable).to receive(:setup_complete?).and_return(false)
+        expect(integration.setup_complete?).to be false
+      end
+    end
+
+    context "when further_setup? is true and providable does not respond to setup_complete?" do
+      it "returns false" do
+        providable = instance_double(SlackIntegration)
+        allow(integration).to receive_messages(further_setup?: true, providable: providable)
+        expect(integration.setup_complete?).to be false
+      end
+    end
+  end
+
+  describe "#requires_configuration?" do
+    context "when further_setup? is true and setup_complete? is false" do
+      it "returns true" do
+        allow(integration).to receive_messages(further_setup?: true, setup_complete?: false)
+        expect(integration.requires_configuration?).to be true
+      end
+    end
+
+    context "when further_setup? is true and setup_complete? is true" do
+      it "returns false" do
+        allow(integration).to receive_messages(further_setup?: true, setup_complete?: true)
+        expect(integration.requires_configuration?).to be false
+      end
+    end
+
+    context "when further_setup? is false" do
+      it "returns false" do
+        allow(integration).to receive(:further_setup?).and_return(false)
+        expect(integration.requires_configuration?).to be false
+      end
+    end
+  end
+
+  describe ".further_setup_by_category" do
+    let(:firebase_integration) {
+      create(:integration,
+        category: "build_channel",
+        integrable: app,
+        status: :connected,
+        providable: create(:google_firebase_integration, :without_callbacks_and_validations))
+    }
+
+    it "returns categories with further_setup and ready status" do
+      firebase_integration
+      result = app.integrations.further_setup_by_category
+      expect(result).to have_key("build_channel")
+      expect(result["build_channel"][:further_setup]).to be true
+    end
+
+    it "marks category as ready when all integrations have setup complete" do
+      firebase_integration
+      allow_any_instance_of(GoogleFirebaseIntegration).to receive(:setup_complete?).and_return(true)
+      result = app.integrations.further_setup_by_category
+      expect(result["build_channel"][:ready]).to be true
+    end
+
+    it "marks category as not ready when setup is incomplete" do
+      firebase_integration
+      allow_any_instance_of(GoogleFirebaseIntegration).to receive(:setup_complete?).and_return(false)
+      result = app.integrations.further_setup_by_category
+      expect(result["build_channel"][:ready]).to be false
+    end
+
+    it "skips notification category" do
+      create(:integration,
+        :notification,
+        integrable: app,
+        status: :connected)
+      result = app.integrations.further_setup_by_category
+      expect(result).not_to have_key("notification")
+    end
+  end
+
+  describe "app_variant_restriction validation" do
+    it "rejects non-build_channel category for app variants" do
+      variant = create(:app_variant, app: app, bundle_identifier: "com.example.staging")
+      integration = build(:integration,
+        category: "version_control",
+        integrable: variant,
+        providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+      expect(integration).not_to be_valid
+      expect(integration.errors[:category]).to be_present
+    end
+
+    context "when android app" do
+      let(:variant) { create(:app_variant, app: app, bundle_identifier: "com.example.staging") }
+
+      it "allows GoogleFirebaseIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        expect(integration).to be_valid
+      end
+
+      it "allows GooglePlayStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "GooglePlayStoreIntegration"
+        expect(integration).to be_valid
+      end
+
+      it "rejects AppStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "AppStoreIntegration"
+        expect(integration).not_to be_valid
+        expect(integration.errors[:providable_type]).to be_present
+      end
+    end
+
+    context "when ios app" do
+      let(:ios_app) { create(:app, :ios) }
+      let(:variant) { create(:app_variant, app: ios_app, bundle_identifier: "com.example.staging") }
+
+      it "allows GoogleFirebaseIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        expect(integration).to be_valid
+      end
+
+      it "allows AppStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "AppStoreIntegration"
+        expect(integration).to be_valid
+      end
+
+      it "rejects GooglePlayStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "GooglePlayStoreIntegration"
+        expect(integration).not_to be_valid
+        expect(integration.errors[:providable_type]).to be_present
+      end
+    end
+
+    context "when cross_platform app" do
+      let(:cp_app) { create(:app, :cross_platform) }
+      let(:variant) { create(:app_variant, app: cp_app, bundle_identifier: "com.example.staging") }
+
+      it "allows GoogleFirebaseIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        expect(integration).to be_valid
+      end
+
+      it "allows GooglePlayStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "GooglePlayStoreIntegration"
+        expect(integration).to be_valid
+      end
+
+      it "allows AppStoreIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "AppStoreIntegration"
+        expect(integration).to be_valid
+      end
+
+      it "rejects SlackIntegration" do
+        integration = build(:integration,
+          category: "build_channel",
+          integrable: variant,
+          providable: build(:google_firebase_integration, :without_callbacks_and_validations))
+        integration.providable_type = "SlackIntegration"
+        expect(integration).not_to be_valid
+        expect(integration.errors[:providable_type]).to be_present
+      end
+    end
+  end
+
   describe ".by_categories_for" do
     let(:organization) { create(:organization) }
     let(:app) { create(:app, :android, organization: organization) }
