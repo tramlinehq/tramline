@@ -491,8 +491,7 @@ describe Release do
 
     it "fetches the commits between ongoing release and release branch for upcoming release" do
       ongoing_release = create(:release, :on_track, train:, scheduled_at: 1.day.ago)
-      create_list(:commit, 5, release: ongoing_release, timestamp: Time.current - rand(1000))
-      ongoing_head = ongoing_release.first_commit
+      ongoing_head = create(:commit, release: ongoing_release)
 
       release.fetch_commit_log
       expect(vcs_mock_provider).to have_received(:commit_log).with(ongoing_head.commit_hash, train.working_branch).once
