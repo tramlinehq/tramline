@@ -25,6 +25,86 @@ describe IntegrationListeners::GitlabController do
     allow_any_instance_of(GitlabIntegration).to receive(:repos).and_return([{id: 1, name: "test-repo"}])
   end
 
+  describe "#events" do
+    let(:train) { create(:train, :active, app: app) }
+
+    before do
+      allow(Webhooks::ProcessPushWebhookJob).to receive(:perform_async)
+      allow(Webhooks::ProcessPullRequestWebhookJob).to receive(:perform_async)
+    end
+
+    context "when event is push" do
+      let(:push_payload) do
+        {
+          object_kind: "push",
+          ref: "refs/heads/release/1.0",
+          checkout_sha: "abc123",
+          project: {path_with_namespace: "tramline/repo"},
+          commits: [
+            {id: "abc123", message: "fix: something", title: "fix", timestamp: "2024-01-01T00:00:00Z", url: "https://gitlab.com/commit/abc123", author: {name: "Test", email: "test@example.com"}}
+          ]
+        }
+      end
+
+      it "enqueues a ProcessPushWebhookJob and returns accepted" do
+        post :events, params: push_payload.merge(train_id: train.id)
+
+        expect(response).to have_http_status(:accepted)
+        expect(Webhooks::ProcessPushWebhookJob).to have_received(:perform_async).with(train.id, Hash)
+      end
+    end
+
+    context "when event is merge_request" do
+      let(:mr_payload) do
+        {
+          object_kind: "merge_request",
+          project: {path_with_namespace: "tramline/repo"},
+          object_attributes: {
+            id: 1,
+            iid: 10,
+            target_branch: "release/1.0",
+            source_branch: "fix-bug",
+            state: "opened",
+            action: "open",
+            title: "Fix bug",
+            description: "Fixes a bug",
+            url: "https://gitlab.com/tramline/repo/-/merge_requests/10",
+            created_at: "2024-01-01T00:00:00Z",
+            updated_at: "2024-01-01T00:00:00Z",
+            last_commit: {id: "abc123"}
+          }
+        }
+      end
+
+      it "enqueues a ProcessPullRequestWebhookJob and returns accepted" do
+        post :events, params: mr_payload.merge(train_id: train.id)
+
+        expect(response).to have_http_status(:accepted)
+        expect(Webhooks::ProcessPullRequestWebhookJob).to have_received(:perform_async).with(train.id, Hash)
+      end
+    end
+
+    context "when event is ping" do
+      it "returns accepted and does not enqueue any jobs" do
+        post :events, params: {object_kind: "ping", train_id: train.id}
+
+        expect(response).to have_http_status(:accepted)
+        expect(Webhooks::ProcessPushWebhookJob).not_to have_received(:perform_async)
+        expect(Webhooks::ProcessPullRequestWebhookJob).not_to have_received(:perform_async)
+      end
+    end
+
+    context "when event is unknown" do
+      it "returns ok and does not enqueue any jobs" do
+        post :events, params: {object_kind: "note", train_id: train.id}
+
+        expect(response).to have_http_status(:ok)
+        expect(Webhooks::ProcessPushWebhookJob).not_to have_received(:perform_async)
+        expect(Webhooks::ProcessPullRequestWebhookJob).not_to have_received(:perform_async)
+      end
+    end
+  end
+
   describe "#callback" do
     let(:params) do
       {
