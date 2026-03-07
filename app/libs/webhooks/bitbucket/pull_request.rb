@@ -1,4 +1,4 @@
-class Coordinators::Webhooks::Bitbucket::PullRequest
+class Webhooks::Bitbucket::PullRequest
   using RefinedHash
   attr_reader :payload
 

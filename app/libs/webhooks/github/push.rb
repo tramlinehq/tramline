@@ -1,4 +1,4 @@
-class Coordinators::Webhooks::Github::Push
+class Webhooks::Github::Push
   attr_reader :payload
 
   def initialize(payload)

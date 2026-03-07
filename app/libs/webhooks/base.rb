@@ -1,10 +1,9 @@
-class Coordinators::Webhooks::Base
-  include SiteHttp
+class Webhooks::Base
   include Memery
 
-  GITHUB = Coordinators::Webhooks::Github
-  GITLAB = Coordinators::Webhooks::Gitlab
-  BITBUCKET = Coordinators::Webhooks::Bitbucket
+  GITHUB = Webhooks::Github
+  GITLAB = Webhooks::Gitlab
+  BITBUCKET = Webhooks::Bitbucket
 
   attr_reader :payload, :train
 

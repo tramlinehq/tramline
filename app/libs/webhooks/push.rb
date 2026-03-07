@@ -1,13 +1,12 @@
-class Coordinators::Webhooks::Push < Coordinators::Webhooks::Base
+class Webhooks::Push < Webhooks::Base
   def process
-    return Response.new(:accepted) if valid_tag?
-    return Response.new(:accepted, "No release") unless release
-    return Response.new(:accepted) unless release.committable?
-    return Response.new(:accepted, "Skipping the commit") unless relevant_commit?
-    return Response.new(:accepted, "Invalid repo/branch") unless valid_repo_and_branch?
+    return if valid_tag?
+    return unless release
+    return unless release.committable?
+    return unless relevant_commit?
+    return unless valid_repo_and_branch?
 
     Webhooks::PushJob.perform_async(release.id, head_commit.to_h, rest_commits.map(&:to_h))
-    Response.new(:accepted)
   end
 
   private

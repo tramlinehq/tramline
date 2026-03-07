@@ -1,4 +1,4 @@
-class Coordinators::Webhooks::Bitbucket::Push
+class Webhooks::Bitbucket::Push
   attr_reader :payload, :train
 
   def initialize(payload, train)

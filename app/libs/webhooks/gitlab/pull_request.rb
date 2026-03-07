@@ -1,4 +1,4 @@
-class Coordinators::Webhooks::Gitlab::PullRequest
+class Webhooks::Gitlab::PullRequest
   attr_reader :payload
 
   def initialize(payload)

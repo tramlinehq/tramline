@@ -1,4 +1,4 @@
-class Coordinators::Webhooks::Gitlab::Push
+class Webhooks::Gitlab::Push
   attr_reader :payload, :train
 
   def initialize(payload, train)

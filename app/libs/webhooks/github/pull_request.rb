@@ -1,4 +1,4 @@
-class Coordinators::Webhooks::Github::PullRequest
+class Webhooks::Github::PullRequest
   using RefinedHash
   attr_reader :payload
 

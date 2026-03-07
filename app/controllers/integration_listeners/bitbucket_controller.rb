@@ -21,27 +21,17 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
   private
 
   def handle_push
-    result = Action.process_push_webhook(train, push_params)
-    response = result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing push, error: #{result.error}")
-
-    Rails.logger.debug response.body
-    head response.status
+    Webhooks::ProcessPushWebhookJob.perform_async(params[:train_id], push_params.to_h)
+    head :accepted
   end
 
   def handle_pull_request
-    result = Action.process_pull_request_webhook(train, pull_request_params)
-    response = result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing pull request")
-
-    Rails.logger.debug response.body
-    head response.status
+    Webhooks::ProcessPullRequestWebhookJob.perform_async(params[:train_id], pull_request_params.to_h)
+    head :accepted
   end
 
   def event_type
     request.headers["X-Event-Key"]
-  end
-
-  def train
-    @train ||= Train.find(params[:train_id])
   end
 
   def pull_request_params
