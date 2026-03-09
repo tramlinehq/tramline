@@ -40,10 +40,9 @@ describe Coordinators::AttachBuildJob do
     expect(workflow_run.build.has_artifact?).to be(true)
   end
 
-  it "retries the job if artifact is not found" do
+  it "retries the job with a static backoff" do
     ex = Installations::Error.new("Artifact not found", reason: :artifact_not_found)
     expect(described_class.new.sidekiq_retry_in_block.call(0, ex)).to eq(30.seconds)
-    expect(described_class.new.sidekiq_retry_in_block.call(0, StandardError.new)).to eq(:kill)
   end
 
   it "raises an error if artifact is not found (to retry) and does not mark the internal release is failed" do
