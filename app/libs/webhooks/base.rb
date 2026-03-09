@@ -1,4 +1,5 @@
 class Webhooks::Base
+  include Loggable
   include Memery
 
   GITHUB = Webhooks::Github
@@ -9,6 +10,8 @@ class Webhooks::Base
 
   def self.process(train, payload)
     new(train, payload).process
+  rescue => e
+    elog(e, level: :warn)
   end
 
   def initialize(train, payload)

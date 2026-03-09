@@ -27,7 +27,6 @@ class Webhooks::Bitbucket::PullRequest
   end
 
   def pull_request
-    return {} unless payload["pullrequest"]
     Installations::Response::Keys
       .transform([payload["pullrequest"]], BitbucketIntegration::PR_TRANSFORMATIONS)
       .first

@@ -6,6 +6,10 @@ class Webhooks::Gitlab::Push
     @train = train
   end
 
+  def valid_head_commit?
+    head_sha.present?
+  end
+
   def head_commit
     head_commit_payload
       .find { |commit| commit[:commit_hash] == head_sha }

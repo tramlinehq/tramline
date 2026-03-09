@@ -5,6 +5,10 @@ class Webhooks::Github::Push
     @payload = payload
   end
 
+  def valid_head_commit?
+    payload["head_commit"].present?
+  end
+
   def head_commit
     head_commit_payload
   end

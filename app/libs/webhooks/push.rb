@@ -5,13 +5,14 @@ class Webhooks::Push < Webhooks::Base
     return unless release.committable?
     return unless relevant_commit?
     return unless valid_repo_and_branch?
+    return unless valid_head_commit?
 
     Webhooks::PushJob.perform_async(release.id, head_commit.to_h, rest_commits.map(&:to_h))
   end
 
   private
 
-  delegate :branch_name, :repository_name, :valid_tag?, :head_commit, :rest_commits, to: :runner
+  delegate :branch_name, :repository_name, :valid_tag?, :valid_head_commit?, :head_commit, :rest_commits, to: :runner
 
   memoize def runner
     return GITHUB::Push.new(payload) if vcs_provider.integration.github_integration?

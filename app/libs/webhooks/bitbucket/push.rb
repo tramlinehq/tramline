@@ -6,6 +6,10 @@ class Webhooks::Bitbucket::Push
     @train = train
   end
 
+  def valid_head_commit?
+    payload_change.present?
+  end
+
   def head_commit
     if head_commit_payload
       Installations::Response::Keys.transform([head_commit_payload], BitbucketIntegration::COMMITS_TRANSFORMATIONS)
@@ -21,15 +25,15 @@ class Webhooks::Bitbucket::Push
   end
 
   def valid_tag?
-    payload_change&.dig("type") == "tag"
+    payload_change.dig("type") == "tag"
   end
 
   def valid_branch?
-    payload_change&.dig("type") == "branch" && branch_name.present?
+    payload_change.dig("type") == "branch" && branch_name.present?
   end
 
   def branch_name
-    payload_change&.dig("name")
+    payload_change.dig("name")
   end
 
   def repository_name
