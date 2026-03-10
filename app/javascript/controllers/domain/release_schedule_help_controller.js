@@ -1,6 +1,5 @@
 import {Controller} from "@hotwired/stimulus";
 
-const NEXT_RELEASE = "Your next release after the initial kickoff will be on – "
 const ERR_HELP_TEXT = "You must set a valid release schedule config when it is enabled"
 
 export default class extends Controller {
@@ -40,26 +39,15 @@ export default class extends Controller {
     }
 
     const nextDateUnit = this.nextDateUnitTarget.value;
-    const nextDate = new Date(kickoffDate);
+    const unitLabel = nextDateUnit === 'weeks' ? 'week' : 'day';
+    const interval = nextDateNumber === 1 ? `1 ${unitLabel}` : `${nextDateNumber} ${unitLabel}s`;
+    const kickoffFormatted = kickoffDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
 
-    switch (nextDateUnit) {
-      case 'days':
-        nextDate.setDate(kickoffDate.getDate() + nextDateNumber);
-        break;
-      case 'weeks':
-        nextDate.setDate(kickoffDate.getDate() + nextDateNumber * 7);
-        break;
-      default:
-        return;
-    }
-
-    if (this.__isValidDate(nextDate)) {
-      this.outputTarget.textContent = NEXT_RELEASE + nextDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    }
+    this.outputTarget.textContent = `Releases will run every ${interval} after the initial kickoff on ${kickoffFormatted}`;
   }
 
   __resetContents() {
