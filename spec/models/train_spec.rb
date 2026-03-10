@@ -899,6 +899,18 @@ describe Train do
           expect(train.errors[:kickoff_at]).to include("the schedule kickoff should be in the future")
         end
       end
+
+      it "skips kickoff_at future check when only repeat_duration changes" do
+        travel_to Time.zone.parse("2024-01-15 10:00:00") do
+          train.update!(kickoff_at: "2024-01-15 15:00:00", repeat_duration: 1.day)
+        end
+
+        travel_to Time.zone.parse("2024-01-16 21:00:00") do
+          train.assign_attributes(repeat_duration: 2.days)
+
+          expect(train).to be_valid
+        end
+      end
     end
   end
 end

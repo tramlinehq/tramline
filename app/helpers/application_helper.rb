@@ -154,6 +154,14 @@ module ApplicationHelper
     "#{channel_pattern}-{version}"
   end
 
+  def iana_timezone(timezone)
+    ActiveSupport::TimeZone[timezone].tzinfo.name
+  end
+
+  def time_now_in_timezone(timezone)
+    Time.current.in_time_zone(timezone).beginning_of_minute
+  end
+
   def release_schedule(train)
     if train.automatic?
       kickoff_time = train.kickoff_at_app_time

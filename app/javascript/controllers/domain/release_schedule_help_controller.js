@@ -5,6 +5,7 @@ const ERR_HELP_TEXT = "You must set a valid release schedule config when it is e
 
 export default class extends Controller {
   static targets = ["checkbox", "config", "kickoffDate", "nextDateNumber", "nextDateUnit", "output", "errOutput"];
+  static values = {timezone: String};
 
   initialize() {
     this.change();
@@ -12,6 +13,7 @@ export default class extends Controller {
 
   change() {
     this.__resetContents()
+    this.kickoffDateTarget.setCustomValidity("")
 
     const enabled = (this.checkboxTarget.checked === true)
     const disabled = (this.checkboxTarget.checked === false)
@@ -34,11 +36,6 @@ export default class extends Controller {
 
     if (this.__invalidRepeatDuration(nextDateNumber)) {
       this.errOutputTarget.textContent = "Invalid repeat duration, please choose a duration >= 1 day & <= 365 days"
-      return
-    }
-
-    if (this.__invalidKickoffDate(kickoffDate)) {
-      this.errOutputTarget.textContent = "The initial scheduled kickoff for the train should be in the future"
       return
     }
 
@@ -85,8 +82,11 @@ export default class extends Controller {
     return d instanceof Date && !isNaN(d);
   }
 
-  __invalidKickoffDate(d) {
-    return d < new Date()
+  showKickoffError(event) {
+    const input = event.target;
+    if (input.validity.rangeUnderflow) {
+      input.setCustomValidity(`The kickoff should be in the future (${this.timezoneValue})`);
+    }
   }
 
   __invalidRepeatDuration(n) {

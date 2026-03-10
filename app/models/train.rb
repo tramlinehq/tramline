@@ -642,7 +642,7 @@ class Train < ApplicationRecord
   def valid_schedule
     if release_schedule_changed?
       errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless kickoff_at.present? && repeat_duration.present?
-      errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at_app_time <= Time.current
+      errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at_changed? && kickoff_at && kickoff_at_app_time <= Time.current
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
     end
   end

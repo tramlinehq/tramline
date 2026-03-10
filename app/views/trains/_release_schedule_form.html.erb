@@ -1,4 +1,5 @@
-<section data-controller="domain--release-schedule-help">
+<section data-controller="domain--release-schedule-help"
+         data-domain--release-schedule-help-timezone-value="<%= iana_timezone(@app.timezone) %>">
   <%= render Form::SwitchComponent.new(form:,
                                        field_name: :release_schedule_enabled,
                                        on_label: "Release scheduling enabled",
@@ -12,9 +13,9 @@
         <div class="col-span-1">
           <%= form.labeled_datetime_field :kickoff_at,
                                           "Kickoff at",
-                                          {min: @train.new_record? ? Time.current.iso8601 : nil,
-                                           value: @train.kickoff_at&.in_time_zone(@app.timezone),
-                                           data: {action: "domain--release-schedule-help#change",
+                                          {min: @train.new_record? ? time_now_in_timezone(@app.timezone).strftime("%Y-%m-%dT%H:%M") : nil,
+                                           value: @train.kickoff_at_app_time,
+                                           data: {action: "domain--release-schedule-help#change invalid->domain--release-schedule-help#showKickoffError",
                                                   domain__release_schedule_help_target: "kickoffDate"}} %>
         </div>
         <div class="col-span-2">
