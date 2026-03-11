@@ -4,7 +4,8 @@
       search_placeholder: "Search App Store and Play Store",
       form_url: search_apps_path(apps_search_pattern: params[:apps_search_pattern]),
       turbo_frame: :app_search_results,
-      query_field: :app_search_pattern
+      query_field: :app_search_pattern,
+      query_field_size: :sm
     ) do |search| %>
   <% search.with_notice do %>
     <%= link_to "Add manually", new_app_path, class: "underline hover:cursor-pointer text-xs" %>
