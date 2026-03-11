@@ -65,7 +65,12 @@
         <% end %>
       </div>
     </div>
-  <% elsif params[:app_search_pattern].present? %>
-    <div class="text-xs text-secondary">No results found. Try a different search term.</div>
+  <% else %>
+    <%= render EmptyStateComponent.new(
+          title: "No apps found",
+          text: "Try a different search term to find your app on the App Store or the Play Store.",
+          banner_image: "search.svg",
+          type: :subdued
+        ) %>
   <% end %>
 <% end %>
