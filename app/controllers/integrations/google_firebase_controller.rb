@@ -5,7 +5,7 @@ class Integrations::GoogleFirebaseController < IntegrationsController
 
   def refresh_channels
     fad_integration.fetch_channels
-    redirect_to app_app_config_path(@app),
+    redirect_back fallback_location: app_integrations_path(@app),
       notice: "We are refreshing your Firebase App Distribution channels. They will update shortly."
   end
 
