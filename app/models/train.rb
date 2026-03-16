@@ -58,10 +58,13 @@ class Train < ApplicationRecord
   using RefinedArray
   using RefinedString
   extend FriendlyId
+  include Discard::Model
   include Rails.application.routes.url_helpers
   include Versionable
   include Loggable
   include TokenInterpolator
+
+  default_scope -> { kept }
 
   self.ignored_columns += ["manual_release"]
 
@@ -300,6 +303,7 @@ class Train < ApplicationRecord
     else
       last_release_ref, ref_type = last_finished_release.last_commit.commit_hash, :commit
     end
+
     vcs_provider.diff_between?(last_release_ref, working_branch, from_type: ref_type)
   end
 

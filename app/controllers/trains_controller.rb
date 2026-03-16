@@ -4,8 +4,8 @@ class TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :require_write_access!, only: %i[new create update destroy activate deactivate]
-  before_action :set_train, only: %i[edit update destroy activate deactivate rules]
+  before_action :require_write_access!, only: %i[new create update destroy activate deactivate archive]
+  before_action :set_train, only: %i[edit update destroy activate deactivate archive rules]
   before_action :set_train_config_tabs, only: %i[edit update rules destroy activate deactivate]
   before_action :ensure_app_ready, only: %i[new create edit update activate deactivate rules]
   before_action :validate_integration_status, only: %i[new create]
@@ -70,6 +70,16 @@ class TrainsController < SignedInApplicationController
       redirect_to train_path, notice: "Train was deactivated!"
     else
       train_redirect_back("Could not deactivate the train. #{@train.errors.full_messages.to_sentence}.")
+    end
+  end
+
+  def archive
+    redirect_to train_path, alert: "Cannot archive a train with active releases" and return if @train.active_runs.exists?
+
+    if @train.discard
+      redirect_to app_path(@app), status: :see_other, notice: "Train was archived!"
+    else
+      train_redirect_back("Could not archive the train.")
     end
   end
 

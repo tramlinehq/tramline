@@ -129,6 +129,7 @@ Rails.application.routes.draw do
         get :rules
         patch :activate
         patch :deactivate
+        patch :archive
       end
 
       resources :scheduled_releases do

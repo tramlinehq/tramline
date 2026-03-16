@@ -102,6 +102,20 @@
     <% end %>
   <% end %>
 
+  <% unless train.active_runs.exists? %>
+    <% container.with_sub_action do %>
+      <%= render ButtonComponent.new(
+            scheme: :supporting,
+            label: "Archive",
+            options: archive_app_train_path(app, train),
+            type: :button,
+            html_options: {method: :patch, data: {turbo_method: :patch, turbo_confirm: "Are you sure you want to archive this train? It will be hidden from the dashboard."}}
+          ) do |b|
+            b.with_icon("archive.svg")
+          end %>
+    <% end %>
+  <% end %>
+
   <% container.with_body do %>
     <%= render partial: "shared/app_not_ready", locals: {app:} %>
 
