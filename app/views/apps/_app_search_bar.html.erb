@@ -1,7 +1,7 @@
 <%= render SearchBarComponent.new(
       search_name: :apps_search,
       search_value: params[:apps_search_pattern],
-      search_placeholder: "Search App Store and Play Store",
+      search_placeholder: "name, bundle identifier",
       form_url: search_apps_path(apps_search_pattern: params[:apps_search_pattern]),
       turbo_frame: :app_search_results,
       query_field: :app_search_pattern
@@ -9,4 +9,10 @@
   <% search.with_notice do %>
     <%= link_to "Add manually", new_app_path, class: "underline hover:cursor-pointer text-xs" %>
   <% end %>
+  <%= render EmptyStateComponent.new(
+        title: "No apps found",
+        text: "Try a different search term to find your app on the App Store or the Play Store.",
+        banner_image: "search.svg",
+        type: :subdued
+      ) %>
 <% end %>
