@@ -188,7 +188,6 @@
         <%= section.F.labeled_text_field :release_branch_pattern, "Release Branch Pattern",
                                          placeholder: "default is r/~trainName~/~releaseStartDate~",
                                          help_text: "Use ~trainName~ for the train name, ~releaseVersion~ for version, and ~releaseStartDate~ for date. Default: r/~trainName~/~releaseStartDate~",
-                                         disabled: @edit_not_allowed,
                                          data: {domain__branch_name_help_target: "input",
                                                 action: "domain--branch-name-help#updatePreview"} %>
         <div class="text-sm mt-1">
