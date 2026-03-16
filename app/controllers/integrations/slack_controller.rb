@@ -3,7 +3,7 @@ class Integrations::SlackController < IntegrationsController
 
   def refresh_channels
     slack_integration.fetch_channels
-    redirect_to app_app_config_path(@app), notice: "We are refreshing your Slack channels. They will update shortly."
+    redirect_back fallback_location: app_integrations_path(@app), notice: "We are refreshing your Slack channels. They will update shortly."
   end
 
   private
