@@ -15,7 +15,7 @@ gem "redis-actionpack", "~> 5.3"
 gem "bcrypt", "~> 3.1.7"
 gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
 gem "bootsnap", "~> 1.10"
-gem "devise", "~> 4.9"
+gem "devise", "~> 5.0"
 gem "strong_password", "~> 0.0.10"
 gem "friendly_id", "~> 5.4"
 gem "flipper", "~> 1.3.0"
