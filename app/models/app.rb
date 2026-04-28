@@ -110,7 +110,7 @@ class App < ApplicationRecord
   end
 
   def teamcity_connected?
-    integrations.ci_cd.any?(&:teamcity_integration?)
+    integrations.connected.ci_cd.any?(&:teamcity_integration?)
   end
 
   def bugsnag_connected?

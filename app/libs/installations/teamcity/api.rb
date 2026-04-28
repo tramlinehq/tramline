@@ -5,6 +5,13 @@ module Installations
     include Vaultable
     using RefinedString
 
+    ARTIFACTS_TRANSFORMATIONS = {
+      id: :name,
+      name: :name,
+      size_in_bytes: :size,
+      archive_download_url: :href
+    }
+
     attr_reader :server_url, :access_token, :cloudflare_credentials
 
     def initialize(server_url, access_token, cloudflare_credentials: nil)
@@ -105,10 +112,11 @@ module Installations
       raise
     end
 
-    def list_artifacts(build_id)
+    def list_artifacts(build_id, transforms = ARTIFACTS_TRANSFORMATIONS)
       execute(:get, "/app/rest/builds/id:#{build_id}/artifacts")
         .then { |response| response&.dig("file") || [] }
         .then { |files| files.select { |f| artifact_file?(f) } }
+        .then { |files| Installations::Response::Keys.transform(files, transforms) }
     end
 
     def get_artifact_metadata(build_id, artifact_path, transforms)
@@ -178,8 +186,8 @@ module Installations
       end
 
       JSON.parse(response.body.to_s)
-    rescue JSON::ParserError
-      nil
+    rescue JSON::ParserError => e
+      raise Installations::Error.new("Non-JSON response from TeamCity (HTTP #{response.status.code}): #{e.message}", reason: :teamcity_invalid_response)
     end
 
     def fetch_csrf_token

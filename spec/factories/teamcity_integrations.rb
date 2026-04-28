@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :teamcity_integration do
     server_url { "https://teamcity.example.com" }
-    access_token { Faker::Lorem.sentence }
+    access_token { SecureRandom.hex(20) }
 
     trait :with_cloudflare do
       cf_access_client_id { "abc123.access" }

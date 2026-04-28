@@ -194,12 +194,12 @@ describe Installations::Teamcity::Api do
   end
 
   describe "#list_artifacts" do
-    it "returns only artifact files" do
+    it "returns only artifact files with symbol-keyed shape" do
       payload = {
         "file" => [
-          {"name" => "app-release.apk", "size" => 1024},
-          {"name" => "build-log.txt", "size" => 512},
-          {"name" => "app-release.aab", "size" => 2048}
+          {"name" => "app-release.apk", "size" => 1024, "href" => "/href/release.apk"},
+          {"name" => "build-log.txt", "size" => 512, "href" => "/href/log.txt"},
+          {"name" => "app-release.aab", "size" => 2048, "href" => "/href/release.aab"}
         ]
       }
       stub_request(:get, "#{server_url}/app/rest/builds/id:123/artifacts")
@@ -207,7 +207,8 @@ describe Installations::Teamcity::Api do
 
       result = api.list_artifacts(123)
       expect(result.size).to eq(2)
-      expect(result.pluck("name")).to contain_exactly("app-release.apk", "app-release.aab")
+      expect(result.pluck(:name)).to contain_exactly("app-release.apk", "app-release.aab")
+      expect(result.first[:size_in_bytes]).to eq(1024)
     end
   end
 

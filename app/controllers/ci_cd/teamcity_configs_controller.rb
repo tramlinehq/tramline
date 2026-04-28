@@ -40,7 +40,9 @@ class CiCd::TeamcityConfigsController < SignedInApplicationController
   def parsed_teamcity_config_params
     teamcity_config_params =
       params.require(:teamcity_integration).permit(:project_config)
-    teamcity_config_params
-      .merge(project_config: teamcity_config_params[:project_config]&.safe_json_parse)
+    raw = teamcity_config_params[:project_config]
+    parsed = raw.is_a?(String) ? raw.safe_json_parse : raw
+    parsed = nil unless parsed.is_a?(Hash)
+    teamcity_config_params.merge(project_config: parsed)
   end
 end

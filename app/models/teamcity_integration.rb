@@ -154,7 +154,7 @@ class TeamcityIntegration < ApplicationRecord
       .list_artifacts(build_id)
       .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
       .then { |artifacts| API.find_biggest(artifacts) }
-      .then { |artifact| artifact&.dig(:href) }
+      .then { |artifact| artifact&.dig(:archive_download_url) }
   end
 
   def get_artifact(artifact_path, artifact_name_pattern, external_workflow_run_id: nil)

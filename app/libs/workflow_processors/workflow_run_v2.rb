@@ -67,7 +67,7 @@ class WorkflowProcessors::WorkflowRunV2
     workflow_run.ci_cd_provider.integration
   end
 
-  def external_workflow_run
+  memoize def external_workflow_run
     workflow_run.get_external_run
   end
 

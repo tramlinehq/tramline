@@ -23,18 +23,18 @@ class Integrations::TeamcityController < IntegrationsController
   end
 
   def server_url
-    integration_params[:providable][:server_url]
+    integration_params.dig(:providable, :server_url)
   end
 
   def access_token
-    integration_params[:providable][:access_token]
+    integration_params.dig(:providable, :access_token)
   end
 
   def cf_access_client_id
-    integration_params[:providable][:cf_access_client_id]
+    integration_params.dig(:providable, :cf_access_client_id)
   end
 
   def cf_access_client_secret
-    integration_params[:providable][:cf_access_client_secret]
+    integration_params.dig(:providable, :cf_access_client_secret)
   end
 end
