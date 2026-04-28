@@ -27,7 +27,8 @@ module Installations
     class << self
       def filter_by_name(artifacts, name_pattern)
         return artifacts if name_pattern.blank?
-        artifacts.filter { |a| a[:name]&.downcase&.include?(name_pattern) }.presence || artifacts
+        needle = name_pattern.to_s.downcase
+        artifacts.filter { |a| a[:name]&.downcase&.include?(needle) }.presence || artifacts
       end
 
       def find_biggest(artifacts)
@@ -120,17 +121,24 @@ module Installations
     end
 
     def get_artifact_metadata(build_id, artifact_path, transforms)
-      execute(:get, "/app/rest/builds/id:#{build_id}/artifacts/metadata/#{artifact_path}")
+      execute(:get, "/app/rest/builds/id:#{build_id}/artifacts/metadata/#{encode_artifact_path(artifact_path)}")
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     def download_artifact(build_id, artifact_path)
-      url = "#{server_url}/app/rest/builds/id:#{build_id}/artifacts/content/#{URI.encode_www_form_component(artifact_path)}"
+      url = "#{server_url}/app/rest/builds/id:#{build_id}/artifacts/content/#{encode_artifact_path(artifact_path)}"
       Down::Http.download(url, headers: auth_headers, follow: {max_hops: 1})
     end
 
     private
+
+    # TeamCity artifact paths are nested (e.g. "outputs/release/app.apk").
+    # Each path segment must be percent-encoded individually while preserving
+    # the literal "/" separators — Tomcat rejects %2F in path segments.
+    def encode_artifact_path(path)
+      path.to_s.split("/").map { |segment| URI.encode_www_form_component(segment) }.join("/")
+    end
 
     def build_properties(inputs, commit_hash)
       properties = []
@@ -147,7 +155,8 @@ module Installations
       properties
     end
 
-    # TeamCity locator values with special chars (parentheses, commas, colons) must be escaped
+    # TeamCity locator values containing parentheses or commas must be escaped.
+    # Colons act as the dimension:value separator and don't need escaping inside values.
     def sanitize_locator_value(value)
       value.to_s.gsub(/([(),])/) { |char| "\\#{char}" }
     end
