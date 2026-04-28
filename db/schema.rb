@@ -856,6 +856,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "teamcity_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "server_url", null: false
+    t.string "access_token"
+    t.jsonb "project_config"
+    t.string "cf_access_client_id"
+    t.string "cf_access_client_secret"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "sso_authentications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "login_id"
     t.string "email", default: "", null: false

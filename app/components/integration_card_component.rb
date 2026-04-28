@@ -8,7 +8,8 @@ class IntegrationCardComponent < BaseComponent
     google_play_store: "Service Account JSON Key",
     crashlytics: "Service Account JSON Key",
     bitrise: "Access Token",
-    sentry: "Auth Token"
+    sentry: "Auth Token",
+    teamcity: "Server URL & Access Token"
   }
 
   def initialize(app, integration, category, pre_open_category = nil)
@@ -136,6 +137,7 @@ class IntegrationCardComponent < BaseComponent
     when "GitlabIntegration" then edit_app_ci_cd_gitlab_config_path(@app)
     when "BitbucketIntegration" then edit_app_ci_cd_bitbucket_config_path(@app)
     when "BitriseIntegration" then edit_app_ci_cd_bitrise_config_path(@app)
+    when "TeamcityIntegration" then edit_app_ci_cd_teamcity_config_path(@app)
     else unsupported_integration_type
     end
   end

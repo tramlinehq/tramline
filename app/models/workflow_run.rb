@@ -103,7 +103,7 @@ class WorkflowRun < ApplicationRecord
     end
 
     event :retry, after_commit: :on_retry! do
-      transitions from: [:failed, :halted], to: :triggering
+      transitions from: [:failed, :halted, :unavailable, :trigger_failed], to: :triggering
     end
 
     event :finish, after_commit: :on_finish! do
@@ -227,7 +227,10 @@ class WorkflowRun < ApplicationRecord
 
     if app.build_number_managed_externally?
       external_unique_number = external_workflow_run[:unique_number]
-      raise ExternalUniqueNumberNotFound if external_unique_number.blank?
+      # TeamCity may not return a build number at trigger time when the build
+      # is queued with snapshot dependencies or a shared counter; the number
+      # gets resolved later and is picked up by update_build_number_from_poll!
+      raise ExternalUniqueNumberNotFound if external_unique_number.blank? && !ci_cd_provider.integration.teamcity_integration?
     end
 
     external_workflow_run
@@ -264,14 +267,21 @@ class WorkflowRun < ApplicationRecord
   def update_external_metadata!(external_workflow_run)
     return if external_workflow_run.try(:[], :ci_ref).blank?
 
+    # TeamCity dependency-chain builds may return an unresolved template
+    # string (e.g. "%dep.OtherBuild.system.build.number%") as the build
+    # number until the parent build runs. Skip persisting non-numeric
+    # values so the poller can pick up the resolved number later.
+    unique_number = external_workflow_run[:unique_number]
+    numeric = Integer(unique_number, exception: false) if unique_number.present?
+
     update!(
       external_id: external_workflow_run[:ci_ref],
       external_url: external_workflow_run[:ci_link],
-      external_number: external_workflow_run[:number],
-      external_unique_number: external_workflow_run[:unique_number]
+      external_number: numeric ? external_workflow_run[:number] : nil,
+      external_unique_number: numeric ? unique_number : nil
     )
 
-    update_build_number_from_external_metadata! if app.build_number_managed_externally?
+    update_build_number_from_external_metadata! if numeric && app.build_number_managed_externally?
   end
 
   def on_initiate!
@@ -288,6 +298,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def on_retry!
+    triggering_release.update!(status: :created) if triggering_release&.failed?
     WorkflowRuns::TriggerJob.perform_async(id, true)
     event_stamp!(reason: :retried, kind: :notice, data: stamp_data)
   end

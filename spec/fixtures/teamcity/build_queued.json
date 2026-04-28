@@ -1,0 +1,9 @@
+{
+  "id": 123456,
+  "buildTypeId": "MyProject_Build",
+  "number": null,
+  "status": null,
+  "state": "queued",
+  "branchName": "main",
+  "webUrl": "https://teamcity.example.com/viewLog.html?buildId=123456"
+}

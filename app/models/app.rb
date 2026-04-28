@@ -109,6 +109,10 @@ class App < ApplicationRecord
     integrations.connected.bitrise_integrations.any?
   end
 
+  def teamcity_connected?
+    integrations.ci_cd.any?(&:teamcity_integration?)
+  end
+
   def bugsnag_connected?
     integrations.bugsnag_integrations.any?
   end
