@@ -77,7 +77,8 @@ class WorkflowProcessors::WorkflowRunV2
   # (e.g. "%dep.OtherBuild.system.build.number%") while the parent build is
   # still running — skip those and wait for a numeric value.
   #
-  # Wrapped in with_lock + reload to serialize concurrent pollers so we don't
+  # The actual write goes through WorkflowRun#apply_external_build_number!,
+  # which holds the lock shared with the trigger-time path so we never
   # double-bump the app's build counter.
   def update_build_number_from_poll!
     return unless app.build_number_managed_externally?
@@ -89,14 +90,7 @@ class WorkflowProcessors::WorkflowRunV2
     numeric_number = Integer(number, exception: false)
     return unless numeric_number
 
-    workflow_run.with_lock do
-      workflow_run.reload
-      return if workflow_run.external_unique_number.present?
-
-      workflow_run.update!(external_unique_number: number, external_number: number)
-      workflow_run.build&.update!(build_number: number)
-      app.bump_build_number!(release_version: workflow_run.build&.release_version, workflow_build_number: numeric_number)
-    end
+    workflow_run.apply_external_build_number!(number, number, numeric_number)
   end
 
   def wait_time

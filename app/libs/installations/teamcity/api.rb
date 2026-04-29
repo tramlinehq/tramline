@@ -136,8 +136,10 @@ module Installations
     # TeamCity artifact paths are nested (e.g. "outputs/release/app.apk").
     # Each path segment must be percent-encoded individually while preserving
     # the literal "/" separators — Tomcat rejects %2F in path segments.
+    # Use encode_uri_component (not encode_www_form_component) so spaces
+    # become %20 instead of "+", which would be a literal "+" in a URL path.
     def encode_artifact_path(path)
-      path.to_s.split("/").map { |segment| URI.encode_www_form_component(segment) }.join("/")
+      path.to_s.split("/", -1).map { |segment| URI.encode_uri_component(segment) }.join("/")
     end
 
     def build_properties(inputs, commit_hash)

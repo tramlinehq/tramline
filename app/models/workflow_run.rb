@@ -249,11 +249,6 @@ class WorkflowRun < ApplicationRecord
     build.update!(build_number: app.bump_build_number!(release_version: build.release_version))
   end
 
-  def update_build_number_from_external_metadata!
-    build.update!(build_number: external_unique_number)
-    app.bump_build_number!(release_version: build.release_version, workflow_build_number: external_unique_number)
-  end
-
   def workflow_inputs
     data = {version_code: build.build_number, build_version: build.version_name}
     data[:build_notes] = triggering_release.tester_notes if organization.build_notes_in_workflow?
@@ -276,12 +271,26 @@ class WorkflowRun < ApplicationRecord
 
     update!(
       external_id: external_workflow_run[:ci_ref],
-      external_url: external_workflow_run[:ci_link],
-      external_number: numeric ? external_workflow_run[:number] : nil,
-      external_unique_number: numeric ? unique_number : nil
+      external_url: external_workflow_run[:ci_link]
     )
 
-    update_build_number_from_external_metadata! if numeric && app.build_number_managed_externally?
+    if numeric
+      apply_external_build_number!(unique_number, external_workflow_run[:number], numeric)
+    end
+  end
+
+  # Atomic write of the external build number triple — workflow run, build,
+  # and app counter — serialized through with_lock so the trigger-time path
+  # and the poller can never both bump the app counter for the same run.
+  def apply_external_build_number!(unique_number, number, numeric_number)
+    with_lock do
+      reload
+      return if external_unique_number.present?
+
+      update!(external_unique_number: unique_number, external_number: number)
+      build&.update!(build_number: unique_number) if app.build_number_managed_externally?
+      app.bump_build_number!(release_version: build&.release_version, workflow_build_number: numeric_number) if app.build_number_managed_externally?
+    end
   end
 
   def on_initiate!
