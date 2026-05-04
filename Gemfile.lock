@@ -142,7 +142,7 @@ GEM
       railties (>= 6.1)
     datadog-ci (0.8.3)
       msgpack
-    date (3.4.1)
+    date (3.5.1)
     ddtrace (1.23.3)
       datadog-ci (~> 0.8.1)
       debase-ruby_core_source (= 3.3.1)
@@ -417,7 +417,7 @@ GEM
     mutex_m (0.2.0)
     net-http (0.9.1)
       uri (>= 0.11.1)
-    net-imap (0.5.7)
+    net-imap (0.5.14)
       date
       net-protocol
     net-pop (0.1.2)
@@ -741,7 +741,7 @@ GEM
     tailwindcss-rails (2.7.9-x86_64-linux)
       railties (>= 7.0.0)
     thor (1.4.0)
-    timeout (0.4.3)
+    timeout (0.6.1)
     trailblazer-option (0.1.2)
     turbo-rails (2.0.13)
       actionpack (>= 7.1.0)
