@@ -1,0 +1,35 @@
+servers:
+  web:
+    options:
+      memory: 512m
+  worker:
+    options:
+      memory: 512m
+
+proxy:
+  ssl: true
+  host: tramline.site
+
+accessories:
+  db:
+    options:
+      memory: 256m
+      restart: always
+      shm-size: 64m
+
+  redis:
+    cmd: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lru --appendonly yes
+    options:
+      memory: 128m
+      restart: always
+
+  applelink:
+    options:
+      restart: always
+      memory: 128m
+
+  portainer:
+    proxy:
+      ssl: false
+      host: <%= ENV["HETZNER_IP"] %>
+      app_port: 9000

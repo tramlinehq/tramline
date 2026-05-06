@@ -63,5 +63,8 @@ aasm-*.pdf
 sbom.xml
 sbom.json
 
+# Ignore Kamal secrets
+.kamal/secrets
+
 # Ignore LLM related files
 .claude/

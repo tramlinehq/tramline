@@ -6,12 +6,64 @@ on:
 jobs:
   production:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      DOCKER_BUILDKIT: 1
+      HETZNER_IP: ${{ secrets.HETZNER_IP }}
+      KAMAL_REGISTRY_USERNAME: ${{ github.actor }}
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+      DEFAULT_REDIS_URL: ${{ secrets.DEFAULT_REDIS_URL }}
+      SESSION_REDIS_URL: ${{ secrets.SESSION_REDIS_URL }}
+      SIDEKIQ_REDIS_URL: ${{ secrets.SIDEKIQ_REDIS_URL }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      DESCOPE_PROJECT_ID: ${{ secrets.DESCOPE_PROJECT_ID }}
+      DESCOPE_MANAGEMENT_KEY: ${{ secrets.DESCOPE_MANAGEMENT_KEY }}
+      HOST_NAME: ${{ secrets.HOST_NAME }}
+      APPLELINK_URL: ${{ secrets.APPLELINK_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      FRONTEND_SENTRY_DSN: ${{ secrets.FRONTEND_SENTRY_DSN }}
+      SENTRY_SECURITY_HEADER_ENDPOINT: ${{ secrets.SENTRY_SECURITY_HEADER_ENDPOINT }}
+      X_MONITOR_ALLOWED: ${{ secrets.X_MONITOR_ALLOWED }}
+      ARTIFACT_BUILDS_BUCKET_NAME: ${{ secrets.ARTIFACT_BUILDS_BUCKET_NAME }}
+      APP_REDIRECT_MAPPING_JSON: ${{ secrets.APP_REDIRECT_MAPPING_JSON }}
+      DISALLOWED_SIGN_UP_DOMAINS: ${{ secrets.DISALLOWED_SIGN_UP_DOMAINS }}
+      CSP_CONNECT_SRC_URIS: ${{ secrets.CSP_CONNECT_SRC_URIS }}
+      AUTH_ISSUER: ${{ secrets.AUTH_ISSUER }}
+      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      AUTH_AUD: ${{ secrets.AUTH_AUD }}
+
     steps:
-      - name: site-jobs
-        uses: wei/curl@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          args: -X POST https://api.render.com/deploy/${{ secrets.SITE_JOBS_PRODUCTION_SERVICE_ID }}?key=${{ secrets.SITE_JOBS_PRODUCTION_API_KEY }}
-      - name: site-web
-        uses: wei/curl@v1
+          ruby-version: 3.3.6
+          bundler-cache: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Expose GitHub Runtime for cache
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Install Kamal
+        run: gem install kamal
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          args: -X POST https://api.render.com/deploy/${{ secrets.SITE_WEB_PRODUCTION_SERVICE_ID }}?key=${{ secrets.SITE_WEB_PRODUCTION_API_KEY }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy with Kamal
+        run: kamal deploy
