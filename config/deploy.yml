@@ -8,12 +8,14 @@ servers:
     cmd: bundle exec puma -C config/puma.rb
     options:
       memory: 4g
+      cpus: 2
   worker:
     hosts:
       - <%= ENV["HETZNER_IP"] %>
     cmd: bundle exec sidekiq
     options:
-      memory: 2g
+      memory: 4g
+      cpus: 2
     proxy: false
 
 proxy:
@@ -94,7 +96,8 @@ accessories:
     directories:
       - tramline-db-data:/var/lib/postgresql/data
     options:
-      memory: 1g
+      memory: 2g
+      cpus: 2
       restart: always
       shm-size: 256m
 
@@ -105,7 +108,8 @@ accessories:
     directories:
       - tramline-redis-data:/data
     options:
-      memory: 256m
+      memory: 512m
+      cpus: 1
       restart: always
 
   applelink:
@@ -118,7 +122,8 @@ accessories:
         - AUTH_AUD
     options:
       restart: always
-      memory: 512m
+      memory: 2g
+      cpus: 1
 
   portainer:
     image: portainer/portainer-ce:latest
