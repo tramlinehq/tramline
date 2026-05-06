@@ -45,6 +45,34 @@ RSpec.describe ReleaseMetadata do
       expect(build(:release_metadata, locale:, release_platform_run:, release_notes: "<a>")).not_to be_valid
       expect(build(:release_metadata, locale:, release_platform_run:, release_notes: "hi2u \n <3")).not_to be_valid
     end
+
+    it "allows up to 4000 characters in description" do
+      expect(build(:release_metadata, locale:, release_platform_run:, description: "a" * 4000)).to be_valid
+    end
+
+    it "disallows more than 4000 characters in description" do
+      expect(build(:release_metadata, locale:, release_platform_run:, description: "a" * 4001)).not_to be_valid
+    end
+
+    it "allows up to 100 characters in keywords" do
+      expect(build(:release_metadata, locale:, release_platform_run:, keywords: ["a" * 50, "b" * 49])).to be_valid
+    end
+
+    it "disallows more than 100 characters in keywords" do
+      expect(build(:release_metadata, locale:, release_platform_run:, keywords: ["a" * 50, "b" * 50])).not_to be_valid
+    end
+
+    describe "#keywords_joined" do
+      it "joins keywords with comma" do
+        metadata = build(:release_metadata, locale:, release_platform_run:, keywords: ["keyword1", "keyword2", "keyword3"])
+        expect(metadata.keywords_joined).to eq("keyword1,keyword2,keyword3")
+      end
+
+      it "returns empty string when no keywords" do
+        metadata = build(:release_metadata, locale:, release_platform_run:, keywords: [])
+        expect(metadata.keywords_joined).to eq("")
+      end
+    end
   end
 
   context "when android" do
@@ -134,6 +162,34 @@ RSpec.describe ReleaseMetadata do
         metadata.update_and_clear_drafts!(release_notes: "<invalid>")
       }.to raise_error(ActiveRecord::RecordInvalid)
     end
+
+    it "clears draft_keywords when keywords are submitted" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "notes",
+        keywords: ["old", "words"],
+        draft_keywords: ["draft", "keywords"])
+
+      metadata.update_and_clear_drafts!(keywords: ["new", "words"])
+
+      expect(metadata.reload.keywords).to eq(["new", "words"])
+      expect(metadata.draft_keywords).to eq([])
+    end
+
+    it "clears draft_description when description is submitted" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "notes",
+        description: "old desc",
+        draft_description: "draft desc")
+
+      metadata.update_and_clear_drafts!(description: "new desc")
+
+      expect(metadata.reload.description).to eq("new desc")
+      expect(metadata.draft_description).to be_nil
+    end
   end
 
   describe "#save_draft" do
@@ -191,6 +247,56 @@ RSpec.describe ReleaseMetadata do
       metadata.save_draft(release_notes: "original")
 
       expect(metadata.reload.draft_release_notes).to be_nil
+    end
+
+    it "saves draft_keywords as array for changed keywords" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "notes",
+        keywords: ["original", "words"])
+
+      metadata.save_draft(keywords: ["new", "draft", "words"])
+
+      expect(metadata.reload.draft_keywords).to eq(["new", "draft", "words"])
+      expect(metadata.keywords).to eq(["original", "words"])
+    end
+
+    it "does not save draft_keywords when keywords unchanged" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "notes",
+        keywords: ["same", "words"])
+
+      metadata.save_draft(keywords: ["same", "words"])
+
+      expect(metadata.reload.draft_keywords).to eq([])
+    end
+
+    it "saves draft_description for changed description" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "notes",
+        description: "original desc")
+
+      metadata.save_draft(description: "new draft desc")
+
+      expect(metadata.reload.draft_description).to eq("new draft desc")
+      expect(metadata.description).to eq("original desc")
+    end
+
+    it "does not save draft_description when description unchanged" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "notes",
+        description: "same desc")
+
+      metadata.save_draft(description: "same desc")
+
+      expect(metadata.reload.draft_description).to be_nil
     end
   end
 end
