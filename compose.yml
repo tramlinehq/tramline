@@ -3,7 +3,7 @@ x-app: &app
     dockerfile: ./dev.Dockerfile
     context: .
     args:
-      RUBY_VERSION: '3.3.6'
+      RUBY_VERSION: '3.4.9'
       PG_MAJOR: '14'
   image: tramline-site-dev:1.0.0
   environment: &env
@@ -84,7 +84,7 @@ services:
     ports:
       - '3000:3000'
     healthcheck:
-      test: [ "CMD", "curl", "-k", "-f", "-H", "X-Monitor-Allowed: 1", "https://localhost:3000/up" ]
+      test: [ "CMD", "curl", "-k", "-f", "https://localhost:3000/up" ]
       interval: 60s
       timeout: 1s
       retries: 2

@@ -1,13 +1,48 @@
-#!/bin/bash -e
+#!/bin/bash
+set -e
 
-# Enable jemalloc for reduced memory usage and latency.
-if [ -z "${LD_PRELOAD+x}" ] && [ -f /usr/lib/*/libjemalloc.so.2 ]; then
-  export LD_PRELOAD="$(echo /usr/lib/*/libjemalloc.so.2)"
+# Enable jemalloc for reduced memory usage and latency
+if [ -z "${LD_PRELOAD+x}" ]; then
+    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit 2>/dev/null)
+    export LD_PRELOAD
 fi
 
-# If running the rails server then create or migrate existing database
-if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
-  ./bin/rails db:prepare
+wait_for_db() {
+    local host="${DATABASE_HOST:-tramline-db}"
+    local port="${DATABASE_PORT:-5432}"
+    local attempts=0
+    local max_attempts="${DB_WAIT_MAX_ATTEMPTS:-60}"
+    echo "Waiting for database at ${host}:${port}..."
+    until nc -z "$host" "$port"; do
+        attempts=$((attempts + 1))
+        if [ "$attempts" -ge "$max_attempts" ]; then
+            echo "Database not reachable after ${max_attempts}s, aborting." >&2
+            exit 1
+        fi
+        sleep 1
+    done
+    echo "Database is ready!"
+}
+
+# Load git ref captured at build time (git not available in production image)
+if [ -f /rails/.git_ref ]; then
+    while IFS= read -r line; do
+        export "$line"
+    done < /rails/.git_ref
+fi
+
+if [[ "${@}" == *"puma"* ]] || [[ "${@}" == *"rails server"* ]] || [[ "${@}" == *"rails s"* ]]; then
+    if [ "$RAILS_ENV" = "production" ]; then
+        : "${RAILS_MASTER_KEY:?RAILS_MASTER_KEY is required}"
+        : "${DATABASE_URL:?DATABASE_URL is required}"
+    fi
+
+    wait_for_db
+
+    echo "Preparing database..."
+    ./bin/rails db:prepare
+
+    rm -f tmp/pids/server.pid
 fi
 
 exec "${@}"

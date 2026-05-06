@@ -1,0 +1,151 @@
+service: tramline
+image: tramlinehq/tramline
+
+servers:
+  web:
+    hosts:
+      - <%= ENV["HETZNER_IP"] %>
+    cmd: bundle exec puma -C config/puma.rb
+    options:
+      memory: 4g
+      cpus: 2
+  worker:
+    hosts:
+      - <%= ENV["HETZNER_IP"] %>
+    cmd: bundle exec sidekiq
+    options:
+      memory: 4g
+      cpus: 2
+    proxy: false
+
+proxy:
+  app_port: 3000
+  ssl: true
+  host: tramline.dev
+  healthcheck:
+    path: /up
+    interval: 3
+    timeout: 5
+  buffering:
+    requests: true
+    responses: true
+    max_request_body: 100_000_000
+
+builder:
+  arch: amd64
+  dockerfile: web.Dockerfile
+  secrets:
+    - RAILS_MASTER_KEY
+  cache:
+    type: gha
+    options: mode=max
+
+registry:
+  server: ghcr.io
+  username:
+    - KAMAL_REGISTRY_USERNAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+ssh:
+  user: deploy
+
+deploy_timeout: 600
+drain_timeout: 30
+
+env:
+  clear:
+    RAILS_ENV: production
+    RAILS_PIPELINE_ENV: production
+    RAILS_LOG_TO_STDOUT: true
+    RAILS_SERVE_STATIC_FILES: true
+    SIDEKIQ_CONCURRENCY: 10
+    SIDEKIQ_TIMEOUT: 25
+    SESSION_TIMEOUT_IN_MINUTES: 60
+    CSP_REPORT_ONLY: false
+    GRACEFUL_ERROR_PAGES: true
+  secret:
+    - RAILS_MASTER_KEY
+    - DATABASE_URL
+    - REDIS_URL
+    - DEFAULT_REDIS_URL
+    - SESSION_REDIS_URL
+    - SIDEKIQ_REDIS_URL
+    - HOST_NAME
+    - DESCOPE_PROJECT_ID
+    - DESCOPE_MANAGEMENT_KEY
+    - APPLELINK_URL
+    - SENTRY_DSN
+    - FRONTEND_SENTRY_DSN
+    - SENTRY_SECURITY_HEADER_ENDPOINT
+    - ARTIFACT_BUILDS_BUCKET_NAME
+    - APP_REDIRECT_MAPPING_JSON
+    - X_MONITOR_ALLOWED
+    - DISALLOWED_SIGN_UP_DOMAINS
+    - CSP_CONNECT_SRC_URIS
+
+accessories:
+  db:
+    image: postgres:14-trixie
+    host: <%= ENV["HETZNER_IP"] %>
+    env:
+      secret:
+        - POSTGRES_USER
+        - POSTGRES_PASSWORD
+        - POSTGRES_DB
+    directories:
+      - tramline-db-data:/var/lib/postgresql/data
+    options:
+      memory: 2g
+      cpus: 2
+      restart: always
+      shm-size: 256m
+
+  redis-cache:
+    image: redis:7-alpine
+    host: <%= ENV["HETZNER_IP"] %>
+    cmd: redis-server --maxmemory 200mb --maxmemory-policy allkeys-lru
+    directories:
+      - tramline-redis-cache-data:/data
+    options:
+      memory: 256m
+      cpus: 0.5
+      restart: always
+
+  redis-sidekiq:
+    image: redis:7-alpine
+    host: <%= ENV["HETZNER_IP"] %>
+    cmd: redis-server --maxmemory 200mb --maxmemory-policy noeviction --appendonly yes
+    directories:
+      - tramline-redis-sidekiq-data:/data
+    options:
+      memory: 256m
+      cpus: 0.5
+      restart: always
+
+  applelink:
+    image: ghcr.io/tramlinehq/applelink:latest
+    host: <%= ENV["HETZNER_IP"] %>
+    env:
+      secret:
+        - AUTH_ISSUER
+        - AUTH_SECRET
+        - AUTH_AUD
+    options:
+      restart: always
+      memory: 2g
+      cpus: 1
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    host: <%= ENV["HETZNER_IP"] %>
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    directories:
+      - tramline-portainer-data:/data
+    options:
+      restart: always
+    proxy:
+      ssl: true
+      host: tramline.site
+      app_port: 9000
