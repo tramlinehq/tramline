@@ -37,7 +37,7 @@ chmod 600 /home/deploy/.ssh/authorized_keys
 # Disable password auth
 sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
 sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
-systemctl restart sshd
+systemctl restart ssh
 ```
 
 ## 3. UFW (secondary firewall on the box)
