@@ -265,7 +265,7 @@ class Integration < ApplicationRecord
   end
 
   def disconnectable_categories?
-    ci_cd? || version_control?
+    ci_cd? || version_control? || build_channel?
   end
 
   def disconnect

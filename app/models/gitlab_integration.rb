@@ -463,7 +463,7 @@ class GitlabIntegration < ApplicationRecord
     raise ex if attempt >= MAX_RETRY_ATTEMPTS
     next_attempt = attempt + 1
 
-    if %i[token_expired token_refresh_failure].include?(ex.reason)
+    if ex.reason == :token_expired
       reset_tokens!
       sleep 0.3
       return with_api_retries(attempt: next_attempt, &)
