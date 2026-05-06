@@ -51,7 +51,7 @@ Rails.application.configure do
   config.force_ssl = true
   config.ssl_options = {
     hsts: {subdomains: true, preload: true},
-    redirect: {exclude: ->(request) { request.path == "/healthz" }}
+    redirect: {exclude: ->(request) { request.path == "/up" }}
   }
 
   # Include generic and useful information about system operation, but avoid logging too much
@@ -96,7 +96,7 @@ Rails.application.configure do
   config.hosts << ENV["HOST_NAME"]
   config.hosts << ".#{ENV["HOST_NAME"]}"
   config.hosts << /.*\.onrender\.com/
-  config.host_authorization = {exclude: ->(request) { request.path == "/healthz" }}
+  config.host_authorization = {exclude: ->(request) { request.path == "/up" }}
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false

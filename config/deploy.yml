@@ -23,7 +23,7 @@ proxy:
   ssl: true
   host: tramline.dev
   healthcheck:
-    path: /healthz
+    path: /up
     interval: 3
     timeout: 5
   buffering:
