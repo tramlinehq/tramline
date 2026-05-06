@@ -101,15 +101,26 @@ accessories:
       restart: always
       shm-size: 256m
 
-  redis:
+  redis-cache:
     image: redis:7-alpine
     host: <%= ENV["HETZNER_IP"] %>
-    cmd: redis-server --maxmemory 200mb --maxmemory-policy allkeys-lru --appendonly yes
+    cmd: redis-server --maxmemory 200mb --maxmemory-policy allkeys-lru
     directories:
-      - tramline-redis-data:/data
+      - tramline-redis-cache-data:/data
     options:
-      memory: 512m
-      cpus: 1
+      memory: 256m
+      cpus: 0.5
+      restart: always
+
+  redis-sidekiq:
+    image: redis:7-alpine
+    host: <%= ENV["HETZNER_IP"] %>
+    cmd: redis-server --maxmemory 200mb --maxmemory-policy noeviction --appendonly yes
+    directories:
+      - tramline-redis-sidekiq-data:/data
+    options:
+      memory: 256m
+      cpus: 0.5
       restart: always
 
   applelink:

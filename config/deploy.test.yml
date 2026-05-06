@@ -17,10 +17,16 @@ accessories:
       restart: always
       shm-size: 64m
 
-  redis:
-    cmd: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lru --appendonly yes
+  redis-cache:
+    cmd: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lru
     options:
-      memory: 128m
+      memory: 64m
+      restart: always
+
+  redis-sidekiq:
+    cmd: redis-server --maxmemory 50mb --maxmemory-policy noeviction --appendonly yes
+    options:
+      memory: 64m
       restart: always
 
   applelink:
