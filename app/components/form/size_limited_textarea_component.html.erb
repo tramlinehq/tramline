@@ -1,0 +1,14 @@
+<div data-controller="character-counter" data-character-counter-max-length-value="<%= max_length %>">
+  <div class="flex items-center gap-1.5">
+    <%= form.label_only obj_method, label_text, type: label_type %>
+    <%= info_icon if info_icon? %>
+  </div>
+
+  <%= form.textarea obj_method, textarea_options %>
+
+  <p class="text-xs text-secondary">
+    Characters –
+    <strong data-character-counter-target="counter"><%= current_length %></strong>
+    / <%= max_length %>
+  </p>
+</div>

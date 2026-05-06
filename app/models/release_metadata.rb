@@ -5,6 +5,8 @@
 #  id                      :uuid             not null, primary key
 #  default_locale          :boolean          default(FALSE)
 #  description             :text
+#  draft_description       :text
+#  draft_keywords          :string           default([]), is an Array
 #  draft_promo_text        :text
 #  draft_release_notes     :text
 #  keywords                :string           default([]), is an Array
@@ -23,6 +25,8 @@ class ReleaseMetadata < ApplicationRecord
   belongs_to :release_platform_run, inverse_of: :release_metadata, optional: true
 
   IOS_NOTES_MAX_LENGTH = 4000
+  IOS_DESCRIPTION_MAX_LENGTH = 4000
+  IOS_KEYWORDS_MAX_LENGTH = 100
   ANDROID_NOTES_MAX_LENGTH = 500
   PROMO_TEXT_MAX_LENGTH = 170
   IOS_DENY_LIST = %w[<]
@@ -40,8 +44,11 @@ class ReleaseMetadata < ApplicationRecord
     format: {with: ANDROID_PLAINTEXT_REGEX, message: :no_special_characters_android, multiline: true},
     if: :android?
   validates :promo_text,
-    format: {with: IOS_PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true, multiline: true},
-    length: {maximum: PROMO_TEXT_MAX_LENGTH}
+    format: {with: IOS_PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true, denied_characters: IOS_DENY_LIST.join(", "), multiline: true},
+    length: {maximum: PROMO_TEXT_MAX_LENGTH},
+    if: :ios?
+  validates :description, length: {maximum: IOS_DESCRIPTION_MAX_LENGTH}, if: :ios?
+  validate :keywords_length, if: :ios?
   validates :locale, uniqueness: {scope: :release_platform_run_id}
   validate :notes_length
 
@@ -59,6 +66,10 @@ class ReleaseMetadata < ApplicationRecord
     update!(attrs.merge(draft_attrs_to_clear(attrs)))
   end
 
+  def keywords_joined
+    keywords.join(",")
+  end
+
   # rubocop:disable Rails/SkipsModelValidations
   def save_draft(attrs)
     draft_attrs = draft_attrs_to_save(attrs)
@@ -73,13 +84,15 @@ class ReleaseMetadata < ApplicationRecord
     {}.tap do |drafts|
       drafts[:draft_release_notes] = nil if attrs.key?(:release_notes)
       drafts[:draft_promo_text] = nil if attrs.key?(:promo_text)
+      drafts[:draft_keywords] = [] if attrs.key?(:keywords)
+      drafts[:draft_description] = nil if attrs.key?(:description)
     end
   end
 
   def draft_attrs_to_save(attrs)
     attrs = attrs.to_h.with_indifferent_access
-    db_values = self.class.where(id: id).pick(:release_notes, :promo_text)
-    db_release_notes, db_promo_text = db_values || [nil, nil]
+    db_values = self.class.where(id: id).pick(:release_notes, :promo_text, :keywords, :description)
+    db_release_notes, db_promo_text, db_keywords, db_description = db_values || [nil, nil, nil, nil]
 
     {}.tap do |drafts|
       if attrs.key?(:release_notes) && attrs[:release_notes] != db_release_notes
@@ -88,6 +101,16 @@ class ReleaseMetadata < ApplicationRecord
 
       if attrs.key?(:promo_text) && attrs[:promo_text] != db_promo_text
         drafts[:draft_promo_text] = attrs[:promo_text]
+      end
+
+      if attrs.key?(:keywords)
+        submitted_keywords = Array(attrs[:keywords])
+        db_keywords_arr = Array(db_keywords)
+        drafts[:draft_keywords] = submitted_keywords if submitted_keywords != db_keywords_arr
+      end
+
+      if attrs.key?(:description) && attrs[:description] != db_description
+        drafts[:draft_description] = attrs[:description]
       end
     end
   end
@@ -102,5 +125,11 @@ class ReleaseMetadata < ApplicationRecord
     return ANDROID_NOTES_MAX_LENGTH if android?
     return IOS_NOTES_MAX_LENGTH if ios?
     raise ArgumentError, "Invalid platform"
+  end
+
+  def keywords_length
+    if keywords_joined.length > IOS_KEYWORDS_MAX_LENGTH
+      errors.add(:keywords, :too_long, count: IOS_KEYWORDS_MAX_LENGTH)
+    end
   end
 end

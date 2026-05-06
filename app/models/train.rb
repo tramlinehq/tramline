@@ -15,6 +15,7 @@
 #  continuous_backmerge_branch_prefix             :string
 #  copy_approvals                                 :boolean          default(FALSE)
 #  description                                    :string
+#  discarded_at                                   :datetime         indexed
 #  enable_changelog_linking_in_notifications      :boolean          default(FALSE)
 #  freeze_version                                 :boolean          default(FALSE)
 #  kickoff_at                                     :datetime

@@ -42,6 +42,14 @@ class LiveRelease::MetadataComponent < BaseComponent
     ReleaseMetadata::PROMO_TEXT_MAX_LENGTH
   end
 
+  def keywords_max_length
+    ReleaseMetadata::IOS_KEYWORDS_MAX_LENGTH
+  end
+
+  def description_max_length
+    ReleaseMetadata::IOS_DESCRIPTION_MAX_LENGTH
+  end
+
   memoize def android_draft_notes
     android_metadata&.draft_release_notes
   end
@@ -54,6 +62,14 @@ class LiveRelease::MetadataComponent < BaseComponent
     ios_metadata&.draft_promo_text
   end
 
+  memoize def ios_draft_keywords
+    ios_metadata&.draft_keywords
+  end
+
+  memoize def ios_draft_description
+    ios_metadata&.draft_description
+  end
+
   def android_has_draft_notes?
     android_draft_notes.present?
   end
@@ -64,5 +80,13 @@ class LiveRelease::MetadataComponent < BaseComponent
 
   def ios_has_draft_promo_text?
     ios_draft_promo_text.present?
+  end
+
+  def ios_has_draft_keywords?
+    ios_draft_keywords.present?
+  end
+
+  def ios_has_draft_description?
+    ios_draft_description.present?
   end
 end

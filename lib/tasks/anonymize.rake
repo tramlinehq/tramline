@@ -285,6 +285,14 @@ namespace :anonymize do
         anonymize("draft_release_notes").using FieldStrategy::LoremIpsum.new
         anonymize("promo_text").using FieldStrategy::LoremIpsum.new
         anonymize("draft_promo_text").using FieldStrategy::LoremIpsum.new
+        anonymize("draft_description").using FieldStrategy::LoremIpsum.new
+        anonymize("draft_keywords") do |field|
+          if field.value.blank?
+            []
+          else
+            Array(field.value).map { Faker::Lorem.word }
+          end
+        end
       end
 
       table "pre_prod_releases" do
