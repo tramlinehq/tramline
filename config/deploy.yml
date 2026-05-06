@@ -84,7 +84,7 @@ env:
 
 accessories:
   db:
-    image: postgres:14
+    image: postgres:14-trixie
     host: <%= ENV["HETZNER_IP"] %>
     env:
       secret:
