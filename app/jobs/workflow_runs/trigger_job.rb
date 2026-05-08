@@ -45,10 +45,12 @@ class WorkflowRuns::TriggerJob < ApplicationJob
   end
 
   def self.trigger_failure?(ex)
-    ex.is_a?(Installations::Error) && TRIGGER_FAILURE_REASONS.include?(ex.reason)
+    return false if retryable_trigger_failure?(ex)
+    ex.is_a?(Installations::Error) && (TRIGGER_FAILURE_REASONS.include?(ex.reason) || ex.is_a?(Installations::Teamcity::Error))
   end
 
   def self.retryable_trigger_failure?(ex)
+    return true if ex.is_a?(Installations::Teamcity::Error) && ex.retryable?
     ex.is_a?(Installations::Error) && RETRYABLE_TRIGGER_FAILURE_REASONS.include?(ex.reason)
   end
 end

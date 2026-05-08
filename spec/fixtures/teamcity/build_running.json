@@ -1,0 +1,10 @@
+{
+  "id": 123456,
+  "buildTypeId": "MyProject_Build",
+  "number": "42",
+  "status": null,
+  "state": "running",
+  "branchName": "main",
+  "webUrl": "https://teamcity.example.com/viewLog.html?buildId=123456",
+  "startDate": "20240115T143052+0000"
+}
