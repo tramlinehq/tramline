@@ -1,4 +1,6 @@
 en:
+  onboarding:
+    completed: "Onboarding completed!"
   page_titles:
     default_suffix: "Tramline"
     controllers:
