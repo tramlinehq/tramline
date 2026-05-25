@@ -205,7 +205,7 @@ describe Installations::Teamcity::Api do
       stub_request(:get, "#{server_url}/app/rest/builds/id:123/artifacts")
         .to_return(status: 200, body: payload.to_json, headers: {"Content-Type" => "application/json"})
 
-      result = api.list_artifacts(123)
+      result = api.list_artifacts(123, TeamcityIntegration::ARTIFACTS_TRANSFORMATIONS)
       expect(result.size).to eq(2)
       expect(result.pluck(:name)).to contain_exactly("app-release.apk", "app-release.aab")
       expect(result.first[:size_in_bytes]).to eq(1024)

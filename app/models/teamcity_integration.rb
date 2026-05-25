@@ -158,7 +158,7 @@ class TeamcityIntegration < ApplicationRecord
 
   def artifact_url(build_id, artifact_name_pattern)
     installation
-      .list_artifacts(build_id)
+      .list_artifacts(build_id, ARTIFACTS_TRANSFORMATIONS)
       .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
       .then { |artifacts| API.find_biggest(artifacts) }
       .then { |artifact| artifact&.dig(:archive_download_url) }
