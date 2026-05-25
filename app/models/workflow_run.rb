@@ -241,10 +241,7 @@ class WorkflowRun < ApplicationRecord
 
     if app.build_number_managed_externally?
       external_unique_number = external_workflow_run[:unique_number]
-      # TeamCity may not return a build number at trigger time when the build
-      # is queued with snapshot dependencies or a shared counter; the number
-      # gets resolved later and is picked up by update_build_number_from_poll!
-      raise ExternalUniqueNumberNotFound if external_unique_number.blank? && !ci_cd_provider.integration.teamcity_integration?
+      raise ExternalUniqueNumberNotFound if external_unique_number.blank? && !ci_cd_provider.external_build_number_assigned_lazily?
     end
 
     external_workflow_run

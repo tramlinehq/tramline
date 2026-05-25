@@ -97,6 +97,13 @@ class TeamcityIntegration < ApplicationRecord
     true
   end
 
+  # TeamCity may not return a build number at trigger time when the build
+  # is queued with snapshot dependencies or a shared counter; the number
+  # gets resolved later and is picked up by update_build_number_from_poll!
+  def external_build_number_assigned_lazily?
+    true
+  end
+
   def setup_complete?
     project_id.present?
   end

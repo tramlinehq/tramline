@@ -352,6 +352,8 @@ class GitlabIntegration < ApplicationRecord
     false
   end
 
+  def external_build_number_assigned_lazily? = false
+
   def project_link = nil
 
   def connection_data
