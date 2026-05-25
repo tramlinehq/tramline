@@ -65,6 +65,8 @@ sbom.json
 
 # Ignore Kamal secrets
 .kamal/secrets
+.kamal/secrets.*
+!.kamal/secrets.*.example
 
 # Ignore LLM related files
 .claude/
