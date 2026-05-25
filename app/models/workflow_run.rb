@@ -212,6 +212,20 @@ class WorkflowRun < ApplicationRecord
     last_error&.message
   end
 
+  def apply_build_number!(unique_number, number)
+    return if external_unique_number.present?
+
+    numeric = Integer(unique_number, exception: false) if unique_number.present?
+    return unless numeric
+
+    update!(external_unique_number: unique_number, external_number: number)
+
+    if app.build_number_managed_externally?
+      build&.update!(build_number: unique_number)
+      app.bump_build_number!(release_version: build&.release_version, workflow_build_number: numeric)
+    end
+  end
+
   private
 
   class ExternalUniqueNumberNotFound < StandardError
@@ -266,31 +280,10 @@ class WorkflowRun < ApplicationRecord
     # string (e.g. "%dep.OtherBuild.system.build.number%") as the build
     # number until the parent build runs. Skip persisting non-numeric
     # values so the poller can pick up the resolved number later.
+    number = external_workflow_run[:number]
     unique_number = external_workflow_run[:unique_number]
-    numeric = Integer(unique_number, exception: false) if unique_number.present?
-
-    update!(
-      external_id: external_workflow_run[:ci_ref],
-      external_url: external_workflow_run[:ci_link]
-    )
-
-    if numeric
-      apply_external_build_number!(unique_number, external_workflow_run[:number], numeric)
-    end
-  end
-
-  # Atomic write of the external build number triple — workflow run, build,
-  # and app counter — serialized through with_lock so the trigger-time path
-  # and the poller can never both bump the app counter for the same run.
-  def apply_external_build_number!(unique_number, number, numeric_number)
-    with_lock do
-      reload
-      return if external_unique_number.present?
-
-      update!(external_unique_number: unique_number, external_number: number)
-      build&.update!(build_number: unique_number) if app.build_number_managed_externally?
-      app.bump_build_number!(release_version: build&.release_version, workflow_build_number: numeric_number) if app.build_number_managed_externally?
-    end
+    update!(external_id: external_workflow_run[:ci_ref], external_url: external_workflow_run[:ci_link])
+    apply_build_number!(unique_number, number)
   end
 
   def on_initiate!

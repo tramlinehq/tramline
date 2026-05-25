@@ -73,24 +73,13 @@ class WorkflowProcessors::WorkflowRunV2
 
   # TeamCity may not return a build number at trigger time (shared counters,
   # snapshot dependencies). Pick it up during polling once TC has assigned it.
-  # Dependency-chain builds may also surface unresolved template strings
-  # (e.g. "%dep.OtherBuild.system.build.number%") while the parent build is
-  # still running — skip those and wait for a numeric value.
-  #
-  # The actual write goes through WorkflowRun#apply_external_build_number!,
-  # which holds the lock shared with the trigger-time path so we never
-  # double-bump the app's build counter.
+  # apply_build_number! skips blank/non-numeric values (e.g. unresolved
+  # dependency-chain templates like "%dep.OtherBuild.system.build.number%")
+  # and is idempotent across re-polls via its external_unique_number guard.
   def update_build_number_from_poll!
     return unless app.build_number_managed_externally?
-    return if workflow_run.external_unique_number.present?
-
     number = external_workflow_run&.with_indifferent_access&.dig(:number)
-    return if number.blank?
-
-    numeric_number = Integer(number, exception: false)
-    return unless numeric_number
-
-    workflow_run.apply_external_build_number!(number, number, numeric_number)
+    workflow_run.apply_build_number!(number, number)
   end
 
   def wait_time
