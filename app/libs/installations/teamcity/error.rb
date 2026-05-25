@@ -23,10 +23,6 @@ module Installations
       super(error_message || "TeamCity error (HTTP #{status_code})", reason: handle)
     end
 
-    def retryable?
-      non_retryable_match.nil?
-    end
-
     private
 
     attr_reader :response_body
@@ -36,7 +32,7 @@ module Installations
       if non_retryable_match
         non_retryable_match[:decorated_reason]
       else
-        :teamcity_client_error
+        :generic_client_error
       end
     end
 

@@ -3,14 +3,17 @@ class WorkflowRuns::TriggerJob < ApplicationJob
   sidekiq_options retry: 25
 
   RETRYABLE_TRIGGER_FAILURE_REASONS = [
-    :workflow_run_not_runnable
+    :workflow_run_not_runnable,
+    :generic_client_error
   ]
   TRIGGER_FAILURE_REASONS = [
     :workflow_parameter_not_provided,
     :workflow_dispatch_missing,
     :workflow_parameter_invalid,
     :workflow_run_not_found,
-    :workflow_trigger_failed
+    :workflow_trigger_failed,
+    :unauthorized,
+    :forbidden
   ]
 
   sidekiq_retry_in do |count, ex, msg|
@@ -45,12 +48,10 @@ class WorkflowRuns::TriggerJob < ApplicationJob
   end
 
   def self.trigger_failure?(ex)
-    return false if retryable_trigger_failure?(ex)
-    ex.is_a?(Installations::Error) && (TRIGGER_FAILURE_REASONS.include?(ex.reason) || ex.is_a?(Installations::Teamcity::Error))
+    ex.is_a?(Installations::Error) && TRIGGER_FAILURE_REASONS.include?(ex.reason)
   end
 
   def self.retryable_trigger_failure?(ex)
-    return true if ex.is_a?(Installations::Teamcity::Error) && ex.retryable?
     ex.is_a?(Installations::Error) && RETRYABLE_TRIGGER_FAILURE_REASONS.include?(ex.reason)
   end
 end

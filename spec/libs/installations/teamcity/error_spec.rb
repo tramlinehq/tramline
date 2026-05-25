@@ -1,47 +1,42 @@
 require "rails_helper"
 
 describe Installations::Teamcity::Error do
-  describe "retryable errors (default)" do
-    it "treats 400 errors as retryable" do
+  describe "retryable reasons (default)" do
+    it "maps 400 errors to :generic_client_error" do
       error = described_class.new(400, {"message" => "Could not find the given change 'abc123' in VCS roots"})
 
-      expect(error).to be_retryable
-      expect(error.reason).to eq(:teamcity_client_error)
+      expect(error.reason).to eq(:generic_client_error)
     end
 
-    it "treats 404 errors as retryable" do
+    it "maps 404 errors to :generic_client_error" do
       error = described_class.new(404, {"message" => "Nothing is found by locator 'count:1,version:abc123'"})
 
-      expect(error).to be_retryable
-      expect(error.reason).to eq(:teamcity_client_error)
+      expect(error.reason).to eq(:generic_client_error)
     end
 
-    it "treats 422 errors as retryable" do
+    it "maps 422 errors to :generic_client_error" do
       error = described_class.new(422, {"message" => "Something unexpected"})
 
-      expect(error).to be_retryable
-      expect(error.reason).to eq(:teamcity_client_error)
+      expect(error.reason).to eq(:generic_client_error)
     end
 
-    it "treats unknown 4xx errors as retryable" do
+    it "maps unknown 4xx errors to :generic_client_error" do
       error = described_class.new(409, {"message" => "Conflict"})
 
-      expect(error).to be_retryable
+      expect(error.reason).to eq(:generic_client_error)
     end
   end
 
-  describe "non-retryable errors" do
-    it "treats 401 as non-retryable" do
+  describe "non-retryable reasons" do
+    it "maps 401 to :unauthorized" do
       error = described_class.new(401, {"message" => "Authentication required"})
 
-      expect(error).not_to be_retryable
       expect(error.reason).to eq(:unauthorized)
     end
 
-    it "treats 403 as non-retryable" do
+    it "maps 403 to :forbidden" do
       error = described_class.new(403, {"message" => "Access denied"})
 
-      expect(error).not_to be_retryable
       expect(error.reason).to eq(:forbidden)
     end
   end

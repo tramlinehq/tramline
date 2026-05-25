@@ -30,7 +30,7 @@ describe Installations::Teamcity::Api do
         .to_return(status: 404, body: {"message" => "Not found"}.to_json, headers: {"Content-Type" => "application/json"})
 
       expect { api.server_version }.to raise_error(Installations::Teamcity::Error) { |e|
-        expect(e.reason).to eq(:teamcity_client_error)
+        expect(e.reason).to eq(:generic_client_error)
         expect(e.status_code).to eq(404)
       }
     end
@@ -89,7 +89,7 @@ describe Installations::Teamcity::Api do
       expect {
         api.trigger_build("MyProject_Build", "main", inputs, "abc123", transforms)
       }.to raise_error(Installations::Teamcity::Error) { |e|
-        expect(e.reason).to eq(:teamcity_client_error)
+        expect(e.reason).to eq(:generic_client_error)
         expect(e.status_code).to eq(400)
       }
     end
