@@ -5,13 +5,14 @@ Easymon::Repository.add(
 )
 
 Easymon::Repository.add(
-  "site-redis",
-  Easymon::RedisCheck.new(
-    YAML.load(
-      ERB.new(Rails.root.join("config/redis.yml").read).result,
-      aliases: true
-    )[Rails.env].symbolize_keys
-  ),
+  "site-redis-cache",
+  Easymon::RedisCheck.new(REDIS_CONFIGURATION.base),
+  :critical
+)
+
+Easymon::Repository.add(
+  "site-redis-sidekiq",
+  Easymon::RedisCheck.new(REDIS_CONFIGURATION.sidekiq),
   :critical
 )
 

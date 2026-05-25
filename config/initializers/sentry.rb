@@ -1,7 +1,7 @@
 Sentry.init do |config|
   config.breadcrumbs_logger = [:active_support_logger, :http_logger]
   config.enabled_environments = %w[production]
-  config.traces_sample_rate = (ENV["RAILS_PIPELINE_ENV"].eql?("staging") ? 0.2 : 0.5)
+  config.traces_sample_rate = 0.5
   # config.traces_sampler = lambda do |sampling_context|
   #   return 0.0 if ENV["RAILS_PIPELINE_ENV"].eql?("staging")
   #   transaction_context = sampling_context[:transaction_context]

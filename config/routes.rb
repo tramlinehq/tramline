@@ -5,10 +5,10 @@ Rails.application.routes.draw do
   require "sidekiq/cron/web"
 
   mount ActionCable.server => "/cable"
-  mount Easymon::Engine => "/up"
+  mount Easymon::Engine => "/healthz"
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
   get "demo", to: "demo#index" if Rails.env.development? || ENV["RAILS_PIPELINE_ENV"].eql?("staging")
-  # get "up" => "rails/health#show", as: :rails_health_check
+  get "up" => "rails/health#show", as: :rails_health_check
 
   root "authentication/sessions#root"
   get "/admin", to: "admin/settings#index", as: :authenticated_admin_root
