@@ -73,4 +73,58 @@ describe WorkflowRun do
       end
     end
   end
+
+  describe "lazily-assigned build number (trigger defers, poll resolves)" do
+    let(:ci_ref) { Faker::Number.number(digits: 6).to_s }
+    let(:ci_link) { Faker::Internet.url }
+    let(:workflow_run) { create(:workflow_run, :triggering) }
+    let(:teamcity) { create(:teamcity_integration, :without_callbacks_and_validations, project_config: {"id" => "Project"}) }
+
+    before do
+      create(:integration, category: "ci_cd", providable: teamcity, integrable: workflow_run.app)
+      allow(workflow_run).to receive(:ci_cd_provider).and_return(teamcity)
+      workflow_run.app.update!(build_number_managed_internally: false)
+    end
+
+    it "does not raise at trigger when the provider has not assigned a number yet" do
+      allow(teamcity).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number: nil, unique_number: nil})
+
+      expect { workflow_run.trigger! }.not_to raise_error
+
+      workflow_run.reload
+      expect(workflow_run.external_id).to eq(ci_ref)
+      expect(workflow_run.external_unique_number).to be_nil
+      expect(workflow_run.build.build_number).to be_nil
+    end
+
+    it "resolves the deferred build number on a later poll" do
+      allow(teamcity).to receive(:trigger_workflow_run!).and_return({ci_ref:, ci_link:, number: nil, unique_number: nil})
+      workflow_run.trigger!
+      expect(workflow_run.reload.external_unique_number).to be_nil
+
+      resolved = (workflow_run.app.build_number + 1).to_s
+      workflow_run.apply_build_number!(resolved, resolved) # simulates update_build_number_from_poll!
+
+      workflow_run.reload
+      expect(workflow_run.external_unique_number).to eq(resolved)
+      expect(workflow_run.build.build_number).to eq(resolved)
+      expect(workflow_run.app.reload.build_number.to_s).to eq(resolved)
+    end
+
+    it "skips non-numeric values so an unresolved template is not persisted" do
+      expect {
+        workflow_run.apply_build_number!("%dep.Other.system.build.number%", "%dep.Other.system.build.number%")
+      }.not_to change { workflow_run.reload.external_unique_number }
+      expect(workflow_run.build.build_number).to be_nil
+    end
+
+    it "bumps the app counter only once across repeated poll ticks" do
+      resolved = (workflow_run.app.build_number + 1).to_s
+      workflow_run.apply_build_number!(resolved, resolved)
+
+      expect {
+        workflow_run.apply_build_number!(resolved, resolved)
+      }.not_to change { workflow_run.app.reload.build_number }
+    end
+  end
 end
