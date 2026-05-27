@@ -149,7 +149,7 @@ class App < ApplicationRecord
 
   # NOTE: fetches and uses latest build numbers from the stores, if added,
   # to reduce build upload rejection probability
-  def bump_build_number!(release_version: nil, workflow_build_number: nil)
+  def bump_or_set_build_number!(release_version: nil, workflow_build_number: nil)
     with_lock do
       if workflow_build_number.present?
         self.build_number = workflow_build_number

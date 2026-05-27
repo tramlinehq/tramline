@@ -222,7 +222,7 @@ class WorkflowRun < ApplicationRecord
 
     if app.build_number_managed_externally?
       build&.update!(build_number: unique_number)
-      app.bump_build_number!(release_version: build&.release_version, workflow_build_number: numeric)
+      app.bump_or_set_build_number!(release_version: build&.release_version, workflow_build_number: numeric)
     end
   end
 
@@ -257,7 +257,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def update_internally_managed_build_number!
-    build.update!(build_number: app.bump_build_number!(release_version: build.release_version))
+    build.update!(build_number: app.bump_or_set_build_number!(release_version: build.release_version))
   end
 
   def workflow_inputs
