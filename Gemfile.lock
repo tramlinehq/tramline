@@ -211,11 +211,11 @@ GEM
       railties (>= 5.0.0)
     faker (3.4.2)
       i18n (>= 1.8.11, < 2)
-    faraday (2.14.1)
+    faraday (2.14.2)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
-    faraday-net_http (3.4.2)
+    faraday-net_http (3.4.3)
       net-http (~> 0.5)
     faraday-retry (2.2.1)
       faraday (~> 2.0)
@@ -358,7 +358,7 @@ GEM
     jbuilder (2.12.0)
       actionview (>= 5.0.0)
       activesupport (>= 5.0.0)
-    json (2.7.6)
+    json (2.19.5)
     json-schema (4.3.1)
       addressable (>= 2.8)
     json_schemer (0.2.25)
@@ -367,7 +367,7 @@ GEM
       regexp_parser (~> 2.0)
       simpleidn (~> 0.2)
       uri_template (~> 0.7)
-    jwt (2.8.2)
+    jwt (2.10.3)
       base64
     language_server-protocol (3.17.0.4)
     launchy (3.0.1)
