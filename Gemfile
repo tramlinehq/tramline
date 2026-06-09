@@ -4,7 +4,7 @@ ruby file: ".ruby-version"
 
 gem "rails", "~> 7.2", ">= 7.2.3.1"
 gem "pg", "~> 1.1"
-gem "puma", "~> 6.4"
+gem "puma", "~> 7.2"
 gem "sprockets-rails", "~> 3.4"
 gem "importmap-rails", "~> 1.0"
 gem "turbo-rails", "~> 2.0"
