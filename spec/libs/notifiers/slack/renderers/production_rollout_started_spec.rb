@@ -9,7 +9,7 @@ describe Notifiers::Slack::Renderers::ProductionRolloutStarted do
       app_platform: "android",
       platform_public_img: "https://storage.googleapis.com/tramline-public-assets/android.png",
       vcs_public_icon_img: "https://storage.googleapis.com/tramline-public-assets/github.png",
-      train_name: "Release Train",
+      train_name: "McDonald's Release",
       release_version: "1.2.3",
       build_number: "456",
       rollout_percentage: "10",
@@ -89,20 +89,23 @@ describe Notifiers::Slack::Renderers::ProductionRolloutStarted do
     end
 
     it "still escapes double quotes for JSON safety" do
-      output = renderer.safe_string('say "hello"')
+      output = renderer.safe_string("user's \"quoted\" value")
       expect(output).to include('\\"')
+      expect(output).not_to include("\\'")
       expect { JSON.parse(%({"text": "#{output}"})) }.not_to raise_error
     end
 
     it "still escapes backslashes for JSON safety" do
-      output = renderer.safe_string('C:\\Users\\path')
+      output = renderer.safe_string("user's C:\\Users\\path")
       expect(output).to include("\\\\")
+      expect(output).not_to include("\\'")
       expect { JSON.parse(%({"text": "#{output}"})) }.not_to raise_error
     end
 
     it "still escapes newlines for JSON safety" do
-      output = renderer.safe_string("line one\nline two")
+      output = renderer.safe_string("user's notes\nline two")
       expect(output).to include("\\n")
+      expect(output).not_to include("\\'")
       expect { JSON.parse(%({"text": "#{output}"})) }.not_to raise_error
     end
   end
