@@ -121,6 +121,8 @@ class AppStoreIntegration < ApplicationRecord
   def rotate(key_id:, issuer_id:, p8_key:)
     verify_credentials!(key_id, issuer_id, p8_key)
     update!(key_id:, issuer_id:, p8_key:)
+    cache.delete(build_channels_cache_key)
+    refresh_external_app
     true
   rescue Installations::Apple::AppStoreConnect::Error => ex
     errors.add(:key_id, ex.reason)

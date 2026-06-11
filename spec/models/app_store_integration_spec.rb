@@ -251,13 +251,17 @@ describe AppStoreIntegration do
         .and_return(api_double)
     end
 
-    it "verifies new credentials, persists them, and returns true on success" do
+    it "verifies new credentials, persists them, busts the channels cache, refreshes the external app, and returns true" do
       allow(api_double).to receive(:find_app).and_return({id: "123", name: "App", bundle_id: "com.example.app"})
+      allow(Rails.cache).to receive(:delete)
+      allow(app_store_integration).to receive(:refresh_external_app)
 
       expect(app_store_integration.rotate(**new_attrs)).to be(true)
       expect(app_store_integration.reload.key_id).to eq("NEW_KEY")
       expect(app_store_integration.reload.issuer_id).to eq("NEW_ISSUER")
       expect(app_store_integration.reload.p8_key).to eq(new_p8)
+      expect(Rails.cache).to have_received(:delete).with(app_store_integration.send(:build_channels_cache_key))
+      expect(app_store_integration).to have_received(:refresh_external_app)
     end
 
     it "does not persist new credentials and surfaces a :key_id error when verification fails" do
