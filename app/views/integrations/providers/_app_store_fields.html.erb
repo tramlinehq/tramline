@@ -5,6 +5,11 @@
           "https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api",
           class: "underline" %>
   </p>
+  <% if local_assigns[:warning].present? %>
+    <p class="mt-3 text-xs text-amber-800 dark:text-amber-400">
+      <strong>Note:</strong> <%= warning %>
+    </p>
+  <% end %>
 <% end %>
 
 <% section.F.fields_for :providable do |subf| %>

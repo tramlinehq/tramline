@@ -1,7 +1,8 @@
 <%= render FormComponent.new(model: [app, integration], url: rotate_app_integration_path(app, integration), method: :patch) do |f| %>
   <% f.with_section(heading: "Rotate") do |section| %>
     <%= render partial: "integrations/providers/app_store_fields",
-               locals: {section: section, integration: integration} %>
+               locals: {section: section, integration: integration,
+                        warning: "Use a key from the same Apple Team. Rotating to a different team will break any existing train submission targets that reference TestFlight beta groups by ID."} %>
   <% end %>
 
   <% f.with_action do %>
