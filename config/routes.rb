@@ -211,6 +211,7 @@ Rails.application.routes.draw do
     resources :integrations, only: %i[index create destroy] do
       member do
         get :reauth
+        patch :rotate
       end
 
       collection do

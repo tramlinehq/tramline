@@ -28,7 +28,7 @@ class IntegrationCardComponent < BaseComponent
     :providable_type,
     :disconnectable_categories?,
     :further_setup?, to: :integration, allow_nil: true
-  delegate :creatable?, :connectable?, to: :provider
+  delegate :creatable?, :connectable?, :rotatable?, to: :provider
   alias_method :provider, :providable
 
   memoize def repeated_integrations_across_apps
@@ -89,6 +89,15 @@ class IntegrationCardComponent < BaseComponent
                integration: @integration,
                is_disconnectable: disconnectable?,
                is_disconnectable_category: disconnectable_categories?})
+  end
+
+  def rotate_form_partial
+    render(partial: "integrations/rotators/#{provider}",
+      locals: {app: @app, integration: @integration})
+  end
+
+  def rotate_modal_title
+    "Rotate #{CONNECTABLE_PROVIDER_TO_TITLE[provider.to_s.to_sym]}"
   end
 
   def disconnectable?

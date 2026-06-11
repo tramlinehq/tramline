@@ -1,0 +1,17 @@
+<% section.with_description do %>
+  <p>Your API key for App Store Connect API</p>
+  <p class="mt-2 text-xs">
+    <%= link_to_external "How to create an API key for App Store Connect API?",
+          "https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api",
+          class: "underline" %>
+  </p>
+<% end %>
+
+<% section.F.fields_for :providable do |subf| %>
+  <% if local_assigns[:include_providable_type] %>
+    <%= subf.hidden_field :type, value: integration.providable_type %>
+  <% end %>
+  <div><%= subf.labeled_text_field :key_id, "Key ID", required: true %></div>
+  <div><%= subf.labeled_text_field :issuer_id, "Issuer ID", required: true %></div>
+  <div><%= subf.labeled_file_field :p8_key_file, "Upload key file", "Only .p8 files.", accept: ".p8", required: true %></div>
+<% end %>

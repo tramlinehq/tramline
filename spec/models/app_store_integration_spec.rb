@@ -236,6 +236,41 @@ describe AppStoreIntegration do
     end
   end
 
+  describe "#rotate" do
+    let(:app) { create(:app, platform: :ios, bundle_identifier: "com.example.app") }
+    let(:integration) { create(:integration, :with_app_store, integrable: app) }
+    let(:app_store_integration) { integration.providable }
+    let(:api_double) { instance_double(Installations::Apple::AppStoreConnect::Api) }
+    let(:new_p8) { "-----BEGIN EC PRIVATE KEY-----\nNEW\n-----END EC PRIVATE KEY-----" }
+    let(:new_attrs) { {key_id: "NEW_KEY", issuer_id: "NEW_ISSUER", p8_key: new_p8} }
+
+    before do
+      allow(OpenSSL::PKey::EC).to receive(:new).with(new_p8).and_return(instance_double(OpenSSL::PKey::EC))
+      allow(Installations::Apple::AppStoreConnect::Api).to receive(:new)
+        .with("com.example.app", "NEW_KEY", "NEW_ISSUER", anything)
+        .and_return(api_double)
+    end
+
+    it "verifies new credentials, persists them, and returns true on success" do
+      allow(api_double).to receive(:find_app).and_return({id: "123", name: "App", bundle_id: "com.example.app"})
+
+      expect(app_store_integration.rotate(**new_attrs)).to be(true)
+      expect(app_store_integration.reload.key_id).to eq("NEW_KEY")
+      expect(app_store_integration.reload.issuer_id).to eq("NEW_ISSUER")
+      expect(app_store_integration.reload.p8_key).to eq(new_p8)
+    end
+
+    it "does not persist new credentials and surfaces a :key_id error when verification fails" do
+      original_key_id = app_store_integration.key_id
+      error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"code" => "unauthorized", "resource" => "app"}})
+      allow(api_double).to receive(:find_app).and_raise(error)
+
+      expect(app_store_integration.rotate(**new_attrs)).to be(false)
+      expect(app_store_integration.errors[:key_id]).to be_present
+      expect(app_store_integration.reload.key_id).to eq(original_key_id)
+    end
+  end
+
   describe "AppStoreReleaseInfo#phased_release_stage" do
     let(:release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(release_data) }
 
