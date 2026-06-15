@@ -22,7 +22,7 @@ class ProductionReleasePresenter < SimpleDelegator
   end
 
   def store_icon
-    "integrations/logo_#{store_submission.provider}.png"
+    "integrations/logo_#{store_submission.provider.presence || "deprecated"}.png"
   end
 
   def h

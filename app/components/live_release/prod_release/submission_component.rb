@@ -88,7 +88,7 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   end
 
   def store_icon
-    "integrations/logo_#{submission.provider}.png"
+    "integrations/logo_#{submission.provider.presence || "deprecated"}.png"
   end
 
   def form_factor

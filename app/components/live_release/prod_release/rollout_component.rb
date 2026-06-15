@@ -40,7 +40,7 @@ class LiveRelease::ProdRelease::RolloutComponent < BaseComponent
   end
 
   def store_icon
-    "integrations/logo_#{provider}.png"
+    "integrations/logo_#{provider.presence || "deprecated"}.png"
   end
 
   def form_factor
