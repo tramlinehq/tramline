@@ -19,7 +19,7 @@
 
             <% setting.notification_channels&.each do |channel| %>
               <div class="inline-flex items-center">
-                <%= render IconComponent.new("integrations/logo_#{setting.notification_provider}.png", size: :md, classes: "mr-1") %>
+                <%= render IconComponent.new(helpers.integration_logo(setting.notification_provider), size: :md, classes: "mr-1") %>
                 <%= channel["name"] %>
               </div>
             <% end %>

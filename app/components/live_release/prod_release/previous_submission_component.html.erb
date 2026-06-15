@@ -23,7 +23,7 @@
 
   <div class="flex flex-row items-center justify-between">
     <div class="flex items-center gap-1.5 text-center text-secondary">
-      <%= render IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
+      <%= render IconComponent.new(helpers.integration_logo(provider), size: :xl) %>
       <%= render BadgeComponent.new(**status) %>
     </div>
 

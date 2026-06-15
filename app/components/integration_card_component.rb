@@ -44,7 +44,7 @@ class IntegrationCardComponent < BaseComponent
   end
 
   def logo
-    image_tag("integrations/logo_#{provider}.png", width: 24, height: 24)
+    image_tag(helpers.integration_logo(provider), width: 24, height: 24)
   end
 
   def creatable_modal_title

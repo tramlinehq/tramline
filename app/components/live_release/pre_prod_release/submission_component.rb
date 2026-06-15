@@ -63,11 +63,11 @@ class LiveRelease::PreProdRelease::SubmissionComponent < BaseComponent
   end
 
   def submission_logo_bw
-    "logo_#{submission.provider}_bw.svg"
+    helpers.integration_logo_bw(submission.provider)
   end
 
   def submission_logo
-    "integrations/logo_#{submission.provider}.png"
+    helpers.integration_logo(submission.provider)
   end
 
   def active?
