@@ -24,7 +24,7 @@
   <div class="flex flex-row items-center justify-between">
     <div class="flex itens-center gap-2">
       <div class="flex items-baseline gap-1 flex">
-        <%= render IconComponent.new("integrations/logo_#{provider}.png", size: :md) %>
+        <%= render IconComponent.new(helpers.integration_logo(provider), size: :md) %>
         <div class="text-lg font-bold"><%= last_rollout_percentage %>%</div>
         <div class="text-sm text-secondary-50">of users</div>
         <div class="text-sm text-secondary-50">(<%= stage_help %>)</div>

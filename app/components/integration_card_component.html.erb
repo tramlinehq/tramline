@@ -40,6 +40,16 @@
                 <% end %>
               <% end %>
 
+              <% if rotatable? %>
+                <%= render ModalComponent.new(title: rotate_modal_title) do |modal| %>
+                  <% button = modal.with_button(scheme: :light, type: :action, size: :xxs, html_options: {alt: "Rotate credentials"}) %>
+                  <% button.with_icon("repeat.svg", size: :sm) %>
+                  <% modal.with_body do %>
+                    <%= rotate_form_partial %>
+                  <% end %>
+                <% end %>
+              <% end %>
+
               <%= disconnect_partial %>
             </div>
           </div>

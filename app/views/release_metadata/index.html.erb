@@ -1,7 +1,7 @@
 <%= render LiveRelease::ContainerComponent.new(@release, title: @train.name) do |container| %>
   <% container.with_back_button %>
   <% container.with_tab(title: "Notes — Release Metadata", icon: live_release_tab_configuration.dig(:metadata, :notes, :icon)) do %>
-    <% content_tag(:div, id: @stream_id) do %>
+    <%= content_tag(:div, id: @stream_id) do %>
       <%= render LiveRelease::MetadataComponent.new(@release,
             @active_languages,
             @language,

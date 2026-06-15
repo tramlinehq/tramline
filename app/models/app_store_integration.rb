@@ -114,6 +114,21 @@ class AppStoreIntegration < ApplicationRecord
     false
   end
 
+  def rotatable?
+    true
+  end
+
+  def rotate(key_id:, issuer_id:, p8_key:)
+    verify_credentials!(key_id, issuer_id, p8_key)
+    update!(key_id:, issuer_id:, p8_key:)
+    cache.delete(build_channels_cache_key)
+    refresh_external_app
+    true
+  rescue Installations::Apple::AppStoreConnect::Error => ex
+    errors.add(:key_id, ex.reason)
+    false
+  end
+
   def store?
     true
   end
@@ -271,6 +286,13 @@ class AppStoreIntegration < ApplicationRecord
     find_app.present?
   rescue Installations::Apple::AppStoreConnect::Error => ex
     errors.add(:key_id, ex.reason)
+  end
+
+  def verify_credentials!(key_id, issuer_id, p8_key)
+    api = Installations::Apple::AppStoreConnect::Api.new(
+      bundle_identifier, key_id, issuer_id, OpenSSL::PKey::EC.new(p8_key)
+    )
+    api.find_app(APP_TRANSFORMATIONS)
   end
 
   def set_external_details_on_app
