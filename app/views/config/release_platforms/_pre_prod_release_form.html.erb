@@ -1,7 +1,7 @@
 <% release_type = :"#{kind}_release" %>
 
 <div class="grid gap-4">
-  <% section.F.fields_for release_type, section.F.object.send(release_type) || Config::ReleaseStep.new(kind: kind, release_platform_config: section.F.object) do |rr| %>
+  <%= section.F.fields_for release_type, section.F.object.send(release_type) || Config::ReleaseStep.new(kind: kind, release_platform_config: section.F.object) do |rr| %>
     <%= rr.hidden_field :id, value: rr.object.id %>
 
     <div data-controller="nested-form-ext"
@@ -30,7 +30,7 @@
           id="<%= release_type %>_submissions">
         <% current_submissions.each_with_index do |submission, _index| %>
           <li class="nested-form-wrapper" data-new-record="false">
-            <% rr.fields_for :submissions, submission do |submission_form| %>
+            <%= rr.fields_for :submissions, submission do |submission_form| %>
               <%= render "submissions_form", form: submission_form, submission_types: submission_types %>
               <%= submission_form.hidden_field :number, value: submission.number, data: {list_position_target: "position"} %>
               <%= submission_form.hidden_field :id, value: submission.id %>
@@ -41,7 +41,7 @@
 
         <template data-nested-form-ext-target="template">
           <li class="nested-form-wrapper" data-new-record="true">
-            <% rr.fields_for :submissions, rr.object.submissions.build(submission_type: submission_types.first, auto_promote: false), child_index: "NEW_RECORD" do |submission_form| %>
+            <%= rr.fields_for :submissions, rr.object.submissions.build(submission_type: submission_types.first, auto_promote: false), child_index: "NEW_RECORD" do |submission_form| %>
               <%= render "submissions_form", form: submission_form, submission_types: submission_types %>
               <%= submission_form.hidden_field :number, data: {list_position_target: "position"} %>
             <% end %>

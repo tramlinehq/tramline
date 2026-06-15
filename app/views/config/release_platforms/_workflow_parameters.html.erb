@@ -34,7 +34,7 @@
 
       <div class="flex flex-col item-gap-default">
         <% sub_fields.object.parameters.each do |parameter| %>
-          <% sub_fields.fields_for :parameters, parameter do |parameter_form| %>
+          <%= sub_fields.fields_for :parameters, parameter do |parameter_form| %>
             <div class="nested-form-wrapper" data-new-record="false">
               <%= render partial: "parameter_form", object: parameter_form %>
             </div>
@@ -44,7 +44,7 @@
 
       <template data-nested-form-ext-target="template">
         <div class="nested-form-wrapper" data-new-record="true">
-          <% sub_fields.fields_for :parameters, sub_fields.object.parameters.build, child_index: "NEW_RECORD" do |parameter_form| %>
+          <%= sub_fields.fields_for :parameters, sub_fields.object.parameters.build, child_index: "NEW_RECORD" do |parameter_form| %>
             <%= render partial: "parameter_form", object: parameter_form %>
           <% end %>
         </div>

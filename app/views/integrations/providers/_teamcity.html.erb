@@ -11,7 +11,7 @@
 
     <%= section.F.hidden_field :category, value: category %>
 
-    <% section.F.fields_for :providable do |subf| %>
+    <%= section.F.fields_for :providable do |subf| %>
       <%= subf.hidden_field :type, value: integration.providable_type %>
       <div><%= subf.labeled_text_field :server_url, "Server URL", required: true, placeholder: "https://teamcity.example.com" %></div>
       <div class="mt-4"><%= subf.labeled_text_field :access_token, "Access Token", required: true %></div>
@@ -28,7 +28,7 @@
       </p>
     <% end %>
 
-    <% section.F.fields_for :providable do |subf| %>
+    <%= section.F.fields_for :providable do |subf| %>
       <div><%= subf.labeled_text_field :cf_access_client_id, "CF-Access-Client-Id", placeholder: "xxxxxxxx.access" %></div>
       <div class="mt-4"><%= subf.labeled_text_field :cf_access_client_secret, "CF-Access-Client-Secret" %></div>
     <% end %>

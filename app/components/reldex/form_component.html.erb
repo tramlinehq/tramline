@@ -58,7 +58,7 @@
         <% components.each do |component| %>
           <div class="" data-controller="domain--reldex-component">
             <div class="px-1 py-3 grid grid-cols-6 items-start gap-x-10 text-sm">
-              <% section.F.fields_for :release_index_components, component do |component_fields| %>
+              <%= section.F.fields_for :release_index_components, component do |component_fields| %>
                 <div class="col-span-2">
                   <div class="flex items-center gap-1.5">
                     <%= component_fields.hidden_field :id, value: component.id %>

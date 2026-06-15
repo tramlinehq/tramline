@@ -12,7 +12,7 @@
 
     <%= section.F.hidden_field :category, value: category %>
 
-    <% section.F.fields_for :providable do |subf| %>
+    <%= section.F.fields_for :providable do |subf| %>
       <%= subf.hidden_field :type, value: integration.providable_type %>
       <div><%= subf.labeled_text_field :access_token, "Personal Auth Token", required: true %></div>
     <% end %>

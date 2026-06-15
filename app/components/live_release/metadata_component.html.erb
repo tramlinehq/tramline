@@ -79,7 +79,7 @@
 
     <%= render PlatformViewComponent.new(@release) do |component| %>
       <% if android_metadata %>
-        <% f.F.fields_for :android, android_metadata do |aF| %>
+        <%= f.F.fields_for :android, android_metadata do |aF| %>
           <div class="flex flex-col gap-y-4">
             <%= aF.hidden_field :id %>
             <div data-controller="text-applier" data-text-applier-content-value="<%= android_draft_notes %>">
@@ -103,7 +103,7 @@
       <% end %>
 
       <% if ios_metadata %>
-        <% f.F.fields_for :ios, ios_metadata do |iosF| %>
+        <%= f.F.fields_for :ios, ios_metadata do |iosF| %>
           <div class="flex flex-col gap-y-4">
             <%= iosF.hidden_field :id %>
             <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_notes %>">

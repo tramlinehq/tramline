@@ -12,7 +12,7 @@
   <% end %>
 <% end %>
 
-<% section.F.fields_for :providable do |subf| %>
+<%= section.F.fields_for :providable do |subf| %>
   <% if local_assigns[:include_providable_type] %>
     <%= subf.hidden_field :type, value: integration.providable_type %>
   <% end %>
