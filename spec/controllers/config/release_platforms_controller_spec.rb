@@ -75,6 +75,29 @@ describe Config::ReleasePlatformsController do
         config.reload
         expect(config.production_release.submissions.first.rollout_stages).to eq([1.0, 5.0, 10.0, 50.0, 100.0])
       end
+
+      it "preserves the already-configured internal workflow" do
+        config.update!(
+          internal_workflow: Config::Workflow.new(kind: "internal", name: "Internal Build", identifier: "internal-123"),
+          internal_release: Config::ReleaseStep.new(kind: "internal")
+        )
+
+        patch :update, params: {
+          app_id: app.id,
+          train_id: train.to_param,
+          platform_id: release_platform.platform,
+          config_release_platform: {
+            internal_release_enabled: "true",
+            internal_workflow_attributes: {id: config.internal_workflow.id, identifier: "internal-123"},
+            internal_release_attributes: {id: config.internal_release.id}
+          }
+        }
+
+        expect(flash[:error]).to be_blank
+        config.reload
+        expect(config.internal_workflow.identifier).to eq("internal-123")
+        expect(config.internal_workflow.name).to eq("Internal Build")
+      end
     end
   end
 end
