@@ -128,7 +128,30 @@ class WebHandlers::UpdateReleasePlatformConfig
     return if workflow_attrs.blank?
     return if workflow_attrs[:identifier].blank?
 
-    workflow_attrs[:name] = ci_actions.find { |a| a[:id] == workflow_attrs[:identifier] }&.dig(:name)
+    found = ci_actions.find { |a| a[:id] == workflow_attrs[:identifier] }
+    if found
+      workflow_attrs[:name] = found[:name]
+      return
+    end
+
+    # The CI provider list came back empty or stale (a transient API miss) and
+    # doesn't contain the submitted identifier. If the identifier is unchanged
+    # from what's persisted, keep the existing name so the configured workflow
+    # round-trips instead of being nulled and failing validation. A genuinely
+    # new, unresolvable identifier still falls through to nil and is rejected.
+    existing = existing_workflow(workflow_attrs[:id])
+    workflow_attrs[:name] =
+      if existing && existing.identifier == workflow_attrs[:identifier]
+        existing.name
+      end
+  end
+
+  def existing_workflow(id)
+    return if id.blank?
+
+    [config.release_candidate_workflow, config.internal_workflow]
+      .compact
+      .find { |workflow| workflow.id.to_s == id.to_s }
   end
 
   def enabled?(params, key)

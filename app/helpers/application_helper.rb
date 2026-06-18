@@ -162,6 +162,22 @@ module ApplicationHelper
     Time.current.in_time_zone(timezone).beginning_of_minute
   end
 
+  # Build the [name, id] option pairs for a workflow select, always including
+  # the currently-configured workflow. The CI provider list (ci_actions) can
+  # come back empty or stale on a transient API miss; folding the configured
+  # value in guarantees the dropdown keeps a valid selection that round-trips
+  # on save instead of posting a blank identifier.
+  def workflow_select_options(ci_actions, current_workflow)
+    actions = Array(ci_actions)
+    identifier = current_workflow&.identifier
+
+    if identifier.present? && actions.none? { |a| a[:id] == identifier }
+      actions = [{id: identifier, name: current_workflow.name.presence || identifier}] + actions
+    end
+
+    actions.map { |c| [c[:name], c[:id]] }
+  end
+
   def release_schedule(train)
     if train.automatic?
       kickoff_time = train.kickoff_at_app_time
