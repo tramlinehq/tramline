@@ -81,7 +81,27 @@ class Config::ReleasePlatformsController < SignedInApplicationController
   end
 
   def set_ci_actions
-    @ci_actions = @train.workflows || []
+    @ci_actions = with_configured_workflows(@train.workflows || [])
+  end
+
+  # The CI provider can hand back an empty or stale workflow list (a transient API
+  # failure or a cached miss). When it does, the edit form would render the workflow
+  # dropdowns with no options - and since Rails 7.2 honours `required` on selects, that
+  # blocks saving any setting on the page. Worse, submitting then posts a blank
+  # identifier, which wipes the already-configured workflow (blank identifier / nil name
+  # both fail Config::Workflow validations). Always fold in the workflows already saved
+  # on the config so the current selection survives a flaky provider response.
+  def with_configured_workflows(ci_actions)
+    return ci_actions if @config.blank?
+
+    preserved = [@config.release_candidate_workflow, @config.internal_workflow].compact.filter_map do |workflow|
+      next if workflow.identifier.blank?
+      next if ci_actions.any? { |action| action[:id].to_s == workflow.identifier.to_s }
+
+      {id: workflow.identifier, name: workflow.name}
+    end
+
+    ci_actions + preserved
   end
 
   def set_submission_types
