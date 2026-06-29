@@ -46,7 +46,9 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
           language: "en-US",
           keywords: "japanese, aural, subway",
           promo_text: nil,
-          whats_new: "We now have the total distance covered by each station across the line!"
+          whats_new: "We now have the total distance covered by each station across the line!",
+          support_url: "http://tramline.app",
+          marketing_url: nil
         }]
       }.with_indifferent_access
 
@@ -87,7 +89,9 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
           language: "en-US",
           keywords: "japanese, aural, subway",
           promo_text: nil,
-          whats_new: "We now have the total distance covered by each station across the line!"
+          whats_new: "We now have the total distance covered by each station across the line!",
+          support_url: "http://tramline.app",
+          marketing_url: nil
         }]
       }.with_indifferent_access
 
@@ -142,7 +146,9 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
           language: "en-US",
           keywords: "japanese, aural, subway",
           promo_text: nil,
-          whats_new: "We now have the total distance covered by each station across the line!"
+          whats_new: "We now have the total distance covered by each station across the line!",
+          support_url: "http://tramline.app",
+          marketing_url: nil
         }]
       }.with_indifferent_access
 
@@ -261,7 +267,9 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
           language: "en-US",
           keywords: "japanese, aural, subway",
           promo_text: nil,
-          whats_new: "We now have the total distance covered by each station across the line!"
+          whats_new: "We now have the total distance covered by each station across the line!",
+          support_url: "http://tramline.app",
+          marketing_url: nil
         }]
       }.with_indifferent_access
 

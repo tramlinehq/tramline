@@ -53,6 +53,8 @@ describe AppStoreSubmission do
               promotional_text: "Try the new feature",
               description: "A longer store description",
               keywords: "bugfix,performance",
+              support_url: nil,
+              marketing_url: nil,
               locale: "en-US"
             }
           ],
@@ -457,6 +459,8 @@ describe AppStoreSubmission do
           promotional_text: "Try the new feature",
           description: "A longer store description",
           keywords: "bugfix,performance",
+          support_url: nil,
+          marketing_url: nil,
           locale: "en-US"
         },
         {
@@ -464,6 +468,8 @@ describe AppStoreSubmission do
           promotional_text: "Essayez la nouvelle fonctionnalité",
           description: "Une description plus longue",
           keywords: "correction,performance",
+          support_url: nil,
+          marketing_url: nil,
           locale: "fr-FR"
         }
       )
