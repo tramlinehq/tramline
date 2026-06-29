@@ -71,7 +71,9 @@ class AppStoreIntegration < ApplicationRecord
                                         whats_new: :whats_new,
                                         promo_text: :promotional_text,
                                         keywords: :keywords,
-                                        description: :description}}
+                                        description: :description,
+                                        support_url: :support_url,
+                                        marketing_url: :marketing_url}}
       }
     }
   }
@@ -89,7 +91,9 @@ class AppStoreIntegration < ApplicationRecord
                                     whats_new: :whats_new,
                                     promo_text: :promotional_text,
                                     keywords: :keywords,
-                                    description: :description}},
+                                    description: :description,
+                                    support_url: :support_url,
+                                    marketing_url: :marketing_url}},
     existing_review_submission: :ready_review_submission
   }
 

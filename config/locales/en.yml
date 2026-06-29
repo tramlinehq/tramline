@@ -555,6 +555,10 @@ en:
               too_long: "is too long for %{platform} (maximum is %{max_length} characters)"
             promo_text:
               no_special_characters: "can only contain letters, numbers, punctuation, basic math symbols, currency symbols, and line breaks. The following characters are not allowed – %{denied_characters}"
+            support_url:
+              invalid_url: "must be a valid URL starting with http:// or https://"
+            marketing_url:
+              invalid_url: "must be a valid URL starting with http:// or https://"
         integration:
           format: "%{message}"
           attributes:

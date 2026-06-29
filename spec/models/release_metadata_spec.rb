@@ -73,6 +73,26 @@ RSpec.describe ReleaseMetadata do
         expect(metadata.keywords_joined).to eq("")
       end
     end
+
+    describe "support and marketing URLs" do
+      it "allows valid http(s) URLs" do
+        expect(build(:release_metadata, locale:, release_platform_run:, support_url: "https://help.example.com", marketing_url: "http://example.com")).to be_valid
+      end
+
+      it "allows blank URLs" do
+        expect(build(:release_metadata, locale:, release_platform_run:, support_url: "", marketing_url: nil)).to be_valid
+      end
+
+      it "disallows non-http(s) URLs" do
+        expect(build(:release_metadata, locale:, release_platform_run:, support_url: "ftp://example.com")).not_to be_valid
+        expect(build(:release_metadata, locale:, release_platform_run:, marketing_url: "example.com")).not_to be_valid
+      end
+
+      it "disallows URLs longer than 255 characters" do
+        long_url = "https://example.com/#{"a" * 250}"
+        expect(build(:release_metadata, locale:, release_platform_run:, support_url: long_url)).not_to be_valid
+      end
+    end
   end
 
   context "when android" do
@@ -190,6 +210,23 @@ RSpec.describe ReleaseMetadata do
       expect(metadata.reload.description).to eq("new desc")
       expect(metadata.draft_description).to be_nil
     end
+
+    it "clears draft URLs when URLs are submitted" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "notes",
+        support_url: "https://old.example.com",
+        draft_support_url: "https://draft.example.com",
+        draft_marketing_url: "https://draft-mktg.example.com")
+
+      metadata.update_and_clear_drafts!(support_url: "https://new.example.com", marketing_url: "https://mktg.example.com")
+
+      expect(metadata.reload.support_url).to eq("https://new.example.com")
+      expect(metadata.marketing_url).to eq("https://mktg.example.com")
+      expect(metadata.draft_support_url).to be_nil
+      expect(metadata.draft_marketing_url).to be_nil
+    end
   end
 
   describe "#save_draft" do
@@ -297,6 +334,32 @@ RSpec.describe ReleaseMetadata do
       metadata.save_draft(description: "same desc")
 
       expect(metadata.reload.draft_description).to be_nil
+    end
+
+    it "saves draft URLs for changed URLs" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "notes",
+        support_url: "https://original.example.com")
+
+      metadata.save_draft(support_url: "https://new.example.com", marketing_url: "https://mktg.example.com")
+
+      expect(metadata.reload.draft_support_url).to eq("https://new.example.com")
+      expect(metadata.draft_marketing_url).to eq("https://mktg.example.com")
+      expect(metadata.support_url).to eq("https://original.example.com")
+    end
+
+    it "does not save draft URLs when unchanged" do
+      metadata = create(:release_metadata,
+        locale: "en-GB",
+        release_platform_run:,
+        release_notes: "notes",
+        support_url: "https://same.example.com")
+
+      metadata.save_draft(support_url: "https://same.example.com")
+
+      expect(metadata.reload.draft_support_url).to be_nil
     end
   end
 end

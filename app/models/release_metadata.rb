@@ -7,12 +7,16 @@
 #  description             :text
 #  draft_description       :text
 #  draft_keywords          :string           default([]), is an Array
+#  draft_marketing_url     :text
 #  draft_promo_text        :text
 #  draft_release_notes     :text
+#  draft_support_url       :text
 #  keywords                :string           default([]), is an Array
 #  locale                  :string           not null, indexed => [release_platform_run_id]
+#  marketing_url           :text
 #  promo_text              :text
 #  release_notes           :text
+#  support_url             :text
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  release_id              :uuid
@@ -29,6 +33,8 @@ class ReleaseMetadata < ApplicationRecord
   IOS_KEYWORDS_MAX_LENGTH = 100
   ANDROID_NOTES_MAX_LENGTH = 500
   PROMO_TEXT_MAX_LENGTH = 170
+  IOS_URL_MAX_LENGTH = 255
+  URL_REGEX = %r{\Ahttps?://}i
   IOS_DENY_LIST = %w[<]
   # NOTE: Refer to https://www.regular-expressions.info/unicode.html for supporting more unicode characters
   IOS_PLAINTEXT_REGEX = /\A(?!.*#{Regexp.union(IOS_DENY_LIST)})[\p{L}\p{N}\p{P}\p{Sm}\p{Sc}\p{Zs}\p{M}\n]+\z/m
@@ -48,6 +54,14 @@ class ReleaseMetadata < ApplicationRecord
     length: {maximum: PROMO_TEXT_MAX_LENGTH},
     if: :ios?
   validates :description, length: {maximum: IOS_DESCRIPTION_MAX_LENGTH}, if: :ios?
+  validates :support_url,
+    format: {with: URL_REGEX, message: :invalid_url, allow_blank: true},
+    length: {maximum: IOS_URL_MAX_LENGTH},
+    if: :ios?
+  validates :marketing_url,
+    format: {with: URL_REGEX, message: :invalid_url, allow_blank: true},
+    length: {maximum: IOS_URL_MAX_LENGTH},
+    if: :ios?
   validate :keywords_length, if: :ios?
   validates :locale, uniqueness: {scope: :release_platform_run_id}
   validate :notes_length
@@ -86,13 +100,15 @@ class ReleaseMetadata < ApplicationRecord
       drafts[:draft_promo_text] = nil if attrs.key?(:promo_text)
       drafts[:draft_keywords] = [] if attrs.key?(:keywords)
       drafts[:draft_description] = nil if attrs.key?(:description)
+      drafts[:draft_support_url] = nil if attrs.key?(:support_url)
+      drafts[:draft_marketing_url] = nil if attrs.key?(:marketing_url)
     end
   end
 
   def draft_attrs_to_save(attrs)
     attrs = attrs.to_h.with_indifferent_access
-    db_values = self.class.where(id: id).pick(:release_notes, :promo_text, :keywords, :description)
-    db_release_notes, db_promo_text, db_keywords, db_description = db_values || [nil, nil, nil, nil]
+    db_values = self.class.where(id: id).pick(:release_notes, :promo_text, :keywords, :description, :support_url, :marketing_url)
+    db_release_notes, db_promo_text, db_keywords, db_description, db_support_url, db_marketing_url = db_values || [nil, nil, nil, nil, nil, nil]
 
     {}.tap do |drafts|
       if attrs.key?(:release_notes) && attrs[:release_notes] != db_release_notes
@@ -111,6 +127,14 @@ class ReleaseMetadata < ApplicationRecord
 
       if attrs.key?(:description) && attrs[:description] != db_description
         drafts[:draft_description] = attrs[:description]
+      end
+
+      if attrs.key?(:support_url) && attrs[:support_url] != db_support_url
+        drafts[:draft_support_url] = attrs[:support_url]
+      end
+
+      if attrs.key?(:marketing_url) && attrs[:marketing_url] != db_marketing_url
+        drafts[:draft_marketing_url] = attrs[:marketing_url]
       end
     end
   end

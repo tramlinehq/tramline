@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -238,8 +238,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
     t.jsonb "parents"
     t.tsvector "search_vector"
     t.uuid "release_changelog_id"
+    t.uuid "forward_merge_queue_id"
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
     t.index ["commit_hash", "release_id", "release_changelog_id"], name: "idx_on_commit_hash_release_id_release_changelog_id_29200d00c2", unique: true
+    t.index ["forward_merge_queue_id"], name: "index_commits_on_forward_merge_queue_id"
     t.index ["message"], name: "index_commits_on_message", opclass: :gin_trgm_ops, using: :gin
     t.index ["release_changelog_id"], name: "index_commits_on_release_changelog_id"
     t.index ["release_id", "timestamp"], name: "index_commits_on_release_id_and_timestamp"
@@ -379,6 +381,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "forward_merge_queues", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_id", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["release_id"], name: "index_forward_merge_queues_on_release_id"
+  end
+
   create_table "github_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "installation_id", null: false
     t.datetime "created_at", null: false
@@ -496,8 +506,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
     t.text "user_content"
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
     t.index ["train_id"], name: "index_notification_settings_on_train_id"
-    t.check_constraint "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))", validate: false
   end
+
+  add_check_constraint "notification_settings", "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))", validate: false
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "status", null: false
@@ -610,8 +621,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
     t.tsvector "search_vector"
     t.string "merge_commit_sha"
     t.string "kind"
+    t.uuid "forward_merge_queue_id"
     t.index ["body"], name: "index_pull_requests_on_body", opclass: :gin_trgm_ops, using: :gin
     t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
+    t.index ["forward_merge_queue_id"], name: "index_pull_requests_on_forward_merge_queue_id"
     t.index ["merge_commit_sha"], name: "index_pull_requests_on_merge_commit_sha", where: "(merge_commit_sha IS NOT NULL)"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
@@ -722,6 +735,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
     t.text "draft_promo_text"
     t.string "draft_keywords", default: [], array: true
     t.text "draft_description"
+    t.text "support_url"
+    t.text "marketing_url"
+    t.text "draft_support_url"
+    t.text "draft_marketing_url"
     t.index ["release_platform_run_id", "locale"], name: "index_release_metadata_on_release_platform_run_id_and_locale", unique: true
     t.index ["release_platform_run_id"], name: "index_release_metadata_on_release_platform_run_id"
   end
@@ -854,16 +871,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
   create_table "slack_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "oauth_access_token"
     t.string "original_oauth_access_token"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "teamcity_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "server_url", null: false
-    t.string "access_token"
-    t.jsonb "project_config"
-    t.string "cf_access_client_id"
-    t.string "cf_access_client_secret"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -1029,6 +1036,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
     t.index ["status"], name: "index_svix_integrations_on_status"
     t.index ["svix_app_id"], name: "index_svix_integrations_on_svix_app_id", unique: true
     t.index ["train_id"], name: "index_svix_integrations_on_train_id", unique: true
+  end
+
+  create_table "teamcity_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "server_url", null: false
+    t.string "access_token"
+    t.jsonb "project_config"
+    t.string "cf_access_client_id"
+    t.string "cf_access_client_secret"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1207,6 +1224,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
   add_foreign_key "builds", "workflow_runs"
   add_foreign_key "commit_listeners", "release_platforms"
   add_foreign_key "commits", "build_queues"
+  add_foreign_key "commits", "forward_merge_queues"
   add_foreign_key "commits", "release_changelogs"
   add_foreign_key "commits", "release_platform_runs"
   add_foreign_key "commits", "release_platforms"
@@ -1216,6 +1234,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
   add_foreign_key "deployments", "steps"
   add_foreign_key "external_apps", "apps"
   add_foreign_key "external_releases", "deployment_runs"
+  add_foreign_key "forward_merge_queues", "releases"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"
   add_foreign_key "invites", "users", column: "recipient_id"
@@ -1231,6 +1250,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_16_000000) do
   add_foreign_key "production_releases", "builds"
   add_foreign_key "production_releases", "production_releases", column: "previous_id"
   add_foreign_key "production_releases", "release_platform_runs"
+  add_foreign_key "pull_requests", "forward_merge_queues"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
   add_foreign_key "release_health_events", "production_releases"

@@ -70,6 +70,18 @@ class LiveRelease::MetadataComponent < BaseComponent
     ios_metadata&.draft_description
   end
 
+  memoize def ios_draft_support_url
+    ios_metadata&.draft_support_url
+  end
+
+  memoize def ios_draft_marketing_url
+    ios_metadata&.draft_marketing_url
+  end
+
+  def url_max_length
+    ReleaseMetadata::IOS_URL_MAX_LENGTH
+  end
+
   def android_has_draft_notes?
     android_draft_notes.present?
   end
@@ -88,5 +100,13 @@ class LiveRelease::MetadataComponent < BaseComponent
 
   def ios_has_draft_description?
     ios_draft_description.present?
+  end
+
+  def ios_has_draft_support_url?
+    ios_draft_support_url.present?
+  end
+
+  def ios_has_draft_marketing_url?
+    ios_draft_marketing_url.present?
   end
 end

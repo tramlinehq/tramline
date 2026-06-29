@@ -54,6 +54,10 @@ class ExternalApp < ApplicationRecord
 
     def promo_text = @localization["promo_text"]
 
+    def support_url = @localization["support_url"]
+
+    def marketing_url = @localization["marketing_url"]
+
     def is_default_locale = locale == @external_app.default_locale
 
     def release_notes
@@ -68,6 +72,8 @@ class ExternalApp < ApplicationRecord
         keywords:,
         release_notes:,
         promo_text:,
+        support_url:,
+        marketing_url:,
         default_locale: is_default_locale
       }
     end
