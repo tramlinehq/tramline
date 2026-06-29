@@ -172,12 +172,7 @@
                 <%= render partial: "release_metadata/draft_alert", locals: {title: "Unsaved support URL", field_name: "support URL"} %>
               <% end %>
               <div data-text-applier-target="input">
-                <%= render Form::SizeLimitedTextareaComponent.new(form: iosF,
-                                                                  obj_method: :support_url,
-                                                                  label_text: "Support URL",
-                                                                  max_length: url_max_length,
-                                                                  existing_value: ios_metadata.support_url,
-                                                                  label_type: :base) %>
+                <%= iosF.labeled_text_field :support_url, "Support URL", maxlength: url_max_length %>
               </div>
             </div>
             <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_marketing_url %>">
@@ -185,12 +180,7 @@
                 <%= render partial: "release_metadata/draft_alert", locals: {title: "Unsaved marketing URL", field_name: "marketing URL"} %>
               <% end %>
               <div data-text-applier-target="input">
-                <%= render Form::SizeLimitedTextareaComponent.new(form: iosF,
-                                                                  obj_method: :marketing_url,
-                                                                  label_text: "Marketing URL (optional)",
-                                                                  max_length: url_max_length,
-                                                                  existing_value: ios_metadata.marketing_url,
-                                                                  label_type: :base) %>
+                <%= iosF.labeled_text_field :marketing_url, "Marketing URL", maxlength: url_max_length %>
               </div>
             </div>
           </div>

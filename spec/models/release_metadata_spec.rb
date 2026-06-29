@@ -88,8 +88,14 @@ RSpec.describe ReleaseMetadata do
         expect(build(:release_metadata, locale:, release_platform_run:, marketing_url: "example.com")).not_to be_valid
       end
 
-      it "disallows URLs longer than 255 characters" do
-        long_url = "https://example.com/#{"a" * 250}"
+      it "allows URLs up to 2000 characters" do
+        url = "https://example.com/#{"a" * 1980}"
+        expect(url.length).to eq(2000)
+        expect(build(:release_metadata, locale:, release_platform_run:, support_url: url)).to be_valid
+      end
+
+      it "disallows URLs longer than 2000 characters" do
+        long_url = "https://example.com/#{"a" * 2000}"
         expect(build(:release_metadata, locale:, release_platform_run:, support_url: long_url)).not_to be_valid
       end
     end
