@@ -34,7 +34,7 @@ class ReleaseMetadata < ApplicationRecord
   ANDROID_NOTES_MAX_LENGTH = 500
   PROMO_TEXT_MAX_LENGTH = 170
   IOS_URL_MAX_LENGTH = 255
-  URL_REGEX = %r{\Ahttps?://}i
+  URL_REGEX = %r{\Ahttps?://\S+\z}i
   IOS_DENY_LIST = %w[<]
   # NOTE: Refer to https://www.regular-expressions.info/unicode.html for supporting more unicode characters
   IOS_PLAINTEXT_REGEX = /\A(?!.*#{Regexp.union(IOS_DENY_LIST)})[\p{L}\p{N}\p{P}\p{Sm}\p{Sc}\p{Zs}\p{M}\n]+\z/m
