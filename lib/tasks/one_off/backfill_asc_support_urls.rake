@@ -35,6 +35,9 @@ namespace :one_off do
       # 2. copy per-locale URLs onto live releases' existing iOS metadata rows
       app.release_platform_runs.where(status: [:created, :on_track]).find_each do |run|
         next unless run.ios?
+        # run.status can be stale (e.g. a stopped release whose run was never
+        # transitioned), so gate on the parent release — the source of truth.
+        next unless run.release.active?
         by_locale = (run.active_locales || []).index_by(&:locale)
 
         run.release_metadata.find_each do |metadata|
