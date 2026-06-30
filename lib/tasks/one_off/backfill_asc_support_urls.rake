@@ -16,40 +16,39 @@ namespace :one_off do
     App.find_each do |app|
       # one bad app (failed store fetch, half-configured integration, etc.)
       # shouldn't abort the whole sweep — skip and log it.
-      begin
-        # support/marketing URLs are App Store-only, so iOS + cross-platform apps only
-        next unless app.has_store_integration? && app.ready?
-        next unless app.ios? || app.cross_platform?
 
-        # 1. synchronous refresh — identical to RefreshExternalAppJob
-        app.create_external!
+      # support/marketing URLs are App Store-only, so iOS + cross-platform apps only
+      next unless app.has_store_integration? && app.ready?
+      next unless app.ios? || app.cross_platform?
 
-        # 2. copy per-locale URLs onto live releases' existing iOS metadata rows
-        app.release_platform_runs.where(status: [:created, :on_track]).find_each do |run|
-          next unless run.ios?
-          by_locale = (run.active_locales || []).index_by(&:locale)
+      # 1. synchronous refresh — identical to RefreshExternalAppJob
+      app.create_external!
 
-          run.release_metadata.find_each do |metadata|
-            data = by_locale[metadata.locale]
-            next if data.nil?
-            next if data.support_url.blank? && data.marketing_url.blank?
+      # 2. copy per-locale URLs onto live releases' existing iOS metadata rows
+      app.release_platform_runs.where(status: [:created, :on_track]).find_each do |run|
+        next unless run.ios?
+        by_locale = (run.active_locales || []).index_by(&:locale)
 
-            report << { app: app.name, release: run.release_version, locale: metadata.locale,
-                        support_url: data.support_url, marketing_url: data.marketing_url }
+        run.release_metadata.find_each do |metadata|
+          data = by_locale[metadata.locale]
+          next if data.nil?
+          next if data.support_url.blank? && data.marketing_url.blank?
 
-            if apply
-              metadata.update!(support_url: data.support_url.presence,
-                               marketing_url: data.marketing_url.presence)
-            end
+          report << {app: app.name, release: run.release_version, locale: metadata.locale,
+                      support_url: data.support_url, marketing_url: data.marketing_url}
+
+          if apply
+            metadata.update!(support_url: data.support_url.presence,
+              marketing_url: data.marketing_url.presence)
           end
         end
-      rescue => e
-        puts "skip #{app.name}: #{e.class} - #{e.message}"
       end
+    rescue => e
+      puts "skip #{app.name}: #{e.class} - #{e.message}"
     end
 
     puts(apply ? "APPLIED #{report.size} row(s):" : "DRY RUN — #{report.size} row(s) would update:")
     report.each { |r| puts "  #{r[:app]} / #{r[:release]} / #{r[:locale]} — support=#{r[:support_url].inspect} marketing=#{r[:marketing_url].inspect}" }
-    puts "apps affected: #{report.map { _1[:app] }.uniq.size}"
+    puts "apps affected: #{report.pluck(:app).uniq.size}"
   end
 end
