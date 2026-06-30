@@ -8,12 +8,20 @@
 #
 # Idempotent. Skips apps without a store integration, only writes where the store
 # actually has a URL, and leaves every other app/customer untouched.
+#
+# APPLY=true       writes (default is a dry run)
+# APP_SLUGS=a,b    limit the sweep to specific app slugs (pilot before a full run)
 namespace :one_off do
-  desc "Refresh store data and backfill Support/Marketing URLs onto live release metadata (APPLY=true to write)"
+  desc "Refresh store data and backfill Support/Marketing URLs onto live release metadata (APPLY=true to write, APP_SLUGS=a,b to scope)"
   task backfill_asc_support_urls: :environment do
     apply = ENV["APPLY"] == "true"
+    slugs = ENV["APP_SLUGS"].to_s.split(",").map(&:strip).compact_blank
+    scope = slugs.any? ? App.where(slug: slugs) : App.all
     report = []
-    App.find_each do |app|
+
+    puts(slugs.any? ? "Scoped to app slugs: #{slugs.join(", ")}" : "Sweeping all apps")
+
+    scope.find_each do |app|
       # one bad app (failed store fetch, half-configured integration, etc.)
       # shouldn't abort the whole sweep — skip and log it.
 
