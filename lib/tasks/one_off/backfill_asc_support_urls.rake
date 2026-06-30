@@ -17,13 +17,16 @@ namespace :one_off do
       # one bad app (failed store fetch, half-configured integration, etc.)
       # shouldn't abort the whole sweep — skip and log it.
       begin
+        # support/marketing URLs are App Store-only, so iOS + cross-platform apps only
         next unless app.has_store_integration? && app.ready?
+        next unless app.ios? || app.cross_platform?
 
         # 1. synchronous refresh — identical to RefreshExternalAppJob
         app.create_external!
 
-        # 2. copy per-locale URLs onto live releases' existing metadata rows
+        # 2. copy per-locale URLs onto live releases' existing iOS metadata rows
         app.release_platform_runs.where(status: [:created, :on_track]).find_each do |run|
+          next unless run.ios?
           by_locale = (run.active_locales || []).index_by(&:locale)
 
           run.release_metadata.find_each do |metadata|
