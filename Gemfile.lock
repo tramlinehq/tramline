@@ -128,7 +128,7 @@ GEM
       bundler (>= 1.2.0, < 3)
       thor (~> 1.0)
     byebug (11.1.3)
-    cgi (0.5.1)
+    cgi (0.5.2)
     childprocess (5.1.0)
       logger (~> 1.5)
     coderay (1.1.3)
@@ -339,7 +339,7 @@ GEM
       domain_name (~> 0.5)
     http-form_data (2.3.0)
     httpclient (2.8.3)
-    i18n (1.14.8)
+    i18n (1.15.2)
       concurrent-ruby (~> 1.0)
     importmap-rails (1.2.3)
       actionpack (>= 6.0.0)
@@ -403,7 +403,7 @@ GEM
       activesupport (>= 4)
       railties (>= 4)
       request_store (~> 1.0)
-    loofah (2.25.1)
+    loofah (2.25.2)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
     mail (2.9.0)
@@ -774,7 +774,7 @@ GEM
     uri (1.1.1)
     uri_template (0.7.0)
     useragent (0.16.11)
-    view_component (4.11.0)
+    view_component (4.12.0)
       actionview (>= 7.1.0)
       activesupport (>= 7.1.0)
       concurrent-ruby (~> 1)
@@ -928,7 +928,7 @@ DEPENDENCIES
   tailwindcss-rails (~> 2.0)
   turbo-rails (~> 2.0)
   tzinfo-data
-  view_component (~> 4.9)
+  view_component (~> 4.12)
   web-console
   webdrivers
   webmock
