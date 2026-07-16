@@ -95,6 +95,8 @@ namespace :anonymize do
         end
       end
 
+      # URLs, headers, templates and auth fields can all embed tokens or internal
+      # endpoints, so everything except plain configuration flags is scrubbed.
       table "lifecycle_hooks" do
         continue { |index, record| record["train_id"] == train_id && !LifecycleHook.exists?(record["id"]) }
 
