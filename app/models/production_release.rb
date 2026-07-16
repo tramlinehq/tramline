@@ -32,7 +32,7 @@ class ProductionRelease < ApplicationRecord
   scope :sequential, -> { order(created_at: :desc) }
 
   delegate :app, :train, :release, :platform, :release_platform, :hotfix?, to: :release_platform_run
-  delegate :monitoring_provider, to: :app
+  delegate :monitoring_provider, :monitoring_providers, to: :app
   delegate :store_rollout, :prepared_at, to: :store_submission
   delegate :notify!, :notify_with_changelog!, to: :train
   delegate :commit, :version_name, :build_number, to: :build
@@ -126,31 +126,49 @@ class ProductionRelease < ApplicationRecord
 
     ProductionReleases::CreateTagJob.perform_async(id) if tag_name.blank?
 
-    return if beyond_monitoring_period?
-    return if monitoring_provider.blank?
     return if app.monitoring_disabled?
 
-    FetchHealthMetricsJob.perform_async(id, JOB_FREQUENCY[monitoring_provider.class])
+    providers = monitoring_providers.presence || [monitoring_provider].compact
+    providers.each do |provider|
+      next if beyond_monitoring_period_for?(provider)
+      FetchHealthMetricsJob.perform_async(id, JOB_FREQUENCY[provider.class], provider.class.name)
+    end
   end
 
   def beyond_monitoring_period?
-    finished? && completed_at && completed_at < release_monitoring_period
+    return false unless finished? && completed_at
+    providers = monitoring_providers.presence || [monitoring_provider].compact
+    return true if providers.blank?
+    providers.all? { |provider| beyond_monitoring_period_for?(provider) }
   end
 
-  def fetch_health_data!
+  def fetch_health_data!(provider = nil)
+    provider ||= monitoring_provider
     return if store_rollout.blank?
-    return if beyond_monitoring_period?
-    return if monitoring_provider.blank?
+    return if provider.blank?
+    return if beyond_monitoring_period_for?(provider)
     return if app.monitoring_disabled?
     return if stale?
 
-    release_data = monitoring_provider.find_release(platform, version_name, build_number, store_rollout.created_at)
+    release_data = provider.find_release(platform, version_name, build_number, store_rollout.created_at)
     return if release_data.blank?
-    release_health_metrics.create!(fetched_at: Time.current, **release_data)
+    release_health_metrics.create!(
+      fetched_at: Time.current,
+      monitoring_provider_type: provider.class.name,
+      monitoring_provider_id: provider.id,
+      **release_data
+    )
   end
 
   def latest_health_data
     release_health_metrics.order(fetched_at: :desc).first
+  end
+
+  def latest_health_data_by_provider
+    release_health_metrics
+      .where.not(monitoring_provider_type: nil)
+      .select("DISTINCT ON (monitoring_provider_type) *")
+      .order(:monitoring_provider_type, fetched_at: :desc)
   end
 
   def unhealthy?
@@ -161,15 +179,28 @@ class ProductionRelease < ApplicationRecord
     return true if release_health_rules.blank?
     return true if release_health_events.blank?
 
+    provider_types = release_health_metrics.where.not(monitoring_provider_type: nil).distinct.pluck(:monitoring_provider_type)
+
     release_health_rules.all? do |rule|
-      event = release_health_events.where(release_health_rule: rule).last
-      event.blank? || event.healthy?
+      if provider_types.present?
+        provider_types.all? do |ptype|
+          event = release_health_events
+            .joins(:release_health_metric)
+            .where(release_health_rule: rule, release_health_metrics: {monitoring_provider_type: ptype})
+            .last
+          event.blank? || event.healthy?
+        end
+      else
+        event = release_health_events.where(release_health_rule: rule).last
+        event.blank? || event.healthy?
+      end
     end
   end
 
   def show_health?
-    return true if latest_health_data&.fresh?
-    false
+    all_data = latest_health_data_by_provider
+    return all_data.any?(&:fresh?) if all_data.present?
+    latest_health_data&.fresh? || false
   end
 
   def check_release_health
@@ -230,7 +261,14 @@ class ProductionRelease < ApplicationRecord
   end
 
   def release_monitoring_period
-    RELEASE_MONITORING_PERIOD_IN_DAYS[monitoring_provider.class].days.ago
+    RELEASE_MONITORING_PERIOD_IN_DAYS[monitoring_provider&.class]&.days&.ago
+  end
+
+  def beyond_monitoring_period_for?(provider)
+    return false unless finished? && completed_at
+    period_days = RELEASE_MONITORING_PERIOD_IN_DAYS[provider.class]
+    return true if period_days.blank?
+    completed_at < period_days.days.ago
   end
 
   private

@@ -24,12 +24,50 @@ class ReleaseMonitoringComponent < BaseComponent
 
   attr_reader :store_rollout, :metrics, :size
 
+  def multi_provider?
+    provider_health_data.size > 1
+  end
+
+  def provider_health_data
+    @provider_health_data ||= begin
+      # Only show providers that are currently connected. Historical metrics from
+      # a provider that was later disconnected stay in the table but must not
+      # render their own section.
+      by_provider = parent_release
+        .latest_health_data_by_provider
+        .index_by(&:monitoring_provider_type)
+        .slice(*connected_provider_types)
+      if by_provider.present?
+        by_provider
+      elsif release_data.present?
+        {monitoring_provider&.class&.name => release_data}
+      else
+        {}
+      end
+    end
+  end
+
+  def provider_display_name(provider_type)
+    provider_type&.demodulize&.chomp("Integration")&.titleize || "Unknown"
+  end
+
+  def provider_icon(provider_type)
+    name = provider_type&.demodulize&.chomp("Integration")&.downcase
+    name.presence || "external"
+  end
+
+  def provider_dashboard_url(provider_type, data)
+    prov = resolve_provider(provider_type)
+    return if prov.blank?
+    prov.dashboard_url(platform:, release_id: data&.external_release_id)
+  end
+
   def empty_component?
     release_data.blank?
   end
 
   def monitoring_provider_url
-    monitoring_provider.dashboard_url(platform:, release_id: release_data&.external_release_id)
+    monitoring_provider&.dashboard_url(platform:, release_id: release_data&.external_release_id)
   end
 
   def release_data
@@ -66,8 +104,9 @@ class ReleaseMonitoringComponent < BaseComponent
     return unless release_data
     range_end = release_data.fetched_at
     range_start = store_rollout.created_at
-    @chart_data ||= parent_release
-      .release_health_metrics
+    metrics_scope = parent_release.release_health_metrics
+    metrics_scope = metrics_scope.where(monitoring_provider_type: primary_provider_type) if primary_provider_type.present?
+    @chart_data ||= metrics_scope
       .group_by_day(:fetched_at, range: range_start..range_end)
       .maximum("CASE WHEN total_sessions_in_last_day = 0 THEN 0
                      ELSE round(CAST(sessions_in_last_day::float * 100 / total_sessions_in_last_day::float as numeric), 2)
@@ -141,7 +180,52 @@ class ReleaseMonitoringComponent < BaseComponent
     "text-red-800"
   end
 
+  def user_stability_for(data)
+    value = data.user_stability.blank? ? "-" : "#{data.user_stability}%"
+    metric_data_for(data, "user_stability", value)
+  end
+
+  def session_stability_for(data)
+    value = data.session_stability.blank? ? "-" : "#{data.session_stability}%"
+    metric_data_for(data, "session_stability", value)
+  end
+
+  def errors_count_for(data)
+    return if data.errors_count.blank?
+    metric_data_for(data, "errors_count", data.errors_count)
+  end
+
+  def new_errors_count_for(data)
+    return if data.new_errors_count.blank?
+    metric_data_for(data, "new_errors_count", data.new_errors_count)
+  end
+
   private
+
+  # Class names of the app's currently-connected monitoring providers
+  # (Integration#monitoring_providers already excludes discarded/disconnected).
+  def connected_provider_types
+    @connected_provider_types ||= app.monitoring_providers.map { |provider| provider.class.name }
+  end
+
+  def primary_provider_type
+    @primary_provider_type ||= monitoring_provider&.class&.name
+  end
+
+  def resolve_provider(provider_type)
+    providers = parent_release.app.monitoring_providers
+    return monitoring_provider if providers.blank?
+    klass = provider_type&.safe_constantize
+    (klass && providers.find { |p| p.instance_of?(klass) }) || monitoring_provider
+  end
+
+  def metric_data_for(data, metric_name, value)
+    {
+      value:,
+      is_healthy: data.metric_healthy?(metric_name),
+      rules: data.rules_for_metric(metric_name)
+    }
+  end
 
   def metric_data(metric_name, value)
     {

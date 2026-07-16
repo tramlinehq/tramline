@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_16_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -683,9 +683,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
     t.bigint "total_sessions_in_last_day"
     t.string "external_release_id"
     t.uuid "production_release_id"
+    t.string "monitoring_provider_type"
+    t.uuid "monitoring_provider_id"
     t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
     t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
     t.index ["production_release_id", "fetched_at"], name: "idx_on_production_release_id_fetched_at_0e35dbfce7", order: { fetched_at: :desc }
+    t.index ["production_release_id", "monitoring_provider_type", "fetched_at"], name: "idx_health_metrics_on_prod_release_provider_fetched"
     t.index ["production_release_id"], name: "index_release_health_metrics_on_production_release_id"
   end
 
