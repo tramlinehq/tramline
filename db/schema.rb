@@ -485,7 +485,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_16_000001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["train_id", "event", "active"], name: "index_lifecycle_hooks_on_train_id_and_event_and_active"
-    t.index ["train_id", "event"], name: "index_lifecycle_hooks_on_train_id_and_event"
     t.index ["train_id"], name: "index_lifecycle_hooks_on_train_id"
   end
 

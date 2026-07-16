@@ -3,12 +3,12 @@
 # Table name: lifecycle_hooks
 #
 #  id                           :uuid             not null, primary key
-#  active                       :boolean          default(TRUE), not null
+#  active                       :boolean          default(TRUE), not null, indexed => [train_id, event]
 #  auth_secret                  :string
 #  auth_type                    :string           default("none"), not null
 #  auth_username                :string
 #  body_template                :text
-#  event                        :string           not null, indexed => [train_id], indexed => [train_id, active]
+#  event                        :string           not null, indexed => [train_id, active]
 #  failure_message_template     :text
 #  failure_notification_channel :jsonb
 #  headers                      :jsonb            not null
@@ -19,7 +19,7 @@
 #  url                          :string           not null
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null
-#  train_id                     :uuid             not null, indexed, indexed => [event], indexed => [event, active]
+#  train_id                     :uuid             not null, indexed, indexed => [event, active]
 #
 class LifecycleHook < ApplicationRecord
   EVENTS = {
@@ -57,7 +57,7 @@ class LifecycleHook < ApplicationRecord
   scope :for_event, ->(event) { where(event: event) }
 
   def available_variables
-    custom_vars = static_variables.keys.map(&:to_s)
+    custom_vars = static_variables.to_h.keys.map(&:to_s)
     (SYSTEM_VARIABLES + custom_vars).uniq
   end
 

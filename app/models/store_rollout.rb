@@ -130,7 +130,14 @@ class StoreRollout < ApplicationRecord
     update!(current_stage: stage)
 
     # complete the release if the rollout has finished and we've reached the last stage
-    return complete! if finish_rollout && reached_last_stage?
+    if finish_rollout && reached_last_stage?
+      # A single-stage staged rollout jumps straight from `created` to `completed` here without
+      # ever calling start!, so the base on_start! callback never fires the rollout lifecycle
+      # hook. Fire it explicitly for that case. The `created?` guard keeps a multi-stage rollout
+      # (already started on an earlier stage) from firing it a second time on its final stage.
+      Coordinators::FireLifecycleHooks.call(self, event: :"#{platform}_rollout_started") if created?
+      return complete!
+    end
 
     # otherwise
     if may_start?

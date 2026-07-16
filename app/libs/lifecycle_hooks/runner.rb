@@ -8,7 +8,11 @@ module LifecycleHooks
     BlockedTargetError = Class.new(StandardError)
     TemplateError = Class.new(StandardError)
 
-    TIMEOUT_SECONDS = 10
+    # Total wall-clock budget for the whole request (connect + write + read). A global
+    # timeout — unlike per-operation timeouts, which reset on every read — bounds the
+    # overall time so a server that trickles bytes cannot hold the worker thread open
+    # indefinitely.
+    TIMEOUT_SECONDS = 15
     RESPONSE_BODY_PREVIEW = 500
 
     BLOCKED_CIDRS = %w[
@@ -45,7 +49,7 @@ module LifecycleHooks
         {
           status: response.code,
           success: response.status.success?,
-          body_preview: response.body.to_s.byteslice(0, RESPONSE_BODY_PREVIEW)
+          body_preview: bounded_body_preview(response)
         }
       end
     end
@@ -57,7 +61,7 @@ module LifecycleHooks
     def perform_request(body, request_headers)
       verb = hook.http_method.downcase.to_sym
 
-      client = HTTP.timeout(connect: TIMEOUT_SECONDS, read: TIMEOUT_SECONDS)
+      client = HTTP.timeout(TIMEOUT_SECONDS)
       client = client.headers(request_headers) if request_headers.any?
       client = apply_auth(client)
 
@@ -66,6 +70,19 @@ module LifecycleHooks
       else
         client.public_send(verb, hook.url, body: body)
       end
+    end
+
+    # Reads at most RESPONSE_BODY_PREVIEW bytes from the response, then closes the
+    # connection, so we never buffer a large (or unbounded) response body into memory.
+    def bounded_body_preview(response)
+      preview = String.new(encoding: Encoding::BINARY)
+      stream = response.body
+      while preview.bytesize < RESPONSE_BODY_PREVIEW && (chunk = stream.readpartial(RESPONSE_BODY_PREVIEW))
+        preview << chunk
+      end
+      preview.byteslice(0, RESPONSE_BODY_PREVIEW)
+    ensure
+      response.connection.close
     end
 
     def apply_auth(client)
@@ -93,7 +110,7 @@ module LifecycleHooks
     end
 
     def json_body?
-      hook.headers.to_h.any? { |k, v| k.to_s.downcase == "content-type" && v.to_s.include?("json") }
+      hook.headers.to_h.any? { |k, v| k.to_s.downcase == "content-type" && v.to_s.downcase.include?("json") }
     end
 
     def render_template(template, json_escape:)
@@ -128,15 +145,24 @@ module LifecycleHooks
         return
       end
 
-      # Otherwise resolve via DNS and check each returned address. On resolution failure, let the
-      # HTTP client attempt and surface the error naturally — we only use this check to block
-      # known-private ranges.
-      addresses = begin
-        Resolv.getaddresses(host)
-      rescue
-        []
-      end
+      # Otherwise resolve the hostname ourselves and validate every returned address. We must
+      # NOT fall through to the HTTP client when resolution yields nothing: alternative IP
+      # encodings that IPAddr/Resolv reject (octal `0177.0.0.1`, integer `2130706433`,
+      # hex `0x7f.0.0.1`) would otherwise be resolved and connected to by the OS socket layer,
+      # bypassing this guard. Failing closed here blocks them.
+      addresses =
+        begin
+          Resolv.getaddresses(host)
+        rescue
+          []
+        end
+      raise BlockedTargetError, "Could not resolve host" if addresses.empty?
 
+      # NOTE: this is a request-time check that does not pin the resolved IP, so it does not
+      # defend against DNS rebinding (a TOCTOU where the host resolves to a public address here
+      # but to a private one when the HTTP client re-resolves). Hooks are configured by trusted
+      # train admins, so this guard is defense-in-depth; pinning the resolved IP is intentionally
+      # out of scope for this change.
       addresses.each do |addr|
         ip = parse_ip(addr)
         check_blocked!(ip) if ip

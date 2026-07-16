@@ -3,6 +3,15 @@ require "rails_helper"
 describe LifecycleHooks::Runner do
   let(:context) { {"build_number" => "12345", "version" => "1.2.3", "platform" => "ios", "admin_url" => "https://admin.example.com"} }
 
+  before do
+    # The `external.example.com` test host is not a real DNS name, and the runner now fails
+    # closed when a host does not resolve. Simulate it resolving to a public address so the SSRF
+    # guard lets it through to WebMock. Blocked-range and unresolvable-host tests below hit the
+    # IP-literal path or resolve to nothing via the real resolver, so they are unaffected.
+    allow(Resolv).to receive(:getaddresses).and_call_original
+    allow(Resolv).to receive(:getaddresses).with("external.example.com").and_return(["93.184.216.34"])
+  end
+
   describe "basic execution" do
     it "fires a PATCH with JSON-escaped body substitution and returns ok result" do
       hook = create(:lifecycle_hook,
@@ -50,6 +59,21 @@ describe LifecycleHooks::Runner do
       result = described_class.call(hook, context)
       expect(result.ok?).to be true
     end
+
+    it "caps the body preview and does not buffer the whole response body" do
+      oversized_body = "x" * (LifecycleHooks::Runner::RESPONSE_BODY_PREVIEW * 4)
+      hook = create(:lifecycle_hook,
+        http_method: "GET",
+        url: "https://external.example.com/big",
+        headers: {},
+        body_template: nil)
+
+      stub_request(:get, "https://external.example.com/big").to_return(status: 200, body: oversized_body)
+
+      result = described_class.call(hook, context)
+      expect(result.ok?).to be true
+      expect(result.value![:body_preview].bytesize).to eq(LifecycleHooks::Runner::RESPONSE_BODY_PREVIEW)
+    end
   end
 
   describe "SSRF protection" do
@@ -79,6 +103,22 @@ describe LifecycleHooks::Runner do
 
     it "blocks IPv4-mapped IPv6 loopback" do
       hook = create(:lifecycle_hook, url: "http://[::ffff:127.0.0.1]/x")
+
+      result = described_class.call(hook, context)
+      expect(result.ok?).to be false
+      expect(result.error).to be_a(LifecycleHooks::Runner::BlockedTargetError)
+    end
+
+    it "blocks octal-encoded IP hosts that only the OS resolver would connect to" do
+      hook = create(:lifecycle_hook, url: "http://0177.0.0.1/evil")
+
+      result = described_class.call(hook, context)
+      expect(result.ok?).to be false
+      expect(result.error).to be_a(LifecycleHooks::Runner::BlockedTargetError)
+    end
+
+    it "blocks integer-encoded IP hosts" do
+      hook = create(:lifecycle_hook, url: "http://2130706433/evil")
 
       result = described_class.call(hook, context)
       expect(result.ok?).to be false

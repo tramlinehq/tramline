@@ -221,6 +221,30 @@ describe PlayStoreRollout do
         expect(rollout.reload.current_stage).to eq(2)
         expect(rollout.completed?).to be(true)
       end
+
+      it "fires the android rollout lifecycle hook exactly once for a single-stage staged rollout" do
+        rollout = create(:store_rollout, :created, :play_store, release_platform_run:, store_submission:, config: [100])
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        allow(rollout).to receive(:provider).and_return(providable_dbl)
+        allow(Coordinators::FireLifecycleHooks).to receive(:call)
+
+        rollout.move_to_next_stage!
+
+        expect(rollout.completed?).to be(true)
+        expect(Coordinators::FireLifecycleHooks).to have_received(:call).with(rollout, event: :android_rollout_started).once
+      end
+
+      it "does not re-fire the rollout lifecycle hook on the final stage of a multi-stage rollout" do
+        rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100], current_stage: 1)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        allow(rollout).to receive(:provider).and_return(providable_dbl)
+        allow(Coordinators::FireLifecycleHooks).to receive(:call)
+
+        rollout.move_to_next_stage!
+
+        expect(rollout.completed?).to be(true)
+        expect(Coordinators::FireLifecycleHooks).not_to have_received(:call)
+      end
     end
   end
 

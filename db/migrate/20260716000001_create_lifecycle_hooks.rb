@@ -20,7 +20,6 @@ class CreateLifecycleHooks < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :lifecycle_hooks, [:train_id, :event]
     add_index :lifecycle_hooks, [:train_id, :event, :active]
   end
 end
