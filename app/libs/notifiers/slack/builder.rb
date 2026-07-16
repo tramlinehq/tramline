@@ -37,7 +37,8 @@ module Notifiers
         soak_period_started: Renderers::SoakPeriodStarted,
         soak_period_extended: Renderers::SoakPeriodExtended,
         soak_period_ended: Renderers::SoakPeriodEnded,
-        changelog: Renderers::Changelog
+        changelog: Renderers::Changelog,
+        lifecycle_hook_failed: Renderers::LifecycleHookFailed
       }.with_indifferent_access
 
       MissingSlackRenderer = Class.new(StandardError)

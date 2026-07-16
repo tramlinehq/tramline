@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_16_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -464,6 +464,29 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
     t.string "organization_url"
     t.jsonb "project_config", default: {}, null: false
     t.index ["cloud_id"], name: "index_jira_integrations_on_cloud_id"
+  end
+
+  create_table "lifecycle_hooks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.string "event", null: false
+    t.string "name", null: false
+    t.string "http_method", null: false
+    t.string "url", null: false
+    t.jsonb "headers", default: {}, null: false
+    t.text "body_template"
+    t.jsonb "static_variables", default: {}, null: false
+    t.string "auth_type", default: "none", null: false
+    t.string "auth_username"
+    t.string "auth_secret"
+    t.boolean "notify_on_failure", default: true, null: false
+    t.text "failure_message_template"
+    t.jsonb "failure_notification_channel"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["train_id", "event", "active"], name: "index_lifecycle_hooks_on_train_id_and_event_and_active"
+    t.index ["train_id", "event"], name: "index_lifecycle_hooks_on_train_id_and_event"
+    t.index ["train_id"], name: "index_lifecycle_hooks_on_train_id"
   end
 
   create_table "linear_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1239,6 +1262,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
   add_foreign_key "invites", "organizations"
   add_foreign_key "invites", "users", column: "recipient_id"
   add_foreign_key "invites", "users", column: "sender_id"
+  add_foreign_key "lifecycle_hooks", "trains"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"

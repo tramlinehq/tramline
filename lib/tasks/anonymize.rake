@@ -95,6 +95,22 @@ namespace :anonymize do
         end
       end
 
+      table "lifecycle_hooks" do
+        continue { |index, record| record["train_id"] == train_id && !LifecycleHook.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "train_id", "event", "name", "http_method", "auth_type", "notify_on_failure", "active"
+        whitelist_timestamps
+        anonymize("url") { |field| "https://example.com/anonymized" }
+        anonymize("headers") { |field| {} }
+        anonymize("body_template") { |field| nil }
+        anonymize("static_variables") { |field| {} }
+        anonymize("auth_username") { |field| nil }
+        anonymize("auth_secret") { |field| nil }
+        anonymize("failure_message_template") { |field| nil }
+        anonymize("failure_notification_channel") { |field| {"id" => "dummy", "name" => "test", "is_private" => false} }
+      end
+
       table "release_platforms" do
         continue { |index, record| (record["platform"] == platform || platform == "cross_platform") && record["train_id"] == train_id && !ReleasePlatform.exists?(record["id"]) }
 

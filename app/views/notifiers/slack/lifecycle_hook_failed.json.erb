@@ -1,0 +1,28 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":warning: Lifecycle hook *<%= safe_string(@hook_name) %>* failed on event *<%= safe_string(@hook_event) %>*"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<%= safe_string(@failure_message) %>"
+      }
+    }
+    <% if @error_summary.present? %>
+    ,
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Error:* ```<%= safe_string(@error_summary) %>```"
+      }
+    }
+    <% end %>
+  ]
+}

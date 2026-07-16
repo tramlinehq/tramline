@@ -20,7 +20,8 @@ module Tabbable
       ([2, "Submission Settings", edit_app_train_platform_submission_config_path(@app, @train, @app.platform), "sliders.svg"] unless @app.cross_platform?),
       [4, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
       [5, "Release Health Rules", rules_app_train_path(@app, @train), "heart_pulse.svg"],
-      [6, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "ruler.svg"]
+      [6, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "ruler.svg"],
+      [7, "Lifecycle Hooks", app_train_lifecycle_hooks_path(@app, @train), "webhook.svg"]
     ].compact
   end
 

@@ -34,6 +34,12 @@ describe PlayStoreRollout do
       expect(prod_double).to have_received(:rollout_started!)
     end
 
+    it "fires the android rollout lifecycle hook via the base on_start! callback when staged" do
+      allow(Coordinators::FireLifecycleHooks).to receive(:call)
+      rollout.start_release!
+      expect(Coordinators::FireLifecycleHooks).to have_received(:call).with(rollout, event: :android_rollout_started).once
+    end
+
     context "when automatic rollout is enabled" do
       let(:rollout) { create(:store_rollout, :play_store, :created, release_platform_run:, store_submission:, automatic_rollout: true) }
 
@@ -65,6 +71,12 @@ describe PlayStoreRollout do
         rollout.start_release!
         expect(rollout.completed?).to be(true)
         expect(prod_double).to have_received(:rollout_complete!)
+      end
+
+      it "fires the android rollout lifecycle hook from the non-staged completion branch" do
+        allow(Coordinators::FireLifecycleHooks).to receive(:call)
+        rollout.start_release!
+        expect(Coordinators::FireLifecycleHooks).to have_received(:call).with(rollout, event: :android_rollout_started).once
       end
     end
 

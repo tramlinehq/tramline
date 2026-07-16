@@ -142,6 +142,7 @@ Rails.application.routes.draw do
 
       resource :release_index, only: %i[edit update]
       resources :notification_settings, only: %i[index update edit]
+      resources :lifecycle_hooks
 
       resources :release_platforms, path: :platforms, as: :platforms do
         resources :release_health_rules, path: :rules

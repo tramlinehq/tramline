@@ -67,6 +67,8 @@ class AppStoreSubmission < StoreSubmission
     cancellation_failed
     cancelled
     failed
+    lifecycle_hook_fired
+    lifecycle_hook_failed
   ]
 
   PreparedVersionNotFoundError = Class.new(StandardError)
@@ -304,6 +306,7 @@ class AppStoreSubmission < StoreSubmission
 
   def on_start_submission!
     event_stamp!(reason: :submitting_for_review, kind: :notice, data: stamp_data)
+    Coordinators::FireLifecycleHooks.call(self, event: :ios_submission_started)
     StoreSubmissions::AppStore::SubmitForReviewJob.perform_async(id)
   end
 

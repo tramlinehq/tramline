@@ -1,0 +1,119 @@
+<%= form_with(model: hook, url: url, method: method, builder: EnhancedFormHelper::AuthzForm, scope: :lifecycle_hook) do |form| %>
+  <div class="flex flex-col gap-6">
+
+    <section>
+      <h3 class="text-md font-medium mb-2">Basic</h3>
+      <div class="grid gap-4 grid-cols-2">
+        <div>
+          <%= form.labeled_text_field :name, "Name", placeholder: "e.g. Notify deployment service" %>
+        </div>
+        <div>
+          <%= form.labeled_select :event, "Event",
+                options_for_select(LifecycleHook::EVENTS.values.map { |e| [e.humanize, e] }, hook.event),
+                {include_blank: true} %>
+        </div>
+      </div>
+      <p class="text-xs text-secondary mt-2">
+        <code>ios_submission_started</code> fires when a build is sent for App Store review,
+        <code>ios_rollout_started</code> when the App Store phased rollout begins,
+        <code>android_submission_started</code> when a release is created on a Play Store track, and
+        <code>android_rollout_started</code> when a Play Store rollout begins.
+        An event fires again if its step is retried.
+      </p>
+      <div class="mt-3">
+        <%= form.labeled_checkbox :active, "Active" %>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="text-md font-medium mb-2">HTTP Request</h3>
+      <div class="grid gap-4 grid-cols-4">
+        <div>
+          <%= form.labeled_select :http_method, "Method",
+                options_for_select(LifecycleHook::HTTP_METHODS.map { |m| [m, m] }, hook.http_method) %>
+        </div>
+        <div class="col-span-3">
+          <%= form.labeled_text_field :url, "URL", placeholder: "https://example.com/api/endpoint" %>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <%= form.labeled_textarea :headers_text, "Headers (one per line, `Name: value`)",
+              value: hook.headers_text,
+              rows: 3,
+              placeholder: "Content-Type: application/json" %>
+      </div>
+
+      <div class="mt-3">
+        <%= form.labeled_textarea :body_template, "Body template",
+              rows: 6,
+              placeholder: '{"build_number": %{build_number}, "version": "%{version}", "platform": "%{platform}"}' %>
+        <p class="text-xs text-secondary mt-1">
+          Use <code>%{variable_name}</code> for substitution. Available variables for the selected event:
+          <code><%= hook.available_variables.join(", ").presence || "select an event" %></code>.
+          Strings are JSON-escaped automatically when <code>Content-Type: application/json</code>.
+        </p>
+      </div>
+
+      <div class="mt-3">
+        <%= form.labeled_textarea :static_variables_text, "Custom variables (one per line, `name: value`)",
+              value: hook.static_variables_text,
+              rows: 3,
+              placeholder: "admin_url: https://admin.example.com/page" %>
+        <p class="text-xs text-secondary mt-1">Variables defined here are available in the body and failure message templates in addition to the event-provided ones.</p>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="text-md font-medium mb-2">Authentication</h3>
+      <div class="grid gap-4 grid-cols-3">
+        <div>
+          <%= form.labeled_select :auth_type, "Type",
+                options_for_select(LifecycleHook::AUTH_TYPES.values.map { |t| [t.humanize, t] }, hook.auth_type) %>
+        </div>
+        <div>
+          <%= form.labeled_text_field :auth_username, "Username (for Basic)", autocomplete: "off" %>
+        </div>
+        <div>
+          <%= form.labeled_text_field :auth_secret, "Secret (password or bearer token)",
+                type: "password",
+                autocomplete: "off",
+                placeholder: (hook.persisted? && hook.auth_secret.present?) ? "•••• (leave blank to keep current)" : "" %>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="text-md font-medium mb-2">Failure handling</h3>
+      <p class="text-xs text-secondary mb-2">If the request fails, a Slack message is sent. The release is not blocked.</p>
+
+      <div>
+        <%= form.labeled_checkbox :notify_on_failure, "Send Slack notification on failure" %>
+      </div>
+
+      <div class="mt-3">
+        <%= form.labeled_textarea :failure_message_template, "Failure message template",
+              rows: 3,
+              placeholder: "Lifecycle hook failed for build %{build_number} (%{version}). Error: %{error_message}" %>
+      </div>
+
+      <div class="mt-3">
+        <% if @notification_channels.present? %>
+          <%= form.labeled_select :failure_notification_channel, "Failure notification Slack channel",
+                options_for_select(
+                  display_channels(@notification_channels, with_none: true) { |chan| "#" + chan[:name] },
+                  hook.failure_notification_channel&.to_json
+                ),
+                {},
+                {data: {controller: "input-select"}} %>
+        <% else %>
+          <p class="text-sm text-secondary italic">Slack integration is not configured — notifications will not be sent.</p>
+        <% end %>
+      </div>
+    </section>
+
+    <div>
+      <%= form.authz_submit submit_label, "save.svg" %>
+    </div>
+  </div>
+<% end %>

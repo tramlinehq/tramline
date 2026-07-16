@@ -1,0 +1,9 @@
+<%= render TabbedContainerComponent.new(title: @train.name,
+                                        turbo_frame: dom_id(@train, :edit_train),
+                                        tab_config: @tab_configuration,
+                                        error_resource: @hook) do |container| %>
+  <% container.with_back_button(to: "lifecycle hooks", path: app_train_lifecycle_hooks_path(@app, @train)) %>
+  <% container.with_tab do %>
+    <%= render partial: "form", locals: {hook: @hook, url: app_train_lifecycle_hook_path(@app, @train, @hook), method: :patch, submit_label: "Save"} %>
+  <% end %>
+<% end %>

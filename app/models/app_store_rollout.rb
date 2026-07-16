@@ -30,6 +30,8 @@ class AppStoreRollout < StoreRollout
     halted
     completed
     fully_released
+    lifecycle_hook_fired
+    lifecycle_hook_failed
   ]
 
   belongs_to :app_store_submission, foreign_key: :store_submission_id, inverse_of: :app_store_rollout

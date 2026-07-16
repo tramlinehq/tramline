@@ -161,6 +161,7 @@ class StoreRollout < ApplicationRecord
 
   def on_start!
     parent_release.rollout_started!
+    Coordinators::FireLifecycleHooks.call(self, event: :"#{platform}_rollout_started")
   end
 
   def on_resume!

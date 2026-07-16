@@ -1,0 +1,59 @@
+<%= render TabbedContainerComponent.new(title: @train.name,
+                                        turbo_frame: dom_id(@train, :edit_train),
+                                        tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button(to: "the train", path: app_train_releases_path(@app, @train)) %>
+  <% container.with_tab do %>
+    <div class="flex flex-col gap-4">
+      <div class="flex justify-between items-start">
+        <div>
+          <h2 class="text-xl font-medium text-default">Lifecycle Hooks</h2>
+          <p class="text-sm text-secondary mt-1">
+            Outbound HTTP requests fired automatically at specific release lifecycle events.
+            Failures do not block the release — a Slack notification is sent instead.
+          </p>
+        </div>
+        <%= link_to "New hook", new_app_train_lifecycle_hook_path(@app, @train),
+              class: "inline-flex items-center px-3 py-1.5 rounded text-sm bg-blue-600 text-white hover:bg-blue-700" %>
+      </div>
+
+      <% if @hooks.empty? %>
+        <div class="p-6 text-sm text-secondary border border-dashed rounded">
+          No lifecycle hooks configured yet.
+        </div>
+      <% else %>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <thead>
+              <tr class="text-left text-secondary">
+                <th class="px-3 py-2">Name</th>
+                <th class="px-3 py-2">Event</th>
+                <th class="px-3 py-2">Method</th>
+                <th class="px-3 py-2">URL</th>
+                <th class="px-3 py-2">Active</th>
+                <th class="px-3 py-2"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% @hooks.each do |hook| %>
+                <tr>
+                  <td class="px-3 py-2 font-medium"><%= hook.name %></td>
+                  <td class="px-3 py-2"><code><%= hook.event %></code></td>
+                  <td class="px-3 py-2"><%= hook.http_method %></td>
+                  <td class="px-3 py-2 truncate max-w-xs"><code class="text-xs"><%= hook.url %></code></td>
+                  <td class="px-3 py-2"><%= hook.active? ? "Yes" : "No" %></td>
+                  <td class="px-3 py-2 text-right">
+                    <%= link_to "Edit", edit_app_train_lifecycle_hook_path(@app, @train, hook), class: "text-blue-600 hover:underline mr-3" %>
+                    <%= button_to "Remove", app_train_lifecycle_hook_path(@app, @train, hook),
+                          method: :delete,
+                          form: {data: {turbo_confirm: "Remove this hook?"}},
+                          class: "text-red-600 hover:underline" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

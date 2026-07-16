@@ -21,6 +21,18 @@ describe AppStoreRollout do
       expect(production_release).to have_received(:rollout_started!)
       expect(StoreRollouts::AppStore::FindLiveReleaseJob).to have_received(:perform_async).with(rollout.id).once
     end
+
+    it "fires the platform rollout lifecycle hook from the base on_start! callback" do
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+      allow(production_release).to receive(:rollout_started!)
+      allow(providable_dbl).to receive(:start_release).and_return(GitHub::Result.new { true })
+      allow(StoreRollouts::AppStore::FindLiveReleaseJob).to receive(:perform_async)
+      allow(Coordinators::FireLifecycleHooks).to receive(:call)
+
+      rollout.start_release!
+
+      expect(Coordinators::FireLifecycleHooks).to have_received(:call).with(rollout, event: :"#{rollout.platform}_rollout_started").once
+    end
   end
 
   describe "#release_fully!" do

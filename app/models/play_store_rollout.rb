@@ -32,6 +32,8 @@ class PlayStoreRollout < StoreRollout
     completed
     failed
     fully_released
+    lifecycle_hook_fired
+    lifecycle_hook_failed
   ]
 
   AUTO_ROLLOUT_RUN_INTERVAL = 24.hours
@@ -80,6 +82,7 @@ class PlayStoreRollout < StoreRollout
       if result.ok?
         complete!
         event_stamp!(reason: :completed, kind: :success, data: stamp_data)
+        Coordinators::FireLifecycleHooks.call(self, event: :android_rollout_started)
       else
         fail!(result.error)
       end

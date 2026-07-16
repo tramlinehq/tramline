@@ -62,6 +62,8 @@ en:
       review_rejected_html: 'Play Store submission for <span class="emphasize">%{version} (%{build_number})</span> was rejected'
       failed_html: 'Failed to create a release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span>. Error – <span class="emphasize">%{failure_reason}</span>'
       finished_manually_html: 'Marked the release for <span class="emphasize">%{version} (%{build_number})</span> as finished manually'
+      lifecycle_hook_fired_html: 'Lifecycle hook <span class="emphasize">%{hook_name}</span> fired on <span class="emphasize">%{hook_event}</span>'
+      lifecycle_hook_failed_html: 'Lifecycle hook <span class="emphasize">%{hook_name}</span> failed on <span class="emphasize">%{hook_event}</span> — <span class="emphasize">%{error}</span>'
     app_store_submission:
       triggered_html: 'Triggered a new store release for <span class="emphasize">%{version} (%{build_number})</span> in the App Store'
       prepared_html: 'Created a new store release for <span class="emphasize">%{version} (%{build_number})</span> in the App Store'
@@ -74,6 +76,8 @@ en:
       cancelling_html: 'Cancelling release submission to the App Store for <span class="emphasize">%{version} (%{build_number})</span>'
       cancelled_html: 'Release submission to the App Store for <span class="emphasize">%{version} (%{build_number})</span> was cancelled'
       failed_html: 'Failed to create an inflight store version for <span class="emphasize">%{version} (%{build_number})</span> in the App Store. Error – <span class="emphasize">%{failure_reason}</span>'
+      lifecycle_hook_fired_html: 'Lifecycle hook <span class="emphasize">%{hook_name}</span> fired on <span class="emphasize">%{hook_event}</span>'
+      lifecycle_hook_failed_html: 'Lifecycle hook <span class="emphasize">%{hook_name}</span> failed on <span class="emphasize">%{hook_event}</span> — <span class="emphasize">%{error}</span>'
     play_store_rollout:
       started_html: 'Started rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
       updated_html: 'Updated the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track to <span class="emphasize">%{rollout_percentage}%</span>'
@@ -83,6 +87,8 @@ en:
       fully_released_html: 'Fully released <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track from <span class="emphasize">%{rollout_percentage}%</span>'
       paused_html: 'Paused the automatic rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
       failed_html: 'Failed to rollout <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track'
+      lifecycle_hook_fired_html: 'Lifecycle hook <span class="emphasize">%{hook_name}</span> fired on <span class="emphasize">%{hook_event}</span>'
+      lifecycle_hook_failed_html: 'Lifecycle hook <span class="emphasize">%{hook_name}</span> failed on <span class="emphasize">%{hook_event}</span> — <span class="emphasize">%{error}</span>'
     app_store_rollout:
       started_html: 'Started rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
       updated_html: 'Rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store is at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
@@ -91,6 +97,8 @@ en:
       fully_released_html: 'Fully released <span class="emphasize">%{version} (%{build_number})</span> to App Store from phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
       paused_html: 'Paused the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
       resumed_html: 'Resumed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
+      lifecycle_hook_fired_html: 'Lifecycle hook <span class="emphasize">%{hook_name}</span> fired on <span class="emphasize">%{hook_event}</span>'
+      lifecycle_hook_failed_html: 'Lifecycle hook <span class="emphasize">%{hook_name}</span> failed on <span class="emphasize">%{hook_event}</span> — <span class="emphasize">%{error}</span>'
     store_rollout:
       reasons:
         started: 'Rollout started'
