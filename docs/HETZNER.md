@@ -1,6 +1,11 @@
 # Hetzner Bare-Metal Setup
 
-Server: Hetzner CPX41 (8 vCPU, 16 GB RAM, AMD EPYC)
+## Servers
+
+| Environment | Machine | vCPU | RAM | Cost |
+|-------------|---------|------|-----|------|
+| Production | CPX42 | 8 | 16 GB | ~€70/mo |
+| Staging | CX33 | 4 | 8 GB | ~€9/mo |
 
 ## 1. Hetzner Cloud Firewall
 
@@ -92,7 +97,8 @@ Create directories for persistent accessory data:
 
 ```bash
 mkdir -p /home/deploy/tramline-db-data
-mkdir -p /home/deploy/tramline-redis-data
+mkdir -p /home/deploy/tramline-redis-cache-data
+mkdir -p /home/deploy/tramline-redis-sidekiq-data
 mkdir -p /home/deploy/tramline-portainer-data
 chown -R deploy:deploy /home/deploy/tramline-*
 ```
@@ -127,10 +133,10 @@ Add these secrets to the GitHub repository (Settings > Secrets > Actions):
 - `POSTGRES_DB` — `tramline_production`
 
 **Redis:**
-- `REDIS_URL` — `redis://tramline-redis:6379/0`
+- `REDIS_URL` — `redis://tramline-redis-cache:6379/0`
 - `DEFAULT_REDIS_URL` — same as REDIS_URL
-- `SESSION_REDIS_URL` — `redis://tramline-redis:6379/1`
-- `SIDEKIQ_REDIS_URL` — `redis://tramline-redis:6379/2`
+- `SESSION_REDIS_URL` — `redis://tramline-redis-cache:6379/1`
+- `SIDEKIQ_REDIS_URL` — `redis://tramline-redis-sidekiq:6379/0`
 
 **App:**
 - `RAILS_MASTER_KEY`
@@ -161,6 +167,10 @@ kamal accessory boot all
 
 # Deploy the app
 kamal deploy
+
+# For staging (uses config/deploy.staging.yml overlay):
+kamal setup -d staging
+kamal deploy -d staging
 ```
 
 ## 10. Data Migration (one-time)

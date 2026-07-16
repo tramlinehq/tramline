@@ -1,38 +1,44 @@
 servers:
   web:
     options:
-      memory: 512m
+      memory: 1g
+      cpus: 1
   worker:
     options:
-      memory: 512m
+      memory: 1g
+      cpus: 1
 
 proxy:
   ssl: true
-  host: tramline.site
+  host: staging.tramline.dev
 
 accessories:
   db:
     options:
-      memory: 256m
+      memory: 1g
+      cpus: 0.5
       restart: always
       shm-size: 64m
 
   redis-cache:
-    cmd: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lru
+    cmd: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
     options:
-      memory: 64m
+      memory: 128m
+      cpus: 0.25
       restart: always
 
   redis-sidekiq:
-    cmd: redis-server --maxmemory 50mb --maxmemory-policy noeviction --appendonly yes
+    cmd: redis-server --maxmemory 100mb --maxmemory-policy noeviction --appendonly yes
     options:
-      memory: 64m
+      memory: 128m
+      cpus: 0.25
       restart: always
 
   applelink:
     options:
       restart: always
-      memory: 128m
+      memory: 512m
+      cpus: 0.5
 
   portainer:
     proxy:
