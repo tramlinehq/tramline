@@ -198,11 +198,11 @@ class Integration < ApplicationRecord
     end
 
     def monitoring_provider
-      kept.monitoring.first&.providable
+      kept.monitoring.order(:created_at).first&.providable
     end
 
     def monitoring_providers
-      kept.monitoring.map(&:providable)
+      kept.monitoring.order(:created_at).map(&:providable)
     end
 
     def notification_provider

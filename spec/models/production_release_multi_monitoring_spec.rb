@@ -169,6 +169,51 @@ describe ProductionRelease do # rubocop:disable RSpec/SpecFilePathFormat
     end
   end
 
+  describe "Legacy (nil-typed) metric transition" do
+    before do
+      create(:release_health_rule, :user_stability, release_platform: production_release.release_platform)
+    end
+
+    it "keeps gating healthy? on a legacy nil-typed unhealthy event while a typed secondary is healthy" do
+      # Legacy metric written before per-provider typing existed (monitoring_provider_type NULL), unhealthy.
+      production_release.release_health_metrics.create!(
+        fetched_at: 5.minutes.ago,
+        monitoring_provider_type: nil,
+        monitoring_provider_id: nil,
+        **unhealthy_data
+      )
+      # A typed secondary provider (Sentry) lands first with healthy data.
+      production_release.release_health_metrics.create!(
+        fetched_at: 3.minutes.ago,
+        monitoring_provider_type: "SentryIntegration",
+        monitoring_provider_id: sentry_provider.id,
+        **healthy_data
+      )
+
+      expect(production_release.reload).not_to be_healthy
+      expect(production_release.show_health?).to be(true)
+    end
+
+    it "show_health? stays true when the only fresh row is a legacy (nil-typed) metric" do
+      # Typed row exists but is stale (beyond the freshness window).
+      production_release.release_health_metrics.create!(
+        fetched_at: 40.days.ago,
+        monitoring_provider_type: "SentryIntegration",
+        monitoring_provider_id: sentry_provider.id,
+        **healthy_data
+      )
+      # Fresh legacy (nil-typed) row must still surface health via the union fallback.
+      production_release.release_health_metrics.create!(
+        fetched_at: 3.minutes.ago,
+        monitoring_provider_type: nil,
+        monitoring_provider_id: nil,
+        **healthy_data
+      )
+
+      expect(production_release.show_health?).to be(true)
+    end
+  end
+
   describe "FetchHealthMetricsJob" do
     it "resolves provider by type and fetches from it" do
       allow(CrashlyticsIntegration).to receive(:find).with(crashlytics_provider.id).and_return(crashlytics_provider)

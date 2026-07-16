@@ -21,37 +21,57 @@
         <span class="font-semibold text-sm text-secondary"><%= provider_display_name(provider_type) %></span>
       </div>
 
-      <% if :adoption_rate.in? metrics %>
-        <% prov_url = provider_dashboard_url(provider_type, data) %>
-        <%= render ProgressCardComponent.new(name: "Adoption Rate",
-                                             current: data.adoption_rate,
-                                             subtitle: "Last 24 hours",
-                                             provider: provider_icon(provider_type),
-                                             size:,
-                                             external_url: prov_url) %>
-      <% end %>
+      <% if data.blank? %>
+        <% if :adoption_rate.in? metrics %>
+          <%= render StatCardComponent.new("Adoption Rate",
+            type: :empty,
+            empty_stat_help_text: "Waiting for data from #{provider_display_name(provider_type)}.") %>
+        <% end %>
 
-      <% if :stability.in? metrics %>
-        <% prov_url = provider_dashboard_url(provider_type, data) %>
-        <%= render MetricCardComponent.new(name: "Stability",
-                                           values: {"users" => user_stability_for(data), "sessions" => session_stability_for(data)},
-                                           provider: provider_icon(provider_type),
-                                           size:,
-                                           external_url: prov_url) %>
-      <% end %>
+        <% if :stability.in? metrics %>
+          <%= render StatCardComponent.new("Stability",
+            type: :empty,
+            empty_stat_help_text: "Waiting for data from #{provider_display_name(provider_type)}.") %>
+        <% end %>
 
-      <% if :errors.in? metrics %>
-        <% if errors_count_for(data).blank? || new_errors_count_for(data).blank? %>
+        <% if :errors.in? metrics %>
           <%= render StatCardComponent.new("Errors",
             type: :empty,
-            empty_stat_help_text: "Waiting for error data from #{provider_display_name(provider_type)}.") %>
-        <% else %>
+            empty_stat_help_text: "Waiting for data from #{provider_display_name(provider_type)}.") %>
+        <% end %>
+      <% else %>
+        <% if :adoption_rate.in? metrics %>
           <% prov_url = provider_dashboard_url(provider_type, data) %>
-          <%= render MetricCardComponent.new(name: "Errors",
-                                             values: {"total" => errors_count_for(data), "new" => new_errors_count_for(data)},
+          <%= render ProgressCardComponent.new(name: "Adoption Rate",
+                                               current: data.adoption_rate,
+                                               subtitle: "Last 24 hours",
+                                               provider: provider_icon(provider_type),
+                                               size:,
+                                               external_url: prov_url) %>
+        <% end %>
+
+        <% if :stability.in? metrics %>
+          <% prov_url = provider_dashboard_url(provider_type, data) %>
+          <%= render MetricCardComponent.new(name: "Stability",
+                                             values: {"users" => user_stability_for(data), "sessions" => session_stability_for(data)},
                                              provider: provider_icon(provider_type),
                                              size:,
                                              external_url: prov_url) %>
+        <% end %>
+
+        <% if :errors.in? metrics %>
+          <% if errors_count_for(data).blank? || new_errors_count_for(data).blank? %>
+            <%= render StatCardComponent.new("Errors",
+              type: :empty,
+              empty_stat_help_text: "Waiting for error data from #{provider_display_name(provider_type)}.") %>
+          <% else %>
+            <% prov_url = provider_dashboard_url(provider_type, data) %>
+            <%= render MetricCardComponent.new(name: "Errors",
+                                               values: {"total" => errors_count_for(data), "new" => new_errors_count_for(data)},
+                                               provider: provider_icon(provider_type),
+                                               size:,
+                                               external_url: prov_url) %>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>

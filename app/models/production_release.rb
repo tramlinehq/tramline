@@ -179,27 +179,26 @@ class ProductionRelease < ApplicationRecord
     return true if release_health_rules.blank?
     return true if release_health_events.blank?
 
-    provider_types = release_health_metrics.where.not(monitoring_provider_type: nil).distinct.pluck(:monitoring_provider_type)
+    # Bucket by provider type, INCLUDING the nil bucket for legacy (untyped) metrics
+    # written before per-provider typing existed. A nil bucket naturally scopes to
+    # `monitoring_provider_type IS NULL`, so an unhealthy legacy event still gates
+    # health during the transition. When nil is the only value this degenerates to
+    # the previous single-bucket behaviour.
+    provider_types = release_health_metrics.distinct.pluck(:monitoring_provider_type)
 
     release_health_rules.all? do |rule|
-      if provider_types.present?
-        provider_types.all? do |ptype|
-          event = release_health_events
-            .joins(:release_health_metric)
-            .where(release_health_rule: rule, release_health_metrics: {monitoring_provider_type: ptype})
-            .last
-          event.blank? || event.healthy?
-        end
-      else
-        event = release_health_events.where(release_health_rule: rule).last
+      provider_types.all? do |ptype|
+        event = release_health_events
+          .joins(:release_health_metric)
+          .where(release_health_rule: rule, release_health_metrics: {monitoring_provider_type: ptype})
+          .last
         event.blank? || event.healthy?
       end
     end
   end
 
   def show_health?
-    all_data = latest_health_data_by_provider
-    return all_data.any?(&:fresh?) if all_data.present?
+    return true if latest_health_data_by_provider.any?(&:fresh?)
     latest_health_data&.fresh? || false
   end
 
