@@ -39,6 +39,20 @@ describe Installations::Slack::Api, type: :integration do
       expect(result[:channels]).to match_array(expected_projects)
       expect(result[:next_cursor]).to eq("dGVhbTpDMDYxRkE1UEI=")
     end
+
+    it "raises an error when the response is not ok instead of returning a partial list" do
+      allow_any_instance_of(described_class).to receive(:execute).and_return(
+        {
+          "ok" => false,
+          "error" => "ratelimited"
+        }
+      )
+
+      expect { described_class.new(access_token).list_channels(SlackIntegration::CHANNELS_TRANSFORMATIONS) }
+        .to raise_error(Installations::Error) { |error|
+          expect(error.reason).to eq("ratelimited")
+        }
+    end
   end
 
   describe "#create_channel" do
