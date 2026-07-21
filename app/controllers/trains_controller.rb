@@ -216,7 +216,7 @@ class TrainsController < SignedInApplicationController
     release_schedule_params = release_schedule_config(train_update_params.slice(*release_schedule_config_params))
     update_params = train_update_params
       .merge(build_queue_config(train_update_params.slice(*build_queue_config_params)))
-      .merge(notifications_config(train_update_params[:notifications_enabled]))
+      .merge(notifications_update_config(train_update_params[:notifications_enabled]))
       .merge(version_bump_file_paths: train_params.fetch(:version_bump_file_paths, "").safe_csv_parse(coerce_string: true))
       .except(:build_queue_wait_time_value, :build_queue_wait_time_unit)
       .except(*release_schedule_config_params)
@@ -235,6 +235,18 @@ class TrainsController < SignedInApplicationController
   def set_notification_channels
     @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
     @current_notification_channel = @train&.notification_channel
+    ensure_current_channel_in_options
+  end
+
+  # Guarantee the configured channel is always present as a selectable option,
+  # even if it is missing from the fetched channel list (archived, or a
+  # truncated/failed fetch). Without this the select renders with nothing
+  # selected and submits blank, which would drop the channel on the next save.
+  def ensure_current_channel_in_options
+    return if @notification_channels.blank? || @current_notification_channel.blank?
+    current = @current_notification_channel.symbolize_keys
+    return if @notification_channels.any? { |chan| chan[:id] == current[:id] }
+    @notification_channels += [current]
   end
 
   def build_queue_config_params
@@ -283,6 +295,23 @@ class TrainsController < SignedInApplicationController
       {notification_channel: nil}
     elsif notifications_enabled == "true"
       {notification_channel: train_params[:notification_channel]&.safe_json_parse}
+    end
+  end
+
+  # On update, a blank notification_channel while notifications are enabled is
+  # treated as "unchanged" rather than "clear". This guards against silently
+  # wiping the configured channel when the select submits blank because the
+  # stored channel was missing from the fetched Slack channel list (archived,
+  # or a truncated/failed channel fetch). Clearing only happens when
+  # notifications are explicitly disabled.
+  def notifications_update_config(notifications_enabled)
+    if notifications_enabled.blank? || notifications_enabled == "false"
+      {notification_channel: nil}
+    elsif notifications_enabled == "true"
+      channel = train_update_params[:notification_channel]&.safe_json_parse
+      # Preserve the currently stored channel when the field submits blank, so an
+      # empty select (stored channel missing from the fetched list) cannot wipe it.
+      channel.present? ? {notification_channel: channel} : {notification_channel: @train.notification_channel}
     end
   end
 end
