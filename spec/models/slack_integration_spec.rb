@@ -43,6 +43,44 @@ describe SlackIntegration do
     end
   end
 
+  describe "#channels" do
+    let(:integration) { create(:integration, :with_slack) }
+    let(:slack_integration) { integration.providable }
+    let(:api_double) { instance_double(Installations::Slack::Api) }
+
+    before do
+      allow(slack_integration).to receive(:installation).and_return(api_double)
+      Rails.cache.delete(slack_integration.channels_cache_key)
+    end
+
+    it "returns and caches the sliced channels on success" do
+      allow(api_double).to receive(:list_channels)
+        .and_return({channels: [{id: "C1", name: "general", is_private: false, member_count: 4}], next_cursor: ""})
+
+      expect(slack_integration.channels).to contain_exactly({id: "C1", name: "general", is_private: false})
+      expect(Rails.cache.read(slack_integration.channels_cache_key)).to be_present
+    end
+
+    context "when a page of the channel fetch fails midway" do
+      before do
+        allow(api_double).to receive(:list_channels)
+          .and_return(
+            {channels: [{id: "C1", name: "general", is_private: false}], next_cursor: "next_page"}
+          )
+          .and_raise(Installations::Error.new("boom", reason: "ratelimited"))
+      end
+
+      it "returns an empty list instead of raising" do
+        expect(slack_integration.channels).to eq([])
+      end
+
+      it "does not cache the partial list" do
+        slack_integration.channels
+        expect(Rails.cache.read(slack_integration.channels_cache_key)).to be_nil
+      end
+    end
+  end
+
   describe "#create_channel" do
     let(:integration) { create(:integration, :with_slack) }
     let(:slack_integration) { integration.providable }

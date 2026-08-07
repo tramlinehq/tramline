@@ -2,12 +2,13 @@ class IntegrationsController < SignedInApplicationController
   using RefinedString
   include Tabbable
 
-  before_action :require_write_access!, only: %i[connect create build_artifact_channels destroy reauth]
+  before_action :require_write_access!, only: %i[connect create build_artifact_channels destroy reauth rotate]
   before_action :set_app_config_tabs, only: %i[index]
   before_action :set_integration, only: %i[connect create reuse]
   before_action :set_existing_integration, only: %i[reuse]
   before_action :set_providable, only: %i[connect create]
   before_action :set_reauth_integration, only: %i[reauth]
+  before_action :set_rotate_integration, only: %i[rotate]
 
   def connect
     redirect_to(@integration.install_path, allow_other_host: true)
@@ -32,6 +33,17 @@ class IntegrationsController < SignedInApplicationController
 
   def reauth
     redirect_to(@reauth_integration.install_path, allow_other_host: true)
+  end
+
+  def rotate
+    rotate_params = build_rotate_params
+    return redirect_to app_integrations_path(@app), flash: {error: @rotate_error} if @rotate_error
+
+    if @rotate_integration.providable.rotate(**rotate_params)
+      redirect_to app_integrations_path(@app), notice: "Credentials were successfully rotated."
+    else
+      redirect_to app_integrations_path(@app), flash: {error: @rotate_integration.providable.errors.full_messages.to_sentence}
+    end
   end
 
   def create
@@ -93,6 +105,35 @@ class IntegrationsController < SignedInApplicationController
     @reauth_integration.current_user = current_user
     # the current_user should be reflected correctly in the associated providable
     @reauth_integration.providable.integration = @reauth_integration
+  end
+
+  def set_rotate_integration
+    @rotate_integration = @app.integrations.linked.find(params[:id])
+    raise ActiveRecord::RecordNotFound unless @rotate_integration.providable.rotatable?
+  end
+
+  def build_rotate_params
+    case @rotate_integration.providable_type
+    when "AppStoreIntegration" then app_store_rotate_params
+    else raise ActiveRecord::RecordNotFound
+    end
+  end
+
+  def app_store_rotate_params
+    permitted = params.require(:integration).require(:providable).permit(:key_id, :issuer_id, :p8_key_file)
+    p8_key_file = permitted[:p8_key_file]
+
+    file_errors = Validators::KeyFileValidator.validate(p8_key_file).errors
+    if file_errors.present?
+      @rotate_error = file_errors.first
+      return {}
+    end
+
+    {
+      key_id: permitted[:key_id],
+      issuer_id: permitted[:issuer_id],
+      p8_key: p8_key_file.read
+    }
   end
 
   def set_providable

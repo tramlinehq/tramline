@@ -8,7 +8,8 @@ class IntegrationCardComponent < BaseComponent
     google_play_store: "Service Account JSON Key",
     crashlytics: "Service Account JSON Key",
     bitrise: "Access Token",
-    sentry: "Auth Token"
+    sentry: "Auth Token",
+    teamcity: "Server URL & Access Token"
   }
 
   def initialize(app, integration, category, pre_open_category = nil)
@@ -27,7 +28,7 @@ class IntegrationCardComponent < BaseComponent
     :providable_type,
     :disconnectable_categories?,
     :further_setup?, to: :integration, allow_nil: true
-  delegate :creatable?, :connectable?, to: :provider
+  delegate :creatable?, :connectable?, :rotatable?, to: :provider
   alias_method :provider, :providable
 
   memoize def repeated_integrations_across_apps
@@ -43,7 +44,7 @@ class IntegrationCardComponent < BaseComponent
   end
 
   def logo
-    image_tag("integrations/logo_#{provider}.png", width: 24, height: 24)
+    image_tag(helpers.integration_logo(provider), width: 24, height: 24)
   end
 
   def creatable_modal_title
@@ -88,6 +89,15 @@ class IntegrationCardComponent < BaseComponent
                integration: @integration,
                is_disconnectable: disconnectable?,
                is_disconnectable_category: disconnectable_categories?})
+  end
+
+  def rotate_form_partial
+    render(partial: "integrations/rotators/#{provider}",
+      locals: {app: @app, integration: @integration})
+  end
+
+  def rotate_modal_title
+    "Rotate #{CONNECTABLE_PROVIDER_TO_TITLE[provider.to_s.to_sym]}"
   end
 
   def disconnectable?
@@ -136,6 +146,7 @@ class IntegrationCardComponent < BaseComponent
     when "GitlabIntegration" then edit_app_ci_cd_gitlab_config_path(@app)
     when "BitbucketIntegration" then edit_app_ci_cd_bitbucket_config_path(@app)
     when "BitriseIntegration" then edit_app_ci_cd_bitrise_config_path(@app)
+    when "TeamcityIntegration" then edit_app_ci_cd_teamcity_config_path(@app)
     else unsupported_integration_type
     end
   end

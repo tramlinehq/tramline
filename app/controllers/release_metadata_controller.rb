@@ -18,7 +18,7 @@ class ReleaseMetadataController < SignedInApplicationController
     language = params.require(:language)
     rm_params = params.require(:release_metadata)
     if rm_params.key?(:ios)
-      ios_params = rm_params.require(:ios).permit(:id, :release_notes, :promo_text, :description, :keywords)
+      ios_params = rm_params.require(:ios).permit(:id, :release_notes, :promo_text, :description, :keywords, :support_url, :marketing_url)
       ios_params[:keywords] = ios_params[:keywords].split(",").map(&:strip).compact_blank
     end
     android_params = rm_params.require(:android).permit(:id, :release_notes) if rm_params.key?(:android)

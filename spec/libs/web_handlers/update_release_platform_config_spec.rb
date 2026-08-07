@@ -201,6 +201,61 @@ describe WebHandlers::UpdateReleasePlatformConfig do
       end
     end
 
+    describe "when the CI provider returns no workflows (empty/stale list)" do
+      let(:ci_actions) { [] }
+
+      context "when re-submitting the already-configured RC workflow with an unrelated edit" do
+        let(:params) do
+          {
+            production_release_enabled: "true",
+            release_candidate_workflow_attributes: {
+              id: config.release_candidate_workflow.id,
+              identifier: config.release_candidate_workflow.identifier
+            },
+            production_release_attributes: {
+              id: config.production_release.id,
+              submissions_attributes: {
+                "0" => {
+                  id: config.production_release.submissions.first.id,
+                  rollout_enabled: "true",
+                  rollout_stages: "1,10,100"
+                }
+              }
+            }
+          }
+        end
+
+        it "saves the edit and preserves the configured RC workflow instead of nulling its name" do
+          original_identifier = config.release_candidate_workflow.identifier
+          original_name = config.release_candidate_workflow.name
+
+          expect(service.call).to be true
+
+          config.reload
+          expect(config.release_candidate_workflow.identifier).to eq(original_identifier)
+          expect(config.release_candidate_workflow.name).to eq(original_name)
+          expect(config.production_release.submissions.first.rollout_stages).to eq([1.0, 10.0, 100.0])
+        end
+      end
+
+      context "when changing the RC workflow to an identifier the provider cannot resolve" do
+        let(:params) do
+          {
+            production_release_enabled: "true",
+            release_candidate_workflow_attributes: {
+              id: config.release_candidate_workflow.id,
+              identifier: "nonexistent_workflow"
+            }
+          }
+        end
+
+        it "still fails validation because the name cannot be resolved" do
+          expect(service.call).to be false
+          expect(service.errors).not_to be_empty
+        end
+      end
+    end
+
     describe "submission data transformation" do
       context "when adding a new submission" do
         let(:params) do

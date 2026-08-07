@@ -88,7 +88,7 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   end
 
   def store_icon
-    "integrations/logo_#{submission.provider}.png"
+    helpers.integration_logo(submission.provider)
   end
 
   def form_factor
@@ -102,7 +102,7 @@ class LiveRelease::ProdRelease::SubmissionComponent < BaseComponent
   end
 
   def submission_logo_bw
-    "logo_#{submission.provider}_bw.svg"
+    helpers.integration_logo_bw(submission.provider)
   end
 
   memoize def available_builds

@@ -10,7 +10,7 @@
                                      html_options: {class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline"})) %>
 
       <div class="flex flex-row gap-x-1.5 items-center">
-        <%= render IconComponent.new("integrations/logo_#{pr.source}.png", size: :md) %>
+        <%= render IconComponent.new(helpers.integration_logo(pr.source), size: :md) %>
 
         <div class="text-xs text-neutral-500 dark:text-white">
           <% if pr.base_ref == pr.head_ref %>

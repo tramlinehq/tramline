@@ -11,7 +11,7 @@
 
     <%= section.F.hidden_field :category, value: "build_channel" %>
 
-    <% section.F.fields_for :providable do |subf| %>
+    <%= section.F.fields_for :providable do |subf| %>
       <%= subf.hidden_field :type, value: provider_type %>
       <div><%= subf.labeled_text_field :key_id, "Key ID", required: true %></div>
       <div><%= subf.labeled_text_field :issuer_id, "Issuer ID", required: true %></div>

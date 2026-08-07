@@ -228,6 +228,8 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
+  def external_build_number_assigned_lazily? = false
+
   def setup_complete?
     repository_config.present?
   end

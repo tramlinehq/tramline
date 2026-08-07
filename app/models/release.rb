@@ -574,11 +574,15 @@ class Release < ApplicationRecord
     return unless active?
     return unless approvals_enabled?
     return true if approvals_overridden?
+    return false unless overridable_by?(who)
 
-    if who == release_pilot
-      update(approval_overridden_by: who)
-      event_stamp!(reason: :approvals_overwritten, kind: :notice)
-    end
+    update(approval_overridden_by: who)
+    event_stamp!(reason: :approvals_overwritten, kind: :notice)
+  end
+
+  # Only the release pilot is allowed to override pending approvals.
+  def overridable_by?(who)
+    who == release_pilot
   end
 
   def approvals_overridden?

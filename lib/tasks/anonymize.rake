@@ -399,6 +399,18 @@ namespace :anonymize do
         end
       end
 
+      table "teamcity_integrations" do
+        continue { |index, record| !TeamcityIntegration.exists?(record["id"]) }
+
+        primary_key "id"
+        whitelist "project_config"
+        whitelist_timestamps
+        anonymize("server_url") { |_field| "https://teamcity.example.com" }
+        anonymize("access_token") { |field| field.value.present? ? SecureRandom.hex(20) : nil }
+        anonymize("cf_access_client_id") { |field| field.value.present? ? SecureRandom.uuid : nil }
+        anonymize("cf_access_client_secret") { |field| field.value.present? ? SecureRandom.hex(20) : nil }
+      end
+
       table "integrations" do
         continue { |index, record| !Integration.exists?(record["id"]) }
 

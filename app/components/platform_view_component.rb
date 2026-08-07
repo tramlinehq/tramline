@@ -3,7 +3,7 @@ class PlatformViewComponent < BaseComponent
     @release = ReleasePresenter.new(release, self)
     @occupy = occupy
     @detail = detail
-    super(@release)
+    super()
   end
 
   delegate :platform_runs, :cross_platform?, to: :@release

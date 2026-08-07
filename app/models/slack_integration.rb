@@ -114,6 +114,13 @@ class SlackIntegration < ApplicationRecord
     cache
       .fetch(channels_cache_key, expires_in: CACHE_EXPIRY) { get_all_channels }
       .map { |c| c.slice(:id, :name, :is_private) }
+  rescue Installations::Error => e
+    # Never cache a partial channel list: if pagination fails midway we would
+    # otherwise persist a truncated list for CACHE_EXPIRY, which silently drops
+    # configured channels (e.g. the train's default notification channel).
+    # cache.fetch does not write when the block raises, so we just log and bail.
+    elog(e, level: :warn)
+    []
   end
 
   def channels_cache_key

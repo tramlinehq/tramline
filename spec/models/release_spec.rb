@@ -743,6 +743,17 @@ describe Release do
 
       expect(release.approval_overridden_by).to eq(who)
     end
+
+    it "returns false and does not override when the user is not the release pilot" do
+      pilot = create(:user, :with_email_authentication, :as_developer)
+      someone_else = create(:user, :with_email_authentication, :as_developer)
+      release = create(:release, release_pilot: pilot)
+
+      result = release.override_approvals(someone_else)
+
+      expect(result).to be(false)
+      expect(release.reload.approval_overridden_by).to be_nil
+    end
   end
 
   describe "#last_applicable_commit" do

@@ -9,7 +9,7 @@ class PlatformOverviewComponent < BaseComponent
     @size = size
     @occupy = occupy
     @show_monitoring = show_monitoring
-    super(@release)
+    super()
   end
 
   attr_reader :release, :occupy, :size, :show_monitoring

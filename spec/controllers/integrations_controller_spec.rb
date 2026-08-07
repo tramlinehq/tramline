@@ -126,4 +126,70 @@ describe IntegrationsController do
       end
     end
   end
+
+  describe "PATCH #rotate" do
+    let(:ios_app) { create(:app, platform: :ios, bundle_identifier: "com.example.rotate", organization: organization) }
+    let(:rotate_params) {
+      {
+        id: integration.id,
+        app_id: ios_app.id,
+        integration: {providable: {key_id: "NEW_KEY", issuer_id: "NEW_ISSUER", p8_key_file: p8_upload}}
+      }
+    }
+    let(:integration) { create(:integration, :with_app_store, integrable: ios_app) }
+    let(:p8_tempfile) {
+      file = Tempfile.new(["key", ".p8"])
+      file.write("key contents")
+      file.rewind
+      file
+    }
+    let(:p8_upload) { Rack::Test::UploadedFile.new(p8_tempfile.path, "application/x-pem-file", false, original_filename: "key.p8") }
+
+    after { p8_tempfile.close! }
+
+    context "when the integration is rotatable and credentials are valid" do
+      it "delegates to providable#rotate and redirects with a success notice" do
+        allow_any_instance_of(AppStoreIntegration)
+          .to receive(:rotate)
+          .with(key_id: "NEW_KEY", issuer_id: "NEW_ISSUER", p8_key: "key contents")
+          .and_return(true)
+
+        patch :rotate, params: rotate_params
+
+        expect(response).to redirect_to(app_integrations_path(ios_app))
+        expect(flash[:notice]).to eq("Credentials were successfully rotated.")
+      end
+    end
+
+    context "when providable#rotate fails" do
+      it "redirects with an error flash" do
+        allow_any_instance_of(AppStoreIntegration).to receive(:rotate) do |inst, **_|
+          inst.errors.add(:base, "boom")
+          false
+        end
+
+        patch :rotate, params: rotate_params
+
+        expect(response).to redirect_to(app_integrations_path(ios_app))
+        expect(flash[:error]).to include("boom")
+      end
+    end
+
+    context "when the integration's providable is not rotatable" do
+      let(:vcs_integration) {
+        create(:integration,
+          status: "connected",
+          category: "version_control",
+          providable: create(:github_integration),
+          integrable: ios_app,
+          metadata: {id: 123})
+      }
+
+      it "raises ActiveRecord::RecordNotFound" do
+        expect {
+          patch :rotate, params: rotate_params.merge(id: vcs_integration.id)
+        }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+  end
 end

@@ -278,6 +278,8 @@ class AppStoreSubmission < StoreSubmission
         promotional_text: metadata.promo_text,
         description: metadata.description,
         keywords: metadata.keywords_joined,
+        support_url: metadata.support_url,
+        marketing_url: metadata.marketing_url,
         locale: metadata.locale
       }
     end

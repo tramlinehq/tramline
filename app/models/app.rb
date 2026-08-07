@@ -109,6 +109,10 @@ class App < ApplicationRecord
     integrations.connected.bitrise_integrations.any?
   end
 
+  def teamcity_connected?
+    integrations.connected.ci_cd.any?(&:teamcity_integration?)
+  end
+
   def bugsnag_connected?
     integrations.bugsnag_integrations.any?
   end
@@ -145,7 +149,7 @@ class App < ApplicationRecord
 
   # NOTE: fetches and uses latest build numbers from the stores, if added,
   # to reduce build upload rejection probability
-  def bump_build_number!(release_version: nil, workflow_build_number: nil)
+  def bump_or_set_build_number!(release_version: nil, workflow_build_number: nil)
     with_lock do
       if workflow_build_number.present?
         self.build_number = workflow_build_number

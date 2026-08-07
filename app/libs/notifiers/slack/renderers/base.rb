@@ -1,6 +1,5 @@
 class Notifiers::Slack::Renderers::Base
   include Rails.application.routes.url_helpers
-  include ActionView::Helpers::JavaScriptHelper
 
   NOTIFIERS_RELATIVE_PATH = "app/views/notifiers/slack".freeze
   ROOT_PATH = Rails.root.join(NOTIFIERS_RELATIVE_PATH)
@@ -55,7 +54,7 @@ class Notifiers::Slack::Renderers::Base
     File.read(File.join(ROOT_PATH, self.class::TEMPLATE_FILE))
   end
 
-  def safe_string(s) = escape_javascript(s)
+  def safe_string(s) = s.to_s.to_json[1..-2]
 
   def google_managed_publishing_text
     "- If managed publishing is disabled, the initial rollout will auto-start upon approval by Google."

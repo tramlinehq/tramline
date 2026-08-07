@@ -3,14 +3,17 @@ class WorkflowRuns::TriggerJob < ApplicationJob
   sidekiq_options retry: 25
 
   RETRYABLE_TRIGGER_FAILURE_REASONS = [
-    :workflow_run_not_runnable
+    :workflow_run_not_runnable,
+    :generic_client_error
   ]
   TRIGGER_FAILURE_REASONS = [
     :workflow_parameter_not_provided,
     :workflow_dispatch_missing,
     :workflow_parameter_invalid,
     :workflow_run_not_found,
-    :workflow_trigger_failed
+    :workflow_trigger_failed,
+    :unauthorized,
+    :forbidden
   ]
 
   sidekiq_retry_in do |count, ex, msg|

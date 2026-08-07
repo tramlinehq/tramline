@@ -67,7 +67,7 @@
       "elements": [
         {
           "type": "plain_text",
-          "text": "Train: <%= @train_name %>",
+          "text": "Train: <%= safe_string(@train_name) %>",
           "emoji": true
         }
       ]

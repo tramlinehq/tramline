@@ -79,7 +79,7 @@
 
     <%= render PlatformViewComponent.new(@release) do |component| %>
       <% if android_metadata %>
-        <% f.F.fields_for :android, android_metadata do |aF| %>
+        <%= f.F.fields_for :android, android_metadata do |aF| %>
           <div class="flex flex-col gap-y-4">
             <%= aF.hidden_field :id %>
             <div data-controller="text-applier" data-text-applier-content-value="<%= android_draft_notes %>">
@@ -103,7 +103,7 @@
       <% end %>
 
       <% if ios_metadata %>
-        <% f.F.fields_for :ios, ios_metadata do |iosF| %>
+        <%= f.F.fields_for :ios, ios_metadata do |iosF| %>
           <div class="flex flex-col gap-y-4">
             <%= iosF.hidden_field :id %>
             <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_notes %>">
@@ -165,6 +165,22 @@
                                                                   max_length: description_max_length,
                                                                   existing_value: ios_metadata.description,
                                                                   label_type: :base) %>
+              </div>
+            </div>
+            <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_support_url %>">
+              <% if ios_has_draft_support_url? %>
+                <%= render partial: "release_metadata/draft_alert", locals: {title: "Unsaved support URL", field_name: "support URL"} %>
+              <% end %>
+              <div data-text-applier-target="input">
+                <%= iosF.labeled_text_field :support_url, "Support URL", maxlength: url_max_length %>
+              </div>
+            </div>
+            <div data-controller="text-applier" data-text-applier-content-value="<%= ios_draft_marketing_url %>">
+              <% if ios_has_draft_marketing_url? %>
+                <%= render partial: "release_metadata/draft_alert", locals: {title: "Unsaved marketing URL", field_name: "marketing URL"} %>
+              <% end %>
+              <div data-text-applier-target="input">
+                <%= iosF.labeled_text_field :marketing_url, "Marketing URL", maxlength: url_max_length %>
               </div>
             </div>
           </div>

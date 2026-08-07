@@ -9,7 +9,7 @@
 
     <%= section.F.hidden_field :category, value: category %>
 
-    <% section.F.fields_for :providable do |subf| %>
+    <%= section.F.fields_for :providable do |subf| %>
       <%= subf.hidden_field :type, value: integration.providable_type %>
       <div><%= subf.labeled_text_field :project_number, "Project Number", required: true %></div>
       <div><%= subf.labeled_file_field :json_key_file, "Upload Service Account JSON Key", "Only .json files.", accept: "application/json", required: true %></div>

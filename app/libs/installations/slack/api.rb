@@ -126,7 +126,12 @@ module Installations
       }
 
       execute(:get, LIST_CHANNELS_URL, params)
-        .then { |response| response.slice("channels", "response_metadata") }
+        .then { |response|
+          unless response["ok"]
+            raise Error.new("Slack API - Error listing channels", reason: response["error"])
+          end
+          response.slice("channels", "response_metadata")
+        }
         .then { |responses|
           {channels: Installations::Response::Keys.transform(responses["channels"], transforms),
            next_cursor: responses.dig("response_metadata", "next_cursor")}

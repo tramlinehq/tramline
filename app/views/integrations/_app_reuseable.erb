@@ -4,7 +4,7 @@
       {
         title: integration.app.name,
         subtitle: integration.providable.connection_data,
-        icon: "integrations/logo_#{provider}.png",
+        icon: integration_logo(provider),
         opt_name: :existing_integration_id,
         opt_value: integration.id,
         options: {checked: i == 0}

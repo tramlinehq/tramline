@@ -44,7 +44,7 @@
             <% end %>
 
             <%= render BadgeComponent.new(text: submission.submission_channel.name.truncate(20), kind: :badge) do |badge| %>
-              <% badge.with_icon("integrations/logo_#{submission.provider}.png") %>
+              <% badge.with_icon(helpers.integration_logo(submission.provider)) %>
             <% end %>
           <% end %>
         </div>

@@ -59,6 +59,11 @@ class ReleasesController < SignedInApplicationController
   end
 
   def override_approvals
+    unless @release.overridable_by?(current_user)
+      redirect_back fallback_location: root_path, flash: {error: "Only the release pilot can override approvals."}
+      return
+    end
+
     if @release.override_approvals(current_user)
       redirect_to release_approval_items_path(@release), notice: "Approvals have been overridden. The release can move ahead."
     else

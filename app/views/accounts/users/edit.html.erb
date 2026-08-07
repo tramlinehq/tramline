@@ -25,7 +25,7 @@
         <div class="grid gap-4">
           <% @user.memberships.each do |membership| %>
             <% org = membership.organization %>
-            <% section.F.fields_for :memberships, membership do |membership_fields| %>
+            <%= section.F.fields_for :memberships, membership do |membership_fields| %>
               <%= membership_fields.hidden_field :id, value: membership.id %>
               <% if membership.team_set? %>
                 <%= render TooltipComponent.new("You cannot change your team once it is set.", placement: "bottom") do |tooltip| %>
