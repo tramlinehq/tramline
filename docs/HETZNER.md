@@ -83,12 +83,22 @@ systemctl start fail2ban
 
 ## 5. Docker
 
-Kamal can install Docker automatically on first `kamal setup`, but if you
-want to do it manually:
+`kamal setup` bootstraps Docker on a fresh box, but it does so over SSH as the
+`deploy` user, and the install needs root — so `deploy` must have
+**passwordless sudo**. The hardened user from §2 is only in the `sudo` group,
+so a non-interactive `kamal setup` would stall on a password prompt. Grant it:
+
+```bash
+echo 'deploy ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/deploy
+sudo chmod 440 /etc/sudoers.d/deploy
+```
+
+Alternatively, install Docker manually and skip the passwordless-sudo grant —
+`kamal setup` then sees Docker already present:
 
 ```bash
 curl -fsSL https://get.docker.com | sh
-usermod -aG docker deploy
+usermod -aG docker deploy   # kamal runs docker as deploy; re-login to apply
 ```
 
 ## 6. Data Directories
