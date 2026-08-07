@@ -47,14 +47,19 @@ accessories:
     env:
       clear:
         RACK_ENV: production
-        SENTRY_DSN: <%= ENV["APPLELINK_SENTRY_DSN"] %>
+        # applelink's own Sentry project (submit-only DSN, safe in config).
+        # kamal does not expose secrets-file vars to deploy.yml ERB, so a
+        # committed literal is the reliable way to set this per destination.
+        SENTRY_DSN: https://b63680dcba62956df297870ae0795c72@o1302950.ingest.sentry.io/4505862044975104
     options:
       restart: always
       memory: 512m
       cpus: 0.5
 
+<% unless ENV["SKIP_DOZZLE"] %>
   dozzle:
     proxy:
       ssl: true
       host: logs.tramline.site
       app_port: 8080
+<% end %>

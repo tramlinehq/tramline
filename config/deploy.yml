@@ -137,8 +137,8 @@ accessories:
         RACK_ENV: production
         # applelink reports to its OWN Sentry project — a different DSN than
         # tramline's, so it can't share the app's SENTRY_DSN secret. Each
-        # destination overlay pulls its APPLELINK_SENTRY_DSN from the secrets
-        # file into this container's SENTRY_DSN via ERB.
+        # destination overlay sets SENTRY_DSN here as a literal (submit-only
+        # DSN); kamal does not expose secrets-file vars to deploy.yml ERB.
       secret:
         - AUTH_ISSUER
         - AUTH_SECRET
@@ -151,6 +151,9 @@ accessories:
   # Read-only log viewer, behind Dozzle's built-in simple auth.
   # Credentials live in users.yml on the host (see docs/HETZNER.md), never
   # in the repo. Served over TLS on its own subdomain via kamal-proxy.
+  # Set SKIP_DOZZLE=1 to leave it out (e.g. first bring-up before users.yml
+  # exists) — the accessory refuses to boot without it.
+<% unless ENV["SKIP_DOZZLE"] %>
   dozzle:
     image: amir20/dozzle:latest
     host: <%= ENV["HETZNER_IP"] %>
@@ -169,3 +172,4 @@ accessories:
       ssl: true
       host: logs.tramline.dev
       app_port: 8080
+<% end %>
