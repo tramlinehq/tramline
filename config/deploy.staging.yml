@@ -8,6 +8,10 @@ servers:
       memory: 3g
       cpus: 1
 
+builder:
+  args:
+    RAILS_PIPELINE_ENV: staging
+
 proxy:
   ssl: true
   host: tramline.site

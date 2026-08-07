@@ -50,8 +50,13 @@ RUN GIT_REF=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown") && \
 
 RUN bundle exec bootsnap precompile app/ lib/
 
+# Selects which credentials file assets:precompile decrypts. Must match the
+# key passed as RAILS_MASTER_KEY (staging.key ↔ staging.yml.enc, etc.); set
+# per destination via the builder args in config/deploy(.staging).yml.
+ARG RAILS_PIPELINE_ENV=production
 RUN --mount=type=secret,id=RAILS_MASTER_KEY \
     RAILS_MASTER_KEY="$(cat /run/secrets/RAILS_MASTER_KEY)" \
+    RAILS_PIPELINE_ENV="${RAILS_PIPELINE_ENV}" \
     DESCOPE_PROJECT_ID="build-placeholder" \
     DESCOPE_MANAGEMENT_KEY="build-placeholder" \
     ./bin/rails assets:precompile
