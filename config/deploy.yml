@@ -132,9 +132,9 @@ accessories:
         # (config.enabled_environments = %w[production]).
         RACK_ENV: production
         # applelink reports to its OWN Sentry project — a different DSN than
-        # tramline's, so it can't share the app's SENTRY_DSN secret. Its value
-        # differs per environment, so each destination overlay sets it (a
-        # submit-only DSN, safe to keep in the config rather than secrets).
+        # tramline's, so it can't share the app's SENTRY_DSN secret. Each
+        # destination overlay pulls its APPLELINK_SENTRY_DSN from the secrets
+        # file into this container's SENTRY_DSN via ERB.
       secret:
         - AUTH_ISSUER
         - AUTH_SECRET
