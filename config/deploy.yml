@@ -36,9 +36,13 @@ builder:
   dockerfile: web.Dockerfile
   secrets:
     - RAILS_MASTER_KEY
+<% if ENV["GITHUB_ACTIONS"] %>
+  # gha cache only works inside GitHub Actions (needs ACTIONS_CACHE_URL /
+  # ACTIONS_RUNTIME_TOKEN). Omitted for local builds so they don't fail.
   cache:
     type: gha
     options: mode=max
+<% end %>
 
 registry:
   server: ghcr.io
