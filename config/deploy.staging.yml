@@ -40,8 +40,8 @@ accessories:
       memory: 512m
       cpus: 0.5
 
-  portainer:
+  dozzle:
     proxy:
-      ssl: false
-      host: <%= ENV["HETZNER_IP"] %>
-      app_port: 9000
+      ssl: true
+      host: logs.staging.tramline.dev
+      app_port: 8080

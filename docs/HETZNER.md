@@ -99,20 +99,32 @@ Create directories for persistent accessory data:
 mkdir -p /home/deploy/tramline-db-data
 mkdir -p /home/deploy/tramline-redis-cache-data
 mkdir -p /home/deploy/tramline-redis-sidekiq-data
-mkdir -p /home/deploy/tramline-portainer-data
+mkdir -p /home/deploy/tramline-dozzle-data
 chown -R deploy:deploy /home/deploy/tramline-*
+```
+
+Generate the Dozzle login (simple auth reads `/data/users.yml`):
+
+```bash
+docker run --rm amir20/dozzle generate admin --password '<pick-a-password>' \
+  --name "Admin" > /home/deploy/tramline-dozzle-data/users.yml
+chown deploy:deploy /home/deploy/tramline-dozzle-data/users.yml
 ```
 
 ## 7. DNS
 
 Point these records to `<HETZNER_IP>`:
 
-| Record | Domain       | Value          |
-|--------|-------------|----------------|
-| A      | tramline.dev | `<HETZNER_IP>` |
-| A      | tramline.in  | `<HETZNER_IP>` |
+| Record | Domain            | Value          |
+|--------|-------------------|----------------|
+| A      | tramline.dev      | `<HETZNER_IP>` |
+| A      | tramline.in       | `<HETZNER_IP>` |
+| A      | logs.tramline.dev | `<HETZNER_IP>` |
 
 Lower TTL to 60s before migration, raise to 3600 after.
+
+`logs.tramline.dev` fronts Dozzle (kamal-proxy terminates TLS and issues a
+Let's Encrypt cert for it automatically).
 
 ## 8. GitHub Secrets
 
@@ -162,7 +174,7 @@ export HETZNER_IP=<your-ip>
 # Bootstrap the server and deploy everything
 kamal setup
 
-# Boot accessories (Postgres, Redis, Applelink, Portainer)
+# Boot accessories (Postgres, Redis, Applelink, Dozzle)
 kamal accessory boot all
 
 # Deploy the app
@@ -204,6 +216,13 @@ kamal accessory reboot <name>
 # Check app status
 kamal details
 ```
+
+### Dozzle (log viewer)
+
+Dozzle is served at `https://logs.tramline.dev` behind its built-in simple
+auth. Log in with the credentials from `users.yml` (generated in step 6).
+To rotate them, regenerate `users.yml` on the host and
+`kamal accessory reboot dozzle`.
 
 ## 12. Backups
 

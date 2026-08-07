@@ -136,16 +136,24 @@ accessories:
       memory: 2g
       cpus: 1
 
-  portainer:
-    image: portainer/portainer-ce:latest
+  # Read-only log viewer, behind Dozzle's built-in simple auth.
+  # Credentials live in users.yml on the host (see docs/HETZNER.md), never
+  # in the repo. Served over TLS on its own subdomain via kamal-proxy.
+  dozzle:
+    image: amir20/dozzle:latest
     host: <%= ENV["HETZNER_IP"] %>
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     directories:
-      - tramline-portainer-data:/data
+      - tramline-dozzle-data:/data
+    env:
+      clear:
+        DOZZLE_AUTH_PROVIDER: simple
     options:
       restart: always
+      memory: 128m
+      cpus: 0.25
     proxy:
       ssl: true
-      host: tramline.site
-      app_port: 9000
+      host: logs.tramline.dev
+      app_port: 8080
