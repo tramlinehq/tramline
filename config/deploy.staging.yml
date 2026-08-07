@@ -10,7 +10,7 @@ servers:
 
 proxy:
   ssl: true
-  host: staging.tramline.dev
+  host: tramline.site
 
 accessories:
   db:
@@ -43,5 +43,5 @@ accessories:
   dozzle:
     proxy:
       ssl: true
-      host: logs.staging.tramline.dev
+      host: logs.tramline.site
       app_port: 8080
