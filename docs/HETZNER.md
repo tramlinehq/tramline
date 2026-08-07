@@ -155,7 +155,7 @@ Add these secrets to the GitHub repository (Settings > Secrets > Actions):
 - `HOST_NAME` — `tramline.dev`
 - `DESCOPE_PROJECT_ID`
 - `DESCOPE_MANAGEMENT_KEY`
-- `APPLELINK_URL` — `http://tramline-applelink:9292`
+- `APPLELINK_URL` — `http://tramline-applelink:4000`
 - `SENTRY_DSN`
 - `FRONTEND_SENTRY_DSN`
 - `SENTRY_SECURITY_HEADER_ENDPOINT`
@@ -167,23 +167,34 @@ Add these secrets to the GitHub repository (Settings > Secrets > Actions):
 
 ## 9. First Deploy
 
+`kamal setup` is the whole first run in one command: it installs Docker,
+boots kamal-proxy, boots **all** accessories (Postgres, Redis ×2, Applelink,
+Dozzle), then builds, pushes, and deploys the app. You do NOT run
+`kamal accessory boot` or `kamal deploy` separately on a first run — those are
+for later, incremental changes.
+
 ```bash
 # From your local machine (with Kamal installed and SSH key configured)
 export HETZNER_IP=<your-ip>
+export KAMAL_REGISTRY_PASSWORD=<ghcr-token>   # read:packages, to pull the image
 
-# Bootstrap the server and deploy everything
+# Production (config/deploy.yml → tramline.dev):
 kamal setup
 
-# Boot accessories (Postgres, Redis, Applelink, Dozzle)
-kamal accessory boot all
-
-# Deploy the app
-kamal deploy
-
-# For staging (uses config/deploy.staging.yml overlay):
+# Staging (config/deploy.yml + config/deploy.staging.yml → tramline.site):
 kamal setup -d staging
-kamal deploy -d staging
 ```
+
+Prerequisites before the first `kamal setup`:
+
+- `.kamal/secrets` (or `.kamal/secrets.staging`) filled in — never committed.
+- DNS for the app host **and** `logs.<host>` pointing at the server, so
+  kamal-proxy can issue Let's Encrypt certs.
+- Dozzle's `users.yml` created on the box (step 6), or the `dozzle` accessory
+  boot aborts mid-setup.
+
+Later, incremental operations (see §11): `kamal deploy` to ship new code,
+`kamal accessory reboot <name>` to restart one accessory.
 
 ## 10. Data Migration (one-time)
 
