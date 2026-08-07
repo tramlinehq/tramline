@@ -63,6 +63,11 @@ RUN --mount=type=secret,id=RAILS_MASTER_KEY \
 
 FROM base
 
+# Links the pushed ghcr package to the repo, so fine-grained PAT permissions
+# (Repository → Packages: read/write) are inherited. Without this the package
+# is org-owned and repo-unlinked, and fine-grained tokens get 403 on push.
+LABEL org.opencontainers.image.source="https://github.com/tramlinehq/tramline"
+
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
