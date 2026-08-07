@@ -126,7 +126,28 @@ Lower TTL to 60s before migration, raise to 3600 after.
 `logs.tramline.dev` fronts Dozzle (kamal-proxy terminates TLS and issues a
 Let's Encrypt cert for it automatically).
 
-## 8. GitHub Secrets
+## 8. Secrets model (local vs CI)
+
+Kamal loads secret files in order, skipping any that are absent, with later
+files overriding earlier ones:
+
+1. `.kamal/secrets-common` — **committed**, reference-only (`KEY=$KEY`, no
+   literal values). Lists every key any destination needs.
+2. `.kamal/secrets.<destination>` — **gitignored**, real literal values.
+
+This gives one manifest that works both ways:
+
+- **Local** — `.kamal/secrets.staging` exists on your machine and overrides
+  the references, so `kamal … -d staging` uses your literal values.
+- **CI** — the gitignored file isn't in the checkout, so `secrets-common`'s
+  `$VARS` resolve straight from the environment, which the workflow populates
+  from GitHub Actions secrets.
+
+When you add a new secret, add a `KEY=$KEY` line to `secrets-common`, the real
+value to your local `secrets.<destination>`, and (for CI) a GitHub Actions
+secret + a line in the workflow's `env:` block.
+
+### GitHub Secrets
 
 Add these secrets to the GitHub repository (Settings > Secrets > Actions):
 
