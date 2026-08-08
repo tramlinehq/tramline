@@ -75,3 +75,4 @@ accessories:
       cpus: 0.5
       cap-add: SYS_PTRACE
       security-opt: apparmor=unconfined
+      hostname: tramline-staging
