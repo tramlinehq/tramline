@@ -182,3 +182,41 @@ accessories:
       healthcheck:
         path: /healthcheck
 <% end %>
+
+  # Host + container metrics WITH history (Dozzle's metrics are live-only).
+  # /var/lib/netdata holds the time-series DB, persisted so history survives
+  # restarts and redeploys.
+  #
+  # Deliberately NOT behind kamal-proxy: the agent dashboard has no built-in
+  # auth, and claiming it to Netdata Cloud uses an OUTBOUND connection, so it
+  # needs no inbound exposure. View it (SSO-gated) at app.netdata.cloud.
+  # The published port is localhost-only, for `ssh -L` debugging.
+  netdata:
+    image: netdata/netdata:stable
+    host: <%= ENV["HETZNER_IP"] %>
+    port: "127.0.0.1:19999:19999"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    directories:
+      - netdata-lib:/var/lib/netdata
+      - netdata-cache:/var/cache/netdata
+      - netdata-config:/etc/netdata
+    env:
+      clear:
+        # gid of the host docker group, so netdata can read the socket and
+        # label container metrics with real names
+        PGID: "989"
+        NETDATA_CLAIM_URL: https://app.netdata.cloud
+      secret:
+        - NETDATA_CLAIM_TOKEN
+    options:
+      restart: always
+      memory: 768m
+      cpus: 0.5
+      cap-add: SYS_PTRACE
+      security-opt: apparmor=unconfined

@@ -67,3 +67,11 @@ accessories:
       host: logs.tramline.site
       app_port: 8080
 <% end %>
+
+  netdata:
+    options:
+      restart: always
+      memory: 512m
+      cpus: 0.5
+      cap-add: SYS_PTRACE
+      security-opt: apparmor=unconfined

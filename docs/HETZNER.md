@@ -273,6 +273,35 @@ auth. Log in with the credentials from `users.yml` (generated in step 6).
 To rotate them, regenerate `users.yml` on the host and
 `kamal accessory reboot dozzle`.
 
+### Netdata (metrics with history)
+
+Dozzle shows live logs but its metrics are real-time only, with no retention.
+Netdata covers host + container metrics with history, kept in
+`/var/lib/netdata` on a persistent volume so it survives restarts.
+
+It is intentionally **not** exposed through kamal-proxy. The agent dashboard
+has no built-in authentication, and it doesn't need inbound access: claiming
+the node opens an **outbound** connection to Netdata Cloud, so you view
+metrics — SSO-gated — at [app.netdata.cloud](https://app.netdata.cloud).
+
+Set `NETDATA_CLAIM_TOKEN` in the secrets file first (app.netdata.cloud →
+Space settings → Connect Nodes), then:
+
+```bash
+kamal accessory boot netdata -d staging
+```
+
+The container also publishes `127.0.0.1:19999` for local debugging:
+
+```bash
+ssh -L 19999:localhost:19999 deploy@<HETZNER_IP>
+# then open http://localhost:19999
+```
+
+Retention is governed by the dbengine settings in `/etc/netdata/netdata.conf`
+(also on a persistent volume, so edits survive). Defaults give roughly days at
+per-second resolution and up to a year at coarser tiers.
+
 ## 12. Backups
 
 Set up automated Postgres backups. A simple cron on the server:
