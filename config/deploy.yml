@@ -212,6 +212,11 @@ accessories:
       - netdata-lib:/var/lib/netdata
       - netdata-cache:/var/cache/netdata
       - netdata-config:/etc/netdata
+    files:
+      # Enables the Postgres collector (needs credentials, so unlike Redis it
+      # is never auto-discovered). ERB-rendered at deploy time from the secrets
+      # file, so no password is committed.
+      - config/netdata/go.d/postgres.conf.erb:/etc/netdata/go.d/postgres.conf
     env:
       clear:
         # gid of the host docker group, so netdata can read the socket and
@@ -222,6 +227,8 @@ accessories:
         NETDATA_CLAIM_ROOMS: 67bcfbf4-a218-4e32-af35-a5a43dbced6e
       secret:
         - NETDATA_CLAIM_TOKEN
+        # consumed by the postgres.conf.erb above
+        - DATABASE_URL
     options:
       restart: always
       memory: 768m
