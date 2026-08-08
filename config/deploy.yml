@@ -177,4 +177,8 @@ accessories:
       ssl: true
       host: logs.tramline.dev
       app_port: 8080
+      # Dozzle serves /healthcheck, not kamal-proxy's default /up — without
+      # this the health check never passes and the boot hangs until timeout.
+      healthcheck:
+        path: /healthcheck
 <% end %>

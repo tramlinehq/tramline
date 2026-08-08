@@ -103,23 +103,30 @@ usermod -aG docker deploy   # kamal runs docker as deploy; re-login to apply
 
 ## 6. Data Directories
 
-Create directories for persistent accessory data:
+Kamal creates the accessory data directories itself on first boot, nesting
+them under a per-accessory folder: a `directories: foo-data:/data` entry
+mounts `~/<accessory-container-name>/foo-data`, e.g.
+
+| Accessory     | Host path                                        |
+|---------------|--------------------------------------------------|
+| db            | `~/tramline-db/tramline-db-data`                 |
+| redis-cache   | `~/tramline-redis-cache/tramline-redis-cache-data` |
+| redis-sidekiq | `~/tramline-redis-sidekiq/tramline-redis-sidekiq-data` |
+| dozzle        | `~/tramline-dozzle/tramline-dozzle-data`         |
+
+Dozzle is the one that needs a file in place *before* it boots: with
+`DOZZLE_AUTH_PROVIDER=simple` it exits (crash-looping) unless it finds
+`/data/users.yml`. Note the nested path — putting it in
+`~/tramline-dozzle-data/` instead will NOT be mounted:
 
 ```bash
-mkdir -p /home/deploy/tramline-db-data
-mkdir -p /home/deploy/tramline-redis-cache-data
-mkdir -p /home/deploy/tramline-redis-sidekiq-data
-mkdir -p /home/deploy/tramline-dozzle-data
-chown -R deploy:deploy /home/deploy/tramline-*
+mkdir -p /home/deploy/tramline-dozzle/tramline-dozzle-data
+sudo docker run --rm amir20/dozzle generate admin --password '<pick-a-password>' \
+  --name "Admin" > /home/deploy/tramline-dozzle/tramline-dozzle-data/users.yml
 ```
 
-Generate the Dozzle login (simple auth reads `/data/users.yml`):
-
-```bash
-docker run --rm amir20/dozzle generate admin --password '<pick-a-password>' \
-  --name "Admin" > /home/deploy/tramline-dozzle-data/users.yml
-chown deploy:deploy /home/deploy/tramline-dozzle-data/users.yml
-```
+(`sudo` because the hardened `deploy` user isn't in the `docker` group; the
+redirect still writes the file as `deploy`.)
 
 ## 7. DNS
 
