@@ -220,8 +220,11 @@ accessories:
     env:
       clear:
         # gid of the host docker group, so netdata can read the socket and
-        # label container metrics with real names
-        PGID: "989"
+        # label container metrics with real names. This differs per host
+        # (install order decides it), so provisioning pins it to 999
+        # (docs §5) and each destination can override via NETDATA_DOCKER_GID.
+        # Check a box with: stat -c %g /var/run/docker.sock
+        PGID: "<%= ENV.fetch('NETDATA_DOCKER_GID', '999') %>"
         NETDATA_CLAIM_URL: https://app.netdata.cloud
         # Netdata Cloud room to join on claim (an identifier, not a credential)
         NETDATA_CLAIM_ROOMS: 67bcfbf4-a218-4e32-af35-a5a43dbced6e

@@ -101,6 +101,20 @@ curl -fsSL https://get.docker.com | sh
 usermod -aG docker deploy   # kamal runs docker as deploy; re-login to apply
 ```
 
+**Pin the docker group GID before installing Docker.** Otherwise it's
+assigned whatever GID is free (staging ended up 989), which makes Netdata's
+`PGID` host-specific. Creating the group with a fixed GID first keeps config
+identical across boxes (the netdata accessory defaults `PGID` to 999):
+
+```bash
+groupadd -g 999 docker    # then install Docker; it reuses this group
+```
+
+If a box already has a different GID (check `stat -c %g /var/run/docker.sock`),
+either leave it and override per destination (`NETDATA_DOCKER_GID`, or a
+`netdata.env.clear.PGID` entry in the overlay — staging does the latter), or
+`groupmod -g 999 docker && systemctl restart docker`.
+
 ## 6. Data Directories
 
 Kamal creates the accessory data directories itself on first boot, nesting
@@ -205,9 +219,29 @@ Add these secrets to the GitHub repository (Settings > Secrets > Actions):
 
 ## 9. First Deploy
 
+### Local toolchain
+
+Deploys run from your machine (or CI). Locally you need Ruby matching
+`.ruby-version` (3.4.9) and the kamal gem:
+
+```bash
+asdf install ruby 3.4.9      # if not already installed
+gem install kamal            # kamal 2.x; runs the amd64 build via qemu locally
+```
+
+The **`KAMAL_REGISTRY_PASSWORD`** (ghcr push/pull) must be a **classic** PAT
+with `write:packages`, or a `gh auth refresh -s write:packages` token —
+**not** a fine-grained PAT. Fine-grained tokens 403 on org-owned container
+packages even with Packages: write, because ghcr inherits permissions from a
+linked repo; `web.Dockerfile` sets `org.opencontainers.image.source` to link
+the package, but a classic token is still the reliable choice. (CI uses the
+built-in `GITHUB_TOKEN` and doesn't hit this.)
+
+### Running it
+
 `kamal setup` is the whole first run in one command: it installs Docker,
 boots kamal-proxy, boots **all** accessories (Postgres, Redis ×2, Applelink,
-Dozzle), then builds, pushes, and deploys the app. You do NOT run
+Dozzle, Netdata), then builds, pushes, and deploys the app. You do NOT run
 `kamal accessory boot` or `kamal deploy` separately on a first run — those are
 for later, incremental changes.
 
@@ -228,8 +262,13 @@ Prerequisites before the first `kamal setup`:
 - `.kamal/secrets` (or `.kamal/secrets.staging`) filled in — never committed.
 - DNS for the app host **and** `logs.<host>` pointing at the server, so
   kamal-proxy can issue Let's Encrypt certs.
-- Dozzle's `users.yml` created on the box (step 6), or the `dozzle` accessory
-  boot aborts mid-setup.
+- Dozzle's `users.yml` created on the box **at the mounted path**
+  `~/tramline-dozzle/tramline-dozzle-data/users.yml` (step 6), or the `dozzle`
+  accessory crash-loops on boot. On a very first `kamal setup`, before that
+  file exists, pass `SKIP_DOZZLE=1` and boot Dozzle afterwards:
+  `kamal accessory boot dozzle -d <dest>`.
+- `NETDATA_CLAIM_TOKEN` in the secrets file (app.netdata.cloud → Connect
+  Nodes), or Netdata boots but won't appear in Cloud.
 
 Later, incremental operations (see §11): `kamal deploy` to ship new code,
 `kamal accessory reboot <name>` to restart one accessory.
