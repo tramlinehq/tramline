@@ -190,7 +190,6 @@ GEM
       rainbow
       rubocop (>= 1)
       smart_properties
-    error_highlight (0.7.2)
     erubi (1.13.1)
     et-orbi (1.4.0)
       tzinfo
@@ -830,7 +829,6 @@ DEPENDENCIES
   down (~> 5.3)
   easymon (~> 1.6)
   erb_lint
-  error_highlight
   factory_bot_rails
   faker
   faraday-retry (~> 2.0)
