@@ -33,7 +33,6 @@ proxy:
 
 builder:
   arch: amd64
-  dockerfile: web.Dockerfile
   args:
     # assets:precompile decrypts config/credentials/<RAILS_PIPELINE_ENV>.yml.enc
     # with RAILS_MASTER_KEY; keep this in sync with the key each destination

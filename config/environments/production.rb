@@ -51,7 +51,7 @@ Rails.application.configure do
   config.force_ssl = true
   config.ssl_options = {
     hsts: {subdomains: true, preload: true},
-    redirect: {exclude: ->(request) { request.path == "/up" }}
+    redirect: {exclude: ->(request) { request.path == "/up" }} # Kamal healthchecks during deploy, needs a TLS-free response
   }
 
   # Include generic and useful information about system operation, but avoid logging too much

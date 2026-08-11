@@ -1,67 +1,81 @@
 # syntax = docker/dockerfile:1
 
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
-# docker build -t my-app .
-# docker run -d -p 80:80 -p 443:443 --name my-app -e RAILS_MASTER_KEY=<value from config/master.key> my-app
+ARG RUBY_VERSION=3.4.9
+ARG DISTRO_NAME=trixie
+FROM ruby:$RUBY_VERSION-slim-$DISTRO_NAME AS base
+ARG DISTRO_NAME
 
-# Make sure RUBY_VERSION matches the Ruby version in .ruby-version
-ARG RUBY_VERSION=3.2.0
-FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
-
-# Rails app lives here
 WORKDIR /rails
 
-# Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 netcat-openbsd && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Set production environment
+ARG PG_MAJOR=14
+RUN curl -sSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
+    gpg --dearmor -o /usr/share/keyrings/postgres-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/postgres-archive-keyring.gpg] https://apt.postgresql.org/pub/repos/apt/" \
+    $DISTRO_NAME-pgdg main $PG_MAJOR | tee /etc/apt/sources.list.d/postgres.list > /dev/null
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=tmpfs,target=/var/log \
+    apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+    libpq-dev \
+    postgresql-client-$PG_MAJOR
+
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development"
+    BUNDLE_WITHOUT="development" \
+    RAILS_SERVE_STATIC_FILES=true
 
-# Throw-away build stage to reduce size of final image
 FROM base AS build
 
-# Install packages needed to build gems
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git pkg-config && \
+    apt-get install --no-install-recommends -y build-essential pkg-config libyaml-dev git && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Install application gems
-COPY Gemfile Gemfile.lock ./
+COPY .ruby-version Gemfile Gemfile.lock ./
 RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-# Copy application code
 COPY . .
 
-# Precompile bootsnap code for faster boot times
+RUN GIT_REF=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown") && \
+    GIT_REF_AT=$(git show -s --format=%cI HEAD 2>/dev/null || date -u +%FT%T%z) && \
+    echo "GIT_REF=${GIT_REF}" > /rails/.git_ref && \
+    echo "GIT_REF_AT=${GIT_REF_AT}" >> /rails/.git_ref
+
 RUN bundle exec bootsnap precompile app/ lib/
 
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+# Selects which credentials file assets:precompile decrypts. Must match the
+# key passed as RAILS_MASTER_KEY (staging.key ↔ staging.yml.enc, etc.); set
+# per destination via the builder args in config/deploy(.staging).yml.
+ARG RAILS_PIPELINE_ENV=production
+RUN --mount=type=secret,id=RAILS_MASTER_KEY \
+    RAILS_MASTER_KEY="$(cat /run/secrets/RAILS_MASTER_KEY)" \
+    RAILS_PIPELINE_ENV="${RAILS_PIPELINE_ENV}" \
+    DESCOPE_PROJECT_ID="build-placeholder" \
+    DESCOPE_MANAGEMENT_KEY="build-placeholder" \
+    ./bin/rails assets:precompile
 
-
-# Final stage for app image
 FROM base
 
-# Copy built artifacts: gems, application
+# Links the pushed ghcr package to the repo, so fine-grained PAT permissions
+# (Repository → Packages: read/write) are inherited. Without this the package
+# is org-owned and repo-unlinked, and fine-grained tokens get 403 on push.
+LABEL org.opencontainers.image.source="https://github.com/tramlinehq/tramline"
+
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
-# Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
-    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
+    useradd --system --uid 1000 --gid 1000 --create-home --shell /bin/bash rails && \
     chown -R rails:rails db log storage tmp
 USER 1000:1000
 
-# Entrypoint prepares the database.
-ENTRYPOINT ["/rails/bin/setup.docker.prod"]
-
-# Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD ["./bin/rails", "server"]
+
+ENTRYPOINT ["/rails/bin/setup.docker.prod"]

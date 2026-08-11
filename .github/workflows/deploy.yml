@@ -7,8 +7,9 @@ on:
         description: "Deploy destination"
         type: choice
         options:
-          - staging
-          - production
+          - staging            # Kamal → Hetzner staging
+          - production         # Kamal → Hetzner production
+          - render-production  # legacy Render deploy hooks (until cutover)
         default: staging
 
 # One in-flight deploy per destination.
@@ -17,7 +18,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Legacy Render deploy — kept alive during the Hetzner migration so we can
+  # still ship the current production (Render) until DNS cutover. Triggers
+  # Render's deploy hooks; secrets are repo-level (not a GitHub Environment).
+  render:
+    if: github.event.inputs.destination == 'render-production'
+    runs-on: ubuntu-latest
+    steps:
+      - name: site-jobs
+        uses: wei/curl@v1
+        with:
+          args: -X POST https://api.render.com/deploy/${{ secrets.SITE_JOBS_PRODUCTION_SERVICE_ID }}?key=${{ secrets.SITE_JOBS_PRODUCTION_API_KEY }}
+      - name: site-web
+        uses: wei/curl@v1
+        with:
+          args: -X POST https://api.render.com/deploy/${{ secrets.SITE_WEB_PRODUCTION_SERVICE_ID }}?key=${{ secrets.SITE_WEB_PRODUCTION_API_KEY }}
+
   deploy:
+    # Kamal path (Hetzner). Skipped when targeting legacy Render.
+    if: github.event.inputs.destination != 'render-production'
     runs-on: ubuntu-latest
 
     # Secrets resolve from this GitHub Environment, so staging and production

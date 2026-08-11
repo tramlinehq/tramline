@@ -60,13 +60,11 @@ accessories:
       memory: 512m
       cpus: 0.5
 
-<% unless ENV["SKIP_DOZZLE"] %>
   dozzle:
     proxy:
       ssl: true
       host: logs.tramline.site
       app_port: 8080
-<% end %>
 
   netdata:
     env:

@@ -233,7 +233,7 @@ The **`KAMAL_REGISTRY_PASSWORD`** (ghcr push/pull) must be a **classic** PAT
 with `write:packages`, or a `gh auth refresh -s write:packages` token —
 **not** a fine-grained PAT. Fine-grained tokens 403 on org-owned container
 packages even with Packages: write, because ghcr inherits permissions from a
-linked repo; `web.Dockerfile` sets `org.opencontainers.image.source` to link
+linked repo; `Dockerfile` sets `org.opencontainers.image.source` to link
 the package, but a classic token is still the reliable choice. (CI uses the
 built-in `GITHUB_TOKEN` and doesn't hit this.)
 
