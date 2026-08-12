@@ -8,3 +8,5 @@ ActiveRecord.yaml_column_permitted_classes |= [
   ActiveSupport::TimeWithZone, ActiveSupport::TimeZone,
   ActiveSupport::HashWithIndifferentAccess
 ]
+
+PaperTrail.config.version_limit = 10
