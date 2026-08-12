@@ -4,12 +4,12 @@
 #
 #  id              :uuid             not null, primary key
 #  accepted_at     :datetime
-#  email           :string           indexed => [organization_id]
+#  email           :string           uniquely indexed => [organization_id]
 #  role            :string
 #  token           :string
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  organization_id :uuid             not null, indexed, indexed => [email]
+#  organization_id :uuid             not null, indexed, uniquely indexed => [email]
 #  recipient_id    :uuid             indexed
 #  sender_id       :uuid             not null, indexed
 #

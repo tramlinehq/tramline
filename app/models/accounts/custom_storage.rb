@@ -8,7 +8,7 @@
 #  service         :string           not null
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  organization_id :uuid             not null, indexed
+#  organization_id :uuid             not null, uniquely indexed
 #
 class Accounts::CustomStorage < ApplicationRecord
   belongs_to :organization, class_name: "Accounts::Organization"

@@ -8,8 +8,8 @@
 #  svix_app_uid  :string
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
-#  svix_app_id   :string           indexed
-#  train_id      :uuid             not null, indexed
+#  svix_app_id   :string           uniquely indexed
+#  train_id      :uuid             not null, uniquely indexed
 #
 class SvixIntegration < ApplicationRecord
   has_paper_trail

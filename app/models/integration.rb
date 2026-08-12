@@ -3,15 +3,15 @@
 # Table name: integrations
 #
 #  id              :uuid             not null, primary key
-#  category        :string           not null, indexed => [integrable_id, providable_type, status]
+#  category        :string           not null, uniquely indexed => [integrable_id, providable_type, status]
 #  discarded_at    :datetime
 #  integrable_type :string
 #  metadata        :jsonb
-#  providable_type :string           indexed => [integrable_id, category, status]
-#  status          :string           indexed => [integrable_id, category, providable_type]
+#  providable_type :string           uniquely indexed => [integrable_id, category, status]
+#  status          :string           uniquely indexed => [integrable_id, category, providable_type]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  integrable_id   :uuid             indexed => [category, providable_type, status]
+#  integrable_id   :uuid             uniquely indexed => [category, providable_type, status]
 #  providable_id   :uuid
 #
 class Integration < ApplicationRecord

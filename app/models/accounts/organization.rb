@@ -6,7 +6,7 @@
 #  api_key                :string
 #  created_by             :string           not null
 #  name                   :string           not null
-#  slug                   :string           indexed
+#  slug                   :string           uniquely indexed
 #  sso                    :boolean          default(FALSE)
 #  sso_configuration_link :string
 #  sso_domains            :string           default([]), is an Array

@@ -12,7 +12,7 @@
 #  draft_release_notes     :text
 #  draft_support_url       :text
 #  keywords                :string           default([]), is an Array
-#  locale                  :string           not null, indexed => [release_platform_run_id]
+#  locale                  :string           not null, uniquely indexed => [release_platform_run_id]
 #  marketing_url           :text
 #  promo_text              :text
 #  release_notes           :text
@@ -20,7 +20,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  release_id              :uuid
-#  release_platform_run_id :uuid             indexed, indexed => [locale]
+#  release_platform_run_id :uuid             indexed, uniquely indexed => [locale]
 #
 class ReleaseMetadata < ApplicationRecord
   has_paper_trail

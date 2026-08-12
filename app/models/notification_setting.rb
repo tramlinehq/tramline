@@ -5,7 +5,7 @@
 #  id                       :uuid             not null, primary key
 #  active                   :boolean          default(TRUE), not null
 #  core_enabled             :boolean          default(FALSE), not null
-#  kind                     :string           not null, indexed => [train_id]
+#  kind                     :string           not null, uniquely indexed => [train_id]
 #  notification_channels    :jsonb
 #  release_specific_channel :jsonb
 #  release_specific_enabled :boolean          default(FALSE)
@@ -13,7 +13,7 @@
 #  user_groups              :jsonb
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
-#  train_id                 :uuid             not null, indexed, indexed => [kind]
+#  train_id                 :uuid             not null, indexed, uniquely indexed => [kind]
 #
 class NotificationSetting < ApplicationRecord
   has_paper_trail

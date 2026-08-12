@@ -17,7 +17,7 @@
 #  notification_channel                :json
 #  created_at                          :datetime         not null
 #  updated_at                          :datetime         not null
-#  app_id                              :uuid             not null, indexed
+#  app_id                              :uuid             not null, uniquely indexed
 #  bitrise_project_id                  :jsonb
 #  bugsnag_project_id                  :jsonb
 #

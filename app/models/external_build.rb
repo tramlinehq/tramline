@@ -6,7 +6,7 @@
 #  metadata   :jsonb            not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
-#  build_id   :uuid             indexed
+#  build_id   :uuid             uniquely indexed
 #
 class ExternalBuild < ApplicationRecord
   has_paper_trail

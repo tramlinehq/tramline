@@ -6,13 +6,13 @@
 #  config                     :jsonb            not null
 #  status                     :string           default("created"), not null
 #  tester_notes               :text
-#  type                       :string           not null, indexed => [release_platform_run_id, commit_id]
+#  type                       :string           not null, uniquely indexed => [release_platform_run_id, commit_id]
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  commit_id                  :uuid             not null, indexed => [release_platform_run_id, type], indexed
+#  commit_id                  :uuid             not null, uniquely indexed => [release_platform_run_id, type], indexed
 #  parent_internal_release_id :uuid             indexed
 #  previous_id                :uuid             indexed
-#  release_platform_run_id    :uuid             not null, indexed => [commit_id, type], indexed
+#  release_platform_run_id    :uuid             not null, uniquely indexed => [commit_id, type], indexed
 #
 class PreProdRelease < ApplicationRecord
   has_paper_trail

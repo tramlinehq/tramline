@@ -3,13 +3,13 @@
 # Table name: release_index_components
 #
 #  id               :uuid             not null, primary key
-#  name             :string           not null, indexed => [release_index_id]
+#  name             :string           not null, uniquely indexed => [release_index_id]
 #  tolerable_range  :numrange         not null
 #  tolerable_unit   :string           not null
 #  weight           :decimal(4, 3)    not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
-#  release_index_id :uuid             not null, indexed => [name], indexed
+#  release_index_id :uuid             not null, uniquely indexed => [name], indexed
 #
 class ReleaseIndexComponent < ApplicationRecord
   using RefinedArray

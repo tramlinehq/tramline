@@ -4,12 +4,12 @@
 #
 #  id              :uuid             not null, primary key
 #  discarded_at    :datetime         indexed
-#  role            :string           not null, indexed, indexed => [user_id, organization_id]
+#  role            :string           not null, indexed, uniquely indexed => [user_id, organization_id]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  organization_id :uuid             indexed, indexed => [user_id, role]
+#  organization_id :uuid             indexed, uniquely indexed => [user_id, role]
 #  team_id         :uuid
-#  user_id         :uuid             indexed => [organization_id, role]
+#  user_id         :uuid             uniquely indexed => [organization_id, role]
 #
 class Accounts::Membership < ApplicationRecord
   include Discard::Model

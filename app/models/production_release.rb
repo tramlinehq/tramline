@@ -4,13 +4,13 @@
 #
 #  id                      :uuid             not null, primary key
 #  config                  :jsonb            not null
-#  status                  :string           default("inflight"), not null, indexed => [release_platform_run_id], indexed => [release_platform_run_id], indexed => [release_platform_run_id]
+#  status                  :string           default("inflight"), not null, uniquely indexed => [release_platform_run_id], uniquely indexed => [release_platform_run_id], uniquely indexed => [release_platform_run_id]
 #  tag_name                :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
 #  previous_id             :uuid             indexed
-#  release_platform_run_id :uuid             not null, indexed, indexed => [status], indexed => [status], indexed => [status]
+#  release_platform_run_id :uuid             not null, indexed, uniquely indexed => [status], uniquely indexed => [status], uniquely indexed => [status]
 #
 class ProductionRelease < ApplicationRecord
   using RefinedString

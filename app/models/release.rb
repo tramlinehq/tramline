@@ -15,7 +15,7 @@
 #  original_release_version  :string
 #  release_type              :string           not null
 #  scheduled_at              :datetime
-#  slug                      :string           indexed
+#  slug                      :string           uniquely indexed
 #  status                    :string           not null, indexed
 #  stopped_at                :datetime
 #  tag_name                  :string
