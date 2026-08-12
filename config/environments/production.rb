@@ -64,7 +64,12 @@ Rails.application.configure do
   # Use tagged logging with lograge
   require "structured_logger"
   config.lograge.enabled = true
-  config.logger = ActiveSupport::TaggedLogging.new(StructuredLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
+  # Containerized deploys (Kamal/Docker) set RAILS_LOG_TO_STDOUT so logs land on
+  # stdout where `docker logs`/Dozzle can capture them; otherwise (e.g. Render)
+  # keep the on-disk log file. Without this, only Puma's boot banner reaches the
+  # container log and request/lograge lines vanish into log/production.log.
+  log_target = ENV["RAILS_LOG_TO_STDOUT"].present? ? $stdout : Rails.root.join("log", "#{Rails.env}.log")
+  config.logger = ActiveSupport::TaggedLogging.new(StructuredLogger.new(log_target))
 
   # Use a different cache store in production.
   config.cache_store = REDIS_CONFIGURATION.cache
