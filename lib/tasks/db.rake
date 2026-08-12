@@ -47,7 +47,9 @@ namespace :db do
     app.variants.delete_all
     # `has_one :config` is commented out on App, so clear app_configs by FK.
     AppConfig.where(app_id: app.id).delete_all
-    ReleasePlatform.where(app_id: app.id).delete_all
+    # Any release_platforms not reached via a train (e.g. app has 0 trains but
+    # still carries platforms with configs) — tear each down before deleting.
+    app.release_platforms.reload.each { |rp| nuke_release_platform(rp) }
     # Detach the icon in the DB only — do NOT purge. The GCS object lives in a
     # bucket shared with Render staging; purging would delete it there too.
     ActiveStorage::Attachment.where(record_type: "App", record_id: app.id).delete_all
@@ -150,41 +152,32 @@ def nuke_train(train)
   train.release_index&.delete
   train.release_index&.release_index_components&.delete_all
   train.release_index&.delete
-  train.release_platforms.each do |release_platform|
-    sql = "delete from deployments where step_id IN (SELECT id FROM steps WHERE release_platform_id = '#{release_platform.id}')"
-    ActiveRecord::Base.connection.execute(sql)
-    sql = "delete from steps where release_platform_id = '#{release_platform.id}'"
-    ActiveRecord::Base.connection.execute(sql)
-    config = release_platform.platform_config
-    if config.present?
-      config.internal_workflow&.delete
-      config.release_candidate_workflow&.delete
-      config.internal_release&.submissions&.each do |submission|
-        submission.submission_external&.delete
-        submission.delete
-      end
-      config.beta_release&.submissions&.each do |submission|
-        submission.submission_external&.delete
-        submission.delete
-      end
-      config.production_release&.submissions&.each do |submission|
-        submission.submission_external&.delete
-        submission.delete
-      end
-      config.internal_release&.delete
-      config.beta_release&.delete
-      config.production_release&.delete
-      config.delete
-    end
-    release_platform.all_release_health_rules.each do |rule|
-      rule.trigger_rule_expressions&.delete_all
-      rule.filter_rule_expressions&.delete_all
-    end
-    release_platform.all_release_health_rules&.delete_all
-    sql = "delete from commit_listeners where release_platform_id = '#{release_platform.id}'"
-    ActiveRecord::Base.connection.execute(sql)
-  end
-  train.release_platforms&.delete_all
+  train.release_platforms.each { |release_platform| nuke_release_platform(release_platform) }
   train.notification_settings&.delete_all
   train.delete
+end
+
+# Tear down a single release_platform and everything hanging off it (steps,
+# deployments, platform config + its workflows/releases/submissions, health
+# rules, commit listeners), then delete the platform row itself. Shared by
+# nuke_train and nuke_app so app-level platforms with no train are handled too.
+def nuke_release_platform(release_platform)
+  ActiveRecord::Base.connection.execute("delete from deployments where step_id IN (SELECT id FROM steps WHERE release_platform_id = '#{release_platform.id}')")
+  ActiveRecord::Base.connection.execute("delete from steps where release_platform_id = '#{release_platform.id}'")
+  # The platform config subtree (workflows + params, release steps +
+  # submissions + externals) is fully dependent: :destroy, so one destroy
+  # cascades all of it — no need to hand-delete each level.
+  release_platform.platform_config&.destroy
+  release_platform.all_release_health_rules.each do |rule|
+    rule.trigger_rule_expressions&.delete_all
+    rule.filter_rule_expressions&.delete_all
+  end
+  release_platform.all_release_health_rules&.delete_all
+  ActiveRecord::Base.connection.execute("delete from commit_listeners where release_platform_id = '#{release_platform.id}'")
+  # Commits can reference the platform directly (fetched by commit listeners);
+  # clear their passports, then the commits, before dropping the platform.
+  platform_commits = Commit.where(release_platform_id: release_platform.id)
+  platform_commits.each { |c| c.passports&.delete_all }
+  platform_commits.delete_all
+  release_platform.delete
 end
