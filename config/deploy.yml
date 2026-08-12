@@ -9,6 +9,12 @@ servers:
     options:
       memory: 4g
       cpus: 2
+    # Stable Dozzle identity: Kamal names app containers with the git SHA, so a
+    # new one appears each deploy. A fixed name + group keeps the log view from
+    # scattering across SHA-suffixed entries (see also DOZZLE_FILTER below).
+    labels:
+      dev.dozzle.name: tramline-web
+      dev.dozzle.group: tramline
   worker:
     hosts:
       - <%= ENV["HETZNER_IP"] %>
@@ -17,6 +23,9 @@ servers:
       memory: 4g
       cpus: 2
     proxy: false
+    labels:
+      dev.dozzle.name: tramline-worker
+      dev.dozzle.group: tramline
     env:
       clear:
         # Sidekiq runs SIDEKIQ_CONCURRENCY threads; the AR pool (database.yml
@@ -193,6 +202,11 @@ accessories:
     env:
       clear:
         DOZZLE_AUTH_PROVIDER: simple
+        # Only list running containers, so prior-deploy (stopped) app containers
+        # don't pile up in the sidebar. Trade-off: a crashed container is hidden
+        # too — drop this (or toggle "show stopped" in the UI) when debugging a
+        # failed boot.
+        DOZZLE_FILTER: status=running
     options:
       restart: always
       memory: 128m
