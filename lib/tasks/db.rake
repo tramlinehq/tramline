@@ -38,13 +38,66 @@ namespace :db do
   end
 
   def nuke_app(app)
-    app.config.delete
-    app.external_apps.delete_all
+    app.trains.each { |train| nuke_train(train) }
+    # integrations are polymorphic (integrable) with a separate providable row;
+    # delete_all skips callbacks, so drop the provider rows explicitly first.
+    app.integrations.includes(:providable).each { |i| i.providable&.delete }
     app.integrations.delete_all
-    app.trains.each do |train|
-      nuke_train(train)
-    end
+    app.external_apps.delete_all
+    app.variants.delete_all
+    # `has_one :config` is commented out on App, so clear app_configs by FK.
+    AppConfig.where(app_id: app.id).delete_all
+    ReleasePlatform.where(app_id: app.id).delete_all
+    # Detach the icon in the DB only — do NOT purge. The GCS object lives in a
+    # bucket shared with Render staging; purging would delete it there too.
+    ActiveStorage::Attachment.where(record_type: "App", record_id: app.id).delete_all
     app.delete
+  end
+
+  # Nuke an org and everything under it: its apps (full tree), then the org's
+  # own children (memberships incl. discarded, teams, invites, custom storage).
+  def nuke_org(org)
+    org.apps.each { |app| nuke_app(app) }
+    Accounts::Membership.where(organization_id: org.id).delete_all
+    org.teams.delete_all
+    org.invites.delete_all
+    Accounts::CustomStorage.where(organization_id: org.id).delete_all
+    org.delete
+  end
+
+  # One-off targeted cleanup. Slugs via env (comma-separated); dry-run unless
+  # CONFIRM=yes. Everything runs in one transaction, so a dry run validates the
+  # entire delete against real data and then rolls back.
+  #   APP_SLUGS=a,b ORG_SLUGS=c bin/rails db:nuke_targets            # dry run
+  #   APP_SLUGS=a,b ORG_SLUGS=c CONFIRM=yes bin/rails db:nuke_targets # execute
+  desc "Delete apps/orgs by slug (APP_SLUGS/ORG_SLUGS env). Dry-run unless CONFIRM=yes."
+  task nuke_targets: :environment do
+    dry = ENV["CONFIRM"] != "yes"
+    app_slugs = ENV.fetch("APP_SLUGS", "").split(",").map(&:strip).reject(&:blank?)
+    org_slugs = ENV.fetch("ORG_SLUGS", "").split(",").map(&:strip).reject(&:blank?)
+    abort "Nothing to do: set APP_SLUGS and/or ORG_SLUGS" if app_slugs.empty? && org_slugs.empty?
+
+    ActiveRecord::Base.transaction do
+      app_slugs.each do |slug|
+        app = App.find_by(slug:)
+        next puts("APP  #{slug}: NOT FOUND") unless app
+        puts "APP  #{slug} (#{app.name}) org=#{app.organization.slug} trains=#{app.trains.count} releases=#{app.releases.count} -> delete"
+        nuke_app(app)
+      end
+      org_slugs.each do |slug|
+        org = Accounts::Organization.find_by(slug:)
+        next puts("ORG  #{slug}: NOT FOUND") unless org
+        puts "ORG  #{slug} (#{org.name}) apps=[#{org.apps.map(&:slug).join(", ")}] -> delete org + its apps"
+        nuke_org(org)
+      end
+
+      if dry
+        puts "\nDRY RUN — no changes committed (set CONFIRM=yes to execute)."
+        raise ActiveRecord::Rollback
+      else
+        puts "\nCOMMITTED."
+      end
+    end
   end
 end
 
