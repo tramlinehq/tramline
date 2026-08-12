@@ -178,7 +178,7 @@ accessories:
       cpus: 1
 
   # Read-only log viewer, behind Dozzle's built-in simple auth.
-  # Credentials live in users.yml on the host (see docs/HETZNER.md), never
+  # Credentials live in users.yml on the host (see docs/hetzner.md), never
   # in the repo. Served over TLS on its own subdomain via kamal-proxy.
   # Set SKIP_DOZZLE=1 to leave it out (e.g. first bring-up before users.yml
   # exists) — the accessory refuses to boot without it.

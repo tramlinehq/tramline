@@ -104,6 +104,33 @@ export TARGET_DB=tramline_production   # matches prod POSTGRES_DB
 export RENDER_URL='postgresql://USER:PASS@RENDER_PROD_HOST:5432/RENDER_PROD_DB'
 ```
 
+**0. Pre-flight: env parity** (do this *before* the downtime window). Every
+app-runtime env key the deploy config references must exist for this
+destination — both in `.kamal/secrets.production` (local deploys) and in the
+`production` GitHub Environment (CI deploys). A key present in the deploy config
+but missing here renders an **empty** value at runtime, which is how app icons
+404'd on staging (empty `ASSETS_BUCKET_NAME` → `storage.googleapis.com//<key>`)
+and how a missing `CSP_SCRIPT_SRC_URIS` would silently block importmap JS.
+
+```bash
+# Keys the app needs at runtime (deploy.yml env.secret):
+HETZNER_IP=x ruby -ryaml -rerb -e \
+  'puts (YAML.safe_load(ERB.new(File.read("config/deploy.yml")).result, aliases: true).dig("env","secret") || []).sort' \
+  > /tmp/required_keys.txt
+
+# (a) present locally in secrets.production?  (empty output = all present)
+comm -23 /tmp/required_keys.txt <(grep -oE '^[A-Z_]+' .kamal/secrets.production | sort -u)
+
+# (b) present in the production GitHub Environment?  (empty output = all present)
+comm -23 /tmp/required_keys.txt \
+  <(gh secret list --env production --repo tramlinehq/tramline | awk '{print $1}' | sort -u)
+```
+
+Both commands must print nothing. Anything listed is a key you must add (with
+its **production** value — e.g. `pvt-assets-production`, not the staging bucket)
+before deploying. Registry/SSH creds (`KAMAL_REGISTRY_*`, `SSH_PRIVATE_KEY`) are
+separate deploy prerequisites, not part of this app-env check.
+
 **1. Stop the app** (begins the downtime window):
 
 ```bash
