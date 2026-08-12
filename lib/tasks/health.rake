@@ -8,7 +8,7 @@ namespace :health do
   desc "Ping services that we depend on to check if they are running"
   task services_heartbeat: [:environment] do
     abort "No external services heartbeat URL set" unless ENV["EXT_SERVICES_HEARTBEAT_URL"]
-    HTTP.get(ENV["EXT_SERVICES_HEARTBEAT_URL"]) if HTTP.get("#{ENV["APPLELINK_URL"]}/ping").status.success?
+    ServicesHeartbeatJob.new.perform
     puts "External services heartbeat passed!"
   rescue
     abort "External services heartbeat failed!"

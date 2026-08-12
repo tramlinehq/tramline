@@ -21,9 +21,15 @@ Sidekiq.configure_server do |config|
 
   config.on(:startup) do
     schedule_file = "config/schedule.yml"
-
     if File.exist?(schedule_file)
       Sidekiq::Cron::Job.load_from_hash YAML.load_file(schedule_file)
+    end
+
+    # Production-only jobs (migrated Render crons). Never loaded on staging, so
+    # they can't run there even if enabled. Toggle each via `status:` in the file.
+    prod_schedule_file = "config/schedule.production.yml"
+    if ENV["RAILS_PIPELINE_ENV"] == "production" && File.exist?(prod_schedule_file)
+      Sidekiq::Cron::Job.load_from_hash YAML.load_file(prod_schedule_file)
     end
   end
 
