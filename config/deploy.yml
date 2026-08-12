@@ -17,6 +17,13 @@ servers:
       memory: 4g
       cpus: 2
     proxy: false
+    env:
+      clear:
+        # Sidekiq runs SIDEKIQ_CONCURRENCY threads; the AR pool (database.yml
+        # pool = RAILS_MAX_THREADS) must cover them plus Sidekiq's own internal
+        # threads, or job threads block on ConnectionTimeoutError. Overrides the
+        # global 5 for this role only. Keep >= SIDEKIQ_CONCURRENCY + 2.
+        RAILS_MAX_THREADS: 12
 
 proxy:
   app_port: 3000
@@ -67,6 +74,11 @@ env:
     RAILS_PIPELINE_ENV: production
     RAILS_LOG_TO_STDOUT: true
     RAILS_SERVE_STATIC_FILES: true
+    # Puma sizing for the single box: 3 workers fits the web container's 2-CPU
+    # share; 5 threads is the MRI sweet spot and also sets the web AR pool.
+    # The worker role overrides RAILS_MAX_THREADS above.
+    WEB_CONCURRENCY: 3
+    RAILS_MAX_THREADS: 5
     SIDEKIQ_CONCURRENCY: 10
     SIDEKIQ_TIMEOUT: 25
     SESSION_TIMEOUT_IN_MINUTES: 60
@@ -112,7 +124,9 @@ accessories:
   redis-cache:
     image: redis:7-alpine
     host: <%= ENV["HETZNER_IP"] %>
-    cmd: redis-server --maxmemory 200mb --maxmemory-policy allkeys-lru
+    # Disposable cache: `--save ""` disables RDB snapshots (no fork, no disk),
+    # so allkeys-lru can evict freely and 200/256 stays safe.
+    cmd: redis-server --maxmemory 200mb --maxmemory-policy allkeys-lru --save ""
     directories:
       - tramline-redis-cache-data:/data
     options:
@@ -123,11 +137,14 @@ accessories:
   redis-sidekiq:
     image: redis:7-alpine
     host: <%= ENV["HETZNER_IP"] %>
-    cmd: redis-server --maxmemory 200mb --maxmemory-policy noeviction --appendonly yes
+    # Job store: noeviction (fail enqueues rather than drop jobs) + AOF for
+    # durability. Sized larger than the cache — 384/512 (~75%) leaves CoW
+    # headroom for AOF rewrite and real backlog room before enqueues error.
+    cmd: redis-server --maxmemory 384mb --maxmemory-policy noeviction --appendonly yes
     directories:
       - tramline-redis-sidekiq-data:/data
     options:
-      memory: 256m
+      memory: 512m
       cpus: 0.5
       restart: always
 

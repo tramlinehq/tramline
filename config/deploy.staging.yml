@@ -5,8 +5,13 @@ servers:
       cpus: 1
   worker:
     options:
-      memory: 3g
+      memory: 2g
       cpus: 1
+    env:
+      clear:
+        # Worker AR pool >= SIDEKIQ_CONCURRENCY (5) + headroom; overrides the
+        # base worker role's 12 for this smaller box.
+        RAILS_MAX_THREADS: 7
 
 builder:
   args:
@@ -23,6 +28,9 @@ proxy:
 env:
   clear:
     RAILS_PIPELINE_ENV: staging
+    # 2 Puma workers for the 4-vCPU box (overrides the base 3); threads stay 5
+    # (inherited). Worker role overrides RAILS_MAX_THREADS above.
+    WEB_CONCURRENCY: 2
     SIDEKIQ_CONCURRENCY: 5
 
 accessories:
@@ -34,14 +42,16 @@ accessories:
       shm-size: 64m
 
   redis-cache:
-    cmd: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
+    cmd: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru --save ""
     options:
       memory: 128m
       cpus: 0.25
       restart: always
 
   redis-sidekiq:
-    cmd: redis-server --maxmemory 100mb --maxmemory-policy noeviction --appendonly yes
+    # maxmemory kept below the 128m container for AOF-rewrite fork headroom.
+    # Staging job loss is acceptable (test data), so this stays small.
+    cmd: redis-server --maxmemory 90mb --maxmemory-policy noeviction --appendonly yes
     options:
       memory: 128m
       cpus: 0.25
