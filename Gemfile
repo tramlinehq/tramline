@@ -52,8 +52,6 @@ gem "retryable", "~> 3.0"
 gem "lograge", "~> 0.12.0"
 gem "ougai", "~> 2.0"
 gem "amazing_print", "~> 1.4"
-gem "ddtrace", "~> 1.4"
-gem "dogstatsd-ruby", "~> 5.5"
 gem "memery", "~> 1.4"
 gem "data_migrate", "11.0.0.rc3"
 gem "device_detector", "~> 1.0"
@@ -103,7 +101,6 @@ group :development, :test do
   gem "rubocop-factory_bot", require: false
   gem "rubocop-rspec_rails", require: false
   gem "stateoscope"
-  gem "error_highlight"
   gem "erb_lint", require: false
   gem "parallel_rspec", "~> 2.4"
 end
