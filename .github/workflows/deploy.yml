@@ -78,6 +78,12 @@ jobs:
       APP_REDIRECT_MAPPING_JSON: ${{ secrets.APP_REDIRECT_MAPPING_JSON }}
       DISALLOWED_SIGN_UP_DOMAINS: ${{ secrets.DISALLOWED_SIGN_UP_DOMAINS }}
       CSP_CONNECT_SRC_URIS: ${{ secrets.CSP_CONNECT_SRC_URIS }}
+      CSP_SCRIPT_SRC_URIS: ${{ secrets.CSP_SCRIPT_SRC_URIS }}
+      BILLING_URL: ${{ secrets.BILLING_URL }}
+      DEMO_ORG_SLUG: ${{ secrets.DEMO_ORG_SLUG }}
+      DEMO_USER_SLUG: ${{ secrets.DEMO_USER_SLUG }}
+      POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+      POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
       AUTH_ISSUER: ${{ secrets.AUTH_ISSUER }}
       AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
       AUTH_AUD: ${{ secrets.AUTH_AUD }}
