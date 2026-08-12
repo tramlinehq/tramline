@@ -115,6 +115,26 @@ either leave it and override per destination (`NETDATA_DOCKER_GID`, or a
 `netdata.env.clear.PGID` entry in the overlay — staging does the latter), or
 `groupmod -g 999 docker && systemctl restart docker`.
 
+### Kernel setting for Redis
+
+Redis warns on startup unless memory overcommit is enabled — without it a
+background save (RDB) or AOF rewrite can fail its fork under memory pressure:
+
+```
+WARNING Memory overcommit must be enabled! ... add 'vm.overcommit_memory = 1'
+```
+
+This is a **host** kernel setting (shared by all containers), so set it on the
+box once:
+
+```bash
+echo 'vm.overcommit_memory = 1' | sudo tee /etc/sysctl.d/99-redis.conf
+sudo sysctl --system    # apply now, no reboot needed
+```
+
+Matters most for `redis-sidekiq` (AOF rewrite forks); `redis-cache` runs
+`--save ""` so it never forks, but the warning is emitted regardless.
+
 ## 6. Data Directories
 
 Kamal creates the accessory data directories itself on first boot, nesting

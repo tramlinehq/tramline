@@ -64,10 +64,10 @@ Rails.application.configure do
   # Use tagged logging with lograge
   require "structured_logger"
   config.lograge.enabled = true
-  # Containerized deploys (Kamal/Docker) set RAILS_LOG_TO_STDOUT so logs land on
-  # stdout where `docker logs`/Dozzle can capture them; otherwise (e.g. Render)
-  # keep the on-disk log file. Without this, only Puma's boot banner reaches the
-  # container log and request/lograge lines vanish into log/production.log.
+  # RAILS_LOG_TO_STDOUT routes structured logs to stdout (where `docker
+  # logs`/Dozzle can capture them); without it, log to the on-disk file. The
+  # previous unconditional file logger meant only Puma's boot banner reached the
+  # container log while request/lograge lines vanished into log/production.log.
   log_target = ENV["RAILS_LOG_TO_STDOUT"].present? ? $stdout : Rails.root.join("log", "#{Rails.env}.log")
   config.logger = ActiveSupport::TaggedLogging.new(StructuredLogger.new(log_target))
 
