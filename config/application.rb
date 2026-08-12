@@ -25,7 +25,6 @@ module Site
     config.assets.css_compressor = nil
     config.middleware.insert_after ActionDispatch::Static, Rack::Deflater
     config.action_dispatch.default_headers["X-XSS-Protection"] = "1; mode=block"
-    PaperTrail.config.version_limit = 10
     config.active_storage.draw_routes = false
     config.lograge.enabled = false
     config.active_storage.service_urls_expire_in = 1.week

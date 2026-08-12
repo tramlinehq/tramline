@@ -340,7 +340,7 @@ Rails.application.routes.draw do
   end
 
   namespace :admin do
-    resource :settings, only: [:index]
+    resources :settings, only: [:index]
   end
 
   namespace :api, defaults: {format: "json"} do
