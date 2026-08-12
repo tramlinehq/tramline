@@ -1,6 +1,10 @@
 name: Deploy
 
 on:
+  # Every push to main auto-deploys Hetzner STAGING (destination resolves to
+  # staging below, since inputs.destination is empty for push events).
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       destination:
@@ -12,9 +16,9 @@ on:
           - render-production  # legacy Render deploy hooks (until cutover)
         default: staging
 
-# One in-flight deploy per destination.
+# One in-flight deploy per destination (push resolves to the staging group).
 concurrency:
-  group: deploy-${{ github.event.inputs.destination }}
+  group: deploy-${{ github.event.inputs.destination || 'staging' }}
   cancel-in-progress: false
 
 jobs:
@@ -42,8 +46,9 @@ jobs:
     # Secrets resolve from this GitHub Environment, so staging and production
     # can share env var names (DATABASE_URL, RAILS_MASTER_KEY, HETZNER_IP, …)
     # with different values. secrets-common references them by their plain
-    # names; the environment scopes which value each deploy gets.
-    environment: ${{ github.event.inputs.destination }}
+    # names; the environment scopes which value each deploy gets. Push events
+    # have no input, so they resolve to the staging environment.
+    environment: ${{ github.event.inputs.destination || 'staging' }}
 
     permissions:
       contents: read
@@ -113,6 +118,6 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # First-time provisioning (`kamal setup`) is done locally; CI ships new
-      # app code to an already-bootstrapped box.
+      # app code to an already-bootstrapped box. Push events deploy staging.
       - name: Deploy with Kamal
-        run: kamal deploy -d ${{ github.event.inputs.destination }}
+        run: kamal deploy -d ${{ github.event.inputs.destination || 'staging' }}
