@@ -41,7 +41,7 @@ namespace :db do
     app.trains.each { |train| nuke_train(train) }
     # integrations are polymorphic (integrable) with a separate providable row;
     # delete_all skips callbacks, so drop the provider rows explicitly first.
-    app.integrations.includes(:providable).each { |i| i.providable&.delete }
+    app.integrations.find_each { |i| i.providable&.delete }
     app.integrations.delete_all
     app.external_apps.delete_all
     app.variants.delete_all
@@ -75,8 +75,8 @@ namespace :db do
   desc "Delete apps/orgs by slug (APP_SLUGS/ORG_SLUGS env). Dry-run unless CONFIRM=yes."
   task nuke_targets: :environment do
     dry = ENV["CONFIRM"] != "yes"
-    app_slugs = ENV.fetch("APP_SLUGS", "").split(",").map(&:strip).reject(&:blank?)
-    org_slugs = ENV.fetch("ORG_SLUGS", "").split(",").map(&:strip).reject(&:blank?)
+    app_slugs = ENV.fetch("APP_SLUGS", "").split(",").map(&:strip).compact_blank
+    org_slugs = ENV.fetch("ORG_SLUGS", "").split(",").map(&:strip).compact_blank
     abort "Nothing to do: set APP_SLUGS and/or ORG_SLUGS" if app_slugs.empty? && org_slugs.empty?
 
     ActiveRecord::Base.transaction do
@@ -178,9 +178,9 @@ def nuke_release_platform(release_platform)
   # orphaned even for 0-release apps. FK enforcement is disabled for the
   # transaction (see nuke_targets), so order is forgiving.
   rpr = "SELECT id FROM release_platform_runs WHERE release_platform_id = '#{rid}'"
-  sr  = "SELECT id FROM step_runs WHERE release_platform_run_id IN (#{rpr})"
+  sr = "SELECT id FROM step_runs WHERE release_platform_run_id IN (#{rpr})"
   dep = "SELECT id FROM deployments WHERE step_id IN (SELECT id FROM steps WHERE release_platform_id = '#{rid}')"
-  dr  = "SELECT id FROM deployment_runs WHERE step_run_id IN (#{sr}) OR deployment_id IN (#{dep})"
+  dr = "SELECT id FROM deployment_runs WHERE step_run_id IN (#{sr}) OR deployment_id IN (#{dep})"
   c.execute("delete from external_releases where deployment_run_id IN (#{dr})")
   c.execute("delete from staged_rollouts where deployment_run_id IN (#{dr})")
   c.execute("delete from deployment_runs where step_run_id IN (#{sr}) OR deployment_id IN (#{dep})")
