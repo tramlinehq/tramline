@@ -78,6 +78,7 @@ gem "color", "~> 1.8"
 gem "descope", "~> 1.0"
 gem "invisible_captcha", "~> 2.3"
 gem "csv", "~> 3.3"
+gem "benchmark" # leaves default gems in Ruby 3.4; easymon loads it, so pin it explicitly
 gem "google-cloud-bigquery", "~> 1.50.0"
 gem "active_record_union", "~> 1.4"
 gem "pg_search", "~> 2.3"

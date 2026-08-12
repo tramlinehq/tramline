@@ -95,6 +95,7 @@ GEM
     awesome_print (1.9.2)
     base64 (0.3.0)
     bcrypt (3.1.22)
+    benchmark (0.5.0)
     better_html (2.1.1)
       actionview (>= 6.0)
       activesupport (>= 6.0)
@@ -801,6 +802,7 @@ DEPENDENCIES
   annotaterb (~> 4.23)
   awesome_print
   bcrypt (~> 3.1.7)
+  benchmark
   bootsnap (~> 1.10)
   brakeman
   bugsnag-api (~> 3.0)
