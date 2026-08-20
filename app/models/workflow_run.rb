@@ -14,9 +14,9 @@
 #  workflow_config         :jsonb
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
-#  commit_id               :uuid             not null, indexed, indexed => [pre_prod_release_id]
+#  commit_id               :uuid             not null, indexed, uniquely indexed => [pre_prod_release_id]
 #  external_id             :string
-#  pre_prod_release_id     :uuid             not null, indexed, indexed => [commit_id]
+#  pre_prod_release_id     :uuid             not null, indexed, uniquely indexed => [commit_id]
 #  release_platform_run_id :uuid             not null, indexed
 #
 class WorkflowRun < ApplicationRecord

@@ -3,8 +3,8 @@
 # docker build -t my-app .
 # docker run -d -p 80:80 -p 443:443 --name my-app -e RAILS_MASTER_KEY=<value from config/master.key> my-app
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version
-ARG RUBY_VERSION=3.3.6
-ARG DISTRO_NAME=bookworm
+ARG RUBY_VERSION=3.4.9
+ARG DISTRO_NAME=trixie
 
 FROM ruby:$RUBY_VERSION-slim-$DISTRO_NAME AS base
 
@@ -18,7 +18,7 @@ RUN gem install bundler:2.5.16
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 less build-essential git pkg-config jq vim mkcert libnss3-tools && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips gnupg2 less build-essential git pkg-config libyaml-dev jq vim mkcert libnss3-tools && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install PostgreSQL dependencies

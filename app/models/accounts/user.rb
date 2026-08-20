@@ -7,7 +7,7 @@
 #  full_name       :string           not null
 #  github_login    :string
 #  preferred_name  :string
-#  slug            :string           indexed
+#  slug            :string           uniquely indexed
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  github_id       :string

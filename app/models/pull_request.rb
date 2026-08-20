@@ -7,12 +7,12 @@
 #  body                    :text             indexed
 #  closed_at               :datetime
 #  head_ref                :string           not null, indexed => [release_id]
-#  kind                    :string           indexed => [release_id]
+#  kind                    :string           uniquely indexed => [release_id]
 #  labels                  :jsonb
 #  merge_commit_sha        :string           indexed
-#  number                  :bigint           not null, indexed => [release_id, phase], indexed
+#  number                  :bigint           not null, uniquely indexed => [release_id, phase], indexed
 #  opened_at               :datetime         not null
-#  phase                   :string           not null, indexed => [release_id, number], indexed, indexed => [release_id]
+#  phase                   :string           not null, uniquely indexed => [release_id, number], indexed, uniquely indexed => [release_id]
 #  search_vector           :tsvector         indexed
 #  source                  :string           not null, indexed
 #  state                   :string           not null, indexed
@@ -21,7 +21,8 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             indexed
-#  release_id              :uuid             indexed => [phase, number], indexed => [head_ref], indexed => [kind], indexed => [phase]
+#  forward_merge_queue_id  :uuid             indexed
+#  release_id              :uuid             uniquely indexed => [phase, number], indexed => [head_ref], uniquely indexed => [kind], uniquely indexed => [phase]
 #  release_platform_run_id :uuid
 #  source_id               :string           not null, indexed
 #

@@ -1,0 +1,12 @@
+# Netdata Postgres collector.
+#
+# Postgres is the one datastore Netdata cannot auto-discover: unlike Redis it
+# needs credentials, so without this file it silently collects nothing.
+#
+# Rendered by Kamal at deploy time (accessories `files:` ERB-renders any *.erb
+# with the accessory's env loaded), so the password comes from the secrets file
+# and is never committed. Reachable because netdata and the db accessory share
+# the `kamal` docker network.
+jobs:
+  - name: tramline-db
+    dsn: <%= ENV["DATABASE_URL"] %>

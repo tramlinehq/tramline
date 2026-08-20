@@ -3,15 +3,15 @@
 # Table name: app_variants
 #
 #  id                      :uuid             not null, primary key
-#  bundle_identifier       :string           not null, indexed => [app_config_id], indexed => [app_id]
+#  bundle_identifier       :string           not null, uniquely indexed => [app_config_id], uniquely indexed => [app_id]
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
 #  name                    :string           not null
-#  slug                    :string           indexed
+#  slug                    :string           uniquely indexed
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
-#  app_config_id           :uuid             indexed, indexed => [bundle_identifier]
-#  app_id                  :uuid             indexed, indexed => [bundle_identifier]
+#  app_config_id           :uuid             indexed, uniquely indexed => [bundle_identifier]
+#  app_id                  :uuid             indexed, uniquely indexed => [bundle_identifier]
 #
 class AppVariant < ApplicationRecord
   has_paper_trail

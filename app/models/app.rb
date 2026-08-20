@@ -5,17 +5,17 @@
 #  id                              :uuid             not null, primary key
 #  build_number                    :bigint           not null
 #  build_number_managed_internally :boolean          default(TRUE), not null
-#  bundle_identifier               :string           not null, indexed => [platform, organization_id, name]
+#  bundle_identifier               :string           not null, uniquely indexed => [platform, organization_id, name]
 #  description                     :string
 #  draft                           :boolean
-#  name                            :string           not null, indexed => [platform, bundle_identifier, organization_id]
-#  platform                        :string           not null, indexed => [bundle_identifier, organization_id, name]
+#  name                            :string           not null, uniquely indexed => [platform, bundle_identifier, organization_id]
+#  platform                        :string           not null, uniquely indexed => [bundle_identifier, organization_id, name]
 #  slug                            :string
 #  timezone                        :string           not null
 #  created_at                      :datetime         not null
 #  updated_at                      :datetime         not null
 #  external_id                     :string
-#  organization_id                 :uuid             not null, indexed, indexed => [platform, bundle_identifier, name]
+#  organization_id                 :uuid             not null, indexed, uniquely indexed => [platform, bundle_identifier, name]
 #
 class App < ApplicationRecord
   has_paper_trail

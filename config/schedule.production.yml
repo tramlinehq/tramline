@@ -1,0 +1,32 @@
+# Production-only scheduled jobs — migrated off the Render cron jobs.
+#
+# Loaded by config/initializers/sidekiq.rb ONLY when RAILS_PIPELINE_ENV is
+# "production", so these never run on staging. Every entry is `status: disabled`
+# for now — to turn one on, flip it to "enabled" (or drop the status line; the
+# sidekiq-cron default is enabled). No env var or code change needed to toggle.
+#
+# Cadences below are placeholders — match them to the old Render schedules when
+# you enable each one. Enabling also needs its runtime env wired on the prod box:
+#   services_heartbeat -> EXT_SERVICES_HEARTBEAT_URL (+ APPLELINK_URL, already set)
+#   worker_heartbeat   -> WORKER_HEARTBEAT_URL
+#   usage_metrics      -> USAGE_METRICS_WEBHOOK_URL
+
+worker_heartbeat: # was site-worker-health-prod
+  cron: "*/10 * * * *"
+  class: "TracerJob"
+  args: ["scheduled"]
+  active_job: false
+  status: "disabled"
+
+services_heartbeat: # was site-services-health-prod
+  cron: "*/15 * * * *"
+  class: "ServicesHeartbeatJob"
+  active_job: false
+  status: "disabled"
+
+usage_metrics: # was site-usage-metrics
+  cron: "0 9 * * *"
+  class: "UsageMetricsJob"
+  args: [24]
+  active_job: false
+  status: "disabled"

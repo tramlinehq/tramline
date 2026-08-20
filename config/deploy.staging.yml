@@ -1,0 +1,91 @@
+servers:
+  web:
+    options:
+      memory: 2g
+      cpus: 1
+  worker:
+    options:
+      memory: 2g
+      cpus: 1
+    env:
+      clear:
+        # Worker AR pool >= SIDEKIQ_CONCURRENCY (5) + headroom; overrides the
+        # base worker role's 12 for this smaller box.
+        RAILS_MAX_THREADS: 7
+
+builder:
+  args:
+    RAILS_PIPELINE_ENV: staging
+
+proxy:
+  ssl: true
+  host: tramline.site
+
+# RAILS_ENV stays production (from the base config); RAILS_PIPELINE_ENV=staging
+# selects config/credentials/staging.yml.enc (decrypted by staging.key) and
+# enables staging-only behaviour. Without this override the box would try to
+# decrypt production.yml.enc with the staging key and fail to boot.
+env:
+  clear:
+    RAILS_PIPELINE_ENV: staging
+    # 2 Puma workers for the 4-vCPU box (overrides the base 3); threads stay 5
+    # (inherited). Worker role overrides RAILS_MAX_THREADS above.
+    WEB_CONCURRENCY: 2
+    SIDEKIQ_CONCURRENCY: 5
+
+accessories:
+  db:
+    options:
+      memory: 1g
+      cpus: 0.5
+      restart: always
+      shm-size: 64m
+
+  redis-cache:
+    cmd: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru --save ""
+    options:
+      memory: 128m
+      cpus: 0.25
+      restart: always
+
+  redis-sidekiq:
+    # maxmemory kept below the 128m container for AOF-rewrite fork headroom.
+    # Staging job loss is acceptable (test data), so this stays small.
+    cmd: redis-server --maxmemory 90mb --maxmemory-policy noeviction --appendonly yes
+    options:
+      memory: 128m
+      cpus: 0.25
+      restart: always
+
+  applelink:
+    env:
+      clear:
+        RACK_ENV: production
+        # applelink's own Sentry project (submit-only DSN, safe in config).
+        # kamal does not expose secrets-file vars to deploy.yml ERB, so a
+        # committed literal is the reliable way to set this per destination.
+        SENTRY_DSN: https://b63680dcba62956df297870ae0795c72@o1302950.ingest.sentry.io/4505862044975104
+    options:
+      restart: always
+      memory: 512m
+      cpus: 0.5
+
+  dozzle:
+    proxy:
+      ssl: true
+      host: logs.tramline.site
+      app_port: 8080
+
+  netdata:
+    env:
+      clear:
+        # staging's docker group is gid 989 (provisioned before we pinned it
+        # to 999); overrides the base default so container names resolve.
+        PGID: "989"
+    options:
+      restart: always
+      memory: 512m
+      cpus: 0.5
+      cap-add: SYS_PTRACE
+      security-opt: apparmor=unconfined
+      hostname: tramline-staging

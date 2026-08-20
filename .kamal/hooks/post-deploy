@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+
+echo "Post-deploy: deployment complete."

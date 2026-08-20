@@ -5,7 +5,7 @@
 #  id                 :uuid             not null, primary key
 #  current_sign_in_at :datetime
 #  current_sign_in_ip :string
-#  email              :string           default(""), not null, indexed
+#  email              :string           default(""), not null, uniquely indexed
 #  last_sign_in_at    :datetime
 #  last_sign_in_ip    :string
 #  logout_time        :datetime
@@ -13,7 +13,7 @@
 #  sso_created_time   :datetime
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
-#  login_id           :string           indexed
+#  login_id           :string           uniquely indexed
 #
 class Accounts::SsoAuthentication < ApplicationRecord
   include Linkable

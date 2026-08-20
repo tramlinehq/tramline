@@ -3,11 +3,11 @@
 # Table name: workflow_config_parameters
 #
 #  id          :bigint           not null, primary key
-#  name        :string           not null, indexed => [workflow_id]
+#  name        :string           not null, uniquely indexed => [workflow_id]
 #  value       :string           not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  workflow_id :bigint           not null, indexed, indexed => [name]
+#  workflow_id :bigint           not null, indexed, uniquely indexed => [name]
 #
 class Config::WorkflowParameter < ApplicationRecord
   self.table_name = "workflow_config_parameters"

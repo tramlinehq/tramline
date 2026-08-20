@@ -49,7 +49,10 @@ Rails.application.configure do
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
-  config.ssl_options = {hsts: {subdomains: true, preload: true}}
+  config.ssl_options = {
+    hsts: {subdomains: true, preload: true},
+    redirect: {exclude: ->(request) { request.path == "/up" }} # Kamal healthchecks during deploy, needs a TLS-free response
+  }
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
@@ -61,7 +64,12 @@ Rails.application.configure do
   # Use tagged logging with lograge
   require "structured_logger"
   config.lograge.enabled = true
-  config.logger = ActiveSupport::TaggedLogging.new(StructuredLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
+  # RAILS_LOG_TO_STDOUT routes structured logs to stdout (where `docker
+  # logs`/Dozzle can capture them); without it, log to the on-disk file. The
+  # previous unconditional file logger meant only Puma's boot banner reached the
+  # container log while request/lograge lines vanished into log/production.log.
+  log_target = ENV["RAILS_LOG_TO_STDOUT"].present? ? $stdout : Rails.root.join("log", "#{Rails.env}.log")
+  config.logger = ActiveSupport::TaggedLogging.new(StructuredLogger.new(log_target))
 
   # Use a different cache store in production.
   config.cache_store = REDIS_CONFIGURATION.cache
@@ -92,7 +100,8 @@ Rails.application.configure do
   # Avoid cache poisoning attack by users setting X-Forwarded-Host
   config.hosts << ENV["HOST_NAME"]
   config.hosts << ".#{ENV["HOST_NAME"]}"
-  config.hosts << /.*\.onrender\.com/  # Allow all Render preview environments
+  config.hosts << /.*\.onrender\.com/
+  config.host_authorization = {exclude: ->(request) { request.path == "/up" }}
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
