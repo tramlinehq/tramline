@@ -102,18 +102,19 @@ usermod -aG docker deploy   # kamal runs docker as deploy; re-login to apply
 ```
 
 **Pin the docker group GID before installing Docker.** Otherwise it's
-assigned whatever GID is free (staging ended up 989), which makes Netdata's
-`PGID` host-specific. Creating the group with a fixed GID first keeps config
-identical across boxes (the netdata accessory defaults `PGID` to 999):
+assigned whatever GID is free, which makes Netdata's `PGID` host-specific.
+Creating the group with a fixed GID first keeps config identical across boxes
+(the netdata accessory defaults `PGID` to **989**). Use 989, **not 999** — 999
+is taken by `systemd-journal` on trixie. Verify it's free first:
 
 ```bash
-groupadd -g 999 docker    # then install Docker; it reuses this group
+getent group 989 || groupadd -g 989 docker   # then install Docker; it reuses this group
 ```
 
-If a box already has a different GID (check `stat -c %g /var/run/docker.sock`),
-either leave it and override per destination (`NETDATA_DOCKER_GID`, or a
-`netdata.env.clear.PGID` entry in the overlay — staging does the latter), or
-`groupmod -g 999 docker && systemctl restart docker`.
+If a box already has docker on a different GID (`getent group docker`), either
+`groupmod -g 989 docker && systemctl restart docker`, or leave it and override
+per destination via `NETDATA_DOCKER_GID` (shell env at deploy) or a
+`netdata.env.clear.PGID` entry in that destination's overlay.
 
 ### Kernel setting for Redis
 
