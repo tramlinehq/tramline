@@ -120,6 +120,13 @@ env:
     - DEMO_USER_SLUG
     - POSTHOG_API_KEY
     - POSTHOG_HOST
+    # Heartbeat/usage pings for the production sidekiq-cron jobs (TracerJob,
+    # ServicesHeartbeatJob, UsageMetricsJob). Present in .kamal/secrets.production,
+    # but the jobs no-op unless the value is injected here. Staging has no monitor,
+    # so these are simply unset there (the jobs guard on presence).
+    - WORKER_HEARTBEAT_URL
+    - EXT_SERVICES_HEARTBEAT_URL
+    - USAGE_METRICS_WEBHOOK_URL
 
 accessories:
   db:

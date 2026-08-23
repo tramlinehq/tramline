@@ -74,6 +74,11 @@ jobs:
       AUTH_ISSUER: ${{ secrets.AUTH_ISSUER }}
       AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
       AUTH_AUD: ${{ secrets.AUTH_AUD }}
+      # Production heartbeat/usage pings (set in the production GH environment;
+      # empty on staging, which has no monitors).
+      WORKER_HEARTBEAT_URL: ${{ secrets.WORKER_HEARTBEAT_URL }}
+      EXT_SERVICES_HEARTBEAT_URL: ${{ secrets.EXT_SERVICES_HEARTBEAT_URL }}
+      USAGE_METRICS_WEBHOOK_URL: ${{ secrets.USAGE_METRICS_WEBHOOK_URL }}
 
     steps:
       - name: Checkout code

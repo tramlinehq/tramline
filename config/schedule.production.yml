@@ -1,32 +1,35 @@
 # Production-only scheduled jobs — migrated off the Render cron jobs.
 #
 # Loaded by config/initializers/sidekiq.rb ONLY when RAILS_PIPELINE_ENV is
-# "production", so these never run on staging. Every entry is `status: disabled`
-# for now — to turn one on, flip it to "enabled" (or drop the status line; the
-# sidekiq-cron default is enabled). No env var or code change needed to toggle.
+# "production", so these never run on staging. Toggle an entry with its `status`
+# ("enabled"/"disabled"). Cadences match the old Render schedules.
 #
-# Cadences below are placeholders — match them to the old Render schedules when
-# you enable each one. Enabling also needs its runtime env wired on the prod box:
+# Each ping's runtime env must be injected on the prod box (deploy.yml env.secret
+# + secrets-common + the CI workflow + the production GH environment):
 #   services_heartbeat -> EXT_SERVICES_HEARTBEAT_URL (+ APPLELINK_URL, already set)
 #   worker_heartbeat   -> WORKER_HEARTBEAT_URL
 #   usage_metrics      -> USAGE_METRICS_WEBHOOK_URL
 
 worker_heartbeat: # was site-worker-health-prod
-  cron: "*/10 * * * *"
+  # The Better Stack monitor expects a ping within ~5m, so ping every 4m to keep
+  # a margin (a 10m/15m cadence flaps the monitor Down between pings).
+  cron: "*/4 * * * *"
   class: "TracerJob"
   args: ["scheduled"]
   active_job: false
   status: "enabled"
 
-services_heartbeat: # was site-services-health-prod
-  cron: "*/15 * * * *"
+services_heartbeat:
+  cron: "*/4 * * * *"
   class: "ServicesHeartbeatJob"
   active_job: false
   status: "enabled"
 
-usage_metrics: # was site-usage-metrics
-  cron: "0 9 * * *"
+usage_metrics: # was (rake "metrics:uptick[12, <webhook>]")
+  # Every 12h, digest of the last 12h. Webhook URL comes from
+  # USAGE_METRICS_WEBHOOK_URL (UsageMetricsJob's default), not a committed arg.
+  cron: "0 */12 * * *"
   class: "UsageMetricsJob"
-  args: [24]
+  args: [12]
   active_job: false
   status: "enabled"
