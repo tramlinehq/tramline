@@ -128,7 +128,7 @@ comm -23 /tmp/required_keys.txt \
 
 Both commands must print nothing. Anything listed is a key you must add (with
 its **production** value — e.g. `pvt-assets-production`, not the staging bucket)
-before deploying. Registry/SSH creds (`KAMAL_REGISTRY_*`, `SSH_PRIVATE_KEY`) are
+before deploying. Registry/SSH creds (`KAMAL_REGISTRY_*`, `HETZNER_SSH_PRIVATE_KEY`) are
 separate deploy prerequisites, not part of this app-env check.
 
 **1. Stop the app** (begins the downtime window):

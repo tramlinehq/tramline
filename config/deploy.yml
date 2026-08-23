@@ -173,10 +173,14 @@ accessories:
         # applelink only enables Sentry when the env resolves to production
         # (config.enabled_environments = %w[production]).
         RACK_ENV: production
+        WEB_CONCURRENCY: 2
+        MAX_THREADS: 2
+        VERBOSE: true
         # applelink reports to its OWN Sentry project — a different DSN than
-        # tramline's, so it can't share the app's SENTRY_DSN secret. Each
-        # destination overlay sets SENTRY_DSN here as a literal (submit-only
-        # DSN); kamal does not expose secrets-file vars to deploy.yml ERB.
+        # tramline's, so it can't share the app's SENTRY_DSN secret. This is
+        # applelink's PRODUCTION DSN (submit-only); the staging overlay
+        # overrides it. kamal does not expose secrets-file vars to deploy.yml ERB.
+        SENTRY_DSN: https://82880c033da34dd48baa52be916bb01a@o1302950.ingest.sentry.io/4504591889268736
       secret:
         - AUTH_ISSUER
         - AUTH_SECRET
@@ -189,9 +193,8 @@ accessories:
   # Read-only log viewer, behind Dozzle's built-in simple auth.
   # Credentials live in users.yml on the host (see docs/hetzner.md), never
   # in the repo. Served over TLS on its own subdomain via kamal-proxy.
-  # Set SKIP_DOZZLE=1 to leave it out (e.g. first bring-up before users.yml
-  # exists) — the accessory refuses to boot without it.
-<% unless ENV["SKIP_DOZZLE"] %>
+  # NOTE: the users.yml must exist on the box before this boots, or Dozzle
+  # crash-loops ("No users.yaml found") — see docs/hetzner.md §6.
   dozzle:
     image: amir20/dozzle:latest
     host: <%= ENV["HETZNER_IP"] %>
@@ -219,7 +222,6 @@ accessories:
       # this the health check never passes and the boot hangs until timeout.
       healthcheck:
         path: /healthcheck
-<% end %>
 
   # Host + container metrics WITH history (Dozzle's metrics are live-only).
   # /var/lib/netdata holds the time-series DB, persisted so history survives

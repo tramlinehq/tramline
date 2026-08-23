@@ -1,0 +1,11 @@
+# Production destination.
+#
+# The base config/deploy.yml already carries the production values (host
+# tramline.dev, applelink prod config, netdata hostname tramline-production,
+# PGID 989, redis sizing, WEB_CONCURRENCY 3). Staging overrides those in
+# deploy.staging.yml; production needs no overrides.
+#
+# This file exists so `-d production` resolves — kamal requires a
+# config/deploy.<destination>.yml for every named destination, and it's what
+# loads .kamal/secrets.production.
+{}

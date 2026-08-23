@@ -16,17 +16,17 @@ worker_heartbeat: # was site-worker-health-prod
   class: "TracerJob"
   args: ["scheduled"]
   active_job: false
-  status: "disabled"
+  status: "enabled"
 
 services_heartbeat: # was site-services-health-prod
   cron: "*/15 * * * *"
   class: "ServicesHeartbeatJob"
   active_job: false
-  status: "disabled"
+  status: "enabled"
 
 usage_metrics: # was site-usage-metrics
   cron: "0 9 * * *"
   class: "UsageMetricsJob"
   args: [24]
   active_job: false
-  status: "disabled"
+  status: "enabled"

@@ -115,7 +115,7 @@ jobs:
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
 
       # First-time provisioning (`kamal setup`) is done locally; CI ships new
       # app code to an already-bootstrapped box. Push events deploy staging.
