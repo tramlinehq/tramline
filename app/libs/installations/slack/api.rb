@@ -148,7 +148,13 @@ module Installations
     private
 
     def execute(verb, url, params, headers = {})
-      response = HTTP.auth("Bearer #{oauth_access_token}").headers(headers).public_send(verb, url, params)
+      # Bounded timeouts so a stalled connection can't pin a worker thread
+      # indefinitely (a no-timeout list_channels call could hang for hours).
+      response = HTTP
+        .timeout(connect: 10, read: 30)
+        .auth("Bearer #{oauth_access_token}")
+        .headers(headers)
+        .public_send(verb, url, params)
       JSON.parse(response.body.to_s)
     end
   end

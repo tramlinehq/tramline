@@ -45,6 +45,16 @@ describe SlackIntegration do
       expect(slack_integration).to have_received(:sleep).once
     end
 
+    it "stops at the hard page cap on an enormous (never-terminating) workspace" do
+      # next_cursor is always present, so only the cap can end the walk.
+      allow(api_double).to receive(:list_channels)
+        .and_return({channels: ["c"], next_cursor: "more"})
+
+      slack_integration.populate_channels!
+
+      expect(api_double).to have_received(:list_channels).exactly(described_class::CHANNELS_MAX_PAGES).times
+    end
+
     it "stores the channels in the cache" do
       allow(api_double).to receive(:list_channels)
         .with(described_class::CHANNELS_TRANSFORMATIONS, anything)

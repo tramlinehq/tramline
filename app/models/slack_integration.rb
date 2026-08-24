@@ -69,6 +69,12 @@ class SlackIntegration < ApplicationRecord
   CHANNELS_PAGE_SLEEP = 1.second                # base delay between fetched pages
   CHANNELS_PAGE_SLEEP_BACKOFF_EVERY = 15        # every N fetched pages, escalate
   CHANNELS_PAGE_SLEEP_BACKOFF_FACTOR = 2        # ...by this factor
+  CHANNELS_PAGE_SLEEP_MAX = 30.seconds          # ...but never sleep longer than this
+  # Hard ceiling on the walk so a giant (or pathologically paginating) workspace
+  # can't run the job for hours — stop after ~15k channels (75 pages at 200/page,
+  # the api's LIST_CHANNELS_LIMIT). At this cap a full walk is ~8 min of throttle
+  # sleeps; the CHANNELS_PAGE_SLEEP_MAX ceiling keeps it bounded if raised.
+  CHANNELS_MAX_PAGES = 75
   # Progress is published to the full-list key as the walk grows, so the UI shows
   # a partial list instead of nothing on a workspace too big to paginate in one
   # cycle. Short TTL so a stalled walk's truncated list can't shadow the real set
@@ -317,6 +323,8 @@ class SlackIntegration < ApplicationRecord
     cursor = nil
     sleep_duration = CHANNELS_PAGE_SLEEP
     pages = 0
+    # The caller's inline budget, but never past the hard ceiling.
+    page_cap = [max_pages, CHANNELS_MAX_PAGES].compact.min
 
     loop do
       page = installation.list_channels(CHANNELS_TRANSFORMATIONS, cursor)
@@ -332,12 +340,21 @@ class SlackIntegration < ApplicationRecord
       # CACHE_EXPIRY once the walk finishes, overwriting this.
       cache.write(channels_cache_key, channels, expires_in: CHANNELS_PARTIAL_CACHE_EXPIRY)
 
-      # Hit the inline budget — hand the rest to the job (which walks fresh).
-      return [channels, false] if max_pages && pages >= max_pages
+      # Stop at the budget: the web prefix hands the rest to the job; the job stops
+      # at the hard ceiling (truncating a huge workspace) so it can't run for hours.
+      if pages >= page_cap
+        if pages >= CHANNELS_MAX_PAGES
+          Rails.logger.warn("SlackIntegration##{id}: channel walk hit the #{CHANNELS_MAX_PAGES}-page (~15k) cap; list truncated")
+        end
+        return [channels, false]
+      end
 
       # Throttle only the unbounded (job) walk; the bounded web prefix is a few
-      # calls and stays responsive.
-      sleep_duration *= CHANNELS_PAGE_SLEEP_BACKOFF_FACTOR if (pages % CHANNELS_PAGE_SLEEP_BACKOFF_EVERY).zero?
+      # calls and stays responsive. Escalate the delay but cap it so total runtime
+      # stays bounded.
+      if (pages % CHANNELS_PAGE_SLEEP_BACKOFF_EVERY).zero?
+        sleep_duration = [sleep_duration * CHANNELS_PAGE_SLEEP_BACKOFF_FACTOR, CHANNELS_PAGE_SLEEP_MAX].min
+      end
       sleep(sleep_duration) if max_pages.nil?
     end
   end
