@@ -665,10 +665,10 @@ GEM
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
     semantic (1.6.1)
-    sentry-rails (5.19.0)
+    sentry-rails (5.28.1)
       railties (>= 5.0)
-      sentry-ruby (~> 5.19.0)
-    sentry-ruby (5.19.0)
+      sentry-ruby (~> 5.28.1)
+    sentry-ruby (5.28.1)
       bigdecimal
       concurrent-ruby (~> 1.0, >= 1.0.2)
     sidekiq (7.3.10)
@@ -887,8 +887,8 @@ DEPENDENCIES
   rubyzip (~> 2.3)
   selenium-webdriver
   semantic (~> 1.6)
-  sentry-rails (~> 5.7)
-  sentry-ruby (~> 5.7)
+  sentry-rails (~> 5.27)
+  sentry-ruby (~> 5.27)
   sidekiq (< 8)
   sidekiq-cron (~> 2.4)
   simplecov
