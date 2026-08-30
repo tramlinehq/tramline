@@ -102,18 +102,19 @@ usermod -aG docker deploy   # kamal runs docker as deploy; re-login to apply
 ```
 
 **Pin the docker group GID before installing Docker.** Otherwise it's
-assigned whatever GID is free (staging ended up 989), which makes Netdata's
-`PGID` host-specific. Creating the group with a fixed GID first keeps config
-identical across boxes (the netdata accessory defaults `PGID` to 999):
+assigned whatever GID is free, which makes Netdata's `PGID` host-specific.
+Creating the group with a fixed GID first keeps config identical across boxes
+(the netdata accessory defaults `PGID` to **989**). Use 989, **not 999** — 999
+is taken by `systemd-journal` on trixie. Verify it's free first:
 
 ```bash
-groupadd -g 999 docker    # then install Docker; it reuses this group
+getent group 989 || groupadd -g 989 docker   # then install Docker; it reuses this group
 ```
 
-If a box already has a different GID (check `stat -c %g /var/run/docker.sock`),
-either leave it and override per destination (`NETDATA_DOCKER_GID`, or a
-`netdata.env.clear.PGID` entry in the overlay — staging does the latter), or
-`groupmod -g 999 docker && systemctl restart docker`.
+If a box already has docker on a different GID (`getent group docker`), either
+`groupmod -g 989 docker && systemctl restart docker`, or leave it and override
+per destination via `NETDATA_DOCKER_GID` (shell env at deploy) or a
+`netdata.env.clear.PGID` entry in that destination's overlay.
 
 ### Kernel setting for Redis
 
@@ -204,7 +205,9 @@ Add these secrets to the GitHub repository (Settings > Secrets > Actions):
 
 **Infrastructure:**
 - `HETZNER_IP` — server IP address
-- `SSH_PRIVATE_KEY` — deploy user's private key
+- `HETZNER_SSH_PRIVATE_KEY` — deploy user's private key. Set at **repo level**
+  (not per-environment): it's the same CI key for every box, so one shared
+  secret keeps it out of each environment's list. `HETZNER_IP` stays per-env.
 
 **Registry:**
 - `KAMAL_REGISTRY_USERNAME` and `KAMAL_REGISTRY_PASSWORD` are derived
@@ -283,10 +286,11 @@ Prerequisites before the first `kamal setup`:
 - DNS for the app host **and** `logs.<host>` pointing at the server, so
   kamal-proxy can issue Let's Encrypt certs.
 - Dozzle's `users.yml` created on the box **at the mounted path**
-  `~/tramline-dozzle/tramline-dozzle-data/users.yml` (step 6), or the `dozzle`
-  accessory crash-loops on boot. On a very first `kamal setup`, before that
-  file exists, pass `SKIP_DOZZLE=1` and boot Dozzle afterwards:
-  `kamal accessory boot dozzle -d <dest>`.
+  `~/tramline-dozzle/tramline-dozzle-data/users.yml` (§6) **before the first
+  `kamal setup`** — the `dozzle` accessory crash-loops without it. Generating it
+  uses `docker run amir20/dozzle …`, so Docker must already be on the box
+  (install it manually per §5, or generate the file on another machine, then
+  copy it over).
 - `NETDATA_CLAIM_TOKEN` in the secrets file (app.netdata.cloud → Connect
   Nodes), or Netdata boots but won't appear in Cloud.
 

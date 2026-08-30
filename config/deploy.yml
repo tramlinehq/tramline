@@ -120,6 +120,13 @@ env:
     - DEMO_USER_SLUG
     - POSTHOG_API_KEY
     - POSTHOG_HOST
+    # Heartbeat/usage pings for the production sidekiq-cron jobs (TracerJob,
+    # ServicesHeartbeatJob, UsageMetricsJob). Present in .kamal/secrets.production,
+    # but the jobs no-op unless the value is injected here. Staging has no monitor,
+    # so these are simply unset there (the jobs guard on presence).
+    - WORKER_HEARTBEAT_URL
+    - EXT_SERVICES_HEARTBEAT_URL
+    - USAGE_METRICS_WEBHOOK_URL
 
 accessories:
   db:
@@ -173,10 +180,14 @@ accessories:
         # applelink only enables Sentry when the env resolves to production
         # (config.enabled_environments = %w[production]).
         RACK_ENV: production
+        WEB_CONCURRENCY: 2
+        MAX_THREADS: 2
+        VERBOSE: true
         # applelink reports to its OWN Sentry project — a different DSN than
-        # tramline's, so it can't share the app's SENTRY_DSN secret. Each
-        # destination overlay sets SENTRY_DSN here as a literal (submit-only
-        # DSN); kamal does not expose secrets-file vars to deploy.yml ERB.
+        # tramline's, so it can't share the app's SENTRY_DSN secret. This is
+        # applelink's PRODUCTION DSN (submit-only); the staging overlay
+        # overrides it. kamal does not expose secrets-file vars to deploy.yml ERB.
+        SENTRY_DSN: https://82880c033da34dd48baa52be916bb01a@o1302950.ingest.sentry.io/4504591889268736
       secret:
         - AUTH_ISSUER
         - AUTH_SECRET
@@ -189,9 +200,8 @@ accessories:
   # Read-only log viewer, behind Dozzle's built-in simple auth.
   # Credentials live in users.yml on the host (see docs/hetzner.md), never
   # in the repo. Served over TLS on its own subdomain via kamal-proxy.
-  # Set SKIP_DOZZLE=1 to leave it out (e.g. first bring-up before users.yml
-  # exists) — the accessory refuses to boot without it.
-<% unless ENV["SKIP_DOZZLE"] %>
+  # NOTE: the users.yml must exist on the box before this boots, or Dozzle
+  # crash-loops ("No users.yaml found") — see docs/hetzner.md §6.
   dozzle:
     image: amir20/dozzle:latest
     host: <%= ENV["HETZNER_IP"] %>
@@ -219,7 +229,6 @@ accessories:
       # this the health check never passes and the boot hangs until timeout.
       healthcheck:
         path: /healthcheck
-<% end %>
 
   # Host + container metrics WITH history (Dozzle's metrics are live-only).
   # /var/lib/netdata holds the time-series DB, persisted so history survives
@@ -258,11 +267,11 @@ accessories:
     env:
       clear:
         # gid of the host docker group, so netdata can read the socket and
-        # label container metrics with real names. This differs per host
-        # (install order decides it), so provisioning pins it to 999
-        # (docs §5) and each destination can override via NETDATA_DOCKER_GID.
-        # Check a box with: stat -c %g /var/run/docker.sock
-        PGID: "<%= ENV.fetch('NETDATA_DOCKER_GID', '999') %>"
+        # label container metrics with real names. Provisioning pins docker to
+        # gid 989 on both boxes (docs §5 — 999 collides with systemd-journal on
+        # trixie). Check a box with `getent group docker`; if it landed on a
+        # different gid, override via NETDATA_DOCKER_GID (or a per-dest PGID).
+        PGID: "<%= ENV.fetch('NETDATA_DOCKER_GID', '989') %>"
         NETDATA_CLAIM_URL: https://app.netdata.cloud
         # Netdata Cloud room to join on claim (an identifier, not a credential)
         NETDATA_CLAIM_ROOMS: 67bcfbf4-a218-4e32-af35-a5a43dbced6e

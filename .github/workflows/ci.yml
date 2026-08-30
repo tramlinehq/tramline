@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install additional dependencies
         run: sudo apt-get update && sudo apt-get install -y libvips
@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -53,7 +53,7 @@ jobs:
           ./cyclonedx-cli validate --input-file sbom.xml --fail-on-errors
 
       - name: Upload CycloneDX BOM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: sbom-cyclonedx
           path: |
@@ -86,7 +86,7 @@ jobs:
       DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install additional dependencies
         run: sudo apt-get update && sudo apt-get install -y libvips
@@ -131,7 +131,7 @@ jobs:
       DEFAULT_REDIS_URL: redis://localhost:6379
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install additional dependencies
         run: sudo apt-get update && sudo apt-get install -y libvips

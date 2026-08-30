@@ -11,9 +11,8 @@ on:
         description: "Deploy destination"
         type: choice
         options:
-          - staging            # Kamal → Hetzner staging
-          - production         # Kamal → Hetzner production
-          - render-production  # legacy Render deploy hooks (until cutover)
+          - staging     # Kamal → Hetzner staging
+          - production  # Kamal → Hetzner production
         default: staging
 
 # One in-flight deploy per destination (push resolves to the staging group).
@@ -22,25 +21,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Legacy Render deploy — kept alive during the Hetzner migration so we can
-  # still ship the current production (Render) until DNS cutover. Triggers
-  # Render's deploy hooks; secrets are repo-level (not a GitHub Environment).
-  render:
-    if: github.event.inputs.destination == 'render-production'
-    runs-on: ubuntu-latest
-    steps:
-      - name: site-jobs
-        uses: wei/curl@v1
-        with:
-          args: -X POST https://api.render.com/deploy/${{ secrets.SITE_JOBS_PRODUCTION_SERVICE_ID }}?key=${{ secrets.SITE_JOBS_PRODUCTION_API_KEY }}
-      - name: site-web
-        uses: wei/curl@v1
-        with:
-          args: -X POST https://api.render.com/deploy/${{ secrets.SITE_WEB_PRODUCTION_SERVICE_ID }}?key=${{ secrets.SITE_WEB_PRODUCTION_API_KEY }}
-
   deploy:
-    # Kamal path (Hetzner). Skipped when targeting legacy Render.
-    if: github.event.inputs.destination != 'render-production'
+    # Kamal path (Hetzner). Push → staging; dispatch → chosen destination.
     runs-on: ubuntu-latest
 
     # Secrets resolve from this GitHub Environment, so staging and production
@@ -92,10 +74,15 @@ jobs:
       AUTH_ISSUER: ${{ secrets.AUTH_ISSUER }}
       AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
       AUTH_AUD: ${{ secrets.AUTH_AUD }}
+      # Production heartbeat/usage pings (set in the production GH environment;
+      # empty on staging, which has no monitors).
+      WORKER_HEARTBEAT_URL: ${{ secrets.WORKER_HEARTBEAT_URL }}
+      EXT_SERVICES_HEARTBEAT_URL: ${{ secrets.EXT_SERVICES_HEARTBEAT_URL }}
+      USAGE_METRICS_WEBHOOK_URL: ${{ secrets.USAGE_METRICS_WEBHOOK_URL }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -104,18 +91,18 @@ jobs:
           bundler-cache: true
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Expose GitHub Runtime for cache
-        uses: crazy-max/ghaction-github-runtime@v3
+        uses: crazy-max/ghaction-github-runtime@v4
 
       - name: Install Kamal
         run: gem install kamal
 
       - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.10.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.HETZNER_SSH_PRIVATE_KEY }}
 
       # First-time provisioning (`kamal setup`) is done locally; CI ships new
       # app code to an already-bootstrapped box. Push events deploy staging.

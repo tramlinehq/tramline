@@ -10,7 +10,8 @@ class UsageMetricsJob < ApplicationJob
 
     new_organizations = Accounts::Organization.where(created_at: ago.hours.ago..Time.current).includes(:users)
     new_apps = App.where(created_at: ago.hours.ago..Time.current).includes(:integrations, trains: [:releases])
-    new_releases = Release.where(created_at: ago.hours.ago..Time.current).includes(train: [release_platforms: [steps: [:deployments]]])
+    new_releases = Release.where(created_at: ago.hours.ago..Time.current)
+      .includes(:all_commits, :release_platform_runs, train: [:release_platforms, {app: :organization}])
 
     data[:accounts] =
       new_organizations.map do |org|
@@ -42,8 +43,8 @@ class UsageMetricsJob < ApplicationJob
           App – #{release.app.bundle_identifier}
           Organization – #{release.app.organization.name}
           Train – #{train.name}
-          Steps – #{train.steps.size}
-          Deployments – #{train.deployments.size}
+          Platforms – #{train.release_platforms.size}
+          Platform Runs – #{release.release_platform_runs.size}
           Status – #{release.status}
           Commits – #{release.all_commits.size}
         DEETS

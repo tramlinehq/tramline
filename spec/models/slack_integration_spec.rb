@@ -8,6 +8,8 @@ describe SlackIntegration do
 
     before do
       allow(slack_integration).to receive(:installation).and_return(api_double)
+      # Don't actually wait out the inter-page throttle in specs.
+      allow(slack_integration).to receive(:sleep)
     end
 
     it "fetches channels from slack API" do
@@ -31,6 +33,28 @@ describe SlackIntegration do
       expect(api_double).to have_received(:list_channels).with(described_class::CHANNELS_TRANSFORMATIONS, anything).twice
     end
 
+    it "throttles between fetched pages" do
+      allow(api_double).to receive(:list_channels)
+        .with(described_class::CHANNELS_TRANSFORMATIONS, anything)
+        .and_return({channels: ["channel-1"], next_cursor: "next_page"},
+          {channels: ["channel-2"], next_cursor: ""})
+
+      slack_integration.populate_channels!
+
+      # Two pages → one inter-page sleep (never after the final page).
+      expect(slack_integration).to have_received(:sleep).once
+    end
+
+    it "stops at the hard page cap on an enormous (never-terminating) workspace" do
+      # next_cursor is always present, so only the cap can end the walk.
+      allow(api_double).to receive(:list_channels)
+        .and_return({channels: ["c"], next_cursor: "more"})
+
+      slack_integration.populate_channels!
+
+      expect(api_double).to have_received(:list_channels).exactly(described_class::CHANNELS_MAX_PAGES).times
+    end
+
     it "stores the channels in the cache" do
       allow(api_double).to receive(:list_channels)
         .with(described_class::CHANNELS_TRANSFORMATIONS, anything)
@@ -50,7 +74,49 @@ describe SlackIntegration do
 
     before do
       allow(slack_integration).to receive(:installation).and_return(api_double)
+      allow(slack_integration).to receive(:sleep)
+      allow(slack_integration).to receive(:fetch_channels) # don't enqueue the real job
       Rails.cache.delete(slack_integration.channels_cache_key)
+    end
+
+    it "returns the cached list without hitting the API when warm" do
+      allow(api_double).to receive(:list_channels)
+      Rails.cache.write(slack_integration.channels_cache_key,
+        [{id: "C9", name: "warm", is_private: false, member_count: 1}], expires_in: 1.minute)
+
+      expect(slack_integration.channels).to contain_exactly({id: "C9", name: "warm", is_private: false})
+      expect(api_double).not_to have_received(:list_channels)
+      expect(slack_integration).not_to have_received(:fetch_channels)
+    end
+
+    it "fetches only the inline budget of pages and parks the rest on a job" do
+      call = 0
+      allow(api_double).to receive(:list_channels) do |_transforms, _cursor|
+        call += 1
+        {channels: [{id: "C#{call}", name: "c#{call}", is_private: false}], next_cursor: "cursor-#{call}"}
+      end
+
+      result = slack_integration.channels
+
+      expect(api_double).to have_received(:list_channels).exactly(described_class::CHANNELS_SYNC_PAGE_LIMIT).times
+      expect(result.size).to eq(described_class::CHANNELS_SYNC_PAGE_LIMIT)
+      expect(slack_integration).to have_received(:fetch_channels)
+    end
+
+    it "completes inline and spawns no job when the workspace fits the budget" do
+      allow(api_double).to receive(:list_channels) do |_transforms, cursor|
+        if cursor.nil?
+          {channels: [{id: "C1", name: "c1", is_private: false}], next_cursor: "c-1"}
+        else
+          {channels: [{id: "C2", name: "c2", is_private: false}], next_cursor: ""}
+        end
+      end
+
+      result = slack_integration.channels
+
+      expect(result).to contain_exactly({id: "C1", name: "c1", is_private: false}, {id: "C2", name: "c2", is_private: false})
+      expect(slack_integration).not_to have_received(:fetch_channels)
+      expect(Rails.cache.read(slack_integration.channels_cache_key)).to be_present
     end
 
     it "returns and caches the sliced channels on success" do
@@ -63,20 +129,44 @@ describe SlackIntegration do
 
     context "when a page of the channel fetch fails midway" do
       before do
-        allow(api_double).to receive(:list_channels)
-          .and_return(
+        # First page returns; the next cursor raises. (A chained
+        # and_return(...).and_raise(...) doesn't sequence in RSpec — the raise
+        # overrides — so drive it off the cursor instead.)
+        allow(api_double).to receive(:list_channels) do |_transforms, cursor|
+          if cursor.nil?
             {channels: [{id: "C1", name: "general", is_private: false}], next_cursor: "next_page"}
-          )
-          .and_raise(Installations::Error.new("boom", reason: "ratelimited"))
+          else
+            raise Installations::Error.new("boom", reason: "ratelimited")
+          end
+        end
       end
 
-      it "returns an empty list instead of raising" do
-        expect(slack_integration.channels).to eq([])
+      it "surfaces the pages fetched so far instead of raising" do
+        expect(slack_integration.channels).to contain_exactly({id: "C1", name: "general", is_private: false})
       end
 
-      it "does not cache the partial list" do
+      it "publishes the partial progress so the UI isn't empty mid-walk" do
         slack_integration.channels
-        expect(Rails.cache.read(slack_integration.channels_cache_key)).to be_nil
+        expect(Rails.cache.read(slack_integration.channels_cache_key))
+          .to contain_exactly({id: "C1", name: "general", is_private: false})
+      end
+
+      it "parks a job to finish the walk asynchronously" do
+        slack_integration.channels
+        expect(slack_integration).to have_received(:fetch_channels)
+      end
+
+      it "caches the partial with a short TTL, not the full CACHE_EXPIRY" do
+        allow(Rails.cache).to receive(:write).and_call_original
+
+        slack_integration.channels
+
+        expect(Rails.cache).to have_received(:write)
+          .with(slack_integration.channels_cache_key, anything,
+            hash_including(expires_in: described_class::CHANNELS_PARTIAL_CACHE_EXPIRY))
+        expect(Rails.cache).not_to have_received(:write)
+          .with(slack_integration.channels_cache_key, anything,
+            hash_including(expires_in: described_class::CACHE_EXPIRY))
       end
     end
   end

@@ -5,7 +5,9 @@ class ServicesHeartbeatJob < ApplicationJob
   # Render cron (rake health:services_heartbeat).
   def perform
     return if ENV["EXT_SERVICES_HEARTBEAT_URL"].blank?
-    return unless HTTP.get("#{ENV["APPLELINK_URL"]}/ping").status.success?
-    HTTP.get(ENV["EXT_SERVICES_HEARTBEAT_URL"])
+    # Bounded timeouts so a stalled endpoint can't pin the worker thread.
+    http = HTTP.timeout(connect: 5, read: 10)
+    return unless http.get("#{ENV["APPLELINK_URL"]}/ping").status.success?
+    http.get(ENV["EXT_SERVICES_HEARTBEAT_URL"])
   end
 end

@@ -77,11 +77,7 @@ accessories:
       app_port: 8080
 
   netdata:
-    env:
-      clear:
-        # staging's docker group is gid 989 (provisioned before we pinned it
-        # to 999); overrides the base default so container names resolve.
-        PGID: "989"
+    # PGID inherits the base default (989 = staging's docker gid); no override.
     options:
       restart: always
       memory: 512m
