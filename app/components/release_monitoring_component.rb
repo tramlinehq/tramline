@@ -38,14 +38,7 @@ class ReleaseMonitoringComponent < BaseComponent
       by_type = parent_release
         .latest_health_data_by_provider
         .index_by(&:monitoring_provider_type)
-      connected_provider_types.index_with do |provider_type|
-        data = by_type[provider_type]
-        # During the transition from untyped to typed metrics the primary
-        # provider may not have a typed row yet. Surface the latest legacy
-        # (nil-typed) metric in its slot so its cards don't go empty.
-        data ||= legacy_health_data if provider_type == primary_provider_type
-        data
-      end
+      connected_provider_types.index_with { |provider_type| by_type[provider_type] }
     end
   end
 
@@ -107,9 +100,9 @@ class ReleaseMonitoringComponent < BaseComponent
     range_end = release_data.fetched_at
     range_start = store_rollout.created_at
     metrics_scope = parent_release.release_health_metrics
-    # Include legacy (nil-typed) rows alongside the primary provider's typed rows
-    # so the chart stays continuous across the untyped -> typed transition.
-    metrics_scope = metrics_scope.where(monitoring_provider_type: [primary_provider_type, nil]) if primary_provider_type.present?
+    # Scope to a single provider: sessions from different providers are not comparable,
+    # so mixing them into one series would produce meaningless adoption numbers.
+    metrics_scope = metrics_scope.where(monitoring_provider_type: primary_provider_type) if primary_provider_type.present?
     @chart_data ||= metrics_scope
       .group_by_day(:fetched_at, range: range_start..range_end)
       .maximum("CASE WHEN total_sessions_in_last_day = 0 THEN 0
@@ -214,14 +207,6 @@ class ReleaseMonitoringComponent < BaseComponent
 
   def primary_provider_type
     @primary_provider_type ||= monitoring_provider&.class&.name
-  end
-
-  # Latest metric recorded before per-provider typing existed (monitoring_provider_type IS NULL).
-  def legacy_health_data
-    @legacy_health_data ||= parent_release.release_health_metrics
-      .where(monitoring_provider_type: nil)
-      .order(fetched_at: :desc)
-      .first
   end
 
   def resolve_provider(provider_type)

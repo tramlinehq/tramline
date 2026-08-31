@@ -169,13 +169,16 @@ describe ProductionRelease do # rubocop:disable RSpec/SpecFilePathFormat
     end
   end
 
-  describe "Legacy (nil-typed) metric transition" do
+  # db/data/20260831120000 backfills the provider onto pre-typing rows, but a row can still
+  # be untyped (written by old code mid-deploy, or an app with no monitoring integration
+  # left to infer from), so nil has to keep behaving as its own provider bucket.
+  describe "Untyped (nil-typed) metrics" do
     before do
       create(:release_health_rule, :user_stability, release_platform: production_release.release_platform)
     end
 
-    it "keeps gating healthy? on a legacy nil-typed unhealthy event while a typed secondary is healthy" do
-      # Legacy metric written before per-provider typing existed (monitoring_provider_type NULL), unhealthy.
+    it "keeps gating healthy? on an untyped unhealthy event while a typed secondary is healthy" do
+      # Metric with no provider type on it, unhealthy.
       production_release.release_health_metrics.create!(
         fetched_at: 5.minutes.ago,
         monitoring_provider_type: nil,
@@ -194,7 +197,7 @@ describe ProductionRelease do # rubocop:disable RSpec/SpecFilePathFormat
       expect(production_release.show_health?).to be(true)
     end
 
-    it "show_health? stays true when the only fresh row is a legacy (nil-typed) metric" do
+    it "show_health? stays true when the only fresh row is an untyped metric" do
       # Typed row exists but is stale (beyond the freshness window).
       production_release.release_health_metrics.create!(
         fetched_at: 40.days.ago,
@@ -202,7 +205,7 @@ describe ProductionRelease do # rubocop:disable RSpec/SpecFilePathFormat
         monitoring_provider_id: sentry_provider.id,
         **healthy_data
       )
-      # Fresh legacy (nil-typed) row must still surface health via the union fallback.
+      # A fresh untyped row must still surface health.
       production_release.release_health_metrics.create!(
         fetched_at: 3.minutes.ago,
         monitoring_provider_type: nil,

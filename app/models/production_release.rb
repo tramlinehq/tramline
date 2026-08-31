@@ -135,13 +135,6 @@ class ProductionRelease < ApplicationRecord
     end
   end
 
-  def beyond_monitoring_period?
-    return false unless finished? && completed_at
-    providers = monitoring_providers.presence || [monitoring_provider].compact
-    return true if providers.blank?
-    providers.all? { |provider| beyond_monitoring_period_for?(provider) }
-  end
-
   def fetch_health_data!(provider = nil)
     provider ||= monitoring_provider
     return if store_rollout.blank?
@@ -179,11 +172,11 @@ class ProductionRelease < ApplicationRecord
     return true if release_health_rules.blank?
     return true if release_health_events.blank?
 
-    # Bucket by provider type, INCLUDING the nil bucket for legacy (untyped) metrics
-    # written before per-provider typing existed. A nil bucket naturally scopes to
-    # `monitoring_provider_type IS NULL`, so an unhealthy legacy event still gates
-    # health during the transition. When nil is the only value this degenerates to
-    # the previous single-bucket behaviour.
+    # Bucket by provider type. The nil bucket is included for free: pre-typing rows
+    # are backfilled by db/data/20260831120000_backfill_monitoring_provider_on_release_health_metrics.rb,
+    # but a row can still be untyped if it was written by old code mid-deploy, or if the
+    # app has no monitoring integration left to infer the type from. When nil is the only
+    # value this degenerates to the previous single-bucket behaviour.
     provider_types = release_health_metrics.distinct.pluck(:monitoring_provider_type)
 
     release_health_rules.all? do |rule|
@@ -198,8 +191,8 @@ class ProductionRelease < ApplicationRecord
   end
 
   def show_health?
-    return true if latest_health_data_by_provider.any?(&:fresh?)
-    latest_health_data&.fresh? || false
+    return true if latest_health_data&.fresh?
+    false
   end
 
   def check_release_health
@@ -257,10 +250,6 @@ class ProductionRelease < ApplicationRecord
       # if it's the first rollout, return all the changes in the release
       (commits_since_last_run + commits_since_last_release).uniq
     end
-  end
-
-  def release_monitoring_period
-    RELEASE_MONITORING_PERIOD_IN_DAYS[monitoring_provider&.class]&.days&.ago
   end
 
   def beyond_monitoring_period_for?(provider)
