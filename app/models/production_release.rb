@@ -172,12 +172,15 @@ class ProductionRelease < ApplicationRecord
     return true if release_health_rules.blank?
     return true if release_health_events.blank?
 
-    # Bucket by provider type. The nil bucket is included for free: pre-typing rows
-    # are backfilled by db/data/20260831120000_backfill_monitoring_provider_on_release_health_metrics.rb,
-    # but a row can still be untyped if it was written by old code mid-deploy, or if the
-    # app has no monitoring integration left to infer the type from. When nil is the only
-    # value this degenerates to the previous single-bucket behaviour.
+    # Bucket by provider type. Pre-typing rows are backfilled by
+    # db/data/20260831120000_backfill_monitoring_provider_on_release_health_metrics.rb, but a row
+    # can still be untyped: written by old code mid-deploy, or left ambiguous by the backfill.
+    # Such a row belongs to the primary provider, so once the primary has typed data the untyped
+    # bucket is superseded and must be dropped — otherwise its last event, which can never be
+    # refreshed, would pin healthy? forever. When nil is the only value this degenerates to the
+    # previous single-bucket behaviour.
     provider_types = release_health_metrics.distinct.pluck(:monitoring_provider_type)
+    provider_types -= [nil] if provider_types.include?(monitoring_provider&.class&.name)
 
     release_health_rules.all? do |rule|
       provider_types.all? do |ptype|

@@ -169,9 +169,9 @@ describe ProductionRelease do # rubocop:disable RSpec/SpecFilePathFormat
     end
   end
 
-  # db/data/20260831120000 backfills the provider onto pre-typing rows, but a row can still
-  # be untyped (written by old code mid-deploy, or an app with no monitoring integration
-  # left to infer from), so nil has to keep behaving as its own provider bucket.
+  # db/data/20260831120000 backfills the provider onto pre-typing rows, but a row can still be
+  # untyped (written by old code mid-deploy, or left ambiguous by the backfill), so nil keeps
+  # behaving as its own provider bucket — until the primary provider's own typed data supersedes it.
   describe "Untyped (nil-typed) metrics" do
     before do
       create(:release_health_rule, :user_stability, release_platform: production_release.release_platform)
@@ -195,6 +195,25 @@ describe ProductionRelease do # rubocop:disable RSpec/SpecFilePathFormat
 
       expect(production_release.reload).not_to be_healthy
       expect(production_release.show_health?).to be(true)
+    end
+
+    it "stops gating healthy? on an untyped unhealthy event once the primary provider has typed data" do
+      # An untyped unhealthy row can never be refreshed — no new untyped rows are ever written —
+      # so its bucket must be dropped once the primary provider reports for itself.
+      production_release.release_health_metrics.create!(
+        fetched_at: 5.minutes.ago,
+        monitoring_provider_type: nil,
+        monitoring_provider_id: nil,
+        **unhealthy_data
+      )
+      production_release.release_health_metrics.create!(
+        fetched_at: 3.minutes.ago,
+        monitoring_provider_type: "CrashlyticsIntegration",
+        monitoring_provider_id: crashlytics_provider.id,
+        **healthy_data
+      )
+
+      expect(production_release.reload).to be_healthy
     end
 
     it "show_health? stays true when the only fresh row is an untyped metric" do
