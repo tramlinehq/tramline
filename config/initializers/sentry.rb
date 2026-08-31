@@ -20,8 +20,13 @@ Sentry.init do |config|
   config.sdk_logger.level = Logger::WARN
 
   # Sentry structured Logs (ships only in production, per enabled_environments above).
-  # Docs-default posture: enabling logs turns on Rails structured-logging subscribers
-  # (per-SQL active_record + per-request action_controller telemetry) by default.
   # See https://docs.sentry.io/platforms/ruby/guides/rails/logs/
   config.enable_logs = true
+
+  # Enabling logs would otherwise auto-attach Rails structured-logging subscribers,
+  # whose active_record subscriber emits one Sentry log PER SQL query ("Database
+  # query: X Load") — a firehose that isn't on stdout/Dozzle and buries everything
+  # else. We forward our actual stdout log lines instead, via StructuredLogger's
+  # Sentry hook (lib/structured_logger.rb), so turn the subscribers off.
+  config.rails.structured_logging.enabled = false
 end
