@@ -1,6 +1,11 @@
 module Installations
   class Bitbucket::Error < Installations::Error
     ERRORS = [
+      # Bitbucket returns this combined message when the OAuth2 access token has expired; refreshing recovers it.
+      {
+        message_matcher: /Token is invalid, expired, or not supported for this endpoint/i,
+        decorated_reason: :token_expired
+      },
       {
         message_matcher: /Token is invalid or not supported for this endpoint/i,
         decorated_reason: :unauthorized
