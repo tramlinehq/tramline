@@ -456,7 +456,8 @@ namespace :anonymize do
         continue { |index, record| ProductionRelease.exists?(record["production_release_id"]) && !ReleaseHealthMetric.exists?(record["id"]) }
         primary_key "id"
         whitelist "deployment_run_id", "production_release_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
-          "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
+          "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id",
+          "monitoring_provider_type", "monitoring_provider_id"
         whitelist_timestamps
       end
 

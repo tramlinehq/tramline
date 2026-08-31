@@ -87,7 +87,7 @@ class Integration < ApplicationRecord
     monitoring: "Monitor release metrics and stability to make the correct decisions about your release progress.",
     project_management: "Track tickets and establish release readiness by associating tickets with your releases."
   }.freeze
-  MULTI_INTEGRATION_CATEGORIES = ["build_channel"].freeze
+  MULTI_INTEGRATION_CATEGORIES = ["build_channel", "monitoring"].freeze
   MINIMUM_REQUIRED_SET = [:version_control, :ci_cd, :build_channel].freeze
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected].freeze
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected].freeze
@@ -198,7 +198,11 @@ class Integration < ApplicationRecord
     end
 
     def monitoring_provider
-      kept.monitoring.first&.providable
+      kept.monitoring.order(:created_at).first&.providable
+    end
+
+    def monitoring_providers
+      kept.monitoring.order(:created_at).map(&:providable)
     end
 
     def notification_provider
