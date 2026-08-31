@@ -2,6 +2,7 @@
 
 class SetAppStoreRolloutsAutomaticRolloutTrue < ActiveRecord::Migration[7.2]
   def up
+    return
     AppStoreRollout.update_all(automatic_rollout: true)
   end
 
