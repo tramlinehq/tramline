@@ -85,6 +85,7 @@ gem "pg_search", "~> 2.3"
 gem "redlock", "~> 2.0"
 gem "svix", "~> 1.0"
 gem "ruby-vips", "~> 2.2"
+gem "image_processing", "~> 1.2" # ActiveStorage variant pipeline (wraps ruby-vips)
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
