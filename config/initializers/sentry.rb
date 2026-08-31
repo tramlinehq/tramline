@@ -16,6 +16,17 @@ Sentry.init do |config|
   #   end
   # end
   config.send_default_pii = true
-  config.logger = Logger.new($stdout)
-  config.logger.level = Logger::WARN
+  config.sdk_logger = Logger.new($stdout)          # SDK-internal diagnostic logger (renamed from config.logger in 5.28); NOT the Logs feature
+  config.sdk_logger.level = Logger::WARN
+
+  # Sentry structured Logs (ships only in production, per enabled_environments above).
+  # See https://docs.sentry.io/platforms/ruby/guides/rails/logs/
+  config.enable_logs = true
+
+  # Enabling logs would otherwise auto-attach Rails structured-logging subscribers,
+  # whose active_record subscriber emits one Sentry log PER SQL query ("Database
+  # query: X Load") — a firehose that isn't on stdout/Dozzle and buries everything
+  # else. We forward our actual stdout log lines instead, via StructuredLogger's
+  # Sentry hook (lib/structured_logger.rb), so turn the subscribers off.
+  config.rails.structured_logging.enabled = false
 end

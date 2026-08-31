@@ -36,8 +36,8 @@ gem "tailwindcss-rails", "~> 2.0"
 gem "paper_trail", "~> 17.0"
 gem "google-apis-androidpublisher_v3", "~> 0.16.0"
 gem "googleauth", "~> 1.1"
-gem "sentry-ruby", "~> 5.7"
-gem "sentry-rails", "~> 5.7"
+gem "sentry-ruby", "~> 5.27"  # >= 5.27 for Rails structured logging / Sentry Logs
+gem "sentry-rails", "~> 5.27"
 gem "google-cloud-storage", "~> 1.37"
 gem "down", "~> 5.3"
 gem "faraday-retry", "~> 2.0"
@@ -85,6 +85,7 @@ gem "pg_search", "~> 2.3"
 gem "redlock", "~> 2.0"
 gem "svix", "~> 1.0"
 gem "ruby-vips", "~> 2.2"
+gem "image_processing", "~> 1.2" # ActiveStorage variant pipeline (wraps ruby-vips)
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
