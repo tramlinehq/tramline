@@ -367,6 +367,10 @@ class BitbucketIntegration < ApplicationRecord
     nil
   end
 
+  def set_tokens(tokens)
+    assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token)
+  end
+
   private
 
   MAX_RETRY_ATTEMPTS = 2
@@ -391,12 +395,25 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    set_tokens(Installations::Bitbucket::Api.oauth_refresh_token(oauth_refresh_token, redirect_uri))
-    save!
+    tokens = Installations::Bitbucket::Api.oauth_refresh_token(oauth_refresh_token, redirect_uri)
+
+    if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      integration.mark_needs_reauth!
+      raise Installations::Error::TokenRefreshFailure
+    end
+
+    transaction do
+      affiliated_providers.each do |affiliated_provider|
+        affiliated_provider.set_tokens(tokens)
+        affiliated_provider.save!
+      end
+    end
+
+    reload
   end
 
-  def set_tokens(tokens)
-    assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token) if tokens
+  def affiliated_providers
+    integrable.integrations.connected.bitbucket_integrations.map(&:providable)
   end
 
   def redirect_uri
