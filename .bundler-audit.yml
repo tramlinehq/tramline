@@ -1,0 +1,10 @@
+---
+ignore:
+  # CVE-2026-85396 / GHSA-47m2-wp7j-p9vc: path traversal in rubyzip < 3.4.0.
+  # The fix is a breaking major bump to rubyzip 3.x, and it is blocked anyway by
+  # selenium-webdriver (test-only) which pins rubyzip < 3.0. Not exploitable here:
+  # Artifacts::Stream extracts entries to explicit Tempfiles named from
+  # File.basename(entry.name), never to entry-controlled paths (app/libs/artifacts/stream.rb).
+  # Revisit once selenium-webdriver permits rubyzip >= 3.4 and our zip usage is verified on 3.x.
+  - CVE-2026-85396
+  - GHSA-47m2-wp7j-p9vc
