@@ -66,6 +66,7 @@ class App < ApplicationRecord
   delegate :vcs_provider,
     :ci_cd_provider,
     :monitoring_provider,
+    :monitoring_providers,
     :notification_provider,
     :project_management_provider,
     :slack_notifications?, to: :integrations, allow_nil: true

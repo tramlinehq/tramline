@@ -100,7 +100,12 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def last_event_for(rule)
-    production_release.release_health_events.where(release_health_rule: rule).last
+    events = production_release.release_health_events.where(release_health_rule: rule)
+    if monitoring_provider_type.present?
+      events = events.joins(:release_health_metric)
+        .where(release_health_metrics: {monitoring_provider_type: monitoring_provider_type})
+    end
+    events.last
   end
 
   def healthy_for_triggers?(rule, metric_name)
