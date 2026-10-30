@@ -391,6 +391,19 @@ describe GitlabIntegration do
           expect(integration).to have_received(:mark_needs_reauth!)
         end
       end
+
+      it "uses the tokens another process just stored instead of marking needs_reauth" do
+        allow(mock_api).to receive(:oauth_refresh_token) do
+          described_class.find(gitlab_integration.id).update!(oauth_access_token: "winner_access", oauth_refresh_token: "winner_refresh")
+          nil
+        end
+
+        expect { gitlab_integration.send(:reset_tokens!) }.not_to raise_error
+
+        expect(integration).not_to have_received(:mark_needs_reauth!)
+        expect(gitlab_integration.oauth_access_token).to eq("winner_access")
+        expect(gitlab_integration.oauth_refresh_token).to eq("winner_refresh")
+      end
     end
   end
 end

@@ -106,6 +106,19 @@ describe BitbucketIntegration do
           expect(integration).to have_received(:mark_needs_reauth!)
         end
       end
+
+      it "uses the tokens another process just stored instead of marking needs_reauth" do
+        allow(Installations::Bitbucket::Api).to receive(:oauth_refresh_token) do
+          described_class.find(bitbucket_integration.id).update!(oauth_access_token: "winner_access", oauth_refresh_token: "winner_refresh")
+          nil
+        end
+
+        expect { bitbucket_integration.send(:reset_tokens!) }.not_to raise_error
+
+        expect(integration).not_to have_received(:mark_needs_reauth!)
+        expect(bitbucket_integration.oauth_access_token).to eq("winner_access")
+        expect(bitbucket_integration.oauth_refresh_token).to eq("winner_refresh")
+      end
     end
   end
 

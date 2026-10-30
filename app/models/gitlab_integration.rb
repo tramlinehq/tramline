@@ -496,6 +496,8 @@ class GitlabIntegration < ApplicationRecord
     tokens = API.oauth_refresh_token(previous_refresh_token, redirect_uri)
 
     if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      return if refreshed_elsewhere?(previous_refresh_token)
+
       # Mark integration as needing reauth instead of disconnecting to preserve configuration
       integration.mark_needs_reauth!
       raise Installations::Error::TokenRefreshFailure
@@ -529,5 +531,13 @@ class GitlabIntegration < ApplicationRecord
     self.class
       .where(id: Integration.where(integrable: organization.apps).gitlab_integrations.select(:providable_id), oauth_refresh_token: refresh_token)
       .where.not(id:)
+  end
+
+  def refreshed_elsewhere?(previous_refresh_token)
+    stored_refresh_token = self.class.where(id:).pick(:oauth_refresh_token)
+    return false if stored_refresh_token.blank? || stored_refresh_token == previous_refresh_token
+
+    reload
+    true
   end
 end
