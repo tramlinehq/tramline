@@ -121,4 +121,102 @@ describe IntegrationListeners::BitbucketController do
       end
     end
   end
+
+  describe "#callback" do
+    using RefinedString
+
+    let(:user) { create(:user, :with_email_authentication, :as_developer, member_organization: organization) }
+    let(:valid_state) do
+      {
+        user_id: user.id,
+        organization_id: organization.id,
+        app_id: app.id,
+        integration_category: "version_control",
+        integration_provider: "BitbucketIntegration"
+      }
+    end
+    let(:fresh_tokens) { OpenStruct.new(access_token: "fresh_access", refresh_token: "fresh_refresh") }
+
+    before do
+      app
+      allow(controller).to receive(:current_user).and_return(user)
+      allow(Installations::Bitbucket::Api).to receive(:oauth_access_token).and_return(fresh_tokens)
+    end
+
+    context "when creating a new integration" do
+      let(:params) { {state: valid_state.to_json.encode, code: "oauth_code_123"} }
+
+      it "creates a connected integration and redirects with success message" do
+        expect {
+          get :callback, params: params
+        }.to change(Integration, :count).by(1)
+
+        expect(Integration.last).to be_connected
+        expect(response).to redirect_to(app_path(app))
+        expect(flash[:notice]).to eq("Integration was successfully created.")
+      end
+
+      it "exchanges the code once and stores the tokens" do
+        get :callback, params: params
+
+        expect(Installations::Bitbucket::Api).to have_received(:oauth_access_token).with("oauth_code_123", anything).once
+        providable = Integration.last.providable
+        expect(providable.oauth_access_token).to eq("fresh_access")
+        expect(providable.oauth_refresh_token).to eq("fresh_refresh")
+      end
+
+      it "does not create the integration when the code exchange returns no tokens" do
+        allow(Installations::Bitbucket::Api).to receive(:oauth_access_token).and_return(OpenStruct.new)
+
+        expect {
+          get :callback, params: params
+        }.not_to change(Integration, :count)
+
+        expect(response).to redirect_to(app_integrations_path(app))
+        expect(flash[:alert]).to be_present
+      end
+    end
+
+    context "when re-authenticating an existing integration" do
+      let(:existing_integration) do
+        create(:integration, :with_bitbucket, integrable: app).tap { |integration| integration.update!(status: "needs_reauth") }
+      end
+      let(:params) do
+        {state: valid_state.merge(integration_id: existing_integration.id).to_json.encode, code: "oauth_code_456"}
+      end
+
+      it "reconnects the existing integration and redirects with success message" do
+        existing_integration
+
+        expect {
+          get :callback, params: params
+        }.not_to change(Integration, :count)
+
+        expect(existing_integration.reload).to be_connected
+        expect(response).to redirect_to(app_path(app))
+        expect(flash[:notice]).to eq("Integration was successfully re-authenticated.")
+      end
+
+      it "replaces the stored tokens with the ones from the new code" do
+        get :callback, params: params
+
+        expect(Installations::Bitbucket::Api).to have_received(:oauth_access_token).with("oauth_code_456", anything).once
+        providable = existing_integration.providable.reload
+        expect(providable.oauth_access_token).to eq("fresh_access")
+        expect(providable.oauth_refresh_token).to eq("fresh_refresh")
+      end
+
+      it "keeps the integration needing re-authorization when the code exchange returns no tokens" do
+        old_access_token = existing_integration.providable.oauth_access_token
+        allow(Installations::Bitbucket::Api).to receive(:oauth_access_token).and_return(OpenStruct.new)
+
+        get :callback, params: params
+
+        expect(existing_integration.reload).to be_needs_reauth
+        expect(existing_integration.providable.reload.oauth_access_token).to eq(old_access_token)
+        expect(response).to redirect_to(app_integrations_path(app))
+        expect(flash[:alert]).to be_present
+      end
+    end
+  end
 end

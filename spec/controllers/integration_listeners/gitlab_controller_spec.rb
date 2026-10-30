@@ -21,7 +21,6 @@ describe IntegrationListeners::GitlabController do
   before do
     allow(controller).to receive(:current_user).and_return(user)
     allow_any_instance_of(Integration).to receive(:set_metadata!)
-    allow_any_instance_of(GitlabIntegration).to receive(:complete_access).and_return(true)
     allow_any_instance_of(GitlabIntegration).to receive(:repos).and_return([{id: 1, name: "test-repo"}])
   end
 
@@ -106,11 +105,16 @@ describe IntegrationListeners::GitlabController do
   end
 
   describe "#callback" do
+    let(:fresh_tokens) { OpenStruct.new(access_token: "fresh_access", refresh_token: "fresh_refresh") }
     let(:params) do
       {
         state: valid_state.to_json.encode,
         code: "oauth_code_123"
       }
+    end
+
+    before do
+      allow(Installations::Gitlab::Api).to receive(:oauth_access_token).and_return(fresh_tokens)
     end
 
     context "when creating new integration (no existing integration)" do
@@ -131,6 +135,26 @@ describe IntegrationListeners::GitlabController do
         expect(integration.status).to eq("connected")
         expect(integration.category).to eq("version_control")
         expect(integration.providable_type).to eq("GitlabIntegration")
+      end
+
+      it "exchanges the code once and stores the tokens" do
+        get :callback, params: params
+
+        expect(Installations::Gitlab::Api).to have_received(:oauth_access_token).with("oauth_code_123", anything).once
+        providable = Integration.last.providable
+        expect(providable.oauth_access_token).to eq("fresh_access")
+        expect(providable.oauth_refresh_token).to eq("fresh_refresh")
+      end
+
+      it "does not create the integration when the code exchange returns no tokens" do
+        allow(Installations::Gitlab::Api).to receive(:oauth_access_token).and_return(OpenStruct.new)
+
+        expect {
+          get :callback, params: params
+        }.not_to change(Integration, :count)
+
+        expect(response).to redirect_to(app_integrations_path(app))
+        expect(flash[:alert]).to be_present
       end
     end
 
@@ -163,6 +187,27 @@ describe IntegrationListeners::GitlabController do
         expect(existing_integration.status).to eq("connected")
         expect(response).to redirect_to(app_path(app))
         expect(flash[:notice]).to eq("Integration was successfully re-authenticated.")
+      end
+
+      it "replaces the stored tokens with the ones from the new code" do
+        get :callback, params: reauth_params
+
+        expect(Installations::Gitlab::Api).to have_received(:oauth_access_token).with("oauth_code_456", anything).once
+        providable = existing_integration.providable.reload
+        expect(providable.oauth_access_token).to eq("fresh_access")
+        expect(providable.oauth_refresh_token).to eq("fresh_refresh")
+      end
+
+      it "keeps the integration needing re-authorization when the code exchange returns no tokens" do
+        old_access_token = existing_integration.providable.oauth_access_token
+        allow(Installations::Gitlab::Api).to receive(:oauth_access_token).and_return(OpenStruct.new)
+
+        get :callback, params: reauth_params
+
+        expect(existing_integration.reload.status).to eq("needs_reauth")
+        expect(existing_integration.providable.reload.oauth_access_token).to eq(old_access_token)
+        expect(response).to redirect_to(app_integrations_path(app))
+        expect(flash[:alert]).to be_present
       end
 
       context "when existing integration not found" do
