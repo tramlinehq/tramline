@@ -25,15 +25,15 @@ class Webhooks::Bitbucket::Push
   end
 
   def valid_tag?
-    payload_change.dig("type") == "tag"
+    payload_change&.dig("type") == "tag"
   end
 
   def valid_branch?
-    payload_change.dig("type") == "branch" && branch_name.present?
+    payload_change&.dig("type") == "branch" && branch_name.present?
   end
 
   def branch_name
-    payload_change.dig("name")
+    payload_change&.dig("name")
   end
 
   def repository_name
@@ -47,7 +47,7 @@ class Webhooks::Bitbucket::Push
   end
 
   def new_branch?
-    payload_change.dig("type") == "branch" && payload.dig("push", "changes", 0, "created") == true
+    payload_change&.dig("type") == "branch" && payload.dig("push", "changes", 0, "created") == true
   end
 
   def commits
