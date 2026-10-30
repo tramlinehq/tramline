@@ -62,13 +62,13 @@ describe KeepAliveIntegrations::GitlabJob do
       let(:api_error) { Installations::Error.new("API error", reason: :api_error) }
       let(:unexpected_error) { StandardError.new("Unexpected error") }
 
-      it "handles token refresh failure by logging warning and not rescheduling" do
+      it "handles token refresh failure by logging warning and checking again in 3 hours" do
         allow_any_instance_of(GitlabIntegration).to receive(:user_info).and_raise(token_error)
 
         job.perform(gitlab_integration.id)
 
         expect(job).to have_received(:elog).with(token_error, level: :warn)
-        expect(described_class).not_to have_received(:perform_in)
+        expect(described_class).to have_received(:perform_in).with(3.hours, gitlab_integration.id)
       end
 
       it "handles API errors by logging error and rescheduling for 1 hour" do

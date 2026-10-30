@@ -22,7 +22,8 @@ class GitlabIntegration < ApplicationRecord
   using RefinedArray
 
   attr_accessor :code
-  before_validation :complete_access, if: :new_record?
+  before_validation :complete_access, if: -> { code.present? }
+  before_save :complete_access, if: -> { code.present? }
   after_create_commit -> { KeepAliveIntegrations::GitlabJob.perform_in(6.hours, id) }
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
@@ -185,8 +186,19 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def complete_access
-    return if oauth_access_token.present? && oauth_refresh_token.present?
-    set_tokens(API.oauth_access_token(code, redirect_uri))
+    tokens = API.oauth_access_token(code, redirect_uri)
+
+    if tokens.access_token.blank? || tokens.refresh_token.blank?
+      errors.add(:base, "Could not authorize with GitLab, please try again.")
+      throw :abort
+    end
+
+    set_tokens(tokens)
+    self.code = nil
+  end
+
+  def changed_for_autosave?
+    super || code.present?
   end
 
   def correct_key
@@ -480,23 +492,25 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
+    previous_refresh_token = oauth_refresh_token
+    tokens = API.oauth_refresh_token(previous_refresh_token, redirect_uri)
 
     if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
+      return if refreshed_elsewhere?(previous_refresh_token)
+
       # Mark integration as needing reauth instead of disconnecting to preserve configuration
       integration.mark_needs_reauth!
       raise Installations::Error::TokenRefreshFailure
     end
 
-    # ensure that all gitlab integrations are updated with the new tokens (not just self)
     transaction do
-      affiliated_providers.each do |affiliated_provider|
-        affiliated_provider.set_tokens(tokens)
-        affiliated_provider.save!
+      providers_sharing_grant(previous_refresh_token).find_each do |provider|
+        provider.update!(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token)
       end
-    end
 
-    reload
+      set_tokens(tokens)
+      save!
+    end
   end
 
   def redirect_uri
@@ -511,7 +525,19 @@ class GitlabIntegration < ApplicationRecord
     "app/#{integrable.id}/gitlab_integration/#{id}/pipeline_jobs/#{branch_name}"
   end
 
-  def affiliated_providers
-    integrable.integrations.connected.gitlab_integrations.map(&:providable)
+  def providers_sharing_grant(refresh_token)
+    return self.class.none if refresh_token.blank?
+
+    self.class
+      .where(id: Integration.where(integrable: organization.apps).gitlab_integrations.select(:providable_id), oauth_refresh_token: refresh_token)
+      .where.not(id:)
+  end
+
+  def refreshed_elsewhere?(previous_refresh_token)
+    stored_refresh_token = self.class.where(id:).pick(:oauth_refresh_token)
+    return false if stored_refresh_token.blank? || stored_refresh_token == previous_refresh_token
+
+    reload
+    true
   end
 end
