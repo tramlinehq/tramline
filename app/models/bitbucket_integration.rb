@@ -401,20 +401,31 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    tokens = Installations::Bitbucket::Api.oauth_refresh_token(oauth_refresh_token, redirect_uri)
+    previous_refresh_token = oauth_refresh_token
+    tokens = Installations::Bitbucket::Api.oauth_refresh_token(previous_refresh_token, redirect_uri)
 
     if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
       integration.mark_needs_reauth!
       raise Installations::Error::TokenRefreshFailure
     end
 
-    set_tokens(tokens)
-    save!
-    reload
+    transaction do
+      providers_sharing_grant(previous_refresh_token).find_each do |provider|
+        provider.update!(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token)
+      end
+
+      set_tokens(tokens)
+      save!
+    end
   end
 
   def set_tokens(tokens)
     assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token)
+  end
+
+  def providers_sharing_grant(refresh_token)
+    return self.class.none if refresh_token.blank?
+    self.class.where(oauth_refresh_token: refresh_token).where.not(id:)
   end
 
   def redirect_uri

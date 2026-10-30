@@ -55,18 +55,35 @@ describe BitbucketIntegration do
 
     before do
       allow(bitbucket_integration).to receive(:redirect_uri).and_return("redirect_uri")
+      bitbucket_integration.update!(oauth_refresh_token: "shared_refresh")
+      allow(Installations::Bitbucket::Api).to receive(:oauth_refresh_token).with("shared_refresh", "redirect_uri").and_return(valid_tokens)
     end
 
-    it "stores the refreshed tokens on itself only" do
-      sibling = create(:integration, :with_bitbucket, integrable: app).providable
-      sibling_access_token = sibling.oauth_access_token
-      allow(Installations::Bitbucket::Api).to receive(:oauth_refresh_token).and_return(valid_tokens)
+    def bitbucket_provider_with(refresh_token, integrable:)
+      create(:integration, :with_bitbucket, integrable:).providable.tap { |provider| provider.update!(oauth_refresh_token: refresh_token) }
+    end
+
+    it "stores the refreshed tokens on every integration sharing the grant, across apps" do
+      sibling = bitbucket_provider_with("shared_refresh", integrable: app)
+      reused_copy = bitbucket_provider_with("shared_refresh", integrable: create(:app, :android, organization: app.organization))
 
       bitbucket_integration.send(:reset_tokens!)
 
-      expect(bitbucket_integration.oauth_access_token).to eq("new_access")
-      expect(bitbucket_integration.oauth_refresh_token).to eq("new_refresh")
-      expect(sibling.reload.oauth_access_token).to eq(sibling_access_token)
+      [bitbucket_integration, sibling, reused_copy].each do |provider|
+        provider.reload
+        expect(provider.oauth_access_token).to eq("new_access")
+        expect(provider.oauth_refresh_token).to eq("new_refresh")
+      end
+    end
+
+    it "leaves integrations with their own grant untouched" do
+      independent = bitbucket_provider_with("independent_refresh", integrable: app)
+      independent_access_token = independent.oauth_access_token
+
+      bitbucket_integration.send(:reset_tokens!)
+
+      expect(independent.reload.oauth_access_token).to eq(independent_access_token)
+      expect(independent.oauth_refresh_token).to eq("independent_refresh")
     end
 
     context "when token refresh fails" do
