@@ -8,7 +8,7 @@ module Installations
 
     BASE_URL = "https://api.bitbucket.org/2.0"
     USER_INFO_URL = "#{BASE_URL}/user"
-    WORKSPACES_URL = "#{BASE_URL}/workspaces"
+    WORKSPACES_URL = "#{BASE_URL}/user/workspaces"
     REPOS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}"
     REPO_HOOKS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/hooks"
     REPO_HOOK_URL = Addressable::Template.new "#{BASE_URL}/repositories/{repo_slug}/hooks/{hook_id}"
@@ -97,8 +97,8 @@ module Installations
     end
 
     def list_workspaces(transforms)
-      execute(:get, WORKSPACES_URL)
-        .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
+      paginated_execute(:get, WORKSPACES_URL)
+        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
     def list_repos(workspace, transforms)

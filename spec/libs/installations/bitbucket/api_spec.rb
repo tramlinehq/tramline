@@ -6,6 +6,22 @@ describe Installations::Bitbucket::Api, type: :integration do
   let(:repo_slug) { "tramline/ueno" }
   let(:url) { "https://example.com" }
 
+  describe "#list_workspaces" do
+    def workspace_access(slug)
+      {type: "workspace_access", administrator: false, workspace: {type: "workspace_base", uuid: "{#{SecureRandom.uuid}}", slug:, links: {}}}
+    end
+
+    it "lists the slugs of every workspace the user can access, across pages" do
+      second_page_url = "#{described_class::WORKSPACES_URL}?page=2"
+      stub_request(:get, described_class::WORKSPACES_URL).to_return_json(body: {values: [workspace_access("tramline")], next: second_page_url})
+      stub_request(:get, second_page_url).to_return_json(body: {values: [workspace_access("kredivo")]})
+
+      result = described_class.new(access_token).list_workspaces(BitbucketIntegration::WORKSPACE_TRANSFORMATIONS)
+
+      expect(result.pluck(:id)).to eq(%w[tramline kredivo])
+    end
+  end
+
   describe "#create_repo_webhook!" do
     it "creates a webhook given a repo" do
       response = JSON.parse(File.read("spec/fixtures/bitbucket/webhook.json"))

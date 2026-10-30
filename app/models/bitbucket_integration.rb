@@ -103,8 +103,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   WORKSPACE_TRANSFORMATIONS = {
-    id: :slug,
-    name: :name
+    id: [:workspace, :slug]
   }
 
   USER_INFO_TRANSFORMATIONS = {
