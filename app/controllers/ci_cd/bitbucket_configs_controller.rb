@@ -37,8 +37,8 @@ class CiCd::BitbucketConfigsController < SignedInApplicationController
 
   def set_code_repositories
     @workspaces = @bitbucket_integration.workspaces || []
-    workspace = params[:workspace] || @workspaces.first
-    @code_repositories = @bitbucket_integration.repos(workspace)
+    @workspace = [params[:workspace], @bitbucket_integration.workspace].find { |workspace| workspace.in?(@workspaces) } || @workspaces.first
+    @code_repositories = @bitbucket_integration.repos(@workspace)
   end
 
   def parsed_bitbucket_config_params

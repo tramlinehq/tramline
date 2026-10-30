@@ -10,7 +10,7 @@
           data-stream-effect-param-value="workspace">
       <%= section.F.labeled_select :workspace,
             "Workspace",
-            options_for_select(workspaces, bitbucket_integration.workspace),
+            options_for_select(workspaces, workspace),
             {include_blank: "Select a workspace"},
             disabled: workspaces.blank?,
             class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES,
