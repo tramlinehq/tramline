@@ -22,7 +22,8 @@ class GitlabIntegration < ApplicationRecord
   using RefinedArray
 
   attr_accessor :code
-  before_validation :complete_access, if: :new_record?
+  before_validation :complete_access, if: -> { code.present? }
+  before_save :complete_access, if: -> { code.present? }
   after_create_commit -> { KeepAliveIntegrations::GitlabJob.perform_in(6.hours, id) }
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
@@ -185,8 +186,19 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def complete_access
-    return if oauth_access_token.present? && oauth_refresh_token.present?
-    set_tokens(API.oauth_access_token(code, redirect_uri))
+    tokens = API.oauth_access_token(code, redirect_uri)
+
+    if tokens.access_token.blank? || tokens.refresh_token.blank?
+      errors.add(:base, "Could not authorize with GitLab, please try again.")
+      throw :abort
+    end
+
+    set_tokens(tokens)
+    self.code = nil
+  end
+
+  def changed_for_autosave?
+    super || code.present?
   end
 
   def correct_key

@@ -26,7 +26,7 @@ class BitbucketIntegration < ApplicationRecord
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/bitbucket_small.png".freeze
 
   attr_accessor :code
-  before_create :complete_access
+  before_save :complete_access, if: -> { code.present? }
   delegate :integrable, to: :integration
   delegate :cache, to: Rails
 
@@ -57,8 +57,18 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def complete_access
-    return if oauth_access_token.present? && oauth_refresh_token.present?
-    set_tokens(Installations::Bitbucket::Api.oauth_access_token(code, redirect_uri))
+    tokens = Installations::Bitbucket::Api.oauth_access_token(code, redirect_uri)
+
+    if tokens.access_token.blank? || tokens.refresh_token.blank?
+      errors.add(:base, "Could not authorize with Bitbucket, please try again.")
+      throw :abort
+    end
+
+    set_tokens(tokens)
+  end
+
+  def changed_for_autosave?
+    super || code.present?
   end
 
   def installation
@@ -367,10 +377,6 @@ class BitbucketIntegration < ApplicationRecord
     nil
   end
 
-  def set_tokens(tokens)
-    assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token)
-  end
-
   private
 
   MAX_RETRY_ATTEMPTS = 2
@@ -402,18 +408,13 @@ class BitbucketIntegration < ApplicationRecord
       raise Installations::Error::TokenRefreshFailure
     end
 
-    transaction do
-      affiliated_providers.each do |affiliated_provider|
-        affiliated_provider.set_tokens(tokens)
-        affiliated_provider.save!
-      end
-    end
-
+    set_tokens(tokens)
+    save!
     reload
   end
 
-  def affiliated_providers
-    integrable.integrations.connected.bitbucket_integrations.map(&:providable)
+  def set_tokens(tokens)
+    assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token)
   end
 
   def redirect_uri

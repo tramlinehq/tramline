@@ -246,6 +246,59 @@ describe GitlabIntegration do
     end
   end
 
+  describe "#complete_access" do
+    let(:mock_api) { class_double(Installations::Gitlab::Api) }
+    let(:fresh_tokens) { OpenStruct.new(access_token: "fresh_access", refresh_token: "fresh_refresh") }
+    let(:reauth_integration) do
+      create(:integration, integrable: app, category: "version_control",
+        providable: build(:gitlab_integration, :without_callbacks_and_validations)).tap(&:mark_needs_reauth!)
+    end
+
+    before { stub_const("GitlabIntegration::API", mock_api) }
+
+    def reauthorize(integration_id, code:)
+      Integration.find(integration_id).tap do |reloaded|
+        allow(reloaded.providable).to receive(:redirect_uri).and_return("redirect_uri")
+        reloaded.providable.assign_attributes(code:)
+        reloaded.status = Integration::DEFAULT_CONNECT_STATUS
+      end
+    end
+
+    it "exchanges the code exactly once when creating an integration" do
+      allow(mock_api).to receive(:oauth_access_token).and_return(fresh_tokens)
+      allow_any_instance_of(described_class).to receive(:redirect_uri).and_return("redirect_uri")
+      allow_any_instance_of(described_class).to receive(:correct_key)
+      new_integration = create(:app, :android).integrations.new(category: "version_control", status: Integration::DEFAULT_CONNECT_STATUS)
+      new_integration.providable = described_class.new(integration: new_integration, code: "new_code")
+
+      expect(new_integration.save).to be(true)
+      expect(mock_api).to have_received(:oauth_access_token).once
+      expect(new_integration.providable.reload.oauth_access_token).to eq("fresh_access")
+    end
+
+    it "exchanges a new code for tokens when re-authorizing an existing integration" do
+      allow(mock_api).to receive(:oauth_access_token).with("new_code", "redirect_uri").and_return(fresh_tokens)
+      reloaded = reauthorize(reauth_integration.id, code: "new_code")
+
+      expect(reloaded.save).to be(true)
+
+      providable = reloaded.providable.reload
+      expect(providable.oauth_access_token).to eq("fresh_access")
+      expect(providable.oauth_refresh_token).to eq("fresh_refresh")
+      expect(reloaded.reload).to be_connected
+    end
+
+    it "keeps the integration needing re-authorization when the code exchange returns no tokens" do
+      allow(mock_api).to receive(:oauth_access_token).and_return(OpenStruct.new)
+      old_access_token = reauth_integration.providable.oauth_access_token
+      reloaded = reauthorize(reauth_integration.id, code: "expired_code")
+
+      expect(reloaded.save).to be(false)
+      expect(reloaded.providable.reload.oauth_access_token).to eq(old_access_token)
+      expect(Integration.find(reauth_integration.id)).to be_needs_reauth
+    end
+  end
+
   describe "#with_api_retries (private)" do
     context "when token expires" do
       let(:error) { Installations::Error.new("Token expired", reason: :token_expired) }
