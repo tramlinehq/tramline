@@ -1,5 +1,6 @@
 class CiCd::GitlabConfigsController < SignedInApplicationController
   using RefinedString
+  include ProviderConfigErrors
 
   before_action :require_write_access!
   before_action :set_gitlab_integration

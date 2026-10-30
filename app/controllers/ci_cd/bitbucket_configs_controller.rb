@@ -1,5 +1,6 @@
 class CiCd::BitbucketConfigsController < SignedInApplicationController
   using RefinedString
+  include ProviderConfigErrors
 
   before_action :require_write_access!
   before_action :set_bitbucket_integration
