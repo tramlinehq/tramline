@@ -13,7 +13,7 @@ describe AppStoreIntegration do
     let(:live_release_response) {
       {
         external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
-        status: "READY_FOR_SALE",
+        status: "READY_FOR_DISTRIBUTION",
         build_number: "33417",
         name: "1.8.0",
         phased_release_day: 1,
