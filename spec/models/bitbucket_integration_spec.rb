@@ -63,7 +63,7 @@ describe BitbucketIntegration do
       create(:integration, :with_bitbucket, integrable:).providable.tap { |provider| provider.update!(oauth_refresh_token: refresh_token) }
     end
 
-    it "stores the refreshed tokens on every integration sharing the grant, across apps" do
+    it "stores the refreshed tokens on integrations sharing the grant across the organization's apps" do
       sibling = bitbucket_provider_with("shared_refresh", integrable: app)
       reused_copy = bitbucket_provider_with("shared_refresh", integrable: create(:app, :android, organization: app.organization))
 
@@ -76,14 +76,14 @@ describe BitbucketIntegration do
       end
     end
 
-    it "leaves integrations with their own grant untouched" do
+    it "leaves integrations with their own grant or in other organizations untouched" do
       independent = bitbucket_provider_with("independent_refresh", integrable: app)
-      independent_access_token = independent.oauth_access_token
+      other_org_copy = bitbucket_provider_with("shared_refresh", integrable: create(:app, :android))
 
       bitbucket_integration.send(:reset_tokens!)
 
-      expect(independent.reload.oauth_access_token).to eq(independent_access_token)
-      expect(independent.oauth_refresh_token).to eq("independent_refresh")
+      expect(independent.reload.oauth_refresh_token).to eq("independent_refresh")
+      expect(other_org_copy.reload.oauth_refresh_token).to eq("shared_refresh")
     end
 
     context "when token refresh fails" do

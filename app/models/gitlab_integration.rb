@@ -492,7 +492,8 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def reset_tokens!
-    tokens = API.oauth_refresh_token(oauth_refresh_token, redirect_uri)
+    previous_refresh_token = oauth_refresh_token
+    tokens = API.oauth_refresh_token(previous_refresh_token, redirect_uri)
 
     if tokens.nil? || tokens.access_token.blank? || tokens.refresh_token.blank?
       # Mark integration as needing reauth instead of disconnecting to preserve configuration
@@ -500,15 +501,14 @@ class GitlabIntegration < ApplicationRecord
       raise Installations::Error::TokenRefreshFailure
     end
 
-    # ensure that all gitlab integrations are updated with the new tokens (not just self)
     transaction do
-      affiliated_providers.each do |affiliated_provider|
-        affiliated_provider.set_tokens(tokens)
-        affiliated_provider.save!
+      providers_sharing_grant(previous_refresh_token).find_each do |provider|
+        provider.update!(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token)
       end
-    end
 
-    reload
+      set_tokens(tokens)
+      save!
+    end
   end
 
   def redirect_uri
@@ -523,7 +523,11 @@ class GitlabIntegration < ApplicationRecord
     "app/#{integrable.id}/gitlab_integration/#{id}/pipeline_jobs/#{branch_name}"
   end
 
-  def affiliated_providers
-    integrable.integrations.connected.gitlab_integrations.map(&:providable)
+  def providers_sharing_grant(refresh_token)
+    return self.class.none if refresh_token.blank?
+
+    self.class
+      .where(id: Integration.where(integrable: organization.apps).gitlab_integrations.select(:providable_id), oauth_refresh_token: refresh_token)
+      .where.not(id:)
   end
 end

@@ -28,6 +28,7 @@ class BitbucketIntegration < ApplicationRecord
   attr_accessor :code
   before_save :complete_access, if: -> { code.present? }
   delegate :integrable, to: :integration
+  delegate :organization, to: :integrable
   delegate :cache, to: Rails
 
   def repository_id
@@ -425,7 +426,10 @@ class BitbucketIntegration < ApplicationRecord
 
   def providers_sharing_grant(refresh_token)
     return self.class.none if refresh_token.blank?
-    self.class.where(oauth_refresh_token: refresh_token).where.not(id:)
+
+    self.class
+      .where(id: Integration.where(integrable: organization.apps).bitbucket_integrations.select(:providable_id), oauth_refresh_token: refresh_token)
+      .where.not(id:)
   end
 
   def redirect_uri

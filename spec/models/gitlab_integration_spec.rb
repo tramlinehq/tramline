@@ -333,21 +333,41 @@ describe GitlabIntegration do
 
     before do
       stub_const("GitlabIntegration::API", mock_api)
-      allow(gitlab_integration).to receive_messages(redirect_uri: "redirect_uri", affiliated_providers: [gitlab_integration])
+      allow(gitlab_integration).to receive_messages(redirect_uri: "redirect_uri")
     end
 
     context "when successful" do
-      before do
-        allow(mock_api).to receive(:oauth_refresh_token).and_return(valid_tokens)
-        allow(gitlab_integration).to receive(:set_tokens)
-        allow(gitlab_integration).to receive(:save!)
+      def gitlab_provider_with(refresh_token, integrable:)
+        create(:integration, integrable:, category: "version_control",
+          providable: build(:gitlab_integration, :without_callbacks_and_validations, oauth_refresh_token: refresh_token)).providable
       end
 
-      it "updates tokens and reloads" do
+      before do
+        gitlab_integration.update!(oauth_refresh_token: "shared_refresh")
+        allow(mock_api).to receive(:oauth_refresh_token).with("shared_refresh", "redirect_uri").and_return(valid_tokens)
+      end
+
+      it "stores the refreshed tokens on integrations sharing the grant across the organization's apps" do
+        sibling = gitlab_provider_with("shared_refresh", integrable: app)
+        reused_copy = gitlab_provider_with("shared_refresh", integrable: create(:app, :android, organization: app.organization))
+
         gitlab_integration.send(:reset_tokens!)
 
-        expect(gitlab_integration).to have_received(:set_tokens).with(valid_tokens)
-        expect(gitlab_integration).to have_received(:save!)
+        [gitlab_integration, sibling, reused_copy].each do |provider|
+          provider.reload
+          expect(provider.oauth_access_token).to eq("new_access")
+          expect(provider.oauth_refresh_token).to eq("new_refresh")
+        end
+      end
+
+      it "leaves integrations with their own grant or in other organizations untouched" do
+        independent = gitlab_provider_with("independent_refresh", integrable: app)
+        other_org_copy = gitlab_provider_with("shared_refresh", integrable: create(:app, :android))
+
+        gitlab_integration.send(:reset_tokens!)
+
+        expect(independent.reload.oauth_refresh_token).to eq("independent_refresh")
+        expect(other_org_copy.reload.oauth_refresh_token).to eq("shared_refresh")
       end
     end
 
