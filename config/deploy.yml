@@ -300,7 +300,7 @@ accessories:
       # ID; set it per destination so nodes are distinguishable there.
       hostname: tramline-production
 
-# Shortcuts: `kamal console` (production) or `kamal console -d staging`.
+# Shortcuts: `kamal console -d production` or `kamal console -d staging` (HETZNER_IP must match the destination).
 aliases:
   console: app exec --interactive --reuse "bin/rails console"
   shell: app exec --interactive --reuse "bash"
