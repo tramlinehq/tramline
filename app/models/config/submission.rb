@@ -15,7 +15,7 @@
 #  created_at                          :datetime         not null
 #  updated_at                          :datetime         not null
 #  integrable_id                       :uuid
-#  release_step_config_id              :bigint           indexed, uniquely indexed => [number]
+#  release_step_config_id              :bigint           uniquely indexed => [number]
 #
 class Config::Submission < ApplicationRecord
   self.table_name = "submission_configs"

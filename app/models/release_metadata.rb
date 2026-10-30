@@ -20,7 +20,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  release_id              :uuid
-#  release_platform_run_id :uuid             indexed, uniquely indexed => [locale]
+#  release_platform_run_id :uuid             uniquely indexed => [locale]
 #
 class ReleaseMetadata < ApplicationRecord
   has_paper_trail

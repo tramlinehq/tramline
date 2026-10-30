@@ -13,7 +13,7 @@
 #  user_groups              :jsonb
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
-#  train_id                 :uuid             not null, indexed, uniquely indexed => [kind]
+#  train_id                 :uuid             not null, uniquely indexed => [kind]
 #
 class NotificationSetting < ApplicationRecord
   has_paper_trail
