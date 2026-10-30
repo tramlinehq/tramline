@@ -1,36 +1,38 @@
 namespace :keep_alive_integration do
-  desc "Start token keepalive jobs for existing GitLab integrations"
-  task gitlab: :environment do
-    puts "Scheduling keepalive jobs for GitLab integrations..."
+  schedule_keep_alive_jobs = lambda do |provider_name, providable_class, job_class|
+    puts "Scheduling keepalive jobs for #{provider_name} integrations..."
     count = 0
     skipped = 0
 
-    # Get all currently scheduled GitLab keepalive jobs
-    scheduled_jobs = Sidekiq::ScheduledSet.new
-    existing_job_args = scheduled_jobs
-      .select { |job| job.klass == "KeepAliveIntegrations::GitlabJob" }
-      .map(&:args)
-      .flatten
+    already_scheduled_ids = Sidekiq::ScheduledSet.new
+      .select { |job| job.klass == job_class.name }
+      .flat_map(&:args)
 
-    GitlabIntegration
+    providable_class
       .joins(:integration)
       .where(integrations: {status: %w[connected needs_reauth]})
-      .find_each do |gitlab_integration|
-      # Skip if job already scheduled for this integration
-      if existing_job_args.include?(gitlab_integration.id)
+      .find_each do |providable|
+      if already_scheduled_ids.include?(providable.id)
         skipped += 1
         next
       end
 
-      # Schedule with a random delay to spread out the load
-      delay = rand(0..6.hours.to_i)
-      KeepAliveIntegrations::GitlabJob.perform_in(delay.seconds, gitlab_integration.id)
-
+      job_class.perform_in(rand(0..6.hours.to_i).seconds, providable.id)
       count += 1
     end
 
-    puts "Started keepalive jobs for #{count} GitLab integrations."
+    puts "Started keepalive jobs for #{count} #{provider_name} integrations."
     puts "Skipped #{skipped} integrations (jobs already scheduled)." if skipped > 0
-    puts "No GitLab integrations found." if count == 0 && skipped == 0
+    puts "No #{provider_name} integrations found." if count == 0 && skipped == 0
+  end
+
+  desc "Start token keepalive jobs for existing GitLab integrations"
+  task gitlab: :environment do
+    schedule_keep_alive_jobs.call("GitLab", GitlabIntegration, KeepAliveIntegrations::GitlabJob)
+  end
+
+  desc "Start token keepalive jobs for existing Bitbucket integrations"
+  task bitbucket: :environment do
+    schedule_keep_alive_jobs.call("Bitbucket", BitbucketIntegration, KeepAliveIntegrations::BitbucketJob)
   end
 end

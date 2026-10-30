@@ -27,6 +27,7 @@ class BitbucketIntegration < ApplicationRecord
 
   attr_accessor :code
   before_save :complete_access, if: -> { code.present? }
+  after_create_commit -> { KeepAliveIntegrations::BitbucketJob.perform_in(6.hours, id) }
   delegate :integrable, to: :integration
   delegate :organization, to: :integrable
   delegate :cache, to: Rails
@@ -66,6 +67,7 @@ class BitbucketIntegration < ApplicationRecord
     end
 
     set_tokens(tokens)
+    self.code = nil
   end
 
   def changed_for_autosave?
