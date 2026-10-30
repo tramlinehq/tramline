@@ -15,7 +15,7 @@
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
 #  external_release_id        :string
-#  production_release_id      :uuid             indexed => [fetched_at], indexed
+#  production_release_id      :uuid             indexed => [fetched_at]
 #
 class ReleaseHealthMetric < ApplicationRecord
   self.ignored_columns += ["deployment_run_id"]

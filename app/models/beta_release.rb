@@ -12,7 +12,7 @@
 #  commit_id                  :uuid             not null, uniquely indexed => [release_platform_run_id, type], indexed
 #  parent_internal_release_id :uuid             indexed
 #  previous_id                :uuid             indexed
-#  release_platform_run_id    :uuid             not null, uniquely indexed => [commit_id, type], indexed
+#  release_platform_run_id    :uuid             not null, uniquely indexed => [commit_id, type]
 #
 class BetaRelease < PreProdRelease
   STAMPABLE_REASONS = %w[created finished failed]

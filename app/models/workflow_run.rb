@@ -16,7 +16,7 @@
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             not null, indexed, uniquely indexed => [pre_prod_release_id]
 #  external_id             :string
-#  pre_prod_release_id     :uuid             not null, indexed, uniquely indexed => [commit_id]
+#  pre_prod_release_id     :uuid             not null, uniquely indexed => [commit_id]
 #  release_platform_run_id :uuid             not null, indexed
 #
 class WorkflowRun < ApplicationRecord
@@ -160,6 +160,7 @@ class WorkflowRun < ApplicationRecord
 
   def cancel_external_workflow!
     return unless workflow_found?
+    return if train.nil? # release graph was torn down (orphaned train); nothing external to cancel
     ci_cd_provider.cancel_workflow_run!(external_id)
   end
 
