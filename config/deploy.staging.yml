@@ -35,6 +35,12 @@ env:
 
 accessories:
   db:
+    # Override the base cmd/files so staging loads its own 1GB-sized conf
+    # instead of production's 2GB one (base deploy.yml would otherwise be
+    # inherited here). See postgresql.staging.conf.
+    cmd: postgres -c config_file=/etc/postgresql/postgresql.conf
+    files:
+      - config/postgres/postgresql.staging.conf:/etc/postgresql/postgresql.conf
     options:
       memory: 1g
       cpus: 0.5
