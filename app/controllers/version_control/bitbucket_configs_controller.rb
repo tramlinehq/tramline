@@ -37,7 +37,7 @@ class VersionControl::BitbucketConfigsController < SignedInApplicationController
 
   def set_code_repositories
     @workspaces = @bitbucket_integration.workspaces || []
-    @workspace = params[:workspace].presence || @bitbucket_integration.workspace.presence || @workspaces.first
+    @workspace = [params[:workspace], @bitbucket_integration.workspace].find { |workspace| workspace.in?(@workspaces) } || @workspaces.first
     @code_repositories = @bitbucket_integration.repos(@workspace)
   end
 

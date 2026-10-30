@@ -68,6 +68,21 @@ describe VersionControl::BitbucketConfigsController do
         expect(response.body).to include('<option selected="selected" value="kredivo">')
       end
 
+      it "falls back to the first workspace when the saved one is no longer accessible" do
+        bitbucket_integration.update!(workspace: "renamed-or-removed")
+
+        get :edit, params: {app_id: app.slug}
+
+        expect(requested_workspaces).to eq(["tramline"])
+        expect(response.body).to include('<option selected="selected" value="tramline">')
+      end
+
+      it "ignores a picked workspace that is not in the accessible list" do
+        get :edit, params: {app_id: app.slug, workspace: "someone-elses"}, format: :turbo_stream
+
+        expect(requested_workspaces).to eq(["tramline"])
+      end
+
       it "falls back to the first workspace when none is picked or saved" do
         get :edit, params: {app_id: app.slug}
 
