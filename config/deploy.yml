@@ -132,15 +132,26 @@ accessories:
   db:
     image: postgres:14-trixie
     host: <%= ENV["HETZNER_IP"] %>
+    # Use our tuned config instead of the image-generated one. NOTE: this makes
+    # postgres ignore the image's postgresql.conf, so the file MUST keep
+    # listen_addresses='*' (compiled default is 'localhost') — see the file
+    # header. data_directory still resolves from the image's PGDATA env var.
+    cmd: postgres -c config_file=/etc/postgresql/postgresql.conf
     env:
       secret:
         - POSTGRES_USER
         - POSTGRES_PASSWORD
         - POSTGRES_DB
+    files:
+      - config/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
     directories:
       - tramline-db-data:/var/lib/postgresql/data
     options:
-      memory: 2g
+      # 3g (not 2g) so the whole ~1.4GB working set stays resident: 512MB
+      # shared_buffers + full 1.4GB in the OS page cache + work_mem/vacuum/temp
+      # headroom, all inside the cgroup (page cache counts against the limit on
+      # cgroup v2). Bump further as the DB grows past ~2GB.
+      memory: 3g
       cpus: 2
       restart: always
       shm-size: 256m

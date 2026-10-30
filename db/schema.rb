@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_25_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -505,7 +505,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
     t.boolean "core_enabled", default: false, null: false
     t.text "user_content"
     t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
-    t.index ["train_id"], name: "index_notification_settings_on_train_id"
   end
 
   add_check_constraint "notification_settings", "active IS TRUE AND (true = ANY (ARRAY[core_enabled, release_specific_enabled])) OR active IS FALSE AND (false = ALL (ARRAY[core_enabled, release_specific_enabled]))", validate: false
@@ -579,7 +578,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
     t.index ["parent_internal_release_id"], name: "index_pre_prod_releases_on_parent_internal_release_id"
     t.index ["previous_id"], name: "index_pre_prod_releases_on_previous_id"
     t.index ["release_platform_run_id", "commit_id", "type"], name: "idx_on_release_platform_run_id_commit_id_type_78e050198a", unique: true
-    t.index ["release_platform_run_id"], name: "index_pre_prod_releases_on_release_platform_run_id"
   end
 
   create_table "production_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -686,7 +684,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
     t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
     t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
     t.index ["production_release_id", "fetched_at"], name: "idx_on_production_release_id_fetched_at_0e35dbfce7", order: { fetched_at: :desc }
-    t.index ["production_release_id"], name: "index_release_health_metrics_on_production_release_id"
   end
 
   create_table "release_health_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -740,7 +737,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
     t.text "draft_support_url"
     t.text "draft_marketing_url"
     t.index ["release_platform_run_id", "locale"], name: "index_release_metadata_on_release_platform_run_id_and_locale", unique: true
-    t.index ["release_platform_run_id"], name: "index_release_metadata_on_release_platform_run_id"
   end
 
   create_table "release_platform_configs", force: :cascade do |t|
@@ -921,7 +917,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
     t.index ["commit_id"], name: "index_step_runs_on_commit_id"
     t.index ["release_platform_run_id"], name: "index_step_runs_on_release_platform_run_id"
     t.index ["step_id", "commit_id"], name: "index_step_runs_on_step_id_and_commit_id", unique: true
-    t.index ["step_id"], name: "index_step_runs_on_step_id"
   end
 
   create_table "steps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1012,7 +1007,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
     t.boolean "auto_start_rollout_after_submission", default: false, null: false
     t.index ["number"], name: "index_submission_configs_on_number"
     t.index ["release_step_config_id", "number"], name: "index_submission_configs_on_release_step_config_id_and_number", unique: true
-    t.index ["release_step_config_id"], name: "index_submission_configs_on_release_step_config_id"
   end
 
   create_table "submission_external_configs", force: :cascade do |t|
@@ -1171,7 +1165,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["workflow_id", "name"], name: "index_workflow_config_parameters_on_workflow_id_and_name", unique: true
-    t.index ["workflow_id"], name: "index_workflow_config_parameters_on_workflow_id"
   end
 
   create_table "workflow_configs", force: :cascade do |t|
@@ -1204,7 +1197,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_29_120000) do
     t.string "external_unique_number"
     t.index ["commit_id"], name: "index_workflow_runs_on_commit_id"
     t.index ["pre_prod_release_id", "commit_id"], name: "index_workflow_runs_on_pre_prod_release_id_and_commit_id", unique: true
-    t.index ["pre_prod_release_id"], name: "index_workflow_runs_on_pre_prod_release_id"
     t.index ["release_platform_run_id"], name: "index_workflow_runs_on_release_platform_run_id"
   end
 
