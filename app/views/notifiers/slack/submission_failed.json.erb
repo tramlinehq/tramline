@@ -31,7 +31,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*Error:* ```<%= @submission_failure_reason %>```"
+        "text": "*Error:* ```<%= safe_string(@submission_failure_reason) %>```"
       }
     }
     <% end %>

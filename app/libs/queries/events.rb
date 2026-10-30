@@ -8,6 +8,9 @@ class Queries::Events
     ios_platform: ReleasePlatform.arel_table[:platform]
   }
 
+  # GitHub::SQL refuses to bind an empty array, so an empty IN list is bound to an id that matches nothing
+  NO_MATCH_ID = "00000000-0000-0000-0000-000000000000".freeze
+
   def initialize(release:, params:)
     @release = release
     @params = params
@@ -26,7 +29,7 @@ class Queries::Events
       .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(FILTER_MAPPING)))
       .pluck(:id)
 
-    results = GitHub::SQL.results <<~SQL.squish, release_id: release.id, run_ids: run_ids
+    results = GitHub::SQL.results <<~SQL.squish, release_id: release.id, run_ids: run_ids.presence || [NO_MATCH_ID]
       WITH "pull_request_data" AS (
         SELECT "pull_requests".id
         FROM "pull_requests"
