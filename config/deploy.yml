@@ -299,3 +299,9 @@ accessories:
       # Without this the node registers in Netdata Cloud under its container
       # ID; set it per destination so nodes are distinguishable there.
       hostname: tramline-production
+
+# Shortcuts: `kamal console` (production) or `kamal console -d staging`.
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs --follow
