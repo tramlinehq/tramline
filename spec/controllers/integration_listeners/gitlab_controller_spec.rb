@@ -154,7 +154,7 @@ describe IntegrationListeners::GitlabController do
         }.not_to change(Integration, :count)
 
         expect(response).to redirect_to(app_integrations_path(app))
-        expect(flash[:alert]).to be_present
+        expect(flash[:alert]).to eq("Could not authorize with GitLab, please try again.")
       end
     end
 
@@ -207,7 +207,7 @@ describe IntegrationListeners::GitlabController do
         expect(existing_integration.reload.status).to eq("needs_reauth")
         expect(existing_integration.providable.reload.oauth_access_token).to eq(old_access_token)
         expect(response).to redirect_to(app_integrations_path(app))
-        expect(flash[:alert]).to be_present
+        expect(flash[:alert]).to eq("Could not authorize with GitLab, please try again.")
       end
 
       context "when existing integration not found" do

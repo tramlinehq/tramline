@@ -173,7 +173,7 @@ describe IntegrationListeners::BitbucketController do
         }.not_to change(Integration, :count)
 
         expect(response).to redirect_to(app_integrations_path(app))
-        expect(flash[:alert]).to be_present
+        expect(flash[:alert]).to eq("Could not authorize with Bitbucket, please try again.")
       end
     end
 
@@ -215,7 +215,7 @@ describe IntegrationListeners::BitbucketController do
         expect(existing_integration.reload).to be_needs_reauth
         expect(existing_integration.providable.reload.oauth_access_token).to eq(old_access_token)
         expect(response).to redirect_to(app_integrations_path(app))
-        expect(flash[:alert]).to be_present
+        expect(flash[:alert]).to eq("Could not authorize with Bitbucket, please try again.")
       end
     end
   end

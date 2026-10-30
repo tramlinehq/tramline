@@ -43,7 +43,9 @@ class IntegrationListenerController < SignedInApplicationController
   private
 
   def integration_create_error
-    @integration.errors.full_messages.to_sentence.presence || INTEGRATION_CREATE_ERROR
+    @integration.errors.full_messages.to_sentence.presence ||
+      @integration.providable&.errors&.full_messages&.to_sentence.presence ||
+      INTEGRATION_CREATE_ERROR
   end
 
   def state
