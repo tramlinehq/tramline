@@ -7,8 +7,9 @@ describe VersionControl::BitbucketConfigsController do
   let(:app) { create(:app, platform: :android, organization:) }
   let(:user) { create(:user, :with_email_authentication, :as_developer, member_organization: organization) }
 
+  let!(:bitbucket_integration) { create(:integration, :with_bitbucket, integrable: app).providable }
+
   before do
-    create(:integration, :with_bitbucket, integrable: app)
     allow(controller).to receive(:current_user).and_return(user)
     request.headers["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
     request.headers["Turbo-Frame"] = "version_control_config"
@@ -41,6 +42,38 @@ describe VersionControl::BitbucketConfigsController do
 
       expect(response.body).to include('<turbo-frame id="version_control_config"')
       expect(response.body).to include("Could not load data from Bitbucket. Please try again in a bit.")
+    end
+
+    context "when choosing the workspace" do
+      let(:requested_workspaces) { [] }
+
+      before do
+        allow_any_instance_of(BitbucketIntegration).to receive(:workspaces).and_return(%w[tramline kredivo])
+        allow_any_instance_of(BitbucketIntegration).to receive(:repos) { |_, workspace| requested_workspaces << workspace and [] }
+      end
+
+      it "keeps the workspace picked in the form selected and lists its repositories" do
+        get :edit, params: {app_id: app.slug, workspace: "kredivo"}, format: :turbo_stream
+
+        expect(requested_workspaces).to eq(["kredivo"])
+        expect(response.body).to include('<option selected="selected" value="kredivo">')
+      end
+
+      it "uses the saved workspace when none is picked" do
+        bitbucket_integration.update!(workspace: "kredivo")
+
+        get :edit, params: {app_id: app.slug}
+
+        expect(requested_workspaces).to eq(["kredivo"])
+        expect(response.body).to include('<option selected="selected" value="kredivo">')
+      end
+
+      it "falls back to the first workspace when none is picked or saved" do
+        get :edit, params: {app_id: app.slug}
+
+        expect(requested_workspaces).to eq(["tramline"])
+        expect(response.body).to include('<option selected="selected" value="tramline">')
+      end
     end
   end
 end
