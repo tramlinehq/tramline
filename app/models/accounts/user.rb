@@ -166,6 +166,14 @@ class Accounts::User < ApplicationRecord
     access_for(organization)
   end
 
+  def membership_for_joining(organization, role:)
+    removed_membership = Accounts::Membership.discarded.find_by(user: self, organization:) if persisted?
+    return memberships.new(organization:, role:) if removed_membership.nil?
+
+    removed_membership.assign_attributes(discarded_at: nil, role:)
+    removed_membership
+  end
+
   def team_for(organization)
     access_for(organization)&.team
   end

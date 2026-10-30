@@ -90,5 +90,24 @@ describe Accounts::Invite do
         cleanup
       end
     end
+
+    it "reports only the validation error when the invitee already has a pending invite" do
+      existing = create(:invite)
+      invite = described_class.new(email: existing.email, organization: existing.organization, sender: existing.sender, role: "viewer")
+
+      expect(invite.make).to be(false)
+      expect(invite.errors[:recipient]).to include("has already been invited to the organization!")
+      expect(invite.errors[:email]).to be_empty
+    end
+
+    it "does not keep the invite when the email cannot be delivered" do
+      organization = create(:organization)
+      sender = create(:user, :as_owner, member_organization: organization)
+      allow(InvitationMailer).to receive(:new_user).and_raise(StandardError, "delivery failed")
+      invite = described_class.new(email: "new-invitee@example.com", organization:, sender:, role: "viewer")
+
+      expect { expect(invite.make).to be(false) }.not_to change(described_class, :count)
+      expect(invite.errors[:email]).to include("Failed to deliver an invite email to new-invitee@example.com! Please try again or contact support if the issue persists.")
+    end
   end
 end

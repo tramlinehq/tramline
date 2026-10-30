@@ -95,8 +95,10 @@ class Accounts::SsoAuthentication < ApplicationRecord
       user.full_name = full_name
       user.preferred_name = preferred_name
     end
-    user.memberships.new(organization:, role: invite&.role || UNINVITED_USER_ROLE)
-    if save
+    membership = user.membership_for_joining(organization, role: invite&.role || UNINVITED_USER_ROLE)
+
+    transaction do
+      raise ActiveRecord::Rollback unless save && membership.save
       invite.mark_accepted(user) if invite.present?
       track_new_user(organization)
     end

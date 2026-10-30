@@ -45,27 +45,28 @@ class Accounts::Invite < ApplicationRecord
   end
 
   def make
-    result = GitHub::Result.new do
-      transaction do
-        save!
-      end
-
-      if organization.sso?
-        InvitationMailer.sso_user(self).deliver_now!
-      elsif recipient.present?
-        InvitationMailer.existing_user(self).deliver_now!
-      else
-        InvitationMailer.new_user(self).deliver_now!
-      end
-    end
-
-    unless result.ok?
-      elog(result.error, level: :error)
-      errors.add(:email, :delivery_failed, email: email)
-      return false
+    transaction do
+      save!
+      deliver_invitation!
     end
 
     true
+  rescue ActiveRecord::RecordInvalid
+    false
+  rescue => e
+    elog(e, level: :error)
+    errors.add(:email, :delivery_failed, email: email)
+    false
+  end
+
+  def deliver_invitation!
+    if organization.sso?
+      InvitationMailer.sso_user(self).deliver_now!
+    elsif recipient.present?
+      InvitationMailer.existing_user(self).deliver_now!
+    else
+      InvitationMailer.new_user(self).deliver_now!
+    end
   end
 
   def add_recipient

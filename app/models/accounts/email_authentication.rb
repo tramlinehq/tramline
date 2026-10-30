@@ -76,7 +76,11 @@ class Accounts::EmailAuthentication < ApplicationRecord
 
   def add(invite)
     user.unique_authn_id = unique_authn_id
-    user.memberships.new(organization: invite.organization, role: invite.role)
-    invite.mark_accepted(user) if save
+    membership = user.membership_for_joining(invite.organization, role: invite.role)
+
+    transaction do
+      raise ActiveRecord::Rollback unless save && membership.save
+      invite.mark_accepted(user)
+    end
   end
 end

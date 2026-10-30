@@ -59,6 +59,23 @@ describe Accounts::User do
 
       expect(user.organizations.reload).to include(invite.organization)
     end
+
+    it "restores the membership of a user who was removed from the organization, with the invited role" do
+      organization = create(:organization)
+      user = create(:user, unique_authn_id: email)
+      create(:email_authentication, email:, user:)
+      membership = create(:membership, organization:, user:, role: "developer")
+      membership.discard!
+      invite = create(:invite, email:, organization:, role: "viewer")
+
+      expect(described_class.add_via_email(invite)).to be_truthy
+
+      expect(user.organizations.reload).to include(organization)
+      expect(membership.reload).to be_kept
+      expect(membership.role).to eq("viewer")
+      expect(Accounts::Membership.where(user:, organization:).count).to eq(1)
+      expect(invite.reload).to be_accepted
+    end
   end
 
   describe ".start_sign_in_via_sso" do
