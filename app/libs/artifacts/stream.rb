@@ -30,9 +30,11 @@ module Artifacts
       unzip.each do |entry|
         basename = File.basename(entry.name)
         ext = extname(entry.name)
-        extract_file = Tempfile.new([basename, ext])
+        extract_file = Tempfile.new([basename, ext], binmode: true)
         begin
-          entry.extract(extract_file) { true }
+          entry.get_input_stream { |input| IO.copy_stream(input, extract_file) }
+          extract_file.flush
+          extract_file.rewind
           yield(StreamIO.new(extract_file, ext))
         ensure
           extract_file.close(true)

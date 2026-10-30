@@ -655,7 +655,7 @@ GEM
       ffi (~> 1.12)
       logger
     ruby2_keywords (0.0.5)
-    rubyzip (2.3.2)
+    rubyzip (3.7.0)
     sanitize (7.0.1)
       crass (~> 1.0.8)
       nokogiri (>= 1.16.8)
@@ -663,11 +663,10 @@ GEM
       addressable (>= 2.3.5)
       faraday (>= 0.17.3, < 3)
     securerandom (0.4.1)
-    selenium-webdriver (4.24.0)
+    selenium-webdriver (4.52.0)
       base64 (~> 0.2)
       logger (~> 1.4)
-      rexml (~> 3.2, >= 3.2.5)
-      rubyzip (>= 1.2.2, < 3.0)
+      rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
     semantic (1.6.1)
     sentry-rails (5.28.1)
@@ -890,7 +889,7 @@ DEPENDENCIES
   rubocop-rspec_rails
   ruby-duration (~> 3.2)
   ruby-vips (~> 2.2)
-  rubyzip (~> 2.3)
+  rubyzip (~> 3.4)
   selenium-webdriver
   semantic (~> 1.6)
   sentry-rails (~> 5.27)
