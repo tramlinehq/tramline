@@ -3,9 +3,11 @@ class NotificationSettingsComponent < ViewComponent::Base
 
   InvalidNotificationSettings = Class.new(StandardError)
 
-  STATUS_PILL_ENABLED = BadgeComponent.new(text: "Enabled", status: :success)
-  STATUS_PILL_DISABLED = BadgeComponent.new(text: "Disabled", status: :failure)
-  STATUS_PILL_NEUTRAL = BadgeComponent.new(text: "Not Applicable", status: :neutral)
+  STATUS_PILLS = {
+    enabled: {text: "Enabled", status: :success},
+    disabled: {text: "Disabled", status: :failure},
+    neutral: {text: "Not Applicable", status: :neutral}
+  }.freeze
 
   NOTIFICATIONS = {
     release_scheduled: {icon: "clock.svg", description: "Your scheduled release will run in a few hours"},
@@ -132,20 +134,24 @@ class NotificationSettingsComponent < ViewComponent::Base
 
     def status_pill
       if setting.active? && setting.core_enabled?
-        return STATUS_PILL_ENABLED
+        return badge(:enabled)
       end
 
-      STATUS_PILL_DISABLED
+      badge(:disabled)
     end
 
     def release_specific_status_pill
-      return STATUS_PILL_NEUTRAL unless release_specific_channel_allowed?
+      return badge(:neutral) unless release_specific_channel_allowed?
 
       if setting.active? && setting.release_specific_enabled?
-        return STATUS_PILL_ENABLED
+        return badge(:enabled)
       end
 
-      STATUS_PILL_DISABLED
+      badge(:disabled)
+    end
+
+    def badge(kind)
+      BadgeComponent.new(**STATUS_PILLS.fetch(kind))
     end
 
     def default_channels
