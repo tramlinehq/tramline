@@ -29,6 +29,7 @@ class Accounts::Organization < ApplicationRecord
   has_many :releases, through: :apps
   has_many :invites, dependent: :destroy
   has_one :custom_storage, class_name: "Accounts::CustomStorage", dependent: :destroy, inverse_of: :organization
+  has_one_attached :icon, service: (:google_assets if Rails.env.production?)
 
   enum :status, {active: "active", dormant: "dormant", guest: "guest"}
 
@@ -116,5 +117,10 @@ class Accounts::Organization < ApplicationRecord
 
   def team_options
     teams.pluck(:name, :id).push([Accounts::Team::UNKNOWN_TEAM_NAME, nil])
+  end
+
+  def icon_path
+    Rails.application.routes.url_helpers
+      .blob_redirect_path(icon.signed_id, icon.filename, disposition: "inline")
   end
 end

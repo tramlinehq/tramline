@@ -43,10 +43,11 @@ Rails.application.routes.draw do
   end
 
   namespace :accounts do
-    resources :organizations, only: [:edit] do
+    resources :organizations, only: [:edit, :update] do
       member do
         get :switch
         get :teams
+        delete :remove_icon
       end
 
       resources :teams, only: %i[create update destroy]
