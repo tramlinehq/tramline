@@ -298,7 +298,7 @@ describe AppStoreSubmission do
     end
 
     it "marks submission as approved if release is live with matching build number" do
-      live_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "READY_FOR_SALE", build_number: build.build_number))
+      live_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "READY_FOR_DISTRIBUTION", build_number: build.build_number))
       allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { live_release_info })
 
       submission.update_external_release
@@ -307,7 +307,7 @@ describe AppStoreSubmission do
     end
 
     it "does not approve submission if release is live but build number does not match" do
-      live_mismatched_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "READY_FOR_SALE", build_number: "mismatched_build"))
+      live_mismatched_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "READY_FOR_DISTRIBUTION", build_number: "mismatched_build"))
       allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { live_mismatched_release_info })
 
       expect { submission.update_external_release }

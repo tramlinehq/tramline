@@ -111,7 +111,7 @@ RSpec.describe ExternalApp do
         {name: "production",
          releases: [
            {id: "62cdd0b0-19aa-4389-bd4b-4789ccf833f8",
-            status: "READY_FOR_SALE",
+            status: "READY_FOR_DISTRIBUTION",
             build_number: "471281164",
             release_date: "2024-10-15T23:44:11-07:00",
             localizations: [
