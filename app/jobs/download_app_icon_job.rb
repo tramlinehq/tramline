@@ -27,7 +27,7 @@ class DownloadAppIconJob < ApplicationJob
   private
 
   def validate_and_attach_icon(app, downloaded_file)
-    validation = Validators::AppIconValidator.validate(downloaded_file)
+    validation = Validators::IconValidator.validate(downloaded_file)
     if validation.errors.any?
       Rails.logger.error "Icon validation failed for app #{app.id}: #{validation.errors.join(", ")}"
     else

@@ -22,7 +22,7 @@
 
             <%= render DropdownComponent.new(authz: false) do |dropdown| %>
               <% button = dropdown.with_button(size: :xs) %>
-              <% button.with_icon("art/org_default.png", size: :xxl) %>
+              <% button.with_icon(organization_icon, size: :xxl) %>
               <% button.with_title_text do %>
                 <div class="text-left">
                   <div class="text-sm font-semibold leading-none text-main dark:text-white">

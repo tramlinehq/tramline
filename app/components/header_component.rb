@@ -14,6 +14,14 @@ class HeaderComponent < BaseComponent
     current_user.full_name
   end
 
+  def organization_icon
+    if current_organization.icon.attached?
+      current_organization.icon_path
+    else
+      "art/org_default.png"
+    end
+  end
+
   def app_icon
     if default_app.icon.attached?
       default_app.icon_path
