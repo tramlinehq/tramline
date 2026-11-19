@@ -913,4 +913,33 @@ describe Train do
       end
     end
   end
+
+  describe "deleting the VCS webhook on destroy" do
+    let(:train) { create(:train) }
+
+    before { Sidekiq::Worker.clear_all }
+
+    it "enqueues the removal of the webhook created for the train" do
+      train.update!(vcs_webhook_id: "1234")
+
+      train.destroy!
+
+      expect(DeleteVcsWebhookJob.jobs.size).to eq(1)
+      expect(DeleteVcsWebhookJob.jobs.first["args"]).to eq([train.app_id, "1234"])
+    end
+
+    it "does not enqueue anything when the train never had a webhook" do
+      train.destroy!
+
+      expect(DeleteVcsWebhookJob.jobs).to be_empty
+    end
+
+    it "does not enqueue anything when the train could not be destroyed" do
+      train.update!(vcs_webhook_id: "1234")
+      create(:release, train:)
+
+      expect(train.reload.destroy).to be(false)
+      expect(DeleteVcsWebhookJob.jobs).to be_empty
+    end
+  end
 end

@@ -204,6 +204,13 @@ class BitbucketIntegration < ApplicationRecord
     end
   end
 
+  def delete_webhook!(id)
+    with_api_retries { installation.delete_repo_webhook!(code_repository_name, id) }
+  rescue Installations::Error => ex
+    raise ex unless ex.reason.in?([:not_found, :webhook_not_found])
+    true
+  end
+
   def create_branch!(from, to, source_type: :branch)
     with_api_retries { installation.create_branch!(code_repository_name, from, to, source_type:) }
   end
