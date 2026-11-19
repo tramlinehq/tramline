@@ -406,4 +406,29 @@ describe GitlabIntegration do
       end
     end
   end
+
+  describe "#delete_webhook!" do
+    before do
+      gitlab_integration.update!(repository_config: {id: 123, full_name: "tramline/repo", namespace: "tramline"})
+    end
+
+    it "deletes the project webhook" do
+      allow(installation).to receive(:delete_project_webhook!).and_return(true)
+
+      expect(gitlab_integration.delete_webhook!("42")).to be(true)
+      expect(installation).to have_received(:delete_project_webhook!).with(gitlab_integration.code_repository_name, "42")
+    end
+
+    it "treats an already deleted webhook as success" do
+      allow(installation).to receive(:delete_project_webhook!).and_raise(Installations::Gitlab::Error.new({"message" => "404 Not found"}))
+
+      expect(gitlab_integration.delete_webhook!("42")).to be(true)
+    end
+
+    it "raises other errors" do
+      allow(installation).to receive(:delete_project_webhook!).and_raise(Installations::Error.new("boom", reason: :unknown_failure))
+
+      expect { gitlab_integration.delete_webhook!("42") }.to raise_error(Installations::Error)
+    end
+  end
 end

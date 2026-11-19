@@ -147,4 +147,23 @@ describe Installations::Bitbucket::Api, type: :integration do
       ).to have_been_made
     end
   end
+
+  describe "#delete_repo_webhook!" do
+    let(:hook_id) { "{cffc8461-e355-4ab2-9eb9-bb2e800240dc}" }
+    let(:hook_url) { described_class::REPO_HOOK_URL.expand(repo_slug:, hook_id:).to_s }
+
+    it "deletes the webhook of the repo" do
+      request = stub_request(:delete, hook_url).to_return(status: 204)
+
+      expect(described_class.new(access_token).delete_repo_webhook!(repo_slug, hook_id)).to be(true)
+      expect(request).to have_been_requested
+    end
+
+    it "raises a not found error when the webhook does not exist" do
+      stub_request(:delete, hook_url).to_return(status: 404, body: "")
+
+      expect { described_class.new(access_token).delete_repo_webhook!(repo_slug, hook_id) }
+        .to raise_error(Installations::Error) { |error| expect(error.reason).to eq(:not_found) }
+    end
+  end
 end

@@ -141,6 +141,12 @@ module Installations
         .first
     end
 
+    # https://docs.gitlab.com/ee/api/projects.html#delete-project-hook
+    def delete_project_webhook!(project_id, hook_id)
+      raw_execute(:delete, PROJECT_HOOK_URL.expand(project_id:, hook_id:).to_s, {})
+      true
+    end
+
     # https://docs.gitlab.com/ee/api/projects.html#get-project-hook
     def find_webhook(project_id, hook_id, transforms)
       execute(:get, PROJECT_HOOK_URL.expand(project_id:, hook_id:).to_s, {})

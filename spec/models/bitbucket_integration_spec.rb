@@ -141,4 +141,32 @@ describe BitbucketIntegration do
       end
     end
   end
+
+  describe "#delete_webhook!" do
+    let(:installation) { instance_double(Installations::Bitbucket::Api) }
+
+    before do
+      bitbucket_integration.update!(repository_config: {"full_name" => "tramline/repo"})
+      allow(bitbucket_integration).to receive_messages(installation:)
+    end
+
+    it "deletes the repo webhook" do
+      allow(installation).to receive(:delete_repo_webhook!).and_return(true)
+
+      expect(bitbucket_integration.delete_webhook!("{abc}")).to be(true)
+      expect(installation).to have_received(:delete_repo_webhook!).with("tramline/repo", "{abc}")
+    end
+
+    it "treats an already deleted webhook as success" do
+      allow(installation).to receive(:delete_repo_webhook!).and_raise(Installations::Error.new("Resource not found", reason: :not_found))
+
+      expect(bitbucket_integration.delete_webhook!("{abc}")).to be(true)
+    end
+
+    it "raises other errors" do
+      allow(installation).to receive(:delete_repo_webhook!).and_raise(Installations::Error.new("boom", reason: :unknown_failure))
+
+      expect { bitbucket_integration.delete_webhook!("{abc}") }.to raise_error(Installations::Error)
+    end
+  end
 end

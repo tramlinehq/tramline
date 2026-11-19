@@ -118,6 +118,11 @@ module Installations
         .first
     end
 
+    def delete_repo_webhook!(repo_slug, hook_id)
+      execute(:delete, REPO_HOOK_URL.expand(repo_slug:, hook_id:).to_s, {}, false)
+      true
+    end
+
     def find_webhook(repo_slug, hook_id, transforms)
       execute(:get, REPO_HOOK_URL.expand(repo_slug:, hook_id:).to_s)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
