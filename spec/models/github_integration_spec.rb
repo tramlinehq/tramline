@@ -8,11 +8,12 @@ describe GithubIntegration do
     let(:installation) { instance_double(Installations::Github::Api) }
     let(:run_id) { 45083872442 }
     let(:not_found) { Installations::Github::Error.new(OpenStruct.new(response_body: {message: "Not Found"}.to_json)) }
-    let(:run) { {id: run_id, html_url: "https://github.com/tramline/repo/actions/runs/#{run_id}", run_number: 5} }
+    let(:html_url) { "https://github.com/tramline/repo/actions/runs/#{run_id}" }
+    let(:run) { {id: run_id, html_url:, run_number: 5} }
 
     before do
       allow(integration).to receive_messages(installation:, sleep: nil)
-      allow(installation).to receive(:run_workflow!).and_return(run_id)
+      allow(installation).to receive(:run_workflow!).and_return({id: run_id, html_url:})
     end
 
     it "returns the dispatched run's metadata" do
@@ -37,14 +38,14 @@ describe GithubIntegration do
       expect(installation).to have_received(:get_workflow_run).twice
     end
 
-    it "falls back to the dispatched run id when the lookup keeps failing" do
+    it "falls back to what the dispatch returned when the lookup keeps failing" do
       allow(installation).to receive(:get_workflow_run).and_raise(not_found)
 
       result = integration.trigger_workflow_run!("ios-release.yml", "r/2.5.0", {})
 
       expect(result).to eq(
         "ci_ref" => run_id,
-        "ci_link" => "https://github.com/tramline/repo/actions/runs/#{run_id}",
+        "ci_link" => html_url,
         "number" => nil,
         "unique_number" => nil
       )

@@ -271,8 +271,8 @@ class GithubIntegration < ApplicationRecord
   DISPATCHED_RUN_LOOKUP_WAIT = 2.seconds
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
-    workflow_run_id = installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash)
-    find_dispatched_workflow_run(workflow_run_id)
+    dispatched_run = installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash)
+    find_dispatched_workflow_run(dispatched_run)
   end
 
   def cancel_workflow_run!(ci_ref)
@@ -391,11 +391,11 @@ class GithubIntegration < ApplicationRecord
 
   # GitHub can 404 on a run for a moment after the dispatch that created it.
   # The run exists by then, so failing the trigger would strand it: fall back
-  # to its id and let polling fill in the rest.
-  def find_dispatched_workflow_run(workflow_run_id)
+  # to what the dispatch returned and let polling fill in the rest.
+  def find_dispatched_workflow_run(dispatched_run)
     attempts = 0
     begin
-      run = get_workflow_run(workflow_run_id)
+      run = get_workflow_run(dispatched_run[:id])
       Installations::Response::Keys.transform([run], WORKFLOW_RUN_TRANSFORMATIONS).first
     rescue Installations::Github::Error => e
       raise unless e.reason == :not_found
@@ -405,7 +405,6 @@ class GithubIntegration < ApplicationRecord
         retry
       end
 
-      dispatched_run = {id: workflow_run_id, html_url: "https://github.com/#{code_repository_name}/actions/runs/#{workflow_run_id}"}
       Installations::Response::Keys.transform([dispatched_run], WORKFLOW_RUN_TRANSFORMATIONS).first
     end
   end
