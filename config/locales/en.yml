@@ -442,6 +442,22 @@ en:
           unauthorized: "the request to the store failed due to authorization error"
           agreement_missing: "a required Apple agreement is missing or has expired, the Account Holder must accept it in App Store Connect (Business)"
           api_key_forbidden: "the App Store Connect API key is not allowed to make this request, give it the App Manager or Admin role"
+      workflow_run:
+        trigger_failure_reason:
+          unknown_failure: "an unknown error, contact support"
+          workflow_parameter_not_provided: "the workflow has a required input that Tramline did not send"
+          workflow_parameter_invalid: "the workflow does not accept one of the inputs Tramline sent"
+          workflow_dispatch_missing: "the workflow does not have a workflow_dispatch trigger"
+          workflow_trigger_failed: "the CI provider did not start the workflow"
+          workflow_run_not_found: "the CI provider did not return the workflow run after it was triggered"
+          workflow_run_id_missing: "the CI provider did not return an id for the workflow run"
+          invalid_response: "the CI provider sent a response Tramline could not read"
+          workflow_run_not_runnable: "the workflow was not ready to run"
+          generic_client_error: "the CI provider rejected the request"
+          not_found: "the workflow, branch or repository was not found"
+          token_expired: "access to the CI provider has expired, reconnect the integration"
+          unauthorized: "the CI provider rejected Tramline's credentials, reconnect the integration"
+          forbidden: "the CI integration is not allowed to trigger this workflow"
       google_firebase_submission:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"

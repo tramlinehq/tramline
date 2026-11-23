@@ -109,6 +109,35 @@ describe WorkflowRuns::TriggerJob do
         expect(result).to eq(:kill)
         expect(workflow_run.reload.status).to eq("trigger_failed")
       end
+
+      it "shows a known failure as its curated message, not the provider's text" do
+        error = Installations::Github::Error.new(OpenStruct.new(response_body: {message: "Required input 'parameter_X' not provided"}.to_json))
+        allow(PassportJob).to receive(:perform_async)
+
+        described_class.sidekiq_retry_in_block.call(1, error, msg)
+
+        expect(PassportJob).to have_received(:perform_async).with(
+          workflow_run.id,
+          "WorkflowRun",
+          hash_including(metadata: hash_including(
+            error_message: "the workflow has a required input that Tramline did not send",
+            error_reason: :workflow_parameter_not_provided,
+            raw_error_message: "Required input 'parameter_X' not provided"
+          ))
+        )
+      end
+
+      it "does not show the text of an error it does not recognise" do
+        allow(PassportJob).to receive(:perform_async)
+
+        described_class.sidekiq_retry_in_block.call(1, StandardError.new("PG::ConnectionBad at 10.0.0.1"), msg)
+
+        expect(PassportJob).to have_received(:perform_async).with(
+          workflow_run.id,
+          "WorkflowRun",
+          hash_including(metadata: hash_including(error_message: "an unknown error, contact support"))
+        )
+      end
     end
 
     describe "sidekiq_retries_exhausted behavior" do
