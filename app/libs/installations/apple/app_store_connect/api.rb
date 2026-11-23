@@ -193,7 +193,8 @@ module Installations
     end
 
     def parse_body(response)
-      JSON.parse(response.body.to_s)
+      body = JSON.parse(response.body.to_s)
+      body if body.is_a?(Hash) && body["error"].is_a?(Hash)
     rescue JSON::ParserError
       nil
     end

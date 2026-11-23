@@ -52,11 +52,14 @@ describe GithubIntegration do
       expect(installation).to have_received(:get_workflow_run).exactly(described_class::DISPATCHED_RUN_LOOKUP_ATTEMPTS).times
     end
 
-    it "does not swallow other lookup errors" do
-      error = Installations::Github::Error.new(OpenStruct.new(response_body: {message: "Bad credentials"}.to_json))
-      allow(installation).to receive(:get_workflow_run).and_raise(error)
+    it "falls back without waiting when the lookup fails for any other reason" do
+      allow(installation).to receive(:get_workflow_run).and_raise(Octokit::InternalServerError)
 
-      expect { integration.trigger_workflow_run!("ios-release.yml", "r/2.5.0", {}) }.to raise_error(error)
+      result = integration.trigger_workflow_run!("ios-release.yml", "r/2.5.0", {})
+
+      expect(result).to include("ci_ref" => run_id, "ci_link" => html_url)
+      expect(installation).to have_received(:get_workflow_run).once
+      expect(integration).not_to have_received(:sleep)
     end
   end
 end

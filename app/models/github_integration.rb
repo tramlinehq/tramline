@@ -389,24 +389,26 @@ class GithubIntegration < ApplicationRecord
 
   private
 
-  # GitHub can 404 on a run for a moment after the dispatch that created it.
-  # The run exists by then, so failing the trigger would strand it: fall back
-  # to what the dispatch returned and let polling fill in the rest.
+  # The run exists once it is dispatched, so a lookup that fails must not fail
+  # the trigger: that would lose the run's id, and a retry would dispatch a
+  # second build. Fall back to what the dispatch returned and let polling fill
+  # in the rest. GitHub can 404 on a run for a moment after dispatching it, so
+  # that one is worth waiting for.
   def find_dispatched_workflow_run(dispatched_run)
     attempts = 0
     begin
       run = get_workflow_run(dispatched_run[:id])
-      Installations::Response::Keys.transform([run], WORKFLOW_RUN_TRANSFORMATIONS).first
-    rescue Installations::Github::Error => e
-      raise unless e.reason == :not_found
+    rescue => e
       attempts += 1
-      if attempts < DISPATCHED_RUN_LOOKUP_ATTEMPTS
+      if e.try(:reason) == :not_found && attempts < DISPATCHED_RUN_LOOKUP_ATTEMPTS
         sleep(DISPATCHED_RUN_LOOKUP_WAIT)
         retry
       end
 
-      Installations::Response::Keys.transform([dispatched_run], WORKFLOW_RUN_TRANSFORMATIONS).first
+      run = dispatched_run
     end
+
+    Installations::Response::Keys.transform([run], WORKFLOW_RUN_TRANSFORMATIONS).first
   end
 
   def namespaced_branch(branch_name)

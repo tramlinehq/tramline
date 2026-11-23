@@ -33,6 +33,16 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         described_class.new(bundle_id, key_id, issuer_id, key).find_release(build_number, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
       }.to raise_error(Installations::Apple::AppStoreConnect::Error, "No app store version found")
     end
+
+    [[1, 2].to_json, "\"Internal Server Error\"", {error: "Internal Server Error"}.to_json].each do |body|
+      it "raises an unknown failure when the body is #{body}, not an error object" do
+        stub_request(:get, url).to_return(status: 500, body:)
+
+        expect {
+          described_class.new(bundle_id, key_id, issuer_id, key).find_release(build_number, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+        }.to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:unknown_failure) }
+      end
+    end
   end
 
   context "when App Store Connect refuses the request" do
