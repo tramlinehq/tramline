@@ -29,6 +29,26 @@ describe WorkflowRuns::TriggerJob do
       expect(workflow_run.reload.status).to eq("unavailable")
     end
 
+    shared_examples "with known error" do |error|
+      before do
+        allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_raise(error)
+      end
+
+      context "when error is #{error.message}" do
+        it "raises the error and leaves workflow_run in triggering state" do
+          expect {
+            described_class.new.perform(workflow_run.id)
+          }.to raise_error(Installations::Github::Error)
+
+          expect(workflow_run.reload.status).to eq("triggering")
+        end
+      end
+    end
+
+    it_behaves_like "with known error", Installations::Github::Error.new(OpenStruct.new(response_body: {message: "Required input 'parameter_X' not provided"}.to_json))
+
+    it_behaves_like "with known error", Installations::Github::Error.new(OpenStruct.new(response_body: {message: "Workflow does not have 'workflow_dispatch' trigger"}.to_json))
+
     context "when error is unknown" do
       before do
         err = Installations::Error.new("Some Error", reason: :unknown_failure)
@@ -62,7 +82,7 @@ describe WorkflowRuns::TriggerJob do
       end
 
       it "kills job immediately for non-retryable trigger failures" do
-        error = Installations::Error.new("Some Error", reason: :unknown_failure)
+        error = Installations::Error.new("Parameter not provided", reason: :workflow_parameter_not_provided)
         allow(described_class).to receive(:mark_failed!)
 
         result = described_class.sidekiq_retry_in_block.call(1, error, msg)
@@ -102,7 +122,7 @@ describe WorkflowRuns::TriggerJob do
       end
 
       it "does nothing when non-retryable error exhausts retries" do
-        error = Installations::Error.new("Some Error", reason: :unknown_failure)
+        error = Installations::Error.new("Parameter not provided", reason: :workflow_parameter_not_provided)
         allow(described_class).to receive(:mark_failed!)
 
         described_class.sidekiq_retries_exhausted_block.call(msg, error)
@@ -113,7 +133,7 @@ describe WorkflowRuns::TriggerJob do
 
     describe "mark_failed! behavior" do
       it "marks workflow run as trigger_failed with error" do
-        error = Installations::Error.new("Test error", reason: :unknown_failure)
+        error = Installations::Error.new("Test error", reason: :workflow_parameter_not_provided)
 
         described_class.mark_failed!(msg, error)
 
@@ -137,7 +157,7 @@ describe WorkflowRuns::TriggerJob do
       end
 
       it "does not treat other errors as retryable" do
-        expect(described_class.retryable_trigger_failure?(Installations::Error.new("x", reason: :unknown_failure))).to be false
+        expect(described_class.retryable_trigger_failure?(Installations::Error.new("x", reason: :workflow_parameter_not_provided))).to be false
         expect(described_class.retryable_trigger_failure?(StandardError.new("x"))).to be false
       end
     end
