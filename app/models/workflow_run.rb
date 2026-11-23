@@ -314,9 +314,16 @@ class WorkflowRun < ApplicationRecord
   end
 
   def on_trigger_fail!(error)
-    event_stamp!(reason: :trigger_failed, kind: :error, data: stamp_data.merge(error_message: error.message, error_reason: error.reason))
+    event_stamp!(reason: :trigger_failed, kind: :error, data: stamp_data.merge(error_message: trigger_failure_message(error), error_reason: error.try(:reason), raw_error_message: error.message))
     notify!("Failed to trigger the workflow run!", :workflow_trigger_failed, notification_params)
     Signal.workflow_run_trigger_failed!(self)
+  end
+
+  # Only messages we wrote reach the activity log: the error's own text can be
+  # anything, including our internals.
+  def trigger_failure_message(error)
+    scope = [:activerecord, :values, :workflow_run, :trigger_failure_reason]
+    I18n.t(error.try(:reason) || :unknown_failure, scope:, default: :unknown_failure)
   end
 
   def on_halt!

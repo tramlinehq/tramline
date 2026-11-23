@@ -86,15 +86,16 @@ describe Installations::Github::Api, type: :integration do
     let(:commit_hash) { Faker::Crypto.sha1 }
     let(:inputs) { {build_version: "1.0.0", version_code: 1, parameters: {}} }
 
-    it "returns workflow_run_id from GitHub API response" do
+    it "returns the run's id and url from GitHub API response" do
       workflow_run_id = Faker::Number.number(digits: 10)
-      response_body = {"workflow_run_id" => workflow_run_id}.to_json
+      html_url = "https://github.com/#{repo}/actions/runs/#{workflow_run_id}"
+      response_body = {"workflow_run_id" => workflow_run_id, "run_url" => "https://api.github.com/repos/#{repo}/actions/runs/#{workflow_run_id}", "html_url" => html_url}.to_json
 
       allow_any_instance_of(described_class).to receive(:execute_custom).and_return(response_body)
 
       result = described_class.new(installation_id).run_workflow!(repo, workflow_id, ref, inputs, commit_hash)
 
-      expect(result).to eq(workflow_run_id)
+      expect(result).to eq({id: workflow_run_id, html_url:})
     end
 
     it "raises error when workflow_run_id is not in response" do

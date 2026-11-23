@@ -89,7 +89,7 @@ module Installations
         }
       }
 
-      # With return_run_details, GitHub API returns 200 OK with workflow_run_id
+      # With return_run_details, GitHub API returns 200 OK with the run's id and urls
       # instead of the default 204 No Content with empty body
       begin
         response_body = execute_custom do |custom_client|
@@ -102,13 +102,12 @@ module Installations
           )
         end
 
-        # Parse JSON response and extract workflow_run_id
         response_data = JSON.parse(response_body.to_s)
         workflow_run_id = response_data["workflow_run_id"]
 
         raise(Installations::Error.new("Workflow run ID not returned", reason: :workflow_run_id_missing)) if workflow_run_id.blank?
 
-        workflow_run_id
+        {id: workflow_run_id, html_url: response_data["html_url"]}
       rescue JSON::ParserError
         raise(Installations::Error.new("Invalid response from GitHub API", reason: :invalid_response))
       rescue Installations::Error

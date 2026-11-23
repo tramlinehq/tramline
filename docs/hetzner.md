@@ -245,10 +245,10 @@ Add these secrets to the GitHub repository (Settings > Secrets > Actions):
 ### Local toolchain
 
 Deploys run from your machine (or CI). Locally you need Ruby matching
-`.ruby-version` (3.4.9) and the kamal gem:
+`.ruby-version` (3.4.13) and the kamal gem:
 
 ```bash
-asdf install ruby 3.4.9      # if not already installed
+asdf install ruby 3.4.13     # if not already installed
 gem install kamal            # kamal 2.x; runs the amd64 build via qemu locally
 ```
 

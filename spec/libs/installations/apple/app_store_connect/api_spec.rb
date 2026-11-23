@@ -24,6 +24,43 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       }.to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:unknown_failure) }
       expect(request).to have_been_made
     end
+
+    it "keeps the error that applelink sent" do
+      payload = {error: {resource: "release", code: "not_found", message: "No app store version found"}}.to_json
+      stub_request(:get, url).to_return(status: 503, body: payload)
+
+      expect {
+        described_class.new(bundle_id, key_id, issuer_id, key).find_release(build_number, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+      }.to raise_error(Installations::Apple::AppStoreConnect::Error, "No app store version found")
+    end
+
+    [[1, 2].to_json, "\"Internal Server Error\"", {error: "Internal Server Error"}.to_json].each do |body|
+      it "raises an unknown failure when the body is #{body}, not an error object" do
+        stub_request(:get, url).to_return(status: 500, body:)
+
+        expect {
+          described_class.new(bundle_id, key_id, issuer_id, key).find_release(build_number, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+        }.to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:unknown_failure) }
+      end
+    end
+  end
+
+  context "when App Store Connect refuses the request" do
+    let(:url) { "http://localhost:4000/apple/connect/v1/apps/#{bundle_id}/release?build_number=#{build_number}" }
+
+    {
+      "agreement_missing" => :agreement_missing,
+      "forbidden" => :api_key_forbidden
+    }.each do |code, reason|
+      it "raises #{reason} with applelink's message for #{code}" do
+        payload = {error: {resource: "app_store_connect_api", code:, message: "Apple says no"}}.to_json
+        stub_request(:get, url).to_return(status: 403, body: payload)
+
+        expect {
+          described_class.new(bundle_id, key_id, issuer_id, key).find_release(build_number, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+        }.to raise_error(Installations::Apple::AppStoreConnect::Error, "Apple says no") { |error| expect(error.reason).to eq(reason) }
+      end
+    end
   end
 
   describe "#find_release" do
