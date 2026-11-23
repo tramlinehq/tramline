@@ -97,6 +97,16 @@ module Installations
         decorated_reason: :unauthorized
       },
       {
+        resource: "app_store_connect_api",
+        code: "agreement_missing",
+        decorated_reason: :agreement_missing
+      },
+      {
+        resource: "app_store_connect_api",
+        code: "forbidden",
+        decorated_reason: :api_key_forbidden
+      },
+      {
         resource: "submission",
         code: "not_found",
         decorated_reason: :submission_not_found
