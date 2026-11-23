@@ -184,12 +184,18 @@ module Installations
         .timeout(300)
         .auth(access_token.to_s)
         .headers(appstore_connect_headers).public_send(verb, url, params)
-      raise Installations::Apple::AppStoreConnect::Error.new if _5xx?(response.status)
+      raise Installations::Apple::AppStoreConnect::Error.new(parse_body(response)) if _5xx?(response.status)
 
       return true if no_content?(response.status)
       body = JSON.parse(response.body.to_s)
       raise Installations::Apple::AppStoreConnect::Error.new(body) if error?(response.status)
       body
+    end
+
+    def parse_body(response)
+      JSON.parse(response.body.to_s)
+    rescue JSON::ParserError
+      nil
     end
 
     def _5xx?(code)

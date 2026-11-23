@@ -91,12 +91,23 @@ describe WorkflowRuns::TriggerJob do
         expect(described_class).to have_received(:mark_failed!).with(msg, error)
       end
 
-      it "kills job for unknown errors" do
-        error = StandardError.new("Unknown error")
+      it "marks the run trigger_failed and kills the job for errors it does not recognise" do
+        error = Installations::Github::Error.new(OpenStruct.new(response_body: {message: "Not Found"}.to_json))
+        allow(PassportJob).to receive(:perform_async)
 
         result = described_class.sidekiq_retry_in_block.call(1, error, msg)
 
         expect(result).to eq(:kill)
+        expect(workflow_run.reload.status).to eq("trigger_failed")
+        expect(PassportJob).to have_received(:perform_async)
+          .with(workflow_run.id, "WorkflowRun", hash_including(reason: "trigger_failed", kind: "error"))
+      end
+
+      it "marks the run trigger_failed for errors that are not installation errors" do
+        result = described_class.sidekiq_retry_in_block.call(1, StandardError.new("boom"), msg)
+
+        expect(result).to eq(:kill)
+        expect(workflow_run.reload.status).to eq("trigger_failed")
       end
     end
 
@@ -128,30 +139,26 @@ describe WorkflowRuns::TriggerJob do
 
         expect(workflow_run.reload.status).to eq("trigger_failed")
       end
+
+      it "leaves a run that has moved on alone" do
+        workflow_run.update!(status: "started")
+
+        described_class.mark_failed!(msg, StandardError.new("late failure"))
+
+        expect(workflow_run.reload.status).to eq("started")
+      end
     end
 
     describe "error classification" do
-      it "correctly identifies retryable trigger failures" do
+      it "identifies retryable trigger failures" do
         error = Installations::Error.new("Not runnable", reason: :workflow_run_not_runnable)
 
         expect(described_class.retryable_trigger_failure?(error)).to be true
-        expect(described_class.trigger_failure?(error)).to be false
       end
 
-      it "correctly identifies non-retryable trigger failures" do
-        described_class::TRIGGER_FAILURE_REASONS.each do |reason|
-          error = Installations::Error.new("Test error", reason: reason)
-
-          expect(described_class.trigger_failure?(error)).to be true
-          expect(described_class.retryable_trigger_failure?(error)).to be false
-        end
-      end
-
-      it "correctly identifies non-Installation errors" do
-        error = StandardError.new("Regular error")
-
-        expect(described_class.trigger_failure?(error)).to be false
-        expect(described_class.retryable_trigger_failure?(error)).to be false
+      it "does not treat other errors as retryable" do
+        expect(described_class.retryable_trigger_failure?(Installations::Error.new("x", reason: :workflow_parameter_not_provided))).to be false
+        expect(described_class.retryable_trigger_failure?(StandardError.new("x"))).to be false
       end
     end
   end

@@ -267,13 +267,12 @@ class GithubIntegration < ApplicationRecord
     end
   end
 
-  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
-    # GitHub API now returns workflow_run_id directly
-    workflow_run_id = installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash)
+  DISPATCHED_RUN_LOOKUP_ATTEMPTS = 3
+  DISPATCHED_RUN_LOOKUP_WAIT = 2.seconds
 
-    # Fetch the full workflow run metadata using the returned ID
-    get_workflow_run(workflow_run_id)
-      .then { |run| Installations::Response::Keys.transform([run], WORKFLOW_RUN_TRANSFORMATIONS).first }
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
+    workflow_run_id = installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash)
+    find_dispatched_workflow_run(workflow_run_id)
   end
 
   def cancel_workflow_run!(ci_ref)
@@ -389,6 +388,26 @@ class GithubIntegration < ApplicationRecord
   end
 
   private
+
+  # GitHub can 404 on a run for a moment after the dispatch that created it.
+  # The run exists by then, so failing the trigger would strand it: fall back
+  # to its id and let polling fill in the rest.
+  def find_dispatched_workflow_run(workflow_run_id)
+    attempts = 0
+    begin
+      run = get_workflow_run(workflow_run_id)
+      Installations::Response::Keys.transform([run], WORKFLOW_RUN_TRANSFORMATIONS).first
+    rescue Installations::Github::Error => e
+      raise unless e.reason == :not_found
+      attempts += 1
+      if attempts < DISPATCHED_RUN_LOOKUP_ATTEMPTS
+        sleep(DISPATCHED_RUN_LOOKUP_WAIT)
+        retry
+      end
+
+      {ci_ref: workflow_run_id, ci_link: "https://github.com/#{code_repository_name}/actions/runs/#{workflow_run_id}"}.with_indifferent_access
+    end
+  end
 
   def namespaced_branch(branch_name)
     [code_repo_namespace, ":", branch_name].join
