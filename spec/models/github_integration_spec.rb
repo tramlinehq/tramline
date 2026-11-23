@@ -42,8 +42,12 @@ describe GithubIntegration do
 
       result = integration.trigger_workflow_run!("ios-release.yml", "r/2.5.0", {})
 
-      expect(result[:ci_ref]).to eq(run_id)
-      expect(result[:ci_link]).to eq("https://github.com/tramline/repo/actions/runs/#{run_id}")
+      expect(result).to eq(
+        "ci_ref" => run_id,
+        "ci_link" => "https://github.com/tramline/repo/actions/runs/#{run_id}",
+        "number" => nil,
+        "unique_number" => nil
+      )
       expect(installation).to have_received(:get_workflow_run).exactly(described_class::DISPATCHED_RUN_LOOKUP_ATTEMPTS).times
     end
 

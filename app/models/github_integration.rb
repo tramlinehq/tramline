@@ -405,7 +405,8 @@ class GithubIntegration < ApplicationRecord
         retry
       end
 
-      {ci_ref: workflow_run_id, ci_link: "https://github.com/#{code_repository_name}/actions/runs/#{workflow_run_id}"}.with_indifferent_access
+      dispatched_run = {id: workflow_run_id, html_url: "https://github.com/#{code_repository_name}/actions/runs/#{workflow_run_id}"}
+      Installations::Response::Keys.transform([dispatched_run], WORKFLOW_RUN_TRANSFORMATIONS).first
     end
   end
 
