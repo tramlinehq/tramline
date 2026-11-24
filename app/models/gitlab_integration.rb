@@ -308,6 +308,13 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_project_webhook!(code_repository_name, events_url(url_params), WEBHOOK_TRANSFORMATIONS) }
   end
 
+  def delete_webhook!(id)
+    with_api_retries { installation.delete_project_webhook!(code_repository_name, id) }
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
+    true
+  end
+
   def create_release!(tag_name, branch, _, release_notes)
     with_api_retries { installation.create_release!(code_repository_name, tag_name, branch, release_notes) }
   end

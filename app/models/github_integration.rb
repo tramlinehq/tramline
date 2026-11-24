@@ -167,6 +167,13 @@ class GithubIntegration < ApplicationRecord
     end
   end
 
+  def delete_webhook!(id)
+    installation.delete_repo_webhook!(code_repository_name, id)
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
+    true
+  end
+
   def create_release!(tag_name, branch, previous_tag_name, release_notes)
     installation.create_release!(code_repository_name, tag_name, branch, previous_tag_name, release_notes)
   end

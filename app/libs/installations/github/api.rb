@@ -170,6 +170,10 @@ module Installations
       end
     end
 
+    def delete_repo_webhook!(repo, id)
+      execute { @client.remove_hook(repo, id) }
+    end
+
     def find_webhook(repo, id, transforms)
       execute do
         @client

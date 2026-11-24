@@ -167,4 +167,22 @@ describe Installations::Github::Api, type: :integration do
       expect(result).to match(expected)
     end
   end
+
+  describe "#delete_repo_webhook!" do
+    let(:repo) { "tramlinehq/ueno" }
+
+    it "removes the webhook from the repo" do
+      allow_any_instance_of(Octokit::Client).to receive(:remove_hook).with(repo, "42").and_return(true)
+
+      expect(described_class.new(installation_id).delete_repo_webhook!(repo, "42")).to be(true)
+    end
+
+    it "raises a not found error when the webhook does not exist" do
+      not_found = Octokit::NotFound.new(status: 404, response_headers: {}, body: {message: "Not Found"}.to_json)
+      allow_any_instance_of(Octokit::Client).to receive(:remove_hook).and_raise(not_found)
+
+      expect { described_class.new(installation_id).delete_repo_webhook!(repo, "42") }
+        .to raise_error(Installations::Github::Error) { |error| expect(error.reason).to eq(:not_found) }
+    end
+  end
 end

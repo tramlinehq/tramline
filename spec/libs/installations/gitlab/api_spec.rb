@@ -764,4 +764,26 @@ describe Installations::Gitlab::Api do
       end
     end
   end
+
+  describe "#delete_project_webhook!" do
+    let(:project_id) { "123" }
+    let(:hook_id) { "42" }
+    let(:url) { "https://gitlab.com/api/v4/projects/#{project_id}/hooks/#{hook_id}" }
+
+    it "deletes the project webhook" do
+      request = stub_request(:delete, url)
+        .with(headers: {"Authorization" => "Bearer access_token"})
+        .to_return(status: 204, body: "")
+
+      expect(api.delete_project_webhook!(project_id, hook_id)).to be(true)
+      expect(request).to have_been_requested
+    end
+
+    it "raises a not found error when the webhook does not exist" do
+      stub_request(:delete, url).to_return(status: 404, body: {message: "404 Not found"}.to_json)
+
+      expect { api.delete_project_webhook!(project_id, hook_id) }
+        .to raise_error(Installations::Gitlab::Error) { |error| expect(error.reason).to eq(:not_found) }
+    end
+  end
 end

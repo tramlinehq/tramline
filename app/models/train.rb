@@ -153,6 +153,7 @@ class Train < ApplicationRecord
   before_update :disable_copy_approvals, unless: :approvals_enabled?
   before_update :create_default_notification_settings, if: :notification_channels_config_changed?
   after_create_commit :create_webhook_integration
+  after_destroy_commit :delete_vcs_webhook
   after_update_commit :update_webhook_integration
   after_update_commit :populate_release_schedules, if: :saved_release_schedule_changed?
 
@@ -715,6 +716,11 @@ class Train < ApplicationRecord
         errors.add(:version_bump_file_paths, :invalid_file_type, valid_extensions: valid_extensions.join(", "))
       end
     end
+  end
+
+  def delete_vcs_webhook
+    return if vcs_webhook_id.blank?
+    DeleteVcsWebhookJob.perform_async(app_id, vcs_webhook_id)
   end
 
   def create_webhook_integration
