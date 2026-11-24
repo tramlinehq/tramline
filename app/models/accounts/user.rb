@@ -204,7 +204,8 @@ class Accounts::User < ApplicationRecord
     record = attachment.record
     return false if record.blank?
 
-    access_for(record.organization).present?
+    organization = record.is_a?(Accounts::Organization) ? record : record.organization
+    access_for(organization).present?
   end
 
   def pending_profile?(organization)

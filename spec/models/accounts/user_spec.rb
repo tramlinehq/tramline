@@ -221,4 +221,37 @@ describe Accounts::User do
       end
     end
   end
+
+  describe "#access_to_blob?" do
+    let(:organization) { create(:organization) }
+    let(:user) { create(:user, :as_viewer, member_organization: organization) }
+    let(:icon) { {io: StringIO.new("icon"), filename: "icon.png", content_type: "image/png"} }
+
+    it "allows access to a build artifact of an app in the user's organization" do
+      artifact = create(:build_artifact)
+      member = create(:user, :as_viewer, member_organization: artifact.organization)
+
+      expect(member.access_to_blob?(artifact.signed_id)).to be(true)
+      expect(user.access_to_blob?(artifact.signed_id)).to be(false)
+    end
+
+    it "allows access to the icon of the user's organization" do
+      organization.icon.attach(**icon)
+
+      expect(user.access_to_blob?(organization.icon.signed_id)).to be(true)
+    end
+
+    it "denies access to the icon of an organization the user is not a member of" do
+      other_organization = create(:organization)
+      other_organization.icon.attach(**icon)
+
+      expect(user.access_to_blob?(other_organization.icon.signed_id)).to be(false)
+    end
+
+    it "denies access to an unattached blob" do
+      blob = ActiveStorage::Blob.create_and_upload!(**icon)
+
+      expect(user.access_to_blob?(blob.signed_id)).to be(false)
+    end
+  end
 end

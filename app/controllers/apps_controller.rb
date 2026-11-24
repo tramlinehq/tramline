@@ -174,6 +174,6 @@ class AppsController < SignedInApplicationController
   end
 
   def app_icon_params_errors
-    @app_icon_params_errors ||= Validators::AppIconValidator.validate(app_update_params[:icon]).errors
+    @app_icon_params_errors ||= Validators::IconValidator.validate(app_update_params[:icon]).errors
   end
 end

@@ -1,3 +1,34 @@
+<%= render SectionComponent.new(style: :titled, title: "Icon", subtitle: "Shown next to the organization name in the header") do %>
+  <div class="flex flex-col gap-y-6 w-1/3">
+    <% if @organization.icon.attached? %>
+      <div class="flex items-center gap-x-2">
+        <%= render IconComponent.new(@organization.icon_path, size: :xl_3) %>
+        <%= render ButtonComponent.new(
+              scheme: :danger,
+              label: "Remove icon",
+              options: remove_icon_accounts_organization_path(@organization),
+              type: :link,
+              html_options: {method: :delete, data: {turbo_method: :delete, turbo_confirm: "Are you sure you want to remove this icon?"}}
+            ) do |b|
+              b.with_icon("trash.svg", size: :sm)
+            end %>
+      </div>
+    <% end %>
+
+    <%= render FormComponent.new(model: @organization, url: accounts_organization_path(@organization), method: :patch, free_form: true) do |f| %>
+      <%= f.F.labeled_file_field :icon,
+            "Choose icon",
+            "512x512 or 1024x1024, square only. Under 1 MiB.",
+            accept: "image/png,image/jpeg,image/jpg,image/webp",
+            required: true %>
+
+      <% f.with_action do %>
+        <%= f.F.authz_submit "Update", "archive.svg" %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
 <% if @organization.sso? %>
   <%= render SectionComponent.new(style: :titled, title: "Authentication", subtitle: "Single Sign-On / SAML configuration") do %>
     <div class="flex flex-col gap-y-6 w-1/3">
