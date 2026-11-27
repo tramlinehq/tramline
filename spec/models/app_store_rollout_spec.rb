@@ -31,7 +31,7 @@ describe AppStoreRollout do
           name: "1.2.0",
           build_number: 9012,
           added_at: 1.day.ago,
-          status: "READY_FOR_SALE",
+          status: "READY_FOR_DISTRIBUTION",
           phased_release_day: 1,
           phased_release_status: "COMPLETE"
         }
@@ -111,7 +111,7 @@ describe AppStoreRollout do
           name: "1.2.0",
           build_number: 9012,
           added_at: 1.day.ago,
-          status: "READY_FOR_SALE",
+          status: "READY_FOR_DISTRIBUTION",
           phased_release_day: 1,
           phased_release_status: "INACTIVE"
         }
@@ -166,7 +166,7 @@ describe AppStoreRollout do
           name: "1.2.0",
           build_number: 9012,
           added_at: 1.day.ago,
-          status: "READY_FOR_SALE",
+          status: "READY_FOR_DISTRIBUTION",
           phased_release_day: 1,
           phased_release_status: "INACTIVE"
         }
@@ -208,7 +208,7 @@ describe AppStoreRollout do
           name: "1.2.0",
           build_number: 9012,
           added_at: 1.day.ago,
-          status: "READY_FOR_SALE",
+          status: "READY_FOR_DISTRIBUTION",
           phased_release_day: 2,
           phased_release_status: "ACTIVE"
         }
@@ -271,7 +271,7 @@ describe AppStoreRollout do
             name: "1.2.0",
             build_number: 9012,
             added_at: 1.day.ago,
-            status: "READY_FOR_SALE",
+            status: "READY_FOR_DISTRIBUTION",
             phased_release_day: 2,
             phased_release_status: "ACTIVE"
           }
@@ -364,7 +364,7 @@ describe AppStoreRollout do
             name: "1.2.0",
             build_number: 9012,
             added_at: 1.day.ago,
-            status: "READY_FOR_SALE",
+            status: "READY_FOR_DISTRIBUTION",
             phased_release_day: 1,
             phased_release_status: "ACTIVE"
           }
@@ -435,7 +435,7 @@ describe AppStoreRollout do
             name: "4.35.0",
             build_number: 15262,
             added_at: 1.day.ago,
-            status: "READY_FOR_SALE",
+            status: "READY_FOR_DISTRIBUTION",
             release_type: "MANUAL",
             phased_release_day: nil,
             phased_release_status: nil
@@ -479,7 +479,7 @@ describe AppStoreRollout do
               name: "1.2.0",
               build_number: 9012,
               added_at: 1.day.ago,
-              status: "READY_FOR_SALE",
+              status: "READY_FOR_DISTRIBUTION",
               phased_release_day: 2,
               phased_release_status: "ACTIVE"
             }
@@ -521,7 +521,7 @@ describe AppStoreRollout do
               name: "1.2.0",
               build_number: 9012,
               added_at: 1.day.ago,
-              status: "READY_FOR_SALE",
+              status: "READY_FOR_DISTRIBUTION",
               phased_release_day: 7,
               phased_release_status: "COMPLETE"
             }

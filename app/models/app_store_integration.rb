@@ -369,10 +369,12 @@ class AppStoreIntegration < ApplicationRecord
 
     attr_reader :release_info
 
-    READY_FOR_SALE = "READY_FOR_SALE"
+    # applelink now reports Apple's appVersionState (appStoreState was deprecated in
+    # App Store Connect API spec 3.3). READY_FOR_SALE -> READY_FOR_DISTRIBUTION, and
+    # the removed-from-sale states no longer exist as version states.
+    READY_FOR_DISTRIBUTION = "READY_FOR_DISTRIBUTION"
     PENDING_DEVELOPER_RELEASE = "PENDING_DEVELOPER_RELEASE"
     DEVELOPER_REJECTED = "DEVELOPER_REJECTED"
-    DEVELOPER_REMOVED_FROM_SALE = "DEVELOPER_REMOVED_FROM_SALE"
     REJECTED = "REJECTED"
     METADATA_REJECTED = "METADATA_REJECTED"
     INVALID_BINARY = "INVALID_BINARY"
@@ -407,7 +409,7 @@ class AppStoreIntegration < ApplicationRecord
     end
 
     def live?(build_number)
-      release_info[:build_number] == build_number && release_info[:status] == READY_FOR_SALE
+      release_info[:build_number] == build_number && release_info[:status] == READY_FOR_DISTRIBUTION
     end
 
     def valid?(build_number, version_name, staged_rollout_enabled)

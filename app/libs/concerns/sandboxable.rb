@@ -85,7 +85,7 @@ module Sandboxable
 
   def mock_start_app_store_rollout!
     return unless sandbox_mode?
-    update_rollout(mocked_store_info("READY_FOR_SALE", "ACTIVE", 2))
+    update_rollout(mocked_store_info("READY_FOR_DISTRIBUTION", "ACTIVE", 2))
     event_stamp!(reason: :started, kind: :notice, data: stamp_data)
   end
 
@@ -157,7 +157,7 @@ module Sandboxable
 
   def mock_approve_for_app_store!
     return unless sandbox_mode?
-    update_store_info!(mocked_store_info("READY_FOR_SALE", "INACTIVE"))
+    update_store_info!(mocked_store_info("READY_FOR_DISTRIBUTION", "INACTIVE"))
     approve!
   end
 

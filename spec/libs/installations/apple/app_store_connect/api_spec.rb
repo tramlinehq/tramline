@@ -70,7 +70,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       request = stub_request(:get, url).to_return(body: File.read("spec/fixtures/app_store_connect/release.json"))
       expected_release = {
         external_id: "31aafef2-d5fb-45d4-9b02-f0ab5911c1b2",
-        status: "READY_FOR_SALE",
+        status: "READY_FOR_DISTRIBUTION",
         build_number: "33417",
         name: "1.8.0",
         added_at: "2023-02-26T03:02:46-08:00",
@@ -113,7 +113,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       request = stub_request(:get, url).to_return(body: File.read("spec/fixtures/app_store_connect/release.json"))
       expected_release = {
         external_id: "31aafef2-d5fb-45d4-9b02-f0ab5911c1b2",
-        status: "READY_FOR_SALE",
+        status: "READY_FOR_DISTRIBUTION",
         build_number: "33417",
         name: "1.8.0",
         added_at: "2023-02-26T03:02:46-08:00",
@@ -170,7 +170,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       payload = File.read("spec/fixtures/app_store_connect/release.json")
       expected_release = {
         external_id: "31aafef2-d5fb-45d4-9b02-f0ab5911c1b2",
-        status: "READY_FOR_SALE",
+        status: "READY_FOR_DISTRIBUTION",
         build_number: "33417",
         name: "1.8.0",
         added_at: "2023-02-26T03:02:46-08:00",
@@ -291,7 +291,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
 
       expected_release = {
         external_id: "31aafef2-d5fb-45d4-9b02-f0ab5911c1b2",
-        status: "READY_FOR_SALE",
+        status: "READY_FOR_DISTRIBUTION",
         build_number: "33417",
         name: "1.8.0",
         added_at: "2023-02-26T03:02:46-08:00",
